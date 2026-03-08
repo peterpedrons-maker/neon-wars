@@ -107,6 +107,53 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   updateOrbitals(state, dt);
   updateAura(state, dt);
   updateRegen(state, dt);
+  updateFrostNova(state, dt);
+  updateMissiles(state, dt);
+  updateLightningRing(state, dt);
+  
+  // Flame trail zones
+  if (state.abilities.flameTrailDamage > 0 && Math.hypot(p.vel.x, p.vel.y) > 20) {
+    state.flameZones.push({ x: p.pos.x, y: p.pos.y, damage: state.abilities.flameTrailDamage, lifetime: 3 });
+    if (state.flameZones.length > 50) state.flameZones.shift();
+  }
+  // Update flame zones
+  for (let i = state.flameZones.length - 1; i >= 0; i--) {
+    state.flameZones[i].lifetime -= dt;
+    if (state.flameZones[i].lifetime <= 0) { state.flameZones.splice(i, 1); continue; }
+    const fz = state.flameZones[i];
+    for (const e of state.enemies) {
+      if (!e.alive) continue;
+      if (Math.hypot(e.pos.x - fz.x, e.pos.y - fz.y) < 15 + e.radius) {
+        e.hp -= fz.damage * dt;
+        e.flashTimer = 0.03;
+      }
+    }
+  }
+  
+  // Update plasma zones
+  if (state.abilities.plasmaFieldRadius > 0) {
+    state.abilities.plasmaFieldTimer -= dt;
+    if (state.abilities.plasmaFieldTimer <= 0) {
+      state.abilities.plasmaFieldTimer = 2;
+      state.plasmaZones.push({ x: p.pos.x, y: p.pos.y, radius: state.abilities.plasmaFieldRadius, damage: state.abilities.plasmaFieldDamage, lifetime: 5 });
+      if (state.plasmaZones.length > 8) state.plasmaZones.shift();
+    }
+  }
+  for (let i = state.plasmaZones.length - 1; i >= 0; i--) {
+    state.plasmaZones[i].lifetime -= dt;
+    if (state.plasmaZones[i].lifetime <= 0) { state.plasmaZones.splice(i, 1); continue; }
+    const pz = state.plasmaZones[i];
+    for (const e of state.enemies) {
+      if (!e.alive) continue;
+      if (Math.hypot(e.pos.x - pz.x, e.pos.y - pz.y) < pz.radius + e.radius) {
+        e.hp -= pz.damage * dt;
+        e.flashTimer = 0.03;
+      }
+    }
+  }
+
+  // Update map hazards
+  updateHazards(state, dt);
 
   // Update trail
   if (Math.hypot(p.vel.x, p.vel.y) > 10) {
