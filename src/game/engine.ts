@@ -18,7 +18,7 @@ import {
   startMusic, stopMusic, setMusicIntensity,
 } from './audio';
 
-const WAVE_SPAWN_INTERVAL = 0.6;
+const WAVE_SPAWN_INTERVAL = 0.35;
 
 export function updateGame(state: GameState, input: InputState, dt: number): void {
   if (state.screen !== 'playing') return;
@@ -91,12 +91,11 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
     }
   }
 
-  // Check wave complete
+  // Check wave complete - auto start next wave (no upgrade screen)
   const aliveEnemies = state.enemies.filter(e => e.alive).length;
   if (state.waveEnemiesRemaining <= 0 && aliveEnemies === 0) {
-    state.screen = 'upgrade';
     playWaveComplete();
-    return;
+    startWave(state);
   }
 
   updateEnemies(state, dt);
@@ -493,8 +492,8 @@ function damagePlayer(state: GameState, damage: number) {
     return;
   }
 
-  p.hp -= damage;
-  p.invincibleTimer = 0.5;
+  p.hp -= 1; // Always lose 1 heart per hit
+  p.invincibleTimer = 1.0;
   state.shakeTimer = 0.15;
   state.shakeIntensity = 5;
   state.particles.push(...createParticles(p.pos, COLORS.health, 6, 120, 2));
@@ -520,7 +519,7 @@ function applyPowerUp(state: GameState, type: string) {
     case 'speed': p.speedBoostTimer = 8; break;
     case 'triple-shot': p.tripleTimer = 8; break;
     case 'shield': p.shieldTimer = 15; break;
-    case 'heal': p.hp = Math.min(p.maxHp, p.hp + 25); break;
+    case 'heal': p.hp = Math.min(p.maxHp, p.hp + 1); break;
   }
 }
 

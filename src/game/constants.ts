@@ -79,9 +79,9 @@ export const COLORS = {
 export type PlayerClass = ShipType;
 
 export const CLASS_STATS: Record<ShipType, { hp: number; damage: number; speed: number; attackCooldown: number; specialCooldown: number; radius: number }> = {
-  phantom: { hp: 80, damage: 15, speed: 130, attackCooldown: 0.38, specialCooldown: 5, radius: 12 },
-  interceptor: { hp: 65, damage: 10, speed: 160, attackCooldown: 0.2, specialCooldown: 4, radius: 10 },
-  titan: { hp: 130, damage: 28, speed: 95, attackCooldown: 0.6, specialCooldown: 3, radius: 15 },
+  phantom: { hp: 3, damage: 15, speed: 130, attackCooldown: 0.38, specialCooldown: 5, radius: 12 },
+  interceptor: { hp: 3, damage: 10, speed: 160, attackCooldown: 0.2, specialCooldown: 4, radius: 10 },
+  titan: { hp: 3, damage: 28, speed: 95, attackCooldown: 0.6, specialCooldown: 3, radius: 15 },
 };
 
 export const ENEMY_STATS: Record<EnemyType, { hp: number; damage: number; speed: number; score: number; radius: number; attackCooldown: number; isBoss: boolean }> = {
@@ -94,10 +94,10 @@ export const ENEMY_STATS: Record<EnemyType, { hp: number; damage: number; speed:
   colossus: { hp: 400, damage: 35, speed: 30, score: 500, radius: 35, attackCooldown: 3, isBoss: true },
 };
 
-export const WAVE_BASE_ENEMIES = 12;
-export const WAVE_ENEMY_INCREMENT = 6;
+export const WAVE_BASE_ENEMIES = 20;
+export const WAVE_ENEMY_INCREMENT = 10;
 export const BOSS_WAVE_INTERVAL = 5;
-export const POWERUP_DROP_CHANCE = 0.18;
+export const POWERUP_DROP_CHANCE = 0.25;
 export const SPAWN_MARGIN = 90;
 export const PROJECTILE_SPEED = 500;
 export const PROJECTILE_LIFETIME = 2;

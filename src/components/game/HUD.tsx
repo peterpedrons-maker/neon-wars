@@ -14,7 +14,6 @@ interface HUDProps {
 const shipIcons: Record<string, string> = { phantom: '👻', interceptor: '⚡', titan: '💥' };
 
 const HUD: React.FC<HUDProps> = ({ player, wave, score, specialReady, combo, comboMultiplier, comboTimer }) => {
-  const hpPct = (player.hp / player.maxHp) * 100;
   const specialPct = player.specialTimer > 0
     ? ((player.specialCooldown - player.specialTimer) / player.specialCooldown) * 100
     : 100;
@@ -23,23 +22,25 @@ const HUD: React.FC<HUDProps> = ({ player, wave, score, specialReady, combo, com
 
   return (
     <div className="absolute top-0 left-0 right-0 pointer-events-none select-none p-3 flex justify-between items-start z-10">
-      {/* Left: HP */}
+      {/* Left: Hearts + Special */}
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <span className="text-lg">{shipIcons[player.class] || '🚀'}</span>
-          <div className="w-36 md:w-48 h-3 bg-[#1a0010] rounded-full overflow-hidden border border-[#ff004033]">
-            <div
-              className="h-full transition-all duration-200 rounded-full"
-              style={{
-                width: `${hpPct}%`,
-                background: hpPct > 50 ? 'linear-gradient(90deg, #00e5ff, #0ff)' :
-                  hpPct > 25 ? 'linear-gradient(90deg, #ffff00, #ff6b00)' :
-                  'linear-gradient(90deg, #ff0040, #ff1493)',
-                boxShadow: `0 0 8px ${hpPct > 50 ? '#0ff' : hpPct > 25 ? '#ff6b00' : '#ff0040'}`,
-              }}
-            />
+          {/* Hearts */}
+          <div className="flex gap-1">
+            {Array.from({ length: player.maxHp }).map((_, i) => (
+              <span
+                key={i}
+                className="text-2xl transition-all duration-200"
+                style={{
+                  filter: i < player.hp ? 'drop-shadow(0 0 6px #ff0040)' : 'grayscale(1) opacity(0.3)',
+                  transform: i < player.hp ? 'scale(1)' : 'scale(0.8)',
+                }}
+              >
+                {i < player.hp ? '❤️' : '🖤'}
+              </span>
+            ))}
           </div>
-          <span className="text-xs text-[#e0e8ff] font-mono">{player.hp}/{player.maxHp}</span>
         </div>
 
         {/* Special */}
