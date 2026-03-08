@@ -108,7 +108,7 @@ export function playShootTitan() {
     const noise = ctx.createOscillator();
     const gain = ctx.createGain();
     const noiseGain = ctx.createGain();
-    const dist = ctx.createWaveShaperNode ? ctx.createWaveShaper() : null;
+    // Heavy bass cannon
     
     osc.type = 'sawtooth';
     osc.frequency.setValueAtTime(120, ctx.currentTime);
