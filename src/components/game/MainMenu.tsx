@@ -8,9 +8,10 @@ interface MainMenuProps {
   onPlay: () => void;
   onLeaderboard: () => void;
   onHowToPlay: () => void;
+  onShop: () => void;
 }
 
-const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, onLeaderboard, onHowToPlay }) => {
+const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, onLeaderboard, onHowToPlay, onShop }) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#000008] text-[#e0e8ff] select-none">
       {/* Title */}
@@ -68,6 +69,13 @@ const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, 
           }}
         >
           🚀 Jogar
+        </button>
+        <button
+          onClick={onShop}
+          className="py-3 px-8 text-lg font-bold rounded-lg text-[#bf5af2] border border-[#bf5af2]/30 transition-all duration-200 hover:border-[#bf5af2] hover:shadow-[0_0_15px_rgba(191,90,242,0.3)] font-mono"
+          style={{ background: 'rgba(191,90,242,0.05)' }}
+        >
+          ⚡ Loja de Plasma
         </button>
         <button
           onClick={onLeaderboard}
