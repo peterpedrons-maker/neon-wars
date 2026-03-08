@@ -976,6 +976,7 @@ export function startWave(state: GameState) {
     ? WAVE_BASE_ENEMIES + state.wave * 2 + 1
     : WAVE_BASE_ENEMIES + (state.wave - 1) * WAVE_ENEMY_INCREMENT;
   state.waveSpawnTimer = 0;
+  state.enemiesKilledThisWave = 0;
   state.screen = 'playing';
 }
 
