@@ -456,10 +456,15 @@ function updateProjectiles(state: GameState, dt: number) {
 }
 
 function damageEnemy(state: GameState, e: Enemy, damage: number) {
+  // Crit check
+  if (state.abilities.critChance > 0 && Math.random() < state.abilities.critChance) {
+    damage *= 2;
+    state.particles.push(...createParticles(e.pos, '#ffff00', 8, 150, 3));
+  }
+  
   e.hp -= damage;
   e.flashTimer = 0.1;
   playHit();
-  // Hit sparks - massive
   state.particles.push(...createParticles(e.pos, COLORS.neonYellow, 15, 180, 3));
   state.particles.push(...createParticles(e.pos, '#ffffff', 8, 120, 2));
   state.particles.push(...createParticles(e.pos, getEnemyColor(e.type), 10, 150, 2.5));
@@ -475,20 +480,36 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
     if (state.combo > state.maxCombo) state.maxCombo = state.combo;
     if (state.comboMultiplier > prevMult) playCombo(state.comboMultiplier);
     
-    // Score with multiplier
     state.score += e.score * state.comboMultiplier;
     state.enemiesKilled++;
 
-    // Explosion sound
+    // Spawn XP orbs
+    const xpValue = e.isBoss ? 50 : Math.floor(5 + e.score * 0.3);
+    const orbCount = e.isBoss ? 8 : Math.min(4, Math.max(1, Math.floor(xpValue / 5)));
+    for (let i = 0; i < orbCount; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd = 60 + Math.random() * 80;
+      state.xpOrbs.push({
+        pos: { x: e.pos.x, y: e.pos.y },
+        vel: { x: Math.cos(angle) * spd, y: Math.sin(angle) * spd },
+        value: Math.ceil(xpValue / orbCount),
+        lifetime: 12,
+        radius: e.isBoss ? 6 : 4,
+      });
+    }
+
+    // Chain lightning
+    if (state.abilities.chainCount > 0) {
+      triggerChainLightning(state, e.pos, state.abilities.chainCount, damage * 0.5);
+    }
+
     playExplosion(e.isBoss);
 
-    // MASSIVE death explosion - tons of particles
     const color = e.isBoss ? COLORS.neonYellow : getEnemyColor(e.type);
     state.particles.push(...createParticles(e.pos, color, e.isBoss ? 200 : 60, 400, e.isBoss ? 8 : 5));
     state.particles.push(...createParticles(e.pos, '#ffffff', e.isBoss ? 80 : 30, 300, 4));
     const secColor = e.isBoss ? '#ff1493' : COLORS.neonCyan;
     state.particles.push(...createParticles(e.pos, secColor, e.isBoss ? 60 : 25, 250, 3.5));
-    // Extra ring of colored sparks
     state.particles.push(...createParticles(e.pos, COLORS.neonPink, e.isBoss ? 40 : 15, 350, 3));
     state.particles.push(...createParticles(e.pos, COLORS.neonGreen, e.isBoss ? 30 : 12, 280, 2.5));
     
@@ -524,6 +545,12 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
       if (pu) state.powerUps.push(pu);
     }
   }
+}
+
+function addXp(state: GameState, amount: number) {
+  state.xp += amount;
+  // Small particle feedback
+  state.particles.push(...createParticles(state.player.pos, '#bf5af2', 2, 40, 1.5));
 }
 
 function getEnemyColor(type: EnemyType): string {
