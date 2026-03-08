@@ -105,6 +105,28 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   // Player
   if (state.player.alive) drawPlayer(ctx, state.player, time);
 
+  // Coop peer with full ship design
+  if (state.coopPeer && state.coopPeer.alive) {
+    const peer = state.coopPeer;
+    const fakePlayer: Player = {
+      pos: { ...peer.pos }, vel: { x: 0, y: 0 }, radius: 12, alive: true,
+      hp: 1, maxHp: 1, class: (peer.shipClass as any) || 'phantom',
+      damage: peer.damage, speed: 200,
+      attackCooldown: peer.attackCooldown, attackTimer: peer.shooting ? peer.attackCooldown * 0.8 : 0,
+      specialCooldown: 5, specialTimer: 0,
+      shieldTimer: 0, tripleTimer: 0, speedBoostTimer: 0, invincibleTimer: 0,
+      angle: peer.angle,
+    };
+    drawPlayer(ctx, fakePlayer, time);
+    // P2 label
+    ctx.save();
+    ctx.shadowColor = '#39ff14'; ctx.shadowBlur = 6;
+    ctx.font = 'bold 8px Orbitron, monospace';
+    ctx.fillStyle = '#39ff14'; ctx.textAlign = 'center'; ctx.globalAlpha = 0.85;
+    ctx.fillText('P2', peer.pos.x, peer.pos.y - 20);
+    ctx.restore();
+  }
+
   // Particles
   state.particles.forEach(p => drawParticle(ctx, p));
 

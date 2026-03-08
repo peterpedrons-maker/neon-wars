@@ -90,6 +90,8 @@ export interface RoomCallbacks {
   onConfirm: () => void;
   onLobbyState: (state: LobbyState) => void;
   onChat: (msg: ChatMessage) => void;
+  onLevelUp: (level: number) => void;
+  onUpgradeDone: () => void;
 }
 
 export function connectToRoom(
@@ -122,6 +124,8 @@ export function connectToRoom(
     .on('broadcast', { event: 'guest_confirm' }, () => callbacks.onConfirm())
     .on('broadcast', { event: 'lobby_state' }, ({ payload }) => callbacks.onLobbyState(payload as LobbyState))
     .on('broadcast', { event: 'chat' }, ({ payload }) => callbacks.onChat(payload as ChatMessage))
+    .on('broadcast', { event: 'level_up' }, ({ payload }) => callbacks.onLevelUp((payload as any).level))
+    .on('broadcast', { event: 'upgrade_done' }, () => callbacks.onUpgradeDone())
     .subscribe((status) => {
       if (status === 'SUBSCRIBED') {
         channel!.send({ type: 'broadcast', event: 'player_join', payload: { playerId: room.playerId, isHost: room.isHost } });
@@ -164,6 +168,16 @@ export function sendLobbyState(state: LobbyState) {
 export function sendChat(msg: ChatMessage) {
   if (!channel) return;
   channel.send({ type: 'broadcast', event: 'chat', payload: msg });
+}
+
+export function sendLevelUp(level: number) {
+  if (!channel) return;
+  channel.send({ type: 'broadcast', event: 'level_up', payload: { level } });
+}
+
+export function sendUpgradeDone() {
+  if (!channel) return;
+  channel.send({ type: 'broadcast', event: 'upgrade_done', payload: {} });
 }
 
 export function leaveRoom() {

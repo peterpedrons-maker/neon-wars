@@ -444,6 +444,8 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
       onChat: (msg: ChatMessage) => {
         setChatMessages(prev => [...prev, msg]);
       },
+      onLevelUp: () => {},
+      onUpgradeDone: () => {},
     });
   };
 

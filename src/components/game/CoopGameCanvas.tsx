@@ -6,7 +6,7 @@ import { createInitialState, updateGame, startWave } from '../../game/engine';
 import { renderGame, getScale, getOffset, resetCamera } from '../../game/renderer';
 import { useIsMobile } from '../../hooks/use-mobile';
 import { loadMeta, endRun, MetaProgress } from '../../game/meta';
-import { RoomInfo, sendPlayerState, sendGameSync, CoopPlayerState, CoopGameSync, connectToRoom, leaveRoom } from '../../game/multiplayer';
+import { RoomInfo, sendPlayerState, sendGameSync, CoopPlayerState, CoopGameSync, connectToRoom, leaveRoom, sendLevelUp, sendUpgradeDone } from '../../game/multiplayer';
 import { CLASS_STATS } from '../../game/constants';
 import HUD from './HUD';
 import LevelUpScreen from './LevelUpScreen';
@@ -21,6 +21,8 @@ interface CoopGameCanvasProps {
   onMenu: () => void;
 }
 
+const MAX_PARTICLES = 150; // Reduced for coop performance
+
 const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass, mapId, room, onMenu }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState | null>(null);
@@ -32,6 +34,13 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
   const isMobile = useIsMobile();
   const [, forceUpdate] = useState(0);
   const [runResult, setRunResult] = useState<{ plasma: number; newMilestones: any[] } | null>(null);
+
+  // Upgrade sync state
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [myUpgradeDone, setMyUpgradeDone] = useState(false);
+  const [peerUpgradeDone, setPeerUpgradeDone] = useState(false);
+  const [waitingForPeer, setWaitingForPeer] = useState(false);
+  const upgradeResumeRef = useRef(false);
 
   // Peer state
   const peerStateRef = useRef<CoopPlayerState>({ x: 0, y: 0, angle: 0, hp: 3, maxHp: 3, alive: true, shipClass: peerClass, shieldTimer: 0, invincibleTimer: 0, shooting: false });
@@ -45,15 +54,17 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
     stateRef.current = createInitialState(player, mapId, meta.weaponSlots);
     startWave(stateRef.current);
     setRunResult(null);
+    setShowUpgrade(false);
+    setMyUpgradeDone(false);
+    setPeerUpgradeDone(false);
+    setWaitingForPeer(false);
     forceUpdate(n => n + 1);
 
-    // Connect to room for game sync
     const ch = connectToRoom(room, {
       onPeerJoin: () => {},
       onPeerLeave: () => {},
       onPeerState: (ps) => {
         peerStateRef.current = ps;
-        // Update coopPeer on game state so engine uses it for AI targeting + shooting
         if (stateRef.current) {
           const peerStats = CLASS_STATS[ps.shipClass as ShipType] || CLASS_STATS.phantom;
           stateRef.current.coopPeer = {
@@ -76,30 +87,13 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
           stateRef.current.level = sync.level;
           stateRef.current.xpToNext = sync.xpToNext;
           stateRef.current.enemies = sync.enemies.map(e => ({
-            pos: { x: e.x, y: e.y },
-            vel: { x: 0, y: 0 },
-            radius: e.radius,
-            alive: e.alive,
-            type: e.type as any,
-            hp: e.hp,
-            maxHp: e.maxHp,
-            damage: 10,
-            speed: 0,
-            score: 0,
-            attackTimer: 0,
-            attackCooldown: 1,
-            isBoss: e.radius >= 25,
-            flashTimer: 0,
+            pos: { x: e.x, y: e.y }, vel: { x: 0, y: 0 }, radius: e.radius, alive: e.alive,
+            type: e.type as any, hp: e.hp, maxHp: e.maxHp, damage: 10, speed: 0, score: 0,
+            attackTimer: 0, attackCooldown: 1, isBoss: e.radius >= 25, flashTimer: 0,
           }));
           stateRef.current.projectiles = sync.projectiles.map(p => ({
-            pos: { x: p.x, y: p.y },
-            vel: { x: p.vx, y: p.vy },
-            radius: 4,
-            alive: p.alive,
-            damage: 10,
-            fromPlayer: p.fromPlayer,
-            lifetime: 2,
-            color: p.color,
+            pos: { x: p.x, y: p.y }, vel: { x: p.vx, y: p.vy }, radius: 4, alive: p.alive,
+            damage: 10, fromPlayer: p.fromPlayer, lifetime: 2, color: p.color,
           }));
         }
       },
@@ -108,10 +102,35 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
       onConfirm: () => {},
       onLobbyState: () => {},
       onChat: () => {},
+      onLevelUp: (_level: number) => {
+        // Peer leveled up - show upgrade screen for us too
+        if (stateRef.current && stateRef.current.screen === 'playing') {
+          setShowUpgrade(true);
+          setMyUpgradeDone(false);
+          setPeerUpgradeDone(false);
+          setWaitingForPeer(false);
+          stateRef.current.screen = 'upgrade';
+        }
+      },
+      onUpgradeDone: () => {
+        setPeerUpgradeDone(true);
+      },
     });
 
     return () => { leaveRoom(); };
   }, [playerClass, mapId]);
+
+  // When both players have chosen upgrades, resume game
+  useEffect(() => {
+    if (myUpgradeDone && peerUpgradeDone && showUpgrade) {
+      setShowUpgrade(false);
+      setWaitingForPeer(false);
+      if (stateRef.current) {
+        stateRef.current.screen = 'playing';
+      }
+      forceUpdate(n => n + 1);
+    }
+  }, [myUpgradeDone, peerUpgradeDone, showUpgrade]);
 
   // Keyboard
   useEffect(() => {
@@ -183,6 +202,7 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
   // Game loop
   useEffect(() => {
     let endRunHandled = false;
+    let prevLevel = 0;
     const loop = (time: number) => {
       frameRef.current = requestAnimationFrame(loop);
       if (!stateRef.current) return;
@@ -204,18 +224,35 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
         inputRef.current.moveY = 0;
       }
 
+      prevLevel = stateRef.current.level;
       const prevScreen = stateRef.current.screen;
+
       // Guest: skip enemy spawning/AI (host syncs enemies)
       if (!room.isHost) {
         stateRef.current.waveEnemiesRemaining = 0;
       }
       updateGame(stateRef.current, inputRef.current, dt);
+
+      // Cap particles for performance
+      if (stateRef.current.particles.length > MAX_PARTICLES) {
+        stateRef.current.particles = stateRef.current.particles.slice(-MAX_PARTICLES);
+      }
+
       forceUpdate(n => n + 1);
+
+      // Detect level up -> broadcast and show upgrade for both
+      if (stateRef.current.screen === 'upgrade' && prevScreen === 'playing') {
+        sendLevelUp(stateRef.current.level);
+        setShowUpgrade(true);
+        setMyUpgradeDone(false);
+        setPeerUpgradeDone(false);
+        setWaitingForPeer(false);
+      }
 
       // Send our state to peer
       syncTimerRef.current -= dt;
       if (syncTimerRef.current <= 0) {
-        syncTimerRef.current = 0.05; // 20 times/sec
+        syncTimerRef.current = 0.05;
         const p = stateRef.current.player;
         sendPlayerState({
           x: p.pos.x, y: p.pos.y, angle: p.angle,
@@ -264,54 +301,6 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
       renderGame(ctx, stateRef.current, canvas.width, canvas.height);
-
-      // Draw peer player on top
-      const peer = peerStateRef.current;
-      if (peer.alive) {
-        const scale = getScale(canvas.width, canvas.height);
-        const offset = getOffset(canvas.width, canvas.height);
-        ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        // We need to find peer position in screen coords
-        // For now, draw a simple indicator
-        const peerScreenX = offset.x + peer.x * scale;
-        const peerScreenY = offset.y + peer.y * scale;
-        
-        const peerColor = peer.shipClass === 'phantom' ? '#bf5af2'
-          : peer.shipClass === 'interceptor' ? '#00e5ff'
-          : peer.shipClass === 'titan' ? '#ff6b00'
-          : peer.shipClass === 'spectre' ? '#9040ff'
-          : peer.shipClass === 'valkyrie' ? '#ff1493'
-          : '#ff4500';
-
-        // Glow
-        ctx.globalAlpha = 0.3;
-        ctx.fillStyle = peerColor;
-        ctx.beginPath();
-        ctx.arc(peerScreenX, peerScreenY, 20 * scale, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Ship body
-        ctx.globalAlpha = peer.invincibleTimer > 0 ? 0.5 + Math.sin(Date.now() * 0.02) * 0.3 : 0.9;
-        ctx.fillStyle = peerColor;
-        ctx.beginPath();
-        const r = 12 * scale;
-        const a = peer.angle;
-        ctx.moveTo(peerScreenX + Math.cos(a) * r * 1.5, peerScreenY + Math.sin(a) * r * 1.5);
-        ctx.lineTo(peerScreenX + Math.cos(a + 2.5) * r, peerScreenY + Math.sin(a + 2.5) * r);
-        ctx.lineTo(peerScreenX + Math.cos(a - 2.5) * r, peerScreenY + Math.sin(a - 2.5) * r);
-        ctx.closePath();
-        ctx.fill();
-
-        // "P2" label
-        ctx.globalAlpha = 0.8;
-        ctx.font = `bold ${10 * scale}px monospace`;
-        ctx.fillStyle = '#fff';
-        ctx.textAlign = 'center';
-        ctx.fillText('P2', peerScreenX, peerScreenY - 18 * scale);
-
-        ctx.restore();
-      }
     };
     frameRef.current = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frameRef.current);
@@ -324,7 +313,10 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
     if (ability.category === 'weapon' && !stateRef.current.equippedWeapons.includes(ability.id)) {
       stateRef.current.equippedWeapons.push(ability.id);
     }
-    stateRef.current.screen = 'playing';
+    setMyUpgradeDone(true);
+    sendUpgradeDone();
+    setWaitingForPeer(true);
+    // Don't resume yet - wait for peer
     forceUpdate(n => n + 1);
   }, []);
 
@@ -345,6 +337,10 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
     stateRef.current = createInitialState(player, mapId, meta.weaponSlots);
     startWave(stateRef.current);
     setRunResult(null);
+    setShowUpgrade(false);
+    setMyUpgradeDone(false);
+    setPeerUpgradeDone(false);
+    setWaitingForPeer(false);
     forceUpdate(n => n + 1);
   }, [playerClass, mapId]);
 
@@ -371,11 +367,21 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
         />
       )}
 
-      {state && state.screen === 'upgrade' && (
+      {state && state.screen === 'upgrade' && showUpgrade && !myUpgradeDone && (
         <LevelUpScreen level={state.level} abilityLevels={state.abilityLevels}
           equippedWeapons={state.equippedWeapons} weaponSlots={state.weaponSlots}
           unlockedAbilities={metaRef.current.unlockedAbilities} onSelect={handleUpgrade}
         />
+      )}
+
+      {/* Waiting for peer to choose upgrade */}
+      {state && state.screen === 'upgrade' && myUpgradeDone && !peerUpgradeDone && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-20 select-none">
+          <div className="text-2xl font-bold font-mono animate-pulse" style={{ color: '#39ff14', textShadow: '0 0 20px rgba(57,255,20,0.5)' }}>
+            ⏳ Outro Jogador Selecionando Upgrade...
+          </div>
+          <p className="text-sm font-mono mt-2" style={{ color: '#6080aa' }}>Aguardando P2 escolher</p>
+        </div>
       )}
 
       {state && state.screen === 'game-over' && (
