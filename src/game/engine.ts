@@ -562,10 +562,16 @@ function updateEnemies(state: GameState, dt: number) {
   }
 }
 
-// Host simulates peer shooting
+// Host simulates peer shooting (legacy single peer)
 function updateCoopPeerShooting(state: GameState, dt: number) {
   const peer = state.coopPeer;
   if (!peer || !peer.alive || !peer.shooting) return;
+  updateCoopPeerShootingSingle(state, peer, dt);
+}
+
+// Host simulates a single peer shooting
+function updateCoopPeerShootingSingle(state: GameState, peer: { pos: { x: number; y: number }; angle: number; alive: boolean; shipClass: string; shooting: boolean; attackTimer: number; attackCooldown: number; damage: number }, dt: number) {
+  if (!peer.alive || !peer.shooting) return;
   
   peer.attackTimer = Math.max(0, peer.attackTimer - dt);
   if (peer.attackTimer > 0) return;
