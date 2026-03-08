@@ -60,7 +60,7 @@ const Index = () => {
   }
 
   if (screen === 'class-select') {
-    return <ClassSelect onSelect={handleClassSelect} onBack={() => setScreen('menu')} />;
+    return <ClassSelect onSelect={handleClassSelect} onBack={() => setScreen('menu')} unlockedShips={meta.unlockedShips} />;
   }
 
   if (screen === 'map-select') {
