@@ -65,7 +65,7 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
       titanBlast(state, dt);
     } else {
       const prevTimer = p.attackTimer;
-      playerAttack(p, state.projectiles);
+      playerAttack(p, state.projectiles, state.abilities);
       if (prevTimer <= 0 && p.attackTimer > 0) {
         // Shot was fired
         if (p.class === 'phantom') playShootPhantom();
