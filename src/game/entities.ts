@@ -1,12 +1,13 @@
 import {
   Player, Enemy, Projectile, Particle, PowerUp, Vec2,
-  ShipType, EnemyType, PowerUpType
+  ShipType, EnemyType, PowerUpType, GameState
 } from './types';
 import {
   CLASS_STATS, ENEMY_STATS, ARENA_W, ARENA_H,
   SPAWN_MARGIN, PROJECTILE_SPEED, PROJECTILE_LIFETIME,
   COLORS, WARRIOR_ATTACK_RANGE
 } from './constants';
+import { AbilityState } from './abilities';
 
 export function createPlayer(cls: ShipType): Player {
   const s = CLASS_STATS[cls];
