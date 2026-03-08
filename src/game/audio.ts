@@ -227,23 +227,33 @@ export function playCombo(multiplier: number) {
 export function playPowerUp() {
   try {
     const ctx = getCtx();
-    const osc = ctx.createOscillator();
-    const osc2 = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc2.type = 'triangle';
-    osc.frequency.setValueAtTime(400, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.2);
-    osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.35);
-    osc2.frequency.setValueAtTime(800, ctx.currentTime);
-    osc2.frequency.exponentialRampToValueAtTime(2000, ctx.currentTime + 0.15);
-    osc2.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.3);
-    gain.gain.setValueAtTime(0.08, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-    osc.connect(gain).connect(ctx.destination);
-    osc2.connect(gain);
-    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.35);
-    osc2.start(ctx.currentTime); osc2.stop(ctx.currentTime + 0.3);
+    // Magical ascending chime
+    const notes = [500, 700, 900, 1200, 1500];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc2.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.04);
+      osc2.frequency.setValueAtTime(freq * 2, ctx.currentTime + i * 0.04);
+      gain.gain.setValueAtTime(0.07, ctx.currentTime + i * 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.04 + 0.2);
+      osc.connect(gain).connect(ctx.destination);
+      osc2.connect(gain);
+      osc.start(ctx.currentTime + i * 0.04); osc.stop(ctx.currentTime + i * 0.04 + 0.2);
+      osc2.start(ctx.currentTime + i * 0.04); osc2.stop(ctx.currentTime + i * 0.04 + 0.2);
+    });
+    // Sparkle shimmer
+    const shimmer = ctx.createOscillator();
+    const sg = ctx.createGain();
+    shimmer.type = 'sine';
+    shimmer.frequency.setValueAtTime(3000, ctx.currentTime + 0.15);
+    shimmer.frequency.exponentialRampToValueAtTime(1500, ctx.currentTime + 0.4);
+    sg.gain.setValueAtTime(0.03, ctx.currentTime + 0.15);
+    sg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    shimmer.connect(sg).connect(ctx.destination);
+    shimmer.start(ctx.currentTime + 0.15); shimmer.stop(ctx.currentTime + 0.42);
   } catch {}
 }
 
