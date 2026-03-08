@@ -1233,6 +1233,7 @@ function getEnemyColor(type: string): string {
   const map: Record<string, string> = {
     drone: COLORS.drone, splitter: COLORS.splitter, dasher: COLORS.dasher,
     tank: COLORS.tank, mothership: COLORS.mothership, vortex: COLORS.vortex, colossus: COLORS.colossus,
+    fire_elemental: COLORS.fire_elemental, void_ghost: COLORS.void_ghost, crystal_golem: COLORS.crystal_golem,
   };
   return map[type] || '#fff';
 }
