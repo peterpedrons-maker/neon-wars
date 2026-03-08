@@ -102,6 +102,11 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
 
   updateEnemies(state, dt);
   updateProjectiles(state, dt);
+  
+  // Coop: host simulates peer shooting
+  if (state.coopPeer) {
+    updateCoopPeerShooting(state, dt);
+  }
 
   // Ability effects
   updateOrbitals(state, dt);

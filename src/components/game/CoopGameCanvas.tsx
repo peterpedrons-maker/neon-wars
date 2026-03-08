@@ -7,6 +7,7 @@ import { renderGame, getScale, getOffset, resetCamera } from '../../game/rendere
 import { useIsMobile } from '../../hooks/use-mobile';
 import { loadMeta, endRun, MetaProgress } from '../../game/meta';
 import { RoomInfo, sendPlayerState, sendGameSync, CoopPlayerState, CoopGameSync, connectToRoom, leaveRoom } from '../../game/multiplayer';
+import { CLASS_STATS } from '../../game/constants';
 import HUD from './HUD';
 import LevelUpScreen from './LevelUpScreen';
 import GameOver from './GameOver';
