@@ -416,5 +416,9 @@ export function createInitialState(player: Player): GameState {
     arenaHeight: ARENA_H,
     shakeTimer: 0,
     shakeIntensity: 0,
+    combo: 0,
+    comboTimer: 0,
+    maxCombo: 0,
+    comboMultiplier: 1,
   };
 }

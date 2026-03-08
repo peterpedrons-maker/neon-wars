@@ -190,6 +190,9 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, onMenu }) => {
           wave={state.wave}
           score={state.score}
           specialReady={state.player.specialTimer <= 0}
+          combo={state.combo}
+          comboMultiplier={state.comboMultiplier}
+          comboTimer={state.comboTimer}
         />
       )}
 

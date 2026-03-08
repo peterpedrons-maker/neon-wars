@@ -81,24 +81,113 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   ctx.restore();
 }
 
-function drawNeonGrid(ctx: CanvasRenderingContext2D, time: number) {
+// Warp sources: player + recent explosions
+interface WarpSource { x: number; y: number; strength: number; radius: number; }
+
+function getWarpSources(state: GameState): WarpSource[] {
+  const sources: WarpSource[] = [];
+  if (state.player.alive) {
+    const speed = Math.hypot(state.player.vel.x || 0, state.player.vel.y || 0);
+    sources.push({ x: state.player.pos.x, y: state.player.pos.y, strength: 8 + speed * 0.02, radius: 120 });
+  }
+  // Shake = recent explosion, add warp at camera center
+  if (state.shakeTimer > 0) {
+    sources.push({ x: camX, y: camY, strength: 20 * state.shakeTimer, radius: 200 });
+  }
+  return sources;
+}
+
+function warpPoint(px: number, py: number, sources: WarpSource[]): [number, number] {
+  let dx = 0, dy = 0;
+  for (const s of sources) {
+    const ox = px - s.x;
+    const oy = py - s.y;
+    const d = Math.hypot(ox, oy);
+    if (d < s.radius && d > 1) {
+      const factor = (1 - d / s.radius) * s.strength;
+      dx += (ox / d) * factor;
+      dy += (oy / d) * factor;
+    }
+  }
+  return [px + dx, py + dy];
+}
+
+function drawNeonGridWarped(ctx: CanvasRenderingContext2D, time: number, state: GameState) {
   const pulse = 0.04 + Math.sin(time * 0.5) * 0.015;
-  
-  ctx.strokeStyle = `rgba(0,255,255,${pulse})`;
+  const sources = getWarpSources(state);
+  const hasWarp = sources.length > 0;
+
+  // Bright lines near warp sources
+  const segLen = hasWarp ? 20 : ARENA_H; // subdivide near player for smooth warp
+
   ctx.lineWidth = 0.5;
 
+  // Vertical lines
   for (let x = 0; x <= ARENA_W; x += GRID_SIZE) {
     ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, ARENA_H);
+    let first = true;
+    for (let y = 0; y <= ARENA_H; y += segLen) {
+      let [wx, wy] = hasWarp ? warpPoint(x, y, sources) : [x, y];
+      // Glow brighter near warp sources
+      let brightness = pulse;
+      for (const s of sources) {
+        const d = Math.hypot(x - s.x, y - s.y);
+        if (d < s.radius) brightness = Math.max(brightness, 0.12 * (1 - d / s.radius));
+      }
+      ctx.strokeStyle = `rgba(0,255,255,${brightness})`;
+      if (first) { ctx.moveTo(wx, wy); first = false; }
+      else ctx.lineTo(wx, wy);
+    }
     ctx.stroke();
   }
+
+  // Horizontal lines
   for (let y = 0; y <= ARENA_H; y += GRID_SIZE) {
     ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(ARENA_W, y);
+    let first = true;
+    for (let x = 0; x <= ARENA_W; x += segLen) {
+      let [wx, wy] = hasWarp ? warpPoint(x, y, sources) : [x, y];
+      let brightness = pulse;
+      for (const s of sources) {
+        const d = Math.hypot(x - s.x, y - s.y);
+        if (d < s.radius) brightness = Math.max(brightness, 0.12 * (1 - d / s.radius));
+      }
+      ctx.strokeStyle = `rgba(0,255,255,${brightness})`;
+      if (first) { ctx.moveTo(wx, wy); first = false; }
+      else ctx.lineTo(wx, wy);
+    }
     ctx.stroke();
   }
+}
+
+function drawComboIndicator(ctx: CanvasRenderingContext2D, state: GameState, time: number) {
+  const p = state.player;
+  const comboAlpha = Math.min(1, state.comboTimer / 0.5);
+  const scale = 1 + Math.sin(time * 8) * 0.05;
+  
+  ctx.save();
+  ctx.translate(p.pos.x, p.pos.y - p.radius - 25);
+  ctx.scale(scale, scale);
+  
+  // Multiplier text
+  const mult = state.comboMultiplier;
+  const color = mult >= 8 ? '#ff1493' : mult >= 4 ? '#ffff00' : '#0ff';
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 15;
+  ctx.fillStyle = color;
+  ctx.font = 'bold 12px Orbitron, monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.globalAlpha = comboAlpha;
+  ctx.fillText(`×${mult}`, 0, 0);
+  
+  // Combo count smaller
+  ctx.font = '7px monospace';
+  ctx.fillStyle = `rgba(255,255,255,${comboAlpha * 0.6})`;
+  ctx.shadowBlur = 0;
+  ctx.fillText(`${state.combo} combo`, 0, 10);
+  
+  ctx.restore();
 }
 
 function drawArenaBorder(ctx: CanvasRenderingContext2D, time: number) {
