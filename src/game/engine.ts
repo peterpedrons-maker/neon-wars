@@ -170,28 +170,48 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   }
   if (state.trail.length > 40) state.trail.splice(0, state.trail.length - 40);
 
-  // Update XP orbs
+  // Update XP orbs - attract to both players in coop
   const magnetR = state.abilities.magnetRadius;
+  const peer = state.coopPeer;
   state.xpOrbs = state.xpOrbs.filter(orb => {
     orb.lifetime -= dt;
     if (orb.lifetime <= 0) return false;
-    // Magnet: attract to player
-    const dx = p.pos.x - orb.pos.x;
-    const dy = p.pos.y - orb.pos.y;
-    const d = Math.hypot(dx, dy);
-    if (d < magnetR) {
-      const pullSpeed = 300 * (1 - d / magnetR) + 100;
-      orb.pos.x += (dx / d) * pullSpeed * dt;
-      orb.pos.y += (dy / d) * pullSpeed * dt;
+    // Magnet: attract to nearest player
+    const dxP = p.pos.x - orb.pos.x;
+    const dyP = p.pos.y - orb.pos.y;
+    const dP = Math.hypot(dxP, dyP);
+    
+    let closestDx = dxP, closestDy = dyP, closestD = dP;
+    if (peer && peer.alive) {
+      const dxPeer = peer.pos.x - orb.pos.x;
+      const dyPeer = peer.pos.y - orb.pos.y;
+      const dPeer = Math.hypot(dxPeer, dyPeer);
+      if (dPeer < closestD) {
+        closestDx = dxPeer; closestDy = dyPeer; closestD = dPeer;
+      }
+    }
+    
+    if (closestD < magnetR) {
+      const pullSpeed = 300 * (1 - closestD / magnetR) + 100;
+      orb.pos.x += (closestDx / closestD) * pullSpeed * dt;
+      orb.pos.y += (closestDy / closestD) * pullSpeed * dt;
     }
     orb.pos.x += orb.vel.x * dt;
     orb.pos.y += orb.vel.y * dt;
     orb.vel.x *= 0.95;
     orb.vel.y *= 0.95;
-    // Collect
-    if (d < p.radius + orb.radius + 5) {
+    // Collect by local player
+    if (dP < p.radius + orb.radius + 5) {
       addXp(state, orb.value);
       return false;
+    }
+    // Collect by peer (both get XP)
+    if (peer && peer.alive) {
+      const dPeer = Math.hypot(peer.pos.x - orb.pos.x, peer.pos.y - orb.pos.y);
+      if (dPeer < 12 + orb.radius + 5) {
+        addXp(state, orb.value);
+        return false;
+      }
     }
     return true;
   });
