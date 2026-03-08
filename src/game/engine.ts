@@ -261,10 +261,23 @@ function spawnWaveEnemy(state: GameState) {
     return;
   }
 
+  // Map-exclusive enemies
+  const mapExclusives: Record<string, EnemyType[]> = {
+    'inferno': ['fire_elemental'],
+    'void': ['void_ghost'],
+    'crystal': ['crystal_golem'],
+  };
+
   const types: EnemyType[] = ['drone'];
   if (state.wave >= 2) types.push('splitter');
   if (state.wave >= 3) types.push('dasher');
   if (state.wave >= 5) types.push('tank');
+  
+  // Add map-specific enemies from wave 2+
+  const mapEnemies = mapExclusives[state.mapId] || [];
+  if (state.wave >= 2 && mapEnemies.length > 0) {
+    types.push(...mapEnemies);
+  }
 
   const type = types[Math.floor(Math.random() * types.length)];
   state.enemies.push(createEnemy(type, state.wave));
