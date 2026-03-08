@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { RunStats, Milestone } from '../../game/meta';
+import { initAudio, startMenuMusic, stopMenuMusic } from '../../game/audio';
 
 interface MainMenuProps {
   plasma: number;
@@ -9,9 +10,16 @@ interface MainMenuProps {
   onLeaderboard: () => void;
   onHowToPlay: () => void;
   onShop: () => void;
+  onMultiplayer: () => void;
 }
 
-const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, onLeaderboard, onHowToPlay, onShop }) => {
+const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, onLeaderboard, onHowToPlay, onShop, onMultiplayer }) => {
+  useEffect(() => {
+    initAudio();
+    startMenuMusic();
+    return () => { stopMenuMusic(); };
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#000008] text-[#e0e8ff] select-none">
       {/* Title */}
@@ -69,6 +77,13 @@ const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, 
           }}
         >
           🚀 Jogar
+        </button>
+        <button
+          onClick={onMultiplayer}
+          className="py-3 px-8 text-lg font-bold rounded-lg text-[#39ff14] border border-[#39ff14]/30 transition-all duration-200 hover:border-[#39ff14] hover:shadow-[0_0_15px_rgba(57,255,20,0.3)] font-mono"
+          style={{ background: 'rgba(57,255,20,0.05)' }}
+        >
+          🎮 Multiplayer Coop
         </button>
         <button
           onClick={onShop}

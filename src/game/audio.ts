@@ -855,6 +855,7 @@ function scheduleNextMeasure() {
 
 export function startMusic() {
   if (musicPlaying) return;
+  stopMenuMusic();
   try {
     getCtx();
     musicPlaying = true;
@@ -881,4 +882,115 @@ export function stopMusic() {
 
 export function setMusicIntensity(wave: number) {
   musicIntensity = Math.min(5, Math.max(1, Math.floor(wave / 2) + 1));
+}
+
+// ===== MENU MUSIC (chill, atmospheric synthwave) =====
+let menuMusicPlaying = false;
+let menuTimers: number[] = [];
+let menuGain: GainNode | null = null;
+let menuMeasure = 0;
+
+const MENU_CHORDS = [
+  [[0,3,7,12], [8,12,15,20], [3,7,10,15], [10,14,17,22]],
+  [[0,3,7,12], [5,8,12,17], [8,12,15,20], [7,11,14,19]],
+];
+
+function scheduleMenuMeasure() {
+  if (!menuMusicPlaying || !audioCtx) return;
+  const ctx = audioCtx;
+  const now = ctx.currentTime;
+  const bpm = 90;
+  const beatDur = 60 / bpm;
+  const measureDur = beatDur * 4;
+  const sixteenth = beatDur / 4;
+
+  if (!menuGain) {
+    menuGain = ctx.createGain();
+    menuGain.gain.value = 0.05;
+    menuGain.connect(ctx.destination);
+  }
+
+  const prog = MENU_CHORDS[menuMeasure % MENU_CHORDS.length];
+  const chord = prog[menuMeasure % prog.length];
+  const key = 33;
+
+  // Warm pad
+  for (let ci = 0; ci < chord.length; ci++) {
+    const noteFreq = midiToFreq(key + 12 + chord[ci]);
+    for (let d = -2; d <= 2; d++) {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      const f = ctx.createBiquadFilter();
+      osc.type = d === 0 ? 'sine' : (Math.abs(d) === 1 ? 'triangle' : 'sawtooth');
+      osc.frequency.setValueAtTime(noteFreq * (1 + d * 0.003), now);
+      f.type = 'lowpass';
+      f.frequency.setValueAtTime(600, now);
+      f.frequency.linearRampToValueAtTime(800, now + measureDur * 0.5);
+      f.frequency.linearRampToValueAtTime(600, now + measureDur);
+      const vol = 0.012;
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(vol, now + measureDur * 0.15);
+      g.gain.setValueAtTime(vol * 0.8, now + measureDur * 0.7);
+      g.gain.exponentialRampToValueAtTime(0.001, now + measureDur + 0.1);
+      osc.connect(f).connect(g).connect(menuGain!);
+      osc.start(now); osc.stop(now + measureDur + 0.15);
+    }
+  }
+
+  // Gentle arpeggio
+  const arpPattern = [0, 2, 1, 0, 2, 1, 0, 2];
+  for (let i = 0; i < 8; i++) {
+    const chordNote = chord[arpPattern[i] % chord.length];
+    const oct = (i % 3 === 0 ? 12 : 0);
+    const noteFreq = midiToFreq(key + 24 + chordNote + oct);
+    const t = now + i * (beatDur / 2);
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    const f = ctx.createBiquadFilter();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(noteFreq, t);
+    f.type = 'lowpass';
+    f.frequency.setValueAtTime(1500, t);
+    f.frequency.exponentialRampToValueAtTime(600, t + beatDur * 0.4);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.015, t + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.001, t + beatDur * 0.45);
+    osc.connect(f).connect(g).connect(menuGain!);
+    osc.start(t); osc.stop(t + beatDur * 0.5);
+  }
+
+  // Soft sub bass
+  const bassFreq = midiToFreq(key + chord[0]);
+  const bass = ctx.createOscillator();
+  const bg = ctx.createGain();
+  bass.type = 'sine';
+  bass.frequency.setValueAtTime(bassFreq, now);
+  bg.gain.setValueAtTime(0.04, now);
+  bg.gain.exponentialRampToValueAtTime(0.001, now + measureDur * 0.8);
+  bass.connect(bg).connect(menuGain!);
+  bass.start(now); bass.stop(now + measureDur);
+
+  menuMeasure++;
+  const timer = window.setTimeout(scheduleMenuMeasure, (measureDur - 0.05) * 1000);
+  menuTimers.push(timer);
+}
+
+export function startMenuMusic() {
+  if (menuMusicPlaying || musicPlaying) return;
+  try {
+    getCtx();
+    menuMusicPlaying = true;
+    menuGain = null;
+    menuMeasure = 0;
+    scheduleMenuMeasure();
+  } catch {}
+}
+
+export function stopMenuMusic() {
+  menuMusicPlaying = false;
+  menuTimers.forEach(t => clearTimeout(t));
+  menuTimers = [];
+  if (menuGain) {
+    try { menuGain.gain.linearRampToValueAtTime(0, audioCtx!.currentTime + 0.5); } catch {}
+  }
 }
