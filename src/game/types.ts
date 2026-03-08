@@ -134,7 +134,24 @@ export interface GameState {
   flameZones: Array<{ x: number; y: number; damage: number; lifetime: number }>;
   // Plasma field zones
   plasmaZones: Array<{ x: number; y: number; radius: number; damage: number; lifetime: number }>;
-  // Coop peer info (optional, set in coop mode)
+  // Coop peer info (optional, set in coop mode) - supports up to 3 peers
+  coopPeers: Array<{
+    pos: { x: number; y: number };
+    angle: number;
+    alive: boolean;
+    shipClass: string;
+    shooting: boolean;
+    attackTimer: number;
+    attackCooldown: number;
+    damage: number;
+    shieldTimer: number;
+    invincibleTimer: number;
+    hp: number;
+    maxHp: number;
+    playerId: string;
+    playerLabel: string;
+  }>;
+  // Legacy single peer alias (computed from coopPeers[0])
   coopPeer?: {
     pos: { x: number; y: number };
     angle: number;
@@ -150,6 +167,7 @@ export interface GameState {
     maxHp: number;
   };
   isHost?: boolean;
+  enemiesKilledThisWave: number;
 }
 
 export interface LeaderboardEntry {

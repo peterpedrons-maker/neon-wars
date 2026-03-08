@@ -105,9 +105,10 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   // Player
   if (state.player.alive) drawPlayer(ctx, state.player, time);
 
-  // Coop peer with full ship design
-  if (state.coopPeer && state.coopPeer.alive) {
-    const peer = state.coopPeer;
+  // Coop peers with full ship design
+  const allPeers = state.coopPeers.length > 0 ? state.coopPeers : (state.coopPeer && state.coopPeer.alive ? [{ ...state.coopPeer, playerId: 'p2', playerLabel: 'P2' }] : []);
+  for (const peer of allPeers) {
+    if (!peer.alive) continue;
     const fakePlayer: Player = {
       pos: { ...peer.pos }, vel: { x: 0, y: 0 }, radius: 12, alive: true,
       hp: peer.hp ?? 1, maxHp: peer.maxHp ?? 1, class: (peer.shipClass as any) || 'phantom',
@@ -119,12 +120,12 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
       angle: peer.angle,
     };
     drawPlayer(ctx, fakePlayer, time);
-    // P2 label
+    // Player label
     ctx.save();
     ctx.shadowColor = '#39ff14'; ctx.shadowBlur = 6;
     ctx.font = 'bold 8px Orbitron, monospace';
     ctx.fillStyle = '#39ff14'; ctx.textAlign = 'center'; ctx.globalAlpha = 0.85;
-    ctx.fillText('P2', peer.pos.x, peer.pos.y - 20);
+    ctx.fillText(peer.playerLabel || 'P2', peer.pos.x, peer.pos.y - 20);
     ctx.restore();
   }
 
@@ -143,6 +144,11 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   drawOutsideArena(ctx, camX, camY, viewportW, viewportH);
 
   ctx.restore();
+
+  // Off-screen peer indicators (drawn in screen space, after ctx.restore)
+  if (allPeers.length > 0) {
+    drawOffScreenPeerIndicators(ctx, allPeers, camX, camY, viewportW, viewportH, scale, canvasW, canvasH, time);
+  }
 }
 
 // Warp sources: player + recent explosions
@@ -1596,6 +1602,68 @@ function drawHazard(ctx: CanvasRenderingContext2D, h: ActiveHazard, time: number
   }
 }
 
+// Off-screen peer direction indicators
+function drawOffScreenPeerIndicators(
+  ctx: CanvasRenderingContext2D,
+  peers: Array<{ pos: { x: number; y: number }; alive: boolean; playerLabel: string; shipClass: string }>,
+  cX: number, cY: number, vW: number, vH: number,
+  scale: number, canvasW: number, canvasH: number, time: number,
+) {
+  const margin = 40;
+  const halfW = canvasW / 2;
+  const halfH = canvasH / 2;
+  const PEER_COLORS = ['#39ff14', '#ff1493', '#ffff00'];
+
+  for (let i = 0; i < peers.length; i++) {
+    const p = peers[i];
+    if (!p.alive) continue;
+
+    // Convert peer world pos to screen pos
+    const sx = halfW + (p.pos.x - cX) * scale;
+    const sy = halfH + (p.pos.y - cY) * scale;
+
+    // Check if off-screen
+    if (sx >= margin && sx <= canvasW - margin && sy >= margin && sy <= canvasH - margin) continue;
+
+    // Clamp to screen edges
+    const angle = Math.atan2(sy - halfH, sx - halfW);
+    const edgeX = Math.max(margin, Math.min(canvasW - margin, halfW + Math.cos(angle) * (halfW - margin)));
+    const edgeY = Math.max(margin, Math.min(canvasH - margin, halfH + Math.sin(angle) * (halfH - margin)));
+
+    const color = PEER_COLORS[i % PEER_COLORS.length];
+    const pulse = 0.7 + Math.sin(time * 4 + i) * 0.3;
+
+    ctx.save();
+    ctx.translate(edgeX, edgeY);
+    ctx.rotate(angle);
+
+    // Arrow
+    ctx.fillStyle = color;
+    ctx.globalAlpha = pulse;
+    ctx.beginPath();
+    ctx.moveTo(14, 0);
+    ctx.lineTo(-6, -8);
+    ctx.lineTo(-3, 0);
+    ctx.lineTo(-6, 8);
+    ctx.closePath();
+    ctx.fill();
+
+    // Glow
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 12;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Label
+    ctx.rotate(-angle);
+    ctx.globalAlpha = 0.9;
+    ctx.font = 'bold 10px Orbitron, monospace';
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.fillText(p.playerLabel || `P${i + 2}`, 0, -14);
+    ctx.restore();
+  }
+}
 
 export function getScale(canvasW: number, canvasH: number) {
   return Math.min(canvasW / CAMERA_VIEW_W, canvasH / CAMERA_VIEW_H);

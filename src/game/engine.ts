@@ -103,8 +103,12 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   updateEnemies(state, dt);
   updateProjectiles(state, dt);
   
-  // Coop: host simulates peer shooting
-  if (state.coopPeer) {
+  // Coop: host simulates all peers shooting
+  if (state.coopPeers.length > 0) {
+    for (const peer of state.coopPeers) {
+      updateCoopPeerShootingSingle(state, peer, dt);
+    }
+  } else if (state.coopPeer) {
     updateCoopPeerShooting(state, dt);
   }
 
@@ -173,6 +177,7 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   // Update XP orbs - only host processes collection (guest gets synced values)
   const magnetR = state.abilities.magnetRadius;
   const peer = state.coopPeer;
+  const allPeers = state.coopPeers.length > 0 ? state.coopPeers : (peer ? [peer] : []);
   state.xpOrbs = state.xpOrbs.filter(orb => {
     orb.lifetime -= dt;
     if (orb.lifetime <= 0) return false;
@@ -182,9 +187,10 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
     const dP = Math.hypot(dxP, dyP);
     
     let closestDx = dxP, closestDy = dyP, closestD = dP;
-    if (peer && peer.alive) {
-      const dxPeer = peer.pos.x - orb.pos.x;
-      const dyPeer = peer.pos.y - orb.pos.y;
+    for (const cp of allPeers) {
+      if (!cp.alive) continue;
+      const dxPeer = cp.pos.x - orb.pos.x;
+      const dyPeer = cp.pos.y - orb.pos.y;
       const dPeer = Math.hypot(dxPeer, dyPeer);
       if (dPeer < closestD) {
         closestDx = dxPeer; closestDy = dyPeer; closestD = dPeer;
@@ -324,6 +330,7 @@ function spawnWaveEnemy(state: GameState) {
 function updateEnemies(state: GameState, dt: number) {
   const p = state.player;
   const peer = state.coopPeer;
+  const allPeers = state.coopPeers.length > 0 ? state.coopPeers : (peer ? [peer] : []);
 
   for (const e of state.enemies) {
     if (!e.alive) {
@@ -334,14 +341,16 @@ function updateEnemies(state: GameState, dt: number) {
     e.flashTimer = Math.max(0, e.flashTimer - dt);
     e.attackTimer = Math.max(0, e.attackTimer - dt);
 
-    // Find nearest player target (host player or coop peer)
+    // Find nearest player target (host player or any coop peer)
     let targetX = p.pos.x, targetY = p.pos.y;
-    if (peer && peer.alive) {
-      const dToPlayer = Math.hypot(p.pos.x - e.pos.x, p.pos.y - e.pos.y);
-      const dToPeer = Math.hypot(peer.pos.x - e.pos.x, peer.pos.y - e.pos.y);
-      if (dToPeer < dToPlayer) {
-        targetX = peer.pos.x;
-        targetY = peer.pos.y;
+    let minDist = Math.hypot(p.pos.x - e.pos.x, p.pos.y - e.pos.y);
+    for (const cp of allPeers) {
+      if (!cp.alive) continue;
+      const d = Math.hypot(cp.pos.x - e.pos.x, cp.pos.y - e.pos.y);
+      if (d < minDist) {
+        minDist = d;
+        targetX = cp.pos.x;
+        targetY = cp.pos.y;
       }
     }
 
@@ -553,10 +562,16 @@ function updateEnemies(state: GameState, dt: number) {
   }
 }
 
-// Host simulates peer shooting
+// Host simulates peer shooting (legacy single peer)
 function updateCoopPeerShooting(state: GameState, dt: number) {
   const peer = state.coopPeer;
   if (!peer || !peer.alive || !peer.shooting) return;
+  updateCoopPeerShootingSingle(state, peer, dt);
+}
+
+// Host simulates a single peer shooting
+function updateCoopPeerShootingSingle(state: GameState, peer: { pos: { x: number; y: number }; angle: number; alive: boolean; shipClass: string; shooting: boolean; attackTimer: number; attackCooldown: number; damage: number }, dt: number) {
+  if (!peer.alive || !peer.shooting) return;
   
   peer.attackTimer = Math.max(0, peer.attackTimer - dt);
   if (peer.attackTimer > 0) return;
@@ -824,6 +839,7 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
     
     state.score += e.score * state.comboMultiplier;
     state.enemiesKilled++;
+    state.enemiesKilledThisWave++;
 
     // Spawn XP orbs
     const xpValue = e.isBoss ? 50 : Math.floor(5 + e.score * 0.3);
@@ -960,6 +976,7 @@ export function startWave(state: GameState) {
     ? WAVE_BASE_ENEMIES + state.wave * 2 + 1
     : WAVE_BASE_ENEMIES + (state.wave - 1) * WAVE_ENEMY_INCREMENT;
   state.waveSpawnTimer = 0;
+  state.enemiesKilledThisWave = 0;
   state.screen = 'playing';
 }
 
@@ -1002,6 +1019,8 @@ export function createInitialState(player: Player, mapId: string = 'neon-grid', 
     hazardSpawnTimer: 5,
     flameZones: [],
     plasmaZones: [],
+    coopPeers: [],
+    enemiesKilledThisWave: 0,
   };
 }
 

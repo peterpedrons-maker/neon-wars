@@ -43,7 +43,8 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
   const upgradeResumeRef = useRef(false);
 
   // Peer state
-  const peerStateRef = useRef<CoopPlayerState>({ x: 0, y: 0, angle: 0, hp: 3, maxHp: 3, alive: true, shipClass: peerClass, shieldTimer: 0, invincibleTimer: 0, shooting: false });
+  const peerStateRef = useRef<Record<string, CoopPlayerState>>({});
+  const peerStatesRef = useRef<CoopPlayerState[]>([]);
   const syncTimerRef = useRef(0);
 
   // Init game state
@@ -65,23 +66,29 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
       onPeerJoin: () => {},
       onPeerLeave: () => {},
       onPeerState: (ps) => {
-        peerStateRef.current = ps;
         if (stateRef.current) {
           const peerStats = CLASS_STATS[ps.shipClass as ShipType] || CLASS_STATS.phantom;
-          stateRef.current.coopPeer = {
+          // Update or add peer in coopPeers array
+          const peers = stateRef.current.coopPeers;
+          const existing = peers.findIndex(p => p.playerId === (ps as any).playerId);
+          const peerData = {
             pos: { x: ps.x, y: ps.y },
-            angle: ps.angle,
-            alive: ps.alive,
-            shipClass: ps.shipClass,
+            angle: ps.angle, alive: ps.alive, shipClass: ps.shipClass,
             shooting: ps.shooting,
-            attackTimer: stateRef.current.coopPeer?.attackTimer ?? 0,
-            attackCooldown: peerStats.attackCooldown,
-            damage: peerStats.damage,
-            shieldTimer: ps.shieldTimer,
-            invincibleTimer: ps.invincibleTimer,
-            hp: ps.hp,
-            maxHp: ps.maxHp,
+            attackTimer: existing >= 0 ? peers[existing].attackTimer : 0,
+            attackCooldown: peerStats.attackCooldown, damage: peerStats.damage,
+            shieldTimer: ps.shieldTimer, invincibleTimer: ps.invincibleTimer,
+            hp: ps.hp, maxHp: ps.maxHp,
+            playerId: (ps as any).playerId || 'p2',
+            playerLabel: (ps as any).playerLabel || 'P2',
           };
+          if (existing >= 0) {
+            peers[existing] = peerData;
+          } else {
+            peers.push(peerData);
+          }
+          // Keep legacy coopPeer for backward compat
+          stateRef.current.coopPeer = peers[0];
         }
       },
       onGameSync: (sync) => {
@@ -238,11 +245,14 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
       }
       updateGame(stateRef.current, inputRef.current, dt);
 
-      // Coop: game over if peer dies
-      if (stateRef.current.screen === 'playing' && stateRef.current.coopPeer && !stateRef.current.coopPeer.alive) {
-        stateRef.current.player.hp = 0;
-        stateRef.current.player.alive = false;
-        stateRef.current.screen = 'game-over';
+      // Coop: game over if any peer dies
+      if (stateRef.current.screen === 'playing') {
+        const anyPeerDead = stateRef.current.coopPeers.some(p => !p.alive);
+        if (anyPeerDead) {
+          stateRef.current.player.hp = 0;
+          stateRef.current.player.alive = false;
+          stateRef.current.screen = 'game-over';
+        }
       }
 
       // Cap particles for performance
@@ -271,7 +281,9 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
           hp: p.hp, maxHp: p.maxHp, alive: p.alive,
           shipClass: playerClass, shieldTimer: p.shieldTimer,
           invincibleTimer: p.invincibleTimer, shooting: inputRef.current.shooting,
-        });
+          playerId: room.playerId,
+          playerLabel: room.isHost ? 'HOST' : `P${2}`,
+        } as any);
 
         // Host sends game sync
         if (room.isHost) {
@@ -377,6 +389,12 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
           level={state.level} xp={state.xp} xpToNext={state.xpToNext}
           equippedWeapons={state.equippedWeapons} weaponSlots={state.weaponSlots}
           abilityLevels={state.abilityLevels}
+          enemiesKilled={state.enemiesKilled}
+          enemiesKilledThisWave={state.enemiesKilledThisWave}
+          coopPeers={state.coopPeers.map((p, i) => ({
+            hp: p.hp, maxHp: p.maxHp, alive: p.alive,
+            shipClass: p.shipClass, label: p.playerLabel || `P${i + 2}`,
+          }))}
         />
       )}
 

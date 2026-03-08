@@ -214,6 +214,8 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, mapId, onMenu }) =
           equippedWeapons={state.equippedWeapons}
           weaponSlots={state.weaponSlots}
           abilityLevels={state.abilityLevels}
+          enemiesKilled={state.enemiesKilled}
+          enemiesKilledThisWave={state.enemiesKilledThisWave}
         />
       )}
 
