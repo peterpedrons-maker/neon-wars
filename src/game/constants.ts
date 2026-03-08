@@ -3,13 +3,12 @@ import { PlayerClass, EnemyType } from './types';
 export const ARENA_W = 1200;
 export const ARENA_H = 900;
 
-// Wall boundaries matching the dungeon floor image
-// The image (1920x1440) has thick stone walls on all sides
-// ~10% border on each side maps to these world coordinates
-export const WALL_LEFT = 115;
-export const WALL_RIGHT = 1085;
-export const WALL_TOP = 95;
-export const WALL_BOTTOM = 805;
+// Wall boundaries matching the dungeon floor image (sealed room, no doors)
+// Left/Right walls ~14%, Top ~13%, Bottom ~14%
+export const WALL_LEFT = 168;
+export const WALL_RIGHT = 1032;
+export const WALL_TOP = 117;
+export const WALL_BOTTOM = 774;
 
 // Camera zoom: how many "world pixels" the viewport shows
 export const CAMERA_VIEW_W = 340;
