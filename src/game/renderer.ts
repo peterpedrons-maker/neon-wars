@@ -57,6 +57,34 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   // Player trail
   drawTrail(ctx, state, time);
 
+  // Map hazards
+  if (state.hazards) state.hazards.forEach(h => drawHazard(ctx, h, time));
+  
+  // Flame zones
+  if (state.flameZones) state.flameZones.forEach(fz => {
+    const alpha = Math.min(0.5, fz.lifetime / 3);
+    const grad = ctx.createRadialGradient(fz.x, fz.y, 0, fz.x, fz.y, 15);
+    grad.addColorStop(0, `rgba(255,100,0,${alpha})`);
+    grad.addColorStop(0.5, `rgba(255,50,0,${alpha * 0.5})`);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(fz.x, fz.y, 15, 0, Math.PI * 2); ctx.fill();
+  });
+  
+  // Plasma zones
+  if (state.plasmaZones) state.plasmaZones.forEach(pz => {
+    const alpha = Math.min(0.4, pz.lifetime / 5);
+    const grad = ctx.createRadialGradient(pz.x, pz.y, 0, pz.x, pz.y, pz.radius);
+    grad.addColorStop(0, `rgba(191,90,242,${alpha * 0.6})`);
+    grad.addColorStop(0.5, `rgba(191,90,242,${alpha * 0.3})`);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(pz.x, pz.y, pz.radius, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = `rgba(191,90,242,${alpha})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(pz.x, pz.y, pz.radius, 0, Math.PI * 2); ctx.stroke();
+  });
+
   // XP orbs
   state.xpOrbs.forEach(orb => drawXpOrb(ctx, orb, time));
 
