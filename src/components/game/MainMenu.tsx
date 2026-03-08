@@ -35,7 +35,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ onPlay, onLeaderboard, onHowToPlay 
         </button>
         <button
           onClick={onLeaderboard}
-          className="py-3 px-8 text-lg font-bold rounded-lg bg-[#2a1810] hover:bg-[#3a2820] text-[#f1c40f] border-2 border-[#5a3a28] transition-all duration-200 hover:border-[#f1c40f] hover:shadow-[0_0_15px_rgba(241,196,15,0.2)]"
+          className="py-3 px-8 text-lg font-bold rounded-lg bg-[#1e1a2e] hover:bg-[#2a2540] text-[#fbbf24] border-2 border-[#4a3a6e] transition-all duration-200 hover:border-[#fbbf24] hover:shadow-[0_0_15px_rgba(251,191,36,0.2)]"
           style={{ fontFamily: 'Georgia, serif' }}
         >
           🏆 Leaderboard
