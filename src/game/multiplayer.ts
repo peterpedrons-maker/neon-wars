@@ -29,6 +29,20 @@ export interface CoopGameSync {
   hostPlayer: CoopPlayerState;
 }
 
+export interface LobbyState {
+  shipClass: string;
+  mapId: string;
+  playerId: string;
+  isHost: boolean;
+}
+
+export interface ChatMessage {
+  from: string;
+  text: string;
+  isHost: boolean;
+  timestamp: number;
+}
+
 let channel: RealtimeChannel | null = null;
 let currentRoom: RoomInfo | null = null;
 
@@ -63,15 +77,21 @@ export function joinRoom(roomCode: string): RoomInfo {
   return room;
 }
 
+export interface RoomCallbacks {
+  onPeerJoin: () => void;
+  onPeerLeave: () => void;
+  onPeerState: (state: CoopPlayerState) => void;
+  onGameSync: (sync: CoopGameSync) => void;
+  onStartGame: (data: { mapId: string; hostClass: string }) => void;
+  onCountdown: (count: number) => void;
+  onConfirm: () => void;
+  onLobbyState: (state: LobbyState) => void;
+  onChat: (msg: ChatMessage) => void;
+}
+
 export function connectToRoom(
   room: RoomInfo,
-  onPeerJoin: () => void,
-  onPeerLeave: () => void,
-  onPeerState: (state: CoopPlayerState) => void,
-  onGameSync: (sync: CoopGameSync) => void,
-  onStartGame: (data: { mapId: string; hostClass: string }) => void,
-  onCountdown: (count: number) => void,
-  onConfirm: () => void,
+  callbacks: RoomCallbacks,
 ): RealtimeChannel {
   if (channel) {
     supabase.removeChannel(channel);
@@ -82,13 +102,23 @@ export function connectToRoom(
   });
 
   channel
-    .on('broadcast', { event: 'player_join' }, () => onPeerJoin())
-    .on('broadcast', { event: 'player_leave' }, () => onPeerLeave())
-    .on('broadcast', { event: 'player_state' }, ({ payload }) => onPeerState(payload as CoopPlayerState))
-    .on('broadcast', { event: 'game_sync' }, ({ payload }) => onGameSync(payload as CoopGameSync))
-    .on('broadcast', { event: 'start_game' }, ({ payload }) => onStartGame(payload as { mapId: string; hostClass: string }))
-    .on('broadcast', { event: 'countdown' }, ({ payload }) => onCountdown((payload as any).count))
-    .on('broadcast', { event: 'guest_confirm' }, () => onConfirm())
+    .on('broadcast', { event: 'player_join' }, ({ payload }) => {
+      callbacks.onPeerJoin();
+      // When we receive a join, send back an ack so the other side knows we're here
+      channel!.send({ type: 'broadcast', event: 'player_ack', payload: { playerId: room.playerId, isHost: room.isHost } });
+    })
+    .on('broadcast', { event: 'player_ack' }, () => {
+      // Receiving an ack means the other player is already in the room
+      callbacks.onPeerJoin();
+    })
+    .on('broadcast', { event: 'player_leave' }, () => callbacks.onPeerLeave())
+    .on('broadcast', { event: 'player_state' }, ({ payload }) => callbacks.onPeerState(payload as CoopPlayerState))
+    .on('broadcast', { event: 'game_sync' }, ({ payload }) => callbacks.onGameSync(payload as CoopGameSync))
+    .on('broadcast', { event: 'start_game' }, ({ payload }) => callbacks.onStartGame(payload as { mapId: string; hostClass: string }))
+    .on('broadcast', { event: 'countdown' }, ({ payload }) => callbacks.onCountdown((payload as any).count))
+    .on('broadcast', { event: 'guest_confirm' }, () => callbacks.onConfirm())
+    .on('broadcast', { event: 'lobby_state' }, ({ payload }) => callbacks.onLobbyState(payload as LobbyState))
+    .on('broadcast', { event: 'chat' }, ({ payload }) => callbacks.onChat(payload as ChatMessage))
     .subscribe((status) => {
       if (status === 'SUBSCRIBED') {
         channel!.send({ type: 'broadcast', event: 'player_join', payload: { playerId: room.playerId, isHost: room.isHost } });
@@ -121,6 +151,16 @@ export function sendCountdown(count: number) {
 export function sendGuestConfirm() {
   if (!channel) return;
   channel.send({ type: 'broadcast', event: 'guest_confirm', payload: {} });
+}
+
+export function sendLobbyState(state: LobbyState) {
+  if (!channel) return;
+  channel.send({ type: 'broadcast', event: 'lobby_state', payload: state });
+}
+
+export function sendChat(msg: ChatMessage) {
+  if (!channel) return;
+  channel.send({ type: 'broadcast', event: 'chat', payload: msg });
 }
 
 export function leaveRoom() {
