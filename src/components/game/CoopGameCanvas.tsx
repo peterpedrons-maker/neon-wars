@@ -83,6 +83,7 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
             playerId: ps.playerId || (ps as any).playerId || 'p2',
             playerLabel: ps.playerLabel || (ps as any).playerLabel || 'P2',
             reviveProgress: (ps as any).reviveProgress || 0,
+            emote: ps.emote,
           };
           if (existing >= 0) {
             peers[existing] = peerData;
