@@ -290,7 +290,6 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
   ctx.translate(p.pos.x, p.pos.y);
 
   const glowColor = p.class === 'mage' ? COLORS.mageGlow : p.class === 'archer' ? COLORS.archerGlow : COLORS.warriorGlow;
-  const glowRGB = p.class === 'mage' ? '168,85,247' : p.class === 'archer' ? '34,211,238' : '249,115,22';
 
   // Shield effect
   if (p.shieldTimer > 0) {
@@ -312,63 +311,64 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
     ctx.setLineDash([]);
   }
 
-  // Invincibility flash
   if (p.invincibleTimer > 0 && Math.floor(Date.now() / 80) % 2 === 0) {
     ctx.globalAlpha = 0.5;
   }
 
-  // Outer glow
   ctx.shadowColor = glowColor;
   ctx.shadowBlur = 20 + Math.sin(time * 3) * 5;
 
-  // Walking bob
+  // --- ANIMATION STATE ---
   const walkSpeed = Math.hypot(p.vel?.x || 0, p.vel?.y || 0);
-  const bob = walkSpeed > 10 ? Math.sin(time * 12) * 2 : 0;
-  const legSwing = walkSpeed > 10 ? Math.sin(time * 12) * 0.4 : 0;
-  const armSwing = walkSpeed > 10 ? Math.sin(time * 12) * 0.3 : 0;
+  const isWalking = walkSpeed > 10;
+  const walkCycle = isWalking ? time * 10 : 0;
+  const bob = isWalking ? Math.sin(walkCycle * 1.2) * 2.5 : Math.sin(time * 2) * 0.5; // idle breathe
+  const legSwing = isWalking ? Math.sin(walkCycle) * 0.5 : 0;
+  const armSwingIdle = Math.sin(time * 1.5) * 0.05; // subtle idle sway
 
-  // Rotate to face aim direction
+  // Attack animation progress (0 = no attack, 1 = peak of attack)
+  const atkRatio = p.attackTimer / p.attackCooldown;
+  const atkProgress = atkRatio > 0.5 ? (atkRatio - 0.5) * 2 : 0; // first half is swing
+  const atkRetract = atkRatio > 0 && atkRatio <= 0.5 ? (0.5 - atkRatio) * 2 : 0; // second half returns
+  const atkAnim = atkProgress > 0 ? atkProgress : -atkRetract * 0.3;
+
+  // Body lean when walking
+  const bodyLean = isWalking ? Math.sin(walkCycle * 0.6) * 0.03 : 0;
+
   ctx.save();
-  ctx.rotate(p.angle);
+  ctx.rotate(p.angle + bodyLean);
 
   // --- CLASS COLORS ---
   let skinColor = '#f5d0a9';
   let hairColor = '#4a2c0a';
-  let tunicColor = '#6b21a8'; // mage purple
+  let tunicColor = '#6b21a8';
   let tunicLight = '#9333ea';
   let pantsColor = '#3b0764';
   let bootColor = '#44403c';
   let capeColor = '#7c3aed';
 
   if (p.class === 'archer') {
-    tunicColor = '#065f46';
-    tunicLight = '#059669';
-    pantsColor = '#064e3b';
-    bootColor = '#78350f';
-    hairColor = '#b45309';
-    capeColor = '#047857';
+    tunicColor = '#065f46'; tunicLight = '#059669'; pantsColor = '#064e3b';
+    bootColor = '#78350f'; hairColor = '#b45309'; capeColor = '#047857';
   } else if (p.class === 'warrior') {
-    tunicColor = '#78350f';
-    tunicLight = '#92400e';
-    pantsColor = '#451a03';
-    bootColor = '#292524';
-    hairColor = '#1c1917';
-    capeColor = '#dc2626';
+    tunicColor = '#78350f'; tunicLight = '#92400e'; pantsColor = '#451a03';
+    bootColor = '#292524'; hairColor = '#1c1917'; capeColor = '#dc2626';
   }
 
-  // Cape (behind body)
+  // Cape (behind body) with movement physics
+  const capeWind = isWalking ? Math.sin(time * 5) * 4 : Math.sin(time * 1.5) * 1;
   ctx.fillStyle = capeColor;
   ctx.beginPath();
   ctx.moveTo(-5, -2);
-  ctx.quadraticCurveTo(-14 - Math.sin(time * 2) * 2, 8, -10, 16 + bob * 0.5);
-  ctx.lineTo(2, 16 + bob * 0.5);
+  ctx.quadraticCurveTo(-14 - capeWind, 8, -10 - capeWind * 0.5, 18 + bob * 0.5);
+  ctx.lineTo(2, 18 + bob * 0.5);
   ctx.quadraticCurveTo(-2, 6, -5, -2);
   ctx.fill();
   ctx.fillStyle = darkenColor(capeColor, 30);
   ctx.beginPath();
   ctx.moveTo(-4, 2);
-  ctx.quadraticCurveTo(-12 - Math.sin(time * 2) * 1.5, 10, -8, 14 + bob * 0.3);
-  ctx.lineTo(0, 14 + bob * 0.3);
+  ctx.quadraticCurveTo(-12 - capeWind * 0.7, 10, -8 - capeWind * 0.3, 16 + bob * 0.3);
+  ctx.lineTo(0, 16 + bob * 0.3);
   ctx.quadraticCurveTo(-1, 8, -4, 2);
   ctx.fill();
 
@@ -378,9 +378,16 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
   ctx.rotate(-legSwing);
   ctx.fillStyle = pantsColor;
   ctx.fillRect(-2.5, 0, 5, 10);
+  // Knee highlight
+  ctx.fillStyle = lightenColor(pantsColor, 15);
+  ctx.fillRect(-1.5, 4, 3, 2);
   ctx.fillStyle = bootColor;
   roundRect(ctx, -3, 8, 6, 4, 1.5);
   ctx.fill();
+  // Boot detail
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(-3, 10); ctx.lineTo(3, 10); ctx.stroke();
   ctx.restore();
 
   // Right leg (front)
@@ -389,18 +396,33 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
   ctx.rotate(legSwing);
   ctx.fillStyle = pantsColor;
   ctx.fillRect(-2.5, 0, 5, 10);
+  ctx.fillStyle = lightenColor(pantsColor, 15);
+  ctx.fillRect(-1.5, 4, 3, 2);
   ctx.fillStyle = bootColor;
   roundRect(ctx, -3, 8, 6, 4, 1.5);
   ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(-3, 10); ctx.lineTo(3, 10); ctx.stroke();
   ctx.restore();
 
   // Torso
   ctx.fillStyle = tunicColor;
   roundRect(ctx, -7, -4 + bob, 14, 16, 3);
   ctx.fill();
-  // Tunic detail - center stripe
   ctx.fillStyle = tunicLight;
   ctx.fillRect(-1.5, -2 + bob, 3, 12);
+  // Shoulder pads
+  if (p.class === 'warrior') {
+    ctx.fillStyle = '#57534e';
+    ctx.beginPath();
+    ctx.ellipse(-8, -2 + bob, 4, 3, -0.2, 0, Math.PI * 2);
+    ctx.ellipse(8, -2 + bob, 4, 3, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+  }
   // Belt
   ctx.fillStyle = '#78350f';
   ctx.fillRect(-7, 8 + bob, 14, 3);
@@ -409,10 +431,11 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
   ctx.arc(0, 9.5 + bob, 2, 0, Math.PI * 2);
   ctx.fill();
 
-  // Left arm (back)
+  // Left arm (back arm - follows walk)
+  const leftArmSwing = isWalking ? Math.sin(walkCycle) * 0.4 : armSwingIdle;
   ctx.save();
   ctx.translate(-8, -1 + bob);
-  ctx.rotate(armSwing + 0.1);
+  ctx.rotate(leftArmSwing);
   ctx.fillStyle = tunicColor;
   roundRect(ctx, -3, 0, 5, 12, 2);
   ctx.fill();
@@ -422,149 +445,223 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
   ctx.fill();
   ctx.restore();
 
-  // Right arm + weapon
+  // Right arm + weapon (ATTACK ARM)
+  const weaponArmBase = isWalking ? -Math.sin(walkCycle) * 0.3 : -armSwingIdle;
   ctx.save();
   ctx.translate(8, -1 + bob);
-  ctx.rotate(-armSwing - 0.1);
-  ctx.fillStyle = tunicColor;
-  roundRect(ctx, -2, 0, 5, 12, 2);
-  ctx.fill();
-  ctx.fillStyle = skinColor;
-  ctx.beginPath();
-  ctx.arc(0.5, 13, 3, 0, Math.PI * 2);
-  ctx.fill();
 
-  // Weapon in right hand
   if (p.class === 'warrior') {
-    // Sword
-    ctx.fillStyle = '#d4d4d8';
+    // Warrior: big overhead swing arc
+    const swingAngle = atkAnim > 0 ? -Math.PI * 0.8 * atkAnim : weaponArmBase + atkAnim * 0.5;
+    ctx.rotate(swingAngle);
+    // Upper arm
+    ctx.fillStyle = tunicColor;
+    roundRect(ctx, -2, 0, 5, 12, 2);
+    ctx.fill();
+    ctx.fillStyle = skinColor;
     ctx.beginPath();
-    ctx.moveTo(1, 10);
-    ctx.lineTo(3, -4);
-    ctx.lineTo(1, -8);
-    ctx.lineTo(-1, -8);
-    ctx.lineTo(-3, -4);
-    ctx.lineTo(-1, 10);
+    ctx.arc(0.5, 13, 3, 0, Math.PI * 2);
+    ctx.fill();
+    // Sword with trail effect during attack
+    ctx.save();
+    ctx.translate(0.5, 13);
+    const swordRotate = atkAnim > 0 ? -0.3 : 0;
+    ctx.rotate(swordRotate);
+    // Sword blade
+    const swordGrad = ctx.createLinearGradient(0, 8, 0, -12);
+    swordGrad.addColorStop(0, '#aaa');
+    swordGrad.addColorStop(0.5, '#e8e8e8');
+    swordGrad.addColorStop(1, '#ccc');
+    ctx.fillStyle = swordGrad;
+    ctx.beginPath();
+    ctx.moveTo(1, 8); ctx.lineTo(2.5, -4); ctx.lineTo(1, -10);
+    ctx.lineTo(-1, -10); ctx.lineTo(-2.5, -4); ctx.lineTo(-1, 8);
     ctx.closePath();
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    // Edge highlight
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
     ctx.lineWidth = 0.5;
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -9); ctx.lineTo(0, 7); ctx.stroke();
     // Guard
     ctx.fillStyle = '#a0522d';
-    ctx.fillRect(-5, 10, 10, 3);
-    // Handle
+    ctx.fillRect(-5, 8, 10, 3);
     ctx.fillStyle = '#5c3a1e';
-    ctx.fillRect(-1.5, 13, 3, 6);
-    // Pommel
+    ctx.fillRect(-1.5, 11, 3, 6);
     ctx.fillStyle = '#ef4444';
-    ctx.beginPath();
-    ctx.arc(0, 20, 2.5, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 18, 2.5, 0, Math.PI * 2); ctx.fill();
+    // Attack trail glow
+    if (atkAnim > 0) {
+      ctx.shadowColor = '#f97316';
+      ctx.shadowBlur = 15 * atkAnim;
+      ctx.strokeStyle = `rgba(253,186,116,${0.6 * atkAnim})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(0, -10); ctx.lineTo(0, 6);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+    ctx.restore();
   } else if (p.class === 'archer') {
+    // Archer: draw-back bow animation
+    const drawBack = atkAnim > 0 ? atkAnim * 8 : 0;
+    const releaseSnap = atkRetract > 0 ? Math.sin(atkRetract * Math.PI) * 2 : 0;
+    ctx.rotate(weaponArmBase);
+    ctx.fillStyle = tunicColor;
+    roundRect(ctx, -2, 0, 5, 12, 2);
+    ctx.fill();
+    ctx.fillStyle = skinColor;
+    ctx.beginPath();
+    ctx.arc(0.5, 13, 3, 0, Math.PI * 2);
+    ctx.fill();
     // Bow
+    ctx.save();
+    ctx.translate(0.5, 6);
+    const bowFlex = 1 + drawBack * 0.02;
     ctx.strokeStyle = '#78350f';
     ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.arc(5, 6, 14, -1.2, 1.2);
+    ctx.arc(5, 0, 14 * bowFlex, -1.2, 1.2);
     ctx.stroke();
-    // String
-    ctx.strokeStyle = 'rgba(220,220,220,0.7)';
+    // Bowstring (pulled back when attacking)
+    ctx.strokeStyle = 'rgba(220,220,220,0.8)';
     ctx.lineWidth = 0.8;
+    const stringPull = drawBack + releaseSnap;
     ctx.beginPath();
-    ctx.moveTo(5 + Math.cos(-1.2) * 14, 6 + Math.sin(-1.2) * 14);
-    ctx.lineTo(2, 6);
-    ctx.lineTo(5 + Math.cos(1.2) * 14, 6 + Math.sin(1.2) * 14);
+    ctx.moveTo(5 + Math.cos(-1.2) * 14 * bowFlex, Math.sin(-1.2) * 14 * bowFlex);
+    ctx.lineTo(2 - stringPull, 0);
+    ctx.lineTo(5 + Math.cos(1.2) * 14 * bowFlex, Math.sin(1.2) * 14 * bowFlex);
     ctx.stroke();
-    // Arrow
-    ctx.fillStyle = '#dc2626';
-    ctx.beginPath();
-    ctx.moveTo(2, 0);
-    ctx.lineTo(0, 2);
-    ctx.lineTo(0, -2);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = '#5c3a1e';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(2, 0);
-    ctx.lineTo(2, 16);
-    ctx.stroke();
+    // Arrow (visible when drawing)
+    if (atkAnim > 0 || drawBack > 0) {
+      ctx.save();
+      ctx.translate(2 - stringPull, 0);
+      // Arrow shaft
+      ctx.strokeStyle = '#78350f';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(16, 0); ctx.stroke();
+      // Arrowhead
+      ctx.fillStyle = '#94a3b8';
+      ctx.beginPath();
+      ctx.moveTo(18, 0); ctx.lineTo(14, -2.5); ctx.lineTo(14, 2.5);
+      ctx.closePath();
+      ctx.fill();
+      // Fletching
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.moveTo(0, 0); ctx.lineTo(-3, -2); ctx.lineTo(-2, 0);
+      ctx.moveTo(0, 0); ctx.lineTo(-3, 2); ctx.lineTo(-2, 0);
+      ctx.fill();
+      ctx.restore();
+    }
+    // Release flash
+    if (atkRetract > 0.5) {
+      ctx.fillStyle = `rgba(34,211,238,${(atkRetract - 0.5) * 0.6})`;
+      ctx.beginPath();
+      ctx.arc(16, 0, 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
   } else {
-    // Mage staff
+    // Mage: staff thrust + magic burst
+    const castThrust = atkAnim > 0 ? atkAnim * 0.4 : 0;
+    ctx.rotate(weaponArmBase - castThrust);
+    ctx.fillStyle = tunicColor;
+    roundRect(ctx, -2, 0, 5, 12, 2);
+    ctx.fill();
+    ctx.fillStyle = skinColor;
+    ctx.beginPath();
+    ctx.arc(0.5, 13, 3, 0, Math.PI * 2);
+    ctx.fill();
+    // Staff
+    ctx.save();
+    ctx.translate(0.5, 6);
+    const staffExtend = atkAnim > 0 ? -atkAnim * 4 : 0;
     ctx.strokeStyle = '#5c3a1e';
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(0, 18);
-    ctx.lineTo(0, -6);
+    ctx.moveTo(0, 12); ctx.lineTo(0, -10 + staffExtend);
     ctx.stroke();
-    // Crystal on top
-    const orbGrad = ctx.createRadialGradient(0, -8, 1, 0, -8, 5);
+    // Staff head ornament
+    ctx.fillStyle = '#78350f';
+    ctx.beginPath();
+    ctx.moveTo(-3, -8 + staffExtend); ctx.lineTo(0, -12 + staffExtend);
+    ctx.lineTo(3, -8 + staffExtend);
+    ctx.closePath();
+    ctx.fill();
+    // Crystal orb
+    const orbY = -13 + staffExtend;
+    const orbPulse = 1 + (atkAnim > 0 ? atkAnim * 0.4 : Math.sin(time * 3) * 0.1);
+    const orbGrad = ctx.createRadialGradient(0, orbY, 1, 0, orbY, 6 * orbPulse);
     orbGrad.addColorStop(0, '#fff');
     orbGrad.addColorStop(0.3, '#c084fc');
     orbGrad.addColorStop(1, '#7c3aed');
     ctx.beginPath();
-    ctx.arc(0, -8, 5, 0, Math.PI * 2);
+    ctx.arc(0, orbY, 6 * orbPulse, 0, Math.PI * 2);
     ctx.fillStyle = orbGrad;
     ctx.fill();
-    ctx.shadowColor = '#a855f7';
-    ctx.shadowBlur = 12;
+    // Magic burst during attack
+    if (atkAnim > 0) {
+      ctx.shadowColor = '#a855f7';
+      ctx.shadowBlur = 20 * atkAnim;
+      ctx.beginPath();
+      ctx.arc(0, orbY, 6 * orbPulse, 0, Math.PI * 2);
+      ctx.fill();
+      // Magic sparkles radiating out
+      for (let i = 0; i < 6; i++) {
+        const sparkAngle = time * 8 + (i / 6) * Math.PI * 2;
+        const sparkDist = 8 + atkAnim * 12;
+        const sx = Math.cos(sparkAngle) * sparkDist;
+        const sy = orbY + Math.sin(sparkAngle) * sparkDist;
+        ctx.fillStyle = `rgba(216,180,254,${0.7 * atkAnim})`;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 1.5 * atkAnim, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.shadowBlur = 0;
+    }
+    // Sparkle on orb
+    ctx.fillStyle = `rgba(255,255,255,${0.6 + Math.sin(time * 5) * 0.3})`;
     ctx.beginPath();
-    ctx.arc(0, -8, 5, 0, Math.PI * 2);
+    ctx.arc(-1.5, orbY - 2, 1.2, 0, Math.PI * 2);
     ctx.fill();
-    ctx.shadowBlur = 0;
-    // Sparkle
-    ctx.fillStyle = 'rgba(255,255,255,0.8)';
-    ctx.beginPath();
-    ctx.arc(-1.5, -10, 1.2, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.restore();
   }
   ctx.restore(); // right arm
 
   // Head
   ctx.save();
   ctx.translate(0, -10 + bob);
+  // Head bob during attack
+  const headTilt = atkAnim > 0 ? atkAnim * 0.1 : 0;
+  ctx.rotate(headTilt);
 
-  // Neck
   ctx.fillStyle = skinColor;
   ctx.fillRect(-2.5, 3, 5, 4);
-
-  // Head shape
   ctx.fillStyle = skinColor;
   ctx.beginPath();
   ctx.arc(0, -2, 8, 0, Math.PI * 2);
   ctx.fill();
-
-  // Hair
   ctx.fillStyle = hairColor;
   ctx.beginPath();
   ctx.arc(0, -3, 8.5, -Math.PI, -0.1);
   ctx.fill();
 
   if (p.class === 'mage') {
-    // Wizard hat
     ctx.fillStyle = '#6b21a8';
     ctx.beginPath();
-    ctx.moveTo(-10, -4);
-    ctx.lineTo(0, -22);
-    ctx.lineTo(10, -4);
+    ctx.moveTo(-10, -4); ctx.lineTo(0, -22); ctx.lineTo(10, -4);
     ctx.closePath();
     ctx.fill();
-    // Hat brim
     ctx.fillStyle = '#581c87';
     ctx.beginPath();
     ctx.ellipse(0, -4, 13, 4, 0, 0, Math.PI * 2);
     ctx.fill();
-    // Hat band
     ctx.fillStyle = '#fbbf24';
     ctx.fillRect(-8, -6, 16, 2);
-    // Star on hat
-    ctx.fillStyle = '#fbbf24';
     ctx.font = '7px serif';
     ctx.textAlign = 'center';
     ctx.fillText('★', 0, -13);
   } else if (p.class === 'archer') {
-    // Hood
     ctx.fillStyle = '#065f46';
     ctx.beginPath();
     ctx.arc(0, -3, 9.5, -Math.PI, 0);
@@ -574,52 +671,41 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
     ctx.quadraticCurveTo(-10, -2, -9.5, 0);
     ctx.closePath();
     ctx.fill();
-    // Hood point
     ctx.beginPath();
-    ctx.moveTo(-3, -11);
-    ctx.lineTo(-8, -16);
-    ctx.lineTo(2, -12);
+    ctx.moveTo(-3, -11); ctx.lineTo(-8, -16); ctx.lineTo(2, -12);
     ctx.closePath();
     ctx.fillStyle = '#047857';
     ctx.fill();
   } else {
-    // Warrior helmet
     ctx.fillStyle = '#57534e';
     ctx.beginPath();
     ctx.arc(0, -3, 9, -Math.PI, 0.1);
     ctx.fill();
-    // Helmet ridge
     ctx.strokeStyle = '#78716c';
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     ctx.arc(0, -3, 9, -2.8, -0.3);
     ctx.stroke();
-    // Nose guard
     ctx.fillStyle = '#57534e';
     ctx.fillRect(-1.5, -6, 3, 8);
-    // Helmet horns
     ctx.fillStyle = '#a8a29e';
     ctx.beginPath();
-    ctx.moveTo(-7, -8);
-    ctx.lineTo(-10, -16);
-    ctx.lineTo(-5, -10);
+    ctx.moveTo(-7, -8); ctx.lineTo(-10, -16); ctx.lineTo(-5, -10);
     ctx.closePath();
     ctx.fill();
     ctx.beginPath();
-    ctx.moveTo(7, -8);
-    ctx.lineTo(10, -16);
-    ctx.lineTo(5, -10);
+    ctx.moveTo(7, -8); ctx.lineTo(10, -16); ctx.lineTo(5, -10);
     ctx.closePath();
     ctx.fill();
   }
 
-  // Eyes
+  // Eyes - squint during attack
+  const eyeH = atkAnim > 0.3 ? 1.2 : 2;
   ctx.fillStyle = '#fff';
   ctx.beginPath();
-  ctx.ellipse(-3, -2, 2.5, 2, 0, 0, Math.PI * 2);
-  ctx.ellipse(3, -2, 2.5, 2, 0, 0, Math.PI * 2);
+  ctx.ellipse(-3, -2, 2.5, eyeH, 0, 0, Math.PI * 2);
+  ctx.ellipse(3, -2, 2.5, eyeH, 0, 0, Math.PI * 2);
   ctx.fill();
-  // Pupils
   const eyeColor = p.class === 'mage' ? '#a855f7' : p.class === 'archer' ? '#22d3ee' : '#f97316';
   ctx.fillStyle = eyeColor;
   ctx.beginPath();
@@ -629,16 +715,21 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
   ctx.fillStyle = '#000';
   ctx.beginPath();
   ctx.arc(-2.5, -2, 0.7, 0, Math.PI * 2);
-  ctx.arc(3.5, -2, 0.7, 0, Math.PI * 2);
+  ctx.ac(3.5, -2, 0.7, 0, Math.PI * 2);
   ctx.fill();
-
-  // Mouth
-  ctx.strokeStyle = '#a0522d';
-  ctx.lineWidth = 0.8;
-  ctx.beginPath();
-  ctx.arc(0, 2, 2.5, 0.2, Math.PI - 0.2);
-  ctx.stroke();
-
+  // Battle cry mouth during attack
+  if (atkAnim > 0.5) {
+    ctx.fillStyle = '#5c3a1e';
+    ctx.beginPath();
+    ctx.ellipse(0, 2.5, 2.5 * atkAnim, 2 * atkAnim, 0, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    ctx.strokeStyle = '#a0522d';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.arc(0, 2, 2.5, 0.2, Math.PI - 0.2);
+    ctx.stroke();
+  }
   ctx.restore(); // head
 
   ctx.restore(); // angle rotation
@@ -647,33 +738,66 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
   if (p.class === 'mage') {
     for (let i = 0; i < 3; i++) {
       const a = time * 1.5 + (i / 3) * Math.PI * 2;
-      const ox = Math.cos(a) * (p.radius + 10);
-      const oy = Math.sin(a) * (p.radius + 10);
+      const runeSpeed = atkAnim > 0 ? 3 : 1;
+      const ox = Math.cos(a * runeSpeed) * (p.radius + 10);
+      const oy = Math.sin(a * runeSpeed) * (p.radius + 10);
       ctx.beginPath();
-      ctx.arc(ox, oy, 2.5, 0, Math.PI * 2);
+      ctx.arc(ox, oy, 2.5 + atkAnim * 2, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(216,180,254,${0.5 + Math.sin(time * 3 + i) * 0.3})`;
       ctx.fill();
     }
   }
 
-  // Warrior melee arc
-  if (p.class === 'warrior' && p.attackTimer > p.attackCooldown * 0.5) {
+  // Warrior melee arc with slash VFX
+  if (p.class === 'warrior' && p.attackTimer > p.attackCooldown * 0.4) {
+    const slashProg = (p.attackTimer / p.attackCooldown - 0.4) / 0.6;
     ctx.save();
     ctx.rotate(p.angle);
+    // Slash arc
+    const arcStart = -1.0 + (1 - slashProg) * 1.5;
+    const arcEnd = arcStart + 1.2;
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.arc(0, 0, WARRIOR_ATTACK_RANGE, -0.8, 0.8);
+    ctx.arc(0, 0, WARRIOR_ATTACK_RANGE, arcStart, arcEnd);
     ctx.closePath();
     const slashGrad = ctx.createRadialGradient(0, 0, p.radius, 0, 0, WARRIOR_ATTACK_RANGE);
-    slashGrad.addColorStop(0, 'rgba(249,115,22,0.5)');
+    slashGrad.addColorStop(0, `rgba(249,115,22,${0.6 * slashProg})`);
     slashGrad.addColorStop(1, 'rgba(249,115,22,0)');
     ctx.fillStyle = slashGrad;
     ctx.fill();
+    // Bright slash edge
     ctx.beginPath();
-    ctx.arc(0, 0, WARRIOR_ATTACK_RANGE, -0.8, 0.8);
-    ctx.strokeStyle = 'rgba(253,186,116,0.6)';
+    ctx.arc(0, 0, WARRIOR_ATTACK_RANGE * 0.95, arcStart, arcEnd);
+    ctx.strokeStyle = `rgba(253,224,170,${0.8 * slashProg})`;
     ctx.lineWidth = 3;
     ctx.stroke();
+    // Spark particles along edge
+    for (let i = 0; i < 4; i++) {
+      const sa = arcStart + (arcEnd - arcStart) * (i / 3);
+      const sr = WARRIOR_ATTACK_RANGE * (0.7 + Math.random() * 0.3);
+      ctx.fillStyle = `rgba(255,220,120,${0.5 * slashProg})`;
+      ctx.beginPath();
+      ctx.arc(Math.cos(sa) * sr, Math.sin(sa) * sr, 2 * slashProg, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // Archer: arrow trail VFX
+  if (p.class === 'archer' && atkRetract > 0.3) {
+    ctx.save();
+    ctx.rotate(p.angle);
+    const trailAlpha = (atkRetract - 0.3) * 1.4;
+    ctx.strokeStyle = `rgba(34,211,238,${trailAlpha * 0.4})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(p.radius, 0);
+    ctx.lineTo(p.radius + 30 * trailAlpha, 0);
+    ctx.stroke();
+    ctx.fillStyle = `rgba(34,211,238,${trailAlpha * 0.3})`;
+    ctx.beginPath();
+    ctx.arc(p.radius + 15 * trailAlpha, 0, 4 * trailAlpha, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   }
 
