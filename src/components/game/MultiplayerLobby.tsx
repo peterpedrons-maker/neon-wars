@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ShipType } from '../../game/types';
 import { 
   RoomInfo, createRoom, joinRoom, connectToRoom, 
-  leaveRoom, sendStartGame, sendCountdown, CoopPlayerState, CoopGameSync 
+  leaveRoom, sendStartGame, sendCountdown, sendGuestConfirm, CoopPlayerState, CoopGameSync 
 } from '../../game/multiplayer';
 
 interface MultiplayerLobbyProps {
@@ -278,6 +278,12 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
   const channelRef = useRef<any>(null);
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
   const startDataRef = useRef<{ mapId: string; hostClass: string } | null>(null);
+  const selectedShipRef = useRef(selectedShip);
+  const selectedMapRef = useRef(selectedMap);
+  const peerShipRef = useRef(peerShip);
+  selectedShipRef.current = selectedShip;
+  selectedMapRef.current = selectedMap;
+  peerShipRef.current = peerShip;
 
   useEffect(() => {
     return () => { 
@@ -314,7 +320,23 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
       () => {},
       () => {},
       () => {}, // onCountdown - host ignores
-      () => {}, // onConfirm - handled below
+      () => {
+        // Guest confirmed! Start countdown for both
+        setStatus('Jogador confirmou! Iniciando...');
+        let count = 5;
+        setCountdown(count);
+        sendCountdown(count);
+        countdownRef.current = setInterval(() => {
+          count--;
+          setCountdown(count);
+          sendCountdown(count);
+          if (count <= 0) {
+            clearInterval(countdownRef.current!);
+            countdownRef.current = null;
+            onStartCoop(newRoom, selectedMapRef.current, selectedShipRef.current, peerShipRef.current);
+          }
+        }, 1000);
+      },
     );
   };
 
@@ -341,7 +363,7 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
         if (count <= 0) {
           const sd = startDataRef.current;
           if (sd) {
-            onStartCoop(newRoom, sd.mapId, selectedShip, sd.hostClass as ShipType);
+            onStartCoop(newRoom, sd.mapId, selectedShipRef.current, sd.hostClass as ShipType);
           }
         }
       },
@@ -353,9 +375,8 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
     if (!waitingConfirm || !room) return;
     startDataRef.current = waitingConfirm;
     setWaitingConfirm(null);
-    // Send confirmation back to host
-    sendCountdown(-1); // signal: guest confirmed
-    setStatus('Iniciando...');
+    sendGuestConfirm();
+    setStatus('Aguardando contagem...');
   };
 
   const handleGuestDecline = () => {
@@ -364,46 +385,8 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
 
   const handleStart = () => {
     if (!room || !peerConnected) return;
-    // Send start request to guest for confirmation
     sendStartGame(selectedMap, selectedShip);
     setStatus('Aguardando confirmação do jogador...');
-
-    // Listen for guest confirm via the existing channel
-    // We re-setup the confirm handler
-    const origConnect = channelRef.current;
-    // Use a polling approach: once guest confirms, they send countdown -1
-    // We detect it via the countdown handler
-    const checkConfirm = () => {
-      // The guest will send a countdown of -1 as confirmation signal
-    };
-
-    // Override: connect with confirm handler
-    if (channelRef.current) {
-      // We already have the channel, listen for the confirm signal
-      // The guest sends a 'countdown' broadcast with value -1
-      // This is handled in the existing connectToRoom's onCountdown
-    }
-
-    // Simpler approach: re-listen on the existing channel for guest_confirm
-    channelRef.current?.on?.('broadcast', { event: 'countdown' }, ({ payload }: any) => {
-      if (payload.count === -1) {
-        // Guest confirmed! Start countdown for both
-        setStatus('Jogador confirmou! Iniciando...');
-        let count = 5;
-        setCountdown(count);
-        sendCountdown(count);
-        countdownRef.current = setInterval(() => {
-          count--;
-          setCountdown(count);
-          sendCountdown(count);
-          if (count <= 0) {
-            clearInterval(countdownRef.current!);
-            countdownRef.current = null;
-            onStartCoop(room, selectedMap, selectedShip, peerShip);
-          }
-        }, 1000);
-      }
-    });
   };
 
   return (
