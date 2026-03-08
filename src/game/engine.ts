@@ -661,7 +661,7 @@ export function startWave(state: GameState) {
   state.screen = 'playing';
 }
 
-export function createInitialState(player: Player): GameState {
+export function createInitialState(player: Player, mapId: string = 'neon-grid', weaponSlots: number = 3): GameState {
   initAudio();
   startMusic();
   return {
@@ -674,6 +674,7 @@ export function createInitialState(player: Player): GameState {
     wave: 0,
     score: 0,
     enemiesKilled: 0,
+    bossesKilled: 0,
     screen: 'playing',
     waveEnemiesRemaining: 0,
     waveSpawnTimer: 0,
@@ -690,7 +691,80 @@ export function createInitialState(player: Player): GameState {
     xpToNext: xpForLevel(1),
     abilityLevels: {},
     abilities: createAbilityState(),
+    equippedWeapons: [],
+    weaponSlots,
     regenAccumulator: 0,
     trail: [],
+    mapId,
+    hazards: [],
+    hazardSpawnTimer: 5,
+    flameZones: [],
+    plasmaZones: [],
   };
+}
+
+function updateHazards(state: GameState, dt: number) {
+  const map = ALL_MAPS[state.mapId];
+  if (!map || map.hazards.length === 0) return;
+  
+  // Spawn hazards
+  state.hazardSpawnTimer -= dt;
+  if (state.hazardSpawnTimer <= 0) {
+    state.hazardSpawnTimer = 8;
+    for (const h of map.hazards) {
+      const active = state.hazards.filter(a => a.type === h.type).length;
+      if (active < h.maxActive && Math.random() < h.spawnChance) {
+        state.hazards.push(createHazard(h.type, ARENA_W, ARENA_H));
+      }
+    }
+  }
+  
+  const p = state.player;
+  for (let i = state.hazards.length - 1; i >= 0; i--) {
+    const hz = state.hazards[i];
+    hz.lifetime -= dt;
+    if (hz.lifetime <= 0) { state.hazards.splice(i, 1); continue; }
+    
+    // Hazard effects
+    if (hz.type === 'lava_pool') {
+      const d = Math.hypot(p.pos.x - hz.pos.x, p.pos.y - hz.pos.y);
+      if (d < hz.radius + p.radius && p.invincibleTimer <= 0) {
+        // Damage handled by normal damage system — apply slow
+        p.speedBoostTimer = 0;
+      }
+      for (const e of state.enemies) {
+        if (!e.alive) continue;
+        const ed = Math.hypot(e.pos.x - hz.pos.x, e.pos.y - hz.pos.y);
+        if (ed < hz.radius + e.radius) {
+          e.hp -= 5 * dt;
+          e.flashTimer = 0.03;
+        }
+      }
+    } else if (hz.type === 'black_hole' && hz.pullStrength) {
+      // Pull everything toward it
+      const pull = hz.pullStrength;
+      const pdx = hz.pos.x - p.pos.x;
+      const pdy = hz.pos.y - p.pos.y;
+      const pd = Math.hypot(pdx, pdy);
+      if (pd < 200 && pd > 5) {
+        p.pos.x += (pdx / pd) * pull * dt * (1 - pd / 200);
+        p.pos.y += (pdy / pd) * pull * dt * (1 - pd / 200);
+      }
+      for (const e of state.enemies) {
+        if (!e.alive) continue;
+        const edx = hz.pos.x - e.pos.x;
+        const edy = hz.pos.y - e.pos.y;
+        const ed = Math.hypot(edx, edy);
+        if (ed < 200 && ed > 5) {
+          e.pos.x += (edx / ed) * pull * 1.5 * dt * (1 - ed / 200);
+          e.pos.y += (edy / ed) * pull * 1.5 * dt * (1 - ed / 200);
+        }
+        // Damage at center
+        if (ed < hz.radius + e.radius) {
+          e.hp -= 20 * dt;
+          e.flashTimer = 0.03;
+        }
+      }
+    }
+  }
 }
