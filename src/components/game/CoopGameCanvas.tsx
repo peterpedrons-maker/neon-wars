@@ -279,11 +279,12 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
         const p = stateRef.current.player;
         sendPlayerState({
           x: p.pos.x, y: p.pos.y, angle: p.angle,
-          hp: p.hp, maxHp: p.maxHp, alive: p.alive,
+          hp: p.hp, maxHp: p.maxHp, alive: p.alive, dead: !p.alive,
           shipClass: playerClass, shieldTimer: p.shieldTimer,
           invincibleTimer: p.invincibleTimer, shooting: inputRef.current.shooting,
           playerId: room.playerId,
           playerLabel: room.isHost ? 'HOST' : `P${2}`,
+          reviveProgress: (stateRef.current as any).myReviveProgress || 0,
         } as any);
 
         // Host sends game sync
