@@ -4,6 +4,7 @@ import { ShipType } from '../../game/types';
 interface ClassSelectProps {
   onSelect: (cls: ShipType) => void;
   onBack: () => void;
+  unlockedShips?: string[];
 }
 
 const ships: { id: ShipType; name: string; desc: string; stats: string; locked?: boolean }[] = [
