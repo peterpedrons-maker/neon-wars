@@ -76,6 +76,10 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
             attackTimer: stateRef.current.coopPeer?.attackTimer ?? 0,
             attackCooldown: peerStats.attackCooldown,
             damage: peerStats.damage,
+            shieldTimer: ps.shieldTimer,
+            invincibleTimer: ps.invincibleTimer,
+            hp: ps.hp,
+            maxHp: ps.maxHp,
           };
         }
       },

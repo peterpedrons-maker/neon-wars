@@ -110,11 +110,12 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
     const peer = state.coopPeer;
     const fakePlayer: Player = {
       pos: { ...peer.pos }, vel: { x: 0, y: 0 }, radius: 12, alive: true,
-      hp: 1, maxHp: 1, class: (peer.shipClass as any) || 'phantom',
+      hp: peer.hp ?? 1, maxHp: peer.maxHp ?? 1, class: (peer.shipClass as any) || 'phantom',
       damage: peer.damage, speed: 200,
       attackCooldown: peer.attackCooldown, attackTimer: peer.shooting ? peer.attackCooldown * 0.8 : 0,
       specialCooldown: 5, specialTimer: 0,
-      shieldTimer: 0, tripleTimer: 0, speedBoostTimer: 0, invincibleTimer: 0,
+      shieldTimer: peer.shieldTimer ?? 0, tripleTimer: 0, speedBoostTimer: 0,
+      invincibleTimer: peer.invincibleTimer ?? 0,
       angle: peer.angle,
     };
     drawPlayer(ctx, fakePlayer, time);

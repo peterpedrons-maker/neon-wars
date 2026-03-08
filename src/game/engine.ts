@@ -200,17 +200,20 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
     orb.pos.y += orb.vel.y * dt;
     orb.vel.x *= 0.95;
     orb.vel.y *= 0.95;
-    // Collect by local player
-    if (dP < p.radius + orb.radius + 5) {
-      addXp(state, orb.value);
-      return false;
-    }
-    // Collect by peer (both get XP)
-    if (peer && peer.alive) {
-      const dPeer = Math.hypot(peer.pos.x - orb.pos.x, peer.pos.y - orb.pos.y);
-      if (dPeer < 12 + orb.radius + 5) {
+    // Only host collects XP (guest receives synced XP via game_sync)
+    if (state.isHost !== false) {
+      // Collect by local player
+      if (dP < p.radius + orb.radius + 5) {
         addXp(state, orb.value);
         return false;
+      }
+      // Collect by peer (host adds XP for both)
+      if (peer && peer.alive) {
+        const dPeer = Math.hypot(peer.pos.x - orb.pos.x, peer.pos.y - orb.pos.y);
+        if (dPeer < 12 + orb.radius + 5) {
+          addXp(state, orb.value);
+          return false;
+        }
       }
     }
     return true;
