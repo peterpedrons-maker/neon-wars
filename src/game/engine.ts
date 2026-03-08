@@ -170,7 +170,7 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   }
   if (state.trail.length > 40) state.trail.splice(0, state.trail.length - 40);
 
-  // Update XP orbs - attract to both players in coop
+  // Update XP orbs - only host processes collection (guest gets synced values)
   const magnetR = state.abilities.magnetRadius;
   const peer = state.coopPeer;
   state.xpOrbs = state.xpOrbs.filter(orb => {
