@@ -352,7 +352,7 @@ export function getRandomAbilities(
 
 // XP required for each level
 export function xpForLevel(level: number): number {
-  return Math.floor(20 + level * 15 + level * level * 2);
+  return Math.floor(25 + level * 18 + level * level * 3.5);
 }
 
 // Update orbital drones - projectileCount adds extra orbitals

@@ -1386,8 +1386,8 @@ function drawPowerUp(ctx: CanvasRenderingContext2D, pu: PowerUp, time: number) {
   ctx.save();
   ctx.translate(pu.pos.x, pu.pos.y);
 
-  const pulse = 1 + Math.sin(time * 3) * 0.08;
-  const bob = Math.sin(time * 2.5) * 4;
+  const pulse = 1 + Math.sin(time * 3) * 0.06;
+  const bob = Math.sin(time * 2.5) * 3;
   ctx.translate(0, bob);
 
   const colorMap: Record<string, string> = {
@@ -1395,7 +1395,8 @@ function drawPowerUp(ctx: CanvasRenderingContext2D, pu: PowerUp, time: number) {
     shield: '#44ffff', heal: '#44ff44',
   };
   const color = colorMap[pu.type] || '#fff';
-  const r = 14 * pulse;
+  const r = 10 * pulse;
+
 
   // Outer rotating dashed ring
   ctx.save();

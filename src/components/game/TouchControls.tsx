@@ -6,8 +6,8 @@ interface TouchControlsProps {
   onSpecial: () => void;
 }
 
-const JOYSTICK_SIZE = 120;
-const KNOB_SIZE = 44;
+const JOYSTICK_SIZE = 140;
+const KNOB_SIZE = 52;
 
 const TouchControls: React.FC<TouchControlsProps> = ({ onInput, onSpecial }) => {
   const leftRef = useRef<{ id: number | null; startX: number; startY: number }>({ id: null, startX: 0, startY: 0 });
@@ -67,63 +67,78 @@ const TouchControls: React.FC<TouchControlsProps> = ({ onInput, onSpecial }) => 
 
   return (
     <>
-      {/* Left joystick */}
+      {/* Left joystick - movement */}
       <div
-        className="absolute bottom-8 left-8 z-30 touch-none"
-        style={{ width: JOYSTICK_SIZE, height: JOYSTICK_SIZE }}
+        className="absolute z-30 touch-none"
+        style={{ bottom: 24, left: 16, width: JOYSTICK_SIZE, height: JOYSTICK_SIZE }}
         onTouchStart={e => handleTouchStart(e, 'left')}
         onTouchMove={e => handleTouchMove(e, 'left')}
         onTouchEnd={e => handleTouchEnd(e, 'left')}
       >
         <div className="w-full h-full rounded-full flex items-center justify-center"
-             style={{ border: '2px solid rgba(0,255,255,0.3)', background: 'rgba(0,0,20,0.5)' }}>
+             style={{ border: '3px solid rgba(0,255,255,0.35)', background: 'rgba(0,0,20,0.55)' }}>
           <div
             className="rounded-full"
             style={{
               width: KNOB_SIZE, height: KNOB_SIZE,
-              background: 'rgba(0,255,255,0.3)',
-              border: '1px solid rgba(0,255,255,0.6)',
-              boxShadow: '0 0 10px rgba(0,255,255,0.2)',
+              background: 'radial-gradient(circle, rgba(0,255,255,0.45) 0%, rgba(0,255,255,0.2) 100%)',
+              border: '2px solid rgba(0,255,255,0.7)',
+              boxShadow: '0 0 15px rgba(0,255,255,0.3)',
               transform: `translate(${leftPos.x}px, ${leftPos.y}px)`,
             }}
           />
         </div>
+        <div style={{
+          position: 'absolute', bottom: -18, left: '50%', transform: 'translateX(-50%)',
+          fontSize: 10, fontWeight: 800, color: 'rgba(0,255,255,0.5)', letterSpacing: '0.1em',
+        }}>MOVE</div>
       </div>
 
-      {/* Right joystick */}
+      {/* Right joystick - aim & shoot */}
       <div
-        className="absolute bottom-8 right-8 z-30 touch-none"
-        style={{ width: JOYSTICK_SIZE, height: JOYSTICK_SIZE }}
+        className="absolute z-30 touch-none"
+        style={{ bottom: 24, right: 16, width: JOYSTICK_SIZE, height: JOYSTICK_SIZE }}
         onTouchStart={e => handleTouchStart(e, 'right')}
         onTouchMove={e => handleTouchMove(e, 'right')}
         onTouchEnd={e => handleTouchEnd(e, 'right')}
       >
         <div className="w-full h-full rounded-full flex items-center justify-center"
-             style={{ border: '2px solid rgba(255,0,64,0.3)', background: 'rgba(0,0,20,0.5)' }}>
+             style={{ border: '3px solid rgba(255,0,64,0.35)', background: 'rgba(0,0,20,0.55)' }}>
           <div
             className="rounded-full"
             style={{
               width: KNOB_SIZE, height: KNOB_SIZE,
-              background: 'rgba(255,0,64,0.3)',
-              border: '1px solid rgba(255,0,64,0.6)',
-              boxShadow: '0 0 10px rgba(255,0,64,0.2)',
+              background: 'radial-gradient(circle, rgba(255,0,64,0.45) 0%, rgba(255,0,64,0.2) 100%)',
+              border: '2px solid rgba(255,0,64,0.7)',
+              boxShadow: '0 0 15px rgba(255,0,64,0.3)',
               transform: `translate(${rightPos.x}px, ${rightPos.y}px)`,
             }}
           />
         </div>
+        <div style={{
+          position: 'absolute', bottom: -18, left: '50%', transform: 'translateX(-50%)',
+          fontSize: 10, fontWeight: 800, color: 'rgba(255,0,64,0.5)', letterSpacing: '0.1em',
+        }}>AIM</div>
       </div>
 
       {/* Special button */}
       <button
-        className="absolute bottom-36 right-10 z-30 w-14 h-14 rounded-full flex items-center justify-center text-2xl active:scale-90 transition-transform touch-none font-mono"
+        className="absolute z-30 flex items-center justify-center touch-none"
         style={{
-          background: 'rgba(191,90,242,0.3)',
-          border: '2px solid rgba(191,90,242,0.6)',
-          boxShadow: '0 0 15px rgba(191,90,242,0.2)',
+          bottom: JOYSTICK_SIZE + 40, right: 24,
+          width: 62, height: 62, borderRadius: 99,
+          background: 'radial-gradient(circle, rgba(191,90,242,0.4) 0%, rgba(191,90,242,0.15) 100%)',
+          border: '3px solid rgba(191,90,242,0.65)',
+          boxShadow: '0 0 20px rgba(191,90,242,0.25)',
+          fontSize: 26,
         }}
         onTouchStart={e => { e.preventDefault(); onSpecial(); }}
       >
         ✨
+        <div style={{
+          position: 'absolute', bottom: -16,
+          fontSize: 9, fontWeight: 800, color: 'rgba(191,90,242,0.6)', letterSpacing: '0.1em', whiteSpace: 'nowrap',
+        }}>SPECIAL</div>
       </button>
     </>
   );
