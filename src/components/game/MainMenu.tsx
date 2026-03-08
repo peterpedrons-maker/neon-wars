@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { RunStats, Milestone } from '../../game/meta';
+import { initAudio, startMenuMusic, stopMenuMusic } from '../../game/audio';
 
 interface MainMenuProps {
   plasma: number;
@@ -9,6 +10,7 @@ interface MainMenuProps {
   onLeaderboard: () => void;
   onHowToPlay: () => void;
   onShop: () => void;
+  onMultiplayer: () => void;
 }
 
 const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, onLeaderboard, onHowToPlay, onShop }) => {
