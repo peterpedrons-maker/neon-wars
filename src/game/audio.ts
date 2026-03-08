@@ -369,18 +369,35 @@ export function playGameOver() {
 export function playWaveComplete() {
   try {
     const ctx = getCtx();
-    const notes = [500, 600, 750, 900, 1100];
+    // Triumphant fanfare
+    const notes = [500, 600, 750, 900, 1100, 1400];
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = i < 3 ? 'sine' : 'triangle';
-      osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.07);
-      gain.gain.setValueAtTime(0.07, ctx.currentTime + i * 0.07);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.07 + 0.25);
+      osc2.type = 'square';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.06);
+      osc2.frequency.setValueAtTime(freq * 0.5, ctx.currentTime + i * 0.06);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime + i * 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.06 + 0.3);
       osc.connect(gain).connect(ctx.destination);
-      osc.start(ctx.currentTime + i * 0.07);
-      osc.stop(ctx.currentTime + i * 0.07 + 0.25);
+      osc2.connect(gain);
+      osc.start(ctx.currentTime + i * 0.06);
+      osc.stop(ctx.currentTime + i * 0.06 + 0.3);
+      osc2.start(ctx.currentTime + i * 0.06);
+      osc2.stop(ctx.currentTime + i * 0.06 + 0.3);
     });
+    // Shimmering tail
+    const shim = ctx.createOscillator();
+    const sg = ctx.createGain();
+    shim.type = 'sine';
+    shim.frequency.setValueAtTime(2000, ctx.currentTime + 0.3);
+    shim.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.7);
+    sg.gain.setValueAtTime(0.04, ctx.currentTime + 0.3);
+    sg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.7);
+    shim.connect(sg).connect(ctx.destination);
+    shim.start(ctx.currentTime + 0.3); shim.stop(ctx.currentTime + 0.72);
   } catch {}
 }
 
