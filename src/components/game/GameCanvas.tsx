@@ -195,10 +195,19 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, onMenu }) => {
           combo={state.combo}
           comboMultiplier={state.comboMultiplier}
           comboTimer={state.comboTimer}
+          level={state.level}
+          xp={state.xp}
+          xpToNext={state.xpToNext}
         />
       )}
 
-      {/* Upgrade screen removed - waves are continuous now */}
+      {state && state.screen === 'upgrade' && (
+        <LevelUpScreen
+          level={state.level}
+          abilityLevels={state.abilityLevels}
+          onSelect={handleUpgrade}
+        />
+      )}
 
       {state && state.screen === 'game-over' && (
         <GameOver
