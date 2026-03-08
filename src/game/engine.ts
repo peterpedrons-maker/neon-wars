@@ -595,8 +595,8 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
       }
     }
 
-    // Power-up drop
-    const dropChance = POWERUP_DROP_CHANCE + (state.comboMultiplier - 1) * 0.02;
+    // Power-up drop (luck bonus)
+    const dropChance = POWERUP_DROP_CHANCE + (state.comboMultiplier - 1) * 0.02 + (state.abilities.luck || 0);
     if (Math.random() < dropChance) {
       const pu = createPowerUp(e.pos);
       if (pu) state.powerUps.push(pu);
