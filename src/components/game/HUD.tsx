@@ -16,7 +16,7 @@ interface HUDProps {
 
 const shipIcons: Record<string, string> = { phantom: '👻', interceptor: '⚡', titan: '💥' };
 
-const HUD: React.FC<HUDProps> = ({ player, wave, score, specialReady, combo, comboMultiplier, comboTimer }) => {
+const HUD: React.FC<HUDProps> = ({ player, wave, score, specialReady, combo, comboMultiplier, comboTimer, level, xp, xpToNext }) => {
   const specialPct = player.specialTimer > 0
     ? ((player.specialCooldown - player.specialTimer) / player.specialCooldown) * 100
     : 100;
