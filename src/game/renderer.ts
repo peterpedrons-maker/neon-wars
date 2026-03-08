@@ -79,12 +79,15 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   }
 
   // Torches along walls (inside wall area)
-  const tw = WALL_THICKNESS / 2;
+  const wallMidL = WALL_LEFT / 2;
+  const wallMidR = (WALL_RIGHT + ARENA_W) / 2;
+  const wallMidT = WALL_TOP / 2;
+  const wallMidB = (WALL_BOTTOM + ARENA_H) / 2;
   const torchPositions = [
-    [tw, tw], [ARENA_W / 4, tw], [ARENA_W / 2, tw], [ARENA_W * 3 / 4, tw], [ARENA_W - tw, tw],
-    [tw, ARENA_H - tw], [ARENA_W / 4, ARENA_H - tw], [ARENA_W / 2, ARENA_H - tw], [ARENA_W * 3 / 4, ARENA_H - tw], [ARENA_W - tw, ARENA_H - tw],
-    [tw, ARENA_H / 4], [tw, ARENA_H / 2], [tw, ARENA_H * 3 / 4],
-    [ARENA_W - tw, ARENA_H / 4], [ARENA_W - tw, ARENA_H / 2], [ARENA_W - tw, ARENA_H * 3 / 4],
+    [wallMidL, wallMidT], [ARENA_W / 4, wallMidT], [ARENA_W / 2, wallMidT], [ARENA_W * 3 / 4, wallMidT], [wallMidR, wallMidT],
+    [wallMidL, wallMidB], [ARENA_W / 4, wallMidB], [ARENA_W / 2, wallMidB], [ARENA_W * 3 / 4, wallMidB], [wallMidR, wallMidB],
+    [wallMidL, ARENA_H / 3], [wallMidL, ARENA_H / 2], [wallMidL, ARENA_H * 2 / 3],
+    [wallMidR, ARENA_H / 3], [wallMidR, ARENA_H / 2], [wallMidR, ARENA_H * 2 / 3],
   ];
   torchPositions.forEach(([tx, ty], i) => drawTorchLight(ctx, tx, ty, time + i * 0.7));
 
