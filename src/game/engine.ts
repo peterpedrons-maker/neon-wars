@@ -12,6 +12,7 @@ import {
 } from './entities';
 
 const WAVE_SPAWN_INTERVAL = 1.2;
+const WALL_THICKNESS = 80;
 
 export function updateGame(state: GameState, input: InputState, dt: number): void {
   if (state.screen !== 'playing') return;
@@ -33,8 +34,8 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   p.vel.y = input.moveY * speed;
   p.pos.x += p.vel.x * dt;
   p.pos.y += p.vel.y * dt;
-  p.pos.x = Math.max(p.radius, Math.min(ARENA_W - p.radius, p.pos.x));
-  p.pos.y = Math.max(p.radius, Math.min(ARENA_H - p.radius, p.pos.y));
+  p.pos.x = Math.max(WALL_THICKNESS + p.radius, Math.min(ARENA_W - WALL_THICKNESS - p.radius, p.pos.x));
+  p.pos.y = Math.max(WALL_THICKNESS + p.radius, Math.min(ARENA_H - WALL_THICKNESS - p.radius, p.pos.y));
 
   // Aim
   if (input.aimX !== 0 || input.aimY !== 0) {
@@ -177,9 +178,9 @@ function updateEnemies(state: GameState, dt: number) {
       e.pos.y += moveY;
     }
 
-    // Clamp to arena
-    e.pos.x = Math.max(e.radius, Math.min(ARENA_W - e.radius, e.pos.x));
-    e.pos.y = Math.max(e.radius, Math.min(ARENA_H - e.radius, e.pos.y));
+    // Clamp to arena (inside walls)
+    e.pos.x = Math.max(WALL_THICKNESS + e.radius, Math.min(ARENA_W - WALL_THICKNESS - e.radius, e.pos.x));
+    e.pos.y = Math.max(WALL_THICKNESS + e.radius, Math.min(ARENA_H - WALL_THICKNESS - e.radius, e.pos.y));
 
     // Boss attacks
     if (e.isBoss && e.bossAttackTimer !== undefined) {

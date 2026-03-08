@@ -6,30 +6,21 @@ import dungeonFloorImg from '../assets/dungeon-floor.jpg';
 let camX = ARENA_W / 2;
 let camY = ARENA_H / 2;
 
-// Cached textures
-let floorPattern: CanvasPattern | null = null;
+// Cached floor image
 let floorImage: HTMLImageElement | null = null;
 let floorImageLoaded = false;
 
-function createFloorPattern(ctx: CanvasRenderingContext2D): CanvasPattern | null {
-  if (floorPattern) return floorPattern;
-
+function loadFloorImage() {
   if (!floorImage) {
     floorImage = new Image();
-    floorImage.onload = () => {
-      floorImageLoaded = true;
-      floorPattern = null; // force recreate
-    };
+    floorImage.onload = () => { floorImageLoaded = true; };
     floorImage.src = dungeonFloorImg;
   }
-
-  if (floorImageLoaded && floorImage) {
-    floorPattern = ctx.createPattern(floorImage, 'repeat');
-    return floorPattern;
-  }
-
-  return null;
 }
+loadFloorImage();
+
+// Wall thickness in world units - the image has thick stone walls on all edges
+const WALL_THICKNESS = 80;
 
 export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canvasW: number, canvasH: number) {
   const time = Date.now() * 0.001;
@@ -68,18 +59,13 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   ctx.scale(scale, scale);
   ctx.translate(viewportW / 2 - camX, viewportH / 2 - camY);
 
-  // Arena floor
-  const pattern = createFloorPattern(ctx);
-  if (pattern) {
-    ctx.fillStyle = pattern;
+  // Arena floor - draw dungeon image stretched to fill arena
+  if (floorImageLoaded && floorImage) {
+    ctx.drawImage(floorImage, 0, 0, ARENA_W, ARENA_H);
   } else {
     ctx.fillStyle = COLORS.arena;
+    ctx.fillRect(0, 0, ARENA_W, ARENA_H);
   }
-  ctx.fillRect(0, 0, ARENA_W, ARENA_H);
-
-  // Subtle dark overlay for depth
-  ctx.fillStyle = 'rgba(0,0,0,0.1)';
-  ctx.fillRect(0, 0, ARENA_W, ARENA_H);
 
   // Ambient glow around player
   if (state.player.alive) {
@@ -93,16 +79,17 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
     ctx.fillRect(p.pos.x - 200, p.pos.y - 200, 400, 400);
   }
 
-  // Torches along walls
+  // Torches along walls (inside wall area)
+  const tw = WALL_THICKNESS / 2;
   const torchPositions = [
-    [30, 30], [ARENA_W / 3, 20], [ARENA_W * 2 / 3, 20], [ARENA_W - 30, 30],
-    [30, ARENA_H - 30], [ARENA_W / 3, ARENA_H - 20], [ARENA_W * 2 / 3, ARENA_H - 20], [ARENA_W - 30, ARENA_H - 30],
-    [20, ARENA_H / 3], [20, ARENA_H * 2 / 3], [ARENA_W - 20, ARENA_H / 3], [ARENA_W - 20, ARENA_H * 2 / 3],
+    [tw, tw], [ARENA_W / 4, tw], [ARENA_W / 2, tw], [ARENA_W * 3 / 4, tw], [ARENA_W - tw, tw],
+    [tw, ARENA_H - tw], [ARENA_W / 4, ARENA_H - tw], [ARENA_W / 2, ARENA_H - tw], [ARENA_W * 3 / 4, ARENA_H - tw], [ARENA_W - tw, ARENA_H - tw],
+    [tw, ARENA_H / 4], [tw, ARENA_H / 2], [tw, ARENA_H * 3 / 4],
+    [ARENA_W - tw, ARENA_H / 4], [ARENA_W - tw, ARENA_H / 2], [ARENA_W - tw, ARENA_H * 3 / 4],
   ];
   torchPositions.forEach(([tx, ty], i) => drawTorchLight(ctx, tx, ty, time + i * 0.7));
 
-  // Stone wall
-  drawStoneWall(ctx, time);
+  // Wall collision is handled by engine - image already has walls drawn
 
   // Power-ups
   state.powerUps.forEach(pu => { if (pu.alive) drawPowerUp(ctx, pu, time); });

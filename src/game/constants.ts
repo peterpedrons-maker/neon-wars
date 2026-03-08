@@ -1,7 +1,7 @@
 import { PlayerClass, EnemyType } from './types';
 
-export const ARENA_W = 1600;
-export const ARENA_H = 1200;
+export const ARENA_W = 2400;
+export const ARENA_H = 1800;
 
 // Camera zoom: how many "world pixels" the viewport shows
 export const CAMERA_VIEW_W = 500;
@@ -68,7 +68,7 @@ export const WAVE_BASE_ENEMIES = 5;
 export const WAVE_ENEMY_INCREMENT = 3;
 export const BOSS_WAVE_INTERVAL = 5;
 export const POWERUP_DROP_CHANCE = 0.15;
-export const SPAWN_MARGIN = 50;
+export const SPAWN_MARGIN = 90;
 export const PROJECTILE_SPEED = 400;
 export const PROJECTILE_LIFETIME = 2;
 export const WARRIOR_ATTACK_RANGE = 70;
