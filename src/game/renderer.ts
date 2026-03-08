@@ -106,9 +106,17 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   if (state.player.alive) drawPlayer(ctx, state.player, time);
 
   // Coop peers with full ship design
-  const allPeers = state.coopPeers.length > 0 ? state.coopPeers : (state.coopPeer && state.coopPeer.alive ? [{ ...state.coopPeer, playerId: 'p2', playerLabel: 'P2' }] : []);
-  for (const peer of allPeers) {
-    if (!peer.alive) continue;
+  const allPeers = state.coopPeers.length > 0 ? state.coopPeers : (state.coopPeer && state.coopPeer.alive ? [{ ...state.coopPeer, playerId: 'p2', playerLabel: 'P2', dead: false, reviveProgress: 0 }] : []);
+  // Filter out local player to avoid ghost ship
+  const remotePeers = allPeers.filter(p => p.playerId !== state.localPlayerId);
+  
+  for (const peer of remotePeers) {
+    // Draw dead peers as wreckage
+    if (peer.dead || !peer.alive) {
+      drawDeadPeer(ctx, peer, time);
+      continue;
+    }
+    
     const fakePlayer: Player = {
       pos: { ...peer.pos }, vel: { x: 0, y: 0 }, radius: 12, alive: true,
       hp: peer.hp ?? 1, maxHp: peer.maxHp ?? 1, class: (peer.shipClass as any) || 'phantom',
