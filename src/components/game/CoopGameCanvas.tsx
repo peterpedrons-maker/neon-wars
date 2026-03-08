@@ -53,10 +53,40 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
       () => {},
       (ps) => { peerStateRef.current = ps; },
       (sync) => {
-        // Guest receives game state from host
+        // Guest receives full game state from host — sync enemies, projectiles, wave, score
         if (!room.isHost && stateRef.current) {
           stateRef.current.wave = sync.wave;
           stateRef.current.score = sync.score;
+          
+          // Sync enemies from host
+          stateRef.current.enemies = sync.enemies.map(e => ({
+            pos: { x: e.x, y: e.y },
+            vel: { x: 0, y: 0 },
+            radius: e.radius,
+            alive: e.alive,
+            type: e.type as any,
+            hp: e.hp,
+            maxHp: e.maxHp,
+            damage: 10,
+            speed: 0,
+            score: 0,
+            attackTimer: 0,
+            attackCooldown: 1,
+            isBoss: e.radius >= 25,
+            flashTimer: 0,
+          }));
+          
+          // Sync projectiles from host
+          stateRef.current.projectiles = sync.projectiles.map(p => ({
+            pos: { x: p.x, y: p.y },
+            vel: { x: p.vx, y: p.vy },
+            radius: 4,
+            alive: p.alive,
+            damage: 10,
+            fromPlayer: p.fromPlayer,
+            lifetime: 2,
+            color: p.color,
+          }));
         }
       },
       () => {},
