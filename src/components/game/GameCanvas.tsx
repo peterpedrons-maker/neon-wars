@@ -1,12 +1,13 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 import { GameState, InputState, ShipType, Upgrade } from '../../game/types';
+import { Ability } from '../../game/abilities';
 import { createPlayer } from '../../game/entities';
 import { createInitialState, updateGame, startWave } from '../../game/engine';
 import { renderGame, getScale, getOffset, resetCamera } from '../../game/renderer';
 import { ARENA_W, ARENA_H } from '../../game/constants';
 import { useIsMobile } from '../../hooks/use-mobile';
 import HUD from './HUD';
-import UpgradeScreen from './UpgradeScreen';
+import LevelUpScreen from './LevelUpScreen';
 import GameOver from './GameOver';
 import TouchControls from './TouchControls';
 
