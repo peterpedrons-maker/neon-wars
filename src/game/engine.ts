@@ -29,8 +29,10 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
 
   // Player movement
   const speed = p.speed * (p.speedBoostTimer > 0 ? 1.5 : 1);
-  p.pos.x += input.moveX * speed * dt;
-  p.pos.y += input.moveY * speed * dt;
+  p.vel.x = input.moveX * speed;
+  p.vel.y = input.moveY * speed;
+  p.pos.x += p.vel.x * dt;
+  p.pos.y += p.vel.y * dt;
   p.pos.x = Math.max(p.radius, Math.min(ARENA_W - p.radius, p.pos.x));
   p.pos.y = Math.max(p.radius, Math.min(ARENA_H - p.radius, p.pos.y));
 

@@ -1,5 +1,6 @@
 import { GameState, Player, Enemy, Projectile, Particle, PowerUp } from './types';
 import { COLORS, ARENA_W, ARENA_H, WARRIOR_ATTACK_RANGE, CAMERA_VIEW_W, CAMERA_VIEW_H, CAMERA_LERP } from './constants';
+import dungeonFloorImg from '../assets/dungeon-floor.jpg';
 
 // Camera state
 let camX = ARENA_W / 2;
@@ -7,62 +8,27 @@ let camY = ARENA_H / 2;
 
 // Cached textures
 let floorPattern: CanvasPattern | null = null;
-let floorPatternCanvas: HTMLCanvasElement | null = null;
+let floorImage: HTMLImageElement | null = null;
+let floorImageLoaded = false;
 
 function createFloorPattern(ctx: CanvasRenderingContext2D): CanvasPattern | null {
-  if (floorPattern && floorPatternCanvas) return floorPattern;
-  const tile = document.createElement('canvas');
-  tile.width = 64;
-  tile.height = 64;
-  const tc = tile.getContext('2d')!;
+  if (floorPattern) return floorPattern;
 
-  // Rich stone tile
-  const bg = tc.createLinearGradient(0, 0, 64, 64);
-  bg.addColorStop(0, '#252040');
-  bg.addColorStop(0.5, '#1e1a2e');
-  bg.addColorStop(1, '#1a1528');
-  tc.fillStyle = bg;
-  tc.fillRect(0, 0, 64, 64);
-
-  // Subtle noise
-  for (let i = 0; i < 60; i++) {
-    const x = Math.random() * 64;
-    const y = Math.random() * 64;
-    const s = Math.random() * 2.5 + 0.5;
-    const bright = Math.random() > 0.5;
-    tc.fillStyle = bright ? `rgba(180,160,255,${Math.random() * 0.06})` : `rgba(0,0,0,${Math.random() * 0.1})`;
-    tc.fillRect(x, y, s, s);
+  if (!floorImage) {
+    floorImage = new Image();
+    floorImage.onload = () => {
+      floorImageLoaded = true;
+      floorPattern = null; // force recreate
+    };
+    floorImage.src = dungeonFloorImg;
   }
 
-  // Tile grooves
-  tc.strokeStyle = 'rgba(0,0,0,0.35)';
-  tc.lineWidth = 2;
-  tc.strokeRect(1, 1, 62, 62);
-  tc.strokeStyle = 'rgba(150,130,200,0.06)';
-  tc.lineWidth = 1;
-  tc.strokeRect(3, 3, 58, 58);
-
-  // Random cracks
-  if (Math.random() > 0.5) {
-    tc.strokeStyle = 'rgba(0,0,0,0.2)';
-    tc.lineWidth = 0.7;
-    tc.beginPath();
-    tc.moveTo(10 + Math.random() * 20, 10 + Math.random() * 10);
-    tc.lineTo(30 + Math.random() * 10, 30 + Math.random() * 10);
-    tc.stroke();
+  if (floorImageLoaded && floorImage) {
+    floorPattern = ctx.createPattern(floorImage, 'repeat');
+    return floorPattern;
   }
 
-  // Random moss
-  if (Math.random() > 0.7) {
-    tc.fillStyle = 'rgba(74,222,128,0.04)';
-    tc.beginPath();
-    tc.arc(20 + Math.random() * 24, 40 + Math.random() * 20, 5 + Math.random() * 5, 0, Math.PI * 2);
-    tc.fill();
-  }
-
-  floorPatternCanvas = tile;
-  floorPattern = ctx.createPattern(tile, 'repeat');
-  return floorPattern;
+  return null;
 }
 
 export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canvasW: number, canvasH: number) {
@@ -111,15 +77,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   }
   ctx.fillRect(0, 0, ARENA_W, ARENA_H);
 
-  // Grid overlay
-  ctx.strokeStyle = COLORS.grid;
-  ctx.lineWidth = 0.5;
-  for (let x = 0; x <= ARENA_W; x += 64) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, ARENA_H); ctx.stroke();
-  }
-  for (let y = 0; y <= ARENA_H; y += 64) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(ARENA_W, y); ctx.stroke();
-  }
+  // Subtle dark overlay for depth
+  ctx.fillStyle = 'rgba(0,0,0,0.1)';
+  ctx.fillRect(0, 0, ARENA_W, ARENA_H);
 
   // Ambient glow around player
   if (state.player.alive) {
@@ -332,11 +292,14 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
   const atkRetract = atkRatio > 0 && atkRatio <= 0.5 ? (0.5 - atkRatio) * 2 : 0; // second half returns
   const atkAnim = atkProgress > 0 ? atkProgress : -atkRetract * 0.3;
 
-  // Body lean when walking
-  const bodyLean = isWalking ? Math.sin(walkCycle * 0.6) * 0.03 : 0;
+  // Body faces movement direction (not aim), weapon aims independently
+  const moveAngle = isWalking ? Math.atan2(p.vel?.y || 0, p.vel?.x || 0) : 0;
+  // Determine if player faces left or right based on aim
+  const facingRight = Math.cos(p.angle) >= 0;
+  const bodyFlip = facingRight ? 1 : -1;
 
   ctx.save();
-  ctx.rotate(p.angle + bodyLean);
+  ctx.scale(bodyFlip, 1); // flip body to face aim direction horizontally
 
   // --- CLASS COLORS ---
   let skinColor = '#f5d0a9';
@@ -445,14 +408,18 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
   ctx.fill();
   ctx.restore();
 
-  // Right arm + weapon (ATTACK ARM)
+  // Right arm + weapon (ATTACK ARM) — rotates to aim direction
   const weaponArmBase = isWalking ? -Math.sin(walkCycle) * 0.3 : -armSwingIdle;
+  // Convert aim angle to local arm angle (body is flipped, so adjust)
+  const localAimAngle = facingRight ? p.angle : (Math.PI - p.angle);
+  // Clamp aim to reasonable arm range (point downward = ~PI/2 in local space)
+  const armAimOffset = localAimAngle - Math.PI / 2; // offset from default "down" position
   ctx.save();
   ctx.translate(8, -1 + bob);
 
   if (p.class === 'warrior') {
     // Warrior: big overhead swing arc
-    const swingAngle = atkAnim > 0 ? -Math.PI * 0.8 * atkAnim : weaponArmBase + atkAnim * 0.5;
+    const swingAngle = armAimOffset + (atkAnim > 0 ? -Math.PI * 0.6 * atkAnim : weaponArmBase + atkAnim * 0.3);
     ctx.rotate(swingAngle);
     // Upper arm
     ctx.fillStyle = tunicColor;
@@ -505,7 +472,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
     // Archer: draw-back bow animation
     const drawBack = atkAnim > 0 ? atkAnim * 8 : 0;
     const releaseSnap = atkRetract > 0 ? Math.sin(atkRetract * Math.PI) * 2 : 0;
-    ctx.rotate(weaponArmBase);
+    ctx.rotate(armAimOffset + weaponArmBase);
     ctx.fillStyle = tunicColor;
     roundRect(ctx, -2, 0, 5, 12, 2);
     ctx.fill();
@@ -564,7 +531,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
   } else {
     // Mage: staff thrust + magic burst
     const castThrust = atkAnim > 0 ? atkAnim * 0.4 : 0;
-    ctx.rotate(weaponArmBase - castThrust);
+    ctx.rotate(armAimOffset + weaponArmBase - castThrust);
     ctx.fillStyle = tunicColor;
     roundRect(ctx, -2, 0, 5, 12, 2);
     ctx.fill();
