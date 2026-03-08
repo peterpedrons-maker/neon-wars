@@ -1,4 +1,4 @@
-import { GameState, Player, Enemy, Projectile, Particle, PowerUp } from './types';
+import { GameState, Player, Enemy, Projectile, Particle, PowerUp, XpOrb } from './types';
 import { COLORS, ARENA_W, ARENA_H, WARRIOR_ATTACK_RANGE, CAMERA_VIEW_W, CAMERA_VIEW_H, CAMERA_LERP, WALL_LEFT, WALL_RIGHT, WALL_TOP, WALL_BOTTOM } from './constants';
 
 // Camera state
