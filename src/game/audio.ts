@@ -29,7 +29,7 @@ export function playShoot(pitch: number = 800) {
     const osc3 = ctx.createOscillator();
     const gain = ctx.createGain();
     const filter = ctx.createBiquadFilter();
-    const dist = ctx.createWaveShaperNode();
+    const dist = ctx.createWaveShaper();
     
     // Subtle distortion for crunch
     const curve = new Float32Array(256);
