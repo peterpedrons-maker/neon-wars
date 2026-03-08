@@ -90,6 +90,8 @@ export interface RoomCallbacks {
   onConfirm: () => void;
   onLobbyState: (state: LobbyState) => void;
   onChat: (msg: ChatMessage) => void;
+  onLevelUp: (level: number) => void;
+  onUpgradeDone: () => void;
 }
 
 export function connectToRoom(
