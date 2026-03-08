@@ -656,7 +656,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
 }
 
 // --- ENEMIES --- Enhanced with unique visuals per behavior
-function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, time: number) {
+function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, time: number, state?: GameState) {
   ctx.save();
   ctx.translate(e.pos.x, e.pos.y);
   if (e.flashTimer > 0) ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.05) * 0.5;
