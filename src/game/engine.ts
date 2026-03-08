@@ -408,9 +408,10 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
   e.hp -= damage;
   e.flashTimer = 0.1;
   playHit();
-  // Hit sparks
-  state.particles.push(...createParticles(e.pos, COLORS.neonYellow, 6, 120, 2));
-  state.particles.push(...createParticles(e.pos, '#ffffff', 2, 80, 1.5));
+  // Hit sparks - massive
+  state.particles.push(...createParticles(e.pos, COLORS.neonYellow, 15, 180, 3));
+  state.particles.push(...createParticles(e.pos, '#ffffff', 8, 120, 2));
+  state.particles.push(...createParticles(e.pos, getEnemyColor(e.type), 10, 150, 2.5));
 
   if (e.hp <= 0) {
     e.alive = false;
@@ -430,24 +431,26 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
     // Explosion sound
     playExplosion(e.isBoss);
 
-    // INTENSE death explosion
+    // MASSIVE death explosion - tons of particles
     const color = e.isBoss ? COLORS.neonYellow : getEnemyColor(e.type);
-    const intensity = e.isBoss ? 3 : 1;
-    state.particles.push(...createParticles(e.pos, color, (e.isBoss ? 60 : 25) * intensity, 300, e.isBoss ? 6 : 4));
-    state.particles.push(...createParticles(e.pos, '#ffffff', (e.isBoss ? 25 : 10), 220, 3));
+    state.particles.push(...createParticles(e.pos, color, e.isBoss ? 200 : 60, 400, e.isBoss ? 8 : 5));
+    state.particles.push(...createParticles(e.pos, '#ffffff', e.isBoss ? 80 : 30, 300, 4));
     const secColor = e.isBoss ? '#ff1493' : COLORS.neonCyan;
-    state.particles.push(...createParticles(e.pos, secColor, (e.isBoss ? 20 : 8), 180, 2.5));
+    state.particles.push(...createParticles(e.pos, secColor, e.isBoss ? 60 : 25, 250, 3.5));
+    // Extra ring of colored sparks
+    state.particles.push(...createParticles(e.pos, COLORS.neonPink, e.isBoss ? 40 : 15, 350, 3));
+    state.particles.push(...createParticles(e.pos, COLORS.neonGreen, e.isBoss ? 30 : 12, 280, 2.5));
     
     if (state.comboMultiplier >= 4) {
-      state.particles.push(...createParticles(e.pos, '#ffff00', state.comboMultiplier, 250, 3));
+      state.particles.push(...createParticles(e.pos, '#ffff00', state.comboMultiplier * 3, 350, 4));
     }
     
     if (e.isBoss) {
-      state.shakeTimer = 0.4;
-      state.shakeIntensity = 10;
+      state.shakeTimer = 0.5;
+      state.shakeIntensity = 14;
     } else {
-      state.shakeTimer = Math.max(state.shakeTimer, 0.05);
-      state.shakeIntensity = Math.max(state.shakeIntensity, 2);
+      state.shakeTimer = Math.max(state.shakeTimer, 0.08);
+      state.shakeIntensity = Math.max(state.shakeIntensity, 3);
     }
 
     // Splitter split
