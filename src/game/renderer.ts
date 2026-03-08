@@ -237,7 +237,7 @@ function drawVignette(ctx: CanvasRenderingContext2D, cx: number, cy: number, vw:
   ctx.fillRect(cx - vw / 2, cy - vh / 2, vw, vh);
 }
 
-// --- PLAYER (SHIP) ---
+// --- PLAYER (SHIP) --- Enhanced designs
 function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
   ctx.save();
   ctx.translate(p.pos.x, p.pos.y);
@@ -245,139 +245,154 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
 
   const color = getShipColor(p.class);
   const glowColor = getShipGlow(p.class);
+  const speed = Math.hypot(p.vel.x || 0, p.vel.y || 0);
 
-  // Shield effect
+  // Shield effect - hexagonal
   if (p.shieldTimer > 0) {
     const sa = 0.3 + Math.sin(time * 5) * 0.15;
-    ctx.beginPath();
-    ctx.arc(0, 0, p.radius + 10, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(0,255,255,${sa})`;
-    ctx.lineWidth = 2;
-    ctx.setLineDash([4, 4]);
-    ctx.lineDashOffset = time * 50;
-    ctx.stroke();
-    ctx.setLineDash([]);
+    ctx.save();
+    ctx.rotate(-p.angle + time * 0.5);
+    drawNeonShape(ctx, 6, p.radius + 12, '#0ff', sa);
+    ctx.restore();
   }
 
   if (p.invincibleTimer > 0 && Math.floor(Date.now() / 80) % 2 === 0) {
     ctx.globalAlpha = 0.4;
   }
 
-  // Engine thrust glow
+  // Engine exhaust - dual flame
   const thrustPulse = 0.6 + Math.sin(time * 15) * 0.3;
-  const speed = Math.hypot(p.vel.x || 0, p.vel.y || 0);
-  const thrustLen = 8 + (speed / p.speed) * 12;
-  ctx.fillStyle = hexToRgba(color, thrustPulse * 0.6);
-  ctx.beginPath();
-  ctx.moveTo(-p.radius * 0.5, -3);
-  ctx.lineTo(-p.radius - thrustLen, 0);
-  ctx.lineTo(-p.radius * 0.5, 3);
-  ctx.closePath();
-  ctx.fill();
-
-  // Ship body - neon outlined triangle
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 15 + Math.sin(time * 3) * 5;
-
-  if (p.class === 'phantom') {
-    // Sleek diamond shape
+  const thrustLen = 10 + (speed / p.speed) * 18;
+  for (let i = -1; i <= 1; i += 2) {
+    const offsetY = i * (p.class === 'titan' ? 5 : 3);
+    ctx.fillStyle = hexToRgba('#ffffff', thrustPulse * 0.8);
     ctx.beginPath();
-    ctx.moveTo(p.radius * 1.5, 0);
-    ctx.lineTo(0, -p.radius * 0.8);
-    ctx.lineTo(-p.radius, -p.radius * 0.4);
-    ctx.lineTo(-p.radius, p.radius * 0.4);
-    ctx.lineTo(0, p.radius * 0.8);
-    ctx.closePath();
-  } else if (p.class === 'interceptor') {
-    // Narrow arrow
+    ctx.moveTo(-p.radius * 0.4, offsetY - 1.5);
+    ctx.lineTo(-p.radius - thrustLen * 0.6, offsetY);
+    ctx.lineTo(-p.radius * 0.4, offsetY + 1.5);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = hexToRgba(color, thrustPulse * 0.5);
     ctx.beginPath();
-    ctx.moveTo(p.radius * 1.6, 0);
-    ctx.lineTo(-p.radius * 0.5, -p.radius * 0.7);
-    ctx.lineTo(-p.radius * 0.3, 0);
-    ctx.lineTo(-p.radius * 0.5, p.radius * 0.7);
-    ctx.closePath();
-  } else {
-    // Titan - heavy wedge
-    ctx.beginPath();
-    ctx.moveTo(p.radius * 1.3, 0);
-    ctx.lineTo(-p.radius * 0.3, -p.radius);
-    ctx.lineTo(-p.radius, -p.radius * 0.8);
-    ctx.lineTo(-p.radius, p.radius * 0.8);
-    ctx.lineTo(-p.radius * 0.3, p.radius);
-    ctx.closePath();
+    ctx.moveTo(-p.radius * 0.5, offsetY - 2.5);
+    ctx.lineTo(-p.radius - thrustLen, offsetY);
+    ctx.lineTo(-p.radius * 0.5, offsetY + 2.5);
+    ctx.closePath(); ctx.fill();
   }
 
-  // Fill with dark + stroke with neon
-  ctx.fillStyle = hexToRgba(color, 0.15);
-  ctx.fill();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 18 + Math.sin(time * 3) * 5;
 
-  // Inner glow line
-  ctx.strokeStyle = glowColor;
-  ctx.lineWidth = 0.5;
-  ctx.globalAlpha = Math.min(ctx.globalAlpha, 0.6);
-  ctx.stroke();
-  ctx.globalAlpha = 1;
-
-  // Cockpit dot
-  ctx.fillStyle = '#fff';
-  ctx.beginPath();
-  ctx.arc(p.radius * 0.3, 0, 2, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.shadowBlur = 0;
-
-  // Speed boost trail
-  if (p.speedBoostTimer > 0) {
-    ctx.strokeStyle = `rgba(0,229,255,${0.4 + Math.sin(time * 8) * 0.2})`;
-    ctx.lineWidth = 1;
+  if (p.class === 'phantom') {
+    // Stealth bomber with swept wings
     ctx.beginPath();
-    ctx.moveTo(-p.radius - thrustLen, 0);
-    ctx.lineTo(-p.radius - thrustLen - 15, 0);
+    ctx.moveTo(p.radius * 1.6, 0);
+    ctx.lineTo(p.radius * 0.3, -p.radius * 0.3);
+    ctx.lineTo(-p.radius * 0.2, -p.radius * 1.0);
+    ctx.lineTo(-p.radius * 0.8, -p.radius * 0.8);
+    ctx.lineTo(-p.radius * 0.6, -p.radius * 0.15);
+    ctx.lineTo(-p.radius * 0.6, p.radius * 0.15);
+    ctx.lineTo(-p.radius * 0.8, p.radius * 0.8);
+    ctx.lineTo(-p.radius * 0.2, p.radius * 1.0);
+    ctx.lineTo(p.radius * 0.3, p.radius * 0.3);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.12); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+    // Wing stripes
+    ctx.strokeStyle = hexToRgba(glowColor, 0.4); ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(p.radius * 0.2, -p.radius * 0.2); ctx.lineTo(-p.radius * 0.5, -p.radius * 0.7);
+    ctx.moveTo(p.radius * 0.2, p.radius * 0.2); ctx.lineTo(-p.radius * 0.5, p.radius * 0.7);
+    ctx.stroke();
+  } else if (p.class === 'interceptor') {
+    // Twin-boom fighter
+    ctx.beginPath();
+    ctx.moveTo(p.radius * 1.8, 0);
+    ctx.lineTo(p.radius * 0.2, -p.radius * 0.4);
+    ctx.lineTo(-p.radius * 0.6, -p.radius * 0.6);
+    ctx.lineTo(-p.radius * 0.4, -p.radius * 0.15);
+    ctx.lineTo(-p.radius * 0.4, p.radius * 0.15);
+    ctx.lineTo(-p.radius * 0.6, p.radius * 0.6);
+    ctx.lineTo(p.radius * 0.2, p.radius * 0.4);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.12); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+    // Canards
+    ctx.strokeStyle = hexToRgba(glowColor, 0.6); ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(p.radius * 0.8, -p.radius * 0.15); ctx.lineTo(p.radius * 0.3, -p.radius * 0.5);
+    ctx.moveTo(p.radius * 0.8, p.radius * 0.15); ctx.lineTo(p.radius * 0.3, p.radius * 0.5);
+    ctx.stroke();
+    if (speed > p.speed * 0.5) {
+      ctx.strokeStyle = hexToRgba(color, 0.2); ctx.lineWidth = 0.5;
+      for (let i = 0; i < 3; i++) {
+        const y = (i - 1) * 4;
+        ctx.beginPath(); ctx.moveTo(-p.radius, y); ctx.lineTo(-p.radius - 10 - speed * 0.03, y); ctx.stroke();
+      }
+    }
+  } else {
+    // Titan: heavy armored wedge
+    ctx.beginPath();
+    ctx.moveTo(p.radius * 1.4, 0);
+    ctx.lineTo(p.radius * 0.4, -p.radius * 0.5);
+    ctx.lineTo(-p.radius * 0.1, -p.radius * 1.1);
+    ctx.lineTo(-p.radius * 0.7, -p.radius * 1.0);
+    ctx.lineTo(-p.radius, -p.radius * 0.5);
+    ctx.lineTo(-p.radius, p.radius * 0.5);
+    ctx.lineTo(-p.radius * 0.7, p.radius * 1.0);
+    ctx.lineTo(-p.radius * 0.1, p.radius * 1.1);
+    ctx.lineTo(p.radius * 0.4, p.radius * 0.5);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.15); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+    // Armor plates
+    ctx.strokeStyle = hexToRgba(glowColor, 0.3); ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(p.radius * 0.2, -p.radius * 0.4); ctx.lineTo(-p.radius * 0.5, -p.radius * 0.7);
+    ctx.moveTo(p.radius * 0.2, p.radius * 0.4); ctx.lineTo(-p.radius * 0.5, p.radius * 0.7);
+    ctx.moveTo(-p.radius * 0.3, 0); ctx.lineTo(-p.radius * 0.8, 0);
     ctx.stroke();
   }
 
-  // Triple shot indicator
-  if (p.tripleTimer > 0) {
-    ctx.fillStyle = `rgba(255,20,147,${0.5 + Math.sin(time * 6) * 0.3})`;
-    ctx.beginPath();
-    ctx.arc(p.radius * 0.8, -3, 1.5, 0, Math.PI * 2);
-    ctx.arc(p.radius * 0.8, 3, 1.5, 0, Math.PI * 2);
-    ctx.fill();
-  }
+  // Cockpit core glow
+  const cockpitGrad = ctx.createRadialGradient(p.radius * 0.3, 0, 0, p.radius * 0.3, 0, 4);
+  cockpitGrad.addColorStop(0, '#ffffff');
+  cockpitGrad.addColorStop(0.5, glowColor);
+  cockpitGrad.addColorStop(1, hexToRgba(color, 0));
+  ctx.fillStyle = cockpitGrad;
+  ctx.beginPath(); ctx.arc(p.radius * 0.3, 0, 3, 0, Math.PI * 2); ctx.fill();
+  ctx.shadowBlur = 0;
 
-  // Titan melee arc
+  if (p.speedBoostTimer > 0) {
+    ctx.fillStyle = hexToRgba('#00e5ff', 0.4 + Math.sin(time * 10) * 0.2);
+    ctx.beginPath();
+    ctx.moveTo(-p.radius * 0.5, -2); ctx.lineTo(-p.radius - thrustLen - 20, 0); ctx.lineTo(-p.radius * 0.5, 2);
+    ctx.closePath(); ctx.fill();
+  }
+  if (p.tripleTimer > 0) {
+    ctx.fillStyle = hexToRgba('#ff1493', 0.5 + Math.sin(time * 6) * 0.3);
+    ctx.beginPath(); ctx.arc(p.radius * 1.0, -4, 2, 0, Math.PI * 2); ctx.arc(p.radius * 1.0, 4, 2, 0, Math.PI * 2); ctx.fill();
+  }
   if (p.class === 'titan' && p.attackTimer > p.attackCooldown * 0.4) {
     const slashProg = (p.attackTimer / p.attackCooldown - 0.4) / 0.6;
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
+    ctx.beginPath(); ctx.moveTo(0, 0);
     ctx.arc(0, 0, WARRIOR_ATTACK_RANGE, -0.8 + (1 - slashProg) * 1.2, -0.8 + (1 - slashProg) * 1.2 + 1.0);
     ctx.closePath();
     const sg = ctx.createRadialGradient(0, 0, p.radius, 0, 0, WARRIOR_ATTACK_RANGE);
     sg.addColorStop(0, `rgba(255,107,0,${0.5 * slashProg})`);
     sg.addColorStop(1, 'rgba(255,107,0,0)');
-    ctx.fillStyle = sg;
-    ctx.fill();
+    ctx.fillStyle = sg; ctx.fill();
   }
-
   ctx.globalAlpha = 1;
   ctx.restore();
 }
 
-// --- ENEMIES (GEOMETRIC SHAPES) ---
+// --- ENEMIES --- Enhanced with unique visuals per behavior
 function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, time: number) {
   ctx.save();
   ctx.translate(e.pos.x, e.pos.y);
-
-  if (e.flashTimer > 0) {
-    ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.05) * 0.5;
-  }
-
+  if (e.flashTimer > 0) ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.05) * 0.5;
   const color = getEnemyColor(e.type);
 
-  // Boss aura
   if (e.isBoss) {
     const auraR = e.radius + 25 + Math.sin(time * 3) * 8;
     const aGrad = ctx.createRadialGradient(0, 0, e.radius, 0, 0, auraR);
@@ -386,123 +401,139 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, time: number) {
     aGrad.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = aGrad;
     ctx.beginPath(); ctx.arc(0, 0, auraR, 0, Math.PI * 2); ctx.fill();
-    
-    // Orbiting particles
-    for (let i = 0; i < 8; i++) {
-      const a = time * 0.8 + (i / 8) * Math.PI * 2;
-      ctx.beginPath();
-      ctx.arc(Math.cos(a) * (e.radius + 15), Math.sin(a) * (e.radius + 15), 2, 0, Math.PI * 2);
-      ctx.fillStyle = hexToRgba(color, 0.4 + Math.sin(time * 2 + i) * 0.2);
-      ctx.fill();
+    for (let i = 0; i < 10; i++) {
+      const a = time * 0.8 + (i / 10) * Math.PI * 2;
+      const ox = Math.cos(a) * (e.radius + 18);
+      const oy = Math.sin(a) * (e.radius + 18);
+      ctx.fillStyle = hexToRgba(color, 0.5);
+      ctx.beginPath(); ctx.arc(ox, oy, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = hexToRgba(color, 0.1); ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(ox, oy); ctx.stroke();
     }
   }
 
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 12;
-
+  ctx.shadowColor = color; ctx.shadowBlur = 12;
   const rot = time * 2;
 
   if (e.type === 'drone') {
-    // Square - rotates
     ctx.save(); ctx.rotate(rot);
     drawNeonShape(ctx, 4, e.radius, color);
+    ctx.strokeStyle = hexToRgba(color, 0.4); ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(-e.radius * 0.5, 0); ctx.lineTo(e.radius * 0.5, 0);
+    ctx.moveTo(0, -e.radius * 0.5); ctx.lineTo(0, e.radius * 0.5);
+    ctx.stroke();
+    ctx.fillStyle = hexToRgba(color, 0.6 + Math.sin(time * 4) * 0.3);
+    ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   } else if (e.type === 'splitter') {
-    // Circle that splits
-    ctx.beginPath();
-    ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
-    ctx.fillStyle = hexToRgba(color, 0.15);
-    ctx.fill();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-    // Inner circle
-    ctx.beginPath();
-    ctx.arc(0, 0, e.radius * 0.5, 0, Math.PI * 2);
-    ctx.strokeStyle = hexToRgba(color, 0.5);
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
+    ctx.fillStyle = hexToRgba(color, 0.12); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.strokeStyle = hexToRgba(color, 0.5); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, -e.radius); ctx.lineTo(0, e.radius); ctx.stroke();
+    for (const sx of [-0.3, 0.3]) {
+      ctx.beginPath(); ctx.arc(e.radius * sx, 0, e.radius * 0.35, 0, Math.PI * 2);
+      ctx.strokeStyle = hexToRgba(color, 0.4); ctx.stroke();
+    }
   } else if (e.type === 'dasher') {
-    // Triangle - fast
-    ctx.save(); ctx.rotate(rot * 2);
-    drawNeonShape(ctx, 3, e.radius, color);
+    const isDashing = e.dashState === 'dashing';
+    const faceAngle = e.dashAngle ?? rot * 2;
+    ctx.save(); ctx.rotate(faceAngle);
+    ctx.beginPath();
+    ctx.moveTo(e.radius * 1.3, 0);
+    ctx.lineTo(-e.radius * 0.8, -e.radius * 0.9);
+    ctx.lineTo(-e.radius * 0.4, 0);
+    ctx.lineTo(-e.radius * 0.8, e.radius * 0.9);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, isDashing ? 0.2 : 0.12); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = isDashing ? 2.5 : 1.5; ctx.stroke();
+    if (isDashing) {
+      ctx.strokeStyle = hexToRgba(color, 0.4); ctx.lineWidth = 1;
+      for (let i = 0; i < 3; i++) {
+        const y = (i - 1) * 4;
+        ctx.beginPath(); ctx.moveTo(-e.radius, y); ctx.lineTo(-e.radius - 15, y); ctx.stroke();
+      }
+    }
+    if (e.dashState === 'tracking' && e.dashTimer !== undefined && e.dashTimer < 0.3) {
+      ctx.fillStyle = hexToRgba('#ffffff', 0.3 + Math.sin(time * 15) * 0.2);
+      ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.3, 0, Math.PI * 2); ctx.fill();
+    }
     ctx.restore();
   } else if (e.type === 'tank') {
-    // Hexagon - heavy
-    ctx.save(); ctx.rotate(rot * 0.5);
-    drawNeonShape(ctx, 6, e.radius, color);
-    ctx.restore();
-    // Inner hexagon
-    ctx.save(); ctx.rotate(-rot * 0.3);
-    drawNeonShape(ctx, 6, e.radius * 0.5, color, 0.4);
-    ctx.restore();
-  } else if (e.type === 'mothership') {
-    // Large pentagon with inner detail
     ctx.save(); ctx.rotate(rot * 0.3);
-    drawNeonShape(ctx, 5, e.radius, color);
+    drawNeonShape(ctx, 6, e.radius, color);
+    drawNeonShape(ctx, 6, e.radius * 0.65, color, 0.35);
     ctx.restore();
-    ctx.save(); ctx.rotate(-rot * 0.5);
-    drawNeonShape(ctx, 5, e.radius * 0.6, color, 0.4);
+    const turretAngle = time * 1.5;
+    ctx.save(); ctx.rotate(turretAngle);
+    ctx.strokeStyle = hexToRgba(color, 0.8); ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(e.radius * 1.1, 0); ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(e.radius * 1.1, 0, 2.5, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
-    // Core glow
-    const cg = ctx.createRadialGradient(0, 0, 2, 0, 0, e.radius * 0.3);
-    cg.addColorStop(0, hexToRgba(color, 0.6));
-    cg.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = cg;
+    ctx.fillStyle = hexToRgba(color, 0.2);
     ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.3, 0, Math.PI * 2); ctx.fill();
+  } else if (e.type === 'mothership') {
+    ctx.save(); ctx.rotate(rot * 0.3); drawNeonShape(ctx, 5, e.radius, color); ctx.restore();
+    ctx.save(); ctx.rotate(-rot * 0.5); drawNeonShape(ctx, 5, e.radius * 0.6, color, 0.4); ctx.restore();
+    for (let i = 0; i < 5; i++) {
+      const a = (i / 5) * Math.PI * 2 + rot * 0.3;
+      ctx.fillStyle = hexToRgba('#ff0040', 0.3 + Math.sin(time * 3 + i) * 0.2);
+      ctx.beginPath(); ctx.arc(Math.cos(a) * e.radius * 0.8, Math.sin(a) * e.radius * 0.8, 3, 0, Math.PI * 2); ctx.fill();
+    }
+    const cg = ctx.createRadialGradient(0, 0, 2, 0, 0, e.radius * 0.3);
+    cg.addColorStop(0, hexToRgba(color, 0.6)); cg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.3, 0, Math.PI * 2); ctx.fill();
   } else if (e.type === 'vortex') {
-    // Spiral / octagon
-    ctx.save(); ctx.rotate(rot);
-    drawNeonShape(ctx, 8, e.radius, color);
-    ctx.restore();
-    ctx.save(); ctx.rotate(-rot * 1.5);
-    drawNeonShape(ctx, 8, e.radius * 0.55, color, 0.5);
-    ctx.restore();
-    // Spiral lines
-    for (let i = 0; i < 4; i++) {
-      const a = rot * 2 + (i / 4) * Math.PI * 2;
-      ctx.strokeStyle = hexToRgba(color, 0.3);
-      ctx.lineWidth = 1;
+    ctx.save(); ctx.rotate(rot); drawNeonShape(ctx, 8, e.radius, color); ctx.restore();
+    ctx.save(); ctx.rotate(-rot * 1.5); drawNeonShape(ctx, 8, e.radius * 0.55, color, 0.5); ctx.restore();
+    for (let i = 0; i < 6; i++) {
+      const a = rot * 2.5 + (i / 6) * Math.PI * 2;
+      ctx.strokeStyle = hexToRgba(color, 0.25); ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(Math.cos(a) * e.radius * 0.3, Math.sin(a) * e.radius * 0.3);
-      ctx.lineTo(Math.cos(a + 0.5) * e.radius * 0.8, Math.sin(a + 0.5) * e.radius * 0.8);
+      for (let t = 0; t < 1; t += 0.1) {
+        const r = e.radius * 0.2 + t * e.radius * 0.7;
+        const sa = a + t * 1.5;
+        if (t === 0) ctx.moveTo(Math.cos(sa) * r, Math.sin(sa) * r);
+        else ctx.lineTo(Math.cos(sa) * r, Math.sin(sa) * r);
+      }
       ctx.stroke();
     }
+    const pullGrad = ctx.createRadialGradient(0, 0, e.radius, 0, 0, e.radius + 80);
+    pullGrad.addColorStop(0, hexToRgba(color, 0.05 + Math.sin(time * 4) * 0.03));
+    pullGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = pullGrad; ctx.beginPath(); ctx.arc(0, 0, e.radius + 80, 0, Math.PI * 2); ctx.fill();
   } else if (e.type === 'colossus') {
-    // Large diamond with pulsing
     const pulse = 1 + Math.sin(time * 2) * 0.05;
-    ctx.save(); ctx.rotate(rot * 0.2); ctx.scale(pulse, pulse);
-    drawNeonShape(ctx, 4, e.radius, color);
-    ctx.restore();
-    ctx.save(); ctx.rotate(-rot * 0.4);
-    drawNeonShape(ctx, 4, e.radius * 0.5, color, 0.5);
-    ctx.restore();
-    // Pulsing core
+    ctx.save(); ctx.rotate(rot * 0.2); ctx.scale(pulse, pulse); drawNeonShape(ctx, 4, e.radius, color); ctx.restore();
+    ctx.save(); ctx.rotate(-rot * 0.4); drawNeonShape(ctx, 4, e.radius * 0.5, color, 0.5); ctx.restore();
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2 + rot * 0.2;
+      ctx.strokeStyle = hexToRgba(color, 0.3 + Math.sin(time * 3 + i * 0.5) * 0.15);
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(a) * e.radius * 0.9, Math.sin(a) * e.radius * 0.9); ctx.stroke();
+    }
     const cg2 = ctx.createRadialGradient(0, 0, 2, 0, 0, e.radius * 0.4);
     cg2.addColorStop(0, `rgba(0,191,255,${0.5 + Math.sin(time * 3) * 0.2})`);
     cg2.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = cg2;
-    ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = cg2; ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.4, 0, Math.PI * 2); ctx.fill();
   } else {
-    // Fallback circle
     ctx.beginPath(); ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
     ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
   }
 
   ctx.shadowBlur = 0;
-
-  // HP bar for damaged enemies
   if (e.hp < e.maxHp && (e.isBoss || e.maxHp > 20)) {
     const barW = e.radius * 2.4;
     const barH = e.isBoss ? 5 : 3;
     const barY = -e.radius - 10;
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
     ctx.fillRect(-barW / 2 - 1, barY - 1, barW + 2, barH + 2);
-    const hpPct = e.hp / e.maxHp;
     ctx.fillStyle = color;
-    ctx.fillRect(-barW / 2, barY, barW * hpPct, barH);
+    ctx.fillRect(-barW / 2, barY, barW * (e.hp / e.maxHp), barH);
   }
-
   ctx.restore();
 }
 

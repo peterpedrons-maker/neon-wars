@@ -11,6 +11,11 @@ import {
   createEnemy, createParticles, createPowerUp,
   playerAttack, playerSpecial, dist,
 } from './entities';
+import {
+  playShootPhantom, playShootInterceptor, playShootTitan,
+  playExplosion, playCombo, playPowerUp, playSpecial,
+  playHit, playDamage, playGameOver, playWaveComplete, initAudio,
+} from './audio';
 
 const WAVE_SPAWN_INTERVAL = 1.0;
 
@@ -56,13 +61,23 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
     if (p.class === 'titan') {
       titanBlast(state, dt);
     } else {
+      const prevTimer = p.attackTimer;
       playerAttack(p, state.projectiles);
+      if (prevTimer <= 0 && p.attackTimer > 0) {
+        // Shot was fired
+        if (p.class === 'phantom') playShootPhantom();
+        else playShootInterceptor();
+      }
     }
   }
 
   // Special
   if (input.special) {
+    const prevTimer = p.specialTimer;
     playerSpecial(p, state.projectiles, state.enemies);
+    if (prevTimer <= 0 && p.specialTimer > 0) {
+      playSpecial();
+    }
   }
 
   // Spawn wave enemies
@@ -79,6 +94,7 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   const aliveEnemies = state.enemies.filter(e => e.alive).length;
   if (state.waveEnemiesRemaining <= 0 && aliveEnemies === 0) {
     state.screen = 'upgrade';
+    playWaveComplete();
     return;
   }
 
@@ -116,6 +132,7 @@ function titanBlast(state: GameState, _dt: number) {
   const p = state.player;
   if (p.attackTimer > 0) return;
   p.attackTimer = p.attackCooldown;
+  playShootTitan();
 
   for (const e of state.enemies) {
     if (!e.alive) continue;
@@ -165,23 +182,111 @@ function updateEnemies(state: GameState, dt: number) {
     e.flashTimer = Math.max(0, e.flashTimer - dt);
     e.attackTimer = Math.max(0, e.attackTimer - dt);
 
-    // Move toward player
     const dx = p.pos.x - e.pos.x;
     const dy = p.pos.y - e.pos.y;
     const d = Math.hypot(dx, dy);
 
-    if (d > 0) {
-      let moveX = (dx / d) * e.speed * dt;
-      let moveY = (dy / d) * e.speed * dt;
-
-      // Dasher erratic movement
-      if (e.type === 'dasher') {
-        moveX += (Math.random() - 0.5) * 4;
-        moveY += (Math.random() - 0.5) * 4;
+    // --- UNIQUE ENEMY BEHAVIORS ---
+    if (e.type === 'drone') {
+      // Drones: swarm in, orbit at close range
+      if (d > 80) {
+        e.pos.x += (dx / d) * e.speed * dt;
+        e.pos.y += (dy / d) * e.speed * dt;
+      } else {
+        // Orbit the player
+        const orbitAngle = Math.atan2(dy, dx) + Math.PI / 2;
+        e.pos.x += Math.cos(orbitAngle) * e.speed * 0.8 * dt;
+        e.pos.y += Math.sin(orbitAngle) * e.speed * 0.8 * dt;
+        // Slowly close in
+        e.pos.x += (dx / d) * e.speed * 0.15 * dt;
+        e.pos.y += (dy / d) * e.speed * 0.15 * dt;
       }
+    } else if (e.type === 'dasher') {
+      // Dashers: charge in a straight line, pause, charge again
+      if (!e.dashState) e.dashState = 'tracking';
+      if (!e.dashTimer) e.dashTimer = 0;
+      e.dashTimer -= dt;
 
-      e.pos.x += moveX;
-      e.pos.y += moveY;
+      if (e.dashState === 'tracking') {
+        // Slowly track player
+        if (d > 0) {
+          e.pos.x += (dx / d) * e.speed * 0.4 * dt;
+          e.pos.y += (dy / d) * e.speed * 0.4 * dt;
+        }
+        if (e.dashTimer <= 0 && d < 300) {
+          // Lock on and dash!
+          e.dashState = 'dashing';
+          e.dashTimer = 0.4;
+          e.dashAngle = Math.atan2(dy, dx);
+        }
+        if (e.dashTimer <= 0) e.dashTimer = 1.0 + Math.random() * 0.5;
+      } else if (e.dashState === 'dashing') {
+        // Dash at high speed in locked direction
+        const dashSpeed = e.speed * 3.5;
+        e.pos.x += Math.cos(e.dashAngle!) * dashSpeed * dt;
+        e.pos.y += Math.sin(e.dashAngle!) * dashSpeed * dt;
+        // Dash trail particles
+        if (Math.random() < 0.5) {
+          state.particles.push(...createParticles(e.pos, COLORS.dasher, 1, 60, 2));
+        }
+        if (e.dashTimer <= 0) {
+          e.dashState = 'cooldown';
+          e.dashTimer = 0.8;
+        }
+      } else { // cooldown
+        if (e.dashTimer <= 0) {
+          e.dashState = 'tracking';
+          e.dashTimer = 0.5 + Math.random() * 0.5;
+        }
+      }
+    } else if (e.type === 'splitter') {
+      // Splitters: weave side to side while approaching
+      const weave = Math.sin(Date.now() * 0.005 + e.pos.x * 0.1) * 60;
+      if (d > 0) {
+        const perpX = -dy / d;
+        const perpY = dx / d;
+        e.pos.x += ((dx / d) * e.speed + perpX * weave) * dt;
+        e.pos.y += ((dy / d) * e.speed + perpY * weave) * dt;
+      }
+    } else if (e.type === 'tank') {
+      // Tanks: slow advance + shoots at player periodically
+      if (d > 0) {
+        e.pos.x += (dx / d) * e.speed * dt;
+        e.pos.y += (dy / d) * e.speed * dt;
+      }
+      if (!e.shootTimer) e.shootTimer = 2;
+      e.shootTimer -= dt;
+      if (e.shootTimer <= 0 && d < 400) {
+        e.shootTimer = 2.5 + Math.random();
+        // Shoot 3 bullets in a spread
+        const baseAngle = Math.atan2(dy, dx);
+        for (let i = -1; i <= 1; i++) {
+          state.projectiles.push({
+            pos: { x: e.pos.x, y: e.pos.y },
+            vel: { x: Math.cos(baseAngle + i * 0.15) * 200, y: Math.sin(baseAngle + i * 0.15) * 200 },
+            radius: 5, alive: true, damage: e.damage, fromPlayer: false,
+            lifetime: 2, color: COLORS.tank,
+          });
+        }
+      }
+    } else {
+      // Default: move toward player (bosses etc)
+      if (d > 0) {
+        e.pos.x += (dx / d) * e.speed * dt;
+        e.pos.y += (dy / d) * e.speed * dt;
+      }
+    }
+
+    // Vortex boss: pulls player toward it
+    if (e.type === 'vortex' && e.alive) {
+      const pullStr = 40;
+      const pullDx = e.pos.x - p.pos.x;
+      const pullDy = e.pos.y - p.pos.y;
+      const pullD = Math.hypot(pullDx, pullDy);
+      if (pullD < 250 && pullD > 1) {
+        p.pos.x += (pullDx / pullD) * pullStr * dt;
+        p.pos.y += (pullDy / pullD) * pullStr * dt;
+      }
     }
 
     e.pos.x = Math.max(WALL_LEFT + e.radius, Math.min(WALL_RIGHT - e.radius, e.pos.x));
@@ -211,6 +316,7 @@ function bossAttack(state: GameState, boss: Enemy) {
   const angle = Math.atan2(p.pos.y - boss.pos.y, p.pos.x - boss.pos.x);
 
   if (boss.type === 'mothership') {
+    // Spawns mini drones + fires spread
     for (let i = -4; i <= 4; i++) {
       state.projectiles.push({
         pos: { x: boss.pos.x, y: boss.pos.y },
@@ -219,9 +325,19 @@ function bossAttack(state: GameState, boss: Enemy) {
         lifetime: 2, color: COLORS.mothership,
       });
     }
+    // Spawn 2 mini drones
+    for (let i = 0; i < 2; i++) {
+      const drone = createEnemy('drone', Math.max(1, state.wave - 2));
+      drone.pos = { x: boss.pos.x + (Math.random() - 0.5) * 40, y: boss.pos.y + (Math.random() - 0.5) * 40 };
+      drone.hp = Math.floor(drone.hp * 0.5);
+      drone.maxHp = drone.hp;
+      drone.score = 5;
+      state.enemies.push(drone);
+    }
   } else if (boss.type === 'vortex') {
-    for (let i = 0; i < 10; i++) {
-      const a = (Math.PI * 2 / 10) * i;
+    // Spiral pattern
+    for (let i = 0; i < 12; i++) {
+      const a = (Math.PI * 2 / 12) * i + Date.now() * 0.001;
       state.projectiles.push({
         pos: { x: boss.pos.x, y: boss.pos.y },
         vel: { x: Math.cos(a) * 200, y: Math.sin(a) * 200 },
@@ -229,9 +345,12 @@ function bossAttack(state: GameState, boss: Enemy) {
         lifetime: 2.5, color: COLORS.vortex,
       });
     }
+    // Pull particles
+    state.particles.push(...createParticles(boss.pos, COLORS.vortex, 15, 100, 3));
   } else if (boss.type === 'colossus') {
-    for (let i = 0; i < 20; i++) {
-      const a = (Math.PI * 2 / 20) * i;
+    // Shockwave ring + aimed shot
+    for (let i = 0; i < 24; i++) {
+      const a = (Math.PI * 2 / 24) * i;
       state.projectiles.push({
         pos: { x: boss.pos.x, y: boss.pos.y },
         vel: { x: Math.cos(a) * 160, y: Math.sin(a) * 160 },
@@ -239,6 +358,13 @@ function bossAttack(state: GameState, boss: Enemy) {
         lifetime: 1.5, color: COLORS.colossus,
       });
     }
+    // Aimed heavy shot
+    state.projectiles.push({
+      pos: { x: boss.pos.x, y: boss.pos.y },
+      vel: { x: Math.cos(angle) * 350, y: Math.sin(angle) * 350 },
+      radius: 12, alive: true, damage: boss.damage, fromPlayer: false,
+      lifetime: 2, color: '#ffffff',
+    });
     state.shakeTimer = 0.3;
     state.shakeIntensity = 8;
   }
@@ -280,6 +406,7 @@ function updateProjectiles(state: GameState, dt: number) {
 function damageEnemy(state: GameState, e: Enemy, damage: number) {
   e.hp -= damage;
   e.flashTimer = 0.1;
+  playHit();
   // Hit sparks
   state.particles.push(...createParticles(e.pos, COLORS.neonYellow, 6, 120, 2));
   state.particles.push(...createParticles(e.pos, '#ffffff', 2, 80, 1.5));
@@ -288,32 +415,32 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
     e.alive = false;
     
     // Combo system
+    const prevMult = state.comboMultiplier;
     state.combo++;
-    state.comboTimer = 2.0; // 2 second window
+    state.comboTimer = 2.0;
     state.comboMultiplier = Math.min(16, Math.pow(2, Math.floor(state.combo / 3)));
     if (state.combo > state.maxCombo) state.maxCombo = state.combo;
+    if (state.comboMultiplier > prevMult) playCombo(state.comboMultiplier);
     
     // Score with multiplier
     state.score += e.score * state.comboMultiplier;
     state.enemiesKilled++;
 
-    // INTENSE death explosion - many more particles
+    // Explosion sound
+    playExplosion(e.isBoss);
+
+    // INTENSE death explosion
     const color = e.isBoss ? COLORS.neonYellow : getEnemyColor(e.type);
     const intensity = e.isBoss ? 3 : 1;
-    // Primary color burst
     state.particles.push(...createParticles(e.pos, color, (e.isBoss ? 60 : 25) * intensity, 300, e.isBoss ? 6 : 4));
-    // White core flash
     state.particles.push(...createParticles(e.pos, '#ffffff', (e.isBoss ? 25 : 10), 220, 3));
-    // Secondary color ring
     const secColor = e.isBoss ? '#ff1493' : COLORS.neonCyan;
     state.particles.push(...createParticles(e.pos, secColor, (e.isBoss ? 20 : 8), 180, 2.5));
     
-    // Combo bonus particles (more particles at higher combo)
     if (state.comboMultiplier >= 4) {
       state.particles.push(...createParticles(e.pos, '#ffff00', state.comboMultiplier, 250, 3));
     }
     
-    // Screen shake on kills (small), bigger on bosses
     if (e.isBoss) {
       state.shakeTimer = 0.4;
       state.shakeIntensity = 10;
@@ -335,7 +462,7 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
       }
     }
 
-    // Power-up drop (higher chance at higher combo)
+    // Power-up drop
     const dropChance = POWERUP_DROP_CHANCE + (state.comboMultiplier - 1) * 0.02;
     if (Math.random() < dropChance) {
       const pu = createPowerUp(e.pos);
@@ -367,6 +494,7 @@ function damagePlayer(state: GameState, damage: number) {
   state.shakeTimer = 0.15;
   state.shakeIntensity = 5;
   state.particles.push(...createParticles(p.pos, COLORS.health, 6, 120, 2));
+  playDamage();
 
   if (p.hp <= 0) {
     p.hp = 0;
@@ -374,12 +502,14 @@ function damagePlayer(state: GameState, damage: number) {
     state.screen = 'game-over';
     state.particles.push(...createParticles(p.pos, COLORS.neonYellow, 40, 300, 5));
     state.particles.push(...createParticles(p.pos, '#ffffff', 20, 200, 3));
+    playGameOver();
   }
 }
 
 function applyPowerUp(state: GameState, type: string) {
   const p = state.player;
   state.particles.push(...createParticles(p.pos, COLORS.neonYellow, 10, 120, 3));
+  playPowerUp();
 
   switch (type) {
     case 'speed': p.speedBoostTimer = 8; break;
@@ -400,6 +530,7 @@ export function startWave(state: GameState) {
 }
 
 export function createInitialState(player: Player): GameState {
+  initAudio();
   return {
     player,
     enemies: [],
