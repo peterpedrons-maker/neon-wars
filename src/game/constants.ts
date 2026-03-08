@@ -1,11 +1,18 @@
 import { PlayerClass, EnemyType } from './types';
 
-export const ARENA_W = 2400;
-export const ARENA_H = 1800;
+export const ARENA_W = 3200;
+export const ARENA_H = 2400;
+
+// Wall boundaries matching the dungeon image (percentage-based)
+// The image has thick stone walls: ~12% on each side
+export const WALL_LEFT = 384;    // 12% of 3200
+export const WALL_RIGHT = 2816;  // 3200 - 384
+export const WALL_TOP = 288;     // 12% of 2400
+export const WALL_BOTTOM = 2112; // 2400 - 288
 
 // Camera zoom: how many "world pixels" the viewport shows
-export const CAMERA_VIEW_W = 500;
-export const CAMERA_VIEW_H = 380;
+export const CAMERA_VIEW_W = 600;
+export const CAMERA_VIEW_H = 450;
 export const CAMERA_LERP = 0.08;
 
 export const COLORS = {
