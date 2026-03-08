@@ -13,12 +13,6 @@ import {
 
 const WAVE_SPAWN_INTERVAL = 1.2;
 const WALL_THICKNESS = 80;
-import {
-  createEnemy, createParticles, createPowerUp,
-  playerAttack, playerSpecial, dist,
-} from './entities';
-
-const WAVE_SPAWN_INTERVAL = 1.2;
 
 export function updateGame(state: GameState, input: InputState, dt: number): void {
   if (state.screen !== 'playing') return;
