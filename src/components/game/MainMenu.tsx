@@ -50,7 +50,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ onPlay, onLeaderboard, onHowToPlay 
       </div>
 
       {/* Footer */}
-      <div className="mt-16 text-sm text-[#5a3a28]">
+      <div className="mt-16 text-sm text-[#4a3a6e]">
         WASD + Mouse • Touch Friendly
       </div>
     </div>
