@@ -26,6 +26,9 @@ export interface CoopGameSync {
   projectiles: Array<{ x: number; y: number; vx: number; vy: number; fromPlayer: boolean; color: string; alive: boolean }>;
   wave: number;
   score: number;
+  xp: number;
+  level: number;
+  xpToNext: number;
   hostPlayer: CoopPlayerState;
 }
 
