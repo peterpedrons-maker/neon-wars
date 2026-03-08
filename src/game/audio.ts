@@ -326,22 +326,43 @@ export function playDamage() {
 export function playGameOver() {
   try {
     const ctx = getCtx();
-    const notes = [500, 420, 350, 260, 180, 100];
+    const notes = [500, 420, 350, 260, 180, 100, 60];
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const osc2 = ctx.createOscillator();
+      const osc3 = ctx.createOscillator();
       const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
       osc.type = 'sine';
       osc2.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.18);
-      osc2.frequency.setValueAtTime(freq * 0.5, ctx.currentTime + i * 0.18);
-      gain.gain.setValueAtTime(0.08, ctx.currentTime + i * 0.18);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.18 + 0.35);
-      osc.connect(gain).connect(ctx.destination);
-      osc2.connect(gain);
-      osc.start(ctx.currentTime + i * 0.18); osc.stop(ctx.currentTime + i * 0.18 + 0.35);
-      osc2.start(ctx.currentTime + i * 0.18); osc2.stop(ctx.currentTime + i * 0.18 + 0.35);
+      osc3.type = 'sawtooth';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.2);
+      osc2.frequency.setValueAtTime(freq * 0.5, ctx.currentTime + i * 0.2);
+      osc3.frequency.setValueAtTime(freq * 0.25, ctx.currentTime + i * 0.2);
+      osc3.detune.setValueAtTime(50, ctx.currentTime + i * 0.2);
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(2000, ctx.currentTime + i * 0.2);
+      filter.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + i * 0.2 + 0.4);
+      gain.gain.setValueAtTime(0.09, ctx.currentTime + i * 0.2);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.2 + 0.4);
+      osc.connect(filter);
+      osc2.connect(filter);
+      osc3.connect(filter);
+      filter.connect(gain).connect(ctx.destination);
+      osc.start(ctx.currentTime + i * 0.2); osc.stop(ctx.currentTime + i * 0.2 + 0.4);
+      osc2.start(ctx.currentTime + i * 0.2); osc2.stop(ctx.currentTime + i * 0.2 + 0.4);
+      osc3.start(ctx.currentTime + i * 0.2); osc3.stop(ctx.currentTime + i * 0.2 + 0.4);
     });
+    // Final sub rumble
+    const sub = ctx.createOscillator();
+    const sg = ctx.createGain();
+    sub.type = 'sine';
+    sub.frequency.setValueAtTime(40, ctx.currentTime + 1.2);
+    sub.frequency.exponentialRampToValueAtTime(15, ctx.currentTime + 2.0);
+    sg.gain.setValueAtTime(0.12, ctx.currentTime + 1.2);
+    sg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2.0);
+    sub.connect(sg).connect(ctx.destination);
+    sub.start(ctx.currentTime + 1.2); sub.stop(ctx.currentTime + 2.1);
   } catch {}
 }
 
