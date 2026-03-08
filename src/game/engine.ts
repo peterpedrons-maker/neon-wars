@@ -510,13 +510,62 @@ function updateEnemies(state: GameState, dt: number) {
       }
     }
 
-    // Contact damage
+    // Contact damage to local player
     if (dist(e.pos, p.pos) < e.radius + p.radius) {
       if (e.attackTimer <= 0) {
         damagePlayer(state, e.damage);
         e.attackTimer = e.attackCooldown;
       }
     }
+    // Contact damage to peer (host handles peer damage)
+    if (peer && peer.alive && dist(e.pos, peer.pos) < e.radius + 12) {
+      // We can't directly damage peer, but we apply contact via broadcast
+      // For now, enemies take contact damage priority from nearest
+    }
+  }
+}
+
+// Host simulates peer shooting
+function updateCoopPeerShooting(state: GameState, dt: number) {
+  const peer = state.coopPeer;
+  if (!peer || !peer.alive || !peer.shooting) return;
+  
+  peer.attackTimer = Math.max(0, peer.attackTimer - dt);
+  if (peer.attackTimer > 0) return;
+  peer.attackTimer = peer.attackCooldown;
+  
+  const color = peer.shipClass === 'phantom' ? COLORS.phantom
+    : peer.shipClass === 'interceptor' ? COLORS.interceptor
+    : peer.shipClass === 'spectre' ? COLORS.spectre
+    : peer.shipClass === 'valkyrie' ? COLORS.valkyrie
+    : peer.shipClass === 'juggernaut' ? COLORS.juggernaut
+    : COLORS.titan;
+  
+  // Titan/Juggernaut are melee - damage nearby enemies directly
+  if (peer.shipClass === 'titan' || peer.shipClass === 'juggernaut') {
+    for (const e of state.enemies) {
+      if (!e.alive) continue;
+      const d = dist(peer.pos, e.pos);
+      if (d > WARRIOR_ATTACK_RANGE + e.radius) continue;
+      const angleToEnemy = Math.atan2(e.pos.y - peer.pos.y, e.pos.x - peer.pos.x);
+      let angleDiff = Math.abs(angleToEnemy - peer.angle);
+      if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
+      if (angleDiff < 1.0) {
+        damageEnemy(state, e, peer.damage);
+      }
+    }
+    return;
+  }
+  
+  const speedMult = peer.shipClass === 'interceptor' ? 1.3 : peer.shipClass === 'spectre' ? 1.5 : 1;
+  
+  if (peer.shipClass === 'valkyrie') {
+    const vAngles = [-0.08, 0.08];
+    for (const offset of vAngles) {
+      state.projectiles.push(createProjectile(peer.pos, peer.angle + offset, peer.damage, true, color, 1.2));
+    }
+  } else {
+    state.projectiles.push(createProjectile(peer.pos, peer.angle, peer.damage, true, color, speedMult));
   }
 }
 
