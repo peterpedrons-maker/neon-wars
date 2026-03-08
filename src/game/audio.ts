@@ -295,19 +295,31 @@ export function playDamage() {
     const ctx = getCtx();
     const osc = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
+    const osc3 = ctx.createOscillator();
     const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
     osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(350, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.25);
+    osc.frequency.setValueAtTime(400, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(35, ctx.currentTime + 0.3);
     osc2.type = 'square';
-    osc2.frequency.setValueAtTime(200, ctx.currentTime);
-    osc2.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.2);
-    gain.gain.setValueAtTime(0.1, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-    osc.connect(gain).connect(ctx.destination);
-    osc2.connect(gain);
-    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.25);
-    osc2.start(ctx.currentTime); osc2.stop(ctx.currentTime + 0.2);
+    osc2.frequency.setValueAtTime(250, ctx.currentTime);
+    osc2.frequency.exponentialRampToValueAtTime(25, ctx.currentTime + 0.25);
+    osc3.type = 'sawtooth';
+    osc3.frequency.setValueAtTime(180, ctx.currentTime);
+    osc3.frequency.exponentialRampToValueAtTime(20, ctx.currentTime + 0.2);
+    osc3.detune.setValueAtTime(600, ctx.currentTime);
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(2500, ctx.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.25);
+    gain.gain.setValueAtTime(0.11, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    osc.connect(filter);
+    osc2.connect(filter);
+    osc3.connect(filter);
+    filter.connect(gain).connect(ctx.destination);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.3);
+    osc2.start(ctx.currentTime); osc2.stop(ctx.currentTime + 0.25);
+    osc3.start(ctx.currentTime); osc3.stop(ctx.currentTime + 0.2);
   } catch {}
 }
 
