@@ -544,6 +544,7 @@ export function createInitialState(player: Player): GameState {
     projectiles: [],
     particles: [],
     powerUps: [],
+    xpOrbs: [],
     wave: 0,
     score: 0,
     enemiesKilled: 0,
@@ -558,5 +559,12 @@ export function createInitialState(player: Player): GameState {
     comboTimer: 0,
     maxCombo: 0,
     comboMultiplier: 1,
+    xp: 0,
+    level: 1,
+    xpToNext: xpForLevel(1),
+    abilityLevels: {},
+    abilities: createAbilityState(),
+    regenAccumulator: 0,
+    trail: [],
   };
 }
