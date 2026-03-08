@@ -1,62 +1,89 @@
 import { GameState, Player, Enemy, Projectile, Particle, PowerUp } from './types';
-import { COLORS, ARENA_W, ARENA_H, WARRIOR_ATTACK_RANGE } from './constants';
+import { COLORS, ARENA_W, ARENA_H, WARRIOR_ATTACK_RANGE, CAMERA_VIEW_W, CAMERA_VIEW_H, CAMERA_LERP } from './constants';
+
+// Camera state
+let camX = ARENA_W / 2;
+let camY = ARENA_H / 2;
 
 // Cached textures
 let floorPattern: CanvasPattern | null = null;
 let floorPatternCanvas: HTMLCanvasElement | null = null;
-let torchFlicker = 0;
 
 function createFloorPattern(ctx: CanvasRenderingContext2D): CanvasPattern | null {
   if (floorPattern && floorPatternCanvas) return floorPattern;
   const tile = document.createElement('canvas');
-  tile.width = 50;
-  tile.height = 50;
+  tile.width = 64;
+  tile.height = 64;
   const tc = tile.getContext('2d')!;
-  
-  // Stone tile base
-  tc.fillStyle = '#2a1810';
-  tc.fillRect(0, 0, 50, 50);
-  
-  // Stone texture noise
-  for (let i = 0; i < 40; i++) {
-    const x = Math.random() * 50;
-    const y = Math.random() * 50;
-    const s = Math.random() * 3 + 1;
-    const a = Math.random() * 0.08;
-    tc.fillStyle = Math.random() > 0.5 ? `rgba(255,220,180,${a})` : `rgba(0,0,0,${a * 1.5})`;
+
+  // Rich stone tile
+  const bg = tc.createLinearGradient(0, 0, 64, 64);
+  bg.addColorStop(0, '#252040');
+  bg.addColorStop(0.5, '#1e1a2e');
+  bg.addColorStop(1, '#1a1528');
+  tc.fillStyle = bg;
+  tc.fillRect(0, 0, 64, 64);
+
+  // Subtle noise
+  for (let i = 0; i < 60; i++) {
+    const x = Math.random() * 64;
+    const y = Math.random() * 64;
+    const s = Math.random() * 2.5 + 0.5;
+    const bright = Math.random() > 0.5;
+    tc.fillStyle = bright ? `rgba(180,160,255,${Math.random() * 0.06})` : `rgba(0,0,0,${Math.random() * 0.1})`;
     tc.fillRect(x, y, s, s);
   }
-  
+
   // Tile grooves
-  tc.strokeStyle = 'rgba(0,0,0,0.25)';
-  tc.lineWidth = 1.5;
-  tc.strokeRect(1, 1, 48, 48);
-  tc.strokeStyle = 'rgba(255,220,180,0.05)';
-  tc.lineWidth = 0.5;
-  tc.strokeRect(2, 2, 46, 46);
-  
-  // Occasional cracks
-  if (Math.random() > 0.6) {
-    tc.strokeStyle = 'rgba(0,0,0,0.15)';
-    tc.lineWidth = 0.5;
+  tc.strokeStyle = 'rgba(0,0,0,0.35)';
+  tc.lineWidth = 2;
+  tc.strokeRect(1, 1, 62, 62);
+  tc.strokeStyle = 'rgba(150,130,200,0.06)';
+  tc.lineWidth = 1;
+  tc.strokeRect(3, 3, 58, 58);
+
+  // Random cracks
+  if (Math.random() > 0.5) {
+    tc.strokeStyle = 'rgba(0,0,0,0.2)';
+    tc.lineWidth = 0.7;
     tc.beginPath();
-    tc.moveTo(10 + Math.random() * 15, 10 + Math.random() * 10);
-    tc.lineTo(25 + Math.random() * 10, 25 + Math.random() * 10);
-    tc.lineTo(30 + Math.random() * 15, 35 + Math.random() * 10);
+    tc.moveTo(10 + Math.random() * 20, 10 + Math.random() * 10);
+    tc.lineTo(30 + Math.random() * 10, 30 + Math.random() * 10);
     tc.stroke();
   }
-  
+
+  // Random moss
+  if (Math.random() > 0.7) {
+    tc.fillStyle = 'rgba(74,222,128,0.04)';
+    tc.beginPath();
+    tc.arc(20 + Math.random() * 24, 40 + Math.random() * 20, 5 + Math.random() * 5, 0, Math.PI * 2);
+    tc.fill();
+  }
+
   floorPatternCanvas = tile;
   floorPattern = ctx.createPattern(tile, 'repeat');
   return floorPattern;
 }
 
 export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canvasW: number, canvasH: number) {
-  const scale = Math.min(canvasW / ARENA_W, canvasH / ARENA_H);
-  const offsetX = (canvasW - ARENA_W * scale) / 2;
-  const offsetY = (canvasH - ARENA_H * scale) / 2;
   const time = Date.now() * 0.001;
-  torchFlicker = Math.sin(time * 5) * 0.1 + Math.sin(time * 7.3) * 0.05 + Math.sin(time * 13.1) * 0.03;
+
+  // Smooth camera follow player
+  if (state.player.alive) {
+    camX += (state.player.pos.x - camX) * CAMERA_LERP;
+    camY += (state.player.pos.y - camY) * CAMERA_LERP;
+  }
+
+  // Clamp camera to arena bounds
+  const halfViewW = CAMERA_VIEW_W / 2;
+  const halfViewH = CAMERA_VIEW_H / 2;
+  camX = Math.max(halfViewW, Math.min(ARENA_W - halfViewW, camX));
+  camY = Math.max(halfViewH, Math.min(ARENA_H - halfViewH, camY));
+
+  // Scale: fit the camera view into the canvas
+  const scale = Math.min(canvasW / CAMERA_VIEW_W, canvasH / CAMERA_VIEW_H);
+  const viewportW = canvasW / scale;
+  const viewportH = canvasH / scale;
 
   ctx.save();
 
@@ -67,14 +94,15 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
     ctx.translate(sx, sy);
   }
 
-  // Clear with dark vignette bg
-  ctx.fillStyle = '#0a0604';
+  // Clear
+  ctx.fillStyle = '#08061a';
   ctx.fillRect(0, 0, canvasW, canvasH);
 
-  ctx.translate(offsetX, offsetY);
+  // Transform: scale + translate so camera center is at canvas center
   ctx.scale(scale, scale);
+  ctx.translate(viewportW / 2 - camX, viewportH / 2 - camY);
 
-  // Arena floor with stone pattern
+  // Arena floor
   const pattern = createFloorPattern(ctx);
   if (pattern) {
     ctx.fillStyle = pattern;
@@ -83,24 +111,37 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   }
   ctx.fillRect(0, 0, ARENA_W, ARENA_H);
 
-  // Ambient floor glow around player
-  if (state.player.alive) {
-    const classGlow = state.player.class === 'mage' ? 'rgba(155,89,182,0.06)'
-      : state.player.class === 'archer' ? 'rgba(39,174,96,0.06)' : 'rgba(230,126,34,0.06)';
-    const grad = ctx.createRadialGradient(state.player.pos.x, state.player.pos.y, 20, state.player.pos.x, state.player.pos.y, 200);
-    grad.addColorStop(0, classGlow);
-    grad.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, ARENA_W, ARENA_H);
+  // Grid overlay
+  ctx.strokeStyle = COLORS.grid;
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x <= ARENA_W; x += 64) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, ARENA_H); ctx.stroke();
+  }
+  for (let y = 0; y <= ARENA_H; y += 64) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(ARENA_W, y); ctx.stroke();
   }
 
-  // Torch lights at corners
-  drawTorchLight(ctx, 30, 30, time);
-  drawTorchLight(ctx, ARENA_W - 30, 30, time + 1);
-  drawTorchLight(ctx, 30, ARENA_H - 30, time + 2);
-  drawTorchLight(ctx, ARENA_W - 30, ARENA_H - 30, time + 3);
+  // Ambient glow around player
+  if (state.player.alive) {
+    const p = state.player;
+    const gc = p.class === 'mage' ? '168,85,247' : p.class === 'archer' ? '34,211,238' : '249,115,22';
+    const grad = ctx.createRadialGradient(p.pos.x, p.pos.y, 10, p.pos.x, p.pos.y, 180);
+    grad.addColorStop(0, `rgba(${gc},0.15)`);
+    grad.addColorStop(0.5, `rgba(${gc},0.04)`);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(p.pos.x - 200, p.pos.y - 200, 400, 400);
+  }
 
-  // Wall / border
+  // Torches along walls
+  const torchPositions = [
+    [30, 30], [ARENA_W / 3, 20], [ARENA_W * 2 / 3, 20], [ARENA_W - 30, 30],
+    [30, ARENA_H - 30], [ARENA_W / 3, ARENA_H - 20], [ARENA_W * 2 / 3, ARENA_H - 20], [ARENA_W - 30, ARENA_H - 30],
+    [20, ARENA_H / 3], [20, ARENA_H * 2 / 3], [ARENA_W - 20, ARENA_H / 3], [ARENA_W - 20, ARENA_H * 2 / 3],
+  ];
+  torchPositions.forEach(([tx, ty], i) => drawTorchLight(ctx, tx, ty, time + i * 0.7));
+
+  // Stone wall
   drawStoneWall(ctx, time);
 
   // Power-ups
@@ -109,10 +150,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   // Projectiles
   state.projectiles.forEach(p => { if (p.alive) drawProjectile(ctx, p, time); });
 
-  // Enemy shadows
+  // Shadows
   state.enemies.forEach(e => { if (e.alive) drawShadow(ctx, e.pos.x, e.pos.y, e.radius); });
-
-  // Player shadow
   if (state.player.alive) drawShadow(ctx, state.player.pos.x, state.player.pos.y, state.player.radius);
 
   // Enemies
@@ -121,92 +160,127 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   // Player
   if (state.player.alive) drawPlayer(ctx, state.player, time);
 
-  // Particles (on top)
+  // Particles
   state.particles.forEach(p => drawParticle(ctx, p));
 
-  // Vignette overlay
+  // Vignette inside arena
   drawVignette(ctx);
 
+  // Darkness outside arena
+  drawOutsideArena(ctx, camX, camY, viewportW, viewportH);
+
   ctx.restore();
+}
+
+function drawOutsideArena(ctx: CanvasRenderingContext2D, cx: number, cy: number, vw: number, vh: number) {
+  ctx.fillStyle = '#08061a';
+  const left = cx - vw / 2;
+  const top = cy - vh / 2;
+  // Top
+  if (top < 0) ctx.fillRect(left, top, vw, -top);
+  // Bottom
+  const bottom = cy + vh / 2;
+  if (bottom > ARENA_H) ctx.fillRect(left, ARENA_H, vw, bottom - ARENA_H);
+  // Left
+  if (left < 0) ctx.fillRect(left, 0, -left, ARENA_H);
+  // Right
+  const right = cx + vw / 2;
+  if (right > ARENA_W) ctx.fillRect(ARENA_W, 0, right - ARENA_W, ARENA_H);
 }
 
 function drawShadow(ctx: CanvasRenderingContext2D, x: number, y: number, radius: number) {
   ctx.save();
   ctx.beginPath();
-  ctx.ellipse(x, y + radius * 0.6, radius * 0.9, radius * 0.35, 0, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.ellipse(x, y + radius * 0.7, radius * 1.0, radius * 0.35, 0, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
   ctx.fill();
   ctx.restore();
 }
 
 function drawTorchLight(ctx: CanvasRenderingContext2D, x: number, y: number, time: number) {
-  const flicker = 0.85 + Math.sin(time * 6) * 0.08 + Math.sin(time * 9.7) * 0.05;
-  const r = 120 * flicker;
-  const grad = ctx.createRadialGradient(x, y, 5, x, y, r);
-  grad.addColorStop(0, `rgba(255,160,50,${0.15 * flicker})`);
-  grad.addColorStop(0.4, `rgba(255,100,20,${0.06 * flicker})`);
+  const flicker = 0.85 + Math.sin(time * 6) * 0.08 + Math.sin(time * 9.7) * 0.05 + Math.sin(time * 15) * 0.02;
+  const r = 140 * flicker;
+  const grad = ctx.createRadialGradient(x, y, 3, x, y, r);
+  grad.addColorStop(0, `rgba(255,180,60,${0.2 * flicker})`);
+  grad.addColorStop(0.3, `rgba(255,120,30,${0.08 * flicker})`);
   grad.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = grad;
   ctx.fillRect(x - r, y - r, r * 2, r * 2);
 
-  // Torch flame
+  // Flame
   ctx.save();
   ctx.translate(x, y);
-  const fSize = 4 + Math.sin(time * 10) * 1.5;
-  const grad2 = ctx.createRadialGradient(0, -2, 1, 0, -2, fSize);
-  grad2.addColorStop(0, 'rgba(255,230,100,0.9)');
-  grad2.addColorStop(0.5, 'rgba(255,120,20,0.6)');
+  const fSize = 5 + Math.sin(time * 10) * 2;
+  const grad2 = ctx.createRadialGradient(0, -3, 1, 0, -3, fSize);
+  grad2.addColorStop(0, 'rgba(255,240,120,0.95)');
+  grad2.addColorStop(0.4, 'rgba(255,140,30,0.7)');
   grad2.addColorStop(1, 'rgba(255,60,0,0)');
   ctx.fillStyle = grad2;
   ctx.beginPath();
-  ctx.arc(0, -2, fSize, 0, Math.PI * 2);
+  ctx.arc(0, -3, fSize, 0, Math.PI * 2);
   ctx.fill();
+
+  // Torch base
+  ctx.fillStyle = '#5a3a20';
+  ctx.fillRect(-2, 0, 4, 8);
   ctx.restore();
 }
 
 function drawStoneWall(ctx: CanvasRenderingContext2D, time: number) {
-  const wallW = 8;
-  
-  // Outer dark border
-  ctx.strokeStyle = '#1a0e08';
-  ctx.lineWidth = wallW + 4;
-  ctx.strokeRect(-2, -2, ARENA_W + 4, ARENA_H + 4);
+  const wallW = 12;
 
-  // Main wall gradient
-  const wallGrad = ctx.createLinearGradient(0, 0, 0, ARENA_H);
-  wallGrad.addColorStop(0, '#6a4a30');
-  wallGrad.addColorStop(0.5, '#5a3a28');
-  wallGrad.addColorStop(1, '#4a2a18');
+  // Outer dark
+  ctx.strokeStyle = '#0d0820';
+  ctx.lineWidth = wallW + 6;
+  ctx.strokeRect(-3, -3, ARENA_W + 6, ARENA_H + 6);
+
+  // Main wall with gradient
+  const wallGrad = ctx.createLinearGradient(0, 0, ARENA_W, ARENA_H);
+  wallGrad.addColorStop(0, '#5a4a80');
+  wallGrad.addColorStop(0.3, '#4a3a6e');
+  wallGrad.addColorStop(0.7, '#3a2a5e');
+  wallGrad.addColorStop(1, '#5a4a80');
   ctx.strokeStyle = wallGrad;
   ctx.lineWidth = wallW;
   ctx.strokeRect(wallW / 2, wallW / 2, ARENA_W - wallW, ARENA_H - wallW);
 
   // Inner highlight
-  ctx.strokeStyle = 'rgba(160,120,80,0.3)';
+  ctx.strokeStyle = 'rgba(180,160,255,0.15)';
   ctx.lineWidth = 1;
   ctx.strokeRect(wallW + 1, wallW + 1, ARENA_W - wallW * 2 - 2, ARENA_H - wallW * 2 - 2);
 
-  // Stone block marks on wall
-  ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+  // Stone block marks
+  ctx.strokeStyle = 'rgba(0,0,0,0.35)';
   ctx.lineWidth = 1;
-  for (let x = 0; x < ARENA_W; x += 40) {
+  for (let x = 0; x < ARENA_W; x += 48) {
     ctx.beginPath();
     ctx.moveTo(x, 0); ctx.lineTo(x, wallW);
     ctx.moveTo(x, ARENA_H - wallW); ctx.lineTo(x, ARENA_H);
     ctx.stroke();
   }
-  for (let y = 0; y < ARENA_H; y += 40) {
+  for (let y = 0; y < ARENA_H; y += 48) {
     ctx.beginPath();
     ctx.moveTo(0, y); ctx.lineTo(wallW, y);
     ctx.moveTo(ARENA_W - wallW, y); ctx.lineTo(ARENA_W, y);
     ctx.stroke();
   }
+
+  // Decorative runes on wall
+  ctx.fillStyle = 'rgba(168,85,247,0.08)';
+  ctx.font = '10px serif';
+  ctx.textAlign = 'center';
+  const runes = ['⚔', '☆', '◆', '✦', '⬥'];
+  for (let i = 0; i < 16; i++) {
+    const rx = 50 + (i * 100) % ARENA_W;
+    const ry = i < 8 ? 5 : ARENA_H - 5;
+    ctx.fillText(runes[i % runes.length], rx, ry + 4);
+  }
 }
 
 function drawVignette(ctx: CanvasRenderingContext2D) {
-  const grad = ctx.createRadialGradient(ARENA_W / 2, ARENA_H / 2, ARENA_W * 0.25, ARENA_W / 2, ARENA_H / 2, ARENA_W * 0.7);
+  const grad = ctx.createRadialGradient(ARENA_W / 2, ARENA_H / 2, ARENA_W * 0.2, ARENA_W / 2, ARENA_H / 2, ARENA_W * 0.65);
   grad.addColorStop(0, 'rgba(0,0,0,0)');
-  grad.addColorStop(1, 'rgba(0,0,0,0.4)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.35)');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, ARENA_W, ARENA_H);
 }
@@ -215,27 +289,26 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
   ctx.save();
   ctx.translate(p.pos.x, p.pos.y);
 
-  const glowColor = p.class === 'mage' ? COLORS.mageGlow
-    : p.class === 'archer' ? COLORS.archerGlow : COLORS.warriorGlow;
-  const baseColor = p.class === 'mage' ? COLORS.mage
-    : p.class === 'archer' ? COLORS.archer : COLORS.warrior;
+  const glowColor = p.class === 'mage' ? COLORS.mageGlow : p.class === 'archer' ? COLORS.archerGlow : COLORS.warriorGlow;
+  const baseColor = p.class === 'mage' ? COLORS.mage : p.class === 'archer' ? COLORS.archer : COLORS.warrior;
+  const glowRGB = p.class === 'mage' ? '168,85,247' : p.class === 'archer' ? '34,211,238' : '249,115,22';
 
   // Shield effect
   if (p.shieldTimer > 0) {
+    const shieldAlpha = 0.35 + Math.sin(time * 4) * 0.15;
     ctx.beginPath();
-    ctx.arc(0, 0, p.radius + 10, 0, Math.PI * 2);
-    const shieldAlpha = 0.3 + Math.sin(time * 4) * 0.15;
-    const shGrad = ctx.createRadialGradient(0, 0, p.radius, 0, 0, p.radius + 10);
-    shGrad.addColorStop(0, `rgba(52,152,219,${shieldAlpha})`);
-    shGrad.addColorStop(1, `rgba(52,152,219,0)`);
+    ctx.arc(0, 0, p.radius + 12, 0, Math.PI * 2);
+    const shGrad = ctx.createRadialGradient(0, 0, p.radius, 0, 0, p.radius + 12);
+    shGrad.addColorStop(0, `rgba(56,189,248,${shieldAlpha})`);
+    shGrad.addColorStop(1, 'rgba(56,189,248,0)');
     ctx.fillStyle = shGrad;
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(0, 0, p.radius + 9, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(100,200,255,${0.4 + Math.sin(time * 6) * 0.2})`;
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([4, 4]);
-    ctx.lineDashOffset = time * 30;
+    ctx.arc(0, 0, p.radius + 11, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(125,211,252,${0.5 + Math.sin(time * 6) * 0.2})`;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.lineDashOffset = time * 40;
     ctx.stroke();
     ctx.setLineDash([]);
   }
@@ -245,112 +318,161 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
     ctx.globalAlpha = 0.5;
   }
 
-  // Outer glow
+  // Outer glow ring
   ctx.shadowColor = glowColor;
-  ctx.shadowBlur = 20 + Math.sin(time * 3) * 5;
+  ctx.shadowBlur = 25 + Math.sin(time * 3) * 8;
 
-  // Body with gradient
-  const bodyGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, p.radius);
-  bodyGrad.addColorStop(0, lightenColor(baseColor, 40));
-  bodyGrad.addColorStop(0.7, baseColor);
-  bodyGrad.addColorStop(1, darkenColor(baseColor, 30));
+  // Body
+  const bodyGrad = ctx.createRadialGradient(-4, -4, 2, 0, 0, p.radius);
+  bodyGrad.addColorStop(0, lightenColor(baseColor, 60));
+  bodyGrad.addColorStop(0.5, baseColor);
+  bodyGrad.addColorStop(1, darkenColor(baseColor, 40));
   ctx.beginPath();
   ctx.arc(0, 0, p.radius, 0, Math.PI * 2);
   ctx.fillStyle = bodyGrad;
   ctx.fill();
 
-  // Inner ring
+  // Bright inner ring
   ctx.beginPath();
-  ctx.arc(0, 0, p.radius * 0.7, 0, Math.PI * 2);
-  ctx.strokeStyle = `rgba(255,255,255,0.15)`;
-  ctx.lineWidth = 1;
+  ctx.arc(0, 0, p.radius * 0.65, 0, Math.PI * 2);
+  ctx.strokeStyle = `rgba(255,255,255,0.2)`;
+  ctx.lineWidth = 1.5;
   ctx.stroke();
 
-  // Direction indicator (weapon)
+  // Class-specific decoration on body
+  if (p.class === 'mage') {
+    // Arcane runes orbiting
+    for (let i = 0; i < 3; i++) {
+      const a = time * 1.5 + (i / 3) * Math.PI * 2;
+      const ox = Math.cos(a) * (p.radius + 5);
+      const oy = Math.sin(a) * (p.radius + 5);
+      ctx.beginPath();
+      ctx.arc(ox, oy, 2, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(216,180,254,${0.5 + Math.sin(time * 3 + i) * 0.3})`;
+      ctx.fill();
+    }
+  } else if (p.class === 'archer') {
+    // Speed lines when moving
+    if (Math.abs(p.vel?.x || 0) > 0 || Math.abs(p.vel?.y || 0) > 0) {
+      for (let i = 0; i < 2; i++) {
+        const a = p.angle + Math.PI + (i - 0.5) * 0.4;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a) * p.radius, Math.sin(a) * p.radius);
+        ctx.lineTo(Math.cos(a) * (p.radius + 8 + Math.random() * 5), Math.sin(a) * (p.radius + 8));
+        ctx.strokeStyle = `rgba(103,232,249,0.3)`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Weapon
   ctx.save();
   ctx.rotate(p.angle);
+  ctx.shadowBlur = 0;
   if (p.class === 'warrior') {
-    // Sword shape
+    // Big sword
     ctx.beginPath();
-    ctx.moveTo(p.radius * 1.6, 0);
-    ctx.lineTo(p.radius * 0.8, -3);
-    ctx.lineTo(p.radius * 0.6, -5);
-    ctx.lineTo(p.radius * 0.6, 5);
-    ctx.lineTo(p.radius * 0.8, 3);
+    ctx.moveTo(p.radius + 20, 0);
+    ctx.lineTo(p.radius + 5, -4);
+    ctx.lineTo(p.radius - 2, -6);
+    ctx.lineTo(p.radius - 2, 6);
+    ctx.lineTo(p.radius + 5, 4);
     ctx.closePath();
-    ctx.fillStyle = '#c0c0c0';
+    const swordGrad = ctx.createLinearGradient(p.radius - 2, 0, p.radius + 20, 0);
+    swordGrad.addColorStop(0, '#aaa');
+    swordGrad.addColorStop(0.5, '#e0e0e0');
+    swordGrad.addColorStop(1, '#ccc');
+    ctx.fillStyle = swordGrad;
     ctx.fill();
-    ctx.strokeStyle = '#888';
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
     ctx.lineWidth = 0.5;
     ctx.stroke();
     // Guard
-    ctx.fillStyle = '#8B4513';
-    ctx.fillRect(p.radius * 0.5, -6, 4, 12);
+    ctx.fillStyle = '#a0522d';
+    ctx.fillRect(p.radius - 4, -8, 5, 16);
+    // Gem on guard
+    ctx.beginPath();
+    ctx.arc(p.radius - 1.5, 0, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#ef4444';
+    ctx.fill();
   } else if (p.class === 'archer') {
     // Arrow
     ctx.beginPath();
-    ctx.moveTo(p.radius * 1.8, 0);
-    ctx.lineTo(p.radius * 1.4, -2);
-    ctx.lineTo(p.radius * 0.6, 0);
-    ctx.lineTo(p.radius * 1.4, 2);
+    ctx.moveTo(p.radius + 22, 0);
+    ctx.lineTo(p.radius + 16, -2.5);
+    ctx.lineTo(p.radius + 4, 0);
+    ctx.lineTo(p.radius + 16, 2.5);
     ctx.closePath();
-    ctx.fillStyle = '#8B4513';
+    ctx.fillStyle = '#92400e';
     ctx.fill();
-    // Bow arc
+    // Arrow shaft
     ctx.beginPath();
-    ctx.arc(0, 0, p.radius * 1.1, -0.6, 0.6);
-    ctx.strokeStyle = '#8B4513';
-    ctx.lineWidth = 2;
+    ctx.moveTo(p.radius + 4, 0);
+    ctx.lineTo(p.radius - 8, 0);
+    ctx.strokeStyle = '#78350f';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    // Bow
+    ctx.beginPath();
+    ctx.arc(0, 0, p.radius + 4, -0.7, 0.7);
+    ctx.strokeStyle = '#92400e';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    // Bowstring
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(-0.7) * (p.radius + 4), Math.sin(-0.7) * (p.radius + 4));
+    ctx.lineTo(p.radius - 6, 0);
+    ctx.lineTo(Math.cos(0.7) * (p.radius + 4), Math.sin(0.7) * (p.radius + 4));
+    ctx.strokeStyle = 'rgba(200,200,200,0.6)';
+    ctx.lineWidth = 0.8;
     ctx.stroke();
   } else {
-    // Staff orb
-    ctx.beginPath();
-    ctx.arc(p.radius * 1.3, 0, 4, 0, Math.PI * 2);
-    const orbGrad = ctx.createRadialGradient(p.radius * 1.3, 0, 1, p.radius * 1.3, 0, 4);
-    orbGrad.addColorStop(0, '#fff');
-    orbGrad.addColorStop(0.5, glowColor);
-    orbGrad.addColorStop(1, baseColor);
-    ctx.fillStyle = orbGrad;
-    ctx.fill();
     // Staff
     ctx.beginPath();
-    ctx.moveTo(p.radius * 1.1, 0);
-    ctx.lineTo(p.radius * 0.3, 0);
-    ctx.strokeStyle = '#8B4513';
-    ctx.lineWidth = 2;
+    ctx.moveTo(p.radius + 8, 0);
+    ctx.lineTo(p.radius - 12, 0);
+    ctx.strokeStyle = '#78350f';
+    ctx.lineWidth = 3;
     ctx.stroke();
+    // Orb at tip
+    const orbGrad = ctx.createRadialGradient(p.radius + 10, 0, 1, p.radius + 10, 0, 6);
+    orbGrad.addColorStop(0, '#fff');
+    orbGrad.addColorStop(0.3, COLORS.mageGlow);
+    orbGrad.addColorStop(1, COLORS.mage);
+    ctx.beginPath();
+    ctx.arc(p.radius + 10, 0, 6, 0, Math.PI * 2);
+    ctx.fillStyle = orbGrad;
+    ctx.fill();
+    // Orb sparkle
+    ctx.beginPath();
+    ctx.arc(p.radius + 8, -2, 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fill();
   }
   ctx.restore();
 
-  // Warrior melee range indicator
+  // Warrior melee arc
   if (p.class === 'warrior' && p.attackTimer > p.attackCooldown * 0.5) {
-    ctx.beginPath();
-    ctx.arc(0, 0, WARRIOR_ATTACK_RANGE, p.angle - 0.8, p.angle + 0.8);
-    const slashGrad = ctx.createRadialGradient(0, 0, p.radius, 0, 0, WARRIOR_ATTACK_RANGE);
-    slashGrad.addColorStop(0, 'rgba(230,126,34,0.5)');
-    slashGrad.addColorStop(1, 'rgba(230,126,34,0)');
-    ctx.strokeStyle = slashGrad;
-    ctx.lineWidth = 4;
-    ctx.stroke();
-    // Slash arc fill
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.arc(0, 0, WARRIOR_ATTACK_RANGE, p.angle - 0.8, p.angle + 0.8);
     ctx.closePath();
-    ctx.fillStyle = 'rgba(255,160,50,0.12)';
+    const slashGrad = ctx.createRadialGradient(0, 0, p.radius, 0, 0, WARRIOR_ATTACK_RANGE);
+    slashGrad.addColorStop(0, 'rgba(249,115,22,0.5)');
+    slashGrad.addColorStop(1, 'rgba(249,115,22,0)');
+    ctx.fillStyle = slashGrad;
     ctx.fill();
+    // Bright arc edge
+    ctx.beginPath();
+    ctx.arc(0, 0, WARRIOR_ATTACK_RANGE, p.angle - 0.8, p.angle + 0.8);
+    ctx.strokeStyle = 'rgba(253,186,116,0.6)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
   }
 
   ctx.shadowBlur = 0;
   ctx.globalAlpha = 1;
-
-  // Class icon (smaller, subtle)
-  ctx.font = `${p.radius * 0.7}px serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  const icon = p.class === 'mage' ? '🔮' : p.class === 'archer' ? '🏹' : '⚔️';
-  ctx.fillText(icon, 0, 0);
-
   ctx.restore();
 }
 
@@ -371,14 +493,13 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, time: number) {
     lich: COLORS.lich,
     golem: COLORS.golem,
   };
-
   const color = colorMap[e.type] || '#fff';
 
   // Boss aura
   if (e.isBoss) {
-    const auraR = e.radius + 15 + Math.sin(time * 3) * 5;
+    const auraR = e.radius + 20 + Math.sin(time * 3) * 8;
     const aGrad = ctx.createRadialGradient(0, 0, e.radius, 0, 0, auraR);
-    aGrad.addColorStop(0, hexToRgba(color, 0.3));
+    aGrad.addColorStop(0, hexToRgba(color, 0.35));
     aGrad.addColorStop(0.5, hexToRgba(color, 0.1));
     aGrad.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = aGrad;
@@ -388,213 +509,304 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, time: number) {
 
     // Rotating runes
     ctx.save();
-    ctx.rotate(time * 0.5);
-    ctx.strokeStyle = hexToRgba(color, 0.2);
-    ctx.lineWidth = 1;
-    for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2;
-      const rx = Math.cos(a) * (e.radius + 8);
-      const ry = Math.sin(a) * (e.radius + 8);
+    ctx.rotate(time * 0.6);
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      const rx = Math.cos(a) * (e.radius + 12);
+      const ry = Math.sin(a) * (e.radius + 12);
       ctx.beginPath();
-      ctx.arc(rx, ry, 2, 0, Math.PI * 2);
-      ctx.stroke();
+      ctx.arc(rx, ry, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = hexToRgba(color, 0.3 + Math.sin(time * 2 + i) * 0.15);
+      ctx.fill();
     }
     ctx.restore();
   }
 
-  // Entity body with gradient
+  // Enemy body
   ctx.beginPath();
   if (e.type === 'slime') {
-    // Jelly blob
-    const wobble = Math.sin(time * 4) * 2;
-    ctx.ellipse(0, 2 + wobble * 0.3, e.radius + wobble * 0.5, e.radius * 0.75 - wobble * 0.3, 0, 0, Math.PI * 2);
-    const slimeGrad = ctx.createRadialGradient(-3, -2, 2, 0, 0, e.radius);
-    slimeGrad.addColorStop(0, lightenColor(color, 50));
-    slimeGrad.addColorStop(0.5, color);
-    slimeGrad.addColorStop(1, darkenColor(color, 30));
+    const wobble = Math.sin(time * 4) * 3;
+    ctx.ellipse(0, 2 + wobble * 0.3, e.radius + wobble * 0.6, e.radius * 0.75 - wobble * 0.3, 0, 0, Math.PI * 2);
+    const slimeGrad = ctx.createRadialGradient(-4, -3, 2, 0, 0, e.radius);
+    slimeGrad.addColorStop(0, lightenColor(color, 60));
+    slimeGrad.addColorStop(0.4, color);
+    slimeGrad.addColorStop(1, darkenColor(color, 40));
     ctx.fillStyle = slimeGrad;
     ctx.fill();
-    // Shine
+    // Big shine
     ctx.beginPath();
-    ctx.ellipse(-e.radius * 0.3, -e.radius * 0.2, e.radius * 0.25, e.radius * 0.15, -0.3, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.ellipse(-e.radius * 0.3, -e.radius * 0.2, e.radius * 0.3, e.radius * 0.18, -0.3, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fill();
+    // Eyes
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(-4, 0, 2.5, 0, Math.PI * 2);
+    ctx.arc(4, 0, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(-3.5, -0.5, 1, 0, Math.PI * 2);
+    ctx.arc(4.5, -0.5, 1, 0, Math.PI * 2);
     ctx.fill();
   } else if (e.type === 'bat') {
-    // Animated wings
-    const wingFlap = Math.sin(time * 12) * 0.4;
+    const wingFlap = Math.sin(time * 14) * 0.5;
+    // Wings
     ctx.save();
-    // Left wing
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(-e.radius * 1.2, -e.radius * (1 + wingFlap), -e.radius * 1.5, e.radius * 0.2);
-    ctx.quadraticCurveTo(-e.radius * 0.8, e.radius * 0.3, 0, 0);
     ctx.fillStyle = color;
-    ctx.fill();
-    // Right wing
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(e.radius * 1.2, -e.radius * (1 + wingFlap), e.radius * 1.5, e.radius * 0.2);
-    ctx.quadraticCurveTo(e.radius * 0.8, e.radius * 0.3, 0, 0);
+    ctx.quadraticCurveTo(-e.radius * 1.5, -e.radius * (1.2 + wingFlap), -e.radius * 2, e.radius * 0.3);
+    ctx.quadraticCurveTo(-e.radius, e.radius * 0.4, 0, 0);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(e.radius * 1.5, -e.radius * (1.2 + wingFlap), e.radius * 2, e.radius * 0.3);
+    ctx.quadraticCurveTo(e.radius, e.radius * 0.4, 0, 0);
     ctx.fill();
     // Body
+    const batGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, e.radius * 0.6);
+    batGrad.addColorStop(0, lightenColor(color, 30));
+    batGrad.addColorStop(1, darkenColor(color, 30));
     ctx.beginPath();
-    ctx.ellipse(0, 0, e.radius * 0.5, e.radius * 0.7, 0, 0, Math.PI * 2);
-    ctx.fillStyle = darkenColor(color, 20);
+    ctx.ellipse(0, 0, e.radius * 0.6, e.radius * 0.8, 0, 0, Math.PI * 2);
+    ctx.fillStyle = batGrad;
     ctx.fill();
     // Eyes
     ctx.fillStyle = '#ff4444';
+    ctx.shadowColor = '#ff4444';
+    ctx.shadowBlur = 6;
     ctx.beginPath();
-    ctx.arc(-3, -2, 1.5, 0, Math.PI * 2);
-    ctx.arc(3, -2, 1.5, 0, Math.PI * 2);
+    ctx.arc(-3, -2, 2, 0, Math.PI * 2);
+    ctx.arc(3, -2, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    // Fangs
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.moveTo(-2, 2); ctx.lineTo(-1, 5); ctx.lineTo(0, 2);
+    ctx.moveTo(0, 2); ctx.lineTo(1, 5); ctx.lineTo(2, 2);
     ctx.fill();
     ctx.restore();
   } else if (e.type === 'skeleton') {
-    // Skeleton with bones look
     ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
     const skelGrad = ctx.createRadialGradient(-2, -2, 1, 0, 0, e.radius);
-    skelGrad.addColorStop(0, '#f0ede8');
-    skelGrad.addColorStop(0.6, color);
-    skelGrad.addColorStop(1, '#8a8578');
+    skelGrad.addColorStop(0, '#f8fafc');
+    skelGrad.addColorStop(0.5, color);
+    skelGrad.addColorStop(1, '#94a3b8');
     ctx.fillStyle = skelGrad;
     ctx.fill();
+    // Skull cracks
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(-2, -e.radius * 0.5);
+    ctx.lineTo(0, -2);
+    ctx.lineTo(3, -e.radius * 0.3);
+    ctx.stroke();
     // Eye sockets
-    ctx.fillStyle = '#2a1810';
+    ctx.fillStyle = '#1e1b4b';
     ctx.beginPath();
-    ctx.ellipse(-3, -2, 2, 2.5, 0, 0, Math.PI * 2);
-    ctx.ellipse(3, -2, 2, 2.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(-4, -2, 3, 3.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(4, -2, 3, 3.5, 0, 0, Math.PI * 2);
     ctx.fill();
-    // Red eye glow
-    ctx.fillStyle = 'rgba(255,50,50,0.6)';
+    // Red glow eyes
+    ctx.fillStyle = '#ef4444';
+    ctx.shadowColor = '#ef4444';
+    ctx.shadowBlur = 5;
     ctx.beginPath();
-    ctx.arc(-3, -2, 1, 0, Math.PI * 2);
-    ctx.arc(3, -2, 1, 0, Math.PI * 2);
+    ctx.arc(-4, -2, 1.5, 0, Math.PI * 2);
+    ctx.arc(4, -2, 1.5, 0, Math.PI * 2);
     ctx.fill();
+    ctx.shadowBlur = 0;
+    // Jaw
+    ctx.strokeStyle = '#64748b';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(0, 4, 5, 0, Math.PI);
+    ctx.stroke();
   } else if (e.type === 'dark-knight') {
     ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
-    const dkGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, e.radius);
-    dkGrad.addColorStop(0, '#4a5568');
+    const dkGrad = ctx.createRadialGradient(-4, -4, 2, 0, 0, e.radius);
+    dkGrad.addColorStop(0, '#64748b');
     dkGrad.addColorStop(0.5, color);
-    dkGrad.addColorStop(1, '#1a202c');
+    dkGrad.addColorStop(1, '#1e293b');
     ctx.fillStyle = dkGrad;
     ctx.fill();
-    // Armor highlight
+    // Armor lines
+    ctx.strokeStyle = 'rgba(200,200,220,0.15)';
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.arc(0, 0, e.radius * 0.8, -Math.PI * 0.3, Math.PI * 0.3);
-    ctx.strokeStyle = 'rgba(200,200,220,0.2)';
-    ctx.lineWidth = 2;
+    ctx.arc(0, 0, e.radius * 0.75, -Math.PI * 0.4, Math.PI * 0.4);
     ctx.stroke();
-    // Visor slit
-    ctx.fillStyle = '#e74c3c';
-    ctx.fillRect(-5, -2, 10, 2);
+    ctx.beginPath();
+    ctx.arc(0, 0, e.radius * 0.5, -Math.PI * 0.3, Math.PI * 0.3);
+    ctx.stroke();
+    // Visor with glow
+    ctx.fillStyle = '#ef4444';
+    ctx.shadowColor = '#ef4444';
+    ctx.shadowBlur = 8;
+    ctx.fillRect(-6, -3, 12, 3);
+    ctx.shadowBlur = 0;
+    // Horns
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-e.radius * 0.5, -e.radius * 0.5);
+    ctx.lineTo(-e.radius * 0.7, -e.radius * 0.9);
+    ctx.moveTo(e.radius * 0.5, -e.radius * 0.5);
+    ctx.lineTo(e.radius * 0.7, -e.radius * 0.9);
+    ctx.stroke();
   } else if (e.type === 'dragon') {
     ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
-    const drGrad = ctx.createRadialGradient(-5, -5, 3, 0, 0, e.radius);
-    drGrad.addColorStop(0, '#ff6b6b');
-    drGrad.addColorStop(0.5, color);
-    drGrad.addColorStop(1, '#8b0000');
+    const drGrad = ctx.createRadialGradient(-8, -8, 4, 0, 0, e.radius);
+    drGrad.addColorStop(0, '#fca5a5');
+    drGrad.addColorStop(0.4, color);
+    drGrad.addColorStop(1, '#7f1d1d');
     ctx.fillStyle = drGrad;
     ctx.fill();
     // Scale pattern
-    ctx.strokeStyle = 'rgba(255,200,100,0.15)';
-    ctx.lineWidth = 0.5;
-    for (let i = 0; i < 5; i++) {
+    ctx.strokeStyle = 'rgba(255,200,100,0.2)';
+    ctx.lineWidth = 0.7;
+    for (let i = 0; i < 6; i++) {
       ctx.beginPath();
-      ctx.arc(0, 0, e.radius * (0.3 + i * 0.15), 0, Math.PI * 2);
+      ctx.arc(0, 0, e.radius * (0.25 + i * 0.13), 0, Math.PI * 2);
       ctx.stroke();
     }
     // Fire breath glow
-    const fbGrad = ctx.createRadialGradient(e.radius * 0.5, 0, 2, e.radius * 0.5, 0, 15);
-    fbGrad.addColorStop(0, 'rgba(255,200,50,0.4)');
+    const ang = Math.atan2(camY - e.pos.y, camX - e.pos.x);
+    ctx.save();
+    ctx.rotate(ang);
+    const fbGrad = ctx.createRadialGradient(e.radius * 0.5, 0, 2, e.radius * 0.5, 0, 20);
+    fbGrad.addColorStop(0, `rgba(255,200,50,${0.3 + Math.sin(time * 6) * 0.15})`);
     fbGrad.addColorStop(1, 'rgba(255,100,0,0)');
     ctx.fillStyle = fbGrad;
     ctx.beginPath();
-    ctx.arc(e.radius * 0.5, 0, 15, 0, Math.PI * 2);
+    ctx.arc(e.radius * 0.5, 0, 20, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    // Eyes
+    ctx.fillStyle = '#fbbf24';
+    ctx.shadowColor = '#fbbf24';
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.ellipse(-10, -8, 4, 3, 0, 0, Math.PI * 2);
+    ctx.ellipse(10, -8, 4, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.ellipse(-10, -8, 1.5, 3, 0, 0, Math.PI * 2);
+    ctx.ellipse(10, -8, 1.5, 3, 0, 0, Math.PI * 2);
     ctx.fill();
   } else if (e.type === 'lich') {
     ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
-    const lGrad = ctx.createRadialGradient(-3, -5, 2, 0, 0, e.radius);
-    lGrad.addColorStop(0, '#a855f7');
+    const lGrad = ctx.createRadialGradient(-5, -5, 2, 0, 0, e.radius);
+    lGrad.addColorStop(0, '#c084fc');
     lGrad.addColorStop(0.5, color);
-    lGrad.addColorStop(1, '#2d1a4e');
+    lGrad.addColorStop(1, '#3b0764');
     ctx.fillStyle = lGrad;
     ctx.fill();
-    // Soul particles orbiting
-    for (let i = 0; i < 4; i++) {
-      const ang = time * 2 + (i / 4) * Math.PI * 2;
-      const ox = Math.cos(ang) * (e.radius + 5);
-      const oy = Math.sin(ang) * (e.radius + 5);
+    // Soul wisps orbiting
+    for (let i = 0; i < 5; i++) {
+      const ang = time * 2 + (i / 5) * Math.PI * 2;
+      const dist = e.radius + 8 + Math.sin(time * 3 + i) * 3;
+      const ox = Math.cos(ang) * dist;
+      const oy = Math.sin(ang) * dist;
       ctx.beginPath();
-      ctx.arc(ox, oy, 2, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(168,85,247,${0.4 + Math.sin(time * 4 + i) * 0.2})`;
+      ctx.arc(ox, oy, 3, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(196,132,252,${0.4 + Math.sin(time * 4 + i) * 0.25})`;
       ctx.fill();
     }
+    // Skull face
+    ctx.fillStyle = '#e9d5ff';
+    ctx.beginPath();
+    ctx.arc(0, -2, e.radius * 0.45, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#3b0764';
+    ctx.beginPath();
+    ctx.ellipse(-5, -4, 3, 4, 0, 0, Math.PI * 2);
+    ctx.ellipse(5, -4, 3, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#a855f7';
+    ctx.shadowColor = '#a855f7';
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.arc(-5, -4, 1.5, 0, Math.PI * 2);
+    ctx.arc(5, -4, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
   } else if (e.type === 'golem') {
-    // Rocky body
     ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
-    const gGrad = ctx.createRadialGradient(-5, -5, 3, 0, 0, e.radius);
-    gGrad.addColorStop(0, '#a0a0a0');
+    const gGrad = ctx.createRadialGradient(-6, -6, 3, 0, 0, e.radius);
+    gGrad.addColorStop(0, '#cbd5e1');
     gGrad.addColorStop(0.5, color);
-    gGrad.addColorStop(1, '#4a4a4a');
+    gGrad.addColorStop(1, '#334155');
     ctx.fillStyle = gGrad;
     ctx.fill();
-    // Crack lines
-    ctx.strokeStyle = 'rgba(255,150,50,0.3)';
-    ctx.lineWidth = 1.5;
+    // Rocky texture
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 5; i++) {
+      const ang = (i / 5) * Math.PI * 2 + 0.3;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(ang) * e.radius * 0.3, Math.sin(ang) * e.radius * 0.3);
+      ctx.lineTo(Math.cos(ang + 0.4) * e.radius * 0.7, Math.sin(ang + 0.4) * e.radius * 0.7);
+      ctx.stroke();
+    }
+    // Lava cracks
+    ctx.strokeStyle = 'rgba(255,150,50,0.4)';
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(-5, -e.radius * 0.5);
+    ctx.moveTo(-8, -e.radius * 0.5);
     ctx.lineTo(0, 0);
-    ctx.lineTo(5, e.radius * 0.5);
+    ctx.lineTo(8, e.radius * 0.5);
     ctx.stroke();
     ctx.beginPath();
     ctx.moveTo(e.radius * 0.3, -e.radius * 0.4);
-    ctx.lineTo(0, 3);
+    ctx.lineTo(0, 5);
     ctx.lineTo(-e.radius * 0.3, e.radius * 0.3);
     ctx.stroke();
     // Glowing core
-    const cGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, e.radius * 0.4);
-    cGrad.addColorStop(0, 'rgba(255,150,50,0.4)');
+    const cGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, e.radius * 0.35);
+    cGrad.addColorStop(0, 'rgba(255,150,50,0.5)');
     cGrad.addColorStop(1, 'rgba(255,100,0,0)');
     ctx.fillStyle = cGrad;
     ctx.beginPath();
-    ctx.arc(0, 0, e.radius * 0.4, 0, Math.PI * 2);
+    ctx.arc(0, 0, e.radius * 0.35, 0, Math.PI * 2);
     ctx.fill();
+    // Eyes
+    ctx.fillStyle = '#fbbf24';
+    ctx.shadowColor = '#fbbf24';
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.arc(-10, -10, 4, 0, Math.PI * 2);
+    ctx.arc(10, -10, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
   } else {
     ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
     ctx.fillStyle = color;
     ctx.fill();
   }
 
-  // Enemy icon (only for simpler enemies without detailed art)
   ctx.shadowBlur = 0;
-  if (e.isBoss) {
-    const iconMap: Record<string, string> = {
-      dragon: '🐉',
-      lich: '👻',
-      golem: '🪨',
-    };
-    ctx.font = `${Math.min(e.radius * 0.6, 20)}px serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(iconMap[e.type] || '👹', 0, 0);
-  }
 
   // HP bar for tough enemies
   if (e.hp < e.maxHp && (e.isBoss || e.maxHp > 30)) {
-    const barW = e.radius * 2.2;
-    const barH = e.isBoss ? 6 : 4;
-    const barY = -e.radius - 10;
-    // Background
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    roundRect(ctx, -barW / 2 - 1, barY - 1, barW + 2, barH + 2, 2);
+    const barW = e.radius * 2.4;
+    const barH = e.isBoss ? 7 : 5;
+    const barY = -e.radius - 14;
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    roundRect(ctx, -barW / 2 - 1, barY - 1, barW + 2, barH + 2, 3);
     ctx.fill();
-    // Health
     const hpPct = e.hp / e.maxHp;
-    const hpColor = hpPct > 0.5 ? '#e74c3c' : hpPct > 0.25 ? '#e67e22' : '#c0392b';
+    const hpColor = hpPct > 0.5 ? '#ef4444' : hpPct > 0.25 ? '#f97316' : '#dc2626';
     const hpGrad = ctx.createLinearGradient(-barW / 2, 0, barW / 2, 0);
     hpGrad.addColorStop(0, lightenColor(hpColor, 20));
     hpGrad.addColorStop(1, hpColor);
     ctx.fillStyle = hpGrad;
-    roundRect(ctx, -barW / 2, barY, barW * hpPct, barH, 2);
+    roundRect(ctx, -barW / 2, barY, barW * hpPct, barH, 3);
     ctx.fill();
   }
 
@@ -604,22 +816,22 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, time: number) {
 function drawProjectile(ctx: CanvasRenderingContext2D, p: Projectile, time: number) {
   ctx.save();
   ctx.translate(p.pos.x, p.pos.y);
-  
+
   // Trail glow
-  const trailGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, p.radius * 3);
-  trailGrad.addColorStop(0, hexToRgba(p.color, 0.4));
+  const trailGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, p.radius * 4);
+  trailGrad.addColorStop(0, hexToRgba(p.color, 0.45));
   trailGrad.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = trailGrad;
   ctx.beginPath();
-  ctx.arc(0, 0, p.radius * 3, 0, Math.PI * 2);
+  ctx.arc(0, 0, p.radius * 4, 0, Math.PI * 2);
   ctx.fill();
 
   // Core
   ctx.shadowColor = p.color;
-  ctx.shadowBlur = 12;
+  ctx.shadowBlur = 15;
   const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, p.radius);
   coreGrad.addColorStop(0, '#fff');
-  coreGrad.addColorStop(0.4, lightenColor(p.color, 30));
+  coreGrad.addColorStop(0.3, lightenColor(p.color, 40));
   coreGrad.addColorStop(1, p.color);
   ctx.beginPath();
   ctx.arc(0, 0, p.radius, 0, Math.PI * 2);
@@ -632,22 +844,20 @@ function drawParticle(ctx: CanvasRenderingContext2D, p: Particle) {
   const alpha = p.lifetime / p.maxLifetime;
   ctx.save();
   ctx.globalAlpha = alpha;
-  
-  // Glow
-  const glowR = p.size * alpha * 2;
+
+  const glowR = p.size * alpha * 2.5;
   const pGrad = ctx.createRadialGradient(p.pos.x, p.pos.y, 0, p.pos.x, p.pos.y, glowR);
   pGrad.addColorStop(0, p.color);
-  pGrad.addColorStop(0.5, hexToRgba(p.color, 0.3 * alpha));
+  pGrad.addColorStop(0.4, hexToRgba(p.color, 0.35 * alpha));
   pGrad.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = pGrad;
   ctx.beginPath();
   ctx.arc(p.pos.x, p.pos.y, glowR, 0, Math.PI * 2);
   ctx.fill();
 
-  // Core
   ctx.fillStyle = '#fff';
   ctx.beginPath();
-  ctx.arc(p.pos.x, p.pos.y, p.size * alpha * 0.4, 0, Math.PI * 2);
+  ctx.arc(p.pos.x, p.pos.y, p.size * alpha * 0.5, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -656,8 +866,8 @@ function drawPowerUp(ctx: CanvasRenderingContext2D, pu: PowerUp, time: number) {
   ctx.save();
   ctx.translate(pu.pos.x, pu.pos.y);
 
-  const pulse = 1 + Math.sin(time * 4) * 0.12;
-  const bob = Math.sin(time * 3) * 3;
+  const pulse = 1 + Math.sin(time * 4) * 0.15;
+  const bob = Math.sin(time * 3) * 4;
   ctx.translate(0, bob);
 
   const colorMap: Record<string, string> = {
@@ -670,46 +880,45 @@ function drawPowerUp(ctx: CanvasRenderingContext2D, pu: PowerUp, time: number) {
 
   // Ground glow
   ctx.save();
-  ctx.translate(0, pu.radius + 5 - bob);
+  ctx.translate(0, pu.radius + 6 - bob);
   ctx.beginPath();
-  ctx.ellipse(0, 0, pu.radius * 1.2, 4, 0, 0, Math.PI * 2);
-  ctx.fillStyle = hexToRgba(color, 0.15);
+  ctx.ellipse(0, 0, pu.radius * 1.5, 5, 0, 0, Math.PI * 2);
+  ctx.fillStyle = hexToRgba(color, 0.2);
   ctx.fill();
   ctx.restore();
 
   // Outer glow
-  const outerGrad = ctx.createRadialGradient(0, 0, pu.radius * 0.5, 0, 0, pu.radius * 2);
-  outerGrad.addColorStop(0, hexToRgba(color, 0.2));
+  const outerGrad = ctx.createRadialGradient(0, 0, pu.radius * 0.3, 0, 0, pu.radius * 2.5);
+  outerGrad.addColorStop(0, hexToRgba(color, 0.25));
   outerGrad.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = outerGrad;
   ctx.beginPath();
-  ctx.arc(0, 0, pu.radius * 2, 0, Math.PI * 2);
+  ctx.arc(0, 0, pu.radius * 2.5, 0, Math.PI * 2);
   ctx.fill();
 
   // Rotating sparkles
-  for (let i = 0; i < 4; i++) {
-    const a = time * 2 + (i / 4) * Math.PI * 2;
-    const sr = pu.radius * 1.3 * pulse;
+  for (let i = 0; i < 5; i++) {
+    const a = time * 2.5 + (i / 5) * Math.PI * 2;
+    const sr = pu.radius * 1.5 * pulse;
     const sx = Math.cos(a) * sr;
     const sy = Math.sin(a) * sr;
-    ctx.fillStyle = `rgba(255,255,255,${0.3 + Math.sin(time * 5 + i) * 0.15})`;
+    ctx.fillStyle = `rgba(255,255,255,${0.35 + Math.sin(time * 5 + i) * 0.2})`;
     ctx.beginPath();
-    ctx.arc(sx, sy, 1.5, 0, Math.PI * 2);
+    ctx.arc(sx, sy, 2, 0, Math.PI * 2);
     ctx.fill();
   }
 
   // Main orb
   ctx.shadowColor = color;
-  ctx.shadowBlur = 15;
+  ctx.shadowBlur = 18;
   const orbGrad = ctx.createRadialGradient(-2, -2, 1, 0, 0, pu.radius * pulse);
   orbGrad.addColorStop(0, '#fff');
-  orbGrad.addColorStop(0.3, lightenColor(color, 30));
+  orbGrad.addColorStop(0.25, lightenColor(color, 40));
   orbGrad.addColorStop(1, color);
   ctx.beginPath();
   ctx.arc(0, 0, pu.radius * pulse, 0, Math.PI * 2);
   ctx.fillStyle = orbGrad;
   ctx.fill();
-
   ctx.shadowBlur = 0;
 
   const iconMap: Record<string, string> = {
@@ -718,11 +927,10 @@ function drawPowerUp(ctx: CanvasRenderingContext2D, pu: PowerUp, time: number) {
     shield: '🛡️',
     heal: '💚',
   };
-  ctx.font = '12px serif';
+  ctx.font = '14px serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(iconMap[pu.type] || '?', 0, 0);
-
   ctx.restore();
 }
 
@@ -764,13 +972,24 @@ function darkenColor(hex: string, amount: number): string {
 }
 
 export function getScale(canvasW: number, canvasH: number) {
-  return Math.min(canvasW / ARENA_W, canvasH / ARENA_H);
+  return Math.min(canvasW / CAMERA_VIEW_W, canvasH / CAMERA_VIEW_H);
 }
 
 export function getOffset(canvasW: number, canvasH: number) {
   const scale = getScale(canvasW, canvasH);
+  const viewportW = canvasW / scale;
+  const viewportH = canvasH / scale;
   return {
-    x: (canvasW - ARENA_W * scale) / 2,
-    y: (canvasH - ARENA_H * scale) / 2,
+    x: (viewportW / 2 - camX) * scale,
+    y: (viewportH / 2 - camY) * scale,
   };
+}
+
+export function getCameraPos() {
+  return { x: camX, y: camY };
+}
+
+export function resetCamera() {
+  camX = ARENA_W / 2;
+  camY = ARENA_H / 2;
 }
