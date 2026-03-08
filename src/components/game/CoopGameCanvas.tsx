@@ -43,7 +43,8 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
   const upgradeResumeRef = useRef(false);
 
   // Peer state
-  const peerStateRef = useRef<CoopPlayerState>({ x: 0, y: 0, angle: 0, hp: 3, maxHp: 3, alive: true, shipClass: peerClass, shieldTimer: 0, invincibleTimer: 0, shooting: false });
+  const peerStateRef = useRef<Record<string, CoopPlayerState>>({});
+  const peerStatesRef = useRef<CoopPlayerState[]>([]);
   const syncTimerRef = useRef(0);
 
   // Init game state
