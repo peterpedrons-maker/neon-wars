@@ -66,23 +66,29 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
       onPeerJoin: () => {},
       onPeerLeave: () => {},
       onPeerState: (ps) => {
-        peerStateRef.current = ps;
         if (stateRef.current) {
           const peerStats = CLASS_STATS[ps.shipClass as ShipType] || CLASS_STATS.phantom;
-          stateRef.current.coopPeer = {
+          // Update or add peer in coopPeers array
+          const peers = stateRef.current.coopPeers;
+          const existing = peers.findIndex(p => p.playerId === (ps as any).playerId);
+          const peerData = {
             pos: { x: ps.x, y: ps.y },
-            angle: ps.angle,
-            alive: ps.alive,
-            shipClass: ps.shipClass,
+            angle: ps.angle, alive: ps.alive, shipClass: ps.shipClass,
             shooting: ps.shooting,
-            attackTimer: stateRef.current.coopPeer?.attackTimer ?? 0,
-            attackCooldown: peerStats.attackCooldown,
-            damage: peerStats.damage,
-            shieldTimer: ps.shieldTimer,
-            invincibleTimer: ps.invincibleTimer,
-            hp: ps.hp,
-            maxHp: ps.maxHp,
+            attackTimer: existing >= 0 ? peers[existing].attackTimer : 0,
+            attackCooldown: peerStats.attackCooldown, damage: peerStats.damage,
+            shieldTimer: ps.shieldTimer, invincibleTimer: ps.invincibleTimer,
+            hp: ps.hp, maxHp: ps.maxHp,
+            playerId: (ps as any).playerId || 'p2',
+            playerLabel: (ps as any).playerLabel || 'P2',
           };
+          if (existing >= 0) {
+            peers[existing] = peerData;
+          } else {
+            peers.push(peerData);
+          }
+          // Keep legacy coopPeer for backward compat
+          stateRef.current.coopPeer = peers[0];
         }
       },
       onGameSync: (sync) => {
