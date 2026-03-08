@@ -459,7 +459,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
 
   if (p.class === 'warrior') {
     // Warrior: big overhead swing arc
-    const swingAngle = atkAnim > 0 ? -Math.PI * 0.8 * atkAnim : weaponArmBase + atkAnim * 0.5;
+    const swingAngle = armAimOffset + (atkAnim > 0 ? -Math.PI * 0.6 * atkAnim : weaponArmBase + atkAnim * 0.3);
     ctx.rotate(swingAngle);
     // Upper arm
     ctx.fillStyle = tunicColor;
