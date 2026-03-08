@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useCallback } from 'react';
 import { GameState, InputState, PlayerClass, Upgrade } from '../../game/types';
 import { createPlayer } from '../../game/entities';
 import { createInitialState, updateGame, startWave } from '../../game/engine';
-import { renderGame, getScale, getOffset } from '../../game/renderer';
+import { renderGame, getScale, getOffset, resetCamera } from '../../game/renderer';
 import { ARENA_W, ARENA_H } from '../../game/constants';
 import { useIsMobile } from '../../hooks/use-mobile';
 import HUD from './HUD';
