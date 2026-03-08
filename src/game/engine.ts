@@ -532,7 +532,7 @@ export function startWave(state: GameState) {
 
 export function createInitialState(player: Player): GameState {
   initAudio();
-  return {
+  startMusic();
     player,
     enemies: [],
     projectiles: [],
