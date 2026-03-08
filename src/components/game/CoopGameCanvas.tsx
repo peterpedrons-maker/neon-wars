@@ -51,11 +51,30 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
     const ch = connectToRoom(room, {
       onPeerJoin: () => {},
       onPeerLeave: () => {},
-      onPeerState: (ps) => { peerStateRef.current = ps; },
+      onPeerState: (ps) => {
+        peerStateRef.current = ps;
+        // Update coopPeer on game state so engine uses it for AI targeting + shooting
+        if (stateRef.current) {
+          const peerStats = CLASS_STATS[ps.shipClass as ShipType] || CLASS_STATS.phantom;
+          stateRef.current.coopPeer = {
+            pos: { x: ps.x, y: ps.y },
+            angle: ps.angle,
+            alive: ps.alive,
+            shipClass: ps.shipClass,
+            shooting: ps.shooting,
+            attackTimer: stateRef.current.coopPeer?.attackTimer ?? 0,
+            attackCooldown: peerStats.attackCooldown,
+            damage: peerStats.damage,
+          };
+        }
+      },
       onGameSync: (sync) => {
         if (!room.isHost && stateRef.current) {
           stateRef.current.wave = sync.wave;
           stateRef.current.score = sync.score;
+          stateRef.current.xp = sync.xp;
+          stateRef.current.level = sync.level;
+          stateRef.current.xpToNext = sync.xpToNext;
           stateRef.current.enemies = sync.enemies.map(e => ({
             pos: { x: e.x, y: e.y },
             vel: { x: 0, y: 0 },
