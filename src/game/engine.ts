@@ -34,6 +34,7 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   p.tripleTimer = Math.max(0, p.tripleTimer - dt);
   p.speedBoostTimer = Math.max(0, p.speedBoostTimer - dt);
   p.invincibleTimer = Math.max(0, p.invincibleTimer - dt);
+  if (p.emote && p.emote.timer > 0) p.emote.timer -= dt;
   state.shakeTimer = Math.max(0, state.shakeTimer - dt);
   
   // Combo timer decay

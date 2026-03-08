@@ -325,6 +325,7 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
           playerId: room.playerId,
           playerLabel: room.isHost ? 'HOST' : `P${2}`,
           reviveProgress: (stateRef.current as any).myReviveProgress || 0,
+          emote: p.emote,
         } as any);
 
         // Host sends game sync

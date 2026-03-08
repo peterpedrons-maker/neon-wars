@@ -431,6 +431,33 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
     ctx.globalAlpha = 0.4;
   }
 
+  // Draw emote if active
+  if (p.emote && p.emote.timer > 0) {
+    ctx.save();
+    ctx.rotate(-p.angle - bankAmount); // Un-rotate to draw text upright
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.strokeStyle = '#0ff';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(-15, -40, 30, 24, 4);
+    ctx.fill();
+    ctx.stroke();
+    // small triangle pointing to player
+    ctx.beginPath();
+    ctx.moveTo(-4, -16);
+    ctx.lineTo(4, -16);
+    ctx.lineTo(0, -10);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.font = '16px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(p.emote.text, 0, -28);
+    ctx.restore();
+  }
+
   // === MULTI-LAYERED ENGINE EXHAUST ===
   const thrustBase = 0.5 + Math.sin(time * 22) * 0.2 + Math.sin(time * 37) * 0.15;
   const thrustLen = 10 + speedRatio * 35 + Math.sin(time * 15) * 3;
