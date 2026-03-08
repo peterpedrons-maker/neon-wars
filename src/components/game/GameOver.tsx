@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { ShipType, LeaderboardEntry } from '../../game/types';
+import { Milestone } from '../../game/meta';
 
 interface GameOverProps {
   score: number;
   wave: number;
   enemiesKilled: number;
   playerClass: ShipType;
+  plasmaEarned: number;
+  newMilestones: Milestone[];
   onRestart: () => void;
   onMenu: () => void;
 }
 
-const GameOver: React.FC<GameOverProps> = ({ score, wave, enemiesKilled, playerClass, onRestart, onMenu }) => {
+const GameOver: React.FC<GameOverProps> = ({ score, wave, enemiesKilled, playerClass, plasmaEarned, newMilestones, onRestart, onMenu }) => {
   const [name, setName] = useState('');
   const [saved, setSaved] = useState(false);
 
@@ -29,13 +32,33 @@ const GameOver: React.FC<GameOverProps> = ({ score, wave, enemiesKilled, playerC
         DESTROYED
       </div>
 
-      <div className="rounded-xl p-6 mb-6 text-center border" style={{ background: 'rgba(0,0,20,0.9)', borderColor: 'rgba(0,255,255,0.2)' }}>
+      <div className="rounded-xl p-6 mb-4 text-center border" style={{ background: 'rgba(0,0,20,0.9)', borderColor: 'rgba(0,255,255,0.2)' }}>
         <div className="text-4xl font-bold font-mono mb-3" style={{ color: '#ffff00', textShadow: '0 0 15px rgba(255,255,0,0.4)' }}>{score.toLocaleString()}</div>
-        <div className="flex gap-6 text-[#6080aa] font-mono">
+        <div className="flex gap-6 text-[#6080aa] font-mono mb-3">
           <div>Wave <span className="text-[#0ff] font-bold">{wave}</span></div>
           <div>Kills <span className="text-[#39ff14] font-bold">{enemiesKilled}</span></div>
         </div>
+        {/* Plasma earned */}
+        <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg" style={{ background: 'rgba(191,90,242,0.15)', border: '1px solid rgba(191,90,242,0.3)' }}>
+          <span className="text-xl">⚡</span>
+          <span className="font-mono font-bold" style={{ color: '#bf5af2' }}>+{plasmaEarned} Plasma</span>
+        </div>
       </div>
+
+      {/* New milestones */}
+      {newMilestones.length > 0 && (
+        <div className="mb-4 flex flex-col gap-2">
+          {newMilestones.map(m => (
+            <div key={m.id} className="flex items-center gap-3 py-2 px-4 rounded-lg animate-pulse" style={{ background: 'rgba(255,255,0,0.1)', border: '1px solid rgba(255,255,0,0.3)' }}>
+              <span className="text-2xl">{m.icon}</span>
+              <div>
+                <div className="font-mono font-bold text-sm" style={{ color: '#ffff00' }}>🏆 {m.name}</div>
+                <div className="font-mono text-xs text-[#6080aa]">Desbloqueado: {m.reward.name}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {!saved ? (
         <div className="flex gap-2 mb-6">
