@@ -15,6 +15,7 @@ import {
   playShootPhantom, playShootInterceptor, playShootTitan,
   playExplosion, playCombo, playPowerUp, playSpecial,
   playHit, playDamage, playGameOver, playWaveComplete, initAudio,
+  startMusic, stopMusic, setMusicIntensity,
 } from './audio';
 
 const WAVE_SPAWN_INTERVAL = 1.0;
