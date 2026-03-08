@@ -107,9 +107,11 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   // Coop: host simulates all peers shooting
   if (state.coopPeers.length > 0) {
     for (const peer of state.coopPeers) {
+      if (peer.emote && peer.emote.timer > 0) peer.emote.timer -= dt;
       updateCoopPeerShootingSingle(state, peer, dt);
     }
   } else if (state.coopPeer) {
+    if (state.coopPeer.emote && state.coopPeer.emote.timer > 0) state.coopPeer.emote.timer -= dt;
     updateCoopPeerShooting(state, dt);
   }
 
