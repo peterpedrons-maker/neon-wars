@@ -170,6 +170,16 @@ export function sendChat(msg: ChatMessage) {
   channel.send({ type: 'broadcast', event: 'chat', payload: msg });
 }
 
+export function sendLevelUp(level: number) {
+  if (!channel) return;
+  channel.send({ type: 'broadcast', event: 'level_up', payload: { level } });
+}
+
+export function sendUpgradeDone() {
+  if (!channel) return;
+  channel.send({ type: 'broadcast', event: 'upgrade_done', payload: {} });
+}
+
 export function leaveRoom() {
   if (channel) {
     channel.send({ type: 'broadcast', event: 'player_leave', payload: { playerId: currentRoom?.playerId } });
