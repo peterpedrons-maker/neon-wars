@@ -170,7 +170,7 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   }
   if (state.trail.length > 40) state.trail.splice(0, state.trail.length - 40);
 
-  // Update XP orbs - attract to both players in coop
+  // Update XP orbs - only host processes collection (guest gets synced values)
   const magnetR = state.abilities.magnetRadius;
   const peer = state.coopPeer;
   state.xpOrbs = state.xpOrbs.filter(orb => {
@@ -200,24 +200,27 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
     orb.pos.y += orb.vel.y * dt;
     orb.vel.x *= 0.95;
     orb.vel.y *= 0.95;
-    // Collect by local player
-    if (dP < p.radius + orb.radius + 5) {
-      addXp(state, orb.value);
-      return false;
-    }
-    // Collect by peer (both get XP)
-    if (peer && peer.alive) {
-      const dPeer = Math.hypot(peer.pos.x - orb.pos.x, peer.pos.y - orb.pos.y);
-      if (dPeer < 12 + orb.radius + 5) {
+    // Only host collects XP (guest receives synced XP via game_sync)
+    if (state.isHost !== false) {
+      // Collect by local player
+      if (dP < p.radius + orb.radius + 5) {
         addXp(state, orb.value);
         return false;
+      }
+      // Collect by peer (host adds XP for both)
+      if (peer && peer.alive) {
+        const dPeer = Math.hypot(peer.pos.x - orb.pos.x, peer.pos.y - orb.pos.y);
+        if (dPeer < 12 + orb.radius + 5) {
+          addXp(state, orb.value);
+          return false;
+        }
       }
     }
     return true;
   });
 
-  // Level up check
-  if (state.xp >= state.xpToNext && state.screen === 'playing') {
+  // Level up check (only host triggers level up; guest receives it via broadcast)
+  if (state.isHost !== false && state.xp >= state.xpToNext && state.screen === 'playing') {
     state.xp -= state.xpToNext;
     state.level++;
     state.xpToNext = xpForLevel(state.level);

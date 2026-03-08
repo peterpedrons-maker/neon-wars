@@ -144,7 +144,12 @@ export interface GameState {
     attackTimer: number;
     attackCooldown: number;
     damage: number;
+    shieldTimer: number;
+    invincibleTimer: number;
+    hp: number;
+    maxHp: number;
   };
+  isHost?: boolean;
 }
 
 export interface LeaderboardEntry {
