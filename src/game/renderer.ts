@@ -970,6 +970,69 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, time: number, state?
     cg2.addColorStop(0.5, hexToRgba(color, 0.3));
     cg2.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = cg2; ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.4, 0, Math.PI * 2); ctx.fill();
+  } else if (e.type === 'fire_elemental') {
+    // Fire elemental: flickering flame shape
+    const flicker = Math.sin(time * 12) * 0.1;
+    ctx.save(); ctx.scale(1 + flicker, 1 - flicker);
+    ctx.beginPath();
+    ctx.moveTo(0, -e.radius * 1.3);
+    ctx.bezierCurveTo(e.radius * 0.8, -e.radius * 0.5, e.radius * 0.6, e.radius * 0.5, 0, e.radius);
+    ctx.bezierCurveTo(-e.radius * 0.6, e.radius * 0.5, -e.radius * 0.8, -e.radius * 0.5, 0, -e.radius * 1.3);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.25); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+    // Inner flame
+    ctx.fillStyle = hexToRgba('#ffff00', 0.3 + Math.sin(time * 8) * 0.15);
+    ctx.beginPath(); ctx.arc(0, -e.radius * 0.2, e.radius * 0.4, 0, Math.PI * 2); ctx.fill();
+    // Core
+    ctx.fillStyle = hexToRgba('#ffffff', 0.5);
+    ctx.beginPath(); ctx.arc(0, -e.radius * 0.2, e.radius * 0.15, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  } else if (e.type === 'void_ghost') {
+    // Void ghost: semi-transparent floating specter
+    const ghostAlpha = 0.4 + Math.sin(time * 4) * 0.2;
+    ctx.globalAlpha = ghostAlpha;
+    ctx.beginPath();
+    ctx.moveTo(0, -e.radius);
+    ctx.quadraticCurveTo(e.radius * 1.2, -e.radius * 0.3, e.radius * 0.8, e.radius * 0.3);
+    ctx.quadraticCurveTo(e.radius * 0.4, e.radius * 0.8, e.radius * 0.2, e.radius);
+    ctx.quadraticCurveTo(0, e.radius * 0.7, -e.radius * 0.2, e.radius);
+    ctx.quadraticCurveTo(-e.radius * 0.4, e.radius * 0.8, -e.radius * 0.8, e.radius * 0.3);
+    ctx.quadraticCurveTo(-e.radius * 1.2, -e.radius * 0.3, 0, -e.radius);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.2); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.stroke();
+    // Eyes
+    ctx.fillStyle = hexToRgba('#ffffff', 0.8);
+    ctx.beginPath(); ctx.arc(-e.radius * 0.25, -e.radius * 0.15, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(e.radius * 0.25, -e.radius * 0.15, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+  } else if (e.type === 'crystal_golem') {
+    // Crystal golem: heavy geometric crystal shape
+    const pulse = 1 + Math.sin(time * 2) * 0.04;
+    ctx.save(); ctx.rotate(rot * 0.15); ctx.scale(pulse, pulse);
+    // Body - large hexagonal crystal
+    drawNeonShape(ctx, 6, e.radius, color);
+    drawNeonShape(ctx, 6, e.radius * 0.5, color, 0.5);
+    // Crystal shards sticking out
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      const sx = Math.cos(a) * e.radius * 0.8;
+      const sy = Math.sin(a) * e.radius * 0.8;
+      ctx.save(); ctx.translate(sx, sy); ctx.rotate(a + time * 0.5);
+      ctx.fillStyle = hexToRgba(color, 0.3);
+      ctx.beginPath();
+      ctx.moveTo(0, -4); ctx.lineTo(3, 4); ctx.lineTo(-3, 4); ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+    // Central glow
+    const cGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, e.radius * 0.4);
+    cGrad.addColorStop(0, hexToRgba('#ffffff', 0.4));
+    cGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = cGrad;
+    ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
   } else {
     ctx.beginPath(); ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
     ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
