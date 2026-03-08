@@ -79,9 +79,9 @@ export const COLORS = {
 export type PlayerClass = ShipType;
 
 export const CLASS_STATS: Record<ShipType, { hp: number; damage: number; speed: number; attackCooldown: number; specialCooldown: number; radius: number }> = {
-  phantom: { hp: 80, damage: 15, speed: 200, attackCooldown: 0.38, specialCooldown: 5, radius: 12 },
-  interceptor: { hp: 65, damage: 10, speed: 260, attackCooldown: 0.2, specialCooldown: 4, radius: 10 },
-  titan: { hp: 130, damage: 28, speed: 155, attackCooldown: 0.6, specialCooldown: 3, radius: 15 },
+  phantom: { hp: 80, damage: 15, speed: 130, attackCooldown: 0.38, specialCooldown: 5, radius: 12 },
+  interceptor: { hp: 65, damage: 10, speed: 160, attackCooldown: 0.2, specialCooldown: 4, radius: 10 },
+  titan: { hp: 130, damage: 28, speed: 95, attackCooldown: 0.6, specialCooldown: 3, radius: 15 },
 };
 
 export const ENEMY_STATS: Record<EnemyType, { hp: number; damage: number; speed: number; score: number; radius: number; attackCooldown: number; isBoss: boolean }> = {
