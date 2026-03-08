@@ -492,8 +492,8 @@ function damagePlayer(state: GameState, damage: number) {
     return;
   }
 
-  p.hp -= damage;
-  p.invincibleTimer = 0.5;
+  p.hp -= 1; // Always lose 1 heart per hit
+  p.invincibleTimer = 1.0;
   state.shakeTimer = 0.15;
   state.shakeIntensity = 5;
   state.particles.push(...createParticles(p.pos, COLORS.health, 6, 120, 2));
