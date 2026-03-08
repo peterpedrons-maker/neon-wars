@@ -94,8 +94,8 @@ export const ENEMY_STATS: Record<EnemyType, { hp: number; damage: number; speed:
   colossus: { hp: 400, damage: 35, speed: 30, score: 500, radius: 35, attackCooldown: 3, isBoss: true },
 };
 
-export const WAVE_BASE_ENEMIES = 12;
-export const WAVE_ENEMY_INCREMENT = 6;
+export const WAVE_BASE_ENEMIES = 20;
+export const WAVE_ENEMY_INCREMENT = 10;
 export const BOSS_WAVE_INTERVAL = 5;
 export const POWERUP_DROP_CHANCE = 0.18;
 export const SPAWN_MARGIN = 90;
