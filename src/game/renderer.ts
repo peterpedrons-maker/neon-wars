@@ -1310,6 +1310,7 @@ function drawHazard(ctx: CanvasRenderingContext2D, h: ActiveHazard, time: number
     ctx.beginPath(); ctx.arc(0, 0, h.radius, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   }
+}
 
 
 export function getScale(canvasW: number, canvasH: number) {
