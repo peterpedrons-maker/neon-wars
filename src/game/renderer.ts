@@ -571,7 +571,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
   } else {
     // Mage: staff thrust + magic burst
     const castThrust = atkAnim > 0 ? atkAnim * 0.4 : 0;
-    ctx.rotate(weaponArmBase - castThrust);
+    ctx.rotate(armAimOffset + weaponArmBase - castThrust);
     ctx.fillStyle = tunicColor;
     roundRect(ctx, -2, 0, 5, 12, 2);
     ctx.fill();
