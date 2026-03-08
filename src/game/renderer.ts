@@ -41,13 +41,13 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   ctx.scale(scale, scale);
   ctx.translate(viewportW / 2 - camX, viewportH / 2 - camY);
 
-  // --- NEON GRID BACKGROUND ---
-  drawNeonGrid(ctx, time);
+  // --- NEON GRID with WARP DISTORTION ---
+  drawNeonGridWarped(ctx, time, state);
   
-  // Arena border - glowing neon rectangle
+  // Arena border
   drawArenaBorder(ctx, time);
 
-  // Grid warp effect near player (subtle)
+  // Player ambient glow
   if (state.player.alive) {
     drawPlayerGlow(ctx, state.player, time);
   }
@@ -66,6 +66,11 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
 
   // Particles
   state.particles.forEach(p => drawParticle(ctx, p));
+
+  // Combo display (in world, above player)
+  if (state.combo > 1 && state.player.alive) {
+    drawComboIndicator(ctx, state, time);
+  }
 
   // Vignette
   drawVignette(ctx, camX, camY, viewportW, viewportH);
