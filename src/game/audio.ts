@@ -293,31 +293,51 @@ export function playWaveComplete() {
   } catch {}
 }
 
-// ===== PROCEDURAL SYNTHWAVE MUSIC ENGINE =====
-// Full synthwave track with proper song structure, fills, transitions, and evolving layers
+// ===== HIGH-ENERGY ARCADE MUSIC ENGINE =====
+// Inspired by Top Gear, Geometry Wars — fast, melodic, pumping
 
-// Chord progressions in semitone intervals from root (minor key)
-// Each progression has 4 chords, each chord is an array of semitone offsets
-const PROGRESSIONS = [
-  // i - VI - III - VII (classic synthwave)
-  [[0, 3, 7, 12], [8, 12, 15, 20], [3, 7, 10, 15], [10, 14, 17, 22]],
-  // i - iv - VI - V (emotional)
-  [[0, 3, 7, 12], [5, 8, 12, 17], [8, 12, 15, 20], [7, 11, 14, 19]],
-  // i - VII - VI - VII (driving)
-  [[0, 3, 7, 12], [10, 14, 17, 22], [8, 12, 15, 20], [10, 14, 17, 22]],
-  // i - III - VII - iv (melancholic)
-  [[0, 3, 7, 12], [3, 7, 10, 15], [10, 14, 17, 22], [5, 8, 12, 17]],
-  // i - v - VI - iv (dark pop)
-  [[0, 3, 7, 12], [7, 10, 14, 19], [8, 12, 15, 20], [5, 8, 12, 17]],
-  // vi - IV - I - V reinterpreted in minor context
-  [[0, 3, 7, 14], [5, 9, 12, 17], [3, 7, 12, 19], [7, 11, 14, 19]],
+const PROGS = [
+  // i-VI-III-VII (classic driving)
+  [[0,3,7],[8,12,15],[3,7,10],[10,14,17]],
+  // i-iv-VII-III (energetic)
+  [[0,3,7],[5,8,12],[10,14,17],[3,7,10]],
+  // i-VII-VI-V (heroic descent)
+  [[0,3,7],[10,14,17],[8,12,15],[7,11,14]],
+  // i-III-iv-VII (epic build)
+  [[0,3,7],[3,7,10],[5,8,12],[10,14,17]],
+  // vi-IV-I-V pop power
+  [[0,3,7],[5,9,12],[7,11,14],[2,5,9]],
+];
+
+// Catchy melody patterns (scale degree indices into minor pentatonic + extras)
+const MELODY_PHRASES = [
+  // Top Gear inspired: fast runs + held notes
+  [[0,2],[2,1],[4,1],[7,2],[5,1],[4,1],[2,2],[0,2],[4,1],[7,1],[9,2],[7,2]],
+  // Geometry Wars: pulsing staccato + sweeps
+  [[7,1],[7,1],[5,1],[4,1],[2,2],[0,1],[2,1],[4,2],[7,1],[9,1],[12,2],[7,2]],
+  // Racing anthem: ascending power
+  [[0,1],[2,1],[4,2],[7,1],[9,1],[12,2],[9,1],[7,1],[4,2],[2,1],[0,1]],
+  // Intense chase
+  [[12,1],[9,1],[7,2],[5,1],[4,1],[2,1],[0,1],[2,2],[4,1],[7,1],[9,2],[12,2]],
+  // Triumphant
+  [[0,3],[4,1],[7,2],[12,2],[9,1],[7,1],[4,2],[0,1],[2,1],[4,1],[7,3]],
+  // Funky groove
+  [[0,1],[0,1],[4,1],[5,1],[7,2],[4,1],[2,1],[0,2],[7,1],[9,1],[7,1],[4,1]],
+];
+
+// Bass rhythms (16th note grid, 1=hit 0=rest)
+const BASS_RHYTHMS = [
+  [1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,0], // syncopated driving
+  [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0], // straight 8ths
+  [1,0,0,1,0,1,0,0,1,0,0,1,0,1,0,0], // funky
+  [1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,0], // galloping
 ];
 
 let musicTimers: number[] = [];
 let currentChordIndex = 0;
 let currentProgIndex = 0;
 let measureCount = 0;
-let currentKey = 33; // A1 MIDI base for deep bass
+let currentKey = 33;
 let sectionCount = 0;
 let compressor: DynamicsCompressorNode | null = null;
 let reverbGain: GainNode | null = null;
@@ -326,14 +346,11 @@ function midiToFreq(midi: number): number {
   return 440 * Math.pow(2, (midi - 69) / 12);
 }
 
-// Simple reverb using feedback delay
 function createReverb(ctx: AudioContext, output: AudioNode): GainNode {
   const wet = ctx.createGain();
-  wet.gain.value = 0.15;
-  
-  const delays = [0.03, 0.07, 0.11, 0.17];
-  const feedbacks = [0.3, 0.25, 0.2, 0.15];
-  
+  wet.gain.value = 0.18;
+  const delays = [0.025, 0.055, 0.09, 0.14, 0.2];
+  const feedbacks = [0.35, 0.3, 0.25, 0.2, 0.15];
   for (let i = 0; i < delays.length; i++) {
     const delay = ctx.createDelay(0.5);
     delay.delayTime.value = delays[i];
@@ -341,12 +358,10 @@ function createReverb(ctx: AudioContext, output: AudioNode): GainNode {
     fb.gain.value = feedbacks[i];
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.value = 2000 - i * 300;
-    
+    filter.frequency.value = 3000 - i * 400;
     wet.connect(delay).connect(filter).connect(fb).connect(delay);
     filter.connect(output);
   }
-  
   return wet;
 }
 
@@ -354,264 +369,222 @@ function scheduleNextMeasure() {
   if (!musicPlaying || !audioCtx) return;
   const ctx = audioCtx;
   const now = ctx.currentTime;
-  const bpm = 128;
+  const bpm = 145; // Fast like Top Gear!
   const beatDur = 60 / bpm;
   const measureDur = beatDur * 4;
   const sixteenth = beatDur / 4;
-  
-  // Song structure: 8-measure sections
+
   const isNewSection = measureCount > 0 && measureCount % 8 === 0;
   if (isNewSection) {
     sectionCount++;
-    currentProgIndex = sectionCount % PROGRESSIONS.length;
-    // Key changes every 32 measures (keeps it fresh but not jarring)
-    if (measureCount % 32 === 0) {
-      const keys = [33, 35, 38, 40, 31, 36, 28]; // A1, B1, D2, E2, G1, C2, E1
-      currentKey = keys[(sectionCount / 4 | 0) % keys.length];
+    currentProgIndex = sectionCount % PROGS.length;
+    if (measureCount % 24 === 0) {
+      const keys = [33, 35, 38, 40, 36, 31, 28, 43];
+      currentKey = keys[(sectionCount / 3 | 0) % keys.length];
     }
   }
-  
-  const prog = PROGRESSIONS[currentProgIndex];
+
+  const prog = PROGS[currentProgIndex];
   const chord = prog[currentChordIndex % prog.length];
-  const nextChord = prog[(currentChordIndex + 1) % prog.length];
-  
-  // Section feel cycles: intro(0) → build(1) → drop(2) → breakdown(3)
-  const sectionFeel = sectionCount % 4;
+  const sectionFeel = sectionCount % 4; // 0=intro, 1=build, 2=drop, 3=breakdown
   const measureInSection = measureCount % 8;
-  const isFillMeasure = measureInSection === 7; // last measure = fill/transition
-  
-  // Setup master chain
+  const isFillMeasure = measureInSection === 7;
+  const intensity = musicIntensity;
+
   if (!musicGain) {
     musicGain = ctx.createGain();
-    musicGain.gain.value = 0.06;
+    musicGain.gain.value = 0.065;
     compressor = ctx.createDynamicsCompressor();
-    compressor.threshold.value = -18;
-    compressor.knee.value = 8;
-    compressor.ratio.value = 4;
-    compressor.attack.value = 0.003;
-    compressor.release.value = 0.15;
+    compressor.threshold.value = -15;
+    compressor.knee.value = 6;
+    compressor.ratio.value = 5;
+    compressor.attack.value = 0.002;
+    compressor.release.value = 0.1;
     musicGain.connect(compressor).connect(ctx.destination);
     reverbGain = createReverb(ctx, musicGain);
   }
-  
-  const masterVol = 0.05 + musicIntensity * 0.008;
+
+  const masterVol = 0.055 + intensity * 0.01;
   musicGain.gain.setValueAtTime(masterVol, now);
 
-  // ============ KICK DRUM ============
-  const kickPattern = sectionFeel === 3 
-    ? (isFillMeasure ? [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5] : [0, 2]) // breakdown: sparse or build fill
-    : [0, 1, 2, 3]; // four-on-the-floor
-    
-  for (const beat of kickPattern) {
+  // ============ KICK ============
+  const kickBeats = sectionFeel === 3
+    ? (isFillMeasure ? [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75] : [0, 2])
+    : [0, 1, 2, 3];
+
+  for (const beat of kickBeats) {
     const t = now + beat * beatDur;
-    // Sub layer
+    // Punchy sub
     const sub = ctx.createOscillator();
     const subG = ctx.createGain();
     sub.type = 'sine';
-    sub.frequency.setValueAtTime(150, t);
-    sub.frequency.exponentialRampToValueAtTime(35, t + 0.15);
-    subG.gain.setValueAtTime(0.18, t);
-    subG.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+    sub.frequency.setValueAtTime(180, t);
+    sub.frequency.exponentialRampToValueAtTime(38, t + 0.12);
+    subG.gain.setValueAtTime(0.22, t);
+    subG.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
     sub.connect(subG).connect(musicGain!);
-    sub.start(t); sub.stop(t + 0.21);
-    
-    // Click transient
+    sub.start(t); sub.stop(t + 0.19);
+
+    // Hard click
     const click = ctx.createOscillator();
     const clickG = ctx.createGain();
-    const clickF = ctx.createBiquadFilter();
     click.type = 'square';
-    click.frequency.setValueAtTime(4000, t);
-    click.frequency.exponentialRampToValueAtTime(200, t + 0.015);
-    clickF.type = 'bandpass';
-    clickF.frequency.value = 3000;
-    clickF.Q.value = 1;
-    clickG.gain.setValueAtTime(0.06, t);
-    clickG.gain.exponentialRampToValueAtTime(0.001, t + 0.02);
-    click.connect(clickF).connect(clickG).connect(musicGain!);
-    click.start(t); click.stop(t + 0.03);
-    
-    // Punch body
+    click.frequency.setValueAtTime(6000, t);
+    click.frequency.exponentialRampToValueAtTime(300, t + 0.01);
+    clickG.gain.setValueAtTime(0.08, t);
+    clickG.gain.exponentialRampToValueAtTime(0.001, t + 0.015);
+    click.connect(clickG).connect(musicGain!);
+    click.start(t); click.stop(t + 0.02);
+
+    // Body punch
     const body = ctx.createOscillator();
     const bodyG = ctx.createGain();
     body.type = 'sine';
-    body.frequency.setValueAtTime(80, t);
-    body.frequency.exponentialRampToValueAtTime(40, t + 0.08);
-    bodyG.gain.setValueAtTime(0.12, t);
-    bodyG.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+    body.frequency.setValueAtTime(100, t);
+    body.frequency.exponentialRampToValueAtTime(42, t + 0.06);
+    bodyG.gain.setValueAtTime(0.15, t);
+    bodyG.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
     body.connect(bodyG).connect(musicGain!);
-    body.start(t); body.stop(t + 0.11);
+    body.start(t); body.stop(t + 0.09);
   }
 
-  // ============ CLAP/SNARE on 2 & 4 ============
-  if (sectionFeel !== 0 || measureInSection >= 4) {
-    const snareBeats = isFillMeasure && sectionFeel === 1 
-      ? [1, 2, 2.5, 3, 3.25, 3.5, 3.75] // build fill
+  // ============ SNARE on 2 & 4 ============
+  if (sectionFeel !== 0 || measureInSection >= 2) {
+    const snareBeats = isFillMeasure && sectionFeel === 1
+      ? [1, 2, 2.5, 3, 3.25, 3.5, 3.75]
+      : isFillMeasure
+      ? [1, 2.5, 3, 3.5, 3.75]
       : [1, 3];
-      
+
     for (const beat of snareBeats) {
       const t = now + beat * beatDur;
-      // Noise burst (multiple detuned oscillators)
-      for (let j = 0; j < 4; j++) {
+      for (let j = 0; j < 5; j++) {
         const n = ctx.createOscillator();
         const ng = ctx.createGain();
         const nf = ctx.createBiquadFilter();
         n.type = 'sawtooth';
-        n.frequency.setValueAtTime(150 + Math.random() * 400, t);
+        n.frequency.setValueAtTime(120 + Math.random() * 500, t);
         n.detune.setValueAtTime(Math.random() * 2400 - 1200, t);
         nf.type = 'bandpass';
-        nf.frequency.value = 3000 + Math.random() * 2000;
-        nf.Q.value = 0.5;
-        ng.gain.setValueAtTime(0.03, t);
-        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.1 + Math.random() * 0.03);
+        nf.frequency.value = 3500 + Math.random() * 2500;
+        nf.Q.value = 0.4;
+        ng.gain.setValueAtTime(0.035, t);
+        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.09 + Math.random() * 0.03);
         n.connect(nf).connect(ng).connect(musicGain!);
         if (reverbGain) ng.connect(reverbGain);
-        n.start(t); n.stop(t + 0.15);
+        n.start(t); n.stop(t + 0.14);
       }
-      // Snare body tone
       const sb = ctx.createOscillator();
       const sbg = ctx.createGain();
       sb.type = 'sine';
-      sb.frequency.setValueAtTime(220, t);
-      sb.frequency.exponentialRampToValueAtTime(120, t + 0.04);
-      sbg.gain.setValueAtTime(0.06, t);
-      sbg.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+      sb.frequency.setValueAtTime(250, t);
+      sb.frequency.exponentialRampToValueAtTime(130, t + 0.03);
+      sbg.gain.setValueAtTime(0.08, t);
+      sbg.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
       sb.connect(sbg).connect(musicGain!);
-      sb.start(t); sb.stop(t + 0.07);
+      sb.start(t); sb.stop(t + 0.06);
     }
   }
 
-  // ============ HI-HATS ============
+  // ============ HI-HATS (fast & energetic) ============
   {
     const hatPatterns: number[][] = [
-      [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],       // straight 8ths
-      [1,0,1,1, 0,1,0,1, 1,0,1,1, 0,1,0,1],       // syncopated
-      [1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1],       // 16ths (intense)
-      [1,0,0,1, 0,0,1,0, 0,1,0,0, 1,0,0,1],       // sparse groove
+      [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+      [1,0,1,1, 0,1,1,0, 1,0,1,1, 0,1,1,0],
+      [1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1], // 16ths!
+      [1,0,0,1, 0,1,0,1, 1,0,0,1, 0,1,0,1],
     ];
-    const pIdx = sectionFeel === 2 ? 2 : sectionFeel === 3 ? 3 : sectionFeel === 1 ? 1 : 0;
+    const pIdx = sectionFeel === 2 ? 2 : sectionFeel === 1 ? 1 : sectionFeel === 3 ? 3 : 0;
     const pattern = hatPatterns[pIdx];
-    
+
     for (let i = 0; i < 16; i++) {
       if (!pattern[i]) continue;
       const t = now + i * sixteenth;
       const isOpen = (i === 4 || i === 12) && sectionFeel >= 1;
-      
       const osc = ctx.createOscillator();
       const g = ctx.createGain();
       const f = ctx.createBiquadFilter();
       osc.type = 'square';
-      osc.frequency.setValueAtTime(8000 + Math.random() * 4000, t);
+      osc.frequency.setValueAtTime(9000 + Math.random() * 5000, t);
       f.type = 'highpass';
-      f.frequency.value = 7000;
-      
-      const dur = isOpen ? 0.08 : 0.02;
-      const vol = isOpen ? 0.018 : 0.012;
+      f.frequency.value = 8000;
+      const dur = isOpen ? 0.09 : 0.018;
+      const vol = isOpen ? 0.022 : 0.014;
       g.gain.setValueAtTime(vol, t);
       g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-      
       osc.connect(f).connect(g).connect(musicGain!);
       osc.start(t); osc.stop(t + dur + 0.01);
     }
   }
 
-  // ============ DEEP BASS LINE ============
+  // ============ BASS LINE (driving, fat, syncopated) ============
   {
-    // Bass patterns per section feel
-    const bassPatterns: number[][] = [
-      [0, -1, -1, -1, 0, -1, 2, -1],           // simple (intro)
-      [0, -1, 0, -1, 0, 0, -1, 0],             // pumping (build)
-      [0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0], // driving 16ths (drop)
-      [0, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1], // sparse (breakdown)
-    ];
-    
-    const bp = bassPatterns[sectionFeel];
-    const stepDur = sectionFeel === 2 || sectionFeel === 3 ? sixteenth : beatDur / 2;
-    
-    for (let i = 0; i < bp.length; i++) {
-      if (bp[i] === -1) continue;
-      const t = now + i * stepDur;
-      
-      // Root note of current chord
+    const bpIdx = (sectionCount + (sectionFeel === 2 ? 1 : 0)) % BASS_RHYTHMS.length;
+    const bp = sectionFeel === 3
+      ? [1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0]
+      : BASS_RHYTHMS[bpIdx];
+
+    for (let i = 0; i < 16; i++) {
+      if (!bp[i]) continue;
+      const t = now + i * sixteenth;
       const bassNote = currentKey + chord[0];
-      const freq = midiToFreq(bassNote);
-      
-      const osc1 = ctx.createOscillator();
-      const osc2 = ctx.createOscillator();
-      const osc3 = ctx.createOscillator();
-      const g = ctx.createGain();
-      const f = ctx.createBiquadFilter();
-      
-      osc1.type = 'sawtooth';
-      osc2.type = 'sawtooth';
-      osc3.type = 'square';
-      osc1.frequency.setValueAtTime(freq, t);
-      osc2.frequency.setValueAtTime(freq * 1.003, t); // detune for width
-      osc3.frequency.setValueAtTime(freq * 0.997, t);
-      
-      f.type = 'lowpass';
-      // Filter envelope - opens on attack then closes
-      const filterBase = 200 + musicIntensity * 80;
-      const filterPeak = filterBase + 800;
-      f.frequency.setValueAtTime(filterPeak, t);
-      f.frequency.exponentialRampToValueAtTime(filterBase, t + stepDur * 0.6);
-      f.Q.setValueAtTime(6, t);
-      
-      const dur = Math.min(stepDur * 0.85, 0.35);
-      g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(0.2, t + 0.005);
-      g.gain.setValueAtTime(0.16, t + dur * 0.3);
-      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-      
-      osc1.connect(f);
-      osc2.connect(f);
-      osc3.connect(f);
-      f.connect(g).connect(musicGain!);
-      osc1.start(t); osc1.stop(t + dur + 0.01);
-      osc2.start(t); osc2.stop(t + dur + 0.01);
-      osc3.start(t); osc3.stop(t + dur + 0.01);
-      
-      // Sub bass layer (pure sine one octave down)
-      const subBass = ctx.createOscillator();
-      const subG = ctx.createGain();
-      subBass.type = 'sine';
-      subBass.frequency.setValueAtTime(freq / 2, t);
-      subG.gain.setValueAtTime(0.12, t);
-      subG.gain.exponentialRampToValueAtTime(0.001, t + dur);
-      subBass.connect(subG).connect(musicGain!);
-      subBass.start(t); subBass.stop(t + dur + 0.01);
+      // Occasional octave jump for energy
+      const octJump = (i === 8 || i === 12) && sectionFeel === 2 ? 12 : 0;
+      const freq = midiToFreq(bassNote + octJump);
+
+      // Triple-osc fat bass
+      for (let d = -1; d <= 1; d++) {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        const f = ctx.createBiquadFilter();
+        osc.type = d === 0 ? 'sawtooth' : 'square';
+        osc.frequency.setValueAtTime(freq * (1 + d * 0.004), t);
+        f.type = 'lowpass';
+        const fPeak = 350 + intensity * 120;
+        f.frequency.setValueAtTime(fPeak + 600, t);
+        f.frequency.exponentialRampToValueAtTime(fPeak, t + sixteenth * 0.7);
+        f.Q.setValueAtTime(5, t);
+        const vol = 0.065;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(vol, t + 0.004);
+        g.gain.exponentialRampToValueAtTime(0.001, t + sixteenth * 0.8);
+        osc.connect(f).connect(g).connect(musicGain!);
+        osc.start(t); osc.stop(t + sixteenth);
+      }
+
+      // Sub sine
+      const subB = ctx.createOscillator();
+      const subBG = ctx.createGain();
+      subB.type = 'sine';
+      subB.frequency.setValueAtTime(freq / 2, t);
+      subBG.gain.setValueAtTime(0.14, t);
+      subBG.gain.exponentialRampToValueAtTime(0.001, t + sixteenth * 0.75);
+      subB.connect(subBG).connect(musicGain!);
+      subB.start(t); subB.stop(t + sixteenth);
     }
   }
 
-  // ============ SYNTH PAD (lush, wide, evolving) ============
-  if (sectionFeel !== 2 || measureInSection < 4) {
-    const padVol = sectionFeel === 3 ? 0.06 : sectionFeel === 0 ? 0.05 : 0.035;
-    
+  // ============ SYNTH PAD (warm, wide) ============
+  if (sectionFeel === 0 || sectionFeel === 3 || (sectionFeel === 2 && measureInSection >= 4)) {
+    const padVol = sectionFeel === 3 ? 0.045 : 0.035;
     for (let ci = 0; ci < chord.length; ci++) {
       const noteFreq = midiToFreq(currentKey + 12 + chord[ci]);
-      
-      // 5 detuned oscillators for super-saw pad
       for (let d = -2; d <= 2; d++) {
         const osc = ctx.createOscillator();
         const g = ctx.createGain();
         const f = ctx.createBiquadFilter();
-        
         osc.type = d === 0 ? 'sine' : (Math.abs(d) === 1 ? 'triangle' : 'sawtooth');
-        osc.frequency.setValueAtTime(noteFreq * (1 + d * 0.003), now);
-        
+        osc.frequency.setValueAtTime(noteFreq * (1 + d * 0.004), now);
         f.type = 'lowpass';
-        // Slow filter sweep across the measure
-        const fBase = 400 + musicIntensity * 100;
-        const fMod = Math.sin(measureCount * 0.15 + ci * 0.5) * 200;
-        f.frequency.setValueAtTime(fBase + fMod, now);
-        f.frequency.linearRampToValueAtTime(fBase + fMod + 150, now + measureDur * 0.5);
-        f.frequency.linearRampToValueAtTime(fBase + fMod, now + measureDur);
-        
+        const fBase = 500 + intensity * 120;
+        f.frequency.setValueAtTime(fBase, now);
+        f.frequency.linearRampToValueAtTime(fBase + 200, now + measureDur * 0.5);
+        f.frequency.linearRampToValueAtTime(fBase, now + measureDur);
         const vol = padVol / 5;
         g.gain.setValueAtTime(0, now);
-        g.gain.linearRampToValueAtTime(vol, now + measureDur * 0.15);
-        g.gain.setValueAtTime(vol * 0.9, now + measureDur * 0.7);
+        g.gain.linearRampToValueAtTime(vol, now + measureDur * 0.1);
+        g.gain.setValueAtTime(vol * 0.85, now + measureDur * 0.75);
         g.gain.exponentialRampToValueAtTime(0.001, now + measureDur + 0.1);
-        
         osc.connect(f).connect(g).connect(musicGain!);
         if (reverbGain) g.connect(reverbGain);
         osc.start(now); osc.stop(now + measureDur + 0.15);
@@ -619,205 +592,262 @@ function scheduleNextMeasure() {
     }
   }
 
-  // ============ ARPEGGIOS ============
-  if (sectionFeel === 1 || sectionFeel === 2) {
-    // Multiple arp patterns for variety
-    const arpOctavePatterns = [
-      [0, 0, 1, 1, 2, 2, 1, 1, 0, 0, 1, 1, 2, 2, 1, 0],  // ascending wave
-      [2, 1, 0, 1, 2, 1, 0, 1, 2, 0, 1, 2, 0, 1, 2, 1],  // descending bounce
-      [0, 2, 1, 0, 2, 1, 0, 2, 1, 0, 2, 1, 0, 1, 2, 0],  // skip pattern
+  // ============ ARPEGGIOS (fast, sparkling, Top Gear style) ============
+  if (sectionFeel >= 1) {
+    const arpPatterns = [
+      [0,1,2,0,1,2,0,1, 2,0,1,2,0,1,2,0],
+      [0,2,1,0,2,1,0,2, 1,0,2,1,0,2,1,0],
+      [2,1,0,2,1,0,2,1, 0,2,1,0,2,1,0,2],
+      [0,1,2,1,0,1,2,1, 0,1,2,1,0,1,2,1],
     ];
-    const arpNoteIndices = [
-      [0, 1, 2, 3, 2, 1, 0, 3, 0, 1, 2, 3, 2, 1, 0, 3],
-      [0, 2, 1, 3, 0, 2, 1, 3, 0, 2, 1, 3, 0, 2, 1, 3],
-      [3, 2, 1, 0, 3, 2, 1, 0, 3, 1, 0, 2, 3, 1, 0, 2],
+    const octShifts = [
+      [0,0,0,1,1,1,2,2, 2,1,1,1,0,0,0,1],
+      [0,1,2,2,1,0,0,1, 2,2,1,0,0,1,2,1],
+      [2,2,1,1,0,0,1,1, 2,2,1,1,0,0,1,1],
     ];
-    
-    const patIdx = (sectionCount + measureCount) % arpOctavePatterns.length;
-    const octPattern = arpOctavePatterns[patIdx];
-    const notePattern = arpNoteIndices[patIdx];
-    const arpSteps = sectionFeel === 2 ? 16 : (measureInSection >= 4 ? 16 : 8);
-    
-    for (let i = 0; i < arpSteps; i++) {
-      const chordNote = chord[notePattern[i] % chord.length];
-      const octShift = octPattern[i] * 12;
-      const noteFreq = midiToFreq(currentKey + 24 + chordNote + octShift);
+    const patIdx = (sectionCount + measureCount) % arpPatterns.length;
+    const octIdx = (sectionCount + measureCount) % octShifts.length;
+    const arpP = arpPatterns[patIdx];
+    const octP = octShifts[octIdx];
+    const steps = sectionFeel === 2 ? 16 : (measureInSection >= 4 ? 16 : 8);
+
+    for (let i = 0; i < steps; i++) {
+      const chordNote = chord[arpP[i] % chord.length];
+      const oct = (octP[i] || 0) * 12;
+      const noteFreq = midiToFreq(currentKey + 24 + chordNote + oct);
       const t = now + i * sixteenth;
-      
+
       const osc = ctx.createOscillator();
       const osc2 = ctx.createOscillator();
       const g = ctx.createGain();
       const f = ctx.createBiquadFilter();
-      
-      // PWM-like sound with detuned pair
       osc.type = 'sawtooth';
       osc2.type = 'sawtooth';
       osc.frequency.setValueAtTime(noteFreq, t);
-      osc2.frequency.setValueAtTime(noteFreq * 1.005, t);
-      
+      osc2.frequency.setValueAtTime(noteFreq * 1.006, t);
       f.type = 'lowpass';
-      f.frequency.setValueAtTime(2000 + musicIntensity * 300, t);
-      f.frequency.exponentialRampToValueAtTime(800, t + sixteenth * 0.85);
-      f.Q.setValueAtTime(2, t);
-      
-      const vol = 0.02 + musicIntensity * 0.004;
-      // Accent every 4th note
-      const accent = i % 4 === 0 ? 1.3 : 1.0;
+      f.frequency.setValueAtTime(2500 + intensity * 400, t);
+      f.frequency.exponentialRampToValueAtTime(900, t + sixteenth * 0.8);
+      f.Q.setValueAtTime(3, t);
+      const vol = 0.022 + intensity * 0.005;
+      const accent = i % 4 === 0 ? 1.4 : (i % 2 === 0 ? 1.1 : 1.0);
       g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(vol * accent, t + 0.003);
-      g.gain.exponentialRampToValueAtTime(0.001, t + sixteenth * 0.85);
-      
+      g.gain.linearRampToValueAtTime(vol * accent, t + 0.002);
+      g.gain.exponentialRampToValueAtTime(0.001, t + sixteenth * 0.8);
       osc.connect(f);
       osc2.connect(f);
       f.connect(g).connect(musicGain!);
-      if (reverbGain && i % 2 === 0) g.connect(reverbGain);
+      if (reverbGain && i % 3 === 0) g.connect(reverbGain);
       osc.start(t); osc.stop(t + sixteenth);
       osc2.start(t); osc2.stop(t + sixteenth);
     }
   }
 
-  // ============ LEAD MELODY (drop sections, high intensity) ============
-  if (sectionFeel === 2 && musicIntensity >= 2) {
-    // Generate melodic phrases based on chord tones + passing tones
-    const scaleNotes = [0, 2, 3, 5, 7, 8, 10, 12, 14, 15, 17, 19]; // natural minor extended
-    const melodyRhythms = [
-      // [step, duration_in_16ths]
-      [[0, 2], [2, 1], [3, 1], [4, 2], [6, 2], [8, 2], [10, 1], [11, 1], [12, 3]],
-      [[0, 3], [3, 1], [4, 2], [6, 1], [7, 1], [8, 4], [12, 2], [14, 2]],
-      [[0, 1], [1, 1], [2, 2], [4, 1], [5, 1], [6, 2], [8, 3], [11, 1], [12, 4]],
-      [[0, 4], [4, 2], [6, 2], [8, 1], [9, 1], [10, 1], [11, 1], [12, 4]],
-    ];
-    
-    const melIdx = (sectionCount * 3 + measureCount) % melodyRhythms.length;
-    const rhythm = melodyRhythms[melIdx];
-    
-    // Generate melody notes using chord tones and scale
-    const seed = (measureCount * 7 + sectionCount * 13) & 0xFFFF;
-    
-    for (let i = 0; i < rhythm.length; i++) {
-      const [step, durSteps] = rhythm[i];
+  // ============ LEAD MELODY (catchy, memorable, Top Gear / Geometry Wars) ============
+  if ((sectionFeel === 2 || (sectionFeel === 1 && measureInSection >= 4)) && intensity >= 1) {
+    const minorScale = [0, 2, 3, 5, 7, 8, 10, 12, 14, 15, 17, 19, 20, 22, 24];
+    const phraseIdx = (sectionCount * 2 + measureCount) % MELODY_PHRASES.length;
+    const phrase = MELODY_PHRASES[phraseIdx];
+
+    let step = 0;
+    for (let i = 0; i < phrase.length; i++) {
+      const [noteIdx, durSteps] = phrase[i];
+      if (step >= 16) break;
       const t = now + step * sixteenth;
       const dur = durSteps * sixteenth;
-      
-      // Pick note: prefer chord tones, occasionally use scale passing tones
-      const noteChoice = ((seed + i * 31) % 12);
-      let note: number;
-      if (noteChoice < 7) {
-        note = chord[noteChoice % chord.length]; // chord tone
-      } else {
-        note = scaleNotes[((seed + i * 17) % scaleNotes.length)]; // scale tone
-      }
-      
-      const noteFreq = midiToFreq(currentKey + 36 + note); // high octave
-      
+      const scaleDeg = noteIdx % minorScale.length;
+      const note = minorScale[scaleDeg];
+      const noteFreq = midiToFreq(currentKey + 36 + note);
+
+      // Bright lead: square + saw
       const osc = ctx.createOscillator();
       const osc2 = ctx.createOscillator();
+      const osc3 = ctx.createOscillator();
       const g = ctx.createGain();
       const f = ctx.createBiquadFilter();
-      
+
       osc.type = 'square';
       osc2.type = 'sawtooth';
+      osc3.type = 'sine'; // sub harmonics for warmth
       osc.frequency.setValueAtTime(noteFreq, t);
-      osc2.frequency.setValueAtTime(noteFreq * 1.002, t);
-      
-      // Vibrato on longer notes
+      osc2.frequency.setValueAtTime(noteFreq * 1.003, t);
+      osc3.frequency.setValueAtTime(noteFreq * 0.5, t);
+
+      // Vibrato on held notes
       if (durSteps >= 3) {
-        const vibStart = t + dur * 0.3;
         const lfo = ctx.createOscillator();
         const lfoG = ctx.createGain();
         lfo.type = 'sine';
-        lfo.frequency.value = 5.5;
-        lfoG.gain.value = noteFreq * 0.008;
+        lfo.frequency.value = 6;
+        lfoG.gain.value = noteFreq * 0.01;
         lfo.connect(lfoG).connect(osc.frequency);
         lfo.connect(lfoG).connect(osc2.frequency);
-        lfo.start(vibStart); lfo.stop(t + dur);
+        lfo.start(t + dur * 0.25); lfo.stop(t + dur);
       }
-      
+
+      // Portamento on fast notes
+      if (durSteps === 1 && i < phrase.length - 1) {
+        const nextNote = minorScale[phrase[i + 1][0] % minorScale.length];
+        const nextFreq = midiToFreq(currentKey + 36 + nextNote);
+        osc.frequency.linearRampToValueAtTime(nextFreq, t + dur * 0.9);
+        osc2.frequency.linearRampToValueAtTime(nextFreq * 1.003, t + dur * 0.9);
+      }
+
       f.type = 'lowpass';
-      f.frequency.setValueAtTime(3000 + musicIntensity * 500, t);
-      f.frequency.exponentialRampToValueAtTime(1500, t + dur * 0.8);
-      f.Q.value = 1;
-      
-      const vol = 0.025 + musicIntensity * 0.003;
+      f.frequency.setValueAtTime(4000 + intensity * 600, t);
+      f.frequency.exponentialRampToValueAtTime(2000, t + dur * 0.7);
+      f.Q.value = 1.5;
+
+      const vol = 0.03 + intensity * 0.004;
       g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(vol, t + 0.008);
+      g.gain.linearRampToValueAtTime(vol, t + 0.005);
       if (durSteps >= 2) {
-        g.gain.setValueAtTime(vol * 0.8, t + dur * 0.5);
+        g.gain.setValueAtTime(vol * 0.85, t + dur * 0.4);
       }
-      g.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.95);
-      
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.92);
+
       osc.connect(f);
       osc2.connect(f);
+      osc3.connect(f);
       f.connect(g).connect(musicGain!);
       if (reverbGain) g.connect(reverbGain);
       osc.start(t); osc.stop(t + dur + 0.01);
       osc2.start(t); osc2.stop(t + dur + 0.01);
+      osc3.start(t); osc3.stop(t + dur + 0.01);
+
+      step += durSteps;
     }
   }
 
-  // ============ TRANSITION EFFECTS ============
+  // ============ COUNTER-MELODY / HARMONY (adds depth at high intensity) ============
+  if (sectionFeel === 2 && intensity >= 3 && measureInSection % 2 === 0) {
+    const counterNotes = [chord[2], chord[0], chord[1], chord[2]];
+    for (let i = 0; i < 4; i++) {
+      const t = now + i * beatDur;
+      const noteFreq = midiToFreq(currentKey + 48 + counterNotes[i]);
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      const f = ctx.createBiquadFilter();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(noteFreq, t);
+      f.type = 'lowpass';
+      f.frequency.value = 2500;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.018, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, t + beatDur * 0.7);
+      osc.connect(f).connect(g).connect(musicGain!);
+      if (reverbGain) g.connect(reverbGain);
+      osc.start(t); osc.stop(t + beatDur);
+    }
+  }
+
+  // ============ RISERS & TRANSITIONS ============
   if (isFillMeasure) {
-    // Riser sweep on build sections
     if (sectionFeel === 1 || sectionFeel === 3) {
+      // White noise riser
       const riser = ctx.createOscillator();
       const rG = ctx.createGain();
       const rF = ctx.createBiquadFilter();
       riser.type = 'sawtooth';
-      riser.frequency.setValueAtTime(200, now);
-      riser.frequency.exponentialRampToValueAtTime(2000, now + measureDur);
+      riser.frequency.setValueAtTime(150, now);
+      riser.frequency.exponentialRampToValueAtTime(3000, now + measureDur);
+      riser.detune.setValueAtTime(0, now);
+      riser.detune.linearRampToValueAtTime(1200, now + measureDur);
       rF.type = 'bandpass';
-      rF.frequency.setValueAtTime(400, now);
-      rF.frequency.exponentialRampToValueAtTime(4000, now + measureDur);
-      rF.Q.value = 3;
+      rF.frequency.setValueAtTime(300, now);
+      rF.frequency.exponentialRampToValueAtTime(6000, now + measureDur);
+      rF.Q.value = 2;
       rG.gain.setValueAtTime(0, now);
-      rG.gain.linearRampToValueAtTime(0.04, now + measureDur * 0.8);
+      rG.gain.linearRampToValueAtTime(0.05, now + measureDur * 0.85);
       rG.gain.exponentialRampToValueAtTime(0.001, now + measureDur);
       riser.connect(rF).connect(rG).connect(musicGain!);
       riser.start(now); riser.stop(now + measureDur + 0.01);
+
+      // Second riser (octave up)
+      const riser2 = ctx.createOscillator();
+      const r2G = ctx.createGain();
+      riser2.type = 'square';
+      riser2.frequency.setValueAtTime(300, now);
+      riser2.frequency.exponentialRampToValueAtTime(5000, now + measureDur);
+      r2G.gain.setValueAtTime(0, now);
+      r2G.gain.linearRampToValueAtTime(0.02, now + measureDur * 0.9);
+      r2G.gain.exponentialRampToValueAtTime(0.001, now + measureDur);
+      riser2.connect(r2G).connect(musicGain!);
+      riser2.start(now); riser2.stop(now + measureDur + 0.01);
     }
-    
-    // Crash on drop transitions
+
+    // Crash cymbal into drop
     if (sectionFeel === 1) {
       const t = now + measureDur - 0.01;
-      for (let j = 0; j < 3; j++) {
+      for (let j = 0; j < 4; j++) {
         const crash = ctx.createOscillator();
         const cg = ctx.createGain();
         crash.type = 'sawtooth';
-        crash.frequency.setValueAtTime(5000 + Math.random() * 5000, t);
-        crash.detune.setValueAtTime(Math.random() * 2400, t);
-        cg.gain.setValueAtTime(0.03, t);
-        cg.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+        crash.frequency.setValueAtTime(5000 + Math.random() * 6000, t);
+        crash.detune.setValueAtTime(Math.random() * 3000, t);
+        cg.gain.setValueAtTime(0.035, t);
+        cg.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
         crash.connect(cg).connect(musicGain!);
-        crash.start(t); crash.stop(t + 0.55);
+        crash.start(t); crash.stop(t + 0.65);
       }
+    }
+
+    // Reverse impact before drops
+    if (sectionFeel === 3) {
+      const impact = ctx.createOscillator();
+      const ig = ctx.createGain();
+      impact.type = 'sine';
+      impact.frequency.setValueAtTime(40, now + measureDur - 0.15);
+      impact.frequency.exponentialRampToValueAtTime(20, now + measureDur);
+      ig.gain.setValueAtTime(0, now + measureDur - 0.15);
+      ig.gain.linearRampToValueAtTime(0.2, now + measureDur - 0.02);
+      ig.gain.exponentialRampToValueAtTime(0.001, now + measureDur + 0.3);
+      impact.connect(ig).connect(musicGain!);
+      impact.start(now + measureDur - 0.15); impact.stop(now + measureDur + 0.35);
     }
   }
 
-  // ============ AMBIENT TEXTURE (breakdown sections) ============
+  // ============ AMBIENT TEXTURE (breakdowns) ============
   if (sectionFeel === 3) {
-    // Filtered noise wash
     const washOsc = ctx.createOscillator();
     const washG = ctx.createGain();
     const washF = ctx.createBiquadFilter();
     washOsc.type = 'sawtooth';
-    washOsc.frequency.setValueAtTime(40 + Math.random() * 20, now);
+    washOsc.frequency.setValueAtTime(35 + Math.random() * 25, now);
     washOsc.detune.setValueAtTime(1200, now);
     washF.type = 'bandpass';
-    washF.frequency.setValueAtTime(300, now);
-    washF.frequency.linearRampToValueAtTime(800, now + measureDur * 0.5);
-    washF.frequency.linearRampToValueAtTime(300, now + measureDur);
-    washF.Q.value = 0.5;
-    washG.gain.setValueAtTime(0.015, now);
-    washG.gain.setValueAtTime(0.015, now + measureDur * 0.8);
+    washF.frequency.setValueAtTime(250, now);
+    washF.frequency.linearRampToValueAtTime(900, now + measureDur * 0.5);
+    washF.frequency.linearRampToValueAtTime(250, now + measureDur);
+    washF.Q.value = 0.4;
+    washG.gain.setValueAtTime(0.018, now);
     washG.gain.exponentialRampToValueAtTime(0.001, now + measureDur);
     washOsc.connect(washF).connect(washG).connect(musicGain!);
     if (reverbGain) washG.connect(reverbGain);
     washOsc.start(now); washOsc.stop(now + measureDur + 0.01);
   }
 
+  // ============ ENERGY STABS (drop accents, Geometry Wars vibes) ============
+  if (sectionFeel === 2 && (measureInSection === 0 || measureInSection === 4)) {
+    // Power chord stab on beat 1
+    for (let ci = 0; ci < chord.length; ci++) {
+      const noteFreq = midiToFreq(currentKey + 24 + chord[ci]);
+      for (let d = -1; d <= 1; d++) {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(noteFreq * (1 + d * 0.008), now);
+        g.gain.setValueAtTime(0.04, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + beatDur * 0.4);
+        osc.connect(g).connect(musicGain!);
+        osc.start(now); osc.stop(now + beatDur * 0.45);
+      }
+    }
+  }
+
   currentChordIndex = (currentChordIndex + 1) % prog.length;
   measureCount++;
-  
+
   const nextTime = (measureDur - 0.05) * 1000;
   const timer = window.setTimeout(scheduleNextMeasure, nextTime);
   musicTimers.push(timer);
