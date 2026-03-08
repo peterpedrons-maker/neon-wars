@@ -15,6 +15,7 @@ import {
   playShootPhantom, playShootInterceptor, playShootTitan,
   playExplosion, playCombo, playPowerUp, playSpecial,
   playHit, playDamage, playGameOver, playWaveComplete, initAudio,
+  startMusic, stopMusic, setMusicIntensity,
 } from './audio';
 
 const WAVE_SPAWN_INTERVAL = 1.0;
@@ -502,6 +503,7 @@ function damagePlayer(state: GameState, damage: number) {
     state.screen = 'game-over';
     state.particles.push(...createParticles(p.pos, COLORS.neonYellow, 40, 300, 5));
     state.particles.push(...createParticles(p.pos, '#ffffff', 20, 200, 3));
+    stopMusic();
     playGameOver();
   }
 }
@@ -521,6 +523,7 @@ function applyPowerUp(state: GameState, type: string) {
 
 export function startWave(state: GameState) {
   state.wave++;
+  setMusicIntensity(state.wave);
   const isBossWave = state.wave % BOSS_WAVE_INTERVAL === 0;
   state.waveEnemiesRemaining = isBossWave
     ? WAVE_BASE_ENEMIES + state.wave * 2 + 1
@@ -531,6 +534,7 @@ export function startWave(state: GameState) {
 
 export function createInitialState(player: Player): GameState {
   initAudio();
+  startMusic();
   return {
     player,
     enemies: [],
