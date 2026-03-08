@@ -647,9 +647,21 @@ function getEnemyColor(type: string): string {
 }
 
 function hexToRgba(hex: string, alpha: number): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
+  if (!hex || hex[0] !== '#') return `rgba(255,255,255,${alpha})`;
+  // Support 3-char hex (#fff) and 4-char (#ffff)
+  let r: number, g: number, b: number;
+  if (hex.length === 4) {
+    r = parseInt(hex[1] + hex[1], 16);
+    g = parseInt(hex[2] + hex[2], 16);
+    b = parseInt(hex[3] + hex[3], 16);
+  } else {
+    r = parseInt(hex.slice(1, 3), 16);
+    g = parseInt(hex.slice(3, 5), 16);
+    b = parseInt(hex.slice(5, 7), 16);
+  }
+  if (isNaN(r)) r = 255;
+  if (isNaN(g)) g = 255;
+  if (isNaN(b)) b = 255;
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
