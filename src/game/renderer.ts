@@ -1252,6 +1252,66 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
+function drawHazard(ctx: CanvasRenderingContext2D, h: ActiveHazard, time: number) {
+  const alpha = Math.min(1, h.lifetime / 3);
+  const pulse = 0.5 + Math.sin(time * 3) * 0.2;
+  
+  if (h.type === 'lava_pool') {
+    const grad = ctx.createRadialGradient(h.pos.x, h.pos.y, 0, h.pos.x, h.pos.y, h.radius);
+    grad.addColorStop(0, `rgba(255,80,0,${0.4 * alpha * pulse})`);
+    grad.addColorStop(0.5, `rgba(255,30,0,${0.25 * alpha})`);
+    grad.addColorStop(0.8, `rgba(200,0,0,${0.1 * alpha})`);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(h.pos.x, h.pos.y, h.radius, 0, Math.PI * 2); ctx.fill();
+    // Bubbles
+    for (let i = 0; i < 3; i++) {
+      const ba = time * 2 + i * 2;
+      const bx = h.pos.x + Math.cos(ba) * h.radius * 0.5;
+      const by = h.pos.y + Math.sin(ba) * h.radius * 0.5;
+      ctx.fillStyle = `rgba(255,150,0,${0.4 * alpha * Math.abs(Math.sin(ba))})`;
+      ctx.beginPath(); ctx.arc(bx, by, 2, 0, Math.PI * 2); ctx.fill();
+    }
+  } else if (h.type === 'black_hole') {
+    // Spinning rings
+    ctx.save(); ctx.translate(h.pos.x, h.pos.y);
+    const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, h.radius * 3);
+    grad.addColorStop(0, `rgba(100,0,200,${0.5 * alpha})`);
+    grad.addColorStop(0.3, `rgba(50,0,100,${0.2 * alpha})`);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(0, 0, h.radius * 3, 0, Math.PI * 2); ctx.fill();
+    // Accretion disk
+    ctx.strokeStyle = `rgba(191,90,242,${0.5 * alpha * pulse})`;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(0, 0, h.radius + Math.sin(time * 4) * 5, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = `rgba(150,0,255,${0.3 * alpha})`;
+    ctx.beginPath(); ctx.arc(0, 0, h.radius * 0.5, time, time + Math.PI * 1.5); ctx.stroke();
+    // Core
+    ctx.fillStyle = `rgba(0,0,0,${0.8 * alpha})`;
+    ctx.beginPath(); ctx.arc(0, 0, h.radius * 0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  } else if (h.type === 'crystal_shard') {
+    ctx.save(); ctx.translate(h.pos.x, h.pos.y); ctx.rotate(time * 0.5);
+    ctx.strokeStyle = `rgba(0,229,255,${0.6 * alpha * pulse})`;
+    ctx.lineWidth = 1.5;
+    // Diamond shape
+    ctx.beginPath();
+    ctx.moveTo(0, -h.radius); ctx.lineTo(h.radius * 0.6, 0);
+    ctx.lineTo(0, h.radius); ctx.lineTo(-h.radius * 0.6, 0); ctx.closePath();
+    ctx.stroke();
+    ctx.fillStyle = `rgba(0,229,255,${0.1 * alpha})`;
+    ctx.fill();
+    // Inner glow
+    const cGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, h.radius);
+    cGrad.addColorStop(0, `rgba(0,229,255,${0.3 * alpha})`);
+    cGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = cGrad;
+    ctx.beginPath(); ctx.arc(0, 0, h.radius, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+
 export function getScale(canvasW: number, canvasH: number) {
   return Math.min(canvasW / CAMERA_VIEW_W, canvasH / CAMERA_VIEW_H);
 }
