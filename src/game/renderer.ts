@@ -52,6 +52,12 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
     drawPlayerGlow(ctx, state.player, time);
   }
 
+  // Player trail
+  drawTrail(ctx, state, time);
+
+  // XP orbs
+  state.xpOrbs.forEach(orb => drawXpOrb(ctx, orb, time));
+
   // Power-ups
   state.powerUps.forEach(pu => { if (pu.alive) drawPowerUp(ctx, pu, time); });
 
@@ -59,7 +65,12 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   state.projectiles.forEach(p => { if (p.alive) drawProjectile(ctx, p, time); });
 
   // Enemies
-  state.enemies.forEach(e => { if (e.alive) drawEnemy(ctx, e, time); });
+  state.enemies.forEach(e => { if (e.alive) drawEnemy(ctx, e, time, state); });
+
+  // Ability visuals (aura, orbitals)
+  if (state.player.alive) {
+    drawAbilityVisuals(ctx, state, time);
+  }
 
   // Player
   if (state.player.alive) drawPlayer(ctx, state.player, time);
