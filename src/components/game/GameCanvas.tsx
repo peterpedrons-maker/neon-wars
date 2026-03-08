@@ -209,6 +209,9 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, mapId, onMenu }) =
           level={state.level}
           xp={state.xp}
           xpToNext={state.xpToNext}
+          equippedWeapons={state.equippedWeapons}
+          weaponSlots={state.weaponSlots}
+          abilityLevels={state.abilityLevels}
         />
       )}
 
