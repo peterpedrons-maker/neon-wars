@@ -187,6 +187,10 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
       }
 
       const prevScreen = stateRef.current.screen;
+      // Guest: skip enemy spawning/AI (host syncs enemies)
+      if (!room.isHost) {
+        stateRef.current.waveEnemiesRemaining = 0;
+      }
       updateGame(stateRef.current, inputRef.current, dt);
       forceUpdate(n => n + 1);
 
