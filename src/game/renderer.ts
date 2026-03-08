@@ -715,7 +715,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
   ctx.fillStyle = '#000';
   ctx.beginPath();
   ctx.arc(-2.5, -2, 0.7, 0, Math.PI * 2);
-  ctx.ac(3.5, -2, 0.7, 0, Math.PI * 2);
+  ctx.arc(3.5, -2, 0.7, 0, Math.PI * 2);
   ctx.fill();
   // Battle cry mouth during attack
   if (atkAnim > 0.5) {
