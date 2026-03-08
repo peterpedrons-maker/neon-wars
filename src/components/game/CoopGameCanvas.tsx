@@ -7,6 +7,7 @@ import { renderGame, getScale, getOffset, resetCamera } from '../../game/rendere
 import { useIsMobile } from '../../hooks/use-mobile';
 import { loadMeta, endRun, MetaProgress } from '../../game/meta';
 import { RoomInfo, sendPlayerState, sendGameSync, CoopPlayerState, CoopGameSync, connectToRoom, leaveRoom } from '../../game/multiplayer';
+import { CLASS_STATS } from '../../game/constants';
 import HUD from './HUD';
 import LevelUpScreen from './LevelUpScreen';
 import GameOver from './GameOver';
@@ -50,11 +51,30 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
     const ch = connectToRoom(room, {
       onPeerJoin: () => {},
       onPeerLeave: () => {},
-      onPeerState: (ps) => { peerStateRef.current = ps; },
+      onPeerState: (ps) => {
+        peerStateRef.current = ps;
+        // Update coopPeer on game state so engine uses it for AI targeting + shooting
+        if (stateRef.current) {
+          const peerStats = CLASS_STATS[ps.shipClass as ShipType] || CLASS_STATS.phantom;
+          stateRef.current.coopPeer = {
+            pos: { x: ps.x, y: ps.y },
+            angle: ps.angle,
+            alive: ps.alive,
+            shipClass: ps.shipClass,
+            shooting: ps.shooting,
+            attackTimer: stateRef.current.coopPeer?.attackTimer ?? 0,
+            attackCooldown: peerStats.attackCooldown,
+            damage: peerStats.damage,
+          };
+        }
+      },
       onGameSync: (sync) => {
         if (!room.isHost && stateRef.current) {
           stateRef.current.wave = sync.wave;
           stateRef.current.score = sync.score;
+          stateRef.current.xp = sync.xp;
+          stateRef.current.level = sync.level;
+          stateRef.current.xpToNext = sync.xpToNext;
           stateRef.current.enemies = sync.enemies.map(e => ({
             pos: { x: e.x, y: e.y },
             vel: { x: 0, y: 0 },
@@ -215,6 +235,9 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
             })),
             wave: stateRef.current.wave,
             score: stateRef.current.score,
+            xp: stateRef.current.xp,
+            level: stateRef.current.level,
+            xpToNext: stateRef.current.xpToNext,
             hostPlayer: {
               x: stateRef.current.player.pos.x, y: stateRef.current.player.pos.y,
               angle: stateRef.current.player.angle, hp: stateRef.current.player.hp,

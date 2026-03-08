@@ -134,6 +134,17 @@ export interface GameState {
   flameZones: Array<{ x: number; y: number; damage: number; lifetime: number }>;
   // Plasma field zones
   plasmaZones: Array<{ x: number; y: number; radius: number; damage: number; lifetime: number }>;
+  // Coop peer info (optional, set in coop mode)
+  coopPeer?: {
+    pos: { x: number; y: number };
+    angle: number;
+    alive: boolean;
+    shipClass: string;
+    shooting: boolean;
+    attackTimer: number;
+    attackCooldown: number;
+    damage: number;
+  };
 }
 
 export interface LeaderboardEntry {
