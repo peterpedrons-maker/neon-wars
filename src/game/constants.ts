@@ -1,81 +1,104 @@
-import { PlayerClass, EnemyType } from './types';
+import { ShipType, EnemyType } from './types';
 
-export const ARENA_W = 1200;
-export const ARENA_H = 900;
+export const ARENA_W = 1600;
+export const ARENA_H = 1200;
 
-// Wall boundaries matching the dungeon floor image (sealed room, no doors)
-// Left/Right walls ~14%, Top ~13%, Bottom ~14%
-export const WALL_LEFT = 168;
-export const WALL_RIGHT = 1032;
-export const WALL_TOP = 117;
-export const WALL_BOTTOM = 774;
+// No walls - open neon grid arena, border is the edge
+export const WALL_LEFT = 0;
+export const WALL_RIGHT = ARENA_W;
+export const WALL_TOP = 0;
+export const WALL_BOTTOM = ARENA_H;
 
-// Camera zoom: how many "world pixels" the viewport shows
-export const CAMERA_VIEW_W = 340;
-export const CAMERA_VIEW_H = 255;
+// Camera
+export const CAMERA_VIEW_W = 500;
+export const CAMERA_VIEW_H = 375;
 export const CAMERA_LERP = 0.08;
 
+// Neon color palette - Geometry Wars style
 export const COLORS = {
-  bg: '#0d0b1a',
-  arena: '#1e1a2e',
-  arenaBorder: '#4a3a6e',
-  arenaBorderLight: '#7a5aaa',
-  grid: 'rgba(100,70,180,0.12)',
-  // Player classes - vivid!
-  mage: '#a855f7',
-  mageGlow: '#d8b4fe',
-  archer: '#22d3ee',
-  archerGlow: '#67e8f9',
-  warrior: '#f97316',
-  warriorGlow: '#fdba74',
-  // Enemies - vivid
-  skeleton: '#e2e8f0',
-  slime: '#4ade80',
-  bat: '#c084fc',
-  darkKnight: '#475569',
-  dragon: '#ef4444',
-  lich: '#a855f7',
-  golem: '#94a3b8',
+  bg: '#000008',
+  arena: '#040412',
+  arenaBorder: '#0ff',
+  arenaBorderLight: '#0ff',
+  grid: 'rgba(0,255,255,0.06)',
+  // Ship types - vivid neon
+  phantom: '#bf5af2',    // purple
+  phantomGlow: '#e0b0ff',
+  interceptor: '#00e5ff', // cyan
+  interceptorGlow: '#80f0ff',
+  titan: '#ff6b00',       // orange
+  titanGlow: '#ffaa55',
+  // Keep backward compat
+  mage: '#bf5af2',
+  mageGlow: '#e0b0ff',
+  archer: '#00e5ff',
+  archerGlow: '#80f0ff',
+  warrior: '#ff6b00',
+  warriorGlow: '#ffaa55',
+  // Enemies - neon geometric
+  drone: '#39ff14',       // green
+  splitter: '#ff1493',    // pink
+  dasher: '#ffff00',      // yellow
+  tank: '#ff4500',        // red-orange
+  mothership: '#ff0040',  // red
+  vortex: '#bf5af2',      // purple
+  colossus: '#00bfff',    // blue
+  // Legacy enemy color mappings
+  skeleton: '#39ff14',
+  slime: '#ff1493',
+  bat: '#ffff00',
+  darkKnight: '#ff4500',
+  dragon: '#ff0040',
+  lich: '#bf5af2',
+  golem: '#00bfff',
   // UI
-  gold: '#fbbf24',
-  health: '#ef4444',
-  healthBg: '#450a0a',
-  shield: '#38bdf8',
-  xp: '#a855f7',
-  text: '#f1f5f9',
-  textDim: '#94a3b8',
-  // Power-ups - vivid
-  speedPU: '#38bdf8',
-  triplePU: '#f43f5e',
-  shieldPU: '#34d399',
-  healPU: '#fb7185',
+  gold: '#ffff00',
+  health: '#ff0040',
+  healthBg: '#1a0010',
+  shield: '#00e5ff',
+  xp: '#bf5af2',
+  text: '#e0e8ff',
+  textDim: '#6080aa',
+  // Power-ups
+  speedPU: '#00e5ff',
+  triplePU: '#ff1493',
+  shieldPU: '#39ff14',
+  healPU: '#ff6090',
   // Particles
-  fire: '#ff6b35',
-  ice: '#7dd3fc',
-  magic: '#c4b5fd',
+  fire: '#ff6b00',
+  ice: '#00e5ff',
+  magic: '#bf5af2',
+  // New neon extras
+  neonCyan: '#0ff',
+  neonPink: '#ff1493',
+  neonGreen: '#39ff14',
+  neonYellow: '#ffff00',
+  neonBlue: '#00bfff',
 };
 
-export const CLASS_STATS: Record<PlayerClass, { hp: number; damage: number; speed: number; attackCooldown: number; specialCooldown: number; radius: number }> = {
-  mage: { hp: 80, damage: 15, speed: 200, attackCooldown: 0.3, specialCooldown: 5, radius: 16 },
-  archer: { hp: 70, damage: 10, speed: 240, attackCooldown: 0.15, specialCooldown: 4, radius: 14 },
-  warrior: { hp: 120, damage: 25, speed: 180, attackCooldown: 0.4, specialCooldown: 3, radius: 18 },
+export type PlayerClass = ShipType;
+
+export const CLASS_STATS: Record<ShipType, { hp: number; damage: number; speed: number; attackCooldown: number; specialCooldown: number; radius: number }> = {
+  phantom: { hp: 80, damage: 15, speed: 220, attackCooldown: 0.25, specialCooldown: 5, radius: 12 },
+  interceptor: { hp: 65, damage: 10, speed: 280, attackCooldown: 0.12, specialCooldown: 4, radius: 10 },
+  titan: { hp: 130, damage: 28, speed: 170, attackCooldown: 0.4, specialCooldown: 3, radius: 15 },
 };
 
 export const ENEMY_STATS: Record<EnemyType, { hp: number; damage: number; speed: number; score: number; radius: number; attackCooldown: number; isBoss: boolean }> = {
-  skeleton: { hp: 20, damage: 10, speed: 80, score: 10, radius: 14, attackCooldown: 1, isBoss: false },
-  slime: { hp: 15, damage: 5, speed: 50, score: 15, radius: 16, attackCooldown: 2, isBoss: false },
-  bat: { hp: 10, damage: 8, speed: 160, score: 20, radius: 10, attackCooldown: 0.8, isBoss: false },
-  'dark-knight': { hp: 60, damage: 20, speed: 40, score: 50, radius: 20, attackCooldown: 1.5, isBoss: false },
-  dragon: { hp: 300, damage: 30, speed: 60, score: 500, radius: 40, attackCooldown: 2, isBoss: true },
-  lich: { hp: 250, damage: 25, speed: 50, score: 500, radius: 35, attackCooldown: 1.5, isBoss: true },
-  golem: { hp: 400, damage: 40, speed: 30, score: 500, radius: 45, attackCooldown: 3, isBoss: true },
+  drone: { hp: 15, damage: 10, speed: 90, score: 10, radius: 10, attackCooldown: 1, isBoss: false },
+  splitter: { hp: 20, damage: 5, speed: 60, score: 15, radius: 12, attackCooldown: 2, isBoss: false },
+  dasher: { hp: 8, damage: 12, speed: 200, score: 25, radius: 8, attackCooldown: 0.6, isBoss: false },
+  tank: { hp: 50, damage: 18, speed: 40, score: 50, radius: 16, attackCooldown: 1.5, isBoss: false },
+  mothership: { hp: 300, damage: 25, speed: 50, score: 500, radius: 30, attackCooldown: 2, isBoss: true },
+  vortex: { hp: 250, damage: 20, speed: 45, score: 500, radius: 28, attackCooldown: 1.5, isBoss: true },
+  colossus: { hp: 400, damage: 35, speed: 30, score: 500, radius: 35, attackCooldown: 3, isBoss: true },
 };
 
-export const WAVE_BASE_ENEMIES = 5;
+export const WAVE_BASE_ENEMIES = 6;
 export const WAVE_ENEMY_INCREMENT = 3;
 export const BOSS_WAVE_INTERVAL = 5;
-export const POWERUP_DROP_CHANCE = 0.15;
+export const POWERUP_DROP_CHANCE = 0.18;
 export const SPAWN_MARGIN = 90;
-export const PROJECTILE_SPEED = 400;
+export const PROJECTILE_SPEED = 500;
 export const PROJECTILE_LIFETIME = 2;
-export const WARRIOR_ATTACK_RANGE = 70;
+export const WARRIOR_ATTACK_RANGE = 60;

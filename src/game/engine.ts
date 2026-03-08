@@ -12,7 +12,7 @@ import {
   playerAttack, playerSpecial, dist,
 } from './entities';
 
-const WAVE_SPAWN_INTERVAL = 1.2;
+const WAVE_SPAWN_INTERVAL = 1.0;
 
 export function updateGame(state: GameState, input: InputState, dt: number): void {
   if (state.screen !== 'playing') return;
@@ -44,8 +44,8 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
 
   // Attack
   if (input.shooting) {
-    if (p.class === 'warrior') {
-      warriorMelee(state, dt);
+    if (p.class === 'titan') {
+      titanBlast(state, dt);
     } else {
       playerAttack(p, state.projectiles);
     }
@@ -73,10 +73,7 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
     return;
   }
 
-  // Update enemies
   updateEnemies(state, dt);
-
-  // Update projectiles
   updateProjectiles(state, dt);
 
   // Update particles
@@ -84,8 +81,8 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
     p.lifetime -= dt;
     p.pos.x += p.vel.x * dt;
     p.pos.y += p.vel.y * dt;
-    p.vel.x *= 0.95;
-    p.vel.y *= 0.95;
+    p.vel.x *= 0.96;
+    p.vel.y *= 0.96;
     return p.lifetime > 0;
   });
 
@@ -106,7 +103,7 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   state.projectiles = state.projectiles.filter(p => p.alive);
 }
 
-function warriorMelee(state: GameState, _dt: number) {
+function titanBlast(state: GameState, _dt: number) {
   const p = state.player;
   if (p.attackTimer > 0) return;
   p.attackTimer = p.attackCooldown;
@@ -118,13 +115,13 @@ function warriorMelee(state: GameState, _dt: number) {
     const angleToEnemy = Math.atan2(e.pos.y - p.pos.y, e.pos.x - p.pos.x);
     let angleDiff = Math.abs(angleToEnemy - p.angle);
     if (angleDiff > Math.PI) angleDiff = Math.PI * 2 - angleDiff;
-    if (angleDiff < 0.8) {
+    if (angleDiff < 1.0) {
       damageEnemy(state, e, p.damage * (p.tripleTimer > 0 ? 2 : 1));
     }
   }
   state.particles.push(...createParticles(
     { x: p.pos.x + Math.cos(p.angle) * 30, y: p.pos.y + Math.sin(p.angle) * 30 },
-    COLORS.warriorGlow, 5, 100, 4
+    COLORS.titanGlow, 8, 120, 4
   ));
 }
 
@@ -132,16 +129,16 @@ function spawnWaveEnemy(state: GameState) {
   const isBossWave = state.wave % BOSS_WAVE_INTERVAL === 0;
 
   if (isBossWave && state.waveEnemiesRemaining === 1) {
-    const bosses: EnemyType[] = ['dragon', 'lich', 'golem'];
+    const bosses: EnemyType[] = ['mothership', 'vortex', 'colossus'];
     const boss = bosses[Math.floor(Math.random() * bosses.length)];
     state.enemies.push(createEnemy(boss, state.wave));
     return;
   }
 
-  const types: EnemyType[] = ['skeleton'];
-  if (state.wave >= 2) types.push('slime');
-  if (state.wave >= 3) types.push('bat');
-  if (state.wave >= 5) types.push('dark-knight');
+  const types: EnemyType[] = ['drone'];
+  if (state.wave >= 2) types.push('splitter');
+  if (state.wave >= 3) types.push('dasher');
+  if (state.wave >= 5) types.push('tank');
 
   const type = types[Math.floor(Math.random() * types.length)];
   state.enemies.push(createEnemy(type, state.wave));
@@ -168,17 +165,16 @@ function updateEnemies(state: GameState, dt: number) {
       let moveX = (dx / d) * e.speed * dt;
       let moveY = (dy / d) * e.speed * dt;
 
-      // Bat erratic movement
-      if (e.type === 'bat') {
-        moveX += (Math.random() - 0.5) * 3;
-        moveY += (Math.random() - 0.5) * 3;
+      // Dasher erratic movement
+      if (e.type === 'dasher') {
+        moveX += (Math.random() - 0.5) * 4;
+        moveY += (Math.random() - 0.5) * 4;
       }
 
       e.pos.x += moveX;
       e.pos.y += moveY;
     }
 
-    // Clamp to arena (inside walls)
     e.pos.x = Math.max(WALL_LEFT + e.radius, Math.min(WALL_RIGHT - e.radius, e.pos.x));
     e.pos.y = Math.max(WALL_TOP + e.radius, Math.min(WALL_BOTTOM - e.radius, e.pos.y));
 
@@ -205,36 +201,33 @@ function bossAttack(state: GameState, boss: Enemy) {
   const p = state.player;
   const angle = Math.atan2(p.pos.y - boss.pos.y, p.pos.x - boss.pos.x);
 
-  if (boss.type === 'dragon') {
-    // Fire breath - spread of fireballs
-    for (let i = -3; i <= 3; i++) {
+  if (boss.type === 'mothership') {
+    for (let i = -4; i <= 4; i++) {
       state.projectiles.push({
         pos: { x: boss.pos.x, y: boss.pos.y },
-        vel: { x: Math.cos(angle + i * 0.15) * 250, y: Math.sin(angle + i * 0.15) * 250 },
-        radius: 8, alive: true, damage: boss.damage, fromPlayer: false,
-        lifetime: 2, color: COLORS.fire,
+        vel: { x: Math.cos(angle + i * 0.12) * 280, y: Math.sin(angle + i * 0.12) * 280 },
+        radius: 6, alive: true, damage: boss.damage, fromPlayer: false,
+        lifetime: 2, color: COLORS.mothership,
       });
     }
-  } else if (boss.type === 'lich') {
-    // Ring of skulls
-    for (let i = 0; i < 8; i++) {
-      const a = (Math.PI * 2 / 8) * i;
+  } else if (boss.type === 'vortex') {
+    for (let i = 0; i < 10; i++) {
+      const a = (Math.PI * 2 / 10) * i;
       state.projectiles.push({
         pos: { x: boss.pos.x, y: boss.pos.y },
-        vel: { x: Math.cos(a) * 180, y: Math.sin(a) * 180 },
-        radius: 7, alive: true, damage: boss.damage * 0.7, fromPlayer: false,
-        lifetime: 2.5, color: COLORS.lich,
+        vel: { x: Math.cos(a) * 200, y: Math.sin(a) * 200 },
+        radius: 5, alive: true, damage: boss.damage * 0.7, fromPlayer: false,
+        lifetime: 2.5, color: COLORS.vortex,
       });
     }
-  } else if (boss.type === 'golem') {
-    // Ground slam - shockwave
-    for (let i = 0; i < 16; i++) {
-      const a = (Math.PI * 2 / 16) * i;
+  } else if (boss.type === 'colossus') {
+    for (let i = 0; i < 20; i++) {
+      const a = (Math.PI * 2 / 20) * i;
       state.projectiles.push({
         pos: { x: boss.pos.x, y: boss.pos.y },
-        vel: { x: Math.cos(a) * 150, y: Math.sin(a) * 150 },
-        radius: 10, alive: true, damage: boss.damage * 0.5, fromPlayer: false,
-        lifetime: 1.5, color: COLORS.golem,
+        vel: { x: Math.cos(a) * 160, y: Math.sin(a) * 160 },
+        radius: 8, alive: true, damage: boss.damage * 0.5, fromPlayer: false,
+        lifetime: 1.5, color: COLORS.colossus,
       });
     }
     state.shakeTimer = 0.3;
@@ -278,25 +271,26 @@ function updateProjectiles(state: GameState, dt: number) {
 function damageEnemy(state: GameState, e: Enemy, damage: number) {
   e.hp -= damage;
   e.flashTimer = 0.1;
-  state.particles.push(...createParticles(e.pos, COLORS.gold, 3, 80, 2));
+  state.particles.push(...createParticles(e.pos, COLORS.neonYellow, 4, 100, 2));
 
   if (e.hp <= 0) {
     e.alive = false;
     state.score += e.score;
     state.enemiesKilled++;
 
-    // Death particles
-    const color = e.isBoss ? COLORS.gold : COLORS.fire;
-    state.particles.push(...createParticles(e.pos, color, e.isBoss ? 25 : 10, 200, e.isBoss ? 5 : 3));
+    // Death explosion - lots of neon particles
+    const color = e.isBoss ? COLORS.neonYellow : getEnemyColor(e.type);
+    state.particles.push(...createParticles(e.pos, color, e.isBoss ? 40 : 15, 250, e.isBoss ? 5 : 3));
+    state.particles.push(...createParticles(e.pos, '#ffffff', 5, 180, 2));
 
-    // Slime split
-    if (e.type === 'slime' && e.maxHp > 8) {
+    // Splitter split
+    if (e.type === 'splitter' && e.maxHp > 8) {
       for (let i = 0; i < 2; i++) {
-        const child = createEnemy('slime', Math.max(1, state.wave - 1));
+        const child = createEnemy('splitter', Math.max(1, state.wave - 1));
         child.pos = { x: e.pos.x + (i === 0 ? -15 : 15), y: e.pos.y };
         child.hp = Math.floor(e.maxHp * 0.4);
         child.maxHp = child.hp;
-        child.radius = Math.max(6, e.radius * 0.7);
+        child.radius = Math.max(5, e.radius * 0.7);
         child.score = Math.floor(e.score * 0.5);
         state.enemies.push(child);
       }
@@ -310,12 +304,20 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
   }
 }
 
+function getEnemyColor(type: EnemyType): string {
+  const map: Record<string, string> = {
+    drone: COLORS.drone, splitter: COLORS.splitter, dasher: COLORS.dasher,
+    tank: COLORS.tank, mothership: COLORS.mothership, vortex: COLORS.vortex, colossus: COLORS.colossus,
+  };
+  return map[type] || '#fff';
+}
+
 function damagePlayer(state: GameState, damage: number) {
   const p = state.player;
   if (p.invincibleTimer > 0) return;
   if (p.shieldTimer > 0) {
     p.shieldTimer = 0;
-    state.particles.push(...createParticles(p.pos, COLORS.shield, 10, 120, 3));
+    state.particles.push(...createParticles(p.pos, COLORS.neonCyan, 15, 150, 3));
     p.invincibleTimer = 0.5;
     return;
   }
@@ -324,19 +326,20 @@ function damagePlayer(state: GameState, damage: number) {
   p.invincibleTimer = 0.5;
   state.shakeTimer = 0.15;
   state.shakeIntensity = 5;
-  state.particles.push(...createParticles(p.pos, COLORS.health, 5, 100, 2));
+  state.particles.push(...createParticles(p.pos, COLORS.health, 6, 120, 2));
 
   if (p.hp <= 0) {
     p.hp = 0;
     p.alive = false;
     state.screen = 'game-over';
-    state.particles.push(...createParticles(p.pos, COLORS.gold, 30, 250, 5));
+    state.particles.push(...createParticles(p.pos, COLORS.neonYellow, 40, 300, 5));
+    state.particles.push(...createParticles(p.pos, '#ffffff', 20, 200, 3));
   }
 }
 
 function applyPowerUp(state: GameState, type: string) {
   const p = state.player;
-  state.particles.push(...createParticles(p.pos, COLORS.gold, 8, 100, 3));
+  state.particles.push(...createParticles(p.pos, COLORS.neonYellow, 10, 120, 3));
 
   switch (type) {
     case 'speed': p.speedBoostTimer = 8; break;
@@ -350,7 +353,7 @@ export function startWave(state: GameState) {
   state.wave++;
   const isBossWave = state.wave % BOSS_WAVE_INTERVAL === 0;
   state.waveEnemiesRemaining = isBossWave
-    ? WAVE_BASE_ENEMIES + state.wave * 2 + 1  // extra 1 for boss
+    ? WAVE_BASE_ENEMIES + state.wave * 2 + 1
     : WAVE_BASE_ENEMIES + (state.wave - 1) * WAVE_ENEMY_INCREMENT;
   state.waveSpawnTimer = 0;
   state.screen = 'playing';
