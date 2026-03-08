@@ -86,7 +86,7 @@ const Index = () => {
   }
 
   if (screen === 'class-select') {
-    return <ClassSelect onSelect={handleClassSelect} onBack={() => setScreen('menu')} unlockedShips={meta.unlockedShips} />;
+    return <ClassSelect onSelect={handleClassSelect} onBack={() => setScreen('menu')} unlockedShips={meta.unlockedShips || ['phantom', 'interceptor', 'titan', 'spectre']} />;
   }
 
   if (screen === 'map-select') {

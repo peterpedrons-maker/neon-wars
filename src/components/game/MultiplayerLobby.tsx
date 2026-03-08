@@ -595,7 +595,7 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
                 {room?.isHost ? '👑 HOST — SUA NAVE' : '🎮 PLAYER 2 — SUA NAVE'}
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {unlockedShips.map(id => {
+                {(unlockedShips && unlockedShips.length > 0 ? unlockedShips : ['phantom', 'interceptor', 'titan', 'spectre']).map(id => {
                   const info = SHIP_INFO[id];
                   if (!info) return null;
                   const isSelected = selectedShip === id;
