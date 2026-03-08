@@ -192,55 +192,96 @@ function drawTorchLight(ctx: CanvasRenderingContext2D, x: number, y: number, tim
   ctx.restore();
 }
 
-function drawStoneWall(ctx: CanvasRenderingContext2D, time: number) {
-  const wallW = 12;
+function drawDungeonWalls(ctx: CanvasRenderingContext2D, time: number) {
+  const wl = WALL_LEFT, wr = WALL_RIGHT, wt = WALL_TOP, wb = WALL_BOTTOM;
+  
+  // Dark background behind walls (entire arena minus playable)
+  ctx.fillStyle = '#0a0816';
+  ctx.fillRect(0, 0, ARENA_W, ARENA_H);
+  
+  // Playable area already drawn (floor tiles), so we draw walls on top of dark bg
+  
+  // Stone wall base color
+  const drawWallSection = (x: number, y: number, w: number, h: number) => {
+    // Base stone
+    const grad = ctx.createLinearGradient(x, y, x + w, y + h);
+    grad.addColorStop(0, '#3a3548');
+    grad.addColorStop(0.3, '#2e2840');
+    grad.addColorStop(0.7, '#352f45');
+    grad.addColorStop(1, '#3a3548');
+    ctx.fillStyle = grad;
+    ctx.fillRect(x, y, w, h);
+    
+    // Stone brick pattern
+    const brickW = 24;
+    const brickH = 14;
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.lineWidth = 1;
+    let row = 0;
+    for (let by = y; by < y + h; by += brickH) {
+      const offset = (row % 2) * (brickW / 2);
+      for (let bx = x + offset; bx < x + w; bx += brickW) {
+        ctx.strokeRect(bx, by, brickW, brickH);
+        // Subtle highlight on some bricks
+        if ((row + Math.floor((bx - x) / brickW)) % 5 === 0) {
+          ctx.fillStyle = 'rgba(255,255,255,0.03)';
+          ctx.fillRect(bx + 1, by + 1, brickW - 2, brickH - 2);
+        }
+      }
+      row++;
+    }
+    
+    // Moss/crack details
+    ctx.fillStyle = 'rgba(40,80,40,0.15)';
+    for (let i = 0; i < Math.floor(w * h / 800); i++) {
+      const mx = x + Math.random() * w;
+      const my = y + Math.random() * h;
+      ctx.beginPath();
+      ctx.arc(mx, my, 2 + Math.random() * 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  };
 
-  // Outer dark
-  ctx.strokeStyle = '#0d0820';
-  ctx.lineWidth = wallW + 6;
-  ctx.strokeRect(-3, -3, ARENA_W + 6, ARENA_H + 6);
+  // Top wall
+  drawWallSection(0, 0, ARENA_W, wt);
+  // Bottom wall
+  drawWallSection(0, wb, ARENA_W, ARENA_H - wb);
+  // Left wall
+  drawWallSection(0, wt, wl, wb - wt);
+  // Right wall
+  drawWallSection(wr, wt, ARENA_W - wr, wb - wt);
 
-  // Main wall with gradient
-  const wallGrad = ctx.createLinearGradient(0, 0, ARENA_W, ARENA_H);
-  wallGrad.addColorStop(0, '#5a4a80');
-  wallGrad.addColorStop(0.3, '#4a3a6e');
-  wallGrad.addColorStop(0.7, '#3a2a5e');
-  wallGrad.addColorStop(1, '#5a4a80');
-  ctx.strokeStyle = wallGrad;
-  ctx.lineWidth = wallW;
-  ctx.strokeRect(wallW / 2, wallW / 2, ARENA_W - wallW, ARENA_H - wallW);
-
-  // Inner highlight
-  ctx.strokeStyle = 'rgba(180,160,255,0.15)';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(wallW + 1, wallW + 1, ARENA_W - wallW * 2 - 2, ARENA_H - wallW * 2 - 2);
-
-  // Stone block marks
-  ctx.strokeStyle = 'rgba(0,0,0,0.35)';
-  ctx.lineWidth = 1;
-  for (let x = 0; x < ARENA_W; x += 48) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0); ctx.lineTo(x, wallW);
-    ctx.moveTo(x, ARENA_H - wallW); ctx.lineTo(x, ARENA_H);
-    ctx.stroke();
-  }
-  for (let y = 0; y < ARENA_H; y += 48) {
-    ctx.beginPath();
-    ctx.moveTo(0, y); ctx.lineTo(wallW, y);
-    ctx.moveTo(ARENA_W - wallW, y); ctx.lineTo(ARENA_W, y);
-    ctx.stroke();
-  }
-
-  // Decorative runes on wall
-  ctx.fillStyle = 'rgba(168,85,247,0.08)';
-  ctx.font = '10px serif';
-  ctx.textAlign = 'center';
-  const runes = ['⚔', '☆', '◆', '✦', '⬥'];
-  for (let i = 0; i < 16; i++) {
-    const rx = 50 + (i * 100) % ARENA_W;
-    const ry = i < 8 ? 5 : ARENA_H - 5;
-    ctx.fillText(runes[i % runes.length], rx, ry + 4);
-  }
+  // Inner wall edge highlight (where wall meets floor)
+  ctx.strokeStyle = 'rgba(100,80,140,0.3)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(wl, wt, wr - wl, wb - wt);
+  
+  // Inner shadow (floor edge darkening)
+  const shadowSize = 15;
+  // Top inner shadow
+  let sg = ctx.createLinearGradient(0, wt, 0, wt + shadowSize);
+  sg.addColorStop(0, 'rgba(0,0,0,0.5)');
+  sg.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = sg;
+  ctx.fillRect(wl, wt, wr - wl, shadowSize);
+  // Bottom inner shadow
+  sg = ctx.createLinearGradient(0, wb, 0, wb - shadowSize);
+  sg.addColorStop(0, 'rgba(0,0,0,0.5)');
+  sg.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = sg;
+  ctx.fillRect(wl, wb - shadowSize, wr - wl, shadowSize);
+  // Left inner shadow
+  sg = ctx.createLinearGradient(wl, 0, wl + shadowSize, 0);
+  sg.addColorStop(0, 'rgba(0,0,0,0.5)');
+  sg.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = sg;
+  ctx.fillRect(wl, wt, shadowSize, wb - wt);
+  // Right inner shadow
+  sg = ctx.createLinearGradient(wr, 0, wr - shadowSize, 0);
+  sg.addColorStop(0, 'rgba(0,0,0,0.5)');
+  sg.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = sg;
+  ctx.fillRect(wr - shadowSize, wt, shadowSize, wb - wt);
 }
 
 function drawVignette(ctx: CanvasRenderingContext2D) {
