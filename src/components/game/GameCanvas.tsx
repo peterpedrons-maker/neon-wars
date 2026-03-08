@@ -135,8 +135,10 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, mapId, onMenu }) =
       const prevScreen = stateRef.current.screen;
       updateGame(stateRef.current, inputRef.current, dt);
 
+      // Always re-render so HUD stays in sync with game state
+      forceUpdate(n => n + 1);
+
       if (stateRef.current.screen !== prevScreen) {
-        forceUpdate(n => n + 1);
         // Handle end of run
         if (stateRef.current.screen === 'game-over' && !endRunHandled) {
           endRunHandled = true;
