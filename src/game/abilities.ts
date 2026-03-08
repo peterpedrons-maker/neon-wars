@@ -456,21 +456,22 @@ export function updateMissiles(state: GameState, dt: number) {
   }
 }
 
-// Lightning Ring - periodic auto-strikes
+// Lightning Ring - periodic auto-strikes, projectileCount adds extra targets
 export function updateLightningRing(state: GameState, dt: number) {
   if (state.abilities.lightningRingRadius <= 0) return;
   state.abilities.lightningRingTimer -= dt;
   if (state.abilities.lightningRingTimer <= 0) {
     state.abilities.lightningRingTimer = 0.8;
     const p = state.player;
-    let hit = false;
+    let hits = 0;
+    const maxHits = 1 + state.abilities.projectileCount;
     for (const e of state.enemies) {
       if (!e.alive) continue;
+      if (hits >= maxHits) break;
       const d = dist(e.pos, p.pos);
       if (d < state.abilities.lightningRingRadius) {
         e.hp -= state.abilities.lightningRingDamage;
         e.flashTimer = 0.1;
-        // Lightning visual
         const steps = 4;
         for (let i = 0; i < steps; i++) {
           const t = i / steps;
@@ -481,11 +482,10 @@ export function updateLightningRing(state: GameState, dt: number) {
             color: '#80d0ff', size: 2,
           });
         }
-        hit = true;
-        break; // one target per tick
+        hits++;
       }
     }
-    if (!hit) state.abilities.lightningRingTimer = 0.2; // faster retry
+    if (hits === 0) state.abilities.lightningRingTimer = 0.2;
   }
 }
 
