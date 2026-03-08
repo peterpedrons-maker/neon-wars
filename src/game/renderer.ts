@@ -87,8 +87,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   ];
   torchPositions.forEach(([tx, ty], i) => drawTorchLight(ctx, tx, ty, time + i * 0.7));
 
-  // Stone wall
-  drawStoneWall(ctx, time);
+  // Wall collision is handled by engine - image already has walls drawn
 
   // Power-ups
   state.powerUps.forEach(pu => { if (pu.alive) drawPowerUp(ctx, pu, time); });

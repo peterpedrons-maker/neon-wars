@@ -178,9 +178,9 @@ function updateEnemies(state: GameState, dt: number) {
       e.pos.y += moveY;
     }
 
-    // Clamp to arena
-    e.pos.x = Math.max(e.radius, Math.min(ARENA_W - e.radius, e.pos.x));
-    e.pos.y = Math.max(e.radius, Math.min(ARENA_H - e.radius, e.pos.y));
+    // Clamp to arena (inside walls)
+    e.pos.x = Math.max(WALL_THICKNESS + e.radius, Math.min(ARENA_W - WALL_THICKNESS - e.radius, e.pos.x));
+    e.pos.y = Math.max(WALL_THICKNESS + e.radius, Math.min(ARENA_H - WALL_THICKNESS - e.radius, e.pos.y));
 
     // Boss attacks
     if (e.isBoss && e.bossAttackTimer !== undefined) {
