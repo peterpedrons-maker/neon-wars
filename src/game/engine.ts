@@ -61,7 +61,7 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
 
   // Attack
   if (input.shooting) {
-    if (p.class === 'titan') {
+    if (p.class === 'titan' || p.class === 'juggernaut') {
       titanBlast(state, dt);
     } else {
       const prevTimer = p.attackTimer;
@@ -261,10 +261,23 @@ function spawnWaveEnemy(state: GameState) {
     return;
   }
 
+  // Map-exclusive enemies
+  const mapExclusives: Record<string, EnemyType[]> = {
+    'inferno': ['fire_elemental'],
+    'void': ['void_ghost'],
+    'crystal': ['crystal_golem'],
+  };
+
   const types: EnemyType[] = ['drone'];
   if (state.wave >= 2) types.push('splitter');
   if (state.wave >= 3) types.push('dasher');
   if (state.wave >= 5) types.push('tank');
+  
+  // Add map-specific enemies from wave 2+
+  const mapEnemies = mapExclusives[state.mapId] || [];
+  if (state.wave >= 2 && mapEnemies.length > 0) {
+    types.push(...mapEnemies);
+  }
 
   const type = types[Math.floor(Math.random() * types.length)];
   state.enemies.push(createEnemy(type, state.wave));
@@ -368,6 +381,80 @@ function updateEnemies(state: GameState, dt: number) {
             lifetime: 2, color: COLORS.tank,
           });
         }
+      }
+    } else if (e.type === 'fire_elemental') {
+      // Fire Elemental: approaches and periodically shoots fire rings
+      if (d > 120) {
+        e.pos.x += (dx / d) * e.speed * dt;
+        e.pos.y += (dy / d) * e.speed * dt;
+      }
+      if (!e.shootTimer) e.shootTimer = 3;
+      e.shootTimer -= dt;
+      if (e.shootTimer <= 0) {
+        e.shootTimer = 2.5 + Math.random();
+        // Fire ring - 8 fireballs
+        for (let i = 0; i < 8; i++) {
+          const a = (i / 8) * Math.PI * 2;
+          state.projectiles.push({
+            pos: { x: e.pos.x, y: e.pos.y },
+            vel: { x: Math.cos(a) * 150, y: Math.sin(a) * 150 },
+            radius: 4, alive: true, damage: e.damage, fromPlayer: false,
+            lifetime: 1.5, color: '#ff6b00',
+          });
+        }
+        state.particles.push(...createParticles(e.pos, '#ff6b00', 10, 100, 3));
+      }
+      // Fire aura particles
+      if (Math.random() < 0.3) {
+        state.particles.push(...createParticles(e.pos, '#ff4500', 1, 40, 2));
+      }
+    } else if (e.type === 'void_ghost') {
+      // Void Ghost: teleports periodically, phases through obstacles
+      if (!e.dashTimer) e.dashTimer = 2;
+      e.dashTimer -= dt;
+      if (e.dashTimer <= 0) {
+        e.dashTimer = 2.5 + Math.random() * 2;
+        // Teleport near player
+        const teleAngle = Math.random() * Math.PI * 2;
+        const teleDist = 80 + Math.random() * 100;
+        state.particles.push(...createParticles(e.pos, '#9040ff', 12, 120, 3));
+        e.pos.x = p.pos.x + Math.cos(teleAngle) * teleDist;
+        e.pos.y = p.pos.y + Math.sin(teleAngle) * teleDist;
+        state.particles.push(...createParticles(e.pos, '#9040ff', 12, 120, 3));
+      }
+      // Slowly drift toward player
+      if (d > 0) {
+        e.pos.x += (dx / d) * e.speed * 0.5 * dt;
+        e.pos.y += (dy / d) * e.speed * 0.5 * dt;
+      }
+      // Ghost particles
+      if (Math.random() < 0.2) {
+        state.particles.push(...createParticles(e.pos, '#9040ff', 1, 30, 1.5));
+      }
+    } else if (e.type === 'crystal_golem') {
+      // Crystal Golem: slow tank that reflects projectiles on death
+      if (d > 0) {
+        e.pos.x += (dx / d) * e.speed * dt;
+        e.pos.y += (dy / d) * e.speed * dt;
+      }
+      // Ground slam when close
+      if (!e.shootTimer) e.shootTimer = 3;
+      e.shootTimer -= dt;
+      if (e.shootTimer <= 0 && d < 150) {
+        e.shootTimer = 3;
+        // Shockwave
+        for (let i = 0; i < 12; i++) {
+          const a = (i / 12) * Math.PI * 2;
+          state.projectiles.push({
+            pos: { x: e.pos.x, y: e.pos.y },
+            vel: { x: Math.cos(a) * 120, y: Math.sin(a) * 120 },
+            radius: 6, alive: true, damage: e.damage, fromPlayer: false,
+            lifetime: 1, color: '#00e5ff',
+          });
+        }
+        state.shakeTimer = 0.15;
+        state.shakeIntensity = 4;
+        state.particles.push(...createParticles(e.pos, '#00e5ff', 15, 150, 4));
       }
     } else {
       // Default: move toward player (bosses etc)
@@ -614,6 +701,7 @@ function getEnemyColor(type: EnemyType): string {
   const map: Record<string, string> = {
     drone: COLORS.drone, splitter: COLORS.splitter, dasher: COLORS.dasher,
     tank: COLORS.tank, mothership: COLORS.mothership, vortex: COLORS.vortex, colossus: COLORS.colossus,
+    fire_elemental: COLORS.fire_elemental, void_ghost: COLORS.void_ghost, crystal_golem: COLORS.crystal_golem,
   };
   return map[type] || '#fff';
 }

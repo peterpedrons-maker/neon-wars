@@ -112,14 +112,27 @@ export function playerAttack(player: Player, projectiles: Projectile[]): void {
   player.attackTimer = player.attackCooldown;
 
   const color = player.class === 'phantom' ? COLORS.phantom
-    : player.class === 'interceptor' ? COLORS.interceptor : COLORS.titan;
+    : player.class === 'interceptor' ? COLORS.interceptor 
+    : player.class === 'spectre' ? COLORS.spectre
+    : player.class === 'valkyrie' ? COLORS.valkyrie
+    : player.class === 'juggernaut' ? COLORS.juggernaut
+    : COLORS.titan;
 
-  if (player.class === 'titan') {
+  if (player.class === 'titan' || player.class === 'juggernaut') {
     // Heavy blast - handled in engine for area damage
     return;
   }
 
   const angles = player.tripleTimer > 0 ? [-0.2, 0, 0.2] : [0];
+  
+  // Valkyrie shoots double
+  if (player.class === 'valkyrie') {
+    for (const offset of [-0.08, 0.08]) {
+      projectiles.push(createProjectile(player.pos, player.angle + offset, player.damage, true, color, 1.2));
+    }
+    return;
+  }
+  
   for (const offset of angles) {
     projectiles.push(createProjectile(
       player.pos,
@@ -127,7 +140,7 @@ export function playerAttack(player: Player, projectiles: Projectile[]): void {
       player.damage,
       true,
       color,
-      player.class === 'interceptor' ? 1.3 : 1
+      player.class === 'interceptor' ? 1.3 : player.class === 'spectre' ? 1.5 : 1
     ));
   }
 }
@@ -137,13 +150,11 @@ export function playerSpecial(player: Player, projectiles: Projectile[], enemies
   player.specialTimer = player.specialCooldown;
 
   if (player.class === 'phantom') {
-    // Nova burst - 16 projectiles in all directions
     for (let i = 0; i < 16; i++) {
       const angle = (Math.PI * 2 / 16) * i;
       projectiles.push(createProjectile(player.pos, angle, player.damage * 2, true, COLORS.neonPink, 0.8));
     }
   } else if (player.class === 'interceptor') {
-    // Lock-on barrage at nearest enemies
     const sorted = enemies.filter(e => e.alive).sort((a, b) => {
       const da = Math.hypot(a.pos.x - player.pos.x, a.pos.y - player.pos.y);
       const db = Math.hypot(b.pos.x - player.pos.x, b.pos.y - player.pos.y);
@@ -154,8 +165,38 @@ export function playerSpecial(player: Player, projectiles: Projectile[], enemies
       const angle = Math.atan2(e.pos.y - player.pos.y, e.pos.x - player.pos.x);
       projectiles.push(createProjectile(player.pos, angle, player.damage * 1.5, true, COLORS.neonCyan, 1.5));
     }
+  } else if (player.class === 'spectre') {
+    // Teleport forward + ghost explosion
+    const teleportDist = 120;
+    player.pos.x += Math.cos(player.angle) * teleportDist;
+    player.pos.y += Math.sin(player.angle) * teleportDist;
+    player.invincibleTimer = 1.0;
+    // Explosion at arrival
+    for (let i = 0; i < 12; i++) {
+      const angle = (Math.PI * 2 / 12) * i;
+      projectiles.push(createProjectile(player.pos, angle, player.damage * 2.5, true, '#9040ff', 0.6));
+    }
+  } else if (player.class === 'valkyrie') {
+    // Rain of energy lances from above
+    for (let i = 0; i < 8; i++) {
+      const angle = player.angle + (i - 3.5) * 0.15;
+      projectiles.push(createProjectile(
+        { x: player.pos.x + (i - 3.5) * 20, y: player.pos.y },
+        angle, player.damage * 1.8, true, '#ff1493', 1.2
+      ));
+    }
+  } else if (player.class === 'juggernaut') {
+    // Massive destruction field
+    for (const e of enemies) {
+      if (!e.alive) continue;
+      const dist = Math.hypot(e.pos.x - player.pos.x, e.pos.y - player.pos.y);
+      if (dist < WARRIOR_ATTACK_RANGE * 3) {
+        e.hp -= player.damage * 4;
+        e.flashTimer = 0.2;
+      }
+    }
   } else {
-    // Titan shockwave - damage all enemies in large radius
+    // Titan shockwave
     for (const e of enemies) {
       if (!e.alive) continue;
       const dist = Math.hypot(e.pos.x - player.pos.x, e.pos.y - player.pos.y);
