@@ -621,6 +621,12 @@ function getEnemyColor(type: EnemyType): string {
 function damagePlayer(state: GameState, damage: number) {
   const p = state.player;
   if (p.invincibleTimer > 0) return;
+  // Dodge check
+  if (state.abilities.dodge > 0 && Math.random() < state.abilities.dodge) {
+    state.particles.push(...createParticles(p.pos, '#ffffff', 8, 100, 2));
+    p.invincibleTimer = 0.3;
+    return;
+  }
   if (p.shieldTimer > 0) {
     p.shieldTimer = 0;
     state.particles.push(...createParticles(p.pos, COLORS.neonCyan, 15, 150, 3));
