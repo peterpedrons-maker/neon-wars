@@ -155,10 +155,11 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, onMenu }) => {
     return () => cancelAnimationFrame(frameRef.current);
   }, [isMobile]);
 
-  const handleUpgrade = useCallback((upgrade: Upgrade) => {
+  const handleUpgrade = useCallback((ability: Ability) => {
     if (!stateRef.current) return;
-    upgrade.apply(stateRef.current.player);
-    startWave(stateRef.current);
+    ability.apply(stateRef.current);
+    stateRef.current.abilityLevels[ability.id] = (stateRef.current.abilityLevels[ability.id] || 0) + 1;
+    stateRef.current.screen = 'playing';
     forceUpdate(n => n + 1);
   }, []);
 
