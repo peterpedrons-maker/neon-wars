@@ -112,14 +112,27 @@ export function playerAttack(player: Player, projectiles: Projectile[]): void {
   player.attackTimer = player.attackCooldown;
 
   const color = player.class === 'phantom' ? COLORS.phantom
-    : player.class === 'interceptor' ? COLORS.interceptor : COLORS.titan;
+    : player.class === 'interceptor' ? COLORS.interceptor 
+    : player.class === 'spectre' ? COLORS.spectre
+    : player.class === 'valkyrie' ? COLORS.valkyrie
+    : player.class === 'juggernaut' ? COLORS.juggernaut
+    : COLORS.titan;
 
-  if (player.class === 'titan') {
+  if (player.class === 'titan' || player.class === 'juggernaut') {
     // Heavy blast - handled in engine for area damage
     return;
   }
 
   const angles = player.tripleTimer > 0 ? [-0.2, 0, 0.2] : [0];
+  
+  // Valkyrie shoots double
+  if (player.class === 'valkyrie') {
+    for (const offset of [-0.08, 0.08]) {
+      projectiles.push(createProjectile(player.pos, player.angle + offset, player.damage, true, color, 1.2));
+    }
+    return;
+  }
+  
   for (const offset of angles) {
     projectiles.push(createProjectile(
       player.pos,
@@ -127,7 +140,7 @@ export function playerAttack(player: Player, projectiles: Projectile[]): void {
       player.damage,
       true,
       color,
-      player.class === 'interceptor' ? 1.3 : 1
+      player.class === 'interceptor' ? 1.3 : player.class === 'spectre' ? 1.5 : 1
     ));
   }
 }
