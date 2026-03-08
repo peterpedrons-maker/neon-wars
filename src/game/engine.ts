@@ -280,17 +280,47 @@ function updateProjectiles(state: GameState, dt: number) {
 function damageEnemy(state: GameState, e: Enemy, damage: number) {
   e.hp -= damage;
   e.flashTimer = 0.1;
-  state.particles.push(...createParticles(e.pos, COLORS.neonYellow, 4, 100, 2));
+  // Hit sparks
+  state.particles.push(...createParticles(e.pos, COLORS.neonYellow, 6, 120, 2));
+  state.particles.push(...createParticles(e.pos, '#ffffff', 2, 80, 1.5));
 
   if (e.hp <= 0) {
     e.alive = false;
-    state.score += e.score;
+    
+    // Combo system
+    state.combo++;
+    state.comboTimer = 2.0; // 2 second window
+    state.comboMultiplier = Math.min(16, Math.pow(2, Math.floor(state.combo / 3)));
+    if (state.combo > state.maxCombo) state.maxCombo = state.combo;
+    
+    // Score with multiplier
+    state.score += e.score * state.comboMultiplier;
     state.enemiesKilled++;
 
-    // Death explosion - lots of neon particles
+    // INTENSE death explosion - many more particles
     const color = e.isBoss ? COLORS.neonYellow : getEnemyColor(e.type);
-    state.particles.push(...createParticles(e.pos, color, e.isBoss ? 40 : 15, 250, e.isBoss ? 5 : 3));
-    state.particles.push(...createParticles(e.pos, '#ffffff', 5, 180, 2));
+    const intensity = e.isBoss ? 3 : 1;
+    // Primary color burst
+    state.particles.push(...createParticles(e.pos, color, (e.isBoss ? 60 : 25) * intensity, 300, e.isBoss ? 6 : 4));
+    // White core flash
+    state.particles.push(...createParticles(e.pos, '#ffffff', (e.isBoss ? 25 : 10), 220, 3));
+    // Secondary color ring
+    const secColor = e.isBoss ? '#ff1493' : COLORS.neonCyan;
+    state.particles.push(...createParticles(e.pos, secColor, (e.isBoss ? 20 : 8), 180, 2.5));
+    
+    // Combo bonus particles (more particles at higher combo)
+    if (state.comboMultiplier >= 4) {
+      state.particles.push(...createParticles(e.pos, '#ffff00', state.comboMultiplier, 250, 3));
+    }
+    
+    // Screen shake on kills (small), bigger on bosses
+    if (e.isBoss) {
+      state.shakeTimer = 0.4;
+      state.shakeIntensity = 10;
+    } else {
+      state.shakeTimer = Math.max(state.shakeTimer, 0.05);
+      state.shakeIntensity = Math.max(state.shakeIntensity, 2);
+    }
 
     // Splitter split
     if (e.type === 'splitter' && e.maxHp > 8) {
@@ -305,8 +335,9 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
       }
     }
 
-    // Power-up drop
-    if (Math.random() < POWERUP_DROP_CHANCE) {
+    // Power-up drop (higher chance at higher combo)
+    const dropChance = POWERUP_DROP_CHANCE + (state.comboMultiplier - 1) * 0.02;
+    if (Math.random() < dropChance) {
       const pu = createPowerUp(e.pos);
       if (pu) state.powerUps.push(pu);
     }
