@@ -429,7 +429,7 @@ export function updateFrostNova(state: GameState, dt: number) {
   }
 }
 
-// Auto missiles
+// Auto missiles - projectileCount adds extra missiles
 export function updateMissiles(state: GameState, dt: number) {
   if (state.abilities.missileCount <= 0) return;
   state.abilities.missileTimer -= dt;
@@ -438,7 +438,9 @@ export function updateMissiles(state: GameState, dt: number) {
     const p = state.player;
     const alive = state.enemies.filter(e => e.alive);
     const sorted = alive.sort((a, b) => dist(a.pos, p.pos) - dist(b.pos, p.pos));
-    const targets = sorted.slice(0, state.abilities.missileCount);
+    const extraProj = state.abilities.projectileCount;
+    const totalMissiles = state.abilities.missileCount + extraProj;
+    const targets = sorted.slice(0, totalMissiles);
     for (const t of targets) {
       const angle = Math.atan2(t.pos.y - p.pos.y, t.pos.x - p.pos.x);
       state.projectiles.push({
