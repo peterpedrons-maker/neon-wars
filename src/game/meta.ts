@@ -31,6 +31,15 @@ export interface RunStats {
   classesPlayed: string[];
 }
 
+export interface PermBonuses {
+  hp?: number;
+  damage?: number;
+  speed?: number;
+  magnet?: number;
+  armor?: number;
+  plasmaMultiplier?: number;
+}
+
 export interface MetaProgress {
   plasma: number;          // persistent currency
   totalPlasma: number;     // lifetime earned
@@ -40,6 +49,7 @@ export interface MetaProgress {
   unlockedAbilities: string[];
   milestones: Record<string, boolean>;
   weaponSlots: number;     // starts at 3, can be upgraded
+  permBonuses?: PermBonuses;
 }
 
 const DEFAULT_META: MetaProgress = {
