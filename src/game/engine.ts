@@ -522,6 +522,7 @@ function applyPowerUp(state: GameState, type: string) {
 
 export function startWave(state: GameState) {
   state.wave++;
+  setMusicIntensity(state.wave);
   const isBossWave = state.wave % BOSS_WAVE_INTERVAL === 0;
   state.waveEnemiesRemaining = isBossWave
     ? WAVE_BASE_ENEMIES + state.wave * 2 + 1
