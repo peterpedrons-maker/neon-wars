@@ -22,7 +22,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ onPlay, onLeaderboard, onHowToPlay 
       </div>
 
       {/* Decorative divider */}
-      <div className="w-48 h-px bg-gradient-to-r from-transparent via-[#5a3a28] to-transparent mb-10" />
+      <div className="w-48 h-px bg-gradient-to-r from-transparent via-[#4a3a6e] to-transparent mb-10" />
 
       {/* Menu buttons */}
       <div className="flex flex-col gap-4 w-72">
