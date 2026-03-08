@@ -1,6 +1,6 @@
 // 🚀 Neon Wars - Game Types (Geometry Wars inspired)
 
-export type ShipType = 'phantom' | 'interceptor' | 'titan';
+// ShipType defined below with EnemyType
 export type PlayerClass = ShipType; // backward compat alias
 export type GameScreen = 'menu' | 'how-to-play' | 'class-select' | 'map-select' | 'playing' | 'upgrade' | 'game-over' | 'leaderboard' | 'shop';
 export type EnemyType = 'drone' | 'splitter' | 'dasher' | 'tank' | 'mothership' | 'vortex' | 'colossus' | 'fire_elemental' | 'void_ghost' | 'crystal_golem';
