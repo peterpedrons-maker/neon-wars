@@ -304,7 +304,7 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
             hostPlayer: {
               x: stateRef.current.player.pos.x, y: stateRef.current.player.pos.y,
               angle: stateRef.current.player.angle, hp: stateRef.current.player.hp,
-              maxHp: stateRef.current.player.maxHp, alive: stateRef.current.player.alive,
+              maxHp: stateRef.current.player.maxHp, alive: stateRef.current.player.alive, dead: !stateRef.current.player.alive,
               shipClass: playerClass, shieldTimer: stateRef.current.player.shieldTimer,
               invincibleTimer: stateRef.current.player.invincibleTimer, shooting: inputRef.current.shooting,
             },
