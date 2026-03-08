@@ -369,9 +369,8 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
     if (!waitingConfirm || !room) return;
     startDataRef.current = waitingConfirm;
     setWaitingConfirm(null);
-    // Send confirmation back to host
-    sendCountdown(-1); // signal: guest confirmed
-    setStatus('Iniciando...');
+    sendGuestConfirm();
+    setStatus('Aguardando contagem...');
   };
 
   const handleGuestDecline = () => {
