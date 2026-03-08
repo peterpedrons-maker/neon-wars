@@ -19,8 +19,7 @@ function loadFloorImage() {
 }
 loadFloorImage();
 
-// Wall thickness in world units - the image has thick stone walls on all edges
-const WALL_THICKNESS = 80;
+// Wall collision is handled by engine using WALL_LEFT/RIGHT/TOP/BOTTOM constants
 
 export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canvasW: number, canvasH: number) {
   const time = Date.now() * 0.001;
