@@ -5,6 +5,7 @@ import {
   ARENA_W, ARENA_H, COLORS, WAVE_BASE_ENEMIES,
   WAVE_ENEMY_INCREMENT, BOSS_WAVE_INTERVAL,
   POWERUP_DROP_CHANCE, WARRIOR_ATTACK_RANGE,
+  WALL_LEFT, WALL_RIGHT, WALL_TOP, WALL_BOTTOM,
 } from './constants';
 import {
   createEnemy, createParticles, createPowerUp,
@@ -12,7 +13,6 @@ import {
 } from './entities';
 
 const WAVE_SPAWN_INTERVAL = 1.2;
-const WALL_THICKNESS = 80;
 
 export function updateGame(state: GameState, input: InputState, dt: number): void {
   if (state.screen !== 'playing') return;
