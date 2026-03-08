@@ -91,12 +91,11 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
     }
   }
 
-  // Check wave complete
+  // Check wave complete - auto start next wave (no upgrade screen)
   const aliveEnemies = state.enemies.filter(e => e.alive).length;
   if (state.waveEnemiesRemaining <= 0 && aliveEnemies === 0) {
-    state.screen = 'upgrade';
     playWaveComplete();
-    return;
+    startWave(state);
   }
 
   updateEnemies(state, dt);
