@@ -61,7 +61,7 @@ const HUD: React.FC<HUDProps> = ({ player, wave, score, specialReady }) => {
 
       {/* Center: Wave */}
       <div className="text-center">
-        <div className="text-[#f1c40f] text-sm font-bold" style={{ fontFamily: 'Georgia, serif', textShadow: '0 0 10px rgba(241,196,15,0.5)' }}>
+        <div className="text-[#fbbf24] text-sm font-bold" style={{ fontFamily: 'Georgia, serif', textShadow: '0 0 10px rgba(251,191,36,0.5)' }}>
           ONDA {wave}
         </div>
       </div>
