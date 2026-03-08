@@ -6,8 +6,9 @@ import dungeonFloorImg from '../assets/dungeon-floor.jpg';
 let camX = ARENA_W / 2;
 let camY = ARENA_H / 2;
 
-// Cached floor image
+// Cached floor pattern (tiled)
 let floorImage: HTMLImageElement | null = null;
+let floorPattern: CanvasPattern | null = null;
 let floorImageLoaded = false;
 
 function loadFloorImage() {
@@ -19,7 +20,8 @@ function loadFloorImage() {
 }
 loadFloorImage();
 
-// Wall collision is handled by engine using WALL_LEFT/RIGHT/TOP/BOTTOM constants
+// Tile size in world units for the floor pattern
+const FLOOR_TILE_SIZE = 128;
 
 export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canvasW: number, canvasH: number) {
   const time = Date.now() * 0.001;
