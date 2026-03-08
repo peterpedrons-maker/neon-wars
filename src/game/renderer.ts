@@ -1669,7 +1669,7 @@ function drawHazard(ctx: CanvasRenderingContext2D, h: ActiveHazard, time: number
 // Off-screen peer direction indicators
 function drawOffScreenPeerIndicators(
   ctx: CanvasRenderingContext2D,
-  peers: Array<{ pos: { x: number; y: number }; alive: boolean; playerLabel: string; shipClass: string }>,
+  peers: Array<{ pos: { x: number; y: number }; alive: boolean; dead?: boolean; playerLabel: string; shipClass: string }>,
   cX: number, cY: number, vW: number, vH: number,
   scale: number, canvasW: number, canvasH: number, time: number,
 ) {
