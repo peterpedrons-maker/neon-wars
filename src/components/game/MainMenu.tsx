@@ -9,7 +9,7 @@ interface MainMenuProps {
 
 const MainMenu: React.FC<MainMenuProps> = ({ onPlay, onLeaderboard, onHowToPlay }) => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#1a0e0a] text-[#f5e6d3] select-none">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#08061a] text-[#f1f5f9] select-none">
       {/* Title */}
       <div className="mb-12 text-center">
         <h1 className="text-6xl md:text-8xl font-bold tracking-wider mb-2"
