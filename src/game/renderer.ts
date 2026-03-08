@@ -1214,15 +1214,19 @@ function drawPowerUp(ctx: CanvasRenderingContext2D, pu: PowerUp, time: number) {
 // ---- Utility ----
 
 function getShipColor(cls: string): string {
-  if (cls === 'phantom') return COLORS.phantom;
-  if (cls === 'interceptor') return COLORS.interceptor;
-  return COLORS.titan;
+  const map: Record<string, string> = {
+    phantom: COLORS.phantom, interceptor: COLORS.interceptor, titan: COLORS.titan,
+    spectre: COLORS.spectre, valkyrie: COLORS.valkyrie, juggernaut: COLORS.juggernaut,
+  };
+  return map[cls] || COLORS.phantom;
 }
 
 function getShipGlow(cls: string): string {
-  if (cls === 'phantom') return COLORS.phantomGlow;
-  if (cls === 'interceptor') return COLORS.interceptorGlow;
-  return COLORS.titanGlow;
+  const map: Record<string, string> = {
+    phantom: COLORS.phantomGlow, interceptor: COLORS.interceptorGlow, titan: COLORS.titanGlow,
+    spectre: COLORS.spectreGlow, valkyrie: COLORS.valkyrieGlow, juggernaut: COLORS.juggernautGlow,
+  };
+  return map[cls] || COLORS.phantomGlow;
 }
 
 function getEnemyColor(type: string): string {
