@@ -39,7 +39,7 @@ const HUD: React.FC<HUDProps> = ({ player, wave, score, specialReady }) => {
         {/* Special */}
         <div className="flex items-center gap-2">
           <span className="text-sm">✨</span>
-          <div className="w-24 md:w-32 h-2.5 bg-[#2a1830] rounded-full overflow-hidden border border-[#5a3a58]">
+          <div className="w-24 md:w-32 h-2.5 bg-[#1e1a2e] rounded-full overflow-hidden border border-[#4a3a6e]">
             <div
               className="h-full transition-all duration-200 rounded-full"
               style={{
