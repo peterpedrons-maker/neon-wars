@@ -10,7 +10,7 @@ import {
   WALL_LEFT, WALL_RIGHT, WALL_TOP, WALL_BOTTOM,
 } from './constants';
 import {
-  createEnemy, createParticles, createPowerUp,
+  createEnemy, createParticles, createPowerUp, createProjectile,
   playerAttack, playerSpecial, dist,
 } from './entities';
 import {
