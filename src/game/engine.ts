@@ -92,7 +92,7 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
     }
   }
 
-  // Check wave complete - auto start next wave (no upgrade screen)
+  // Check wave complete - auto start next wave
   const aliveEnemies = state.enemies.filter(e => e.alive).length;
   if (state.waveEnemiesRemaining <= 0 && aliveEnemies === 0) {
     playWaveComplete();
@@ -101,6 +101,57 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
 
   updateEnemies(state, dt);
   updateProjectiles(state, dt);
+
+  // Ability effects
+  updateOrbitals(state, dt);
+  updateAura(state, dt);
+  updateRegen(state, dt);
+
+  // Update trail
+  if (Math.hypot(p.vel.x, p.vel.y) > 10) {
+    state.trail.push({ x: p.pos.x, y: p.pos.y, age: 0 });
+  }
+  for (let i = state.trail.length - 1; i >= 0; i--) {
+    state.trail[i].age += dt;
+    if (state.trail[i].age > 0.5) state.trail.splice(i, 1);
+  }
+  if (state.trail.length > 40) state.trail.splice(0, state.trail.length - 40);
+
+  // Update XP orbs
+  const magnetR = state.abilities.magnetRadius;
+  state.xpOrbs = state.xpOrbs.filter(orb => {
+    orb.lifetime -= dt;
+    if (orb.lifetime <= 0) return false;
+    // Magnet: attract to player
+    const dx = p.pos.x - orb.pos.x;
+    const dy = p.pos.y - orb.pos.y;
+    const d = Math.hypot(dx, dy);
+    if (d < magnetR) {
+      const pullSpeed = 300 * (1 - d / magnetR) + 100;
+      orb.pos.x += (dx / d) * pullSpeed * dt;
+      orb.pos.y += (dy / d) * pullSpeed * dt;
+    }
+    orb.pos.x += orb.vel.x * dt;
+    orb.pos.y += orb.vel.y * dt;
+    orb.vel.x *= 0.95;
+    orb.vel.y *= 0.95;
+    // Collect
+    if (d < p.radius + orb.radius + 5) {
+      addXp(state, orb.value);
+      return false;
+    }
+    return true;
+  });
+
+  // Level up check
+  if (state.xp >= state.xpToNext && state.screen === 'playing') {
+    state.xp -= state.xpToNext;
+    state.level++;
+    state.xpToNext = xpForLevel(state.level);
+    state.screen = 'upgrade';
+    state.particles.push(...createParticles(p.pos, '#ffff00', 30, 200, 4));
+    state.particles.push(...createParticles(p.pos, '#ffffff', 15, 150, 3));
+  }
 
   // Update particles
   state.particles = state.particles.filter(p => {
