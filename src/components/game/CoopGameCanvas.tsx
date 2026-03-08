@@ -246,12 +246,43 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
       }
       updateGame(stateRef.current, inputRef.current, dt);
 
-      // Coop: game over if any peer dies
+      // Coop: game over if ALL players are dead
       if (stateRef.current.screen === 'playing') {
-        const anyPeerDead = stateRef.current.coopPeers.some(p => !p.alive);
-        if (anyPeerDead) {
-          stateRef.current.player.hp = 0;
-          stateRef.current.player.alive = false;
+        const p = stateRef.current.player;
+        if (p.hp <= 0 && p.alive) {
+          p.alive = false;
+        }
+        
+        // Handle revive logic
+        if (!p.alive) {
+          // Check if any peer is near us to revive us
+          const peers = stateRef.current.coopPeers;
+          let beingRevived = false;
+          
+          for (const peer of peers) {
+            if (!peer.dead && peer.alive) {
+              const dist = Math.hypot(p.pos.x - peer.pos.x, p.pos.y - peer.pos.y);
+              if (dist < 80) {
+                beingRevived = true;
+                break;
+              }
+            }
+          }
+          
+          if (beingRevived) {
+            (stateRef.current as any).myReviveProgress = ((stateRef.current as any).myReviveProgress || 0) + dt / 5; // 5 seconds to revive
+            if ((stateRef.current as any).myReviveProgress >= 1) {
+              p.alive = true;
+              p.hp = Math.floor(p.maxHp * 0.5); // Revive with 50% HP
+              (stateRef.current as any).myReviveProgress = 0;
+            }
+          } else {
+            (stateRef.current as any).myReviveProgress = Math.max(0, ((stateRef.current as any).myReviveProgress || 0) - dt);
+          }
+        }
+        
+        const allPeersDead = stateRef.current.coopPeers.every(p => p.dead || !p.alive);
+        if (!p.alive && (stateRef.current.coopPeers.length === 0 || allPeersDead)) {
           stateRef.current.screen = 'game-over';
         }
       }
