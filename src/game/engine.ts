@@ -605,8 +605,8 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
 }
 
 function addXp(state: GameState, amount: number) {
-  state.xp += amount;
-  // Small particle feedback
+  const bonus = 1 + (state.abilities.xpBonus || 0);
+  state.xp += Math.floor(amount * bonus);
   state.particles.push(...createParticles(state.player.pos, '#bf5af2', 2, 40, 1.5));
 }
 
