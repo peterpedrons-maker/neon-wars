@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PlayerClass, GameScreen } from '../game/types';
+import { ShipType, GameScreen } from '../game/types';
 import MainMenu from '../components/game/MainMenu';
 import ClassSelect from '../components/game/ClassSelect';
 import HowToPlay from '../components/game/HowToPlay';
@@ -8,10 +8,10 @@ import GameCanvas from '../components/game/GameCanvas';
 
 const Index = () => {
   const [screen, setScreen] = useState<GameScreen>('menu');
-  const [playerClass, setPlayerClass] = useState<PlayerClass>('mage');
+  const [playerClass, setPlayerClass] = useState<ShipType>('phantom');
   const [gameKey, setGameKey] = useState(0);
 
-  const handleClassSelect = (cls: PlayerClass) => {
+  const handleClassSelect = (cls: ShipType) => {
     setPlayerClass(cls);
     setGameKey(k => k + 1);
     setScreen('playing');

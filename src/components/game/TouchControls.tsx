@@ -75,11 +75,15 @@ const TouchControls: React.FC<TouchControlsProps> = ({ onInput, onSpecial }) => 
         onTouchMove={e => handleTouchMove(e, 'left')}
         onTouchEnd={e => handleTouchEnd(e, 'left')}
       >
-        <div className="w-full h-full rounded-full border-2 border-[#5a3a28] bg-[#2a1810]/60 flex items-center justify-center">
+        <div className="w-full h-full rounded-full flex items-center justify-center"
+             style={{ border: '2px solid rgba(0,255,255,0.3)', background: 'rgba(0,0,20,0.5)' }}>
           <div
-            className="rounded-full bg-[#8a6a50]/80 border border-[#CD853F]"
+            className="rounded-full"
             style={{
               width: KNOB_SIZE, height: KNOB_SIZE,
+              background: 'rgba(0,255,255,0.3)',
+              border: '1px solid rgba(0,255,255,0.6)',
+              boxShadow: '0 0 10px rgba(0,255,255,0.2)',
               transform: `translate(${leftPos.x}px, ${leftPos.y}px)`,
             }}
           />
@@ -94,11 +98,15 @@ const TouchControls: React.FC<TouchControlsProps> = ({ onInput, onSpecial }) => 
         onTouchMove={e => handleTouchMove(e, 'right')}
         onTouchEnd={e => handleTouchEnd(e, 'right')}
       >
-        <div className="w-full h-full rounded-full border-2 border-[#5a3a28] bg-[#2a1810]/60 flex items-center justify-center">
+        <div className="w-full h-full rounded-full flex items-center justify-center"
+             style={{ border: '2px solid rgba(255,0,64,0.3)', background: 'rgba(0,0,20,0.5)' }}>
           <div
-            className="rounded-full bg-[#e74c3c]/60 border border-[#e74c3c]"
+            className="rounded-full"
             style={{
               width: KNOB_SIZE, height: KNOB_SIZE,
+              background: 'rgba(255,0,64,0.3)',
+              border: '1px solid rgba(255,0,64,0.6)',
+              boxShadow: '0 0 10px rgba(255,0,64,0.2)',
               transform: `translate(${rightPos.x}px, ${rightPos.y}px)`,
             }}
           />
@@ -107,7 +115,12 @@ const TouchControls: React.FC<TouchControlsProps> = ({ onInput, onSpecial }) => 
 
       {/* Special button */}
       <button
-        className="absolute bottom-36 right-10 z-30 w-14 h-14 rounded-full bg-[#9b59b6]/50 border-2 border-[#9b59b6] flex items-center justify-center text-2xl active:scale-90 active:bg-[#9b59b6]/80 transition-transform touch-none"
+        className="absolute bottom-36 right-10 z-30 w-14 h-14 rounded-full flex items-center justify-center text-2xl active:scale-90 transition-transform touch-none font-mono"
+        style={{
+          background: 'rgba(191,90,242,0.3)',
+          border: '2px solid rgba(191,90,242,0.6)',
+          boxShadow: '0 0 15px rgba(191,90,242,0.2)',
+        }}
         onTouchStart={e => { e.preventDefault(); onSpecial(); }}
       >
         ✨
