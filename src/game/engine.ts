@@ -65,7 +65,7 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
       titanBlast(state, dt);
     } else {
       const prevTimer = p.attackTimer;
-      playerAttack(p, state.projectiles);
+      playerAttack(p, state.projectiles, state.abilities);
       if (prevTimer <= 0 && p.attackTimer > 0) {
         // Shot was fired
         if (p.class === 'phantom') playShootPhantom();
@@ -562,6 +562,31 @@ function updateProjectiles(state: GameState, dt: number) {
 
   for (const proj of state.projectiles) {
     if (!proj.alive) continue;
+    
+    // Homing: player projectiles slightly track nearest enemy
+    if (proj.fromPlayer && state.abilities.homingChance > 0) {
+      let nearest: Enemy | null = null;
+      let nearestDist = 200;
+      for (const e of state.enemies) {
+        if (!e.alive) continue;
+        const d = dist(proj.pos, e.pos);
+        if (d < nearestDist) { nearestDist = d; nearest = e; }
+      }
+      if (nearest && Math.random() < state.abilities.homingChance) {
+        const targetAngle = Math.atan2(nearest.pos.y - proj.pos.y, nearest.pos.x - proj.pos.x);
+        const currentAngle = Math.atan2(proj.vel.y, proj.vel.x);
+        let diff = targetAngle - currentAngle;
+        if (diff > Math.PI) diff -= Math.PI * 2;
+        if (diff < -Math.PI) diff += Math.PI * 2;
+        const turnRate = 3 * dt;
+        const turn = Math.max(-turnRate, Math.min(turnRate, diff));
+        const newAngle = currentAngle + turn;
+        const speed = Math.hypot(proj.vel.x, proj.vel.y);
+        proj.vel.x = Math.cos(newAngle) * speed;
+        proj.vel.y = Math.sin(newAngle) * speed;
+      }
+    }
+    
     proj.pos.x += proj.vel.x * dt;
     proj.pos.y += proj.vel.y * dt;
     proj.lifetime -= dt;
@@ -578,6 +603,20 @@ function updateProjectiles(state: GameState, dt: number) {
         if (dist(proj.pos, e.pos) < proj.radius + e.radius) {
           proj.alive = false;
           damageEnemy(state, e, proj.damage);
+          
+          // Explosion radius: damage nearby enemies too
+          if (state.abilities.explosionRadius > 0) {
+            const expR = state.abilities.explosionRadius;
+            for (const e2 of state.enemies) {
+              if (!e2.alive || e2 === e) continue;
+              if (dist(proj.pos, e2.pos) < expR + e2.radius) {
+                e2.hp -= proj.damage * 0.5;
+                e2.flashTimer = 0.08;
+              }
+            }
+            state.particles.push(...createParticles(proj.pos, '#ff6b00', 12, expR, 3));
+            state.particles.push(...createParticles(proj.pos, '#ffff00', 6, expR * 0.6, 2));
+          }
           break;
         }
       }

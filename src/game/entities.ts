@@ -1,12 +1,13 @@
 import {
   Player, Enemy, Projectile, Particle, PowerUp, Vec2,
-  ShipType, EnemyType, PowerUpType
+  ShipType, EnemyType, PowerUpType, GameState
 } from './types';
 import {
   CLASS_STATS, ENEMY_STATS, ARENA_W, ARENA_H,
   SPAWN_MARGIN, PROJECTILE_SPEED, PROJECTILE_LIFETIME,
   COLORS, WARRIOR_ATTACK_RANGE
 } from './constants';
+import { AbilityState } from './abilities';
 
 export function createPlayer(cls: ShipType): Player {
   const s = CLASS_STATS[cls];
@@ -107,7 +108,7 @@ export function createPowerUp(pos: Vec2): PowerUp | null {
   };
 }
 
-export function playerAttack(player: Player, projectiles: Projectile[]): void {
+export function playerAttack(player: Player, projectiles: Projectile[], abilities?: AbilityState): void {
   if (player.attackTimer > 0) return;
   player.attackTimer = player.attackCooldown;
 
@@ -119,29 +120,35 @@ export function playerAttack(player: Player, projectiles: Projectile[]): void {
     : COLORS.titan;
 
   if (player.class === 'titan' || player.class === 'juggernaut') {
-    // Heavy blast - handled in engine for area damage
     return;
   }
 
-  const angles = player.tripleTimer > 0 ? [-0.2, 0, 0.2] : [0];
+  const extraProjectiles = abilities?.projectileCount || 0;
+  const baseAngles = player.tripleTimer > 0 ? [-0.2, 0, 0.2] : [0];
   
-  // Valkyrie shoots double
+  // Add extra projectile spread
+  let angles = [...baseAngles];
+  for (let i = 1; i <= extraProjectiles; i++) {
+    angles.push(i * 0.12);
+    angles.push(-i * 0.12);
+  }
+  
+  // Valkyrie shoots double base + extra
   if (player.class === 'valkyrie') {
-    for (const offset of [-0.08, 0.08]) {
+    const vAngles = [-0.08, 0.08];
+    for (let i = 1; i <= extraProjectiles; i++) {
+      vAngles.push(0.08 + i * 0.12);
+      vAngles.push(-0.08 - i * 0.12);
+    }
+    for (const offset of vAngles) {
       projectiles.push(createProjectile(player.pos, player.angle + offset, player.damage, true, color, 1.2));
     }
     return;
   }
   
+  const speedMult = player.class === 'interceptor' ? 1.3 : player.class === 'spectre' ? 1.5 : 1;
   for (const offset of angles) {
-    projectiles.push(createProjectile(
-      player.pos,
-      player.angle + offset,
-      player.damage,
-      true,
-      color,
-      player.class === 'interceptor' ? 1.3 : player.class === 'spectre' ? 1.5 : 1
-    ));
+    projectiles.push(createProjectile(player.pos, player.angle + offset, player.damage, true, color, speedMult));
   }
 }
 

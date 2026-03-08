@@ -355,11 +355,11 @@ export function xpForLevel(level: number): number {
   return Math.floor(20 + level * 15 + level * level * 2);
 }
 
-// Update orbital drones
+// Update orbital drones - projectileCount adds extra orbitals
 export function updateOrbitals(state: GameState, dt: number) {
   if (state.abilities.orbitals <= 0) return;
   const p = state.player;
-  const count = state.abilities.orbitals;
+  const count = state.abilities.orbitals + state.abilities.projectileCount;
   const orbitalDamage = 15 + state.wave * 2;
   const orbitalRadius = p.radius + 30;
 
@@ -429,7 +429,7 @@ export function updateFrostNova(state: GameState, dt: number) {
   }
 }
 
-// Auto missiles
+// Auto missiles - projectileCount adds extra missiles
 export function updateMissiles(state: GameState, dt: number) {
   if (state.abilities.missileCount <= 0) return;
   state.abilities.missileTimer -= dt;
@@ -438,7 +438,9 @@ export function updateMissiles(state: GameState, dt: number) {
     const p = state.player;
     const alive = state.enemies.filter(e => e.alive);
     const sorted = alive.sort((a, b) => dist(a.pos, p.pos) - dist(b.pos, p.pos));
-    const targets = sorted.slice(0, state.abilities.missileCount);
+    const extraProj = state.abilities.projectileCount;
+    const totalMissiles = state.abilities.missileCount + extraProj;
+    const targets = sorted.slice(0, totalMissiles);
     for (const t of targets) {
       const angle = Math.atan2(t.pos.y - p.pos.y, t.pos.x - p.pos.x);
       state.projectiles.push({
@@ -454,21 +456,22 @@ export function updateMissiles(state: GameState, dt: number) {
   }
 }
 
-// Lightning Ring - periodic auto-strikes
+// Lightning Ring - periodic auto-strikes, projectileCount adds extra targets
 export function updateLightningRing(state: GameState, dt: number) {
   if (state.abilities.lightningRingRadius <= 0) return;
   state.abilities.lightningRingTimer -= dt;
   if (state.abilities.lightningRingTimer <= 0) {
     state.abilities.lightningRingTimer = 0.8;
     const p = state.player;
-    let hit = false;
+    let hits = 0;
+    const maxHits = 1 + state.abilities.projectileCount;
     for (const e of state.enemies) {
       if (!e.alive) continue;
+      if (hits >= maxHits) break;
       const d = dist(e.pos, p.pos);
       if (d < state.abilities.lightningRingRadius) {
         e.hp -= state.abilities.lightningRingDamage;
         e.flashTimer = 0.1;
-        // Lightning visual
         const steps = 4;
         for (let i = 0; i < steps; i++) {
           const t = i / steps;
@@ -479,11 +482,10 @@ export function updateLightningRing(state: GameState, dt: number) {
             color: '#80d0ff', size: 2,
           });
         }
-        hit = true;
-        break; // one target per tick
+        hits++;
       }
     }
-    if (!hit) state.abilities.lightningRingTimer = 0.2; // faster retry
+    if (hits === 0) state.abilities.lightningRingTimer = 0.2;
   }
 }
 
