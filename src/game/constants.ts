@@ -82,6 +82,9 @@ export const CLASS_STATS: Record<ShipType, { hp: number; damage: number; speed: 
   phantom: { hp: 3, damage: 15, speed: 130, attackCooldown: 0.38, specialCooldown: 5, radius: 12 },
   interceptor: { hp: 3, damage: 10, speed: 160, attackCooldown: 0.2, specialCooldown: 4, radius: 10 },
   titan: { hp: 3, damage: 28, speed: 95, attackCooldown: 0.6, specialCooldown: 3, radius: 15 },
+  spectre: { hp: 2, damage: 20, speed: 150, attackCooldown: 0.3, specialCooldown: 4, radius: 11 },
+  valkyrie: { hp: 4, damage: 12, speed: 140, attackCooldown: 0.25, specialCooldown: 3.5, radius: 11 },
+  juggernaut: { hp: 5, damage: 35, speed: 75, attackCooldown: 0.8, specialCooldown: 6, radius: 17 },
 };
 
 export const ENEMY_STATS: Record<EnemyType, { hp: number; damage: number; speed: number; score: number; radius: number; attackCooldown: number; isBoss: boolean }> = {
@@ -89,6 +92,9 @@ export const ENEMY_STATS: Record<EnemyType, { hp: number; damage: number; speed:
   splitter: { hp: 20, damage: 5, speed: 60, score: 15, radius: 12, attackCooldown: 2, isBoss: false },
   dasher: { hp: 8, damage: 12, speed: 200, score: 25, radius: 8, attackCooldown: 0.6, isBoss: false },
   tank: { hp: 50, damage: 18, speed: 40, score: 50, radius: 16, attackCooldown: 1.5, isBoss: false },
+  fire_elemental: { hp: 30, damage: 15, speed: 70, score: 35, radius: 13, attackCooldown: 1.2, isBoss: false },
+  void_ghost: { hp: 18, damage: 20, speed: 110, score: 40, radius: 10, attackCooldown: 0.8, isBoss: false },
+  crystal_golem: { hp: 60, damage: 12, speed: 35, score: 45, radius: 18, attackCooldown: 2, isBoss: false },
   mothership: { hp: 300, damage: 25, speed: 50, score: 500, radius: 30, attackCooldown: 2, isBoss: true },
   vortex: { hp: 250, damage: 20, speed: 45, score: 500, radius: 28, attackCooldown: 1.5, isBoss: true },
   colossus: { hp: 400, damage: 35, speed: 30, score: 500, radius: 35, attackCooldown: 3, isBoss: true },
