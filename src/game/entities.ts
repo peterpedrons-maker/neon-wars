@@ -96,8 +96,8 @@ export function createParticles(pos: Vec2, color: string, count: number, speed =
 }
 
 export function createPowerUp(pos: Vec2): PowerUp | null {
-  // 5% chance for a rare heart drop
-  if (Math.random() < 0.05) {
+  // 3% chance for a rare heart drop
+  if (Math.random() < 0.03) {
     return {
       pos: { x: pos.x, y: pos.y },
       vel: { x: 0, y: 0 },

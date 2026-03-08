@@ -1381,132 +1381,109 @@ function drawParticle(ctx: CanvasRenderingContext2D, p: Particle) {
   ctx.restore();
 }
 
-// --- POWER-UP (Distinct designs to avoid confusion with enemies) ---
+// --- POWER-UP (Very distinct from enemies — white bg circle + colored icon + label) ---
 function drawPowerUp(ctx: CanvasRenderingContext2D, pu: PowerUp, time: number) {
   ctx.save();
   ctx.translate(pu.pos.x, pu.pos.y);
 
-  const pulse = 1 + Math.sin(time * 4) * 0.12;
-  const bob = Math.sin(time * 3) * 3;
+  const pulse = 1 + Math.sin(time * 3) * 0.08;
+  const bob = Math.sin(time * 2.5) * 4;
   ctx.translate(0, bob);
 
   const colorMap: Record<string, string> = {
-    speed: COLORS.speedPU, 'triple-shot': COLORS.triplePU,
-    shield: COLORS.shieldPU, heal: COLORS.healPU,
+    speed: '#ffff00', 'triple-shot': '#ff44ff',
+    shield: '#44ffff', heal: '#44ff44',
   };
   const color = colorMap[pu.type] || '#fff';
-  const r = pu.radius * pulse;
+  const r = 14 * pulse;
 
-  // Soft outer beacon glow (very distinct from enemy shapes)
-  const og = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 3.5);
-  og.addColorStop(0, hexToRgba(color, 0.25));
-  og.addColorStop(0.5, hexToRgba(color, 0.08));
-  og.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = og;
-  ctx.beginPath(); ctx.arc(0, 0, r * 3.5, 0, Math.PI * 2); ctx.fill();
-
-  // Pulsing ring (makes it look like a pickup, not an enemy)
-  const ringPulse = 1 + Math.sin(time * 6) * 0.3;
-  ctx.strokeStyle = hexToRgba(color, 0.3);
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.arc(0, 0, r * 2 * ringPulse, 0, Math.PI * 2); ctx.stroke();
-
-  // Draw unique shape per type
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 18;
-
-  if (pu.type === 'speed') {
-    // Lightning bolt shape
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.moveTo(-3 * pulse, -r);
-    ctx.lineTo(2 * pulse, -2 * pulse);
-    ctx.lineTo(-1 * pulse, -1 * pulse);
-    ctx.lineTo(3 * pulse, r);
-    ctx.lineTo(-2 * pulse, 2 * pulse);
-    ctx.lineTo(1 * pulse, 1 * pulse);
-    ctx.closePath();
-    ctx.fill();
-  } else if (pu.type === 'triple-shot') {
-    // Diamond / rhombus
-    ctx.fillStyle = hexToRgba(color, 0.4);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(0, -r * 1.2);
-    ctx.lineTo(r * 0.8, 0);
-    ctx.lineTo(0, r * 1.2);
-    ctx.lineTo(-r * 0.8, 0);
-    ctx.closePath();
-    ctx.fill(); ctx.stroke();
-    // Inner diamond
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.moveTo(0, -r * 0.5);
-    ctx.lineTo(r * 0.3, 0);
-    ctx.lineTo(0, r * 0.5);
-    ctx.lineTo(-r * 0.3, 0);
-    ctx.closePath();
-    ctx.fill();
-  } else if (pu.type === 'shield') {
-    // Hexagon shield
-    ctx.fillStyle = hexToRgba(color, 0.3);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2 - Math.PI / 6;
-      const x = Math.cos(a) * r * 1.1;
-      const y = Math.sin(a) * r * 1.1;
-      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    }
-    ctx.closePath();
-    ctx.fill(); ctx.stroke();
-    // Inner circle
-    ctx.fillStyle = hexToRgba(color, 0.5);
-    ctx.beginPath(); ctx.arc(0, 0, r * 0.4, 0, Math.PI * 2); ctx.fill();
-  } else if (pu.type === 'heal') {
-    // Cross / plus sign
-    const w = r * 0.45;
-    const h = r * 1.1;
-    ctx.fillStyle = hexToRgba(color, 0.4);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(-w, -h); ctx.lineTo(w, -h); ctx.lineTo(w, -w);
-    ctx.lineTo(h, -w); ctx.lineTo(h, w); ctx.lineTo(w, w);
-    ctx.lineTo(w, h); ctx.lineTo(-w, h); ctx.lineTo(-w, w);
-    ctx.lineTo(-h, w); ctx.lineTo(-h, -w); ctx.lineTo(-w, -w);
-    ctx.closePath();
-    ctx.fill(); ctx.stroke();
-    // Center dot
-    ctx.fillStyle = color;
-    ctx.beginPath(); ctx.arc(0, 0, r * 0.2, 0, Math.PI * 2); ctx.fill();
-  }
-
-  ctx.shadowBlur = 0;
-
-  // Floating sparkles around power-up
-  ctx.save(); ctx.rotate(time * 2);
-  for (let i = 0; i < 4; i++) {
-    const a = (i / 4) * Math.PI * 2 + time * 3;
-    const sparkDist = r * 1.8 + Math.sin(time * 5 + i * 2) * 3;
-    ctx.fillStyle = hexToRgba('#ffffff', 0.6 + Math.sin(time * 7 + i) * 0.3);
-    ctx.beginPath();
-    ctx.arc(Math.cos(a) * sparkDist, Math.sin(a) * sparkDist, 1.2, 0, Math.PI * 2);
-    ctx.fill();
-  }
+  // Outer rotating dashed ring
+  ctx.save();
+  ctx.rotate(time * 1.5);
+  ctx.setLineDash([4, 4]);
+  ctx.strokeStyle = hexToRgba(color, 0.5);
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(0, 0, r * 2.2, 0, Math.PI * 2); ctx.stroke();
+  ctx.setLineDash([]);
   ctx.restore();
 
-  // Label below
-  ctx.fillStyle = hexToRgba(color, 0.7);
-  ctx.font = 'bold 6px Orbitron, monospace';
+  // Large white filled circle background (key differentiator from enemies)
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 25;
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Draw icon inside the white circle
+  if (pu.type === 'speed') {
+    // Bold lightning bolt
+    ctx.fillStyle = '#cc8800';
+    ctx.strokeStyle = '#886600';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(-1, -r * 0.7);
+    ctx.lineTo(4, -r * 0.1);
+    ctx.lineTo(0, -r * 0.1);
+    ctx.lineTo(1, r * 0.7);
+    ctx.lineTo(-4, r * 0.1);
+    ctx.lineTo(0, r * 0.1);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+  } else if (pu.type === 'triple-shot') {
+    // Three small circles in a fan (like projectiles)
+    ctx.fillStyle = '#cc00cc';
+    for (let i = -1; i <= 1; i++) {
+      const angle = i * 0.4 - Math.PI / 2;
+      const dx = Math.cos(angle) * r * 0.45;
+      const dy = Math.sin(angle) * r * 0.45;
+      ctx.beginPath(); ctx.arc(dx, dy, 3, 0, Math.PI * 2); ctx.fill();
+    }
+    // Arrow base
+    ctx.strokeStyle = '#cc00cc';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, r * 0.3); ctx.lineTo(0, -r * 0.1); ctx.stroke();
+  } else if (pu.type === 'shield') {
+    // Shield icon (rounded chevron)
+    ctx.fillStyle = '#0088aa';
+    ctx.strokeStyle = '#005566';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, -r * 0.65);
+    ctx.lineTo(r * 0.55, -r * 0.3);
+    ctx.lineTo(r * 0.55, r * 0.15);
+    ctx.quadraticCurveTo(0, r * 0.75, 0, r * 0.75);
+    ctx.quadraticCurveTo(0, r * 0.75, -r * 0.55, r * 0.15);
+    ctx.lineTo(-r * 0.55, -r * 0.3);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+  } else if (pu.type === 'heal') {
+    // Red/green cross
+    ctx.fillStyle = '#cc2222';
+    const cw = r * 0.3;
+    const ch = r * 0.6;
+    ctx.fillRect(-cw, -ch, cw * 2, ch * 2);
+    ctx.fillRect(-ch, -cw, ch * 2, cw * 2);
+  }
+
+  // Colored label below (big and clear)
+  ctx.fillStyle = color;
+  ctx.font = 'bold 8px Orbitron, monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   const labelMap: Record<string, string> = {
-    speed: 'SPEED', 'triple-shot': 'TRIPLE', shield: 'SHIELD', heal: 'HEAL',
+    speed: '⚡SPD', 'triple-shot': '▶▶▶', shield: '🛡SHD', heal: '♥HP',
   };
-  ctx.fillText(labelMap[pu.type] || '', 0, r * 1.5);
+  ctx.fillText(labelMap[pu.type] || '', 0, r + 4);
+
+  // Vertical beam of light above
+  const beamAlpha = 0.15 + Math.sin(time * 4) * 0.08;
+  const beam = ctx.createLinearGradient(0, -60, 0, -r);
+  beam.addColorStop(0, 'rgba(255,255,255,0)');
+  beam.addColorStop(1, hexToRgba(color, beamAlpha));
+  ctx.fillStyle = beam;
+  ctx.fillRect(-3, -60, 6, 60 - r);
 
   ctx.restore();
 }
