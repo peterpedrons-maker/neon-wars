@@ -60,10 +60,12 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   ctx.scale(scale, scale);
   ctx.translate(viewportW / 2 - camX, viewportH / 2 - camY);
 
-  // Arena floor - tile the texture across playable area
+  // Draw procedural dungeon walls first (dark bg + stone walls)
+  drawDungeonWalls(ctx, time);
+
+  // Arena floor - tile the texture across playable area (on top of dark bg)
   if (floorImageLoaded && floorImage) {
     if (!floorPattern) {
-      // Create a temporary canvas to scale the tile
       const tileCanvas = document.createElement('canvas');
       tileCanvas.width = FLOOR_TILE_SIZE;
       tileCanvas.height = FLOOR_TILE_SIZE;
@@ -80,8 +82,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
     ctx.fillRect(WALL_LEFT, WALL_TOP, WALL_RIGHT - WALL_LEFT, WALL_BOTTOM - WALL_TOP);
   }
 
-  // Draw procedural dungeon walls (match collision exactly)
-  drawDungeonWalls(ctx, time);
+  // Draw inner wall shadows on top of floor
+  drawWallInnerShadows(ctx);
 
   // Ambient glow around player
   if (state.player.alive) {
