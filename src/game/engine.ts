@@ -219,8 +219,8 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
     return true;
   });
 
-  // Level up check
-  if (state.xp >= state.xpToNext && state.screen === 'playing') {
+  // Level up check (only host triggers level up; guest receives it via broadcast)
+  if (state.isHost !== false && state.xp >= state.xpToNext && state.screen === 'playing') {
     state.xp -= state.xpToNext;
     state.level++;
     state.xpToNext = xpForLevel(state.level);
