@@ -152,6 +152,12 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
     const onKeyDown = (e: KeyboardEvent) => {
       keysRef.current.add(e.key.toLowerCase());
       if (e.key === ' ') { e.preventDefault(); inputRef.current.special = true; }
+      
+      // Emotes
+      if (e.key === '1') { if (stateRef.current) stateRef.current.player.emote = { text: '👍', timer: 3 }; }
+      if (e.key === '2') { if (stateRef.current) stateRef.current.player.emote = { text: '💀', timer: 3 }; }
+      if (e.key === '3') { if (stateRef.current) stateRef.current.player.emote = { text: '🔥', timer: 3 }; }
+      if (e.key === '4') { if (stateRef.current) stateRef.current.player.emote = { text: '❤️', timer: 3 }; }
     };
     const onKeyUp = (e: KeyboardEvent) => {
       keysRef.current.delete(e.key.toLowerCase());
