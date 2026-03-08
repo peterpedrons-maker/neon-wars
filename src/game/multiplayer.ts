@@ -124,6 +124,8 @@ export function connectToRoom(
     .on('broadcast', { event: 'guest_confirm' }, () => callbacks.onConfirm())
     .on('broadcast', { event: 'lobby_state' }, ({ payload }) => callbacks.onLobbyState(payload as LobbyState))
     .on('broadcast', { event: 'chat' }, ({ payload }) => callbacks.onChat(payload as ChatMessage))
+    .on('broadcast', { event: 'level_up' }, ({ payload }) => callbacks.onLevelUp((payload as any).level))
+    .on('broadcast', { event: 'upgrade_done' }, () => callbacks.onUpgradeDone())
     .subscribe((status) => {
       if (status === 'SUBSCRIBED') {
         channel!.send({ type: 'broadcast', event: 'player_join', payload: { playerId: room.playerId, isHost: room.isHost } });
