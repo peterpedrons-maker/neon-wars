@@ -77,15 +77,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   }
   ctx.fillRect(0, 0, ARENA_W, ARENA_H);
 
-  // Grid overlay
-  ctx.strokeStyle = COLORS.grid;
-  ctx.lineWidth = 0.5;
-  for (let x = 0; x <= ARENA_W; x += 64) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, ARENA_H); ctx.stroke();
-  }
-  for (let y = 0; y <= ARENA_H; y += 64) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(ARENA_W, y); ctx.stroke();
-  }
+  // Subtle dark overlay for depth
+  ctx.fillStyle = 'rgba(0,0,0,0.1)';
+  ctx.fillRect(0, 0, ARENA_W, ARENA_H);
 
   // Ambient glow around player
   if (state.player.alive) {
