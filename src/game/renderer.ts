@@ -233,15 +233,6 @@ function drawDungeonWalls(ctx: CanvasRenderingContext2D, time: number) {
       row++;
     }
     
-    // Moss/crack details
-    ctx.fillStyle = 'rgba(40,80,40,0.15)';
-    for (let i = 0; i < Math.floor(w * h / 800); i++) {
-      const mx = x + Math.random() * w;
-      const my = y + Math.random() * h;
-      ctx.beginPath();
-      ctx.arc(mx, my, 2 + Math.random() * 3, 0, Math.PI * 2);
-      ctx.fill();
-    }
   };
 
   // Top wall
