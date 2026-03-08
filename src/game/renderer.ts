@@ -59,18 +59,13 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   ctx.scale(scale, scale);
   ctx.translate(viewportW / 2 - camX, viewportH / 2 - camY);
 
-  // Arena floor
-  const pattern = createFloorPattern(ctx);
-  if (pattern) {
-    ctx.fillStyle = pattern;
+  // Arena floor - draw dungeon image stretched to fill arena
+  if (floorImageLoaded && floorImage) {
+    ctx.drawImage(floorImage, 0, 0, ARENA_W, ARENA_H);
   } else {
     ctx.fillStyle = COLORS.arena;
+    ctx.fillRect(0, 0, ARENA_W, ARENA_H);
   }
-  ctx.fillRect(0, 0, ARENA_W, ARENA_H);
-
-  // Subtle dark overlay for depth
-  ctx.fillStyle = 'rgba(0,0,0,0.1)';
-  ctx.fillRect(0, 0, ARENA_W, ARENA_H);
 
   // Ambient glow around player
   if (state.player.alive) {
