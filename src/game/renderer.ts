@@ -257,8 +257,10 @@ function drawDungeonWalls(ctx: CanvasRenderingContext2D, time: number) {
   ctx.strokeStyle = 'rgba(100,80,140,0.3)';
   ctx.lineWidth = 2;
   ctx.strokeRect(wl, wt, wr - wl, wb - wt);
-  
-  // Inner shadow (floor edge darkening)
+}
+
+function drawWallInnerShadows(ctx: CanvasRenderingContext2D) {
+  const wl = WALL_LEFT, wr = WALL_RIGHT, wt = WALL_TOP, wb = WALL_BOTTOM;
   const shadowSize = 15;
   // Top inner shadow
   let sg = ctx.createLinearGradient(0, wt, 0, wt + shadowSize);
