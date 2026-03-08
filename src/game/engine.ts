@@ -295,6 +295,7 @@ function spawnWaveEnemy(state: GameState) {
 
 function updateEnemies(state: GameState, dt: number) {
   const p = state.player;
+  const peer = state.coopPeer;
 
   for (const e of state.enemies) {
     if (!e.alive) {
@@ -305,8 +306,19 @@ function updateEnemies(state: GameState, dt: number) {
     e.flashTimer = Math.max(0, e.flashTimer - dt);
     e.attackTimer = Math.max(0, e.attackTimer - dt);
 
-    const dx = p.pos.x - e.pos.x;
-    const dy = p.pos.y - e.pos.y;
+    // Find nearest player target (host player or coop peer)
+    let targetX = p.pos.x, targetY = p.pos.y;
+    if (peer && peer.alive) {
+      const dToPlayer = Math.hypot(p.pos.x - e.pos.x, p.pos.y - e.pos.y);
+      const dToPeer = Math.hypot(peer.pos.x - e.pos.x, peer.pos.y - e.pos.y);
+      if (dToPeer < dToPlayer) {
+        targetX = peer.pos.x;
+        targetY = peer.pos.y;
+      }
+    }
+
+    const dx = targetX - e.pos.x;
+    const dy = targetY - e.pos.y;
     const d = Math.hypot(dx, dy);
 
     // --- UNIQUE ENEMY BEHAVIORS ---
