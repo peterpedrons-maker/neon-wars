@@ -48,7 +48,7 @@ const HUD: React.FC<HUDProps> = ({ player, wave, score, specialReady }) => {
               }}
             />
           </div>
-          <span className="text-xs text-[#8a7a6a]">{specialReady ? 'PRONTO' : `${Math.ceil(player.specialTimer)}s`}</span>
+          <span className="text-xs text-[#94a3b8]">{specialReady ? 'PRONTO' : `${Math.ceil(player.specialTimer)}s`}</span>
         </div>
 
         {/* Active effects */}
