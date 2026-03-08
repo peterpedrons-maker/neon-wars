@@ -15,10 +15,13 @@ export interface CoopPlayerState {
   hp: number;
   maxHp: number;
   alive: boolean;
+  dead: boolean; // true if they died and need revive
   shipClass: string;
   shieldTimer: number;
   invincibleTimer: number;
   shooting: boolean;
+  playerId?: string;
+  playerLabel?: string;
 }
 
 export interface CoopGameSync {

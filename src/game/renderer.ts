@@ -1695,7 +1695,7 @@ function drawOffScreenPeerIndicators(
     const edgeX = Math.max(margin, Math.min(canvasW - margin, halfW + Math.cos(angle) * (halfW - margin)));
     const edgeY = Math.max(margin, Math.min(canvasH - margin, halfH + Math.sin(angle) * (halfH - margin)));
 
-    const color = PEER_COLORS[i % PEER_COLORS.length];
+    const color = (p.dead || !p.alive) ? '#ff4060' : PEER_COLORS[i % PEER_COLORS.length];
     const pulse = 0.7 + Math.sin(time * 4 + i) * 0.3;
 
     ctx.save();

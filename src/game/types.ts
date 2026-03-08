@@ -139,6 +139,7 @@ export interface GameState {
     pos: { x: number; y: number };
     angle: number;
     alive: boolean;
+    dead: boolean; // true if they died
     shipClass: string;
     shooting: boolean;
     attackTimer: number;
@@ -150,6 +151,7 @@ export interface GameState {
     maxHp: number;
     playerId: string;
     playerLabel: string;
+    reviveProgress: number; // 0-1 for revive progress
   }>;
   // Legacy single peer alias (computed from coopPeers[0])
   coopPeer?: {
@@ -168,6 +170,7 @@ export interface GameState {
   };
   isHost?: boolean;
   enemiesKilledThisWave: number;
+  localPlayerId?: string; // ID of the local player (to filter out from peer rendering)
 }
 
 export interface LeaderboardEntry {
