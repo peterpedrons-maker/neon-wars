@@ -332,11 +332,14 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
   const atkRetract = atkRatio > 0 && atkRatio <= 0.5 ? (0.5 - atkRatio) * 2 : 0; // second half returns
   const atkAnim = atkProgress > 0 ? atkProgress : -atkRetract * 0.3;
 
-  // Body lean when walking
-  const bodyLean = isWalking ? Math.sin(walkCycle * 0.6) * 0.03 : 0;
+  // Body faces movement direction (not aim), weapon aims independently
+  const moveAngle = isWalking ? Math.atan2(p.vel?.y || 0, p.vel?.x || 0) : 0;
+  // Determine if player faces left or right based on aim
+  const facingRight = Math.cos(p.angle) >= 0;
+  const bodyFlip = facingRight ? 1 : -1;
 
   ctx.save();
-  ctx.rotate(p.angle + bodyLean);
+  ctx.scale(bodyFlip, 1); // flip body to face aim direction horizontally
 
   // --- CLASS COLORS ---
   let skinColor = '#f5d0a9';
