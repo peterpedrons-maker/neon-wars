@@ -22,7 +22,6 @@ export interface CoopPlayerState {
 }
 
 export interface CoopGameSync {
-  // Host sends full lightweight state
   enemies: Array<{ x: number; y: number; type: string; hp: number; maxHp: number; radius: number; alive: boolean }>;
   projectiles: Array<{ x: number; y: number; vx: number; vy: number; fromPlayer: boolean; color: string; alive: boolean }>;
   wave: number;
@@ -71,6 +70,8 @@ export function connectToRoom(
   onPeerState: (state: CoopPlayerState) => void,
   onGameSync: (sync: CoopGameSync) => void,
   onStartGame: (data: { mapId: string; hostClass: string }) => void,
+  onCountdown: (count: number) => void,
+  onConfirm: () => void,
 ): RealtimeChannel {
   if (channel) {
     supabase.removeChannel(channel);
@@ -86,9 +87,10 @@ export function connectToRoom(
     .on('broadcast', { event: 'player_state' }, ({ payload }) => onPeerState(payload as CoopPlayerState))
     .on('broadcast', { event: 'game_sync' }, ({ payload }) => onGameSync(payload as CoopGameSync))
     .on('broadcast', { event: 'start_game' }, ({ payload }) => onStartGame(payload as { mapId: string; hostClass: string }))
+    .on('broadcast', { event: 'countdown' }, ({ payload }) => onCountdown((payload as any).count))
+    .on('broadcast', { event: 'guest_confirm' }, () => onConfirm())
     .subscribe((status) => {
       if (status === 'SUBSCRIBED') {
-        // Announce ourselves
         channel!.send({ type: 'broadcast', event: 'player_join', payload: { playerId: room.playerId, isHost: room.isHost } });
       }
     });
@@ -109,6 +111,16 @@ export function sendGameSync(sync: CoopGameSync) {
 export function sendStartGame(mapId: string, hostClass: string) {
   if (!channel) return;
   channel.send({ type: 'broadcast', event: 'start_game', payload: { mapId, hostClass } });
+}
+
+export function sendCountdown(count: number) {
+  if (!channel) return;
+  channel.send({ type: 'broadcast', event: 'countdown', payload: { count } });
+}
+
+export function sendGuestConfirm() {
+  if (!channel) return;
+  channel.send({ type: 'broadcast', event: 'guest_confirm', payload: {} });
 }
 
 export function leaveRoom() {
