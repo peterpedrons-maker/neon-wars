@@ -1002,6 +1002,8 @@ export function createInitialState(player: Player, mapId: string = 'neon-grid', 
     hazardSpawnTimer: 5,
     flameZones: [],
     plasmaZones: [],
+    coopPeers: [],
+    enemiesKilledThisWave: 0,
   };
 }
 
