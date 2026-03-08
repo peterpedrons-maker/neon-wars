@@ -503,6 +503,7 @@ function damagePlayer(state: GameState, damage: number) {
     state.screen = 'game-over';
     state.particles.push(...createParticles(p.pos, COLORS.neonYellow, 40, 300, 5));
     state.particles.push(...createParticles(p.pos, '#ffffff', 20, 200, 3));
+    stopMusic();
     playGameOver();
   }
 }
