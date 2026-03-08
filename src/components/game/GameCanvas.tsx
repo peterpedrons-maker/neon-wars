@@ -196,9 +196,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, onMenu }) => {
         />
       )}
 
-      {state && state.screen === 'upgrade' && (
-        <UpgradeScreen wave={state.wave} onSelect={handleUpgrade} />
-      )}
+      {/* Upgrade screen removed - waves are continuous now */}
 
       {state && state.screen === 'game-over' && (
         <GameOver
