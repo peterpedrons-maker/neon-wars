@@ -181,7 +181,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, onMenu }) => {
   const state = stateRef.current;
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-[#1a0e0a]">
+    <div className="relative w-screen h-screen overflow-hidden bg-[#08061a]">
       <canvas ref={canvasRef} className="block w-full h-full" />
 
       {state && state.screen === 'playing' && (
