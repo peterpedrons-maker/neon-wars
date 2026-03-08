@@ -1381,12 +1381,12 @@ function drawParticle(ctx: CanvasRenderingContext2D, p: Particle) {
   ctx.restore();
 }
 
-// --- POWER-UP ---
+// --- POWER-UP (Distinct designs to avoid confusion with enemies) ---
 function drawPowerUp(ctx: CanvasRenderingContext2D, pu: PowerUp, time: number) {
   ctx.save();
   ctx.translate(pu.pos.x, pu.pos.y);
 
-  const pulse = 1 + Math.sin(time * 4) * 0.15;
+  const pulse = 1 + Math.sin(time * 4) * 0.12;
   const bob = Math.sin(time * 3) * 3;
   ctx.translate(0, bob);
 
@@ -1395,46 +1395,118 @@ function drawPowerUp(ctx: CanvasRenderingContext2D, pu: PowerUp, time: number) {
     shield: COLORS.shieldPU, heal: COLORS.healPU,
   };
   const color = colorMap[pu.type] || '#fff';
+  const r = pu.radius * pulse;
 
-  // Outer glow
-  const og = ctx.createRadialGradient(0, 0, pu.radius * 0.3, 0, 0, pu.radius * 2.5);
-  og.addColorStop(0, hexToRgba(color, 0.3));
+  // Soft outer beacon glow (very distinct from enemy shapes)
+  const og = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 3.5);
+  og.addColorStop(0, hexToRgba(color, 0.25));
+  og.addColorStop(0.5, hexToRgba(color, 0.08));
   og.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = og;
-  ctx.beginPath(); ctx.arc(0, 0, pu.radius * 2.5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(0, 0, r * 3.5, 0, Math.PI * 2); ctx.fill();
 
-  // Rotating ring
-  ctx.save(); ctx.rotate(time * 3);
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2;
-    ctx.fillStyle = hexToRgba(color, 0.4 + Math.sin(time * 5 + i) * 0.2);
+  // Pulsing ring (makes it look like a pickup, not an enemy)
+  const ringPulse = 1 + Math.sin(time * 6) * 0.3;
+  ctx.strokeStyle = hexToRgba(color, 0.3);
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(0, 0, r * 2 * ringPulse, 0, Math.PI * 2); ctx.stroke();
+
+  // Draw unique shape per type
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 18;
+
+  if (pu.type === 'speed') {
+    // Lightning bolt shape
+    ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(Math.cos(a) * pu.radius * 1.3 * pulse, Math.sin(a) * pu.radius * 1.3 * pulse, 1.5, 0, Math.PI * 2);
+    ctx.moveTo(-3 * pulse, -r);
+    ctx.lineTo(2 * pulse, -2 * pulse);
+    ctx.lineTo(-1 * pulse, -1 * pulse);
+    ctx.lineTo(3 * pulse, r);
+    ctx.lineTo(-2 * pulse, 2 * pulse);
+    ctx.lineTo(1 * pulse, 1 * pulse);
+    ctx.closePath();
+    ctx.fill();
+  } else if (pu.type === 'triple-shot') {
+    // Diamond / rhombus
+    ctx.fillStyle = hexToRgba(color, 0.4);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, -r * 1.2);
+    ctx.lineTo(r * 0.8, 0);
+    ctx.lineTo(0, r * 1.2);
+    ctx.lineTo(-r * 0.8, 0);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    // Inner diamond
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, -r * 0.5);
+    ctx.lineTo(r * 0.3, 0);
+    ctx.lineTo(0, r * 0.5);
+    ctx.lineTo(-r * 0.3, 0);
+    ctx.closePath();
+    ctx.fill();
+  } else if (pu.type === 'shield') {
+    // Hexagon shield
+    ctx.fillStyle = hexToRgba(color, 0.3);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2 - Math.PI / 6;
+      const x = Math.cos(a) * r * 1.1;
+      const y = Math.sin(a) * r * 1.1;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    // Inner circle
+    ctx.fillStyle = hexToRgba(color, 0.5);
+    ctx.beginPath(); ctx.arc(0, 0, r * 0.4, 0, Math.PI * 2); ctx.fill();
+  } else if (pu.type === 'heal') {
+    // Cross / plus sign
+    const w = r * 0.45;
+    const h = r * 1.1;
+    ctx.fillStyle = hexToRgba(color, 0.4);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-w, -h); ctx.lineTo(w, -h); ctx.lineTo(w, -w);
+    ctx.lineTo(h, -w); ctx.lineTo(h, w); ctx.lineTo(w, w);
+    ctx.lineTo(w, h); ctx.lineTo(-w, h); ctx.lineTo(-w, w);
+    ctx.lineTo(-h, w); ctx.lineTo(-h, -w); ctx.lineTo(-w, -w);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    // Center dot
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(0, 0, r * 0.2, 0, Math.PI * 2); ctx.fill();
+  }
+
+  ctx.shadowBlur = 0;
+
+  // Floating sparkles around power-up
+  ctx.save(); ctx.rotate(time * 2);
+  for (let i = 0; i < 4; i++) {
+    const a = (i / 4) * Math.PI * 2 + time * 3;
+    const sparkDist = r * 1.8 + Math.sin(time * 5 + i * 2) * 3;
+    ctx.fillStyle = hexToRgba('#ffffff', 0.6 + Math.sin(time * 7 + i) * 0.3);
+    ctx.beginPath();
+    ctx.arc(Math.cos(a) * sparkDist, Math.sin(a) * sparkDist, 1.2, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.restore();
 
-  // Core orb
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 15;
-  ctx.beginPath();
-  ctx.arc(0, 0, pu.radius * pulse, 0, Math.PI * 2);
-  ctx.fillStyle = hexToRgba(color, 0.3);
-  ctx.fill();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-  ctx.shadowBlur = 0;
-
-  // Icon
-  const iconMap: Record<string, string> = {
-    speed: '⚡', 'triple-shot': '◆', shield: '◯', heal: '+',
-  };
-  ctx.fillStyle = '#fff';
-  ctx.font = `${10 * pulse}px monospace`;
+  // Label below
+  ctx.fillStyle = hexToRgba(color, 0.7);
+  ctx.font = 'bold 6px Orbitron, monospace';
   ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(iconMap[pu.type] || '?', 0, 0);
+  ctx.textBaseline = 'top';
+  const labelMap: Record<string, string> = {
+    speed: 'SPEED', 'triple-shot': 'TRIPLE', shield: 'SHIELD', heal: 'HEAL',
+  };
+  ctx.fillText(labelMap[pu.type] || '', 0, r * 1.5);
 
   ctx.restore();
 }
