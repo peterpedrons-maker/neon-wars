@@ -512,7 +512,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
     // Archer: draw-back bow animation
     const drawBack = atkAnim > 0 ? atkAnim * 8 : 0;
     const releaseSnap = atkRetract > 0 ? Math.sin(atkRetract * Math.PI) * 2 : 0;
-    ctx.rotate(weaponArmBase);
+    ctx.rotate(armAimOffset + weaponArmBase);
     ctx.fillStyle = tunicColor;
     roundRect(ctx, -2, 0, 5, 12, 2);
     ctx.fill();
