@@ -314,7 +314,23 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
       () => {},
       () => {},
       () => {}, // onCountdown - host ignores
-      () => {}, // onConfirm - handled below
+      () => {
+        // Guest confirmed! Start countdown for both
+        setStatus('Jogador confirmou! Iniciando...');
+        let count = 5;
+        setCountdown(count);
+        sendCountdown(count);
+        countdownRef.current = setInterval(() => {
+          count--;
+          setCountdown(count);
+          sendCountdown(count);
+          if (count <= 0) {
+            clearInterval(countdownRef.current!);
+            countdownRef.current = null;
+            onStartCoop(newRoom, selectedMap, selectedShip, peerShip);
+          }
+        }, 1000);
+      },
     );
   };
 
