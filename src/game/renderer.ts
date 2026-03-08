@@ -6,30 +6,21 @@ import dungeonFloorImg from '../assets/dungeon-floor.jpg';
 let camX = ARENA_W / 2;
 let camY = ARENA_H / 2;
 
-// Cached textures
-let floorPattern: CanvasPattern | null = null;
+// Cached floor image
 let floorImage: HTMLImageElement | null = null;
 let floorImageLoaded = false;
 
-function createFloorPattern(ctx: CanvasRenderingContext2D): CanvasPattern | null {
-  if (floorPattern) return floorPattern;
-
+function loadFloorImage() {
   if (!floorImage) {
     floorImage = new Image();
-    floorImage.onload = () => {
-      floorImageLoaded = true;
-      floorPattern = null; // force recreate
-    };
+    floorImage.onload = () => { floorImageLoaded = true; };
     floorImage.src = dungeonFloorImg;
   }
-
-  if (floorImageLoaded && floorImage) {
-    floorPattern = ctx.createPattern(floorImage, 'repeat');
-    return floorPattern;
-  }
-
-  return null;
 }
+loadFloorImage();
+
+// Wall thickness in world units - the image has thick stone walls on all edges
+const WALL_THICKNESS = 80;
 
 export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canvasW: number, canvasH: number) {
   const time = Date.now() * 0.001;

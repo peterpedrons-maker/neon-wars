@@ -1,7 +1,7 @@
 import { PlayerClass, EnemyType } from './types';
 
-export const ARENA_W = 1600;
-export const ARENA_H = 1200;
+export const ARENA_W = 2400;
+export const ARENA_H = 1800;
 
 // Camera zoom: how many "world pixels" the viewport shows
 export const CAMERA_VIEW_W = 500;
