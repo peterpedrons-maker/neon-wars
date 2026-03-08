@@ -355,11 +355,11 @@ export function xpForLevel(level: number): number {
   return Math.floor(20 + level * 15 + level * level * 2);
 }
 
-// Update orbital drones
+// Update orbital drones - projectileCount adds extra orbitals
 export function updateOrbitals(state: GameState, dt: number) {
   if (state.abilities.orbitals <= 0) return;
   const p = state.player;
-  const count = state.abilities.orbitals;
+  const count = state.abilities.orbitals + state.abilities.projectileCount;
   const orbitalDamage = 15 + state.wave * 2;
   const orbitalRadius = p.radius + 30;
 
