@@ -824,6 +824,7 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
     
     state.score += e.score * state.comboMultiplier;
     state.enemiesKilled++;
+    state.enemiesKilledThisWave++;
 
     // Spawn XP orbs
     const xpValue = e.isBoss ? 50 : Math.floor(5 + e.score * 0.3);
