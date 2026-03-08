@@ -387,6 +387,12 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
           level={state.level} xp={state.xp} xpToNext={state.xpToNext}
           equippedWeapons={state.equippedWeapons} weaponSlots={state.weaponSlots}
           abilityLevels={state.abilityLevels}
+          enemiesKilled={state.enemiesKilled}
+          enemiesKilledThisWave={state.enemiesKilledThisWave}
+          coopPeers={state.coopPeers.map((p, i) => ({
+            hp: p.hp, maxHp: p.maxHp, alive: p.alive,
+            shipClass: p.shipClass, label: p.playerLabel || `P${i + 2}`,
+          }))}
         />
       )}
 
