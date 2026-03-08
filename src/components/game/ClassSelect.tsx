@@ -146,37 +146,109 @@ function drawShipPreview(ctx: CanvasRenderingContext2D, shipType: ShipType, w: n
     ctx.stroke();
     ctx.fillStyle = hexToRgba('#ffffff', 0.6 + Math.sin(time * 8) * 0.3);
     ctx.beginPath(); ctx.arc(r * 1.8, 0, 1, 0, Math.PI * 2); ctx.fill();
-  } else {
-    // Titan
+  } else if (shipType === 'titan') {
     ctx.beginPath();
     ctx.moveTo(r * 1.5, 0);
-    ctx.lineTo(r * 0.6, -r * 0.45);
-    ctx.lineTo(r * 0.1, -r * 0.6);
-    ctx.lineTo(-r * 0.3, -r * 0.7);
-    ctx.lineTo(-r * 0.5, -r * 1.3);
-    ctx.lineTo(-r * 0.8, -r * 1.1);
-    ctx.lineTo(-r * 0.65, -r * 0.5);
-    ctx.lineTo(-r * 0.8, -r * 0.25);
-    ctx.lineTo(-r * 0.8, r * 0.25);
-    ctx.lineTo(-r * 0.65, r * 0.5);
-    ctx.lineTo(-r * 0.8, r * 1.1);
-    ctx.lineTo(-r * 0.5, r * 1.3);
-    ctx.lineTo(-r * 0.3, r * 0.7);
-    ctx.lineTo(r * 0.1, r * 0.6);
-    ctx.lineTo(r * 0.6, r * 0.45);
+    ctx.lineTo(r * 0.6, -r * 0.45); ctx.lineTo(r * 0.1, -r * 0.6);
+    ctx.lineTo(-r * 0.3, -r * 0.7); ctx.lineTo(-r * 0.5, -r * 1.3);
+    ctx.lineTo(-r * 0.8, -r * 1.1); ctx.lineTo(-r * 0.65, -r * 0.5);
+    ctx.lineTo(-r * 0.8, -r * 0.25); ctx.lineTo(-r * 0.8, r * 0.25);
+    ctx.lineTo(-r * 0.65, r * 0.5); ctx.lineTo(-r * 0.8, r * 1.1);
+    ctx.lineTo(-r * 0.5, r * 1.3); ctx.lineTo(-r * 0.3, r * 0.7);
+    ctx.lineTo(r * 0.1, r * 0.6); ctx.lineTo(r * 0.6, r * 0.45);
     ctx.closePath();
     ctx.fillStyle = hexToRgba(color, 0.18); ctx.fill();
     ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
-    // Armor plates
     ctx.strokeStyle = hexToRgba(glow, 0.3); ctx.lineWidth = 0.8;
     ctx.beginPath();
     ctx.moveTo(r * 0.8, -r * 0.15); ctx.lineTo(-r * 0.3, -r * 0.55);
     ctx.moveTo(r * 0.8, r * 0.15); ctx.lineTo(-r * 0.3, r * 0.55);
     ctx.stroke();
-    // Cannon glow
     const cannonPulse = 0.4 + Math.sin(time * 3) * 0.2;
     ctx.fillStyle = hexToRgba(glow, cannonPulse);
     ctx.beginPath(); ctx.arc(r * 1.3, 0, 2.5, 0, Math.PI * 2); ctx.fill();
+  } else if (shipType === 'spectre') {
+    // Curved stealth blade with phase shimmer
+    const phase = Math.sin(time * 5) * 0.15;
+    ctx.globalAlpha = 0.85 + phase;
+    ctx.beginPath();
+    ctx.moveTo(r * 2.0, 0);
+    ctx.quadraticCurveTo(r * 1.2, -r * 0.5, r * 0.2, -r * 0.6);
+    ctx.lineTo(-r * 0.4, -r * 0.8);
+    ctx.quadraticCurveTo(-r * 0.7, -r * 0.4, -r * 0.6, 0);
+    ctx.quadraticCurveTo(-r * 0.7, r * 0.4, -r * 0.4, r * 0.8);
+    ctx.lineTo(r * 0.2, r * 0.6);
+    ctx.quadraticCurveTo(r * 1.2, r * 0.5, r * 2.0, 0);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.12); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.strokeStyle = hexToRgba(glow, 0.4 + Math.sin(time * 8) * 0.3);
+    ctx.lineWidth = 0.6; ctx.setLineDash([3, 4]);
+    ctx.beginPath();
+    ctx.moveTo(r * 1.5, -r * 0.15); ctx.lineTo(-r * 0.3, -r * 0.6);
+    ctx.moveTo(r * 1.5, r * 0.15); ctx.lineTo(-r * 0.3, r * 0.6);
+    ctx.stroke(); ctx.setLineDash([]);
+    const ghostPulse = 0.5 + Math.sin(time * 6) * 0.4;
+    ctx.fillStyle = hexToRgba(glow, ghostPulse);
+    ctx.beginPath(); ctx.arc(r * 0.3, 0, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+  } else if (shipType === 'valkyrie') {
+    // Angular wings spread wide
+    ctx.beginPath();
+    ctx.moveTo(r * 1.8, 0);
+    ctx.lineTo(r * 0.5, -r * 0.3); ctx.lineTo(r * 0.1, -r * 0.4);
+    ctx.lineTo(-r * 0.2, -r * 1.4); ctx.lineTo(-r * 0.5, -r * 1.2);
+    ctx.lineTo(-r * 0.3, -r * 0.35); ctx.lineTo(-r * 0.6, -r * 0.2);
+    ctx.lineTo(-r * 0.6, r * 0.2); ctx.lineTo(-r * 0.3, r * 0.35);
+    ctx.lineTo(-r * 0.5, r * 1.2); ctx.lineTo(-r * 0.2, r * 1.4);
+    ctx.lineTo(r * 0.1, r * 0.4); ctx.lineTo(r * 0.5, r * 0.3);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.15); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+    const spearPulse = 0.5 + Math.sin(time * 5) * 0.3;
+    ctx.strokeStyle = hexToRgba(glow, spearPulse); ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.2, -r * 1.4); ctx.lineTo(r * 0.3, -r * 0.2);
+    ctx.moveTo(-r * 0.2, r * 1.4); ctx.lineTo(r * 0.3, r * 0.2);
+    ctx.stroke();
+    ctx.fillStyle = hexToRgba('#ffffff', spearPulse);
+    ctx.beginPath(); ctx.arc(-r * 0.2, -r * 1.35, 1.8, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-r * 0.2, r * 1.35, 1.8, 0, Math.PI * 2); ctx.fill();
+  } else if (shipType === 'juggernaut') {
+    // Bulky hexagonal fortress
+    const sides = 6;
+    ctx.beginPath();
+    for (let i = 0; i <= sides; i++) {
+      const a = (i / sides) * Math.PI * 2 - Math.PI / 6;
+      const rr = r * 1.3;
+      const px = Math.cos(a) * rr;
+      const py = Math.sin(a) * rr * 0.85;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.2); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.strokeStyle = hexToRgba(glow, 0.3); ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 0; i <= sides; i++) {
+      const a = (i / sides) * Math.PI * 2 - Math.PI / 6;
+      const rr = r * 0.8;
+      const px = Math.cos(a) * rr;
+      const py = Math.sin(a) * rr * 0.85;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.closePath(); ctx.stroke();
+    const corePulse = 0.4 + Math.sin(time * 2) * 0.2;
+    const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.5);
+    coreGrad.addColorStop(0, hexToRgba('#ffffff', corePulse));
+    coreGrad.addColorStop(0.5, hexToRgba(color, corePulse * 0.5));
+    coreGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = coreGrad;
+    ctx.beginPath(); ctx.arc(0, 0, r * 0.5, 0, Math.PI * 2); ctx.fill();
+    for (const side of [-1, 0, 1]) {
+      ctx.fillStyle = hexToRgba(glow, 0.5);
+      ctx.fillRect(r * 0.8, side * r * 0.35 - 1, r * 0.6, 2);
+    }
   }
 
   // Cockpit glow
