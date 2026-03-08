@@ -111,6 +111,9 @@ export const ENEMY_STATS: Record<EnemyType, { hp: number; damage: number; speed:
   mothership: { hp: 300, damage: 25, speed: 50, score: 500, radius: 30, attackCooldown: 2, isBoss: true },
   vortex: { hp: 250, damage: 20, speed: 45, score: 500, radius: 28, attackCooldown: 1.5, isBoss: true },
   colossus: { hp: 400, damage: 35, speed: 30, score: 500, radius: 35, attackCooldown: 3, isBoss: true },
+  lava_dragon: { hp: 500, damage: 30, speed: 45, score: 800, radius: 35, attackCooldown: 2, isBoss: true },
+  void_lord: { hp: 400, damage: 35, speed: 40, score: 800, radius: 32, attackCooldown: 1.8, isBoss: true },
+  crystal_giant: { hp: 600, damage: 25, speed: 25, score: 800, radius: 40, attackCooldown: 2.5, isBoss: true },
 };
 
 export const WAVE_BASE_ENEMIES = 20;
