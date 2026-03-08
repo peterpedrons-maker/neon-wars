@@ -1,6 +1,7 @@
 import {
-  GameState, InputState, Player, Enemy, EnemyType,
+  GameState, InputState, Player, Enemy, EnemyType, XpOrb,
 } from './types';
+import { createAbilityState, updateOrbitals, updateAura, updateRegen, triggerChainLightning, xpForLevel } from './abilities';
 import {
   ARENA_W, ARENA_H, COLORS, WAVE_BASE_ENEMIES,
   WAVE_ENEMY_INCREMENT, BOSS_WAVE_INTERVAL,
@@ -91,7 +92,7 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
     }
   }
 
-  // Check wave complete - auto start next wave (no upgrade screen)
+  // Check wave complete - auto start next wave
   const aliveEnemies = state.enemies.filter(e => e.alive).length;
   if (state.waveEnemiesRemaining <= 0 && aliveEnemies === 0) {
     playWaveComplete();
@@ -100,6 +101,57 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
 
   updateEnemies(state, dt);
   updateProjectiles(state, dt);
+
+  // Ability effects
+  updateOrbitals(state, dt);
+  updateAura(state, dt);
+  updateRegen(state, dt);
+
+  // Update trail
+  if (Math.hypot(p.vel.x, p.vel.y) > 10) {
+    state.trail.push({ x: p.pos.x, y: p.pos.y, age: 0 });
+  }
+  for (let i = state.trail.length - 1; i >= 0; i--) {
+    state.trail[i].age += dt;
+    if (state.trail[i].age > 0.5) state.trail.splice(i, 1);
+  }
+  if (state.trail.length > 40) state.trail.splice(0, state.trail.length - 40);
+
+  // Update XP orbs
+  const magnetR = state.abilities.magnetRadius;
+  state.xpOrbs = state.xpOrbs.filter(orb => {
+    orb.lifetime -= dt;
+    if (orb.lifetime <= 0) return false;
+    // Magnet: attract to player
+    const dx = p.pos.x - orb.pos.x;
+    const dy = p.pos.y - orb.pos.y;
+    const d = Math.hypot(dx, dy);
+    if (d < magnetR) {
+      const pullSpeed = 300 * (1 - d / magnetR) + 100;
+      orb.pos.x += (dx / d) * pullSpeed * dt;
+      orb.pos.y += (dy / d) * pullSpeed * dt;
+    }
+    orb.pos.x += orb.vel.x * dt;
+    orb.pos.y += orb.vel.y * dt;
+    orb.vel.x *= 0.95;
+    orb.vel.y *= 0.95;
+    // Collect
+    if (d < p.radius + orb.radius + 5) {
+      addXp(state, orb.value);
+      return false;
+    }
+    return true;
+  });
+
+  // Level up check
+  if (state.xp >= state.xpToNext && state.screen === 'playing') {
+    state.xp -= state.xpToNext;
+    state.level++;
+    state.xpToNext = xpForLevel(state.level);
+    state.screen = 'upgrade';
+    state.particles.push(...createParticles(p.pos, '#ffff00', 30, 200, 4));
+    state.particles.push(...createParticles(p.pos, '#ffffff', 15, 150, 3));
+  }
 
   // Update particles
   state.particles = state.particles.filter(p => {
@@ -404,10 +456,15 @@ function updateProjectiles(state: GameState, dt: number) {
 }
 
 function damageEnemy(state: GameState, e: Enemy, damage: number) {
+  // Crit check
+  if (state.abilities.critChance > 0 && Math.random() < state.abilities.critChance) {
+    damage *= 2;
+    state.particles.push(...createParticles(e.pos, '#ffff00', 8, 150, 3));
+  }
+  
   e.hp -= damage;
   e.flashTimer = 0.1;
   playHit();
-  // Hit sparks - massive
   state.particles.push(...createParticles(e.pos, COLORS.neonYellow, 15, 180, 3));
   state.particles.push(...createParticles(e.pos, '#ffffff', 8, 120, 2));
   state.particles.push(...createParticles(e.pos, getEnemyColor(e.type), 10, 150, 2.5));
@@ -423,20 +480,36 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
     if (state.combo > state.maxCombo) state.maxCombo = state.combo;
     if (state.comboMultiplier > prevMult) playCombo(state.comboMultiplier);
     
-    // Score with multiplier
     state.score += e.score * state.comboMultiplier;
     state.enemiesKilled++;
 
-    // Explosion sound
+    // Spawn XP orbs
+    const xpValue = e.isBoss ? 50 : Math.floor(5 + e.score * 0.3);
+    const orbCount = e.isBoss ? 8 : Math.min(4, Math.max(1, Math.floor(xpValue / 5)));
+    for (let i = 0; i < orbCount; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd = 60 + Math.random() * 80;
+      state.xpOrbs.push({
+        pos: { x: e.pos.x, y: e.pos.y },
+        vel: { x: Math.cos(angle) * spd, y: Math.sin(angle) * spd },
+        value: Math.ceil(xpValue / orbCount),
+        lifetime: 12,
+        radius: e.isBoss ? 6 : 4,
+      });
+    }
+
+    // Chain lightning
+    if (state.abilities.chainCount > 0) {
+      triggerChainLightning(state, e.pos, state.abilities.chainCount, damage * 0.5);
+    }
+
     playExplosion(e.isBoss);
 
-    // MASSIVE death explosion - tons of particles
     const color = e.isBoss ? COLORS.neonYellow : getEnemyColor(e.type);
     state.particles.push(...createParticles(e.pos, color, e.isBoss ? 200 : 60, 400, e.isBoss ? 8 : 5));
     state.particles.push(...createParticles(e.pos, '#ffffff', e.isBoss ? 80 : 30, 300, 4));
     const secColor = e.isBoss ? '#ff1493' : COLORS.neonCyan;
     state.particles.push(...createParticles(e.pos, secColor, e.isBoss ? 60 : 25, 250, 3.5));
-    // Extra ring of colored sparks
     state.particles.push(...createParticles(e.pos, COLORS.neonPink, e.isBoss ? 40 : 15, 350, 3));
     state.particles.push(...createParticles(e.pos, COLORS.neonGreen, e.isBoss ? 30 : 12, 280, 2.5));
     
@@ -472,6 +545,12 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
       if (pu) state.powerUps.push(pu);
     }
   }
+}
+
+function addXp(state: GameState, amount: number) {
+  state.xp += amount;
+  // Small particle feedback
+  state.particles.push(...createParticles(state.player.pos, '#bf5af2', 2, 40, 1.5));
 }
 
 function getEnemyColor(type: EnemyType): string {
@@ -543,6 +622,7 @@ export function createInitialState(player: Player): GameState {
     projectiles: [],
     particles: [],
     powerUps: [],
+    xpOrbs: [],
     wave: 0,
     score: 0,
     enemiesKilled: 0,
@@ -557,5 +637,12 @@ export function createInitialState(player: Player): GameState {
     comboTimer: 0,
     maxCombo: 0,
     comboMultiplier: 1,
+    xp: 0,
+    level: 1,
+    xpToNext: xpForLevel(1),
+    abilityLevels: {},
+    abilities: createAbilityState(),
+    regenAccumulator: 0,
+    trail: [],
   };
 }

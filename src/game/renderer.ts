@@ -1,4 +1,4 @@
-import { GameState, Player, Enemy, Projectile, Particle, PowerUp } from './types';
+import { GameState, Player, Enemy, Projectile, Particle, PowerUp, XpOrb } from './types';
 import { COLORS, ARENA_W, ARENA_H, WARRIOR_ATTACK_RANGE, CAMERA_VIEW_W, CAMERA_VIEW_H, CAMERA_LERP, WALL_LEFT, WALL_RIGHT, WALL_TOP, WALL_BOTTOM } from './constants';
 
 // Camera state
@@ -52,6 +52,12 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
     drawPlayerGlow(ctx, state.player, time);
   }
 
+  // Player trail
+  drawTrail(ctx, state, time);
+
+  // XP orbs
+  state.xpOrbs.forEach(orb => drawXpOrb(ctx, orb, time));
+
   // Power-ups
   state.powerUps.forEach(pu => { if (pu.alive) drawPowerUp(ctx, pu, time); });
 
@@ -59,7 +65,12 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   state.projectiles.forEach(p => { if (p.alive) drawProjectile(ctx, p, time); });
 
   // Enemies
-  state.enemies.forEach(e => { if (e.alive) drawEnemy(ctx, e, time); });
+  state.enemies.forEach(e => { if (e.alive) drawEnemy(ctx, e, time, state); });
+
+  // Ability visuals (aura, orbitals)
+  if (state.player.alive) {
+    drawAbilityVisuals(ctx, state, time);
+  }
 
   // Player
   if (state.player.alive) drawPlayer(ctx, state.player, time);
@@ -645,7 +656,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
 }
 
 // --- ENEMIES --- Enhanced with unique visuals per behavior
-function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, time: number) {
+function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, time: number, state?: GameState) {
   ctx.save();
   ctx.translate(e.pos.x, e.pos.y);
   if (e.flashTimer > 0) ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.05) * 0.5;
@@ -674,29 +685,87 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, time: number) {
   const rot = time * 2;
 
   if (e.type === 'drone') {
+    // Enhanced drone: spinning diamond with pulsing inner eye and orbiting dots
     ctx.save(); ctx.rotate(rot);
     drawNeonShape(ctx, 4, e.radius, color);
+    // Inner cross
     ctx.strokeStyle = hexToRgba(color, 0.4); ctx.lineWidth = 0.8;
     ctx.beginPath();
     ctx.moveTo(-e.radius * 0.5, 0); ctx.lineTo(e.radius * 0.5, 0);
     ctx.moveTo(0, -e.radius * 0.5); ctx.lineTo(0, e.radius * 0.5);
     ctx.stroke();
-    ctx.fillStyle = hexToRgba(color, 0.6 + Math.sin(time * 4) * 0.3);
-    ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
+    // Pulsing eye
+    const eyePulse = 0.5 + Math.sin(time * 6) * 0.4;
+    const eyeGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, e.radius * 0.35);
+    eyeGrad.addColorStop(0, hexToRgba('#ffffff', eyePulse));
+    eyeGrad.addColorStop(0.5, hexToRgba(color, eyePulse * 0.6));
+    eyeGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = eyeGrad;
+    ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.35, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
-  } else if (e.type === 'splitter') {
-    ctx.beginPath(); ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
-    ctx.fillStyle = hexToRgba(color, 0.12); ctx.fill();
-    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
-    ctx.strokeStyle = hexToRgba(color, 0.5); ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(0, -e.radius); ctx.lineTo(0, e.radius); ctx.stroke();
-    for (const sx of [-0.3, 0.3]) {
-      ctx.beginPath(); ctx.arc(e.radius * sx, 0, e.radius * 0.35, 0, Math.PI * 2);
-      ctx.strokeStyle = hexToRgba(color, 0.4); ctx.stroke();
+    // Orbiting micro-dots
+    for (let i = 0; i < 4; i++) {
+      const oa = time * 5 + (i / 4) * Math.PI * 2;
+      const ox = Math.cos(oa) * (e.radius + 4);
+      const oy = Math.sin(oa) * (e.radius + 4);
+      ctx.fillStyle = hexToRgba(color, 0.4);
+      ctx.beginPath(); ctx.arc(ox, oy, 1, 0, Math.PI * 2); ctx.fill();
     }
+  } else if (e.type === 'splitter') {
+    // Enhanced splitter: mitosis animation with wobbling membrane
+    const wobble = Math.sin(time * 4) * 0.08;
+    ctx.save(); ctx.scale(1 + wobble, 1 - wobble);
+    ctx.beginPath(); ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
+    ctx.fillStyle = hexToRgba(color, 0.15); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+    // Division line that pulses
+    const divPulse = 0.3 + Math.sin(time * 3) * 0.2;
+    ctx.strokeStyle = hexToRgba(color, divPulse); ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(0, -e.radius); ctx.lineTo(0, e.radius); ctx.stroke();
+    // Twin nuclei
+    for (const sx of [-0.35, 0.35]) {
+      const nucPulse = 0.5 + Math.sin(time * 5 + sx * 10) * 0.3;
+      const nucGrad = ctx.createRadialGradient(e.radius * sx, 0, 0, e.radius * sx, 0, e.radius * 0.3);
+      nucGrad.addColorStop(0, hexToRgba('#ffffff', nucPulse));
+      nucGrad.addColorStop(0.5, hexToRgba(color, nucPulse * 0.5));
+      nucGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = nucGrad;
+      ctx.beginPath(); ctx.arc(e.radius * sx, 0, e.radius * 0.3, 0, Math.PI * 2); ctx.fill();
+    }
+    // Membrane particles
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2 + time * 2;
+      const pr = e.radius + Math.sin(time * 3 + i) * 3;
+      ctx.fillStyle = hexToRgba(color, 0.3);
+      ctx.beginPath(); ctx.arc(Math.cos(a) * pr, Math.sin(a) * pr, 1, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
   } else if (e.type === 'dasher') {
+    // Enhanced dasher: streak effect when dashing, charging glow
     const isDashing = e.dashState === 'dashing';
+    const isCharging = e.dashState === 'tracking' && e.dashTimer !== undefined && e.dashTimer < 0.3;
     const faceAngle = e.dashAngle ?? rot * 2;
+    
+    // Dash afterimage trail
+    if (isDashing) {
+      for (let i = 1; i <= 4; i++) {
+        const trailAlpha = (1 - i * 0.22) * 0.3;
+        const tx = -Math.cos(faceAngle) * i * 8;
+        const ty = -Math.sin(faceAngle) * i * 8;
+        ctx.save(); ctx.translate(tx, ty); ctx.rotate(faceAngle);
+        ctx.globalAlpha = trailAlpha;
+        ctx.beginPath();
+        ctx.moveTo(e.radius * 1.3, 0);
+        ctx.lineTo(-e.radius * 0.8, -e.radius * 0.9);
+        ctx.lineTo(-e.radius * 0.4, 0);
+        ctx.lineTo(-e.radius * 0.8, e.radius * 0.9);
+        ctx.closePath();
+        ctx.fillStyle = hexToRgba(color, 0.15); ctx.fill();
+        ctx.restore();
+      }
+      ctx.globalAlpha = e.flashTimer > 0 ? 0.5 + Math.sin(Date.now() * 0.05) * 0.5 : 1;
+    }
+    
     ctx.save(); ctx.rotate(faceAngle);
     ctx.beginPath();
     ctx.moveTo(e.radius * 1.3, 0);
@@ -704,77 +773,171 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, time: number) {
     ctx.lineTo(-e.radius * 0.4, 0);
     ctx.lineTo(-e.radius * 0.8, e.radius * 0.9);
     ctx.closePath();
-    ctx.fillStyle = hexToRgba(color, isDashing ? 0.2 : 0.12); ctx.fill();
+    ctx.fillStyle = hexToRgba(color, isDashing ? 0.25 : 0.12); ctx.fill();
     ctx.strokeStyle = color; ctx.lineWidth = isDashing ? 2.5 : 1.5; ctx.stroke();
+    
+    // Speed lines when dashing
     if (isDashing) {
-      ctx.strokeStyle = hexToRgba(color, 0.4); ctx.lineWidth = 1;
-      for (let i = 0; i < 3; i++) {
-        const y = (i - 1) * 4;
-        ctx.beginPath(); ctx.moveTo(-e.radius, y); ctx.lineTo(-e.radius - 15, y); ctx.stroke();
+      ctx.strokeStyle = hexToRgba(color, 0.5); ctx.lineWidth = 1;
+      for (let i = 0; i < 5; i++) {
+        const y = (i - 2) * 3;
+        const len = 10 + Math.random() * 15;
+        ctx.beginPath(); ctx.moveTo(-e.radius, y); ctx.lineTo(-e.radius - len, y); ctx.stroke();
       }
     }
-    if (e.dashState === 'tracking' && e.dashTimer !== undefined && e.dashTimer < 0.3) {
-      ctx.fillStyle = hexToRgba('#ffffff', 0.3 + Math.sin(time * 15) * 0.2);
-      ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.3, 0, Math.PI * 2); ctx.fill();
+    
+    // Charge-up glow
+    if (isCharging) {
+      const chargePulse = 0.4 + Math.sin(time * 20) * 0.3;
+      const chargeGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, e.radius * 1.5);
+      chargeGrad.addColorStop(0, hexToRgba('#ffffff', chargePulse));
+      chargeGrad.addColorStop(0.3, hexToRgba(color, chargePulse * 0.6));
+      chargeGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = chargeGrad;
+      ctx.beginPath(); ctx.arc(0, 0, e.radius * 1.5, 0, Math.PI * 2); ctx.fill();
     }
+    
+    // Nose light
+    const nosePulse = 0.6 + Math.sin(time * 8) * 0.3;
+    ctx.fillStyle = hexToRgba('#ffffff', nosePulse);
+    ctx.beginPath(); ctx.arc(e.radius * 1.0, 0, 1.5, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   } else if (e.type === 'tank') {
-    ctx.save(); ctx.rotate(rot * 0.3);
+    // Enhanced tank: heavy hex with shield layers, rotating turret with barrel heat
+    const tankRot = rot * 0.3;
+    ctx.save(); ctx.rotate(tankRot);
     drawNeonShape(ctx, 6, e.radius, color);
+    // Inner shield ring
     drawNeonShape(ctx, 6, e.radius * 0.65, color, 0.35);
+    // Armor plating lines
+    ctx.strokeStyle = hexToRgba(color, 0.2); ctx.lineWidth = 0.6;
+    for (let i = 0; i < 6; i++) {
+      const a1 = (i / 6) * Math.PI * 2 - Math.PI / 2;
+      const a2 = ((i + 0.5) / 6) * Math.PI * 2 - Math.PI / 2;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a1) * e.radius * 0.65, Math.sin(a1) * e.radius * 0.65);
+      ctx.lineTo(Math.cos(a2) * e.radius, Math.sin(a2) * e.radius);
+      ctx.stroke();
+    }
     ctx.restore();
-    const turretAngle = time * 1.5;
+    
+    // Rotating turret aimed at player
+    const turretAngle = state ? Math.atan2(state.player.pos.y - e.pos.y, state.player.pos.x - e.pos.x) : time * 1.5;
     ctx.save(); ctx.rotate(turretAngle);
-    ctx.strokeStyle = hexToRgba(color, 0.8); ctx.lineWidth = 2.5;
-    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(e.radius * 1.1, 0); ctx.stroke();
+    ctx.strokeStyle = hexToRgba(color, 0.8); ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(e.radius * 1.2, 0); ctx.stroke();
+    // Barrel tip
     ctx.fillStyle = color;
-    ctx.beginPath(); ctx.arc(e.radius * 1.1, 0, 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(e.radius * 1.2, 0, 3, 0, Math.PI * 2); ctx.fill();
+    // Barrel heat glow
+    const heatPulse = 0.3 + Math.sin(time * 4) * 0.2;
+    const heatGrad = ctx.createRadialGradient(e.radius * 1.2, 0, 0, e.radius * 1.2, 0, 6);
+    heatGrad.addColorStop(0, hexToRgba('#ffffff', heatPulse));
+    heatGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = heatGrad;
+    ctx.beginPath(); ctx.arc(e.radius * 1.2, 0, 6, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
-    ctx.fillStyle = hexToRgba(color, 0.2);
-    ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.3, 0, Math.PI * 2); ctx.fill();
+    
+    // Central reactor
+    const reactGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, e.radius * 0.35);
+    reactGrad.addColorStop(0, hexToRgba('#ffffff', 0.5));
+    reactGrad.addColorStop(0.5, hexToRgba(color, 0.3));
+    reactGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = reactGrad;
+    ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.35, 0, Math.PI * 2); ctx.fill();
   } else if (e.type === 'mothership') {
+    // Enhanced mothership: pulsing pentagon with drone bays and energy web
     ctx.save(); ctx.rotate(rot * 0.3); drawNeonShape(ctx, 5, e.radius, color); ctx.restore();
     ctx.save(); ctx.rotate(-rot * 0.5); drawNeonShape(ctx, 5, e.radius * 0.6, color, 0.4); ctx.restore();
+    // Drone bay lights
     for (let i = 0; i < 5; i++) {
       const a = (i / 5) * Math.PI * 2 + rot * 0.3;
-      ctx.fillStyle = hexToRgba('#ff0040', 0.3 + Math.sin(time * 3 + i) * 0.2);
-      ctx.beginPath(); ctx.arc(Math.cos(a) * e.radius * 0.8, Math.sin(a) * e.radius * 0.8, 3, 0, Math.PI * 2); ctx.fill();
+      const bayPulse = 0.4 + Math.sin(time * 4 + i * 1.2) * 0.3;
+      const bx = Math.cos(a) * e.radius * 0.8;
+      const by = Math.sin(a) * e.radius * 0.8;
+      const bayGrad = ctx.createRadialGradient(bx, by, 0, bx, by, 6);
+      bayGrad.addColorStop(0, hexToRgba('#ff0040', bayPulse));
+      bayGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = bayGrad;
+      ctx.beginPath(); ctx.arc(bx, by, 6, 0, Math.PI * 2); ctx.fill();
     }
-    const cg = ctx.createRadialGradient(0, 0, 2, 0, 0, e.radius * 0.3);
-    cg.addColorStop(0, hexToRgba(color, 0.6)); cg.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.3, 0, Math.PI * 2); ctx.fill();
+    // Energy web connecting bays
+    ctx.strokeStyle = hexToRgba(color, 0.15); ctx.lineWidth = 0.5;
+    for (let i = 0; i < 5; i++) {
+      for (let j = i + 1; j < 5; j++) {
+        const a1 = (i / 5) * Math.PI * 2 + rot * 0.3;
+        const a2 = (j / 5) * Math.PI * 2 + rot * 0.3;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a1) * e.radius * 0.8, Math.sin(a1) * e.radius * 0.8);
+        ctx.lineTo(Math.cos(a2) * e.radius * 0.8, Math.sin(a2) * e.radius * 0.8);
+        ctx.stroke();
+      }
+    }
+    // Central core
+    const cg = ctx.createRadialGradient(0, 0, 2, 0, 0, e.radius * 0.35);
+    cg.addColorStop(0, hexToRgba('#ffffff', 0.6)); cg.addColorStop(0.5, hexToRgba(color, 0.4)); cg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.35, 0, Math.PI * 2); ctx.fill();
   } else if (e.type === 'vortex') {
+    // Enhanced vortex: hypnotic spirals with pull field visualization
     ctx.save(); ctx.rotate(rot); drawNeonShape(ctx, 8, e.radius, color); ctx.restore();
     ctx.save(); ctx.rotate(-rot * 1.5); drawNeonShape(ctx, 8, e.radius * 0.55, color, 0.5); ctx.restore();
+    // Dynamic spirals
     for (let i = 0; i < 6; i++) {
       const a = rot * 2.5 + (i / 6) * Math.PI * 2;
-      ctx.strokeStyle = hexToRgba(color, 0.25); ctx.lineWidth = 1;
+      const spiralAlpha = 0.15 + Math.sin(time * 3 + i) * 0.1;
+      ctx.strokeStyle = hexToRgba(color, spiralAlpha); ctx.lineWidth = 1.2;
       ctx.beginPath();
-      for (let t = 0; t < 1; t += 0.1) {
-        const r = e.radius * 0.2 + t * e.radius * 0.7;
-        const sa = a + t * 1.5;
+      for (let t = 0; t < 1; t += 0.05) {
+        const r = e.radius * 0.2 + t * e.radius * 0.8;
+        const sa = a + t * 2;
         if (t === 0) ctx.moveTo(Math.cos(sa) * r, Math.sin(sa) * r);
         else ctx.lineTo(Math.cos(sa) * r, Math.sin(sa) * r);
       }
       ctx.stroke();
     }
-    const pullGrad = ctx.createRadialGradient(0, 0, e.radius, 0, 0, e.radius + 80);
-    pullGrad.addColorStop(0, hexToRgba(color, 0.05 + Math.sin(time * 4) * 0.03));
-    pullGrad.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = pullGrad; ctx.beginPath(); ctx.arc(0, 0, e.radius + 80, 0, Math.PI * 2); ctx.fill();
+    // Pull field rings
+    for (let ri = 1; ri <= 3; ri++) {
+      const ringR = e.radius + ri * 25;
+      const ringAlpha = (0.08 - ri * 0.02) * (1 + Math.sin(time * 4 + ri) * 0.5);
+      ctx.strokeStyle = hexToRgba(color, ringAlpha); ctx.lineWidth = 0.8;
+      ctx.setLineDash([4, 4]); ctx.lineDashOffset = time * 30;
+      ctx.beginPath(); ctx.arc(0, 0, ringR, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    // Central vortex eye
+    const vGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, e.radius * 0.3);
+    vGrad.addColorStop(0, hexToRgba('#ffffff', 0.6 + Math.sin(time * 5) * 0.2));
+    vGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = vGrad; ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.3, 0, Math.PI * 2); ctx.fill();
   } else if (e.type === 'colossus') {
+    // Enhanced colossus: massive pulsing diamond with shockwave rings
     const pulse = 1 + Math.sin(time * 2) * 0.05;
     ctx.save(); ctx.rotate(rot * 0.2); ctx.scale(pulse, pulse); drawNeonShape(ctx, 4, e.radius, color); ctx.restore();
     ctx.save(); ctx.rotate(-rot * 0.4); drawNeonShape(ctx, 4, e.radius * 0.5, color, 0.5); ctx.restore();
+    // Energy cross-beams
     for (let i = 0; i < 4; i++) {
       const a = (i / 4) * Math.PI * 2 + rot * 0.2;
-      ctx.strokeStyle = hexToRgba(color, 0.3 + Math.sin(time * 3 + i * 0.5) * 0.15);
-      ctx.lineWidth = 1.5;
+      const beamPulse = 0.3 + Math.sin(time * 3 + i * 0.5) * 0.2;
+      ctx.strokeStyle = hexToRgba(color, beamPulse);
+      ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(0, 0);
       ctx.lineTo(Math.cos(a) * e.radius * 0.9, Math.sin(a) * e.radius * 0.9); ctx.stroke();
+      // Beam endpoint glow
+      const bx = Math.cos(a) * e.radius * 0.9;
+      const by = Math.sin(a) * e.radius * 0.9;
+      ctx.fillStyle = hexToRgba(color, beamPulse * 0.6);
+      ctx.beginPath(); ctx.arc(bx, by, 3, 0, Math.PI * 2); ctx.fill();
     }
+    // Shockwave ring effect
+    const shockPhase = (time * 0.8) % 1;
+    const shockR = e.radius + shockPhase * 40;
+    const shockAlpha = (1 - shockPhase) * 0.15;
+    ctx.strokeStyle = hexToRgba(color, shockAlpha); ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(0, 0, shockR, 0, Math.PI * 2); ctx.stroke();
+    // Central reactor
     const cg2 = ctx.createRadialGradient(0, 0, 2, 0, 0, e.radius * 0.4);
-    cg2.addColorStop(0, `rgba(0,191,255,${0.5 + Math.sin(time * 3) * 0.2})`);
+    cg2.addColorStop(0, hexToRgba('#ffffff', 0.5 + Math.sin(time * 3) * 0.2));
+    cg2.addColorStop(0.5, hexToRgba(color, 0.3));
     cg2.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = cg2; ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.4, 0, Math.PI * 2); ctx.fill();
   } else {
@@ -793,6 +956,111 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, time: number) {
     ctx.fillRect(-barW / 2, barY, barW * (e.hp / e.maxHp), barH);
   }
   ctx.restore();
+}
+
+// --- TRAIL ---
+function drawTrail(ctx: CanvasRenderingContext2D, state: GameState, time: number) {
+  const trail = state.trail;
+  if (trail.length < 2) return;
+  const color = getShipColor(state.player.class);
+  
+  for (let i = 0; i < trail.length; i++) {
+    const t = trail[i];
+    const alpha = (1 - t.age / 0.5) * 0.4;
+    const size = (1 - t.age / 0.5) * 3;
+    if (alpha <= 0) continue;
+    
+    const trailGrad = ctx.createRadialGradient(t.x, t.y, 0, t.x, t.y, size * 2);
+    trailGrad.addColorStop(0, hexToRgba(color, alpha));
+    trailGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = trailGrad;
+    ctx.beginPath(); ctx.arc(t.x, t.y, size * 2, 0, Math.PI * 2); ctx.fill();
+    
+    ctx.fillStyle = hexToRgba('#ffffff', alpha * 0.6);
+    ctx.beginPath(); ctx.arc(t.x, t.y, size * 0.4, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+// --- XP ORB ---
+function drawXpOrb(ctx: CanvasRenderingContext2D, orb: XpOrb, time: number) {
+  ctx.save();
+  ctx.translate(orb.pos.x, orb.pos.y);
+  
+  const pulse = 1 + Math.sin(time * 8 + orb.pos.x * 0.1) * 0.2;
+  const alpha = Math.min(1, orb.lifetime / 2);
+  
+  // Outer glow
+  const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, orb.radius * 3 * pulse);
+  glow.addColorStop(0, `rgba(191,90,242,${0.3 * alpha})`);
+  glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath(); ctx.arc(0, 0, orb.radius * 3 * pulse, 0, Math.PI * 2); ctx.fill();
+  
+  // Core
+  ctx.shadowColor = '#bf5af2';
+  ctx.shadowBlur = 8;
+  ctx.fillStyle = `rgba(224,176,255,${0.7 * alpha})`;
+  ctx.beginPath(); ctx.arc(0, 0, orb.radius * pulse * 0.6, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = `rgba(255,255,255,${0.5 * alpha})`;
+  ctx.beginPath(); ctx.arc(0, 0, orb.radius * pulse * 0.3, 0, Math.PI * 2); ctx.fill();
+  ctx.shadowBlur = 0;
+  
+  ctx.restore();
+}
+
+// --- ABILITY VISUALS ---
+function drawAbilityVisuals(ctx: CanvasRenderingContext2D, state: GameState, time: number) {
+  const p = state.player;
+  const abilities = state.abilities;
+  
+  // Damage aura
+  if (abilities.auraRadius > 0) {
+    const auraPulse = 0.08 + Math.sin(time * 3) * 0.04;
+    const auraGrad = ctx.createRadialGradient(p.pos.x, p.pos.y, p.radius, p.pos.x, p.pos.y, abilities.auraRadius);
+    const auraColor = getShipColor(p.class);
+    auraGrad.addColorStop(0, hexToRgba(auraColor, auraPulse));
+    auraGrad.addColorStop(0.7, hexToRgba(auraColor, auraPulse * 0.3));
+    auraGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = auraGrad;
+    ctx.beginPath(); ctx.arc(p.pos.x, p.pos.y, abilities.auraRadius, 0, Math.PI * 2); ctx.fill();
+    // Aura edge
+    ctx.strokeStyle = hexToRgba(auraColor, auraPulse * 0.5);
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]); ctx.lineDashOffset = time * 20;
+    ctx.beginPath(); ctx.arc(p.pos.x, p.pos.y, abilities.auraRadius, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  
+  // Orbital drones
+  if (abilities.orbitals > 0) {
+    const count = abilities.orbitals;
+    const orbitalRadius = p.radius + 30;
+    for (let i = 0; i < count; i++) {
+      const angle = (time * 3) + (i / count) * Math.PI * 2;
+      const ox = p.pos.x + Math.cos(angle) * orbitalRadius;
+      const oy = p.pos.y + Math.sin(angle) * orbitalRadius;
+      
+      // Orbital glow
+      const oGrad = ctx.createRadialGradient(ox, oy, 0, ox, oy, 8);
+      oGrad.addColorStop(0, 'rgba(0,255,255,0.5)');
+      oGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = oGrad;
+      ctx.beginPath(); ctx.arc(ox, oy, 8, 0, Math.PI * 2); ctx.fill();
+      
+      // Orbital core
+      ctx.shadowColor = '#0ff';
+      ctx.shadowBlur = 6;
+      ctx.fillStyle = '#0ff';
+      ctx.beginPath(); ctx.arc(ox, oy, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(ox, oy, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+    // Orbit path
+    ctx.strokeStyle = 'rgba(0,255,255,0.06)';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.arc(p.pos.x, p.pos.y, orbitalRadius, 0, Math.PI * 2); ctx.stroke();
+  }
 }
 
 function drawNeonShape(ctx: CanvasRenderingContext2D, sides: number, radius: number, color: string, alpha = 1) {

@@ -1,12 +1,13 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 import { GameState, InputState, ShipType, Upgrade } from '../../game/types';
+import { Ability } from '../../game/abilities';
 import { createPlayer } from '../../game/entities';
 import { createInitialState, updateGame, startWave } from '../../game/engine';
 import { renderGame, getScale, getOffset, resetCamera } from '../../game/renderer';
 import { ARENA_W, ARENA_H } from '../../game/constants';
 import { useIsMobile } from '../../hooks/use-mobile';
 import HUD from './HUD';
-import UpgradeScreen from './UpgradeScreen';
+import LevelUpScreen from './LevelUpScreen';
 import GameOver from './GameOver';
 import TouchControls from './TouchControls';
 
@@ -154,10 +155,11 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, onMenu }) => {
     return () => cancelAnimationFrame(frameRef.current);
   }, [isMobile]);
 
-  const handleUpgrade = useCallback((upgrade: Upgrade) => {
+  const handleUpgrade = useCallback((ability: Ability) => {
     if (!stateRef.current) return;
-    upgrade.apply(stateRef.current.player);
-    startWave(stateRef.current);
+    ability.apply(stateRef.current);
+    stateRef.current.abilityLevels[ability.id] = (stateRef.current.abilityLevels[ability.id] || 0) + 1;
+    stateRef.current.screen = 'playing';
     forceUpdate(n => n + 1);
   }, []);
 
@@ -193,10 +195,19 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, onMenu }) => {
           combo={state.combo}
           comboMultiplier={state.comboMultiplier}
           comboTimer={state.comboTimer}
+          level={state.level}
+          xp={state.xp}
+          xpToNext={state.xpToNext}
         />
       )}
 
-      {/* Upgrade screen removed - waves are continuous now */}
+      {state && state.screen === 'upgrade' && (
+        <LevelUpScreen
+          level={state.level}
+          abilityLevels={state.abilityLevels}
+          onSelect={handleUpgrade}
+        />
+      )}
 
       {state && state.screen === 'game-over' && (
         <GameOver

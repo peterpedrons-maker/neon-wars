@@ -85,12 +85,21 @@ export interface Upgrade {
   apply: (player: Player) => void;
 }
 
+export interface XpOrb {
+  pos: Vec2;
+  vel: Vec2;
+  value: number;
+  lifetime: number;
+  radius: number;
+}
+
 export interface GameState {
   player: Player;
   enemies: Enemy[];
   projectiles: Projectile[];
   particles: Particle[];
   powerUps: PowerUp[];
+  xpOrbs: XpOrb[];
   wave: number;
   score: number;
   enemiesKilled: number;
@@ -106,6 +115,15 @@ export interface GameState {
   comboTimer: number;
   maxCombo: number;
   comboMultiplier: number;
+  // XP / Level system
+  xp: number;
+  level: number;
+  xpToNext: number;
+  abilityLevels: Record<string, number>;
+  abilities: import('./abilities').AbilityState;
+  regenAccumulator: number;
+  // Trail system
+  trail: Array<{ x: number; y: number; age: number }>;
 }
 
 export interface LeaderboardEntry {
