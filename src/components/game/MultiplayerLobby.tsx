@@ -333,7 +333,7 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
           if (count <= 0) {
             clearInterval(countdownRef.current!);
             countdownRef.current = null;
-            onStartCoop(newRoom, selectedMap, selectedShip, peerShip);
+            onStartCoop(newRoom, selectedMapRef.current, selectedShipRef.current, peerShipRef.current);
           }
         }, 1000);
       },
