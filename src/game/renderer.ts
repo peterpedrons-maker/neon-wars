@@ -1,5 +1,6 @@
 import { GameState, Player, Enemy, Projectile, Particle, PowerUp } from './types';
 import { COLORS, ARENA_W, ARENA_H, WARRIOR_ATTACK_RANGE, CAMERA_VIEW_W, CAMERA_VIEW_H, CAMERA_LERP } from './constants';
+import dungeonFloorImg from '../assets/dungeon-floor.jpg';
 
 // Camera state
 let camX = ARENA_W / 2;
