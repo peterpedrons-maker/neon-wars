@@ -60,13 +60,28 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   ctx.scale(scale, scale);
   ctx.translate(viewportW / 2 - camX, viewportH / 2 - camY);
 
-  // Arena floor - draw dungeon image stretched to fill arena
+  // Arena floor - tile the texture across playable area
   if (floorImageLoaded && floorImage) {
-    ctx.drawImage(floorImage, 0, 0, ARENA_W, ARENA_H);
+    if (!floorPattern) {
+      // Create a temporary canvas to scale the tile
+      const tileCanvas = document.createElement('canvas');
+      tileCanvas.width = FLOOR_TILE_SIZE;
+      tileCanvas.height = FLOOR_TILE_SIZE;
+      const tileCtx = tileCanvas.getContext('2d')!;
+      tileCtx.drawImage(floorImage, 0, 0, FLOOR_TILE_SIZE, FLOOR_TILE_SIZE);
+      floorPattern = ctx.createPattern(tileCanvas, 'repeat');
+    }
+    if (floorPattern) {
+      ctx.fillStyle = floorPattern;
+      ctx.fillRect(WALL_LEFT, WALL_TOP, WALL_RIGHT - WALL_LEFT, WALL_BOTTOM - WALL_TOP);
+    }
   } else {
     ctx.fillStyle = COLORS.arena;
-    ctx.fillRect(0, 0, ARENA_W, ARENA_H);
+    ctx.fillRect(WALL_LEFT, WALL_TOP, WALL_RIGHT - WALL_LEFT, WALL_BOTTOM - WALL_TOP);
   }
+
+  // Draw procedural dungeon walls (match collision exactly)
+  drawDungeonWalls(ctx, time);
 
   // Ambient glow around player
   if (state.player.alive) {
@@ -80,16 +95,16 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
     ctx.fillRect(p.pos.x - 200, p.pos.y - 200, 400, 400);
   }
 
-  // Torches along walls (inside wall area)
-  const wallMidL = WALL_LEFT / 2;
-  const wallMidR = (WALL_RIGHT + ARENA_W) / 2;
-  const wallMidT = WALL_TOP / 2;
-  const wallMidB = (WALL_BOTTOM + ARENA_H) / 2;
+  // Torches along inner wall edges
   const torchPositions = [
-    [wallMidL, wallMidT], [ARENA_W / 4, wallMidT], [ARENA_W / 2, wallMidT], [ARENA_W * 3 / 4, wallMidT], [wallMidR, wallMidT],
-    [wallMidL, wallMidB], [ARENA_W / 4, wallMidB], [ARENA_W / 2, wallMidB], [ARENA_W * 3 / 4, wallMidB], [wallMidR, wallMidB],
-    [wallMidL, ARENA_H / 3], [wallMidL, ARENA_H / 2], [wallMidL, ARENA_H * 2 / 3],
-    [wallMidR, ARENA_H / 3], [wallMidR, ARENA_H / 2], [wallMidR, ARENA_H * 2 / 3],
+    // Top wall inner edge
+    [WALL_LEFT + 60, WALL_TOP - 15], [(WALL_LEFT + WALL_RIGHT) / 2, WALL_TOP - 15], [WALL_RIGHT - 60, WALL_TOP - 15],
+    // Bottom wall inner edge
+    [WALL_LEFT + 60, WALL_BOTTOM + 15], [(WALL_LEFT + WALL_RIGHT) / 2, WALL_BOTTOM + 15], [WALL_RIGHT - 60, WALL_BOTTOM + 15],
+    // Left wall inner edge
+    [WALL_LEFT - 15, WALL_TOP + 60], [WALL_LEFT - 15, (WALL_TOP + WALL_BOTTOM) / 2], [WALL_LEFT - 15, WALL_BOTTOM - 60],
+    // Right wall inner edge
+    [WALL_RIGHT + 15, WALL_TOP + 60], [WALL_RIGHT + 15, (WALL_TOP + WALL_BOTTOM) / 2], [WALL_RIGHT + 15, WALL_BOTTOM - 60],
   ];
   torchPositions.forEach(([tx, ty], i) => drawTorchLight(ctx, tx, ty, time + i * 0.7));
 
