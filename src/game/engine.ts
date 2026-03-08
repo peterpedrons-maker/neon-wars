@@ -34,8 +34,8 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   p.vel.y = input.moveY * speed;
   p.pos.x += p.vel.x * dt;
   p.pos.y += p.vel.y * dt;
-  p.pos.x = Math.max(WALL_THICKNESS + p.radius, Math.min(ARENA_W - WALL_THICKNESS - p.radius, p.pos.x));
-  p.pos.y = Math.max(WALL_THICKNESS + p.radius, Math.min(ARENA_H - WALL_THICKNESS - p.radius, p.pos.y));
+  p.pos.x = Math.max(WALL_LEFT + p.radius, Math.min(WALL_RIGHT - p.radius, p.pos.x));
+  p.pos.y = Math.max(WALL_TOP + p.radius, Math.min(WALL_BOTTOM - p.radius, p.pos.y));
 
   // Aim
   if (input.aimX !== 0 || input.aimY !== 0) {
