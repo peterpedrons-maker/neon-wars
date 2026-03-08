@@ -1680,7 +1680,8 @@ function drawOffScreenPeerIndicators(
 
   for (let i = 0; i < peers.length; i++) {
     const p = peers[i];
-    if (!p.alive) continue;
+    // Show indicator even if dead (so you can find them to revive)
+    // if (!p.alive && !p.dead) continue;
 
     // Convert peer world pos to screen pos
     const sx = halfW + (p.pos.x - cX) * scale;
