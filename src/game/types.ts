@@ -153,6 +153,7 @@ export interface GameState {
     playerId: string;
     playerLabel: string;
     reviveProgress: number; // 0-1 for revive progress
+    emote?: { text: string; timer: number };
   }>;
   // Legacy single peer alias (computed from coopPeers[0])
   coopPeer?: {
