@@ -43,6 +43,9 @@ export const COLORS = {
   fire_elemental: '#ff6b00', // orange fire
   void_ghost: '#9040ff',     // deep purple
   crystal_golem: '#00e5ff',  // cyan crystal
+  lava_dragon: '#ff2200',   // deep red-orange
+  void_lord: '#6000c0',     // deep void purple
+  crystal_giant: '#00ffcc',  // bright crystal teal
   mothership: '#ff0040',  // red
   vortex: '#bf5af2',      // purple
   colossus: '#00bfff',    // blue
