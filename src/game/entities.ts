@@ -96,7 +96,18 @@ export function createParticles(pos: Vec2, color: string, count: number, speed =
 }
 
 export function createPowerUp(pos: Vec2): PowerUp | null {
-  const types: PowerUpType[] = ['speed', 'triple-shot', 'shield', 'heal'];
+  // 5% chance for a rare heart drop
+  if (Math.random() < 0.05) {
+    return {
+      pos: { x: pos.x, y: pos.y },
+      vel: { x: 0, y: 0 },
+      radius: 10,
+      alive: true,
+      type: 'heal',
+      lifetime: 8,
+    };
+  }
+  const types: PowerUpType[] = ['speed', 'triple-shot', 'shield'];
   const type = types[Math.floor(Math.random() * types.length)];
   return {
     pos: { x: pos.x, y: pos.y },
