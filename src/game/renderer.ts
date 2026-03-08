@@ -237,22 +237,34 @@ function drawVignette(ctx: CanvasRenderingContext2D, cx: number, cy: number, vw:
   ctx.fillRect(cx - vw / 2, cy - vh / 2, vw, vh);
 }
 
-// --- PLAYER (SHIP) --- Premium detailed designs
+// --- PLAYER (SHIP) --- Premium detailed designs with dynamic animations
 function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
   ctx.save();
   ctx.translate(p.pos.x, p.pos.y);
-  ctx.rotate(p.angle);
-
+  
   const color = getShipColor(p.class);
   const glowColor = getShipGlow(p.class);
   const speed = Math.hypot(p.vel.x || 0, p.vel.y || 0);
+  const speedRatio = Math.min(1, speed / (p.speed * 1.5));
   const r = p.radius;
+  
+  // Attack recoil animation
+  const attackProg = p.attackTimer / p.attackCooldown;
+  const recoil = attackProg > 0.7 ? (attackProg - 0.7) / 0.3 * 2.5 : 0;
+  
+  // Banking/tilt based on turning (simulate via velocity angle vs facing angle)
+  const bankAmount = Math.sin(time * 2.5) * speedRatio * 0.08;
+  
+  ctx.rotate(p.angle + bankAmount);
+  
+  // Slight recoil translation
+  ctx.translate(-recoil, 0);
 
   // Shield effect - rotating hex with inner ring
   if (p.shieldTimer > 0) {
     const sa = 0.3 + Math.sin(time * 5) * 0.15;
     ctx.save();
-    ctx.rotate(-p.angle + time * 0.5);
+    ctx.rotate(-p.angle - bankAmount + time * 0.5);
     drawNeonShape(ctx, 6, r + 14, '#0ff', sa);
     ctx.rotate(time * -1);
     drawNeonShape(ctx, 6, r + 10, '#0ff', sa * 0.4);
@@ -263,74 +275,180 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
     ctx.globalAlpha = 0.4;
   }
 
-  // --- ENGINE EXHAUST ---
-  const thrustPulse = 0.6 + Math.sin(time * 18) * 0.3;
-  const thrustLen = 8 + (speed / p.speed) * 20;
-  const exhaustSpread = p.class === 'titan' ? 6 : p.class === 'phantom' ? 4 : 3;
+  // === MULTI-LAYERED ENGINE EXHAUST ===
+  const thrustBase = 0.5 + Math.sin(time * 22) * 0.2 + Math.sin(time * 37) * 0.15;
+  const thrustLen = 10 + speedRatio * 35 + Math.sin(time * 15) * 3;
+  const exhaustSpread = p.class === 'titan' ? 7 : p.class === 'phantom' ? 4.5 : 3.5;
+  const numExhausts = p.class === 'titan' ? 3 : 2;
   
-  for (let i = -1; i <= 1; i += 2) {
-    const oy = i * exhaustSpread;
-    // Outer flame (colored)
-    ctx.fillStyle = hexToRgba(color, thrustPulse * 0.4);
+  // Attack boost exhaust flare
+  const attackFlare = attackProg > 0.5 ? (attackProg - 0.5) * 2 : 0;
+  const totalThrustLen = thrustLen + attackFlare * 15;
+  
+  for (let ei = 0; ei < numExhausts; ei++) {
+    const oy = numExhausts === 3 
+      ? (ei - 1) * exhaustSpread 
+      : (ei === 0 ? -1 : 1) * exhaustSpread;
+    
+    // Layer 1: Wide outer glow cone
+    const outerLen = totalThrustLen * 1.3;
+    const outerGrad = ctx.createLinearGradient(-r * 0.4, 0, -r - outerLen, 0);
+    outerGrad.addColorStop(0, hexToRgba(color, thrustBase * 0.25));
+    outerGrad.addColorStop(0.5, hexToRgba(color, thrustBase * 0.12));
+    outerGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = outerGrad;
     ctx.beginPath();
-    ctx.moveTo(-r * 0.4, oy - 3);
-    ctx.quadraticCurveTo(-r - thrustLen * 0.7, oy, -r - thrustLen, oy);
-    ctx.quadraticCurveTo(-r - thrustLen * 0.7, oy, -r * 0.4, oy + 3);
+    ctx.moveTo(-r * 0.4, oy - 5);
+    ctx.quadraticCurveTo(-r - outerLen * 0.5, oy - 2, -r - outerLen, oy);
+    ctx.quadraticCurveTo(-r - outerLen * 0.5, oy + 2, -r * 0.4, oy + 5);
     ctx.closePath(); ctx.fill();
-    // Inner flame (white hot)
-    ctx.fillStyle = hexToRgba('#ffffff', thrustPulse * 0.7);
+    
+    // Layer 2: Colored flame core
+    const flameFlicker = Math.sin(time * 30 + ei * 2.5) * 0.15;
+    ctx.fillStyle = hexToRgba(color, (thrustBase + flameFlicker) * 0.55);
     ctx.beginPath();
-    ctx.moveTo(-r * 0.35, oy - 1.2);
-    ctx.lineTo(-r - thrustLen * 0.5, oy);
-    ctx.lineTo(-r * 0.35, oy + 1.2);
+    ctx.moveTo(-r * 0.38, oy - 3.2);
+    ctx.bezierCurveTo(
+      -r - totalThrustLen * 0.3, oy - 2 + Math.sin(time * 25) * 1.5,
+      -r - totalThrustLen * 0.7, oy + Math.sin(time * 19) * 1,
+      -r - totalThrustLen, oy
+    );
+    ctx.bezierCurveTo(
+      -r - totalThrustLen * 0.7, oy - Math.sin(time * 19) * 1,
+      -r - totalThrustLen * 0.3, oy + 2 - Math.sin(time * 25) * 1.5,
+      -r * 0.38, oy + 3.2
+    );
     ctx.closePath(); ctx.fill();
+    
+    // Layer 3: White-hot inner core
+    const innerLen = totalThrustLen * 0.6;
+    ctx.fillStyle = hexToRgba('#ffffff', (thrustBase + flameFlicker) * 0.8);
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.35, oy - 1.5);
+    ctx.bezierCurveTo(
+      -r - innerLen * 0.4, oy - 0.8 + Math.sin(time * 35) * 0.5,
+      -r - innerLen * 0.7, oy,
+      -r - innerLen, oy
+    );
+    ctx.bezierCurveTo(
+      -r - innerLen * 0.7, oy,
+      -r - innerLen * 0.4, oy + 0.8 - Math.sin(time * 35) * 0.5,
+      -r * 0.35, oy + 1.5
+    );
+    ctx.closePath(); ctx.fill();
+    
+    // Layer 4: Exhaust nozzle glow ring
+    ctx.strokeStyle = hexToRgba(glowColor, thrustBase * 0.6);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.4, oy, 1.5, 3.5, 0, 0, Math.PI * 2);
+    ctx.stroke();
   }
-  // Center exhaust glow
-  const exGrad = ctx.createRadialGradient(-r * 0.3, 0, 1, -r * 0.3, 0, thrustLen);
-  exGrad.addColorStop(0, hexToRgba(color, 0.3));
-  exGrad.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = exGrad;
-  ctx.fillRect(-r - thrustLen, -exhaustSpread - 5, thrustLen + r * 0.3, (exhaustSpread + 5) * 2);
+  
+  // Central exhaust heat distortion glow
+  const heatGrad = ctx.createRadialGradient(-r * 0.3, 0, 2, -r * 0.3, 0, totalThrustLen * 1.2);
+  heatGrad.addColorStop(0, hexToRgba(color, 0.25 + speedRatio * 0.15));
+  heatGrad.addColorStop(0.4, hexToRgba(color, 0.08));
+  heatGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = heatGrad;
+  ctx.fillRect(-r - totalThrustLen * 1.3, -exhaustSpread - 8, totalThrustLen * 1.5 + r * 0.3, (exhaustSpread + 8) * 2);
+  
+  // Exhaust particle sparks (scattered dots behind engines)
+  for (let si = 0; si < Math.floor(3 + speedRatio * 6); si++) {
+    const sparkX = -r - Math.random() * totalThrustLen * 1.5;
+    const sparkY = (Math.random() - 0.5) * exhaustSpread * 3;
+    const sparkAlpha = Math.random() * 0.5 * thrustBase;
+    const sparkSize = 0.5 + Math.random() * 1.5;
+    ctx.fillStyle = hexToRgba(si % 2 === 0 ? color : '#ffffff', sparkAlpha);
+    ctx.beginPath(); ctx.arc(sparkX, sparkY, sparkSize, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // === ATTACK MUZZLE FLASH ===
+  if (attackProg > 0.6) {
+    const flashIntensity = (attackProg - 0.6) / 0.4;
+    const flashR = r * 1.5 + flashIntensity * 12;
+    const muzzleX = p.class === 'titan' ? r * 0.8 : r * 1.8;
+    
+    const muzzleGrad = ctx.createRadialGradient(muzzleX, 0, 0, muzzleX, 0, flashR);
+    muzzleGrad.addColorStop(0, hexToRgba('#ffffff', flashIntensity * 0.7));
+    muzzleGrad.addColorStop(0.3, hexToRgba(color, flashIntensity * 0.5));
+    muzzleGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = muzzleGrad;
+    ctx.beginPath(); ctx.arc(muzzleX, 0, flashR, 0, Math.PI * 2); ctx.fill();
+    
+    // Muzzle spark lines
+    ctx.strokeStyle = hexToRgba(color, flashIntensity * 0.6);
+    ctx.lineWidth = 0.8;
+    for (let si = 0; si < 5; si++) {
+      const sa = (si / 5) * Math.PI * 2 + time * 12;
+      const sLen = 4 + flashIntensity * 8;
+      ctx.beginPath();
+      ctx.moveTo(muzzleX + Math.cos(sa) * 2, Math.sin(sa) * 2);
+      ctx.lineTo(muzzleX + Math.cos(sa) * sLen, Math.sin(sa) * sLen);
+      ctx.stroke();
+    }
+  }
 
   ctx.shadowColor = color;
-  ctx.shadowBlur = 20 + Math.sin(time * 3) * 6;
+  ctx.shadowBlur = 18 + Math.sin(time * 3) * 6 + attackFlare * 15;
 
+  // === SHIP BODY with speed-reactive energy lines ===
   if (p.class === 'phantom') {
-    // === PHANTOM: Sleek stealth craft with angular wings ===
-    // Main body
+    // === PHANTOM: Sleek stealth craft ===
     ctx.beginPath();
-    ctx.moveTo(r * 1.8, 0);                    // nose
-    ctx.lineTo(r * 0.6, -r * 0.25);            // upper nose
-    ctx.lineTo(r * 0.1, -r * 0.35);            // front shoulder
-    ctx.lineTo(-r * 0.3, -r * 1.2);            // wing tip
-    ctx.lineTo(-r * 0.7, -r * 1.0);            // wing back
-    ctx.lineTo(-r * 0.55, -r * 0.25);          // wing root
-    ctx.lineTo(-r * 0.7, -r * 0.15);           // rear notch
-    ctx.lineTo(-r * 0.7, r * 0.15);            // rear notch bottom
-    ctx.lineTo(-r * 0.55, r * 0.25);           // wing root bottom
-    ctx.lineTo(-r * 0.7, r * 1.0);             // wing back bottom
-    ctx.lineTo(-r * 0.3, r * 1.2);             // wing tip bottom
-    ctx.lineTo(r * 0.1, r * 0.35);             // front shoulder bottom
-    ctx.lineTo(r * 0.6, r * 0.25);             // lower nose
+    ctx.moveTo(r * 1.8, 0);
+    ctx.lineTo(r * 0.6, -r * 0.25);
+    ctx.lineTo(r * 0.1, -r * 0.35);
+    ctx.lineTo(-r * 0.3, -r * 1.2);
+    ctx.lineTo(-r * 0.7, -r * 1.0);
+    ctx.lineTo(-r * 0.55, -r * 0.25);
+    ctx.lineTo(-r * 0.7, -r * 0.15);
+    ctx.lineTo(-r * 0.7, r * 0.15);
+    ctx.lineTo(-r * 0.55, r * 0.25);
+    ctx.lineTo(-r * 0.7, r * 1.0);
+    ctx.lineTo(-r * 0.3, r * 1.2);
+    ctx.lineTo(r * 0.1, r * 0.35);
+    ctx.lineTo(r * 0.6, r * 0.25);
     ctx.closePath();
-    ctx.fillStyle = hexToRgba(color, 0.15); ctx.fill();
+    ctx.fillStyle = hexToRgba(color, 0.15 + speedRatio * 0.08); ctx.fill();
     ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
     
-    // Wing energy lines
-    ctx.strokeStyle = hexToRgba(glowColor, 0.5); ctx.lineWidth = 0.8;
+    // Wing energy lines - pulse faster at speed
+    const energyPulse = 0.4 + Math.sin(time * (4 + speedRatio * 8)) * 0.3;
+    ctx.strokeStyle = hexToRgba(glowColor, energyPulse); ctx.lineWidth = 0.8 + speedRatio * 0.5;
     ctx.beginPath();
     ctx.moveTo(r * 0.3, -r * 0.2); ctx.lineTo(-r * 0.4, -r * 0.9);
     ctx.moveTo(r * 0.3, r * 0.2); ctx.lineTo(-r * 0.4, r * 0.9);
     ctx.stroke();
+    
+    // Animated energy flow along wings
+    const flowPos = (time * 3) % 1;
+    const fX = r * 0.3 + (-r * 0.7 - r * 0.3) * flowPos;
+    const fY = -r * 0.2 + (-r * 0.7) * flowPos;
+    ctx.fillStyle = hexToRgba('#ffffff', 0.6 * (1 - flowPos));
+    ctx.beginPath(); ctx.arc(fX, fY, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(fX, -fY, 1.5, 0, Math.PI * 2); ctx.fill();
+    
     // Wing tip lights (pulsing)
     const wingPulse = 0.5 + Math.sin(time * 4) * 0.3;
     ctx.fillStyle = hexToRgba(glowColor, wingPulse);
-    ctx.beginPath(); ctx.arc(-r * 0.3, -r * 1.15, 1.5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(-r * 0.3, r * 1.15, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-r * 0.3, -r * 1.15, 1.5 + wingPulse, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-r * 0.3, r * 1.15, 1.5 + wingPulse, 0, Math.PI * 2); ctx.fill();
+    // Wing tip glow halos
+    const tipGrad1 = ctx.createRadialGradient(-r * 0.3, -r * 1.15, 0, -r * 0.3, -r * 1.15, 5);
+    tipGrad1.addColorStop(0, hexToRgba(glowColor, wingPulse * 0.5));
+    tipGrad1.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = tipGrad1;
+    ctx.beginPath(); ctx.arc(-r * 0.3, -r * 1.15, 5, 0, Math.PI * 2); ctx.fill();
+    const tipGrad2 = ctx.createRadialGradient(-r * 0.3, r * 1.15, 0, -r * 0.3, r * 1.15, 5);
+    tipGrad2.addColorStop(0, hexToRgba(glowColor, wingPulse * 0.5));
+    tipGrad2.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = tipGrad2;
+    ctx.beginPath(); ctx.arc(-r * 0.3, r * 1.15, 5, 0, Math.PI * 2); ctx.fill();
+    
     // Center spine
     ctx.strokeStyle = hexToRgba(color, 0.3); ctx.lineWidth = 0.6;
     ctx.beginPath(); ctx.moveTo(r * 1.2, 0); ctx.lineTo(-r * 0.5, 0); ctx.stroke();
-    // Internal panel lines
     ctx.strokeStyle = hexToRgba(color, 0.15); ctx.lineWidth = 0.4;
     ctx.beginPath();
     ctx.moveTo(r * 0.1, -r * 0.3); ctx.lineTo(-r * 0.5, -r * 0.2);
@@ -339,9 +457,8 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
     
   } else if (p.class === 'interceptor') {
     // === INTERCEPTOR: Twin-boom sleek fighter ===
-    // Fuselage
     ctx.beginPath();
-    ctx.moveTo(r * 2.0, 0);                     // long nose
+    ctx.moveTo(r * 2.0, 0);
     ctx.lineTo(r * 0.8, -r * 0.2);
     ctx.lineTo(r * 0.3, -r * 0.35);
     ctx.lineTo(-r * 0.2, -r * 0.3);
@@ -351,10 +468,10 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
     ctx.lineTo(r * 0.3, r * 0.35);
     ctx.lineTo(r * 0.8, r * 0.2);
     ctx.closePath();
-    ctx.fillStyle = hexToRgba(color, 0.12); ctx.fill();
+    ctx.fillStyle = hexToRgba(color, 0.12 + speedRatio * 0.06); ctx.fill();
     ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.stroke();
     
-    // Twin boom nacelles
+    // Twin boom nacelles with pulsing energy
     for (const side of [-1, 1]) {
       ctx.beginPath();
       ctx.moveTo(r * 0.4, side * r * 0.35);
@@ -364,9 +481,17 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
       ctx.closePath();
       ctx.fillStyle = hexToRgba(color, 0.1); ctx.fill();
       ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.stroke();
-      // Nacelle glow
-      ctx.fillStyle = hexToRgba(glowColor, 0.4 + Math.sin(time * 6 + side) * 0.2);
-      ctx.beginPath(); ctx.arc(-r * 0.3, side * r * 0.55, 1.5, 0, Math.PI * 2); ctx.fill();
+      
+      // Nacelle glow - reactive to speed
+      const nacPulse = 0.4 + Math.sin(time * 6 + side) * 0.2 + speedRatio * 0.3;
+      ctx.fillStyle = hexToRgba(glowColor, nacPulse);
+      ctx.beginPath(); ctx.arc(-r * 0.3, side * r * 0.55, 1.5 + speedRatio, 0, Math.PI * 2); ctx.fill();
+      // Nacelle glow halo
+      const nacGrad = ctx.createRadialGradient(-r * 0.3, side * r * 0.55, 0, -r * 0.3, side * r * 0.55, 5 + speedRatio * 3);
+      nacGrad.addColorStop(0, hexToRgba(glowColor, nacPulse * 0.4));
+      nacGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = nacGrad;
+      ctx.beginPath(); ctx.arc(-r * 0.3, side * r * 0.55, 5 + speedRatio * 3, 0, Math.PI * 2); ctx.fill();
     }
     
     // Canard wings
@@ -376,30 +501,37 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
     ctx.moveTo(r * 1.0, r * 0.1); ctx.lineTo(r * 0.5, r * 0.5);
     ctx.stroke();
     
-    // Speed lines at high velocity
-    if (speed > p.speed * 0.5) {
-      ctx.strokeStyle = hexToRgba(color, 0.15); ctx.lineWidth = 0.5;
-      for (let i = -1; i <= 1; i++) {
+    // Speed lines - more intense at high velocity
+    if (speed > p.speed * 0.2) {
+      const lineAlpha = Math.min(0.3, speedRatio * 0.4);
+      ctx.strokeStyle = hexToRgba(color, lineAlpha); ctx.lineWidth = 0.5 + speedRatio * 0.5;
+      for (let i = -2; i <= 2; i++) {
+        const lineLen = 8 + speedRatio * 25 + Math.sin(time * 12 + i * 3) * 3;
         ctx.beginPath(); 
-        ctx.moveTo(-r * 0.6, i * 3); 
-        ctx.lineTo(-r - 12 - speed * 0.02, i * 3); 
+        ctx.moveTo(-r * 0.6, i * 2.5); 
+        ctx.lineTo(-r - lineLen, i * 2.5); 
         ctx.stroke();
       }
     }
     
-    // Nose laser emitter
-    ctx.fillStyle = hexToRgba('#ffffff', 0.6 + Math.sin(time * 8) * 0.3);
-    ctx.beginPath(); ctx.arc(r * 1.8, 0, 1, 0, Math.PI * 2); ctx.fill();
+    // Nose laser emitter with pulsing halo
+    const nosePulse = 0.6 + Math.sin(time * 8) * 0.3;
+    ctx.fillStyle = hexToRgba('#ffffff', nosePulse);
+    ctx.beginPath(); ctx.arc(r * 1.8, 0, 1.2, 0, Math.PI * 2); ctx.fill();
+    const noseGrad = ctx.createRadialGradient(r * 1.8, 0, 0, r * 1.8, 0, 4);
+    noseGrad.addColorStop(0, hexToRgba(color, nosePulse * 0.4));
+    noseGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = noseGrad;
+    ctx.beginPath(); ctx.arc(r * 1.8, 0, 4, 0, Math.PI * 2); ctx.fill();
     
   } else {
     // === TITAN: Heavy armored gunship ===
-    // Main hull
     ctx.beginPath();
-    ctx.moveTo(r * 1.5, 0);                     // front
+    ctx.moveTo(r * 1.5, 0);
     ctx.lineTo(r * 0.6, -r * 0.45);
     ctx.lineTo(r * 0.1, -r * 0.6);
-    ctx.lineTo(-r * 0.3, -r * 1.15);            // shoulder
-    ctx.lineTo(-r * 0.8, -r * 1.05);            // back wing
+    ctx.lineTo(-r * 0.3, -r * 1.15);
+    ctx.lineTo(-r * 0.8, -r * 1.05);
     ctx.lineTo(-r * 0.9, -r * 0.6);
     ctx.lineTo(-r, -r * 0.3);
     ctx.lineTo(-r, r * 0.3);
@@ -409,78 +541,105 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
     ctx.lineTo(r * 0.1, r * 0.6);
     ctx.lineTo(r * 0.6, r * 0.45);
     ctx.closePath();
-    ctx.fillStyle = hexToRgba(color, 0.18); ctx.fill();
+    ctx.fillStyle = hexToRgba(color, 0.18 + speedRatio * 0.05); ctx.fill();
     ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
     
     // Inner armor plating
     ctx.strokeStyle = hexToRgba(glowColor, 0.25); ctx.lineWidth = 0.8;
     ctx.beginPath();
-    // Horizontal plates
     ctx.moveTo(r * 0.4, -r * 0.35); ctx.lineTo(-r * 0.7, -r * 0.35);
     ctx.moveTo(r * 0.4, r * 0.35); ctx.lineTo(-r * 0.7, r * 0.35);
-    // Vertical spine
     ctx.moveTo(-r * 0.4, -r * 0.8); ctx.lineTo(-r * 0.4, r * 0.8);
-    // Diagonal reinforcements
     ctx.moveTo(r * 0.2, -r * 0.4); ctx.lineTo(-r * 0.5, -r * 0.9);
     ctx.moveTo(r * 0.2, r * 0.4); ctx.lineTo(-r * 0.5, r * 0.9);
     ctx.stroke();
     
-    // Heavy cannon barrels
+    // Heavy cannon barrels with heat glow
     for (const side of [-1, 1]) {
       ctx.fillStyle = hexToRgba(color, 0.4);
       ctx.fillRect(r * 0.8, side * r * 0.25 - 1.5, r * 0.5, 3);
       ctx.strokeStyle = color; ctx.lineWidth = 0.8;
       ctx.strokeRect(r * 0.8, side * r * 0.25 - 1.5, r * 0.5, 3);
+      // Barrel tip heat
+      const barrelHeat = attackProg > 0.3 ? (attackProg - 0.3) / 0.7 : 0;
+      if (barrelHeat > 0) {
+        ctx.fillStyle = hexToRgba('#ffffff', barrelHeat * 0.5);
+        ctx.beginPath(); ctx.arc(r * 1.3, side * r * 0.25, 2 + barrelHeat * 2, 0, Math.PI * 2); ctx.fill();
+      }
     }
     
     // Shoulder armor glow
-    const armorPulse = 0.3 + Math.sin(time * 2) * 0.15;
+    const armorPulse = 0.3 + Math.sin(time * 2) * 0.15 + speedRatio * 0.2;
     ctx.fillStyle = hexToRgba(glowColor, armorPulse);
-    ctx.beginPath(); ctx.arc(-r * 0.3, -r * 1.0, 2, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(-r * 0.3, r * 1.0, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-r * 0.3, -r * 1.0, 2 + armorPulse * 2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-r * 0.3, r * 1.0, 2 + armorPulse * 2, 0, Math.PI * 2); ctx.fill();
+    // Shoulder halos
+    for (const sy of [-1, 1]) {
+      const shGrad = ctx.createRadialGradient(-r * 0.3, sy * r * 1.0, 0, -r * 0.3, sy * r * 1.0, 6);
+      shGrad.addColorStop(0, hexToRgba(glowColor, armorPulse * 0.4));
+      shGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = shGrad;
+      ctx.beginPath(); ctx.arc(-r * 0.3, sy * r * 1.0, 6, 0, Math.PI * 2); ctx.fill();
+    }
     
-    // Reactor core
-    const reactGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, r * 0.35);
-    reactGrad.addColorStop(0, hexToRgba('#ffffff', 0.4));
-    reactGrad.addColorStop(0.4, hexToRgba(color, 0.2));
+    // Reactor core - pulsing with intensity
+    const reactPulse = 0.4 + Math.sin(time * 3) * 0.15 + attackFlare * 0.3;
+    const reactGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, r * 0.4);
+    reactGrad.addColorStop(0, hexToRgba('#ffffff', reactPulse));
+    reactGrad.addColorStop(0.3, hexToRgba(color, reactPulse * 0.6));
     reactGrad.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = reactGrad;
-    ctx.beginPath(); ctx.arc(-r * 0.2, 0, r * 0.35, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-r * 0.2, 0, r * 0.4, 0, Math.PI * 2); ctx.fill();
+    
+    // Titan attack sweep arc
+    if (p.attackTimer > p.attackCooldown * 0.4) {
+      const slashProg = (p.attackTimer / p.attackCooldown - 0.4) / 0.6;
+      ctx.beginPath(); ctx.moveTo(0, 0);
+      ctx.arc(0, 0, WARRIOR_ATTACK_RANGE, -0.8 + (1 - slashProg) * 1.2, -0.8 + (1 - slashProg) * 1.2 + 1.0);
+      ctx.closePath();
+      const sg = ctx.createRadialGradient(0, 0, r, 0, 0, WARRIOR_ATTACK_RANGE);
+      sg.addColorStop(0, `rgba(255,107,0,${0.5 * slashProg})`);
+      sg.addColorStop(1, 'rgba(255,107,0,0)');
+      ctx.fillStyle = sg; ctx.fill();
+      // Sweep edge glow
+      ctx.strokeStyle = hexToRgba('#ffaa55', slashProg * 0.6);
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
   }
 
   // Cockpit/nose glow (all ships)
   const cockpitX = p.class === 'interceptor' ? r * 0.5 : r * 0.4;
   const cockpitR = p.class === 'titan' ? 3.5 : 2.5;
-  const cockpitGrad = ctx.createRadialGradient(cockpitX, 0, 0, cockpitX, 0, cockpitR + 2);
+  const cockpitGrad = ctx.createRadialGradient(cockpitX, 0, 0, cockpitX, 0, cockpitR + 3);
   cockpitGrad.addColorStop(0, '#ffffff');
-  cockpitGrad.addColorStop(0.4, glowColor);
+  cockpitGrad.addColorStop(0.3, glowColor);
   cockpitGrad.addColorStop(1, hexToRgba(color, 0));
   ctx.fillStyle = cockpitGrad;
-  ctx.beginPath(); ctx.arc(cockpitX, 0, cockpitR, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cockpitX, 0, cockpitR + 1, 0, Math.PI * 2); ctx.fill();
   ctx.shadowBlur = 0;
 
-  // Power-up visual indicators
+  // Power-up visual indicators (enhanced)
   if (p.speedBoostTimer > 0) {
-    ctx.fillStyle = hexToRgba('#00e5ff', 0.4 + Math.sin(time * 10) * 0.2);
-    ctx.beginPath();
-    ctx.moveTo(-r * 0.5, -2); ctx.lineTo(-r - thrustLen - 25, 0); ctx.lineTo(-r * 0.5, 2);
-    ctx.closePath(); ctx.fill();
+    const boostPulse = 0.4 + Math.sin(time * 10) * 0.2;
+    // Multiple speed boost trails
+    for (let i = 0; i < 3; i++) {
+      ctx.fillStyle = hexToRgba('#00e5ff', boostPulse * (1 - i * 0.25));
+      ctx.beginPath();
+      ctx.moveTo(-r * 0.5, -2 + i * 0.5);
+      ctx.lineTo(-r - totalThrustLen - 20 - i * 8, 0);
+      ctx.lineTo(-r * 0.5, 2 - i * 0.5);
+      ctx.closePath(); ctx.fill();
+    }
   }
   if (p.tripleTimer > 0) {
-    ctx.fillStyle = hexToRgba('#ff1493', 0.5 + Math.sin(time * 6) * 0.3);
-    ctx.beginPath(); ctx.arc(r * 1.2, -4, 2, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(r * 1.2, 4, 2, 0, Math.PI * 2); ctx.fill();
+    const tPulse = 0.5 + Math.sin(time * 6) * 0.3;
+    ctx.fillStyle = hexToRgba('#ff1493', tPulse);
+    ctx.beginPath(); ctx.arc(r * 1.2, -4, 2 + tPulse, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(r * 1.2, 4, 2 + tPulse, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(r * 1.5, 0, 1.5 + tPulse, 0, Math.PI * 2); ctx.fill();
   }
-  if (p.class === 'titan' && p.attackTimer > p.attackCooldown * 0.4) {
-    const slashProg = (p.attackTimer / p.attackCooldown - 0.4) / 0.6;
-    ctx.beginPath(); ctx.moveTo(0, 0);
-    ctx.arc(0, 0, WARRIOR_ATTACK_RANGE, -0.8 + (1 - slashProg) * 1.2, -0.8 + (1 - slashProg) * 1.2 + 1.0);
-    ctx.closePath();
-    const sg = ctx.createRadialGradient(0, 0, r, 0, 0, WARRIOR_ATTACK_RANGE);
-    sg.addColorStop(0, `rgba(255,107,0,${0.5 * slashProg})`);
-    sg.addColorStop(1, 'rgba(255,107,0,0)');
-    ctx.fillStyle = sg; ctx.fill();
-  }
+  
   ctx.globalAlpha = 1;
   ctx.restore();
 }
