@@ -177,6 +177,7 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   // Update XP orbs - only host processes collection (guest gets synced values)
   const magnetR = state.abilities.magnetRadius;
   const peer = state.coopPeer;
+  const allPeers = state.coopPeers.length > 0 ? state.coopPeers : (peer ? [peer] : []);
   state.xpOrbs = state.xpOrbs.filter(orb => {
     orb.lifetime -= dt;
     if (orb.lifetime <= 0) return false;
@@ -186,9 +187,10 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
     const dP = Math.hypot(dxP, dyP);
     
     let closestDx = dxP, closestDy = dyP, closestD = dP;
-    if (peer && peer.alive) {
-      const dxPeer = peer.pos.x - orb.pos.x;
-      const dyPeer = peer.pos.y - orb.pos.y;
+    for (const cp of allPeers) {
+      if (!cp.alive) continue;
+      const dxPeer = cp.pos.x - orb.pos.x;
+      const dyPeer = cp.pos.y - orb.pos.y;
       const dPeer = Math.hypot(dxPeer, dyPeer);
       if (dPeer < closestD) {
         closestDx = dxPeer; closestDy = dyPeer; closestD = dPeer;
