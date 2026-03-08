@@ -148,6 +148,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
       shieldTimer: peer.shieldTimer ?? 0, tripleTimer: 0, speedBoostTimer: 0,
       invincibleTimer: peer.invincibleTimer ?? 0,
       angle: peer.angle,
+      emote: (peer as any).emote,
     };
     drawPlayer(ctx, fakePlayer, time);
     // Player label
