@@ -5,7 +5,7 @@ interface LeaderboardProps {
   onBack: () => void;
 }
 
-const shipIcons: Record<ShipType, string> = { phantom: '👻', interceptor: '⚡', titan: '💥' };
+const shipIcons: Record<ShipType, string> = { phantom: '👻', interceptor: '⚡', titan: '💥', spectre: '🌀', valkyrie: '🦅', juggernaut: '🛡️' };
 
 const Leaderboard: React.FC<LeaderboardProps> = ({ onBack }) => {
   const entries: LeaderboardEntry[] = JSON.parse(localStorage.getItem('neon-wars-lb') || '[]');

@@ -40,9 +40,19 @@ export const COLORS = {
   splitter: '#ff1493',    // pink
   dasher: '#ffff00',      // yellow
   tank: '#ff4500',        // red-orange
+  fire_elemental: '#ff6b00', // orange fire
+  void_ghost: '#9040ff',     // deep purple
+  crystal_golem: '#00e5ff',  // cyan crystal
   mothership: '#ff0040',  // red
   vortex: '#bf5af2',      // purple
   colossus: '#00bfff',    // blue
+  // New ships
+  spectre: '#9040ff',
+  spectreGlow: '#c090ff',
+  valkyrie: '#ff1493',
+  valkyrieGlow: '#ff80b0',
+  juggernaut: '#ff4500',
+  juggernautGlow: '#ff8040',
   // Legacy enemy color mappings
   skeleton: '#39ff14',
   slime: '#ff1493',
