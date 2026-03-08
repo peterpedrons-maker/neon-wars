@@ -171,6 +171,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, onMenu }) => {
   }, []);
 
   const handleRestart = useCallback(() => {
+    resetCamera();
     const player = createPlayer(playerClass);
     stateRef.current = createInitialState(player);
     startWave(stateRef.current);
