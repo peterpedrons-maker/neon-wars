@@ -290,7 +290,6 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
   ctx.translate(p.pos.x, p.pos.y);
 
   const glowColor = p.class === 'mage' ? COLORS.mageGlow : p.class === 'archer' ? COLORS.archerGlow : COLORS.warriorGlow;
-  const baseColor = p.class === 'mage' ? COLORS.mage : p.class === 'archer' ? COLORS.archer : COLORS.warrior;
   const glowRGB = p.class === 'mage' ? '168,85,247' : p.class === 'archer' ? '34,211,238' : '249,115,22';
 
   // Shield effect
@@ -318,157 +317,364 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
     ctx.globalAlpha = 0.5;
   }
 
-  // Outer glow ring
+  // Outer glow
   ctx.shadowColor = glowColor;
-  ctx.shadowBlur = 25 + Math.sin(time * 3) * 8;
+  ctx.shadowBlur = 20 + Math.sin(time * 3) * 5;
 
-  // Body
-  const bodyGrad = ctx.createRadialGradient(-4, -4, 2, 0, 0, p.radius);
-  bodyGrad.addColorStop(0, lightenColor(baseColor, 60));
-  bodyGrad.addColorStop(0.5, baseColor);
-  bodyGrad.addColorStop(1, darkenColor(baseColor, 40));
-  ctx.beginPath();
-  ctx.arc(0, 0, p.radius, 0, Math.PI * 2);
-  ctx.fillStyle = bodyGrad;
-  ctx.fill();
+  // Walking bob
+  const walkSpeed = Math.hypot(p.vel?.x || 0, p.vel?.y || 0);
+  const bob = walkSpeed > 10 ? Math.sin(time * 12) * 2 : 0;
+  const legSwing = walkSpeed > 10 ? Math.sin(time * 12) * 0.4 : 0;
+  const armSwing = walkSpeed > 10 ? Math.sin(time * 12) * 0.3 : 0;
 
-  // Bright inner ring
-  ctx.beginPath();
-  ctx.arc(0, 0, p.radius * 0.65, 0, Math.PI * 2);
-  ctx.strokeStyle = `rgba(255,255,255,0.2)`;
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-
-  // Class-specific decoration on body
-  if (p.class === 'mage') {
-    // Arcane runes orbiting
-    for (let i = 0; i < 3; i++) {
-      const a = time * 1.5 + (i / 3) * Math.PI * 2;
-      const ox = Math.cos(a) * (p.radius + 5);
-      const oy = Math.sin(a) * (p.radius + 5);
-      ctx.beginPath();
-      ctx.arc(ox, oy, 2, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(216,180,254,${0.5 + Math.sin(time * 3 + i) * 0.3})`;
-      ctx.fill();
-    }
-  } else if (p.class === 'archer') {
-    // Speed lines when moving
-    if (Math.abs(p.vel?.x || 0) > 0 || Math.abs(p.vel?.y || 0) > 0) {
-      for (let i = 0; i < 2; i++) {
-        const a = p.angle + Math.PI + (i - 0.5) * 0.4;
-        ctx.beginPath();
-        ctx.moveTo(Math.cos(a) * p.radius, Math.sin(a) * p.radius);
-        ctx.lineTo(Math.cos(a) * (p.radius + 8 + Math.random() * 5), Math.sin(a) * (p.radius + 8));
-        ctx.strokeStyle = `rgba(103,232,249,0.3)`;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
-    }
-  }
-
-  // Weapon
+  // Rotate to face aim direction
   ctx.save();
   ctx.rotate(p.angle);
-  ctx.shadowBlur = 0;
+
+  // --- CLASS COLORS ---
+  let skinColor = '#f5d0a9';
+  let hairColor = '#4a2c0a';
+  let tunicColor = '#6b21a8'; // mage purple
+  let tunicLight = '#9333ea';
+  let pantsColor = '#3b0764';
+  let bootColor = '#44403c';
+  let capeColor = '#7c3aed';
+
+  if (p.class === 'archer') {
+    tunicColor = '#065f46';
+    tunicLight = '#059669';
+    pantsColor = '#064e3b';
+    bootColor = '#78350f';
+    hairColor = '#b45309';
+    capeColor = '#047857';
+  } else if (p.class === 'warrior') {
+    tunicColor = '#78350f';
+    tunicLight = '#92400e';
+    pantsColor = '#451a03';
+    bootColor = '#292524';
+    hairColor = '#1c1917';
+    capeColor = '#dc2626';
+  }
+
+  // Cape (behind body)
+  ctx.fillStyle = capeColor;
+  ctx.beginPath();
+  ctx.moveTo(-5, -2);
+  ctx.quadraticCurveTo(-14 - Math.sin(time * 2) * 2, 8, -10, 16 + bob * 0.5);
+  ctx.lineTo(2, 16 + bob * 0.5);
+  ctx.quadraticCurveTo(-2, 6, -5, -2);
+  ctx.fill();
+  ctx.fillStyle = darkenColor(capeColor, 30);
+  ctx.beginPath();
+  ctx.moveTo(-4, 2);
+  ctx.quadraticCurveTo(-12 - Math.sin(time * 2) * 1.5, 10, -8, 14 + bob * 0.3);
+  ctx.lineTo(0, 14 + bob * 0.3);
+  ctx.quadraticCurveTo(-1, 8, -4, 2);
+  ctx.fill();
+
+  // Left leg (back)
+  ctx.save();
+  ctx.translate(-3, 10);
+  ctx.rotate(-legSwing);
+  ctx.fillStyle = pantsColor;
+  ctx.fillRect(-2.5, 0, 5, 10);
+  ctx.fillStyle = bootColor;
+  roundRect(ctx, -3, 8, 6, 4, 1.5);
+  ctx.fill();
+  ctx.restore();
+
+  // Right leg (front)
+  ctx.save();
+  ctx.translate(3, 10);
+  ctx.rotate(legSwing);
+  ctx.fillStyle = pantsColor;
+  ctx.fillRect(-2.5, 0, 5, 10);
+  ctx.fillStyle = bootColor;
+  roundRect(ctx, -3, 8, 6, 4, 1.5);
+  ctx.fill();
+  ctx.restore();
+
+  // Torso
+  ctx.fillStyle = tunicColor;
+  roundRect(ctx, -7, -4 + bob, 14, 16, 3);
+  ctx.fill();
+  // Tunic detail - center stripe
+  ctx.fillStyle = tunicLight;
+  ctx.fillRect(-1.5, -2 + bob, 3, 12);
+  // Belt
+  ctx.fillStyle = '#78350f';
+  ctx.fillRect(-7, 8 + bob, 14, 3);
+  ctx.fillStyle = '#fbbf24';
+  ctx.beginPath();
+  ctx.arc(0, 9.5 + bob, 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Left arm (back)
+  ctx.save();
+  ctx.translate(-8, -1 + bob);
+  ctx.rotate(armSwing + 0.1);
+  ctx.fillStyle = tunicColor;
+  roundRect(ctx, -3, 0, 5, 12, 2);
+  ctx.fill();
+  ctx.fillStyle = skinColor;
+  ctx.beginPath();
+  ctx.arc(-0.5, 13, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Right arm + weapon
+  ctx.save();
+  ctx.translate(8, -1 + bob);
+  ctx.rotate(-armSwing - 0.1);
+  ctx.fillStyle = tunicColor;
+  roundRect(ctx, -2, 0, 5, 12, 2);
+  ctx.fill();
+  ctx.fillStyle = skinColor;
+  ctx.beginPath();
+  ctx.arc(0.5, 13, 3, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Weapon in right hand
   if (p.class === 'warrior') {
-    // Big sword
+    // Sword
+    ctx.fillStyle = '#d4d4d8';
     ctx.beginPath();
-    ctx.moveTo(p.radius + 20, 0);
-    ctx.lineTo(p.radius + 5, -4);
-    ctx.lineTo(p.radius - 2, -6);
-    ctx.lineTo(p.radius - 2, 6);
-    ctx.lineTo(p.radius + 5, 4);
+    ctx.moveTo(1, 10);
+    ctx.lineTo(3, -4);
+    ctx.lineTo(1, -8);
+    ctx.lineTo(-1, -8);
+    ctx.lineTo(-3, -4);
+    ctx.lineTo(-1, 10);
     ctx.closePath();
-    const swordGrad = ctx.createLinearGradient(p.radius - 2, 0, p.radius + 20, 0);
-    swordGrad.addColorStop(0, '#aaa');
-    swordGrad.addColorStop(0.5, '#e0e0e0');
-    swordGrad.addColorStop(1, '#ccc');
-    ctx.fillStyle = swordGrad;
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
     ctx.lineWidth = 0.5;
     ctx.stroke();
     // Guard
     ctx.fillStyle = '#a0522d';
-    ctx.fillRect(p.radius - 4, -8, 5, 16);
-    // Gem on guard
-    ctx.beginPath();
-    ctx.arc(p.radius - 1.5, 0, 2.5, 0, Math.PI * 2);
+    ctx.fillRect(-5, 10, 10, 3);
+    // Handle
+    ctx.fillStyle = '#5c3a1e';
+    ctx.fillRect(-1.5, 13, 3, 6);
+    // Pommel
     ctx.fillStyle = '#ef4444';
+    ctx.beginPath();
+    ctx.arc(0, 20, 2.5, 0, Math.PI * 2);
     ctx.fill();
   } else if (p.class === 'archer') {
-    // Arrow
-    ctx.beginPath();
-    ctx.moveTo(p.radius + 22, 0);
-    ctx.lineTo(p.radius + 16, -2.5);
-    ctx.lineTo(p.radius + 4, 0);
-    ctx.lineTo(p.radius + 16, 2.5);
-    ctx.closePath();
-    ctx.fillStyle = '#92400e';
-    ctx.fill();
-    // Arrow shaft
-    ctx.beginPath();
-    ctx.moveTo(p.radius + 4, 0);
-    ctx.lineTo(p.radius - 8, 0);
-    ctx.strokeStyle = '#78350f';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
     // Bow
-    ctx.beginPath();
-    ctx.arc(0, 0, p.radius + 4, -0.7, 0.7);
-    ctx.strokeStyle = '#92400e';
+    ctx.strokeStyle = '#78350f';
     ctx.lineWidth = 2.5;
-    ctx.stroke();
-    // Bowstring
     ctx.beginPath();
-    ctx.moveTo(Math.cos(-0.7) * (p.radius + 4), Math.sin(-0.7) * (p.radius + 4));
-    ctx.lineTo(p.radius - 6, 0);
-    ctx.lineTo(Math.cos(0.7) * (p.radius + 4), Math.sin(0.7) * (p.radius + 4));
-    ctx.strokeStyle = 'rgba(200,200,200,0.6)';
+    ctx.arc(5, 6, 14, -1.2, 1.2);
+    ctx.stroke();
+    // String
+    ctx.strokeStyle = 'rgba(220,220,220,0.7)';
     ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(5 + Math.cos(-1.2) * 14, 6 + Math.sin(-1.2) * 14);
+    ctx.lineTo(2, 6);
+    ctx.lineTo(5 + Math.cos(1.2) * 14, 6 + Math.sin(1.2) * 14);
+    ctx.stroke();
+    // Arrow
+    ctx.fillStyle = '#dc2626';
+    ctx.beginPath();
+    ctx.moveTo(2, 0);
+    ctx.lineTo(0, 2);
+    ctx.lineTo(0, -2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#5c3a1e';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(2, 0);
+    ctx.lineTo(2, 16);
     ctx.stroke();
   } else {
-    // Staff
-    ctx.beginPath();
-    ctx.moveTo(p.radius + 8, 0);
-    ctx.lineTo(p.radius - 12, 0);
-    ctx.strokeStyle = '#78350f';
+    // Mage staff
+    ctx.strokeStyle = '#5c3a1e';
     ctx.lineWidth = 3;
-    ctx.stroke();
-    // Orb at tip
-    const orbGrad = ctx.createRadialGradient(p.radius + 10, 0, 1, p.radius + 10, 0, 6);
-    orbGrad.addColorStop(0, '#fff');
-    orbGrad.addColorStop(0.3, COLORS.mageGlow);
-    orbGrad.addColorStop(1, COLORS.mage);
     ctx.beginPath();
-    ctx.arc(p.radius + 10, 0, 6, 0, Math.PI * 2);
+    ctx.moveTo(0, 18);
+    ctx.lineTo(0, -6);
+    ctx.stroke();
+    // Crystal on top
+    const orbGrad = ctx.createRadialGradient(0, -8, 1, 0, -8, 5);
+    orbGrad.addColorStop(0, '#fff');
+    orbGrad.addColorStop(0.3, '#c084fc');
+    orbGrad.addColorStop(1, '#7c3aed');
+    ctx.beginPath();
+    ctx.arc(0, -8, 5, 0, Math.PI * 2);
     ctx.fillStyle = orbGrad;
     ctx.fill();
-    // Orb sparkle
+    ctx.shadowColor = '#a855f7';
+    ctx.shadowBlur = 12;
     ctx.beginPath();
-    ctx.arc(p.radius + 8, -2, 1.5, 0, Math.PI * 2);
+    ctx.arc(0, -8, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    // Sparkle
     ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.beginPath();
+    ctx.arc(-1.5, -10, 1.2, 0, Math.PI * 2);
     ctx.fill();
   }
-  ctx.restore();
+  ctx.restore(); // right arm
+
+  // Head
+  ctx.save();
+  ctx.translate(0, -10 + bob);
+
+  // Neck
+  ctx.fillStyle = skinColor;
+  ctx.fillRect(-2.5, 3, 5, 4);
+
+  // Head shape
+  ctx.fillStyle = skinColor;
+  ctx.beginPath();
+  ctx.arc(0, -2, 8, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Hair
+  ctx.fillStyle = hairColor;
+  ctx.beginPath();
+  ctx.arc(0, -3, 8.5, -Math.PI, -0.1);
+  ctx.fill();
+
+  if (p.class === 'mage') {
+    // Wizard hat
+    ctx.fillStyle = '#6b21a8';
+    ctx.beginPath();
+    ctx.moveTo(-10, -4);
+    ctx.lineTo(0, -22);
+    ctx.lineTo(10, -4);
+    ctx.closePath();
+    ctx.fill();
+    // Hat brim
+    ctx.fillStyle = '#581c87';
+    ctx.beginPath();
+    ctx.ellipse(0, -4, 13, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Hat band
+    ctx.fillStyle = '#fbbf24';
+    ctx.fillRect(-8, -6, 16, 2);
+    // Star on hat
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = '7px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('★', 0, -13);
+  } else if (p.class === 'archer') {
+    // Hood
+    ctx.fillStyle = '#065f46';
+    ctx.beginPath();
+    ctx.arc(0, -3, 9.5, -Math.PI, 0);
+    ctx.lineTo(9.5, 0);
+    ctx.quadraticCurveTo(10, -2, 8, -3);
+    ctx.lineTo(-8, -3);
+    ctx.quadraticCurveTo(-10, -2, -9.5, 0);
+    ctx.closePath();
+    ctx.fill();
+    // Hood point
+    ctx.beginPath();
+    ctx.moveTo(-3, -11);
+    ctx.lineTo(-8, -16);
+    ctx.lineTo(2, -12);
+    ctx.closePath();
+    ctx.fillStyle = '#047857';
+    ctx.fill();
+  } else {
+    // Warrior helmet
+    ctx.fillStyle = '#57534e';
+    ctx.beginPath();
+    ctx.arc(0, -3, 9, -Math.PI, 0.1);
+    ctx.fill();
+    // Helmet ridge
+    ctx.strokeStyle = '#78716c';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(0, -3, 9, -2.8, -0.3);
+    ctx.stroke();
+    // Nose guard
+    ctx.fillStyle = '#57534e';
+    ctx.fillRect(-1.5, -6, 3, 8);
+    // Helmet horns
+    ctx.fillStyle = '#a8a29e';
+    ctx.beginPath();
+    ctx.moveTo(-7, -8);
+    ctx.lineTo(-10, -16);
+    ctx.lineTo(-5, -10);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(7, -8);
+    ctx.lineTo(10, -16);
+    ctx.lineTo(5, -10);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Eyes
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.ellipse(-3, -2, 2.5, 2, 0, 0, Math.PI * 2);
+  ctx.ellipse(3, -2, 2.5, 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Pupils
+  const eyeColor = p.class === 'mage' ? '#a855f7' : p.class === 'archer' ? '#22d3ee' : '#f97316';
+  ctx.fillStyle = eyeColor;
+  ctx.beginPath();
+  ctx.arc(-2.5, -2, 1.3, 0, Math.PI * 2);
+  ctx.arc(3.5, -2, 1.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.arc(-2.5, -2, 0.7, 0, Math.PI * 2);
+  ctx.arc(3.5, -2, 0.7, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Mouth
+  ctx.strokeStyle = '#a0522d';
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.arc(0, 2, 2.5, 0.2, Math.PI - 0.2);
+  ctx.stroke();
+
+  ctx.restore(); // head
+
+  ctx.restore(); // angle rotation
+
+  // Mage orbiting runes
+  if (p.class === 'mage') {
+    for (let i = 0; i < 3; i++) {
+      const a = time * 1.5 + (i / 3) * Math.PI * 2;
+      const ox = Math.cos(a) * (p.radius + 10);
+      const oy = Math.sin(a) * (p.radius + 10);
+      ctx.beginPath();
+      ctx.arc(ox, oy, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(216,180,254,${0.5 + Math.sin(time * 3 + i) * 0.3})`;
+      ctx.fill();
+    }
+  }
 
   // Warrior melee arc
   if (p.class === 'warrior' && p.attackTimer > p.attackCooldown * 0.5) {
+    ctx.save();
+    ctx.rotate(p.angle);
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.arc(0, 0, WARRIOR_ATTACK_RANGE, p.angle - 0.8, p.angle + 0.8);
+    ctx.arc(0, 0, WARRIOR_ATTACK_RANGE, -0.8, 0.8);
     ctx.closePath();
     const slashGrad = ctx.createRadialGradient(0, 0, p.radius, 0, 0, WARRIOR_ATTACK_RANGE);
     slashGrad.addColorStop(0, 'rgba(249,115,22,0.5)');
     slashGrad.addColorStop(1, 'rgba(249,115,22,0)');
     ctx.fillStyle = slashGrad;
     ctx.fill();
-    // Bright arc edge
     ctx.beginPath();
-    ctx.arc(0, 0, WARRIOR_ATTACK_RANGE, p.angle - 0.8, p.angle + 0.8);
+    ctx.arc(0, 0, WARRIOR_ATTACK_RANGE, -0.8, 0.8);
     ctx.strokeStyle = 'rgba(253,186,116,0.6)';
     ctx.lineWidth = 3;
     ctx.stroke();
+    ctx.restore();
   }
 
   ctx.shadowBlur = 0;
