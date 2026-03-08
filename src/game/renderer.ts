@@ -958,6 +958,111 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, time: number, state?
   ctx.restore();
 }
 
+// --- TRAIL ---
+function drawTrail(ctx: CanvasRenderingContext2D, state: GameState, time: number) {
+  const trail = state.trail;
+  if (trail.length < 2) return;
+  const color = getShipColor(state.player.class);
+  
+  for (let i = 0; i < trail.length; i++) {
+    const t = trail[i];
+    const alpha = (1 - t.age / 0.5) * 0.4;
+    const size = (1 - t.age / 0.5) * 3;
+    if (alpha <= 0) continue;
+    
+    const trailGrad = ctx.createRadialGradient(t.x, t.y, 0, t.x, t.y, size * 2);
+    trailGrad.addColorStop(0, hexToRgba(color, alpha));
+    trailGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = trailGrad;
+    ctx.beginPath(); ctx.arc(t.x, t.y, size * 2, 0, Math.PI * 2); ctx.fill();
+    
+    ctx.fillStyle = hexToRgba('#ffffff', alpha * 0.6);
+    ctx.beginPath(); ctx.arc(t.x, t.y, size * 0.4, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+// --- XP ORB ---
+function drawXpOrb(ctx: CanvasRenderingContext2D, orb: XpOrb, time: number) {
+  ctx.save();
+  ctx.translate(orb.pos.x, orb.pos.y);
+  
+  const pulse = 1 + Math.sin(time * 8 + orb.pos.x * 0.1) * 0.2;
+  const alpha = Math.min(1, orb.lifetime / 2);
+  
+  // Outer glow
+  const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, orb.radius * 3 * pulse);
+  glow.addColorStop(0, `rgba(191,90,242,${0.3 * alpha})`);
+  glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath(); ctx.arc(0, 0, orb.radius * 3 * pulse, 0, Math.PI * 2); ctx.fill();
+  
+  // Core
+  ctx.shadowColor = '#bf5af2';
+  ctx.shadowBlur = 8;
+  ctx.fillStyle = `rgba(224,176,255,${0.7 * alpha})`;
+  ctx.beginPath(); ctx.arc(0, 0, orb.radius * pulse * 0.6, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = `rgba(255,255,255,${0.5 * alpha})`;
+  ctx.beginPath(); ctx.arc(0, 0, orb.radius * pulse * 0.3, 0, Math.PI * 2); ctx.fill();
+  ctx.shadowBlur = 0;
+  
+  ctx.restore();
+}
+
+// --- ABILITY VISUALS ---
+function drawAbilityVisuals(ctx: CanvasRenderingContext2D, state: GameState, time: number) {
+  const p = state.player;
+  const abilities = state.abilities;
+  
+  // Damage aura
+  if (abilities.auraRadius > 0) {
+    const auraPulse = 0.08 + Math.sin(time * 3) * 0.04;
+    const auraGrad = ctx.createRadialGradient(p.pos.x, p.pos.y, p.radius, p.pos.x, p.pos.y, abilities.auraRadius);
+    const auraColor = getShipColor(p.class);
+    auraGrad.addColorStop(0, hexToRgba(auraColor, auraPulse));
+    auraGrad.addColorStop(0.7, hexToRgba(auraColor, auraPulse * 0.3));
+    auraGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = auraGrad;
+    ctx.beginPath(); ctx.arc(p.pos.x, p.pos.y, abilities.auraRadius, 0, Math.PI * 2); ctx.fill();
+    // Aura edge
+    ctx.strokeStyle = hexToRgba(auraColor, auraPulse * 0.5);
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]); ctx.lineDashOffset = time * 20;
+    ctx.beginPath(); ctx.arc(p.pos.x, p.pos.y, abilities.auraRadius, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  
+  // Orbital drones
+  if (abilities.orbitals > 0) {
+    const count = abilities.orbitals;
+    const orbitalRadius = p.radius + 30;
+    for (let i = 0; i < count; i++) {
+      const angle = (time * 3) + (i / count) * Math.PI * 2;
+      const ox = p.pos.x + Math.cos(angle) * orbitalRadius;
+      const oy = p.pos.y + Math.sin(angle) * orbitalRadius;
+      
+      // Orbital glow
+      const oGrad = ctx.createRadialGradient(ox, oy, 0, ox, oy, 8);
+      oGrad.addColorStop(0, 'rgba(0,255,255,0.5)');
+      oGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = oGrad;
+      ctx.beginPath(); ctx.arc(ox, oy, 8, 0, Math.PI * 2); ctx.fill();
+      
+      // Orbital core
+      ctx.shadowColor = '#0ff';
+      ctx.shadowBlur = 6;
+      ctx.fillStyle = '#0ff';
+      ctx.beginPath(); ctx.arc(ox, oy, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(ox, oy, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+    // Orbit path
+    ctx.strokeStyle = 'rgba(0,255,255,0.06)';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.arc(p.pos.x, p.pos.y, orbitalRadius, 0, Math.PI * 2); ctx.stroke();
+  }
+}
+
 function drawNeonShape(ctx: CanvasRenderingContext2D, sides: number, radius: number, color: string, alpha = 1) {
   ctx.beginPath();
   for (let i = 0; i <= sides; i++) {
