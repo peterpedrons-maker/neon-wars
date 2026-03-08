@@ -519,7 +519,7 @@ function applyPowerUp(state: GameState, type: string) {
     case 'speed': p.speedBoostTimer = 8; break;
     case 'triple-shot': p.tripleTimer = 8; break;
     case 'shield': p.shieldTimer = 15; break;
-    case 'heal': p.hp = Math.min(p.maxHp, p.hp + 25); break;
+    case 'heal': p.hp = Math.min(p.maxHp, p.hp + 1); break;
   }
 }
 

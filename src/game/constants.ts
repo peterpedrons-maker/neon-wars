@@ -97,7 +97,7 @@ export const ENEMY_STATS: Record<EnemyType, { hp: number; damage: number; speed:
 export const WAVE_BASE_ENEMIES = 20;
 export const WAVE_ENEMY_INCREMENT = 10;
 export const BOSS_WAVE_INTERVAL = 5;
-export const POWERUP_DROP_CHANCE = 0.18;
+export const POWERUP_DROP_CHANCE = 0.25;
 export const SPAWN_MARGIN = 90;
 export const PROJECTILE_SPEED = 500;
 export const PROJECTILE_LIFETIME = 2;
