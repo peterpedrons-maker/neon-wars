@@ -278,6 +278,12 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
   const channelRef = useRef<any>(null);
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
   const startDataRef = useRef<{ mapId: string; hostClass: string } | null>(null);
+  const selectedShipRef = useRef(selectedShip);
+  const selectedMapRef = useRef(selectedMap);
+  const peerShipRef = useRef(peerShip);
+  selectedShipRef.current = selectedShip;
+  selectedMapRef.current = selectedMap;
+  peerShipRef.current = peerShip;
 
   useEffect(() => {
     return () => { 
