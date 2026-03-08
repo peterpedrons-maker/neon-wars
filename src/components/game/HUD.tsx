@@ -33,7 +33,7 @@ const HUD: React.FC<HUDProps> = ({ player, wave, score, specialReady }) => {
               }}
             />
           </div>
-          <span className="text-xs text-[#f5e6d3] font-mono">{player.hp}/{player.maxHp}</span>
+          <span className="text-xs text-[#f1f5f9] font-mono">{player.hp}/{player.maxHp}</span>
         </div>
 
         {/* Special */}
