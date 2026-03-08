@@ -1,17 +1,20 @@
 import React from 'react';
-import { ShipType } from '../../game/types';
+import { RunStats, Milestone } from '../../game/meta';
 
 interface MainMenuProps {
+  plasma: number;
+  stats: RunStats;
+  milestones: Milestone[];
   onPlay: () => void;
   onLeaderboard: () => void;
   onHowToPlay: () => void;
 }
 
-const MainMenu: React.FC<MainMenuProps> = ({ onPlay, onLeaderboard, onHowToPlay }) => {
+const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, onLeaderboard, onHowToPlay }) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#000008] text-[#e0e8ff] select-none">
       {/* Title */}
-      <div className="mb-12 text-center">
+      <div className="mb-8 text-center">
         <h1 className="text-6xl md:text-8xl font-bold tracking-wider mb-2"
             style={{ fontFamily: 'Orbitron, monospace', textShadow: '0 0 40px rgba(0,255,255,0.4), 0 0 80px rgba(0,255,255,0.15)' }}>
           <span style={{ color: '#0ff' }}>NEON</span> <span style={{ color: '#ff1493' }}>WARS</span>
@@ -21,8 +24,37 @@ const MainMenu: React.FC<MainMenuProps> = ({ onPlay, onLeaderboard, onHowToPlay 
         </p>
       </div>
 
+      {/* Plasma display */}
+      <div className="flex items-center gap-2 mb-4 py-2 px-5 rounded-lg" style={{ background: 'rgba(191,90,242,0.1)', border: '1px solid rgba(191,90,242,0.25)' }}>
+        <span className="text-xl">⚡</span>
+        <span className="font-mono font-bold text-lg" style={{ color: '#bf5af2' }}>{plasma}</span>
+        <span className="font-mono text-xs text-[#6080aa]">Plasma</span>
+      </div>
+
+      {/* Stats bar */}
+      {stats.totalRuns > 0 && (
+        <div className="flex gap-4 mb-6 text-xs font-mono text-[#405070]">
+          <span>Runs: {stats.totalRuns}</span>
+          <span>Kills: {stats.totalKills}</span>
+          <span>Best Wave: {stats.highestWave}</span>
+          <span>Best Score: {stats.highestScore.toLocaleString()}</span>
+        </div>
+      )}
+
+      {/* Milestones progress */}
+      {milestones.length > 0 && (
+        <div className="flex gap-1 mb-6">
+          {milestones.slice(-6).map(m => (
+            <div key={m.id} title={m.name} className="text-lg cursor-default">{m.icon}</div>
+          ))}
+          {milestones.length > 6 && (
+            <span className="text-xs text-[#405070] font-mono self-center ml-1">+{milestones.length - 6}</span>
+          )}
+        </div>
+      )}
+
       {/* Decorative divider */}
-      <div className="w-48 h-px bg-gradient-to-r from-transparent via-[#0ff] to-transparent mb-10" />
+      <div className="w-48 h-px bg-gradient-to-r from-transparent via-[#0ff] to-transparent mb-8" />
 
       {/* Menu buttons */}
       <div className="flex flex-col gap-4 w-72">
@@ -54,7 +86,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ onPlay, onLeaderboard, onHowToPlay 
       </div>
 
       {/* Footer */}
-      <div className="mt-16 text-sm text-[#203050] font-mono">
+      <div className="mt-12 text-sm text-[#203050] font-mono">
         WASD + Mouse • Touch Friendly
       </div>
     </div>

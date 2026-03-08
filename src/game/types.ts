@@ -2,7 +2,7 @@
 
 export type ShipType = 'phantom' | 'interceptor' | 'titan';
 export type PlayerClass = ShipType; // backward compat alias
-export type GameScreen = 'menu' | 'how-to-play' | 'class-select' | 'playing' | 'upgrade' | 'game-over' | 'leaderboard';
+export type GameScreen = 'menu' | 'how-to-play' | 'class-select' | 'map-select' | 'playing' | 'upgrade' | 'game-over' | 'leaderboard';
 export type EnemyType = 'drone' | 'splitter' | 'dasher' | 'tank' | 'mothership' | 'vortex' | 'colossus';
 export type PowerUpType = 'speed' | 'triple-shot' | 'shield' | 'heal';
 
@@ -55,11 +55,9 @@ export interface Enemy extends Entity {
   flashTimer: number;
   bossPhase?: number;
   bossAttackTimer?: number;
-  // Dasher mechanics
   dashState?: 'tracking' | 'dashing' | 'cooldown';
   dashTimer?: number;
   dashAngle?: number;
-  // Tank mechanics
   shootTimer?: number;
 }
 
@@ -103,6 +101,7 @@ export interface GameState {
   wave: number;
   score: number;
   enemiesKilled: number;
+  bossesKilled: number;
   screen: GameScreen;
   waveEnemiesRemaining: number;
   waveSpawnTimer: number;
@@ -121,9 +120,19 @@ export interface GameState {
   xpToNext: number;
   abilityLevels: Record<string, number>;
   abilities: import('./abilities').AbilityState;
+  equippedWeapons: string[];
+  weaponSlots: number;
   regenAccumulator: number;
   // Trail system
   trail: Array<{ x: number; y: number; age: number }>;
+  // Map
+  mapId: string;
+  hazards: import('./maps').ActiveHazard[];
+  hazardSpawnTimer: number;
+  // Flame trail zones
+  flameZones: Array<{ x: number; y: number; damage: number; lifetime: number }>;
+  // Plasma field zones
+  plasmaZones: Array<{ x: number; y: number; radius: number; damage: number; lifetime: number }>;
 }
 
 export interface LeaderboardEntry {
