@@ -12,10 +12,19 @@ const GRID_SIZE = 40;
 export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canvasW: number, canvasH: number) {
   const time = Date.now() * 0.001;
 
-  // Smooth camera follow player
-  if (state.player.alive) {
-    camX += (state.player.pos.x - camX) * CAMERA_LERP;
-    camY += (state.player.pos.y - camY) * CAMERA_LERP;
+  // Spectator camera: if local player is dead, follow a living peer
+  let followTarget = state.player;
+  if (!state.player.alive && state.coopPeers.length > 0) {
+    const livingPeer = state.coopPeers.find(p => p.alive && !p.dead);
+    if (livingPeer) {
+      followTarget = { pos: livingPeer.pos, alive: true } as Player;
+    }
+  }
+
+  // Smooth camera follow target
+  if (followTarget.alive) {
+    camX += (followTarget.pos.x - camX) * CAMERA_LERP;
+    camY += (followTarget.pos.y - camY) * CAMERA_LERP;
   }
 
   const halfViewW = CAMERA_VIEW_W / 2;
