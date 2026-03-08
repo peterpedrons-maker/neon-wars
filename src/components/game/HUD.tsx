@@ -167,6 +167,11 @@ const HUD: React.FC<HUDProps> = ({
 
           {/* RIGHT: Score + Level + XP */}
           <div className="flex flex-col items-end shrink-0">
+            {coopPeers && coopPeers.length > 0 && (
+              <div style={{ fontSize: fs(9), fontWeight: 700, color: '#0ff', opacity: 0.8, marginBottom: -2 }}>
+                PONTUAÇÃO COMPARTILHADA
+              </div>
+            )}
             <div style={{
               fontSize: fs(24), fontWeight: 900, fontVariantNumeric: 'tabular-nums',
               color: '#ffff00', textShadow: '0 0 12px rgba(255,255,0,0.5)', letterSpacing: '0.5px',
