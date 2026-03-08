@@ -28,7 +28,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ onPlay, onLeaderboard, onHowToPlay 
       <div className="flex flex-col gap-4 w-72">
         <button
           onClick={onPlay}
-          className="py-4 px-8 text-xl font-bold rounded-lg bg-gradient-to-r from-[#8B4513] to-[#A0522D] hover:from-[#A0522D] hover:to-[#CD853F] text-[#f5e6d3] border-2 border-[#CD853F] transition-all duration-200 hover:scale-105 hover:shadow-[0_0_20px_rgba(205,133,63,0.4)] active:scale-95"
+          className="py-4 px-8 text-xl font-bold rounded-lg bg-gradient-to-r from-[#7c3aed] to-[#a855f7] hover:from-[#8b5cf6] hover:to-[#c084fc] text-white border-2 border-[#a855f7] transition-all duration-200 hover:scale-105 hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] active:scale-95"
           style={{ fontFamily: 'Georgia, serif' }}
         >
           ⚔️ Jogar
