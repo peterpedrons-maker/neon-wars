@@ -448,8 +448,12 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
   ctx.fill();
   ctx.restore();
 
-  // Right arm + weapon (ATTACK ARM)
+  // Right arm + weapon (ATTACK ARM) — rotates to aim direction
   const weaponArmBase = isWalking ? -Math.sin(walkCycle) * 0.3 : -armSwingIdle;
+  // Convert aim angle to local arm angle (body is flipped, so adjust)
+  const localAimAngle = facingRight ? p.angle : (Math.PI - p.angle);
+  // Clamp aim to reasonable arm range (point downward = ~PI/2 in local space)
+  const armAimOffset = localAimAngle - Math.PI / 2; // offset from default "down" position
   ctx.save();
   ctx.translate(8, -1 + bob);
 
