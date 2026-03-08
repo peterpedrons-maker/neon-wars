@@ -54,6 +54,7 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
     const player = createPlayer(playerClass);
     stateRef.current = createInitialState(player, mapId, meta.weaponSlots);
     stateRef.current.isHost = room.isHost;
+    stateRef.current.localPlayerId = room.playerId;
     startWave(stateRef.current);
     setRunResult(null);
     setShowUpgrade(false);
@@ -73,14 +74,15 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
           const existing = peers.findIndex(p => p.playerId === (ps as any).playerId);
           const peerData = {
             pos: { x: ps.x, y: ps.y },
-            angle: ps.angle, alive: ps.alive, shipClass: ps.shipClass,
+            angle: ps.angle, alive: ps.alive, dead: ps.dead || false, shipClass: ps.shipClass,
             shooting: ps.shooting,
             attackTimer: existing >= 0 ? peers[existing].attackTimer : 0,
             attackCooldown: peerStats.attackCooldown, damage: peerStats.damage,
             shieldTimer: ps.shieldTimer, invincibleTimer: ps.invincibleTimer,
             hp: ps.hp, maxHp: ps.maxHp,
-            playerId: (ps as any).playerId || 'p2',
-            playerLabel: (ps as any).playerLabel || 'P2',
+            playerId: ps.playerId || (ps as any).playerId || 'p2',
+            playerLabel: ps.playerLabel || (ps as any).playerLabel || 'P2',
+            reviveProgress: (ps as any).reviveProgress || 0,
           };
           if (existing >= 0) {
             peers[existing] = peerData;
@@ -245,12 +247,43 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
       }
       updateGame(stateRef.current, inputRef.current, dt);
 
-      // Coop: game over if any peer dies
+      // Coop: game over if ALL players are dead
       if (stateRef.current.screen === 'playing') {
-        const anyPeerDead = stateRef.current.coopPeers.some(p => !p.alive);
-        if (anyPeerDead) {
-          stateRef.current.player.hp = 0;
-          stateRef.current.player.alive = false;
+        const p = stateRef.current.player;
+        if (p.hp <= 0 && p.alive) {
+          p.alive = false;
+        }
+        
+        // Handle revive logic
+        if (!p.alive) {
+          // Check if any peer is near us to revive us
+          const peers = stateRef.current.coopPeers;
+          let beingRevived = false;
+          
+          for (const peer of peers) {
+            if (!peer.dead && peer.alive) {
+              const dist = Math.hypot(p.pos.x - peer.pos.x, p.pos.y - peer.pos.y);
+              if (dist < 80) {
+                beingRevived = true;
+                break;
+              }
+            }
+          }
+          
+          if (beingRevived) {
+            (stateRef.current as any).myReviveProgress = ((stateRef.current as any).myReviveProgress || 0) + dt / 5; // 5 seconds to revive
+            if ((stateRef.current as any).myReviveProgress >= 1) {
+              p.alive = true;
+              p.hp = Math.floor(p.maxHp * 0.5); // Revive with 50% HP
+              (stateRef.current as any).myReviveProgress = 0;
+            }
+          } else {
+            (stateRef.current as any).myReviveProgress = Math.max(0, ((stateRef.current as any).myReviveProgress || 0) - dt);
+          }
+        }
+        
+        const allPeersDead = stateRef.current.coopPeers.every(p => p.dead || !p.alive);
+        if (!p.alive && (stateRef.current.coopPeers.length === 0 || allPeersDead)) {
           stateRef.current.screen = 'game-over';
         }
       }
@@ -278,11 +311,12 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
         const p = stateRef.current.player;
         sendPlayerState({
           x: p.pos.x, y: p.pos.y, angle: p.angle,
-          hp: p.hp, maxHp: p.maxHp, alive: p.alive,
+          hp: p.hp, maxHp: p.maxHp, alive: p.alive, dead: !p.alive,
           shipClass: playerClass, shieldTimer: p.shieldTimer,
           invincibleTimer: p.invincibleTimer, shooting: inputRef.current.shooting,
           playerId: room.playerId,
           playerLabel: room.isHost ? 'HOST' : `P${2}`,
+          reviveProgress: (stateRef.current as any).myReviveProgress || 0,
         } as any);
 
         // Host sends game sync
@@ -302,7 +336,7 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
             hostPlayer: {
               x: stateRef.current.player.pos.x, y: stateRef.current.player.pos.y,
               angle: stateRef.current.player.angle, hp: stateRef.current.player.hp,
-              maxHp: stateRef.current.player.maxHp, alive: stateRef.current.player.alive,
+              maxHp: stateRef.current.player.maxHp, alive: stateRef.current.player.alive, dead: !stateRef.current.player.alive,
               shipClass: playerClass, shieldTimer: stateRef.current.player.shieldTimer,
               invincibleTimer: stateRef.current.player.invincibleTimer, shooting: inputRef.current.shooting,
             },

@@ -12,10 +12,19 @@ const GRID_SIZE = 40;
 export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canvasW: number, canvasH: number) {
   const time = Date.now() * 0.001;
 
-  // Smooth camera follow player
-  if (state.player.alive) {
-    camX += (state.player.pos.x - camX) * CAMERA_LERP;
-    camY += (state.player.pos.y - camY) * CAMERA_LERP;
+  // Spectator camera: if local player is dead, follow a living peer
+  let followTarget = state.player;
+  if (!state.player.alive && state.coopPeers.length > 0) {
+    const livingPeer = state.coopPeers.find(p => p.alive && !p.dead);
+    if (livingPeer) {
+      followTarget = { pos: livingPeer.pos, alive: true } as Player;
+    }
+  }
+
+  // Smooth camera follow target
+  if (followTarget.alive) {
+    camX += (followTarget.pos.x - camX) * CAMERA_LERP;
+    camY += (followTarget.pos.y - camY) * CAMERA_LERP;
   }
 
   const halfViewW = CAMERA_VIEW_W / 2;
@@ -102,13 +111,34 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
     drawAbilityVisuals(ctx, state, time);
   }
 
-  // Player
-  if (state.player.alive) drawPlayer(ctx, state.player, time);
+  // Player (show even if dead in coop mode - as wreckage)
+  if (state.player.alive) {
+    drawPlayer(ctx, state.player, time);
+  } else if (state.coopPeers.length > 0) {
+    // Draw local dead player as wreckage
+    const fakeDeadPeer = {
+      pos: state.player.pos,
+      alive: false,
+      dead: true,
+      reviveProgress: (state as any).myReviveProgress || 0,
+      playerLabel: 'YOU',
+      shipClass: state.player.class,
+    };
+    drawDeadPeer(ctx, fakeDeadPeer, time);
+  }
 
   // Coop peers with full ship design
-  const allPeers = state.coopPeers.length > 0 ? state.coopPeers : (state.coopPeer && state.coopPeer.alive ? [{ ...state.coopPeer, playerId: 'p2', playerLabel: 'P2' }] : []);
-  for (const peer of allPeers) {
-    if (!peer.alive) continue;
+  const allPeers = state.coopPeers.length > 0 ? state.coopPeers : (state.coopPeer && state.coopPeer.alive ? [{ ...state.coopPeer, playerId: 'p2', playerLabel: 'P2', dead: false, reviveProgress: 0 }] : []);
+  // Filter out local player to avoid ghost ship
+  const remotePeers = allPeers.filter(p => p.playerId !== state.localPlayerId);
+  
+  for (const peer of remotePeers) {
+    // Draw dead peers as wreckage
+    if (peer.dead || !peer.alive) {
+      drawDeadPeer(ctx, peer, time);
+      continue;
+    }
+    
     const fakePlayer: Player = {
       pos: { ...peer.pos }, vel: { x: 0, y: 0 }, radius: 12, alive: true,
       hp: peer.hp ?? 1, maxHp: peer.maxHp ?? 1, class: (peer.shipClass as any) || 'phantom',
@@ -146,9 +176,65 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   ctx.restore();
 
   // Off-screen peer indicators (drawn in screen space, after ctx.restore)
-  if (allPeers.length > 0) {
-    drawOffScreenPeerIndicators(ctx, allPeers, camX, camY, viewportW, viewportH, scale, canvasW, canvasH, time);
+  if (remotePeers.length > 0) {
+    drawOffScreenPeerIndicators(ctx, remotePeers, camX, camY, viewportW, viewportH, scale, canvasW, canvasH, time);
   }
+}
+
+// Draw dead peer as wreckage
+function drawDeadPeer(ctx: CanvasRenderingContext2D, peer: any, time: number) {
+  const info = getShipColor(peer.shipClass);
+  const pulse = 0.3 + Math.sin(time * 2) * 0.1;
+  
+  ctx.save();
+  ctx.translate(peer.pos.x, peer.pos.y);
+  
+  // Wreckage particles
+  ctx.globalAlpha = 0.6;
+  for (let i = 0; i < 8; i++) {
+    const angle = (i / 8) * Math.PI * 2 + time * 0.5;
+    const dist = 8 + Math.sin(time * 3 + i) * 3;
+    const x = Math.cos(angle) * dist;
+    const y = Math.sin(angle) * dist;
+    ctx.fillStyle = info;
+    ctx.beginPath();
+    ctx.arc(x, y, 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  // Revive progress ring
+  if (peer.reviveProgress > 0) {
+    const progress = peer.reviveProgress;
+    ctx.strokeStyle = '#39ff14';
+    ctx.lineWidth = 3;
+    ctx.globalAlpha = 0.8;
+    ctx.beginPath();
+    ctx.arc(0, 0, 18, -Math.PI / 2, -Math.PI / 2 + progress * Math.PI * 2);
+    ctx.stroke();
+    
+    // Revive text
+    ctx.font = 'bold 10px Orbitron, monospace';
+    ctx.fillStyle = '#39ff14';
+    ctx.textAlign = 'center';
+    ctx.fillText('REVIVING...', 0, -25);
+    ctx.fillText(`${Math.floor(progress * 100)}%`, 0, 30);
+  } else {
+    // "Hold to revive" hint
+    ctx.globalAlpha = pulse;
+    ctx.font = 'bold 8px Orbitron, monospace';
+    ctx.fillStyle = '#ff6b00';
+    ctx.textAlign = 'center';
+    ctx.fillText('❤️ PRESS TO REVIVE', 0, -22);
+  }
+  
+  // Label
+  ctx.globalAlpha = 0.7;
+  ctx.font = 'bold 8px Orbitron, monospace';
+  ctx.fillStyle = '#ff4060';
+  ctx.textAlign = 'center';
+  ctx.fillText(`${peer.playerLabel || 'PLAYER'} [DEAD]`, 0, -35);
+  
+  ctx.restore();
 }
 
 // Warp sources: player + recent explosions
@@ -1605,7 +1691,7 @@ function drawHazard(ctx: CanvasRenderingContext2D, h: ActiveHazard, time: number
 // Off-screen peer direction indicators
 function drawOffScreenPeerIndicators(
   ctx: CanvasRenderingContext2D,
-  peers: Array<{ pos: { x: number; y: number }; alive: boolean; playerLabel: string; shipClass: string }>,
+  peers: Array<{ pos: { x: number; y: number }; alive: boolean; dead?: boolean; playerLabel: string; shipClass: string }>,
   cX: number, cY: number, vW: number, vH: number,
   scale: number, canvasW: number, canvasH: number, time: number,
 ) {
@@ -1616,7 +1702,8 @@ function drawOffScreenPeerIndicators(
 
   for (let i = 0; i < peers.length; i++) {
     const p = peers[i];
-    if (!p.alive) continue;
+    // Show indicator even if dead (so you can find them to revive)
+    // if (!p.alive && !p.dead) continue;
 
     // Convert peer world pos to screen pos
     const sx = halfW + (p.pos.x - cX) * scale;
@@ -1630,7 +1717,7 @@ function drawOffScreenPeerIndicators(
     const edgeX = Math.max(margin, Math.min(canvasW - margin, halfW + Math.cos(angle) * (halfW - margin)));
     const edgeY = Math.max(margin, Math.min(canvasH - margin, halfH + Math.sin(angle) * (halfH - margin)));
 
-    const color = PEER_COLORS[i % PEER_COLORS.length];
+    const color = (p.dead || !p.alive) ? '#ff4060' : PEER_COLORS[i % PEER_COLORS.length];
     const pulse = 0.7 + Math.sin(time * 4 + i) * 0.3;
 
     ctx.save();
