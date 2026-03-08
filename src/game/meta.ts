@@ -71,6 +71,7 @@ const DEFAULT_META: MetaProgress = {
   unlockedAbilities: [],
   milestones: {},
   weaponSlots: 3,
+  permBonuses: {},
 };
 
 const STORAGE_KEY = 'neonwars_meta';
