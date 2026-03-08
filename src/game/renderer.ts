@@ -144,6 +144,11 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   drawOutsideArena(ctx, camX, camY, viewportW, viewportH);
 
   ctx.restore();
+
+  // Off-screen peer indicators (drawn in screen space, after ctx.restore)
+  if (allPeers.length > 0) {
+    drawOffScreenPeerIndicators(ctx, allPeers, camX, camY, viewportW, viewportH, scale, canvasW, canvasH, time);
+  }
 }
 
 // Warp sources: player + recent explosions
