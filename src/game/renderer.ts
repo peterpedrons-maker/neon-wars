@@ -154,9 +154,65 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   ctx.restore();
 
   // Off-screen peer indicators (drawn in screen space, after ctx.restore)
-  if (allPeers.length > 0) {
-    drawOffScreenPeerIndicators(ctx, allPeers, camX, camY, viewportW, viewportH, scale, canvasW, canvasH, time);
+  if (remotePeers.length > 0) {
+    drawOffScreenPeerIndicators(ctx, remotePeers, camX, camY, viewportW, viewportH, scale, canvasW, canvasH, time);
   }
+}
+
+// Draw dead peer as wreckage
+function drawDeadPeer(ctx: CanvasRenderingContext2D, peer: any, time: number) {
+  const info = getShipColor(peer.shipClass);
+  const pulse = 0.3 + Math.sin(time * 2) * 0.1;
+  
+  ctx.save();
+  ctx.translate(peer.pos.x, peer.pos.y);
+  
+  // Wreckage particles
+  ctx.globalAlpha = 0.6;
+  for (let i = 0; i < 8; i++) {
+    const angle = (i / 8) * Math.PI * 2 + time * 0.5;
+    const dist = 8 + Math.sin(time * 3 + i) * 3;
+    const x = Math.cos(angle) * dist;
+    const y = Math.sin(angle) * dist;
+    ctx.fillStyle = info;
+    ctx.beginPath();
+    ctx.arc(x, y, 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  // Revive progress ring
+  if (peer.reviveProgress > 0) {
+    const progress = peer.reviveProgress;
+    ctx.strokeStyle = '#39ff14';
+    ctx.lineWidth = 3;
+    ctx.globalAlpha = 0.8;
+    ctx.beginPath();
+    ctx.arc(0, 0, 18, -Math.PI / 2, -Math.PI / 2 + progress * Math.PI * 2);
+    ctx.stroke();
+    
+    // Revive text
+    ctx.font = 'bold 10px Orbitron, monospace';
+    ctx.fillStyle = '#39ff14';
+    ctx.textAlign = 'center';
+    ctx.fillText('REVIVING...', 0, -25);
+    ctx.fillText(`${Math.floor(progress * 100)}%`, 0, 30);
+  } else {
+    // "Hold to revive" hint
+    ctx.globalAlpha = pulse;
+    ctx.font = 'bold 8px Orbitron, monospace';
+    ctx.fillStyle = '#ff6b00';
+    ctx.textAlign = 'center';
+    ctx.fillText('❤️ PRESS TO REVIVE', 0, -22);
+  }
+  
+  // Label
+  ctx.globalAlpha = 0.7;
+  ctx.font = 'bold 8px Orbitron, monospace';
+  ctx.fillStyle = '#ff4060';
+  ctx.textAlign = 'center';
+  ctx.fillText(`${peer.playerLabel || 'PLAYER'} [DEAD]`, 0, -35);
+  
+  ctx.restore();
 }
 
 // Warp sources: player + recent explosions
