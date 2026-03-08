@@ -363,7 +363,7 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
         if (count <= 0) {
           const sd = startDataRef.current;
           if (sd) {
-            onStartCoop(newRoom, sd.mapId, selectedShip, sd.hostClass as ShipType);
+            onStartCoop(newRoom, sd.mapId, selectedShipRef.current, sd.hostClass as ShipType);
           }
         }
       },
