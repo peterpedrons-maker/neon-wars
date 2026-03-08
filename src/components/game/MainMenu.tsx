@@ -8,6 +8,7 @@ interface MainMenuProps {
   onPlay: () => void;
   onLeaderboard: () => void;
   onHowToPlay: () => void;
+  onShop: () => void;
 }
 
 const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, onLeaderboard, onHowToPlay }) => {
