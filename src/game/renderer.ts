@@ -1665,7 +1665,7 @@ function drawOffScreenPeerIndicators(
   }
 }
 
-
+export function getScale(canvasW: number, canvasH: number) {
   return Math.min(canvasW / CAMERA_VIEW_W, canvasH / CAMERA_VIEW_H);
 }
 
