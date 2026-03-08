@@ -135,35 +135,68 @@ export function playShootTitan() {
 export function playExplosion(big: boolean = false) {
   try {
     const ctx = getCtx();
-    const dur = big ? 0.5 : 0.2;
-    const vol = big ? 0.12 : 0.07;
-    for (let i = 0; i < (big ? 4 : 3); i++) {
+    const dur = big ? 0.6 : 0.25;
+    const vol = big ? 0.14 : 0.08;
+    
+    // Sub impact thump
+    const sub = ctx.createOscillator();
+    const subG = ctx.createGain();
+    sub.type = 'sine';
+    sub.frequency.setValueAtTime(big ? 80 : 100, ctx.currentTime);
+    sub.frequency.exponentialRampToValueAtTime(20, ctx.currentTime + dur * 0.6);
+    subG.gain.setValueAtTime(vol * 1.3, ctx.currentTime);
+    subG.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur * 0.7);
+    sub.connect(subG).connect(ctx.destination);
+    sub.start(ctx.currentTime); sub.stop(ctx.currentTime + dur * 0.8);
+    
+    // Noise burst layers
+    for (let i = 0; i < (big ? 5 : 3); i++) {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       const filter = ctx.createBiquadFilter();
       osc.type = i % 2 === 0 ? 'sawtooth' : 'square';
-      osc.frequency.setValueAtTime(80 + Math.random() * 100, ctx.currentTime + i * 0.015);
-      osc.frequency.exponentialRampToValueAtTime(15 + Math.random() * 15, ctx.currentTime + dur);
-      osc.detune.setValueAtTime(Math.random() * 200 - 100, ctx.currentTime);
+      osc.frequency.setValueAtTime(60 + Math.random() * 120, ctx.currentTime + i * 0.012);
+      osc.frequency.exponentialRampToValueAtTime(12 + Math.random() * 10, ctx.currentTime + dur);
+      osc.detune.setValueAtTime(Math.random() * 400 - 200, ctx.currentTime);
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(2000, ctx.currentTime);
-      filter.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + dur);
-      gain.gain.setValueAtTime(vol, ctx.currentTime + i * 0.015);
+      filter.frequency.setValueAtTime(big ? 3000 : 2000, ctx.currentTime);
+      filter.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + dur);
+      filter.Q.setValueAtTime(1.5, ctx.currentTime);
+      gain.gain.setValueAtTime(vol * 0.7, ctx.currentTime + i * 0.012);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
       osc.connect(filter).connect(gain).connect(ctx.destination);
-      osc.start(ctx.currentTime + i * 0.015);
-      osc.stop(ctx.currentTime + dur + i * 0.015);
+      osc.start(ctx.currentTime + i * 0.012);
+      osc.stop(ctx.currentTime + dur + i * 0.012);
     }
+    
     if (big) {
-      const hit = ctx.createOscillator();
-      const hg = ctx.createGain();
-      hit.type = 'sine';
-      hit.frequency.setValueAtTime(250, ctx.currentTime);
-      hit.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.3);
-      hg.gain.setValueAtTime(0.08, ctx.currentTime);
-      hg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-      hit.connect(hg).connect(ctx.destination);
-      hit.start(ctx.currentTime); hit.stop(ctx.currentTime + 0.3);
+      // Metallic ring
+      const ring = ctx.createOscillator();
+      const rg = ctx.createGain();
+      const rf = ctx.createBiquadFilter();
+      ring.type = 'sine';
+      ring.frequency.setValueAtTime(350, ctx.currentTime);
+      ring.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.4);
+      rf.type = 'bandpass';
+      rf.frequency.value = 200;
+      rf.Q.value = 5;
+      rg.gain.setValueAtTime(0.06, ctx.currentTime);
+      rg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      ring.connect(rf).connect(rg).connect(ctx.destination);
+      ring.start(ctx.currentTime); ring.stop(ctx.currentTime + 0.45);
+      
+      // Crackle tail
+      for (let j = 0; j < 3; j++) {
+        const cr = ctx.createOscillator();
+        const cg = ctx.createGain();
+        cr.type = 'sawtooth';
+        cr.frequency.setValueAtTime(2000 + Math.random() * 3000, ctx.currentTime + 0.15 + j * 0.06);
+        cr.detune.setValueAtTime(Math.random() * 2400, ctx.currentTime);
+        cg.gain.setValueAtTime(0.02, ctx.currentTime + 0.15 + j * 0.06);
+        cg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3 + j * 0.06);
+        cr.connect(cg).connect(ctx.destination);
+        cr.start(ctx.currentTime + 0.15 + j * 0.06); cr.stop(ctx.currentTime + 0.35 + j * 0.06);
+      }
     }
   } catch {}
 }
