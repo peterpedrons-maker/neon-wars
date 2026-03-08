@@ -1602,8 +1602,70 @@ function drawHazard(ctx: CanvasRenderingContext2D, h: ActiveHazard, time: number
   }
 }
 
+// Off-screen peer direction indicators
+function drawOffScreenPeerIndicators(
+  ctx: CanvasRenderingContext2D,
+  peers: Array<{ pos: { x: number; y: number }; alive: boolean; playerLabel: string; shipClass: string }>,
+  cX: number, cY: number, vW: number, vH: number,
+  scale: number, canvasW: number, canvasH: number, time: number,
+) {
+  const margin = 40;
+  const halfW = canvasW / 2;
+  const halfH = canvasH / 2;
+  const PEER_COLORS = ['#39ff14', '#ff1493', '#ffff00'];
 
-export function getScale(canvasW: number, canvasH: number) {
+  for (let i = 0; i < peers.length; i++) {
+    const p = peers[i];
+    if (!p.alive) continue;
+
+    // Convert peer world pos to screen pos
+    const sx = halfW + (p.pos.x - cX) * scale;
+    const sy = halfH + (p.pos.y - cY) * scale;
+
+    // Check if off-screen
+    if (sx >= margin && sx <= canvasW - margin && sy >= margin && sy <= canvasH - margin) continue;
+
+    // Clamp to screen edges
+    const angle = Math.atan2(sy - halfH, sx - halfW);
+    const edgeX = Math.max(margin, Math.min(canvasW - margin, halfW + Math.cos(angle) * (halfW - margin)));
+    const edgeY = Math.max(margin, Math.min(canvasH - margin, halfH + Math.sin(angle) * (halfH - margin)));
+
+    const color = PEER_COLORS[i % PEER_COLORS.length];
+    const pulse = 0.7 + Math.sin(time * 4 + i) * 0.3;
+
+    ctx.save();
+    ctx.translate(edgeX, edgeY);
+    ctx.rotate(angle);
+
+    // Arrow
+    ctx.fillStyle = color;
+    ctx.globalAlpha = pulse;
+    ctx.beginPath();
+    ctx.moveTo(14, 0);
+    ctx.lineTo(-6, -8);
+    ctx.lineTo(-3, 0);
+    ctx.lineTo(-6, 8);
+    ctx.closePath();
+    ctx.fill();
+
+    // Glow
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 12;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Label
+    ctx.rotate(-angle);
+    ctx.globalAlpha = 0.9;
+    ctx.font = 'bold 10px Orbitron, monospace';
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.fillText(p.playerLabel || `P${i + 2}`, 0, -14);
+    ctx.restore();
+  }
+}
+
+
   return Math.min(canvasW / CAMERA_VIEW_W, canvasH / CAMERA_VIEW_H);
 }
 
