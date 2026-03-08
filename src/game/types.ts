@@ -174,6 +174,11 @@ export interface GameState {
   isHost?: boolean;
   enemiesKilledThisWave: number;
   localPlayerId?: string; // ID of the local player (to filter out from peer rendering)
+  coopMission?: {
+    type: 'switches';
+    switches: Array<{ x: number; y: number; active: boolean }>;
+    completed: boolean;
+  };
 }
 
 export interface LeaderboardEntry {
