@@ -95,6 +95,11 @@ export interface GameState {
   arenaHeight: number;
   shakeTimer: number;
   shakeIntensity: number;
+  // Combo system
+  combo: number;
+  comboTimer: number;
+  maxCombo: number;
+  comboMultiplier: number;
 }
 
 export interface LeaderboardEntry {

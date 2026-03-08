@@ -6,11 +6,14 @@ interface HUDProps {
   wave: number;
   score: number;
   specialReady: boolean;
+  combo: number;
+  comboMultiplier: number;
+  comboTimer: number;
 }
 
 const shipIcons: Record<string, string> = { phantom: '👻', interceptor: '⚡', titan: '💥' };
 
-const HUD: React.FC<HUDProps> = ({ player, wave, score, specialReady }) => {
+const HUD: React.FC<HUDProps> = ({ player, wave, score, specialReady, combo, comboMultiplier, comboTimer }) => {
   const hpPct = (player.hp / player.maxHp) * 100;
   const specialPct = player.specialTimer > 0
     ? ((player.specialCooldown - player.specialTimer) / player.specialCooldown) * 100
@@ -63,11 +66,33 @@ const HUD: React.FC<HUDProps> = ({ player, wave, score, specialReady }) => {
         </div>
       </div>
 
-      {/* Center: Wave */}
+      {/* Center: Wave + Combo */}
       <div className="text-center">
         <div className="text-sm font-bold font-mono" style={{ color: '#0ff', textShadow: '0 0 10px rgba(0,255,255,0.5)' }}>
           WAVE {wave}
         </div>
+        {combo > 1 && comboTimer > 0 && (
+          <div className="mt-1">
+            <span
+              className="text-lg font-bold font-mono animate-pulse"
+              style={{
+                color: comboMultiplier >= 8 ? '#ff1493' : comboMultiplier >= 4 ? '#ffff00' : '#0ff',
+                textShadow: `0 0 12px ${comboMultiplier >= 8 ? '#ff1493' : comboMultiplier >= 4 ? '#ffff00' : '#0ff'}`,
+              }}
+            >
+              ×{comboMultiplier}
+            </span>
+            <div className="w-16 h-1 mx-auto mt-0.5 bg-[#0a0020] rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-100"
+                style={{
+                  width: `${(comboTimer / 2) * 100}%`,
+                  background: comboMultiplier >= 8 ? '#ff1493' : comboMultiplier >= 4 ? '#ffff00' : '#0ff',
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Right: Score */}
