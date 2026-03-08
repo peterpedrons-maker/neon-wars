@@ -34,6 +34,7 @@ export interface Player extends Entity {
   speedBoostTimer: number;
   invincibleTimer: number;
   angle: number;
+  emote?: { text: string; timer: number };
 }
 
 export interface Projectile extends Entity {
