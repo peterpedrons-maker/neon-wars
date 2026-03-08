@@ -3,7 +3,7 @@
 // ShipType defined below with EnemyType
 export type PlayerClass = ShipType; // backward compat alias
 export type GameScreen = 'menu' | 'how-to-play' | 'class-select' | 'map-select' | 'playing' | 'upgrade' | 'game-over' | 'leaderboard' | 'shop' | 'multiplayer-lobby';
-export type EnemyType = 'drone' | 'splitter' | 'dasher' | 'tank' | 'mothership' | 'vortex' | 'colossus' | 'fire_elemental' | 'void_ghost' | 'crystal_golem';
+export type EnemyType = 'drone' | 'splitter' | 'dasher' | 'tank' | 'mothership' | 'vortex' | 'colossus' | 'fire_elemental' | 'void_ghost' | 'crystal_golem' | 'lava_dragon' | 'void_lord' | 'crystal_giant';
 export type ShipType = 'phantom' | 'interceptor' | 'titan' | 'spectre' | 'valkyrie' | 'juggernaut';
 export type PowerUpType = 'speed' | 'triple-shot' | 'shield' | 'heal';
 

@@ -255,6 +255,16 @@ function spawnWaveEnemy(state: GameState) {
   const isBossWave = state.wave % BOSS_WAVE_INTERVAL === 0;
 
   if (isBossWave && state.waveEnemiesRemaining === 1) {
+    // Map-exclusive bosses
+    const mapBoss: Record<string, EnemyType> = {
+      'inferno': 'lava_dragon',
+      'void': 'void_lord',
+      'crystal': 'crystal_giant',
+    };
+    if (mapBoss[state.mapId]) {
+      state.enemies.push(createEnemy(mapBoss[state.mapId], state.wave));
+      return;
+    }
     const bosses: EnemyType[] = ['mothership', 'vortex', 'colossus'];
     const boss = bosses[Math.floor(Math.random() * bosses.length)];
     state.enemies.push(createEnemy(boss, state.wave));
@@ -545,7 +555,6 @@ function bossAttack(state: GameState, boss: Enemy) {
         lifetime: 1.5, color: COLORS.colossus,
       });
     }
-    // Aimed heavy shot
     state.projectiles.push({
       pos: { x: boss.pos.x, y: boss.pos.y },
       vel: { x: Math.cos(angle) * 350, y: Math.sin(angle) * 350 },
@@ -554,6 +563,67 @@ function bossAttack(state: GameState, boss: Enemy) {
     });
     state.shakeTimer = 0.3;
     state.shakeIntensity = 8;
+  } else if (boss.type === 'lava_dragon') {
+    // Fire breath cone + lava pools
+    for (let i = -5; i <= 5; i++) {
+      state.projectiles.push({
+        pos: { x: boss.pos.x, y: boss.pos.y },
+        vel: { x: Math.cos(angle + i * 0.08) * (250 + Math.abs(i) * 15), y: Math.sin(angle + i * 0.08) * (250 + Math.abs(i) * 15) },
+        radius: 7, alive: true, damage: boss.damage * 0.6, fromPlayer: false,
+        lifetime: 1.8, color: '#ff4500',
+      });
+    }
+    // Leave lava at current position
+    state.particles.push(...createParticles(boss.pos, '#ff6b00', 25, 200, 4));
+    state.shakeTimer = 0.2;
+    state.shakeIntensity = 6;
+  } else if (boss.type === 'void_lord') {
+    // Teleport + void explosions at random spots near player
+    for (let i = 0; i < 5; i++) {
+      const rAngle = Math.random() * Math.PI * 2;
+      const rDist = 40 + Math.random() * 120;
+      const tx = p.pos.x + Math.cos(rAngle) * rDist;
+      const ty = p.pos.y + Math.sin(rAngle) * rDist;
+      for (let j = 0; j < 8; j++) {
+        const a = (j / 8) * Math.PI * 2;
+        state.projectiles.push({
+          pos: { x: tx, y: ty },
+          vel: { x: Math.cos(a) * 130, y: Math.sin(a) * 130 },
+          radius: 5, alive: true, damage: boss.damage * 0.4, fromPlayer: false,
+          lifetime: 1.2, color: '#9040ff',
+        });
+      }
+      state.particles.push(...createParticles({ x: tx, y: ty }, '#6000c0', 12, 120, 3));
+    }
+    // Teleport boss
+    const telAngle = Math.random() * Math.PI * 2;
+    state.particles.push(...createParticles(boss.pos, '#9040ff', 20, 150, 3));
+    boss.pos.x = p.pos.x + Math.cos(telAngle) * 200;
+    boss.pos.y = p.pos.y + Math.sin(telAngle) * 200;
+    state.particles.push(...createParticles(boss.pos, '#9040ff', 20, 150, 3));
+  } else if (boss.type === 'crystal_giant') {
+    // Giant crystal shockwave + crystal shards that persist
+    for (let i = 0; i < 16; i++) {
+      const a = (Math.PI * 2 / 16) * i;
+      state.projectiles.push({
+        pos: { x: boss.pos.x, y: boss.pos.y },
+        vel: { x: Math.cos(a) * 140, y: Math.sin(a) * 140 },
+        radius: 10, alive: true, damage: boss.damage * 0.5, fromPlayer: false,
+        lifetime: 2, color: '#00ffcc',
+      });
+    }
+    // Heavy aimed crystal lance
+    for (let i = -1; i <= 1; i++) {
+      state.projectiles.push({
+        pos: { x: boss.pos.x, y: boss.pos.y },
+        vel: { x: Math.cos(angle + i * 0.1) * 300, y: Math.sin(angle + i * 0.1) * 300 },
+        radius: 14, alive: true, damage: boss.damage, fromPlayer: false,
+        lifetime: 2.5, color: '#00e5ff',
+      });
+    }
+    state.shakeTimer = 0.4;
+    state.shakeIntensity = 10;
+    state.particles.push(...createParticles(boss.pos, '#00ffcc', 30, 250, 5));
   }
 }
 
@@ -741,6 +811,7 @@ function getEnemyColor(type: EnemyType): string {
     drone: COLORS.drone, splitter: COLORS.splitter, dasher: COLORS.dasher,
     tank: COLORS.tank, mothership: COLORS.mothership, vortex: COLORS.vortex, colossus: COLORS.colossus,
     fire_elemental: COLORS.fire_elemental, void_ghost: COLORS.void_ghost, crystal_golem: COLORS.crystal_golem,
+    lava_dragon: COLORS.lava_dragon, void_lord: COLORS.void_lord, crystal_giant: COLORS.crystal_giant,
   };
   return map[type] || '#fff';
 }

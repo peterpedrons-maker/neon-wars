@@ -1297,6 +1297,7 @@ function getEnemyColor(type: string): string {
     drone: COLORS.drone, splitter: COLORS.splitter, dasher: COLORS.dasher,
     tank: COLORS.tank, mothership: COLORS.mothership, vortex: COLORS.vortex, colossus: COLORS.colossus,
     fire_elemental: COLORS.fire_elemental, void_ghost: COLORS.void_ghost, crystal_golem: COLORS.crystal_golem,
+    lava_dragon: COLORS.lava_dragon, void_lord: COLORS.void_lord, crystal_giant: COLORS.crystal_giant,
   };
   return map[type] || '#fff';
 }

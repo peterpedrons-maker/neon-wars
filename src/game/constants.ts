@@ -43,6 +43,9 @@ export const COLORS = {
   fire_elemental: '#ff6b00', // orange fire
   void_ghost: '#9040ff',     // deep purple
   crystal_golem: '#00e5ff',  // cyan crystal
+  lava_dragon: '#ff2200',   // deep red-orange
+  void_lord: '#6000c0',     // deep void purple
+  crystal_giant: '#00ffcc',  // bright crystal teal
   mothership: '#ff0040',  // red
   vortex: '#bf5af2',      // purple
   colossus: '#00bfff',    // blue
@@ -100,7 +103,7 @@ export const CLASS_STATS: Record<ShipType, { hp: number; damage: number; speed: 
 export const ENEMY_STATS: Record<EnemyType, { hp: number; damage: number; speed: number; score: number; radius: number; attackCooldown: number; isBoss: boolean }> = {
   drone: { hp: 15, damage: 10, speed: 90, score: 10, radius: 10, attackCooldown: 1, isBoss: false },
   splitter: { hp: 20, damage: 5, speed: 60, score: 15, radius: 12, attackCooldown: 2, isBoss: false },
-  dasher: { hp: 8, damage: 12, speed: 200, score: 25, radius: 8, attackCooldown: 0.6, isBoss: false },
+  dasher: { hp: 8, damage: 12, speed: 130, score: 25, radius: 8, attackCooldown: 0.6, isBoss: false },
   tank: { hp: 50, damage: 18, speed: 40, score: 50, radius: 16, attackCooldown: 1.5, isBoss: false },
   fire_elemental: { hp: 30, damage: 15, speed: 70, score: 35, radius: 13, attackCooldown: 1.2, isBoss: false },
   void_ghost: { hp: 18, damage: 20, speed: 110, score: 40, radius: 10, attackCooldown: 0.8, isBoss: false },
@@ -108,6 +111,9 @@ export const ENEMY_STATS: Record<EnemyType, { hp: number; damage: number; speed:
   mothership: { hp: 300, damage: 25, speed: 50, score: 500, radius: 30, attackCooldown: 2, isBoss: true },
   vortex: { hp: 250, damage: 20, speed: 45, score: 500, radius: 28, attackCooldown: 1.5, isBoss: true },
   colossus: { hp: 400, damage: 35, speed: 30, score: 500, radius: 35, attackCooldown: 3, isBoss: true },
+  lava_dragon: { hp: 500, damage: 30, speed: 45, score: 800, radius: 35, attackCooldown: 2, isBoss: true },
+  void_lord: { hp: 400, damage: 35, speed: 40, score: 800, radius: 32, attackCooldown: 1.8, isBoss: true },
+  crystal_giant: { hp: 600, damage: 25, speed: 25, score: 800, radius: 40, attackCooldown: 2.5, isBoss: true },
 };
 
 export const WAVE_BASE_ENEMIES = 20;
