@@ -12,10 +12,10 @@ const UpgradeScreen: React.FC<UpgradeScreenProps> = ({ wave, onSelect }) => {
 
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 z-20 select-none p-4">
-      <div className="text-[#f1c40f] text-3xl md:text-4xl font-bold mb-2" style={{ fontFamily: 'Georgia, serif', textShadow: '0 0 20px rgba(241,196,15,0.5)' }}>
+      <div className="text-[#fbbf24] text-3xl md:text-4xl font-bold mb-2" style={{ fontFamily: 'Georgia, serif', textShadow: '0 0 20px rgba(251,191,36,0.5)' }}>
         Onda {wave} Completa! 🎉
       </div>
-      <p className="text-[#8a7a6a] mb-8 text-lg">Escolha uma melhoria:</p>
+      <p className="text-[#94a3b8] mb-8 text-lg">Escolha uma melhoria:</p>
 
       <div className="flex flex-col md:flex-row gap-4">
         {upgrades.map(u => (
