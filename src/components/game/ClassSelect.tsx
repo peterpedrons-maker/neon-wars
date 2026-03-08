@@ -6,22 +6,31 @@ interface ClassSelectProps {
   onBack: () => void;
 }
 
-const ships: { id: ShipType; name: string; desc: string; stats: string }[] = [
+const ships: { id: ShipType; name: string; desc: string; stats: string; locked?: boolean }[] = [
   { id: 'phantom', name: 'Phantom', desc: 'Nave ágil com disparos energéticos. Especial: Nova de plasma em todas as direções.', stats: 'DMG: 15 | VEL: Média' },
   { id: 'interceptor', name: 'Interceptor', desc: 'Ultra veloz com tiro rápido. Especial: Barragem lock-on nos inimigos próximos.', stats: 'DMG: 10 | VEL: Alta' },
   { id: 'titan', name: 'Titan', desc: 'Nave pesada com ataque devastador em área. Especial: Onda de choque massiva.', stats: 'DMG: 28 | VEL: Baixa' },
+  { id: 'spectre', name: 'Spectre', desc: 'Nave furtiva com dano alto e pouca vida. Especial: Teleporte + explosão fantasma.', stats: 'DMG: 20 | VEL: Alta' },
+  { id: 'valkyrie', name: 'Valkyrie', desc: 'Guerreira alada com tiro rápido e HP extra. Especial: Chuva de lanças energéticas.', stats: 'DMG: 12 | VEL: Média-Alta' },
+  { id: 'juggernaut', name: 'Juggernaut', desc: 'Fortaleza indestrutível. Lenta mas devastadora. Especial: Campo de destruição total.', stats: 'DMG: 35 | VEL: Muito Baixa' },
 ];
 
-const shipColors: Record<ShipType, string> = {
+const shipColors: Record<string, string> = {
   phantom: '#bf5af2',
   interceptor: '#00e5ff',
   titan: '#ff6b00',
+  spectre: '#9040ff',
+  valkyrie: '#ff1493',
+  juggernaut: '#ff4500',
 };
 
-const shipGlows: Record<ShipType, string> = {
+const shipGlows: Record<string, string> = {
   phantom: '#e0b0ff',
   interceptor: '#80f0ff',
   titan: '#ffaa55',
+  spectre: '#c090ff',
+  valkyrie: '#ff80b0',
+  juggernaut: '#ff8040',
 };
 
 function hexToRgba(hex: string, a: number): string {
