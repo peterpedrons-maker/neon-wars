@@ -281,7 +281,9 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
           hp: p.hp, maxHp: p.maxHp, alive: p.alive,
           shipClass: playerClass, shieldTimer: p.shieldTimer,
           invincibleTimer: p.invincibleTimer, shooting: inputRef.current.shooting,
-        });
+          playerId: room.playerId,
+          playerLabel: room.isHost ? 'HOST' : `P${2}`,
+        } as any);
 
         // Host sends game sync
         if (room.isHost) {
