@@ -26,24 +26,39 @@ export function playShoot(pitch: number = 800) {
     const ctx = getCtx();
     const osc = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
+    const osc3 = ctx.createOscillator();
     const gain = ctx.createGain();
     const filter = ctx.createBiquadFilter();
+    const dist = ctx.createWaveShaperNode();
+    
+    // Subtle distortion for crunch
+    const curve = new Float32Array(256);
+    for (let i = 0; i < 256; i++) { const x = (i / 128) - 1; curve[i] = (Math.PI + 3) * x / (Math.PI + 3 * Math.abs(x)); }
+    dist.curve = curve;
+    
     osc.type = 'square';
     osc.frequency.setValueAtTime(pitch, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(pitch * 0.3, ctx.currentTime + 0.1);
+    osc.frequency.exponentialRampToValueAtTime(pitch * 0.25, ctx.currentTime + 0.12);
     osc2.type = 'sine';
     osc2.frequency.setValueAtTime(pitch * 1.5, ctx.currentTime);
-    osc2.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.06);
+    osc2.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.07);
+    osc3.type = 'triangle';
+    osc3.frequency.setValueAtTime(pitch * 0.5, ctx.currentTime);
+    osc3.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.1);
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(3000, ctx.currentTime);
-    filter.frequency.exponentialRampToValueAtTime(500, ctx.currentTime + 0.1);
-    gain.gain.setValueAtTime(0.07, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-    osc.connect(filter);
+    filter.frequency.setValueAtTime(4000, ctx.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.12);
+    filter.Q.setValueAtTime(2, ctx.currentTime);
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+    osc.connect(dist);
     osc2.connect(filter);
+    osc3.connect(filter);
+    dist.connect(filter);
     filter.connect(gain).connect(ctx.destination);
-    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.1);
-    osc2.start(ctx.currentTime); osc2.stop(ctx.currentTime + 0.06);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.12);
+    osc2.start(ctx.currentTime); osc2.stop(ctx.currentTime + 0.07);
+    osc3.start(ctx.currentTime); osc3.stop(ctx.currentTime + 0.1);
   } catch {}
 }
 
