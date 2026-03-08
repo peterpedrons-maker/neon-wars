@@ -68,10 +68,10 @@ const HUD: React.FC<HUDProps> = ({ player, wave, score, specialReady }) => {
 
       {/* Right: Score */}
       <div className="text-right">
-        <div className="text-[#f1c40f] text-xl font-bold font-mono" style={{ textShadow: '0 0 10px rgba(241,196,15,0.4)' }}>
+        <div className="text-[#fbbf24] text-xl font-bold font-mono" style={{ textShadow: '0 0 10px rgba(251,191,36,0.4)' }}>
           {score.toLocaleString()}
         </div>
-        <div className="text-xs text-[#8a7a6a]">pontos</div>
+        <div className="text-xs text-[#94a3b8]">pontos</div>
       </div>
     </div>
   );
