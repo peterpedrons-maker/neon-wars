@@ -255,6 +255,16 @@ function spawnWaveEnemy(state: GameState) {
   const isBossWave = state.wave % BOSS_WAVE_INTERVAL === 0;
 
   if (isBossWave && state.waveEnemiesRemaining === 1) {
+    // Map-exclusive bosses
+    const mapBoss: Record<string, EnemyType> = {
+      'inferno': 'lava_dragon',
+      'void': 'void_lord',
+      'crystal': 'crystal_giant',
+    };
+    if (mapBoss[state.mapId]) {
+      state.enemies.push(createEnemy(mapBoss[state.mapId], state.wave));
+      return;
+    }
     const bosses: EnemyType[] = ['mothership', 'vortex', 'colossus'];
     const boss = bosses[Math.floor(Math.random() * bosses.length)];
     state.enemies.push(createEnemy(boss, state.wave));
