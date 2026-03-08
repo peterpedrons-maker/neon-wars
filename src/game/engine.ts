@@ -18,7 +18,7 @@ import {
   startMusic, stopMusic, setMusicIntensity,
 } from './audio';
 
-const WAVE_SPAWN_INTERVAL = 0.6;
+const WAVE_SPAWN_INTERVAL = 0.35;
 
 export function updateGame(state: GameState, input: InputState, dt: number): void {
   if (state.screen !== 'playing') return;
