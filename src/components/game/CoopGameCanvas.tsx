@@ -136,7 +136,8 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
 
   // When both players have chosen upgrades, resume game
   useEffect(() => {
-    if (myUpgradeDone && peerUpgradeDone && showUpgrade) {
+    const allLivingPeersDone = peerUpgradeDone || (stateRef.current?.coopPeers && stateRef.current.coopPeers.length > 0 && stateRef.current.coopPeers.every(p => p.dead || !p.alive));
+    if (myUpgradeDone && allLivingPeersDone && showUpgrade) {
       setShowUpgrade(false);
       setWaitingForPeer(false);
       if (stateRef.current) {
