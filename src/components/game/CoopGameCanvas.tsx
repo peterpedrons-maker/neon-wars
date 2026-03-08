@@ -90,6 +90,8 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
         }
       },
       () => {},
+      () => {}, // onCountdown
+      () => {}, // onConfirm
     );
 
     return () => { leaveRoom(); };
