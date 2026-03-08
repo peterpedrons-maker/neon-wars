@@ -111,8 +111,21 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
     drawAbilityVisuals(ctx, state, time);
   }
 
-  // Player
-  if (state.player.alive) drawPlayer(ctx, state.player, time);
+  // Player (show even if dead in coop mode - as wreckage)
+  if (state.player.alive) {
+    drawPlayer(ctx, state.player, time);
+  } else if (state.coopPeers.length > 0) {
+    // Draw local dead player as wreckage
+    const fakeDeadPeer = {
+      pos: state.player.pos,
+      alive: false,
+      dead: true,
+      reviveProgress: (state as any).myReviveProgress || 0,
+      playerLabel: 'YOU',
+      shipClass: state.player.class,
+    };
+    drawDeadPeer(ctx, fakeDeadPeer, time);
+  }
 
   // Coop peers with full ship design
   const allPeers = state.coopPeers.length > 0 ? state.coopPeers : (state.coopPeer && state.coopPeer.alive ? [{ ...state.coopPeer, playerId: 'p2', playerLabel: 'P2', dead: false, reviveProgress: 0 }] : []);
