@@ -55,6 +55,12 @@ export interface Enemy extends Entity {
   flashTimer: number;
   bossPhase?: number;
   bossAttackTimer?: number;
+  // Dasher mechanics
+  dashState?: 'tracking' | 'dashing' | 'cooldown';
+  dashTimer?: number;
+  dashAngle?: number;
+  // Tank mechanics
+  shootTimer?: number;
 }
 
 export interface Particle {
