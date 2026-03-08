@@ -13,10 +13,10 @@ const MainMenu: React.FC<MainMenuProps> = ({ onPlay, onLeaderboard, onHowToPlay 
       {/* Title */}
       <div className="mb-12 text-center">
         <h1 className="text-6xl md:text-8xl font-bold tracking-wider mb-2"
-            style={{ fontFamily: 'Georgia, serif', textShadow: '0 0 40px rgba(241,196,15,0.4), 0 4px 8px rgba(0,0,0,0.8)' }}>
-          <span className="text-[#f1c40f]">⚔️</span> Medieval Wars
+            style={{ fontFamily: 'Georgia, serif', textShadow: '0 0 40px rgba(168,85,247,0.4), 0 4px 8px rgba(0,0,0,0.8)' }}>
+          <span className="text-[#fbbf24]">⚔️</span> Medieval Wars
         </h1>
-        <p className="text-xl md:text-2xl text-[#8a7a6a] italic" style={{ fontFamily: 'Georgia, serif' }}>
+        <p className="text-xl md:text-2xl text-[#94a3b8] italic" style={{ fontFamily: 'Georgia, serif' }}>
           Arena de Sobrevivência Fantasy
         </p>
       </div>
