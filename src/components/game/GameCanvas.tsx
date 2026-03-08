@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useCallback } from 'react';
-import { GameState, InputState, PlayerClass, Upgrade } from '../../game/types';
+import { GameState, InputState, ShipType, Upgrade } from '../../game/types';
 import { createPlayer } from '../../game/entities';
 import { createInitialState, updateGame, startWave } from '../../game/engine';
 import { renderGame, getScale, getOffset, resetCamera } from '../../game/renderer';
@@ -11,7 +11,7 @@ import GameOver from './GameOver';
 import TouchControls from './TouchControls';
 
 interface GameCanvasProps {
-  playerClass: PlayerClass;
+  playerClass: ShipType;
   onMenu: () => void;
 }
 

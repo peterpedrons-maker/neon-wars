@@ -1,6 +1,6 @@
 import {
   Player, Enemy, Projectile, Particle, PowerUp, Vec2,
-  PlayerClass, EnemyType, PowerUpType
+  ShipType, EnemyType, PowerUpType
 } from './types';
 import {
   CLASS_STATS, ENEMY_STATS, ARENA_W, ARENA_H,
@@ -8,7 +8,7 @@ import {
   COLORS, WARRIOR_ATTACK_RANGE
 } from './constants';
 
-export function createPlayer(cls: PlayerClass): Player {
+export function createPlayer(cls: ShipType): Player {
   const s = CLASS_STATS[cls];
   return {
     pos: { x: ARENA_W / 2, y: ARENA_H / 2 },
@@ -67,7 +67,7 @@ export function createProjectile(pos: Vec2, angle: number, damage: number, fromP
   return {
     pos: { x: pos.x, y: pos.y },
     vel: { x: Math.cos(angle) * PROJECTILE_SPEED * speedMult, y: Math.sin(angle) * PROJECTILE_SPEED * speedMult },
-    radius: fromPlayer ? 5 : 6,
+    radius: fromPlayer ? 4 : 5,
     alive: true,
     damage,
     fromPlayer,
@@ -81,7 +81,7 @@ export function createParticles(pos: Vec2, color: string, count: number, speed =
   for (let i = 0; i < count; i++) {
     const angle = Math.random() * Math.PI * 2;
     const spd = speed * (0.3 + Math.random() * 0.7);
-    const lt = 0.3 + Math.random() * 0.5;
+    const lt = 0.3 + Math.random() * 0.6;
     particles.push({
       pos: { x: pos.x, y: pos.y },
       vel: { x: Math.cos(angle) * spd, y: Math.sin(angle) * spd },
@@ -111,11 +111,11 @@ export function playerAttack(player: Player, projectiles: Projectile[]): void {
   if (player.attackTimer > 0) return;
   player.attackTimer = player.attackCooldown;
 
-  const color = player.class === 'mage' ? COLORS.magic
-    : player.class === 'archer' ? COLORS.archer : COLORS.warrior;
+  const color = player.class === 'phantom' ? COLORS.phantom
+    : player.class === 'interceptor' ? COLORS.interceptor : COLORS.titan;
 
-  if (player.class === 'warrior') {
-    // Melee sweep - handled via collision in engine
+  if (player.class === 'titan') {
+    // Heavy blast - handled in engine for area damage
     return;
   }
 
@@ -127,7 +127,7 @@ export function playerAttack(player: Player, projectiles: Projectile[]): void {
       player.damage,
       true,
       color,
-      player.class === 'archer' ? 1.3 : 1
+      player.class === 'interceptor' ? 1.3 : 1
     ));
   }
 }
@@ -136,30 +136,30 @@ export function playerSpecial(player: Player, projectiles: Projectile[], enemies
   if (player.specialTimer > 0) return;
   player.specialTimer = player.specialCooldown;
 
-  if (player.class === 'mage') {
-    // Nova burst - 12 projectiles in all directions
-    for (let i = 0; i < 12; i++) {
-      const angle = (Math.PI * 2 / 12) * i;
-      projectiles.push(createProjectile(player.pos, angle, player.damage * 2, true, COLORS.fire, 0.8));
+  if (player.class === 'phantom') {
+    // Nova burst - 16 projectiles in all directions
+    for (let i = 0; i < 16; i++) {
+      const angle = (Math.PI * 2 / 16) * i;
+      projectiles.push(createProjectile(player.pos, angle, player.damage * 2, true, COLORS.neonPink, 0.8));
     }
-  } else if (player.class === 'archer') {
-    // Rain of arrows - rapid fire at nearest enemies
+  } else if (player.class === 'interceptor') {
+    // Lock-on barrage at nearest enemies
     const sorted = enemies.filter(e => e.alive).sort((a, b) => {
       const da = Math.hypot(a.pos.x - player.pos.x, a.pos.y - player.pos.y);
       const db = Math.hypot(b.pos.x - player.pos.x, b.pos.y - player.pos.y);
       return da - db;
     });
-    for (let i = 0; i < Math.min(8, sorted.length); i++) {
+    for (let i = 0; i < Math.min(10, sorted.length); i++) {
       const e = sorted[i];
       const angle = Math.atan2(e.pos.y - player.pos.y, e.pos.x - player.pos.x);
-      projectiles.push(createProjectile(player.pos, angle, player.damage * 1.5, true, COLORS.archerGlow, 1.5));
+      projectiles.push(createProjectile(player.pos, angle, player.damage * 1.5, true, COLORS.neonCyan, 1.5));
     }
   } else {
-    // Warrior whirlwind - damage all enemies in large radius
+    // Titan shockwave - damage all enemies in large radius
     for (const e of enemies) {
       if (!e.alive) continue;
       const dist = Math.hypot(e.pos.x - player.pos.x, e.pos.y - player.pos.y);
-      if (dist < WARRIOR_ATTACK_RANGE * 2) {
+      if (dist < WARRIOR_ATTACK_RANGE * 2.5) {
         e.hp -= player.damage * 3;
         e.flashTimer = 0.15;
       }

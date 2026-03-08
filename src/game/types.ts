@@ -1,8 +1,9 @@
-// ⚔️ Medieval Wars - Game Types
+// 🚀 Neon Wars - Game Types (Geometry Wars inspired)
 
-export type PlayerClass = 'mage' | 'archer' | 'warrior';
+export type ShipType = 'phantom' | 'interceptor' | 'titan';
+export type PlayerClass = ShipType; // backward compat alias
 export type GameScreen = 'menu' | 'how-to-play' | 'class-select' | 'playing' | 'upgrade' | 'game-over' | 'leaderboard';
-export type EnemyType = 'skeleton' | 'slime' | 'bat' | 'dark-knight' | 'dragon' | 'lich' | 'golem';
+export type EnemyType = 'drone' | 'splitter' | 'dasher' | 'tank' | 'mothership' | 'vortex' | 'colossus';
 export type PowerUpType = 'speed' | 'triple-shot' | 'shield' | 'heal';
 
 export interface Vec2 {
@@ -20,7 +21,7 @@ export interface Entity {
 export interface Player extends Entity {
   hp: number;
   maxHp: number;
-  class: PlayerClass;
+  class: ShipType;
   damage: number;
   speed: number;
   attackCooldown: number;
@@ -52,7 +53,6 @@ export interface Enemy extends Entity {
   attackCooldown: number;
   isBoss: boolean;
   flashTimer: number;
-  // Boss-specific
   bossPhase?: number;
   bossAttackTimer?: number;
 }
@@ -101,7 +101,7 @@ export interface LeaderboardEntry {
   name: string;
   score: number;
   wave: number;
-  class: PlayerClass;
+  class: ShipType;
   date: string;
 }
 
