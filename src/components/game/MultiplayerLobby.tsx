@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ShipType } from '../../game/types';
 import { 
   RoomInfo, createRoom, joinRoom, connectToRoom, 
-  leaveRoom, sendStartGame, sendCountdown, CoopPlayerState, CoopGameSync 
+  leaveRoom, sendStartGame, sendCountdown, sendGuestConfirm, CoopPlayerState, CoopGameSync 
 } from '../../game/multiplayer';
 
 interface MultiplayerLobbyProps {
