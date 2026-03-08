@@ -169,6 +169,7 @@ export interface GameState {
     invincibleTimer: number;
     hp: number;
     maxHp: number;
+    emote?: { text: string; timer: number };
   };
   isHost?: boolean;
   enemiesKilledThisWave: number;
