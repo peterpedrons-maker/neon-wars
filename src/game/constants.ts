@@ -103,7 +103,7 @@ export const CLASS_STATS: Record<ShipType, { hp: number; damage: number; speed: 
 export const ENEMY_STATS: Record<EnemyType, { hp: number; damage: number; speed: number; score: number; radius: number; attackCooldown: number; isBoss: boolean }> = {
   drone: { hp: 15, damage: 10, speed: 90, score: 10, radius: 10, attackCooldown: 1, isBoss: false },
   splitter: { hp: 20, damage: 5, speed: 60, score: 15, radius: 12, attackCooldown: 2, isBoss: false },
-  dasher: { hp: 8, damage: 12, speed: 200, score: 25, radius: 8, attackCooldown: 0.6, isBoss: false },
+  dasher: { hp: 8, damage: 12, speed: 130, score: 25, radius: 8, attackCooldown: 0.6, isBoss: false },
   tank: { hp: 50, damage: 18, speed: 40, score: 50, radius: 16, attackCooldown: 1.5, isBoss: false },
   fire_elemental: { hp: 30, damage: 15, speed: 70, score: 35, radius: 13, attackCooldown: 1.2, isBoss: false },
   void_ghost: { hp: 18, damage: 20, speed: 110, score: 40, radius: 10, attackCooldown: 0.8, isBoss: false },
