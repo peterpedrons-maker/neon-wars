@@ -73,14 +73,15 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
           const existing = peers.findIndex(p => p.playerId === (ps as any).playerId);
           const peerData = {
             pos: { x: ps.x, y: ps.y },
-            angle: ps.angle, alive: ps.alive, shipClass: ps.shipClass,
+            angle: ps.angle, alive: ps.alive, dead: ps.dead || false, shipClass: ps.shipClass,
             shooting: ps.shooting,
             attackTimer: existing >= 0 ? peers[existing].attackTimer : 0,
             attackCooldown: peerStats.attackCooldown, damage: peerStats.damage,
             shieldTimer: ps.shieldTimer, invincibleTimer: ps.invincibleTimer,
             hp: ps.hp, maxHp: ps.maxHp,
-            playerId: (ps as any).playerId || 'p2',
-            playerLabel: (ps as any).playerLabel || 'P2',
+            playerId: ps.playerId || (ps as any).playerId || 'p2',
+            playerLabel: ps.playerLabel || (ps as any).playerLabel || 'P2',
+            reviveProgress: (ps as any).reviveProgress || 0,
           };
           if (existing >= 0) {
             peers[existing] = peerData;
