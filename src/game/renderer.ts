@@ -8,62 +8,27 @@ let camY = ARENA_H / 2;
 
 // Cached textures
 let floorPattern: CanvasPattern | null = null;
-let floorPatternCanvas: HTMLCanvasElement | null = null;
+let floorImage: HTMLImageElement | null = null;
+let floorImageLoaded = false;
 
 function createFloorPattern(ctx: CanvasRenderingContext2D): CanvasPattern | null {
-  if (floorPattern && floorPatternCanvas) return floorPattern;
-  const tile = document.createElement('canvas');
-  tile.width = 64;
-  tile.height = 64;
-  const tc = tile.getContext('2d')!;
+  if (floorPattern) return floorPattern;
 
-  // Rich stone tile
-  const bg = tc.createLinearGradient(0, 0, 64, 64);
-  bg.addColorStop(0, '#252040');
-  bg.addColorStop(0.5, '#1e1a2e');
-  bg.addColorStop(1, '#1a1528');
-  tc.fillStyle = bg;
-  tc.fillRect(0, 0, 64, 64);
-
-  // Subtle noise
-  for (let i = 0; i < 60; i++) {
-    const x = Math.random() * 64;
-    const y = Math.random() * 64;
-    const s = Math.random() * 2.5 + 0.5;
-    const bright = Math.random() > 0.5;
-    tc.fillStyle = bright ? `rgba(180,160,255,${Math.random() * 0.06})` : `rgba(0,0,0,${Math.random() * 0.1})`;
-    tc.fillRect(x, y, s, s);
+  if (!floorImage) {
+    floorImage = new Image();
+    floorImage.onload = () => {
+      floorImageLoaded = true;
+      floorPattern = null; // force recreate
+    };
+    floorImage.src = dungeonFloorImg;
   }
 
-  // Tile grooves
-  tc.strokeStyle = 'rgba(0,0,0,0.35)';
-  tc.lineWidth = 2;
-  tc.strokeRect(1, 1, 62, 62);
-  tc.strokeStyle = 'rgba(150,130,200,0.06)';
-  tc.lineWidth = 1;
-  tc.strokeRect(3, 3, 58, 58);
-
-  // Random cracks
-  if (Math.random() > 0.5) {
-    tc.strokeStyle = 'rgba(0,0,0,0.2)';
-    tc.lineWidth = 0.7;
-    tc.beginPath();
-    tc.moveTo(10 + Math.random() * 20, 10 + Math.random() * 10);
-    tc.lineTo(30 + Math.random() * 10, 30 + Math.random() * 10);
-    tc.stroke();
+  if (floorImageLoaded && floorImage) {
+    floorPattern = ctx.createPattern(floorImage, 'repeat');
+    return floorPattern;
   }
 
-  // Random moss
-  if (Math.random() > 0.7) {
-    tc.fillStyle = 'rgba(74,222,128,0.04)';
-    tc.beginPath();
-    tc.arc(20 + Math.random() * 24, 40 + Math.random() * 20, 5 + Math.random() * 5, 0, Math.PI * 2);
-    tc.fill();
-  }
-
-  floorPatternCanvas = tile;
-  floorPattern = ctx.createPattern(tile, 'repeat');
-  return floorPattern;
+  return null;
 }
 
 export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canvasW: number, canvasH: number) {
