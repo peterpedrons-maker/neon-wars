@@ -79,11 +79,13 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
     ctx.fillRect(p.pos.x - 200, p.pos.y - 200, 400, 400);
   }
 
-  // Torches along walls
+  // Torches along walls (inside wall area)
+  const tw = WALL_THICKNESS / 2;
   const torchPositions = [
-    [30, 30], [ARENA_W / 3, 20], [ARENA_W * 2 / 3, 20], [ARENA_W - 30, 30],
-    [30, ARENA_H - 30], [ARENA_W / 3, ARENA_H - 20], [ARENA_W * 2 / 3, ARENA_H - 20], [ARENA_W - 30, ARENA_H - 30],
-    [20, ARENA_H / 3], [20, ARENA_H * 2 / 3], [ARENA_W - 20, ARENA_H / 3], [ARENA_W - 20, ARENA_H * 2 / 3],
+    [tw, tw], [ARENA_W / 4, tw], [ARENA_W / 2, tw], [ARENA_W * 3 / 4, tw], [ARENA_W - tw, tw],
+    [tw, ARENA_H - tw], [ARENA_W / 4, ARENA_H - tw], [ARENA_W / 2, ARENA_H - tw], [ARENA_W * 3 / 4, ARENA_H - tw], [ARENA_W - tw, ARENA_H - tw],
+    [tw, ARENA_H / 4], [tw, ARENA_H / 2], [tw, ARENA_H * 3 / 4],
+    [ARENA_W - tw, ARENA_H / 4], [ARENA_W - tw, ARENA_H / 2], [ARENA_W - tw, ARENA_H * 3 / 4],
   ];
   torchPositions.forEach(([tx, ty], i) => drawTorchLight(ctx, tx, ty, time + i * 0.7));
 
