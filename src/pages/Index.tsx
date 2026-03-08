@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ShipType, GameScreen } from '../game/types';
-import { loadMeta, MetaProgress, ALL_MILESTONES } from '../game/meta';
+import { loadMeta, saveMeta, MetaProgress, ALL_MILESTONES } from '../game/meta';
 import { ALL_MAPS } from '../game/maps';
 import MainMenu from '../components/game/MainMenu';
 import ClassSelect from '../components/game/ClassSelect';
@@ -8,6 +8,7 @@ import HowToPlay from '../components/game/HowToPlay';
 import Leaderboard from '../components/game/Leaderboard';
 import GameCanvas from '../components/game/GameCanvas';
 import MapSelect from '../components/game/MapSelect';
+import PlasmaShop from '../components/game/PlasmaShop';
 
 const Index = () => {
   const [screen, setScreen] = useState<GameScreen>('menu');
@@ -43,6 +44,17 @@ const Index = () => {
         onPlay={() => setScreen('class-select')}
         onLeaderboard={() => setScreen('leaderboard')}
         onHowToPlay={() => setScreen('how-to-play')}
+        onShop={() => setScreen('shop')}
+      />
+    );
+  }
+
+  if (screen === 'shop') {
+    return (
+      <PlasmaShop
+        meta={meta}
+        onUpdate={(m) => setMeta(m)}
+        onBack={() => setScreen('menu')}
       />
     );
   }
