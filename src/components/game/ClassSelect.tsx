@@ -13,18 +13,18 @@ const classes: { id: PlayerClass; name: string; icon: string; desc: string; stat
 ];
 
 const classColors: Record<PlayerClass, string> = {
-  mage: '#9b59b6',
-  archer: '#27ae60',
-  warrior: '#e67e22',
+  mage: '#a855f7',
+  archer: '#22d3ee',
+  warrior: '#f97316',
 };
 
 const ClassSelect: React.FC<ClassSelectProps> = ({ onSelect, onBack }) => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#1a0e0a] text-[#f5e6d3] select-none p-4">
-      <h2 className="text-4xl md:text-5xl font-bold mb-2" style={{ fontFamily: 'Georgia, serif', textShadow: '0 0 20px rgba(241,196,15,0.3)' }}>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#08061a] text-[#f1f5f9] select-none p-4">
+      <h2 className="text-4xl md:text-5xl font-bold mb-2" style={{ fontFamily: 'Georgia, serif', textShadow: '0 0 20px rgba(168,85,247,0.3)' }}>
         Escolha sua Classe
       </h2>
-      <div className="w-48 h-px bg-gradient-to-r from-transparent via-[#5a3a28] to-transparent mb-8" />
+      <div className="w-48 h-px bg-gradient-to-r from-transparent via-[#4a3a6e] to-transparent mb-8" />
 
       <div className="flex flex-col md:flex-row gap-6 mb-8">
         {classes.map(cls => (
@@ -34,11 +34,11 @@ const ClassSelect: React.FC<ClassSelectProps> = ({ onSelect, onBack }) => {
             className="flex flex-col items-center p-6 rounded-xl border-2 transition-all duration-300 hover:scale-105 active:scale-95 w-64"
             style={{
               borderColor: classColors[cls.id],
-              background: `linear-gradient(180deg, rgba(42,24,16,0.9) 0%, rgba(26,14,10,0.95) 100%)`,
+              background: `linear-gradient(180deg, rgba(30,26,46,0.95) 0%, rgba(8,6,26,0.98) 100%)`,
               boxShadow: `0 0 20px ${classColors[cls.id]}33`,
             }}
             onMouseEnter={e => {
-              (e.currentTarget as HTMLElement).style.boxShadow = `0 0 30px ${classColors[cls.id]}66`;
+              (e.currentTarget as HTMLElement).style.boxShadow = `0 0 35px ${classColors[cls.id]}66`;
             }}
             onMouseLeave={e => {
               (e.currentTarget as HTMLElement).style.boxShadow = `0 0 20px ${classColors[cls.id]}33`;
@@ -48,7 +48,7 @@ const ClassSelect: React.FC<ClassSelectProps> = ({ onSelect, onBack }) => {
             <h3 className="text-2xl font-bold mb-2" style={{ color: classColors[cls.id], fontFamily: 'Georgia, serif' }}>
               {cls.name}
             </h3>
-            <p className="text-sm text-[#8a7a6a] text-center mb-3">{cls.desc}</p>
+            <p className="text-sm text-[#94a3b8] text-center mb-3">{cls.desc}</p>
             <p className="text-xs font-mono" style={{ color: classColors[cls.id] }}>{cls.stats}</p>
           </button>
         ))}
@@ -56,7 +56,7 @@ const ClassSelect: React.FC<ClassSelectProps> = ({ onSelect, onBack }) => {
 
       <button
         onClick={onBack}
-        className="text-[#8a7a6a] hover:text-[#f5e6d3] transition-colors text-lg"
+        className="text-[#94a3b8] hover:text-[#f1f5f9] transition-colors text-lg"
         style={{ fontFamily: 'Georgia, serif' }}
       >
         ← Voltar

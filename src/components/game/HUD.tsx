@@ -22,7 +22,7 @@ const HUD: React.FC<HUDProps> = ({ player, wave, score, specialReady }) => {
           <span className="text-lg">
             {player.class === 'mage' ? '🔮' : player.class === 'archer' ? '🏹' : '⚔️'}
           </span>
-          <div className="w-36 md:w-48 h-4 bg-[#4a1a1a] rounded-full overflow-hidden border border-[#5a3a28]">
+          <div className="w-36 md:w-48 h-4 bg-[#450a0a] rounded-full overflow-hidden border border-[#4a3a6e]">
             <div
               className="h-full transition-all duration-200 rounded-full"
               style={{
@@ -33,13 +33,13 @@ const HUD: React.FC<HUDProps> = ({ player, wave, score, specialReady }) => {
               }}
             />
           </div>
-          <span className="text-xs text-[#f5e6d3] font-mono">{player.hp}/{player.maxHp}</span>
+          <span className="text-xs text-[#f1f5f9] font-mono">{player.hp}/{player.maxHp}</span>
         </div>
 
         {/* Special */}
         <div className="flex items-center gap-2">
           <span className="text-sm">✨</span>
-          <div className="w-24 md:w-32 h-2.5 bg-[#2a1830] rounded-full overflow-hidden border border-[#5a3a58]">
+          <div className="w-24 md:w-32 h-2.5 bg-[#1e1a2e] rounded-full overflow-hidden border border-[#4a3a6e]">
             <div
               className="h-full transition-all duration-200 rounded-full"
               style={{
@@ -48,7 +48,7 @@ const HUD: React.FC<HUDProps> = ({ player, wave, score, specialReady }) => {
               }}
             />
           </div>
-          <span className="text-xs text-[#8a7a6a]">{specialReady ? 'PRONTO' : `${Math.ceil(player.specialTimer)}s`}</span>
+          <span className="text-xs text-[#94a3b8]">{specialReady ? 'PRONTO' : `${Math.ceil(player.specialTimer)}s`}</span>
         </div>
 
         {/* Active effects */}
@@ -61,17 +61,17 @@ const HUD: React.FC<HUDProps> = ({ player, wave, score, specialReady }) => {
 
       {/* Center: Wave */}
       <div className="text-center">
-        <div className="text-[#f1c40f] text-sm font-bold" style={{ fontFamily: 'Georgia, serif', textShadow: '0 0 10px rgba(241,196,15,0.5)' }}>
+        <div className="text-[#fbbf24] text-sm font-bold" style={{ fontFamily: 'Georgia, serif', textShadow: '0 0 10px rgba(251,191,36,0.5)' }}>
           ONDA {wave}
         </div>
       </div>
 
       {/* Right: Score */}
       <div className="text-right">
-        <div className="text-[#f1c40f] text-xl font-bold font-mono" style={{ textShadow: '0 0 10px rgba(241,196,15,0.4)' }}>
+        <div className="text-[#fbbf24] text-xl font-bold font-mono" style={{ textShadow: '0 0 10px rgba(251,191,36,0.4)' }}>
           {score.toLocaleString()}
         </div>
-        <div className="text-xs text-[#8a7a6a]">pontos</div>
+        <div className="text-xs text-[#94a3b8]">pontos</div>
       </div>
     </div>
   );

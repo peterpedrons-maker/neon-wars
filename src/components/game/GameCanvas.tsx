@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useCallback } from 'react';
 import { GameState, InputState, PlayerClass, Upgrade } from '../../game/types';
 import { createPlayer } from '../../game/entities';
 import { createInitialState, updateGame, startWave } from '../../game/engine';
-import { renderGame, getScale, getOffset } from '../../game/renderer';
+import { renderGame, getScale, getOffset, resetCamera } from '../../game/renderer';
 import { ARENA_W, ARENA_H } from '../../game/constants';
 import { useIsMobile } from '../../hooks/use-mobile';
 import HUD from './HUD';
@@ -171,6 +171,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, onMenu }) => {
   }, []);
 
   const handleRestart = useCallback(() => {
+    resetCamera();
     const player = createPlayer(playerClass);
     stateRef.current = createInitialState(player);
     startWave(stateRef.current);
@@ -180,7 +181,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, onMenu }) => {
   const state = stateRef.current;
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-[#1a0e0a]">
+    <div className="relative w-screen h-screen overflow-hidden bg-[#08061a]">
       <canvas ref={canvasRef} className="block w-full h-full" />
 
       {state && state.screen === 'playing' && (
