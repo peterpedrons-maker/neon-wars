@@ -1,6 +1,7 @@
 import {
-  GameState, InputState, Player, Enemy, EnemyType,
+  GameState, InputState, Player, Enemy, EnemyType, XpOrb,
 } from './types';
+import { createAbilityState, updateOrbitals, updateAura, updateRegen, triggerChainLightning, xpForLevel } from './abilities';
 import {
   ARENA_W, ARENA_H, COLORS, WAVE_BASE_ENEMIES,
   WAVE_ENEMY_INCREMENT, BOSS_WAVE_INTERVAL,
