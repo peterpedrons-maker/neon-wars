@@ -9,6 +9,9 @@ interface HUDProps {
   combo: number;
   comboMultiplier: number;
   comboTimer: number;
+  level: number;
+  xp: number;
+  xpToNext: number;
 }
 
 const shipIcons: Record<string, string> = { phantom: '👻', interceptor: '⚡', titan: '💥' };
