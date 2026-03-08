@@ -47,18 +47,14 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
     forceUpdate(n => n + 1);
 
     // Connect to room for game sync
-    const ch = connectToRoom(
-      room,
-      () => {},
-      () => {},
-      (ps) => { peerStateRef.current = ps; },
-      (sync) => {
-        // Guest receives full game state from host — sync enemies, projectiles, wave, score
+    const ch = connectToRoom(room, {
+      onPeerJoin: () => {},
+      onPeerLeave: () => {},
+      onPeerState: (ps) => { peerStateRef.current = ps; },
+      onGameSync: (sync) => {
         if (!room.isHost && stateRef.current) {
           stateRef.current.wave = sync.wave;
           stateRef.current.score = sync.score;
-          
-          // Sync enemies from host
           stateRef.current.enemies = sync.enemies.map(e => ({
             pos: { x: e.x, y: e.y },
             vel: { x: 0, y: 0 },
@@ -75,8 +71,6 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
             isBoss: e.radius >= 25,
             flashTimer: 0,
           }));
-          
-          // Sync projectiles from host
           stateRef.current.projectiles = sync.projectiles.map(p => ({
             pos: { x: p.x, y: p.y },
             vel: { x: p.vx, y: p.vy },
@@ -89,10 +83,12 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
           }));
         }
       },
-      () => {},
-      () => {}, // onCountdown
-      () => {}, // onConfirm
-    );
+      onStartGame: () => {},
+      onCountdown: () => {},
+      onConfirm: () => {},
+      onLobbyState: () => {},
+      onChat: () => {},
+    });
 
     return () => { leaveRoom(); };
   }, [playerClass, mapId]);
