@@ -326,188 +326,304 @@ export function playWaveComplete() {
 }
 
 // ===== PROCEDURAL BACKGROUND MUSIC =====
-// Evolving synthwave that changes over time to avoid repetition
+// Dark synthwave/retrowave that evolves continuously
 
-// Musical scales and chord progressions
-const SCALE_MINOR = [0, 2, 3, 5, 7, 8, 10]; // Natural minor
-const CHORD_PROG = [
-  [0, 3, 7],    // i
-  [5, 8, 12],   // iv
-  [3, 7, 10],   // III
-  [7, 10, 14],  // v
-  [0, 3, 7],    // i
-  [8, 12, 15],  // VI
-  [5, 8, 12],   // iv
-  [10, 14, 17], // VII
+// Multiple chord progressions to cycle through (minor key, cinematic feel)
+const PROGRESSIONS = [
+  // Am - F - C - G (epic)
+  [[0, 3, 7], [5, 9, 12], [3, 7, 10], [7, 11, 14]],
+  // Am - Dm - E - Am (dark)
+  [[0, 3, 7], [5, 8, 12], [7, 11, 14], [0, 3, 7]],
+  // Am - G - F - E (descending tension)
+  [[0, 3, 7], [7, 10, 14], [5, 8, 12], [4, 7, 11]],
+  // Am - C - Dm - F (dreamy)
+  [[0, 3, 7], [3, 7, 10], [5, 8, 12], [5, 9, 12]],
+  // Fm - Ab - Eb - Bb (dark cinematic)
+  [[0, 3, 7], [3, 6, 10], [7, 10, 14], [2, 5, 9]],
 ];
 
 let musicTimers: number[] = [];
 let currentChordIndex = 0;
-let bassNoteIndex = 0;
+let currentProgIndex = 0;
 let measureCount = 0;
 let currentKey = 40; // E2 MIDI base
+let sectionCount = 0; // tracks song sections for variety
 
 function midiToFreq(midi: number): number {
   return 440 * Math.pow(2, (midi - 69) / 12);
-}
-
-function getScaleNote(degree: number): number {
-  const octave = Math.floor(degree / 7);
-  const note = SCALE_MINOR[degree % 7];
-  return currentKey + octave * 12 + note;
 }
 
 function scheduleNextMeasure() {
   if (!musicPlaying || !audioCtx) return;
   const ctx = audioCtx;
   const now = ctx.currentTime;
-  const bpm = 128 + musicIntensity * 8;
+  const bpm = 130 + musicIntensity * 5;
   const beatDur = 60 / bpm;
   const measureDur = beatDur * 4;
   
-  // Evolve key every 16 measures
-  if (measureCount > 0 && measureCount % 16 === 0) {
-    const shifts = [0, 5, 7, -2, 3, -5];
-    currentKey = 40 + shifts[Math.floor(Math.random() * shifts.length)];
+  // Change progression every 8 measures
+  if (measureCount > 0 && measureCount % 8 === 0) {
+    sectionCount++;
+    // Switch progression
+    currentProgIndex = sectionCount % PROGRESSIONS.length;
+    // Key modulation every 16 measures for freshness
+    if (measureCount % 16 === 0) {
+      const keys = [38, 40, 43, 45, 47, 35, 42]; // various minor roots
+      currentKey = keys[sectionCount % keys.length];
+    }
   }
   
-  // Get current chord
-  const chord = CHORD_PROG[currentChordIndex % CHORD_PROG.length];
+  const prog = PROGRESSIONS[currentProgIndex];
+  const chord = prog[currentChordIndex % prog.length];
   
   if (!musicGain) {
     musicGain = ctx.createGain();
-    musicGain.gain.value = 0.035;
+    musicGain.gain.value = 0.04;
     musicGain.connect(ctx.destination);
   }
-  musicGain.gain.value = 0.025 + musicIntensity * 0.003;
+  musicGain.gain.value = 0.03 + musicIntensity * 0.004;
   
-  // === BASS LINE (evolving pattern) ===
-  const bassPatterns = [
-    [0, -1, 0, 2],      // steady
-    [0, 0, 3, 2],       // ascending
-    [0, 4, 2, 0],       // bouncy
-    [0, -1, 2, 5],      // wide
-  ];
-  const bassPattern = bassPatterns[(measureCount >> 2) % bassPatterns.length];
+  // Determine "section feel" based on sectionCount for variety
+  const sectionFeel = sectionCount % 4; // 0=minimal, 1=building, 2=intense, 3=breakdown
   
-  for (let beat = 0; beat < 4; beat++) {
-    const bassNote = getScaleNote(chord[0] / 2 + bassPattern[beat]);
-    const bassFreq = midiToFreq(bassNote);
+  // === KICK DRUM ===
+  const kickBeats = sectionFeel === 3 ? [0] : [0, 2]; // half-time on breakdowns
+  for (const beat of kickBeats) {
     const t = now + beat * beatDur;
-    
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    const filter = ctx.createBiquadFilter();
-    
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(bassFreq, t);
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(400 + musicIntensity * 50, t);
-    gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(0.15, t + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + beatDur * 0.9);
-    
-    osc.connect(filter).connect(gain).connect(musicGain!);
-    osc.start(t); osc.stop(t + beatDur);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(160, t);
+    osc.frequency.exponentialRampToValueAtTime(28, t + 0.12);
+    gain.gain.setValueAtTime(0.1 + musicIntensity * 0.012, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+    osc.connect(gain).connect(musicGain!);
+    osc.start(t); osc.stop(t + 0.18);
+    // Kick click layer
+    const click = ctx.createOscillator();
+    const cg = ctx.createGain();
+    click.type = 'square';
+    click.frequency.setValueAtTime(1200, t);
+    click.frequency.exponentialRampToValueAtTime(100, t + 0.02);
+    cg.gain.setValueAtTime(0.03, t);
+    cg.gain.exponentialRampToValueAtTime(0.001, t + 0.02);
+    click.connect(cg).connect(musicGain!);
+    click.start(t); click.stop(t + 0.03);
   }
   
-  // === PAD CHORD (long evolving tones) ===
-  const padVol = 0.04 + musicIntensity * 0.005;
-  for (const interval of chord) {
-    const noteFreq = midiToFreq(currentKey + 12 + interval);
+  // === SNARE on beats 2 and 4 ===
+  if (sectionFeel !== 0) {
+    for (const beat of [1, 3]) {
+      const t = now + beat * beatDur;
+      // Noise-like snare
+      for (let j = 0; j < 2; j++) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200 + Math.random() * 100, t);
+        osc.detune.setValueAtTime(Math.random() * 1200, t);
+        gain.gain.setValueAtTime(0.025, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+        osc.connect(gain).connect(musicGain!);
+        osc.start(t); osc.stop(t + 0.08);
+      }
+      // Snare body
+      const body = ctx.createOscillator();
+      const bg = ctx.createGain();
+      body.type = 'sine';
+      body.frequency.setValueAtTime(180, t);
+      body.frequency.exponentialRampToValueAtTime(100, t + 0.05);
+      bg.gain.setValueAtTime(0.04, t);
+      bg.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+      body.connect(bg).connect(musicGain!);
+      body.start(t); body.stop(t + 0.07);
+    }
+  }
+  
+  // === BASS LINE ===
+  // Different bass patterns per section
+  const bassRhythms = [
+    [0, 2],              // simple halves
+    [0, 1.5, 2, 3.5],   // syncopated
+    [0, 0.75, 1.5, 2, 2.75, 3.5], // driving 
+    [0, 3],              // sparse breakdown
+  ];
+  const bassRhythm = bassRhythms[sectionFeel];
+  const bassOctave = currentKey;
+  
+  for (const beatPos of bassRhythm) {
+    const t = now + beatPos * beatDur;
+    const bassNote = bassOctave + chord[0];
+    const bassFreq = midiToFreq(bassNote);
+    
     const osc = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
     const gain = ctx.createGain();
     const filter = ctx.createBiquadFilter();
     
-    osc.type = 'sine';
-    osc2.type = 'triangle';
-    osc.frequency.setValueAtTime(noteFreq, now);
-    osc2.frequency.setValueAtTime(noteFreq * 1.003, now); // slight detune for width
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(800 + musicIntensity * 100 + Math.sin(measureCount * 0.3) * 200, now);
+    osc.type = 'sawtooth';
+    osc2.type = 'square';
+    osc.frequency.setValueAtTime(bassFreq, t);
+    osc2.frequency.setValueAtTime(bassFreq * 0.998, t); // slight detune
     
-    gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(padVol, now + measureDur * 0.15);
-    gain.gain.setValueAtTime(padVol, now + measureDur * 0.7);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + measureDur);
+    filter.type = 'lowpass';
+    const filterSweep = 300 + musicIntensity * 80 + Math.sin(measureCount * 0.4) * 100;
+    filter.frequency.setValueAtTime(filterSweep, t);
+    filter.Q.setValueAtTime(4, t);
+    
+    const dur = Math.min(beatDur * 0.85, 0.4);
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.18, t + 0.01);
+    gain.gain.setValueAtTime(0.15, t + dur * 0.5);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
     
     osc.connect(filter);
     osc2.connect(filter);
     filter.connect(gain).connect(musicGain!);
-    osc.start(now); osc.stop(now + measureDur + 0.1);
-    osc2.start(now); osc2.stop(now + measureDur + 0.1);
+    osc.start(t); osc.stop(t + dur + 0.01);
+    osc2.start(t); osc2.stop(t + dur + 0.01);
   }
   
-  // === ARPEGGIOS (only at higher intensity, varying patterns) ===
-  if (musicIntensity >= 2) {
+  // === PAD CHORD (lush with detuned layers) ===
+  const padVol = sectionFeel === 2 ? 0.035 : 0.05 + musicIntensity * 0.005;
+  for (const interval of chord) {
+    const noteFreq = midiToFreq(currentKey + 12 + interval);
+    
+    // 3 detuned oscillators for thick pad
+    for (let d = -1; d <= 1; d++) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      
+      osc.type = d === 0 ? 'sine' : 'triangle';
+      osc.frequency.setValueAtTime(noteFreq * (1 + d * 0.004), now);
+      
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(600 + musicIntensity * 120 + Math.sin(measureCount * 0.2 + d) * 150, now);
+      
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(padVol / 3, now + measureDur * 0.2);
+      gain.gain.setValueAtTime(padVol / 3, now + measureDur * 0.65);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + measureDur + 0.05);
+      
+      osc.connect(filter).connect(gain).connect(musicGain!);
+      osc.start(now); osc.stop(now + measureDur + 0.1);
+    }
+  }
+  
+  // === ARPEGGIOS (sections 1,2 and high intensity) ===
+  if ((sectionFeel === 1 || sectionFeel === 2) && musicIntensity >= 1) {
+    // Many different arp patterns
     const arpPatterns = [
-      [0, 1, 2, 1, 0, 2, 1, 0],
-      [0, 2, 1, 2, 0, 1, 2, 1],
-      [2, 1, 0, 1, 2, 0, 1, 2],
-      [0, 1, 0, 2, 1, 0, 2, 1],
+      [0, 1, 2, 1, 0, 2, 1, 2, 0, 1, 2, 0, 1, 0, 2, 1],
+      [2, 1, 0, 2, 1, 0, 1, 2, 0, 2, 1, 0, 2, 1, 0, 1],
+      [0, 0, 1, 2, 2, 1, 0, 1, 2, 2, 0, 1, 1, 2, 0, 0],
+      [0, 2, 0, 1, 2, 0, 2, 1, 0, 1, 2, 1, 0, 2, 1, 0],
+      [1, 0, 2, 0, 1, 2, 0, 2, 1, 0, 2, 1, 0, 1, 2, 0],
     ];
-    const arpPattern = arpPatterns[(measureCount + Math.floor(measureCount / 4)) % arpPatterns.length];
+    const arpPattern = arpPatterns[(measureCount + sectionCount) % arpPatterns.length];
+    const sixteenthDur = beatDur / 4;
+    const arpSteps = sectionFeel === 2 ? 16 : 8;
+    
+    for (let i = 0; i < arpSteps; i++) {
+      const noteIdx = arpPattern[i % arpPattern.length];
+      const octaveShift = (i >= 8) ? 12 : 0;
+      const noteFreq = midiToFreq(currentKey + 24 + chord[noteIdx] + octaveShift);
+      const t = now + i * sixteenthDur;
+      
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      
+      // Alternate waveforms per section for variety
+      const waves: OscillatorType[] = ['square', 'triangle', 'sawtooth'];
+      osc.type = waves[(sectionCount + Math.floor(i / 4)) % waves.length];
+      osc.frequency.setValueAtTime(noteFreq, t);
+      
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1500 + musicIntensity * 200, t);
+      filter.frequency.exponentialRampToValueAtTime(600, t + sixteenthDur * 0.9);
+      
+      const vol = 0.025 + musicIntensity * 0.004;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(vol, t + 0.005);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + sixteenthDur * 0.9);
+      
+      osc.connect(filter).connect(gain).connect(musicGain!);
+      osc.start(t); osc.stop(t + sixteenthDur);
+    }
+  }
+  
+  // === HI-HATS (varied patterns) ===
+  if (sectionFeel !== 3 || musicIntensity >= 3) {
+    const hatPatterns = [
+      [1, 0, 1, 0, 1, 0, 1, 0],    // straight 8ths
+      [1, 0, 1, 1, 0, 1, 0, 1],    // syncopated
+      [1, 1, 0, 1, 1, 0, 1, 1],    // busy
+      [1, 0, 0, 1, 0, 0, 1, 0],    // sparse
+      [1, 1, 1, 0, 1, 1, 0, 1],    // driving
+    ];
+    const hatPattern = hatPatterns[(measureCount + sectionCount * 2) % hatPatterns.length];
     const eighthDur = beatDur / 2;
     
     for (let i = 0; i < 8; i++) {
-      const noteIdx = arpPattern[i];
-      const noteFreq = midiToFreq(currentKey + 24 + chord[noteIdx]);
+      if (!hatPattern[i]) continue;
+      const t = now + i * eighthDur;
+      const isOpen = (i === 2 || i === 6) && sectionFeel >= 1;
+      
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(7000 + Math.random() * 3000, t);
+      filter.type = 'highpass';
+      filter.frequency.setValueAtTime(6000, t);
+      
+      const hatDur = isOpen ? 0.06 : 0.025;
+      const hatVol = isOpen ? 0.015 : 0.01;
+      gain.gain.setValueAtTime(hatVol, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + hatDur);
+      
+      osc.connect(filter).connect(gain).connect(musicGain!);
+      osc.start(t); osc.stop(t + hatDur + 0.01);
+    }
+  }
+  
+  // === LEAD MELODY (occasional, adds musicality) ===
+  if (sectionFeel === 2 && musicIntensity >= 3 && measureCount % 2 === 0) {
+    const melodies = [
+      [0, 2, 3, 5, 7, 5, 3, 2],
+      [7, 5, 3, 2, 0, 2, 3, 5],
+      [0, 3, 7, 5, 3, 7, 10, 7],
+      [3, 5, 7, 10, 7, 5, 3, 0],
+    ];
+    const melody = melodies[(sectionCount + measureCount) % melodies.length];
+    const eighthDur = beatDur / 2;
+    
+    for (let i = 0; i < melody.length; i++) {
+      const noteFreq = midiToFreq(currentKey + 24 + melody[i]);
       const t = now + i * eighthDur;
       
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = (measureCount % 8 < 4) ? 'square' : 'triangle';
+      osc.type = 'sine';
       osc.frequency.setValueAtTime(noteFreq, t);
+      // Slight vibrato
+      osc.frequency.setValueAtTime(noteFreq, t + eighthDur * 0.3);
+      osc.frequency.linearRampToValueAtTime(noteFreq * 1.01, t + eighthDur * 0.6);
+      osc.frequency.linearRampToValueAtTime(noteFreq, t + eighthDur * 0.8);
       
-      const vol = 0.03 + (musicIntensity - 2) * 0.005;
       gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(vol, t + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + eighthDur * 0.85);
+      gain.gain.linearRampToValueAtTime(0.03, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + eighthDur * 0.9);
       
       osc.connect(gain).connect(musicGain!);
       osc.start(t); osc.stop(t + eighthDur);
     }
   }
   
-  // === HI-HAT pattern (higher intensities) ===
-  if (musicIntensity >= 3) {
-    const hatPatterns = [
-      [1, 0, 1, 0, 1, 0, 1, 1],
-      [1, 1, 0, 1, 1, 0, 1, 0],
-      [1, 0, 1, 1, 0, 1, 0, 1],
-    ];
-    const hatPattern = hatPatterns[measureCount % hatPatterns.length];
-    
-    for (let i = 0; i < 8; i++) {
-      if (!hatPattern[i]) continue;
-      const t = now + i * (beatDur / 2);
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(8000 + Math.random() * 2000, t);
-      gain.gain.setValueAtTime(0.012, t);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
-      osc.connect(gain).connect(musicGain!);
-      osc.start(t); osc.stop(t + 0.04);
-    }
-  }
-  
-  // === KICK DRUM (on beats 1 and 3) ===
-  for (const beat of [0, 2]) {
-    const t = now + beat * beatDur;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(150, t);
-    osc.frequency.exponentialRampToValueAtTime(30, t + 0.1);
-    gain.gain.setValueAtTime(0.08 + musicIntensity * 0.01, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-    osc.connect(gain).connect(musicGain!);
-    osc.start(t); osc.stop(t + 0.15);
-  }
-  
-  currentChordIndex = (currentChordIndex + 1) % CHORD_PROG.length;
+  currentChordIndex = (currentChordIndex + 1) % prog.length;
   measureCount++;
   
   // Schedule next measure
@@ -523,7 +639,9 @@ export function startMusic() {
     musicPlaying = true;
     musicGain = null;
     currentChordIndex = 0;
+    currentProgIndex = 0;
     measureCount = 0;
+    sectionCount = 0;
     currentKey = 40;
     scheduleNextMeasure();
   } catch {}
@@ -539,6 +657,5 @@ export function stopMusic() {
 }
 
 export function setMusicIntensity(wave: number) {
-  // Intensity 1-5 based on wave progression
   musicIntensity = Math.min(5, Math.max(1, Math.floor(wave / 2) + 1));
 }
