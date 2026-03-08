@@ -238,6 +238,13 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
       }
       updateGame(stateRef.current, inputRef.current, dt);
 
+      // Coop: game over if peer dies
+      if (stateRef.current.screen === 'playing' && stateRef.current.coopPeer && !stateRef.current.coopPeer.alive) {
+        stateRef.current.player.hp = 0;
+        stateRef.current.player.alive = false;
+        stateRef.current.screen = 'game-over';
+      }
+
       // Cap particles for performance
       if (stateRef.current.particles.length > MAX_PARTICLES) {
         stateRef.current.particles = stateRef.current.particles.slice(-MAX_PARTICLES);
