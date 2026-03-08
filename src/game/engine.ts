@@ -520,6 +520,15 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
   if (e.hp <= 0) {
     e.alive = false;
     
+    // Track boss kills
+    if (e.isBoss) state.bossesKilled = (state.bossesKilled || 0) + 1;
+    
+    // Vampirism
+    if (state.abilities.vampirism > 0 && Math.random() < state.abilities.vampirism) {
+      state.player.hp = Math.min(state.player.maxHp, state.player.hp + 1);
+      state.particles.push(...createParticles(state.player.pos, '#ff0060', 5, 60, 2));
+    }
+    
     // Combo system
     const prevMult = state.comboMultiplier;
     state.combo++;
