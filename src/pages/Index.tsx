@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ShipType, GameScreen } from '../game/types';
-import { loadMeta, saveMeta, MetaProgress, ALL_MILESTONES } from '../game/meta';
-import { ALL_MAPS } from '../game/maps';
+import { loadMeta, MetaProgress, ALL_MILESTONES } from '../game/meta';
+import { RoomInfo } from '../game/multiplayer';
 import MainMenu from '../components/game/MainMenu';
 import ClassSelect from '../components/game/ClassSelect';
 import HowToPlay from '../components/game/HowToPlay';
@@ -9,6 +9,8 @@ import Leaderboard from '../components/game/Leaderboard';
 import GameCanvas from '../components/game/GameCanvas';
 import MapSelect from '../components/game/MapSelect';
 import PlasmaShop from '../components/game/PlasmaShop';
+import MultiplayerLobby from '../components/game/MultiplayerLobby';
+import CoopGameCanvas from '../components/game/CoopGameCanvas';
 
 const Index = () => {
   const [screen, setScreen] = useState<GameScreen>('menu');
@@ -16,6 +18,10 @@ const Index = () => {
   const [mapId, setMapId] = useState<string>('neon-grid');
   const [gameKey, setGameKey] = useState(0);
   const [meta, setMeta] = useState<MetaProgress>(loadMeta());
+
+  // Coop state
+  const [coopRoom, setCoopRoom] = useState<RoomInfo | null>(null);
+  const [peerClass, setPeerClass] = useState<ShipType>('interceptor');
 
   const refreshMeta = () => setMeta(loadMeta());
 
@@ -35,16 +41,36 @@ const Index = () => {
     setScreen('menu');
   };
 
+  const handleStartCoop = (room: RoomInfo, mId: string, myClass: ShipType, theirClass: ShipType) => {
+    setCoopRoom(room);
+    setMapId(mId);
+    setPlayerClass(myClass);
+    setPeerClass(theirClass);
+    setGameKey(k => k + 1);
+    setScreen('playing');
+  };
+
   if (screen === 'menu') {
     return (
       <MainMenu
         plasma={meta.plasma}
         stats={meta.stats}
         milestones={ALL_MILESTONES.filter(m => meta.milestones[m.id])}
-        onPlay={() => setScreen('class-select')}
+        onPlay={() => { setCoopRoom(null); setScreen('class-select'); }}
         onLeaderboard={() => setScreen('leaderboard')}
         onHowToPlay={() => setScreen('how-to-play')}
         onShop={() => setScreen('shop')}
+        onMultiplayer={() => setScreen('multiplayer-lobby')}
+      />
+    );
+  }
+
+  if (screen === 'multiplayer-lobby') {
+    return (
+      <MultiplayerLobby
+        unlockedShips={meta.unlockedShips}
+        onStartCoop={handleStartCoop}
+        onBack={() => setScreen('menu')}
       />
     );
   }
@@ -79,6 +105,20 @@ const Index = () => {
 
   if (screen === 'leaderboard') {
     return <Leaderboard onBack={() => setScreen('menu')} />;
+  }
+
+  // Coop mode
+  if (coopRoom) {
+    return (
+      <CoopGameCanvas
+        key={gameKey}
+        playerClass={playerClass}
+        peerClass={peerClass}
+        mapId={mapId}
+        room={coopRoom}
+        onMenu={handleMenu}
+      />
+    );
   }
 
   return (

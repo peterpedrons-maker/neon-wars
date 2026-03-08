@@ -79,6 +79,13 @@ const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, 
           🚀 Jogar
         </button>
         <button
+          onClick={onMultiplayer}
+          className="py-3 px-8 text-lg font-bold rounded-lg text-[#39ff14] border border-[#39ff14]/30 transition-all duration-200 hover:border-[#39ff14] hover:shadow-[0_0_15px_rgba(57,255,20,0.3)] font-mono"
+          style={{ background: 'rgba(57,255,20,0.05)' }}
+        >
+          🎮 Multiplayer Coop
+        </button>
+        <button
           onClick={onShop}
           className="py-3 px-8 text-lg font-bold rounded-lg text-[#bf5af2] border border-[#bf5af2]/30 transition-all duration-200 hover:border-[#bf5af2] hover:shadow-[0_0_15px_rgba(191,90,242,0.3)] font-mono"
           style={{ background: 'rgba(191,90,242,0.05)' }}
