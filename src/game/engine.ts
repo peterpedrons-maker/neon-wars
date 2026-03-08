@@ -27,6 +27,15 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   p.speedBoostTimer = Math.max(0, p.speedBoostTimer - dt);
   p.invincibleTimer = Math.max(0, p.invincibleTimer - dt);
   state.shakeTimer = Math.max(0, state.shakeTimer - dt);
+  
+  // Combo timer decay
+  if (state.comboTimer > 0) {
+    state.comboTimer -= dt;
+    if (state.comboTimer <= 0) {
+      state.combo = 0;
+      state.comboMultiplier = 1;
+    }
+  }
 
   // Player movement
   const speed = p.speed * (p.speedBoostTimer > 0 ? 1.5 : 1);
