@@ -11,7 +11,7 @@ import GameOver from './GameOver';
 import TouchControls from './TouchControls';
 
 interface GameCanvasProps {
-  playerClass: PlayerClass;
+  playerClass: ShipType;
   onMenu: () => void;
 }
 
