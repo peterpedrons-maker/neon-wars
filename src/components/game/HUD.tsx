@@ -22,7 +22,7 @@ const HUD: React.FC<HUDProps> = ({ player, wave, score, specialReady }) => {
           <span className="text-lg">
             {player.class === 'mage' ? '🔮' : player.class === 'archer' ? '🏹' : '⚔️'}
           </span>
-          <div className="w-36 md:w-48 h-4 bg-[#4a1a1a] rounded-full overflow-hidden border border-[#5a3a28]">
+          <div className="w-36 md:w-48 h-4 bg-[#450a0a] rounded-full overflow-hidden border border-[#4a3a6e]">
             <div
               className="h-full transition-all duration-200 rounded-full"
               style={{
