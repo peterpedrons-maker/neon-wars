@@ -379,46 +379,8 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
 
   const handleStart = () => {
     if (!room || !peerConnected) return;
-    // Send start request to guest for confirmation
     sendStartGame(selectedMap, selectedShip);
     setStatus('Aguardando confirmação do jogador...');
-
-    // Listen for guest confirm via the existing channel
-    // We re-setup the confirm handler
-    const origConnect = channelRef.current;
-    // Use a polling approach: once guest confirms, they send countdown -1
-    // We detect it via the countdown handler
-    const checkConfirm = () => {
-      // The guest will send a countdown of -1 as confirmation signal
-    };
-
-    // Override: connect with confirm handler
-    if (channelRef.current) {
-      // We already have the channel, listen for the confirm signal
-      // The guest sends a 'countdown' broadcast with value -1
-      // This is handled in the existing connectToRoom's onCountdown
-    }
-
-    // Simpler approach: re-listen on the existing channel for guest_confirm
-    channelRef.current?.on?.('broadcast', { event: 'countdown' }, ({ payload }: any) => {
-      if (payload.count === -1) {
-        // Guest confirmed! Start countdown for both
-        setStatus('Jogador confirmou! Iniciando...');
-        let count = 5;
-        setCountdown(count);
-        sendCountdown(count);
-        countdownRef.current = setInterval(() => {
-          count--;
-          setCountdown(count);
-          sendCountdown(count);
-          if (count <= 0) {
-            clearInterval(countdownRef.current!);
-            countdownRef.current = null;
-            onStartCoop(room, selectedMap, selectedShip, peerShip);
-          }
-        }, 1000);
-      }
-    });
   };
 
   return (
