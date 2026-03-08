@@ -13,7 +13,13 @@ interface MainMenuProps {
   onMultiplayer: () => void;
 }
 
-const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, onLeaderboard, onHowToPlay, onShop }) => {
+const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, onLeaderboard, onHowToPlay, onShop, onMultiplayer }) => {
+  useEffect(() => {
+    initAudio();
+    startMenuMusic();
+    return () => { stopMenuMusic(); };
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#000008] text-[#e0e8ff] select-none">
       {/* Title */}
