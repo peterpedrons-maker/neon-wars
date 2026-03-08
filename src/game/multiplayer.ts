@@ -22,6 +22,7 @@ export interface CoopPlayerState {
   shooting: boolean;
   playerId?: string;
   playerLabel?: string;
+  emote?: { text: string; timer: number };
 }
 
 export interface CoopGameSync {

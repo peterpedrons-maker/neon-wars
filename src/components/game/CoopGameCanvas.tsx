@@ -83,6 +83,7 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
             playerId: ps.playerId || (ps as any).playerId || 'p2',
             playerLabel: ps.playerLabel || (ps as any).playerLabel || 'P2',
             reviveProgress: (ps as any).reviveProgress || 0,
+            emote: ps.emote,
           };
           if (existing >= 0) {
             peers[existing] = peerData;
@@ -136,7 +137,8 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
 
   // When both players have chosen upgrades, resume game
   useEffect(() => {
-    if (myUpgradeDone && peerUpgradeDone && showUpgrade) {
+    const allLivingPeersDone = peerUpgradeDone || (stateRef.current?.coopPeers && stateRef.current.coopPeers.length > 0 && stateRef.current.coopPeers.every(p => p.dead || !p.alive));
+    if (myUpgradeDone && allLivingPeersDone && showUpgrade) {
       setShowUpgrade(false);
       setWaitingForPeer(false);
       if (stateRef.current) {
@@ -151,6 +153,12 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
     const onKeyDown = (e: KeyboardEvent) => {
       keysRef.current.add(e.key.toLowerCase());
       if (e.key === ' ') { e.preventDefault(); inputRef.current.special = true; }
+      
+      // Emotes
+      if (e.key === '1') { if (stateRef.current) stateRef.current.player.emote = { text: '👍', timer: 3 }; }
+      if (e.key === '2') { if (stateRef.current) stateRef.current.player.emote = { text: '💀', timer: 3 }; }
+      if (e.key === '3') { if (stateRef.current) stateRef.current.player.emote = { text: '🔥', timer: 3 }; }
+      if (e.key === '4') { if (stateRef.current) stateRef.current.player.emote = { text: '❤️', timer: 3 }; }
     };
     const onKeyUp = (e: KeyboardEvent) => {
       keysRef.current.delete(e.key.toLowerCase());
@@ -317,6 +325,7 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
           playerId: room.playerId,
           playerLabel: room.isHost ? 'HOST' : `P${2}`,
           reviveProgress: (stateRef.current as any).myReviveProgress || 0,
+          emote: p.emote,
         } as any);
 
         // Host sends game sync

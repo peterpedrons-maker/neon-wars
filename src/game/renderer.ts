@@ -148,6 +148,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
       shieldTimer: peer.shieldTimer ?? 0, tripleTimer: 0, speedBoostTimer: 0,
       invincibleTimer: peer.invincibleTimer ?? 0,
       angle: peer.angle,
+      emote: (peer as any).emote,
     };
     drawPlayer(ctx, fakePlayer, time);
     // Player label
@@ -429,6 +430,33 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
 
   if (p.invincibleTimer > 0 && Math.floor(Date.now() / 80) % 2 === 0) {
     ctx.globalAlpha = 0.4;
+  }
+
+  // Draw emote if active
+  if (p.emote && p.emote.timer > 0) {
+    ctx.save();
+    ctx.rotate(-p.angle - bankAmount); // Un-rotate to draw text upright
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.strokeStyle = '#0ff';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(-15, -40, 30, 24, 4);
+    ctx.fill();
+    ctx.stroke();
+    // small triangle pointing to player
+    ctx.beginPath();
+    ctx.moveTo(-4, -16);
+    ctx.lineTo(4, -16);
+    ctx.lineTo(0, -10);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.font = '16px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(p.emote.text, 0, -28);
+    ctx.restore();
   }
 
   // === MULTI-LAYERED ENGINE EXHAUST ===

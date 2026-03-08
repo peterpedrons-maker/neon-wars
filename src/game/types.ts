@@ -34,6 +34,7 @@ export interface Player extends Entity {
   speedBoostTimer: number;
   invincibleTimer: number;
   angle: number;
+  emote?: { text: string; timer: number };
 }
 
 export interface Projectile extends Entity {
@@ -152,6 +153,7 @@ export interface GameState {
     playerId: string;
     playerLabel: string;
     reviveProgress: number; // 0-1 for revive progress
+    emote?: { text: string; timer: number };
   }>;
   // Legacy single peer alias (computed from coopPeers[0])
   coopPeer?: {
@@ -167,10 +169,16 @@ export interface GameState {
     invincibleTimer: number;
     hp: number;
     maxHp: number;
+    emote?: { text: string; timer: number };
   };
   isHost?: boolean;
   enemiesKilledThisWave: number;
   localPlayerId?: string; // ID of the local player (to filter out from peer rendering)
+  coopMission?: {
+    type: 'switches';
+    switches: Array<{ x: number; y: number; active: boolean }>;
+    completed: boolean;
+  };
 }
 
 export interface LeaderboardEntry {
