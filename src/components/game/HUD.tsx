@@ -99,12 +99,25 @@ const HUD: React.FC<HUDProps> = ({ player, wave, score, specialReady, combo, com
         )}
       </div>
 
-      {/* Right: Score */}
+      {/* Right: Score + Level/XP */}
       <div className="text-right">
         <div className="text-xl font-bold font-mono" style={{ color: '#ffff00', textShadow: '0 0 10px rgba(255,255,0,0.4)' }}>
           {score.toLocaleString()}
         </div>
         <div className="text-xs text-[#6080aa] font-mono">score</div>
+        <div className="mt-2 flex items-center gap-1 justify-end">
+          <span className="text-xs font-mono" style={{ color: '#bf5af2', textShadow: '0 0 6px rgba(191,90,242,0.4)' }}>LV {level}</span>
+        </div>
+        <div className="w-20 md:w-24 h-1.5 bg-[#0a0020] rounded-full overflow-hidden border border-[#bf5af233] mt-0.5">
+          <div
+            className="h-full rounded-full transition-all duration-150"
+            style={{
+              width: `${(xp / xpToNext) * 100}%`,
+              background: '#bf5af2',
+              boxShadow: '0 0 4px #bf5af2',
+            }}
+          />
+        </div>
       </div>
     </div>
   );
