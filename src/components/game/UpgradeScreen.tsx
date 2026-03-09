@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Upgrade } from '../../game/types';
 import { getRandomUpgrades } from '../../game/upgrades';
+import { UPGRADE_ICONS } from '../../game/icons';
 
 interface UpgradeScreenProps {
   wave: number;
