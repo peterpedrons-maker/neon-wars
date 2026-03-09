@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ALL_ACHIEVEMENTS, Achievement, AchievementDifficulty,
   DIFFICULTY_COLORS, DIFFICULTY_LABELS,
 } from '../../game/achievements';
-import { playClick, playHover, playBack } from '../../game/audio';
+import { playClick, playHover, playBack, startAchievementsMusic, stopAchievementsMusic } from '../../game/audio';
 import { getAchievementIcon } from '../../game/icons';
 
 interface AchievementsProps {
@@ -22,6 +22,7 @@ const TABS: { key: 'all' | 'global' | AchievementDifficulty; label: string; colo
 
 const Achievements: React.FC<AchievementsProps> = ({ unlocked, onBack }) => {
   const [tab, setTab] = useState<string>('all');
+  useEffect(() => { startAchievementsMusic(); return () => { stopAchievementsMusic(); }; }, []);
 
   const filtered = ALL_ACHIEVEMENTS.filter(a => {
     if (tab === 'all') return true;

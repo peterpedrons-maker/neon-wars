@@ -7,6 +7,7 @@ import upgradeHeal from '@/assets/icons/upgrade-heal.png';
 import plasmaCrystal from '@/assets/icons/plasma-crystal.png';
 import achievementTrophy from '@/assets/icons/achievement-trophy.png';
 
+// Original ability icons (kept for backward compat)
 import abilityFrostNova from '@/assets/icons/ability-frost-nova.png';
 import abilityMissile from '@/assets/icons/ability-missile.png';
 import abilityLightning from '@/assets/icons/ability-lightning.png';
@@ -45,6 +46,32 @@ import achEye from '@/assets/icons/ach-eye.png';
 import achRuns from '@/assets/icons/ach-runs.png';
 import achPlasma from '@/assets/icons/ach-plasma.png';
 
+// NEW AI-Generated Weapon Icons
+import weaponOrbitals from '@/assets/icons/weapon-orbitals.png';
+import weaponAura from '@/assets/icons/weapon-aura.png';
+import weaponChain from '@/assets/icons/weapon-chain.png';
+import weaponMultishot from '@/assets/icons/weapon-multishot.png';
+import weaponExplosion from '@/assets/icons/weapon-explosion.png';
+import weaponHoming from '@/assets/icons/weapon-homing.png';
+import weaponPiercing from '@/assets/icons/weapon-piercing.png';
+import weaponRicochet from '@/assets/icons/weapon-ricochet.png';
+import weaponIonBeam from '@/assets/icons/weapon-ionbeam.png';
+import weaponShockwave from '@/assets/icons/weapon-shockwave.png';
+import weaponSentry from '@/assets/icons/weapon-sentry.png';
+import weaponIceBeam from '@/assets/icons/weapon-icebeam.png';
+import weaponBoomerang from '@/assets/icons/weapon-boomerang.png';
+import weaponHeavyCannon from '@/assets/icons/weapon-heavycannon.png';
+import weaponAcidSpray from '@/assets/icons/weapon-acidspray.png';
+import weaponGravityWell from '@/assets/icons/weapon-gravitywell.png';
+import weaponTeslaCoil from '@/assets/icons/weapon-teslacoil.png';
+import weaponVoidRift from '@/assets/icons/weapon-voidrift.png';
+import weaponFrostNova from '@/assets/icons/weapon-frostnova.png';
+import weaponMissile from '@/assets/icons/weapon-missile.png';
+import weaponPlasmaField from '@/assets/icons/weapon-plasmafield.png';
+import weaponLightningRing from '@/assets/icons/weapon-lightningring.png';
+import weaponFlameTrail from '@/assets/icons/weapon-flametrail.png';
+import weaponChainLightning from '@/assets/icons/weapon-chainlightning.png';
+
 export const UPGRADE_ICONS: Record<string, string> = {
   hp_up: upgradeShield,
   dmg_up: upgradeDamage,
@@ -54,6 +81,34 @@ export const UPGRADE_ICONS: Record<string, string> = {
   regen: upgradeHeal,
   armor: upgradeShield,
   critical: upgradeDamage,
+};
+
+// Weapon icons by ability ID
+export const WEAPON_ICONS: Record<string, string> = {
+  orbitals: weaponOrbitals,
+  aura: weaponAura,
+  chain: weaponChain,
+  multishot: weaponMultishot,
+  explosion: weaponExplosion,
+  homing: weaponHoming,
+  piercing_rounds: weaponPiercing,
+  ricochet_rounds: weaponRicochet,
+  ion_beam: weaponIonBeam,
+  shockwave_emitter: weaponShockwave,
+  sentry_drones: weaponSentry,
+  frost_nova: weaponFrostNova,
+  missile_barrage: weaponMissile,
+  plasma_field: weaponPlasmaField,
+  lightning_ring: weaponLightningRing,
+  flame_trail: weaponFlameTrail,
+  chain_lightning_weapon: weaponChainLightning,
+  ice_beam: weaponIceBeam,
+  boomerang: weaponBoomerang,
+  heavy_cannon: weaponHeavyCannon,
+  acid_spray: weaponAcidSpray,
+  gravity_well: weaponGravityWell,
+  tesla_coil: weaponTeslaCoil,
+  void_rift: weaponVoidRift,
 };
 
 export const ABILITY_ICONS: Record<string, string> = {

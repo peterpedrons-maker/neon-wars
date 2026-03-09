@@ -1,5 +1,5 @@
-import React from 'react';
-import { playBack, playHover } from '../../game/audio';
+import React, { useEffect } from 'react';
+import { playBack, playHover, startLeaderboardMusic, stopLeaderboardMusic } from '../../game/audio';
 import { LeaderboardEntry, ShipType } from '../../game/types';
 
 interface LeaderboardProps {
@@ -9,6 +9,7 @@ interface LeaderboardProps {
 const shipIcons: Partial<Record<ShipType, string>> = { phantom: '👻', interceptor: '⚡', titan: '💥', spectre: '🌀', valkyrie: '🦅', juggernaut: '🛡️', wraith: '👤', sentinel: '🏰', tempest: '🌪️', venom: '🐍', nova_ship: '💫', chronos: '⏳', leviathan: '🐋', raptor: '🦅', oracle: '🔮', pyro: '🔥' };
 
 const Leaderboard: React.FC<LeaderboardProps> = ({ onBack }) => {
+  useEffect(() => { startLeaderboardMusic(); return () => { stopLeaderboardMusic(); }; }, []);
   const entries: LeaderboardEntry[] = JSON.parse(localStorage.getItem('neon-wars-lb') || '[]');
 
   return (

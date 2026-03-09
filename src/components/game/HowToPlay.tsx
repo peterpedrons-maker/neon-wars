@@ -1,11 +1,12 @@
-import React from 'react';
-import { playBack, playHover } from '../../game/audio';
+import React, { useEffect } from 'react';
+import { playBack, playHover, startHowToPlayMusic, stopHowToPlayMusic } from '../../game/audio';
 
 interface HowToPlayProps {
   onBack: () => void;
 }
 
 const HowToPlay: React.FC<HowToPlayProps> = ({ onBack }) => {
+  useEffect(() => { startHowToPlayMusic(); return () => { stopHowToPlayMusic(); }; }, []);
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#000008] text-[#e0e8ff] select-none p-4">
       <h2 className="text-4xl font-bold mb-2 font-mono" style={{ color: '#0ff', textShadow: '0 0 20px rgba(0,255,255,0.3)' }}>

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { RunStats, Milestone } from '../../game/meta';
-import { initAudio, startMenuMusic, stopMenuMusic, playClick, playHover } from '../../game/audio';
+import { initAudio, startMenuMusic, stopMenuMusic, stopAllMenuMusic, playClick, playHover } from '../../game/audio';
 import { UI_ICONS } from '../../game/icons';
 
 interface MainMenuProps {
@@ -20,6 +20,7 @@ interface MainMenuProps {
 const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, onLeaderboard, onHowToPlay, onShop, onMultiplayer, onAchievements, username, onLogout }) => {
   useEffect(() => {
     initAudio();
+    stopAllMenuMusic();
     startMenuMusic();
     return () => { stopMenuMusic(); };
   }, []);

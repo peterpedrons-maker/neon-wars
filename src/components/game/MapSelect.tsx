@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ALL_MAPS, MAP_ORDER } from '../../game/maps';
 import type { MapDifficulty } from '../../game/maps';
-import { playClick, playHover, playBack } from '../../game/audio';
+import { playClick, playHover, playBack, startSelectMusic, stopSelectMusic } from '../../game/audio';
 
 interface MapSelectProps {
   unlockedMaps: string[];
@@ -19,6 +19,7 @@ const difficultyOptions: Array<{ id: MapDifficulty; label: string; hint: string 
 
 const MapSelect: React.FC<MapSelectProps> = ({ unlockedMaps, onSelect, onBack }) => {
   const [difficulty, setDifficulty] = useState<MapDifficulty>('medium');
+  useEffect(() => { startSelectMusic(); return () => { stopSelectMusic(); }; }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#000008] text-[#e0e8ff] select-none p-4">
