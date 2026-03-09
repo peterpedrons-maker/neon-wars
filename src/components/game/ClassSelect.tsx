@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { ShipType } from '../../game/types';
-import { playClick, playHover, playBack, playNavigate } from '../../game/audio';
+import { COLORS } from '../../game/constants';
+import { playClick, playHover, playBack } from '../../game/audio';
 
 interface ClassSelectProps {
   onSelect: (cls: ShipType) => void;
@@ -8,228 +9,31 @@ interface ClassSelectProps {
   unlockedShips?: string[];
 }
 
-const ships: { id: ShipType; name: string; desc: string; stats: string; locked?: boolean }[] = [
-  { id: 'phantom', name: 'Phantom', desc: 'Nave ágil com disparos energéticos. Especial: Nova de plasma em todas as direções.', stats: 'DMG: 15 | VEL: Média' },
-  { id: 'interceptor', name: 'Interceptor', desc: 'Ultra veloz com tiro rápido. Especial: Barragem lock-on nos inimigos próximos.', stats: 'DMG: 10 | VEL: Alta' },
-  { id: 'titan', name: 'Titan', desc: 'Nave pesada com ataque devastador em área. Especial: Onda de choque massiva.', stats: 'DMG: 28 | VEL: Baixa' },
-  { id: 'spectre', name: 'Spectre', desc: 'Nave furtiva com dano alto e pouca vida. Especial: Teleporte + explosão fantasma.', stats: 'DMG: 20 | VEL: Alta' },
-  { id: 'valkyrie', name: 'Valkyrie', desc: 'Guerreira alada com tiro rápido e HP extra. Especial: Chuva de lanças energéticas.', stats: 'DMG: 12 | VEL: Média-Alta' },
-  { id: 'juggernaut', name: 'Juggernaut', desc: 'Fortaleza indestrutível. Lenta mas devastadora. Especial: Campo de destruição total.', stats: 'DMG: 35 | VEL: Muito Baixa' },
+const ships: { id: ShipType; name: string; desc: string; stats: string; type: 'ranged' | 'melee' | 'special' }[] = [
+  { id: 'phantom', name: 'Phantom', desc: 'Nave ágil com disparos energéticos. Especial: Nova de plasma.', stats: 'DMG: 15 | VEL: Média', type: 'ranged' },
+  { id: 'interceptor', name: 'Interceptor', desc: 'Ultra veloz com tiro rápido. Especial: Lock-on barrage.', stats: 'DMG: 10 | VEL: Alta', type: 'ranged' },
+  { id: 'titan', name: 'Titan', desc: 'Ataque devastador em área. Especial: Onda de choque.', stats: 'DMG: 28 | VEL: Baixa', type: 'melee' },
+  { id: 'spectre', name: 'Spectre', desc: 'Furtiva com teleporte. Especial: Teleporte + explosão.', stats: 'DMG: 20 | VEL: Alta', type: 'ranged' },
+  { id: 'valkyrie', name: 'Valkyrie', desc: 'Guerreira alada, tiro duplo. Especial: Chuva de lanças.', stats: 'DMG: 12 | VEL: Média+', type: 'ranged' },
+  { id: 'juggernaut', name: 'Juggernaut', desc: 'Fortaleza indestrutível. Especial: Campo de destruição.', stats: 'DMG: 35 | VEL: Lenta', type: 'melee' },
+  { id: 'wraith', name: 'Wraith', desc: 'Fantasma que cria clones sombrios. Especial: Invisibilidade + clones.', stats: 'DMG: 18 | VEL: Alta', type: 'ranged' },
+  { id: 'sentinel', name: 'Sentinel', desc: 'Tanque com barreira protetora. Especial: Escudo + reflexão.', stats: 'DMG: 22 | VEL: Baixa', type: 'ranged' },
+  { id: 'tempest', name: 'Tempest', desc: 'Controlador de ventos. Especial: Tornado que puxa inimigos.', stats: 'DMG: 14 | VEL: Alta', type: 'ranged' },
+  { id: 'venom', name: 'Venom', desc: 'Envenenador com tiros tóxicos. Especial: Nuvem venenosa.', stats: 'DMG: 16 | VEL: Média', type: 'special' },
+  { id: 'nova_ship', name: 'Nova', desc: 'Poder destrutivo bruto. Especial: Supernova massiva.', stats: 'DMG: 30 | VEL: Média-', type: 'special' },
+  { id: 'chronos', name: 'Chronos', desc: 'Manipulador do tempo. Especial: Congela todos os inimigos.', stats: 'DMG: 13 | VEL: Média', type: 'special' },
+  { id: 'leviathan', name: 'Leviathan', desc: 'Colosso devorador. Especial: Devora e se cura.', stats: 'DMG: 40 | VEL: Lenta', type: 'melee' },
+  { id: 'raptor', name: 'Raptor', desc: 'O mais veloz. Tiro ultra-rápido. Especial: Blitz dash.', stats: 'DMG: 11 | VEL: Máxima', type: 'ranged' },
+  { id: 'oracle', name: 'Oracle', desc: 'Tiros rastreadores. Especial: Marca todos os inimigos.', stats: 'DMG: 12 | VEL: Média', type: 'special' },
+  { id: 'pyro', name: 'Pyro', desc: 'Lança-chamas devastador. Especial: Anel de fogo.', stats: 'DMG: 20 | VEL: Média-', type: 'special' },
 ];
 
-const shipColors: Record<string, string> = {
-  phantom: '#bf5af2', interceptor: '#00e5ff', titan: '#ff6b00',
-  spectre: '#9040ff', valkyrie: '#ff1493', juggernaut: '#ff4500',
-};
-
-const shipGlows: Record<string, string> = {
-  phantom: '#e0b0ff', interceptor: '#80f0ff', titan: '#ffaa55',
-  spectre: '#c090ff', valkyrie: '#ff80b0', juggernaut: '#ff8040',
-};
-
 function hexToRgba(hex: string, a: number): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
+  if (!hex || hex[0] !== '#') return `rgba(255,255,255,${a})`;
+  const r = parseInt(hex.slice(1, 3), 16) || 255;
+  const g = parseInt(hex.slice(3, 5), 16) || 255;
+  const b = parseInt(hex.slice(5, 7), 16) || 255;
   return `rgba(${r},${g},${b},${a})`;
-}
-
-function drawShipPreview(ctx: CanvasRenderingContext2D, shipType: ShipType, w: number, h: number, time: number) {
-  ctx.clearRect(0, 0, w, h);
-  const color = shipColors[shipType];
-  const glow = shipGlows[shipType];
-  const cx = w / 2;
-  const cy = h / 2;
-  const r = 18;
-
-  const bgGrad = ctx.createRadialGradient(cx, cy, 5, cx, cy, 80);
-  bgGrad.addColorStop(0, hexToRgba(color, 0.15));
-  bgGrad.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = bgGrad;
-  ctx.fillRect(0, 0, w, h);
-  ctx.save();
-  ctx.translate(cx, cy);
-
-  const thrustPulse = 0.6 + Math.sin(time * 18) * 0.3;
-  const thrustLen = 18;
-  const exhaustSpread = shipType === 'titan' ? 6 : shipType === 'phantom' ? 4 : 3;
-  for (let i = -1; i <= 1; i += 2) {
-    const oy = i * exhaustSpread;
-    ctx.fillStyle = hexToRgba(color, thrustPulse * 0.4);
-    ctx.beginPath();
-    ctx.moveTo(-r * 0.4, oy - 3);
-    ctx.quadraticCurveTo(-r - thrustLen * 0.7, oy, -r - thrustLen, oy);
-    ctx.quadraticCurveTo(-r - thrustLen * 0.7, oy, -r * 0.4, oy + 3);
-    ctx.closePath(); ctx.fill();
-    ctx.fillStyle = hexToRgba('#ffffff', thrustPulse * 0.7);
-    ctx.beginPath();
-    ctx.moveTo(-r * 0.35, oy - 1.2);
-    ctx.lineTo(-r - thrustLen * 0.5, oy);
-    ctx.lineTo(-r * 0.35, oy + 1.2);
-    ctx.closePath(); ctx.fill();
-  }
-
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 20 + Math.sin(time * 3) * 6;
-
-  if (shipType === 'phantom') {
-    ctx.beginPath();
-    ctx.moveTo(r * 1.8, 0);
-    ctx.lineTo(r * 0.6, -r * 0.25); ctx.lineTo(r * 0.1, -r * 0.35);
-    ctx.lineTo(-r * 0.3, -r * 1.2); ctx.lineTo(-r * 0.7, -r * 1.0);
-    ctx.lineTo(-r * 0.55, -r * 0.25); ctx.lineTo(-r * 0.7, -r * 0.15);
-    ctx.lineTo(-r * 0.7, r * 0.15); ctx.lineTo(-r * 0.55, r * 0.25);
-    ctx.lineTo(-r * 0.7, r * 1.0); ctx.lineTo(-r * 0.3, r * 1.2);
-    ctx.lineTo(r * 0.1, r * 0.35); ctx.lineTo(r * 0.6, r * 0.25);
-    ctx.closePath();
-    ctx.fillStyle = hexToRgba(color, 0.15); ctx.fill();
-    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
-    ctx.strokeStyle = hexToRgba(glow, 0.5); ctx.lineWidth = 0.8;
-    ctx.beginPath();
-    ctx.moveTo(r * 0.3, -r * 0.2); ctx.lineTo(-r * 0.4, -r * 0.9);
-    ctx.moveTo(r * 0.3, r * 0.2); ctx.lineTo(-r * 0.4, r * 0.9);
-    ctx.stroke();
-    const wingPulse = 0.5 + Math.sin(time * 4) * 0.3;
-    ctx.fillStyle = hexToRgba(glow, wingPulse);
-    ctx.beginPath(); ctx.arc(-r * 0.3, -r * 1.15, 1.5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(-r * 0.3, r * 1.15, 1.5, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = hexToRgba(color, 0.3); ctx.lineWidth = 0.6;
-    ctx.beginPath(); ctx.moveTo(r * 1.2, 0); ctx.lineTo(-r * 0.5, 0); ctx.stroke();
-  } else if (shipType === 'interceptor') {
-    ctx.beginPath();
-    ctx.moveTo(r * 2.0, 0);
-    ctx.lineTo(r * 0.8, -r * 0.2); ctx.lineTo(r * 0.3, -r * 0.35);
-    ctx.lineTo(-r * 0.2, -r * 0.3); ctx.lineTo(-r * 0.5, -r * 0.15);
-    ctx.lineTo(-r * 0.5, r * 0.15); ctx.lineTo(-r * 0.2, r * 0.3);
-    ctx.lineTo(r * 0.3, r * 0.35); ctx.lineTo(r * 0.8, r * 0.2);
-    ctx.closePath();
-    ctx.fillStyle = hexToRgba(color, 0.12); ctx.fill();
-    ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.stroke();
-    for (const side of [-1, 1]) {
-      ctx.beginPath();
-      ctx.moveTo(r * 0.4, side * r * 0.35);
-      ctx.lineTo(-r * 0.1, side * r * 0.7);
-      ctx.lineTo(-r * 0.6, side * r * 0.65);
-      ctx.lineTo(-r * 0.4, side * r * 0.35);
-      ctx.closePath();
-      ctx.fillStyle = hexToRgba(color, 0.1); ctx.fill();
-      ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.stroke();
-      ctx.fillStyle = hexToRgba(glow, 0.4 + Math.sin(time * 6 + side) * 0.2);
-      ctx.beginPath(); ctx.arc(-r * 0.3, side * r * 0.55, 1.5, 0, Math.PI * 2); ctx.fill();
-    }
-    ctx.strokeStyle = hexToRgba(glow, 0.6); ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(r * 1.0, -r * 0.1); ctx.lineTo(r * 0.5, -r * 0.5);
-    ctx.moveTo(r * 1.0, r * 0.1); ctx.lineTo(r * 0.5, r * 0.5);
-    ctx.stroke();
-    ctx.fillStyle = hexToRgba('#ffffff', 0.6 + Math.sin(time * 8) * 0.3);
-    ctx.beginPath(); ctx.arc(r * 1.8, 0, 1, 0, Math.PI * 2); ctx.fill();
-  } else if (shipType === 'titan') {
-    ctx.beginPath();
-    ctx.moveTo(r * 1.5, 0);
-    ctx.lineTo(r * 0.6, -r * 0.45); ctx.lineTo(r * 0.1, -r * 0.6);
-    ctx.lineTo(-r * 0.3, -r * 0.7); ctx.lineTo(-r * 0.5, -r * 1.3);
-    ctx.lineTo(-r * 0.8, -r * 1.1); ctx.lineTo(-r * 0.65, -r * 0.5);
-    ctx.lineTo(-r * 0.8, -r * 0.25); ctx.lineTo(-r * 0.8, r * 0.25);
-    ctx.lineTo(-r * 0.65, r * 0.5); ctx.lineTo(-r * 0.8, r * 1.1);
-    ctx.lineTo(-r * 0.5, r * 1.3); ctx.lineTo(-r * 0.3, r * 0.7);
-    ctx.lineTo(r * 0.1, r * 0.6); ctx.lineTo(r * 0.6, r * 0.45);
-    ctx.closePath();
-    ctx.fillStyle = hexToRgba(color, 0.18); ctx.fill();
-    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
-    ctx.strokeStyle = hexToRgba(glow, 0.3); ctx.lineWidth = 0.8;
-    ctx.beginPath();
-    ctx.moveTo(r * 0.8, -r * 0.15); ctx.lineTo(-r * 0.3, -r * 0.55);
-    ctx.moveTo(r * 0.8, r * 0.15); ctx.lineTo(-r * 0.3, r * 0.55);
-    ctx.stroke();
-    const cannonPulse = 0.4 + Math.sin(time * 3) * 0.2;
-    ctx.fillStyle = hexToRgba(glow, cannonPulse);
-    ctx.beginPath(); ctx.arc(r * 1.3, 0, 2.5, 0, Math.PI * 2); ctx.fill();
-  } else if (shipType === 'spectre') {
-    const phase = Math.sin(time * 5) * 0.15;
-    ctx.globalAlpha = 0.85 + phase;
-    ctx.beginPath();
-    ctx.moveTo(r * 2.0, 0);
-    ctx.quadraticCurveTo(r * 1.2, -r * 0.5, r * 0.2, -r * 0.6);
-    ctx.lineTo(-r * 0.4, -r * 0.8);
-    ctx.quadraticCurveTo(-r * 0.7, -r * 0.4, -r * 0.6, 0);
-    ctx.quadraticCurveTo(-r * 0.7, r * 0.4, -r * 0.4, r * 0.8);
-    ctx.lineTo(r * 0.2, r * 0.6);
-    ctx.quadraticCurveTo(r * 1.2, r * 0.5, r * 2.0, 0);
-    ctx.closePath();
-    ctx.fillStyle = hexToRgba(color, 0.12); ctx.fill();
-    ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.stroke();
-    ctx.strokeStyle = hexToRgba(glow, 0.4 + Math.sin(time * 8) * 0.3);
-    ctx.lineWidth = 0.6; ctx.setLineDash([3, 4]);
-    ctx.beginPath();
-    ctx.moveTo(r * 1.5, -r * 0.15); ctx.lineTo(-r * 0.3, -r * 0.6);
-    ctx.moveTo(r * 1.5, r * 0.15); ctx.lineTo(-r * 0.3, r * 0.6);
-    ctx.stroke(); ctx.setLineDash([]);
-    const ghostPulse = 0.5 + Math.sin(time * 6) * 0.4;
-    ctx.fillStyle = hexToRgba(glow, ghostPulse);
-    ctx.beginPath(); ctx.arc(r * 0.3, 0, 2, 0, Math.PI * 2); ctx.fill();
-    ctx.globalAlpha = 1;
-  } else if (shipType === 'valkyrie') {
-    ctx.beginPath();
-    ctx.moveTo(r * 1.8, 0);
-    ctx.lineTo(r * 0.5, -r * 0.3); ctx.lineTo(r * 0.1, -r * 0.4);
-    ctx.lineTo(-r * 0.2, -r * 1.4); ctx.lineTo(-r * 0.5, -r * 1.2);
-    ctx.lineTo(-r * 0.3, -r * 0.35); ctx.lineTo(-r * 0.6, -r * 0.2);
-    ctx.lineTo(-r * 0.6, r * 0.2); ctx.lineTo(-r * 0.3, r * 0.35);
-    ctx.lineTo(-r * 0.5, r * 1.2); ctx.lineTo(-r * 0.2, r * 1.4);
-    ctx.lineTo(r * 0.1, r * 0.4); ctx.lineTo(r * 0.5, r * 0.3);
-    ctx.closePath();
-    ctx.fillStyle = hexToRgba(color, 0.15); ctx.fill();
-    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
-    const spearPulse = 0.5 + Math.sin(time * 5) * 0.3;
-    ctx.strokeStyle = hexToRgba(glow, spearPulse); ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(-r * 0.2, -r * 1.4); ctx.lineTo(r * 0.3, -r * 0.2);
-    ctx.moveTo(-r * 0.2, r * 1.4); ctx.lineTo(r * 0.3, r * 0.2);
-    ctx.stroke();
-    ctx.fillStyle = hexToRgba('#ffffff', spearPulse);
-    ctx.beginPath(); ctx.arc(-r * 0.2, -r * 1.35, 1.8, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(-r * 0.2, r * 1.35, 1.8, 0, Math.PI * 2); ctx.fill();
-  } else if (shipType === 'juggernaut') {
-    const sides = 6;
-    ctx.beginPath();
-    for (let i = 0; i <= sides; i++) {
-      const a = (i / sides) * Math.PI * 2 - Math.PI / 6;
-      const rr = r * 1.3;
-      const px = Math.cos(a) * rr;
-      const py = Math.sin(a) * rr * 0.85;
-      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-    }
-    ctx.closePath();
-    ctx.fillStyle = hexToRgba(color, 0.2); ctx.fill();
-    ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.stroke();
-    ctx.strokeStyle = hexToRgba(glow, 0.3); ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let i = 0; i <= sides; i++) {
-      const a = (i / sides) * Math.PI * 2 - Math.PI / 6;
-      const rr = r * 0.8;
-      const px = Math.cos(a) * rr;
-      const py = Math.sin(a) * rr * 0.85;
-      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-    }
-    ctx.closePath(); ctx.stroke();
-    const corePulse = 0.4 + Math.sin(time * 2) * 0.2;
-    const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.5);
-    coreGrad.addColorStop(0, hexToRgba('#ffffff', corePulse));
-    coreGrad.addColorStop(0.5, hexToRgba(color, corePulse * 0.5));
-    coreGrad.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = coreGrad;
-    ctx.beginPath(); ctx.arc(0, 0, r * 0.5, 0, Math.PI * 2); ctx.fill();
-    for (const side of [-1, 0, 1]) {
-      ctx.fillStyle = hexToRgba(glow, 0.5);
-      ctx.fillRect(r * 0.8, side * r * 0.35 - 1, r * 0.6, 2);
-    }
-  }
-
-  const cockpitPulse = 0.4 + Math.sin(time * 2) * 0.15;
-  ctx.fillStyle = hexToRgba('#ffffff', cockpitPulse);
-  ctx.beginPath(); ctx.arc(r * 0.4, 0, 2, 0, Math.PI * 2); ctx.fill();
-  ctx.restore();
 }
 
 function ShipCanvas({ shipType }: { shipType: ShipType }) {
@@ -241,71 +45,116 @@ function ShipCanvas({ shipType }: { shipType: ShipType }) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    const w = 160; const h = 120;
+    const w = 140, h = 100;
     canvas.width = w * 2; canvas.height = h * 2;
     ctx.scale(2, 2);
+    const color = COLORS[shipType] || '#fff';
+    const glow = COLORS[shipType + 'Glow'] || '#fff';
     function loop() {
       const time = Date.now() * 0.001;
-      drawShipPreview(ctx!, shipType, w, h, time);
+      ctx!.clearRect(0, 0, w, h);
+      const cx = w / 2, cy = h / 2, r = 16;
+      // Background glow
+      const bgGrad = ctx!.createRadialGradient(cx, cy, 5, cx, cy, 70);
+      bgGrad.addColorStop(0, hexToRgba(color, 0.15));
+      bgGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx!.fillStyle = bgGrad;
+      ctx!.fillRect(0, 0, w, h);
+      ctx!.save();
+      ctx!.translate(cx, cy);
+      // Exhaust
+      const thrustPulse = 0.6 + Math.sin(time * 18) * 0.3;
+      ctx!.fillStyle = hexToRgba(color, thrustPulse * 0.4);
+      ctx!.beginPath();
+      ctx!.moveTo(-r * 0.4, -3); ctx!.lineTo(-r - 15, 0); ctx!.lineTo(-r * 0.4, 3);
+      ctx!.closePath(); ctx!.fill();
+      ctx!.fillStyle = hexToRgba('#fff', thrustPulse * 0.6);
+      ctx!.beginPath();
+      ctx!.moveTo(-r * 0.35, -1); ctx!.lineTo(-r - 10, 0); ctx!.lineTo(-r * 0.35, 1);
+      ctx!.closePath(); ctx!.fill();
+      // Generic ship shape
+      ctx!.shadowColor = color; ctx!.shadowBlur = 15;
+      ctx!.beginPath();
+      ctx!.moveTo(r * 1.6, 0);
+      ctx!.lineTo(r * 0.3, -r * 0.8);
+      ctx!.lineTo(-r * 0.5, -r * 0.6);
+      ctx!.lineTo(-r * 0.6, 0);
+      ctx!.lineTo(-r * 0.5, r * 0.6);
+      ctx!.lineTo(r * 0.3, r * 0.8);
+      ctx!.closePath();
+      ctx!.fillStyle = hexToRgba(color, 0.15); ctx!.fill();
+      ctx!.strokeStyle = color; ctx!.lineWidth = 1.5; ctx!.stroke();
+      // Core
+      const p = 0.4 + Math.sin(time * 3) * 0.2;
+      ctx!.fillStyle = hexToRgba(glow, p);
+      ctx!.beginPath(); ctx!.arc(r * 0.3, 0, 2, 0, Math.PI * 2); ctx!.fill();
+      ctx!.shadowBlur = 0;
+      ctx!.restore();
       animRef.current = requestAnimationFrame(loop);
     }
     loop();
     return () => cancelAnimationFrame(animRef.current);
   }, [shipType]);
 
-  return <canvas ref={canvasRef} style={{ width: 160, height: 120 }} className="pointer-events-none" />;
+  return <canvas ref={canvasRef} style={{ width: 140, height: 100 }} className="pointer-events-none" />;
 }
+
+const TYPE_BADGES: Record<string, { label: string; color: string }> = {
+  ranged: { label: 'RANGED', color: '#0ff' },
+  melee: { label: 'MELEE', color: '#ff6b00' },
+  special: { label: 'SPECIAL', color: '#bf5af2' },
+};
 
 const ClassSelect: React.FC<ClassSelectProps> = ({ onSelect, onBack, unlockedShips }) => {
   const unlocked = unlockedShips || ['phantom', 'interceptor', 'titan'];
-  
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#000008] text-[#e0e8ff] select-none p-4">
-      <h2 className="text-4xl md:text-5xl font-bold mb-2" style={{ fontFamily: 'Orbitron, monospace', textShadow: '0 0 30px rgba(0,255,255,0.3)' }}>
+      <h2 className="text-3xl md:text-4xl font-bold mb-2" style={{ fontFamily: 'Orbitron, monospace', textShadow: '0 0 30px rgba(0,255,255,0.3)' }}>
         Escolha sua Nave
       </h2>
-      <div className="w-48 h-px bg-gradient-to-r from-transparent via-[#0ff] to-transparent mb-8" />
+      <div className="w-48 h-px bg-gradient-to-r from-transparent via-[#0ff] to-transparent mb-6" />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 max-w-5xl">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 mb-6 max-w-7xl max-h-[70vh] overflow-y-auto pr-1"
+        style={{ scrollbarWidth: 'thin', scrollbarColor: '#0ff33 transparent' }}>
         {ships.map(s => {
           const isLocked = !unlocked.includes(s.id);
+          const color = COLORS[s.id] || '#fff';
+          const badge = TYPE_BADGES[s.type];
           return (
-            <button
-              key={s.id}
+            <button key={s.id}
               onClick={() => { if (!isLocked) { playClick(); onSelect(s.id); } }}
               onMouseEnter={() => { if (!isLocked) playHover(); }}
               disabled={isLocked}
-              className="flex flex-col items-center p-5 rounded-xl border transition-all duration-300 hover:scale-105 active:scale-95 w-56 relative"
+              className="flex flex-col items-center p-3 rounded-xl border transition-all duration-200 hover:scale-105 active:scale-95 w-44 relative"
               style={{
-                borderColor: isLocked ? '#333' : shipColors[s.id],
-                background: `linear-gradient(180deg, rgba(0,0,8,0.95) 0%, rgba(0,0,20,0.98) 100%)`,
-                boxShadow: isLocked ? 'none' : `0 0 25px ${shipColors[s.id]}33, inset 0 0 20px ${shipColors[s.id]}11`,
-                opacity: isLocked ? 0.4 : 1,
+                borderColor: isLocked ? '#333' : color,
+                background: 'linear-gradient(180deg, rgba(0,0,8,0.95), rgba(0,0,20,0.98))',
+                boxShadow: isLocked ? 'none' : `0 0 20px ${color}33, inset 0 0 15px ${color}11`,
+                opacity: isLocked ? 0.35 : 1,
                 cursor: isLocked ? 'not-allowed' : 'pointer',
-              }}
-            >
+              }}>
               {isLocked && (
-                <div className="absolute top-2 right-2 text-xs px-2 py-0.5 rounded font-bold font-mono"
-                  style={{ background: 'rgba(255,64,96,0.2)', color: '#ff4060' }}>
-                  🔒 BLOQUEADA
-                </div>
+                <div className="absolute top-1.5 right-1.5 text-[9px] px-1.5 py-0.5 rounded font-bold font-mono"
+                  style={{ background: 'rgba(255,64,96,0.2)', color: '#ff4060' }}>🔒</div>
               )}
+              <div className="absolute top-1.5 left-1.5 text-[8px] px-1 py-0.5 rounded font-bold font-mono"
+                style={{ background: badge.color + '22', color: badge.color }}>
+                {badge.label}
+              </div>
               <ShipCanvas shipType={s.id} />
-              <h3 className="text-xl font-bold mb-1" style={{ color: isLocked ? '#555' : shipColors[s.id], fontFamily: 'Orbitron, monospace' }}>
+              <h3 className="text-sm font-bold mb-0.5" style={{ color: isLocked ? '#555' : color, fontFamily: 'Orbitron, monospace' }}>
                 {s.name}
               </h3>
-              <p className="text-xs text-[#6080aa] text-center mb-2">{s.desc}</p>
-              <p className="text-[10px] font-mono" style={{ color: isLocked ? '#444' : shipColors[s.id] }}>{s.stats}</p>
+              <p className="text-[9px] text-[#6080aa] text-center mb-1 leading-tight">{s.desc}</p>
+              <p className="text-[8px] font-mono" style={{ color: isLocked ? '#444' : color }}>{s.stats}</p>
             </button>
           );
         })}
       </div>
 
-      <button
-        onClick={() => { playBack(); onBack(); }}
-        onMouseEnter={playHover}
-        className="text-[#6080aa] hover:text-[#0ff] transition-colors text-lg font-mono"
-      >
+      <button onClick={() => { playBack(); onBack(); }} onMouseEnter={playHover}
+        className="text-[#6080aa] hover:text-[#0ff] transition-colors text-lg font-mono">
         ← Voltar
       </button>
     </div>

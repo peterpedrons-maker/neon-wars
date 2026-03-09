@@ -67,23 +67,15 @@ export function createEnemy(type: EnemyType, wave: number): Enemy {
 }
 
 export function createProjectile(
-  pos: Vec2,
-  angle: number,
-  damage: number,
-  fromPlayer: boolean,
-  color: string,
-  speedMult = 1,
-  mods?: Partial<Projectile>,
+  pos: Vec2, angle: number, damage: number, fromPlayer: boolean,
+  color: string, speedMult = 1, mods?: Partial<Projectile>,
 ): Projectile {
   return {
     pos: { x: pos.x, y: pos.y },
     vel: { x: Math.cos(angle) * PROJECTILE_SPEED * speedMult, y: Math.sin(angle) * PROJECTILE_SPEED * speedMult },
     radius: fromPlayer ? 4 : 5,
-    alive: true,
-    damage,
-    fromPlayer,
-    lifetime: PROJECTILE_LIFETIME,
-    color,
+    alive: true, damage, fromPlayer,
+    lifetime: PROJECTILE_LIFETIME, color,
     ...mods,
   };
 }
@@ -97,9 +89,7 @@ export function createParticles(pos: Vec2, color: string, count: number, speed =
     particles.push({
       pos: { x: pos.x, y: pos.y },
       vel: { x: Math.cos(angle) * spd, y: Math.sin(angle) * spd },
-      lifetime: lt,
-      maxLifetime: lt,
-      color,
+      lifetime: lt, maxLifetime: lt, color,
       size: size * (0.5 + Math.random() * 0.5),
     });
   }
@@ -107,48 +97,33 @@ export function createParticles(pos: Vec2, color: string, count: number, speed =
 }
 
 export function createPowerUp(pos: Vec2): PowerUp | null {
-  // 3% chance for a rare heart drop
   if (Math.random() < 0.03) {
-    return {
-      pos: { x: pos.x, y: pos.y },
-      vel: { x: 0, y: 0 },
-      radius: 10,
-      alive: true,
-      type: 'heal',
-      lifetime: 8,
-    };
+    return { pos: { x: pos.x, y: pos.y }, vel: { x: 0, y: 0 }, radius: 10, alive: true, type: 'heal', lifetime: 8 };
   }
   const types: PowerUpType[] = ['speed', 'triple-shot', 'shield'];
   const type = types[Math.floor(Math.random() * types.length)];
-  return {
-    pos: { x: pos.x, y: pos.y },
-    vel: { x: 0, y: 0 },
-    radius: 10,
-    alive: true,
-    type,
-    lifetime: 10,
-  };
+  return { pos: { x: pos.x, y: pos.y }, vel: { x: 0, y: 0 }, radius: 10, alive: true, type, lifetime: 10 };
 }
+
+// Melee ships - attack nearby enemies instead of shooting projectiles
+const MELEE_SHIPS: ShipType[] = ['titan', 'juggernaut', 'leviathan'];
+
+// Ships with custom speed multipliers
+const SPEED_MULTS: Partial<Record<ShipType, number>> = {
+  interceptor: 1.3, spectre: 1.5, raptor: 1.6, tempest: 1.4, wraith: 1.3,
+};
 
 export function playerAttack(player: Player, projectiles: Projectile[], abilities?: AbilityState): void {
   if (player.attackTimer > 0) return;
   player.attackTimer = player.attackCooldown;
 
-  const color = player.class === 'phantom' ? COLORS.phantom
-    : player.class === 'interceptor' ? COLORS.interceptor 
-    : player.class === 'spectre' ? COLORS.spectre
-    : player.class === 'valkyrie' ? COLORS.valkyrie
-    : player.class === 'juggernaut' ? COLORS.juggernaut
-    : COLORS.titan;
+  const color = COLORS[player.class] || COLORS.phantom;
 
-  if (player.class === 'titan' || player.class === 'juggernaut') {
-    return;
-  }
+  // Melee ships don't shoot projectiles
+  if (MELEE_SHIPS.includes(player.class)) return;
 
   const extraProjectiles = abilities?.projectileCount || 0;
   const baseAngles = player.tripleTimer > 0 ? [-0.2, 0, 0.2] : [0];
-
-  // Add extra projectile spread
   let angles = [...baseAngles];
   for (let i = 1; i <= extraProjectiles; i++) {
     angles.push(i * 0.12);
@@ -157,7 +132,7 @@ export function playerAttack(player: Player, projectiles: Projectile[], abilitie
 
   const mods = abilities ? { pierce: abilities.pierce || 0, ricochet: abilities.ricochet || 0 } : undefined;
 
-  // Valkyrie shoots double base + extra
+  // Valkyrie: twin emitters
   if (player.class === 'valkyrie') {
     const vAngles = [-0.08, 0.08];
     for (let i = 1; i <= extraProjectiles; i++) {
@@ -170,7 +145,52 @@ export function playerAttack(player: Player, projectiles: Projectile[], abilitie
     return;
   }
 
-  const speedMult = player.class === 'interceptor' ? 1.3 : player.class === 'spectre' ? 1.5 : 1;
+  // Venom: poison shots (slower but lingering)
+  if (player.class === 'venom') {
+    const vAngles = player.tripleTimer > 0 ? [-0.15, 0, 0.15] : [0];
+    for (const offset of vAngles) {
+      projectiles.push(createProjectile(player.pos, player.angle + offset, player.damage, true, color, 0.8, { ...mods, lifetime: 3 }));
+    }
+    return;
+  }
+
+  // Oracle: homing shots
+  if (player.class === 'oracle') {
+    for (const offset of angles) {
+      projectiles.push(createProjectile(player.pos, player.angle + offset, player.damage, true, color, 0.9, { ...mods }));
+    }
+    return;
+  }
+
+  // Nova: slow powerful shots
+  if (player.class === 'nova_ship') {
+    projectiles.push(createProjectile(player.pos, player.angle, player.damage, true, color, 0.7, { ...mods, radius: 8 } as any));
+    return;
+  }
+
+  // Pyro: flamethrower spread
+  if (player.class === 'pyro') {
+    for (let i = -2; i <= 2; i++) {
+      projectiles.push(createProjectile(player.pos, player.angle + i * 0.1, player.damage * 0.5, true, color, 0.6 + Math.random() * 0.4, { ...mods, lifetime: 0.6 }));
+    }
+    return;
+  }
+
+  // Sentinel: shield burst (fewer but stronger)
+  if (player.class === 'sentinel') {
+    for (const offset of angles) {
+      projectiles.push(createProjectile(player.pos, player.angle + offset, player.damage, true, color, 0.9, mods));
+    }
+    return;
+  }
+
+  // Raptor: ultra-fast tiny shots
+  if (player.class === 'raptor') {
+    projectiles.push(createProjectile(player.pos, player.angle + (Math.random() - 0.5) * 0.15, player.damage, true, color, 1.6, mods));
+    return;
+  }
+
+  const speedMult = SPEED_MULTS[player.class] || 1;
   for (const offset of angles) {
     projectiles.push(createProjectile(player.pos, player.angle + offset, player.damage, true, color, speedMult, mods));
   }
@@ -180,35 +200,36 @@ export function playerSpecial(player: Player, projectiles: Projectile[], enemies
   if (player.specialTimer > 0) return;
   player.specialTimer = player.specialCooldown;
 
+  const color = COLORS[player.class] || COLORS.phantom;
+
   if (player.class === 'phantom') {
+    // Plasma nova
     for (let i = 0; i < 16; i++) {
       const angle = (Math.PI * 2 / 16) * i;
       projectiles.push(createProjectile(player.pos, angle, player.damage * 2, true, COLORS.neonPink, 0.8));
     }
   } else if (player.class === 'interceptor') {
-    const sorted = enemies.filter(e => e.alive).sort((a, b) => {
-      const da = Math.hypot(a.pos.x - player.pos.x, a.pos.y - player.pos.y);
-      const db = Math.hypot(b.pos.x - player.pos.x, b.pos.y - player.pos.y);
-      return da - db;
-    });
+    // Lock-on barrage
+    const sorted = enemies.filter(e => e.alive).sort((a, b) =>
+      Math.hypot(a.pos.x - player.pos.x, a.pos.y - player.pos.y) -
+      Math.hypot(b.pos.x - player.pos.x, b.pos.y - player.pos.y)
+    );
     for (let i = 0; i < Math.min(10, sorted.length); i++) {
       const e = sorted[i];
       const angle = Math.atan2(e.pos.y - player.pos.y, e.pos.x - player.pos.x);
       projectiles.push(createProjectile(player.pos, angle, player.damage * 1.5, true, COLORS.neonCyan, 1.5));
     }
   } else if (player.class === 'spectre') {
-    // Teleport forward + ghost explosion
-    const teleportDist = 120;
-    player.pos.x += Math.cos(player.angle) * teleportDist;
-    player.pos.y += Math.sin(player.angle) * teleportDist;
+    // Teleport + ghost explosion
+    player.pos.x += Math.cos(player.angle) * 120;
+    player.pos.y += Math.sin(player.angle) * 120;
     player.invincibleTimer = 1.0;
-    // Explosion at arrival
     for (let i = 0; i < 12; i++) {
       const angle = (Math.PI * 2 / 12) * i;
       projectiles.push(createProjectile(player.pos, angle, player.damage * 2.5, true, '#9040ff', 0.6));
     }
   } else if (player.class === 'valkyrie') {
-    // Rain of energy lances from above
+    // Rain of lances
     for (let i = 0; i < 8; i++) {
       const angle = player.angle + (i - 3.5) * 0.15;
       projectiles.push(createProjectile(
@@ -220,20 +241,121 @@ export function playerSpecial(player: Player, projectiles: Projectile[], enemies
     // Massive destruction field
     for (const e of enemies) {
       if (!e.alive) continue;
-      const dist = Math.hypot(e.pos.x - player.pos.x, e.pos.y - player.pos.y);
-      if (dist < WARRIOR_ATTACK_RANGE * 3) {
-        e.hp -= player.damage * 4;
-        e.flashTimer = 0.2;
-      }
+      const d = Math.hypot(e.pos.x - player.pos.x, e.pos.y - player.pos.y);
+      if (d < WARRIOR_ATTACK_RANGE * 3) { e.hp -= player.damage * 4; e.flashTimer = 0.2; }
     }
-  } else {
-    // Titan shockwave
+  } else if (player.class === 'titan') {
+    // Shockwave
     for (const e of enemies) {
       if (!e.alive) continue;
-      const dist = Math.hypot(e.pos.x - player.pos.x, e.pos.y - player.pos.y);
-      if (dist < WARRIOR_ATTACK_RANGE * 2.5) {
-        e.hp -= player.damage * 3;
+      const d = Math.hypot(e.pos.x - player.pos.x, e.pos.y - player.pos.y);
+      if (d < WARRIOR_ATTACK_RANGE * 2.5) { e.hp -= player.damage * 3; e.flashTimer = 0.15; }
+    }
+  } else if (player.class === 'wraith') {
+    // Phase shift: become invisible + leave shadow clones that shoot
+    player.invincibleTimer = 2.0;
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI * 2 / 6) * i;
+      const cx = player.pos.x + Math.cos(angle) * 60;
+      const cy = player.pos.y + Math.sin(angle) * 60;
+      for (let j = 0; j < 4; j++) {
+        const a2 = (Math.PI * 2 / 4) * j;
+        projectiles.push(createProjectile({ x: cx, y: cy }, a2, player.damage * 1.2, true, color, 1.0));
+      }
+    }
+  } else if (player.class === 'sentinel') {
+    // Deploy barrier: massive shield + reflect zone
+    player.shieldTimer = 8;
+    for (let i = 0; i < 20; i++) {
+      const angle = (Math.PI * 2 / 20) * i;
+      projectiles.push(createProjectile(player.pos, angle, player.damage * 1.5, true, color, 0.5));
+    }
+  } else if (player.class === 'tempest') {
+    // Tornado: pulls enemies in then explodes
+    for (const e of enemies) {
+      if (!e.alive) continue;
+      const d = Math.hypot(e.pos.x - player.pos.x, e.pos.y - player.pos.y);
+      if (d < 200) {
+        const dx = player.pos.x - e.pos.x;
+        const dy = player.pos.y - e.pos.y;
+        e.pos.x += dx * 0.5;
+        e.pos.y += dy * 0.5;
+        e.hp -= player.damage * 1.5;
         e.flashTimer = 0.15;
+      }
+    }
+    for (let i = 0; i < 16; i++) {
+      const angle = (Math.PI * 2 / 16) * i;
+      projectiles.push(createProjectile(player.pos, angle, player.damage, true, color, 1.2));
+    }
+  } else if (player.class === 'venom') {
+    // Toxic cloud: massive poison AoE
+    for (let i = 0; i < 24; i++) {
+      const angle = (Math.PI * 2 / 24) * i;
+      const spd = 0.3 + Math.random() * 0.5;
+      projectiles.push(createProjectile(player.pos, angle, player.damage * 0.8, true, color, spd, { lifetime: 4 }));
+    }
+  } else if (player.class === 'nova_ship') {
+    // Supernova: massive explosion
+    for (const e of enemies) {
+      if (!e.alive) continue;
+      const d = Math.hypot(e.pos.x - player.pos.x, e.pos.y - player.pos.y);
+      if (d < 250) {
+        e.hp -= player.damage * 5;
+        e.flashTimer = 0.3;
+      }
+    }
+  } else if (player.class === 'chronos') {
+    // Time Freeze: slow all enemies
+    for (const e of enemies) {
+      if (!e.alive) continue;
+      e.slowUntil = Date.now() + 5000;
+    }
+    // Bonus: shoot time shards
+    for (let i = 0; i < 12; i++) {
+      const angle = (Math.PI * 2 / 12) * i;
+      projectiles.push(createProjectile(player.pos, angle, player.damage * 2, true, color, 0.8));
+    }
+  } else if (player.class === 'leviathan') {
+    // Devour: massive AoE damage + heal
+    for (const e of enemies) {
+      if (!e.alive) continue;
+      const d = Math.hypot(e.pos.x - player.pos.x, e.pos.y - player.pos.y);
+      if (d < WARRIOR_ATTACK_RANGE * 4) {
+        e.hp -= player.damage * 5;
+        e.flashTimer = 0.25;
+        if (e.hp <= 0) player.hp = Math.min(player.maxHp, player.hp + 1);
+      }
+    }
+  } else if (player.class === 'raptor') {
+    // Blitz: dash forward shooting a wall of bullets
+    player.pos.x += Math.cos(player.angle) * 150;
+    player.pos.y += Math.sin(player.angle) * 150;
+    player.invincibleTimer = 0.8;
+    for (let i = -8; i <= 8; i++) {
+      const perpAngle = player.angle + Math.PI / 2;
+      const ox = Math.cos(perpAngle) * i * 8;
+      const oy = Math.sin(perpAngle) * i * 8;
+      projectiles.push(createProjectile(
+        { x: player.pos.x + ox, y: player.pos.y + oy },
+        player.angle, player.damage * 1.5, true, color, 1.3
+      ));
+    }
+  } else if (player.class === 'oracle') {
+    // Foresight: mark all enemies, each takes bonus damage burst
+    for (const e of enemies) {
+      if (!e.alive) continue;
+      e.hp -= player.damage * 2;
+      e.flashTimer = 0.2;
+      const angle = Math.atan2(e.pos.y - player.pos.y, e.pos.x - player.pos.x);
+      projectiles.push(createProjectile(player.pos, angle, player.damage, true, color, 2.0));
+    }
+  } else if (player.class === 'pyro') {
+    // Inferno: ring of fire expanding outward
+    for (let ring = 0; ring < 3; ring++) {
+      for (let i = 0; i < 12; i++) {
+        const angle = (Math.PI * 2 / 12) * i + ring * 0.15;
+        projectiles.push(createProjectile(player.pos, angle, player.damage * 1.5, true, color, 0.5 + ring * 0.3, { lifetime: 2 }));
       }
     }
   }

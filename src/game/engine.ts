@@ -75,7 +75,7 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
 
   // Attack
   if (input.shooting) {
-    if (p.class === 'titan' || p.class === 'juggernaut') {
+  if (p.class === 'titan' || p.class === 'juggernaut' || p.class === 'leviathan') {
       titanBlast(state, dt);
     } else {
       const prevTimer = p.attackTimer;
@@ -618,15 +618,10 @@ function updateCoopPeerShootingSingle(state: GameState, peer: { pos: { x: number
   if (peer.attackTimer > 0) return;
   peer.attackTimer = peer.attackCooldown;
   
-  const color = peer.shipClass === 'phantom' ? COLORS.phantom
-    : peer.shipClass === 'interceptor' ? COLORS.interceptor
-    : peer.shipClass === 'spectre' ? COLORS.spectre
-    : peer.shipClass === 'valkyrie' ? COLORS.valkyrie
-    : peer.shipClass === 'juggernaut' ? COLORS.juggernaut
-    : COLORS.titan;
+  const color = COLORS[peer.shipClass] || COLORS.phantom;
   
-  // Titan/Juggernaut are melee - damage nearby enemies directly
-  if (peer.shipClass === 'titan' || peer.shipClass === 'juggernaut') {
+  // Melee ships - damage nearby enemies directly
+  if (peer.shipClass === 'titan' || peer.shipClass === 'juggernaut' || peer.shipClass === 'leviathan') {
     for (const e of state.enemies) {
       if (!e.alive) continue;
       const d = dist(peer.pos, e.pos);
@@ -769,6 +764,85 @@ function bossAttack(state: GameState, boss: Enemy) {
     state.shakeTimer = 0.4;
     state.shakeIntensity = 10;
     state.particles.push(...createParticles(boss.pos, '#00ffcc', 30, 250, 5));
+  } else if (boss.type === 'frost_titan') {
+    // Ice shards + freeze zone
+    for (let i = 0; i < 16; i++) {
+      const a = (Math.PI * 2 / 16) * i;
+      state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(a) * 160, y: Math.sin(a) * 160 }, radius: 7, alive: true, damage: boss.damage * 0.5, fromPlayer: false, lifetime: 2, color: '#88ddff' });
+    }
+    state.particles.push(...createParticles(boss.pos, '#88ddff', 25, 200, 4));
+    state.shakeTimer = 0.3; state.shakeIntensity = 8;
+  } else if (boss.type === 'cosmic_horror') {
+    // Tentacle burst from multiple points
+    for (let i = 0; i < 6; i++) {
+      const rA = Math.random() * Math.PI * 2;
+      const rD = 50 + Math.random() * 100;
+      const tx = p.pos.x + Math.cos(rA) * rD;
+      const ty = p.pos.y + Math.sin(rA) * rD;
+      for (let j = 0; j < 6; j++) {
+        const a = (j / 6) * Math.PI * 2;
+        state.projectiles.push({ pos: { x: tx, y: ty }, vel: { x: Math.cos(a) * 140, y: Math.sin(a) * 140 }, radius: 5, alive: true, damage: boss.damage * 0.4, fromPlayer: false, lifetime: 1.5, color: '#6600cc' });
+      }
+    }
+    state.particles.push(...createParticles(boss.pos, '#9966ff', 30, 250, 5));
+    state.shakeTimer = 0.4; state.shakeIntensity = 10;
+  } else if (boss.type === 'plague_lord') {
+    // Poison clouds + acid spray
+    for (let i = 0; i < 20; i++) {
+      const a = (Math.PI * 2 / 20) * i;
+      const spd = 100 + Math.random() * 80;
+      state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(a) * spd, y: Math.sin(a) * spd }, radius: 6, alive: true, damage: boss.damage * 0.3, fromPlayer: false, lifetime: 3, color: '#66ff00' });
+    }
+    state.particles.push(...createParticles(boss.pos, '#88ff00', 25, 180, 4));
+  } else if (boss.type === 'thunder_god') {
+    // Lightning bolts + aimed thunder
+    for (let i = 0; i < 8; i++) {
+      const a = angle + (i - 3.5) * 0.2;
+      state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(a) * 400, y: Math.sin(a) * 400 }, radius: 4, alive: true, damage: boss.damage * 0.6, fromPlayer: false, lifetime: 1.5, color: '#ffff00' });
+    }
+    for (let i = 0; i < 12; i++) {
+      const a = (Math.PI * 2 / 12) * i + Date.now() * 0.002;
+      state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(a) * 220, y: Math.sin(a) * 220 }, radius: 5, alive: true, damage: boss.damage * 0.4, fromPlayer: false, lifetime: 2, color: '#ffff44' });
+    }
+    state.shakeTimer = 0.3; state.shakeIntensity = 10;
+  } else if (boss.type === 'lich_king') {
+    // Summon undead + death beam
+    for (let i = 0; i < 3; i++) {
+      const d = createEnemy('undead_risen', state.wave);
+      d.pos = { x: boss.pos.x + (Math.random() - 0.5) * 80, y: boss.pos.y + (Math.random() - 0.5) * 80 };
+      state.enemies.push(d);
+    }
+    for (let i = -2; i <= 2; i++) {
+      state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(angle + i * 0.1) * 320, y: Math.sin(angle + i * 0.1) * 320 }, radius: 10, alive: true, damage: boss.damage * 0.7, fromPlayer: false, lifetime: 2, color: '#44ff88' });
+    }
+    state.particles.push(...createParticles(boss.pos, '#668866', 20, 180, 4));
+  } else if (boss.type === 'nexus_guardian' || boss.type === 'aurora_phoenix' || boss.type === 'core_titan' || boss.type === 'reality_breaker' || boss.type === 'void_emperor') {
+    // Generic powerful boss: rotating spread + aimed burst + shockwave
+    const phase = (boss.bossPhase || 0) % 3;
+    if (phase === 0) {
+      for (let i = 0; i < 20; i++) {
+        const a = (Math.PI * 2 / 20) * i + Date.now() * 0.002;
+        state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(a) * 200, y: Math.sin(a) * 200 }, radius: 7, alive: true, damage: boss.damage * 0.4, fromPlayer: false, lifetime: 2.5, color: COLORS[boss.type] || '#ff00ff' });
+      }
+    } else if (phase === 1) {
+      for (let i = -4; i <= 4; i++) {
+        state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(angle + i * 0.08) * 380, y: Math.sin(angle + i * 0.08) * 380 }, radius: 10, alive: true, damage: boss.damage * 0.7, fromPlayer: false, lifetime: 2, color: '#ffffff' });
+      }
+    } else {
+      // Teleport + explosion
+      state.particles.push(...createParticles(boss.pos, COLORS[boss.type] || '#ff00ff', 25, 200, 4));
+      const tA = Math.random() * Math.PI * 2;
+      boss.pos.x = p.pos.x + Math.cos(tA) * 180;
+      boss.pos.y = p.pos.y + Math.sin(tA) * 180;
+      state.particles.push(...createParticles(boss.pos, COLORS[boss.type] || '#ff00ff', 25, 200, 4));
+      for (let i = 0; i < 16; i++) {
+        const a = (Math.PI * 2 / 16) * i;
+        state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(a) * 160, y: Math.sin(a) * 160 }, radius: 6, alive: true, damage: boss.damage * 0.4, fromPlayer: false, lifetime: 2, color: COLORS[boss.type] || '#ff00ff' });
+      }
+    }
+    boss.bossPhase = (boss.bossPhase || 0) + 1;
+    state.shakeTimer = 0.4; state.shakeIntensity = 12;
+    state.particles.push(...createParticles(boss.pos, COLORS[boss.type] || '#ff00ff', 35, 280, 5));
   } else if (boss.type === 'archon') {
     // Archon: Golden storm - massive spread + homing orbs + spawns tanks
     // Phase 1: wide golden spread
