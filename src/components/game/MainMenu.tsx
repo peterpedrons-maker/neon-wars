@@ -96,7 +96,18 @@ const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, 
         </button>
       </div>
 
-      <div className="mt-10 text-sm text-[#203050] font-mono">WASD + Mouse • Touch Friendly</div>
+      {username && (
+        <div className="mt-4 flex items-center gap-3">
+          <span className="text-xs font-mono text-[#6080aa]">👤 {username}</span>
+          {onLogout && (
+            <button onClick={() => { playClick(); onLogout(); }}
+              className="text-xs font-mono text-[#ff4060] hover:text-[#ff6080] transition-colors">
+              Sair
+            </button>
+          )}
+        </div>
+      )}
+      <div className="mt-4 text-sm text-[#203050] font-mono">WASD + Mouse • Touch Friendly</div>
     </div>
   );
 };
