@@ -16,7 +16,7 @@ interface MainMenuProps {
   onLogout?: () => void;
 }
 
-const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, onLeaderboard, onHowToPlay, onShop, onMultiplayer, onAchievements }) => {
+const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, onLeaderboard, onHowToPlay, onShop, onMultiplayer, onAchievements, username, onLogout }) => {
   useEffect(() => {
     initAudio();
     startMenuMusic();
