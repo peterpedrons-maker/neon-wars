@@ -306,9 +306,30 @@ function titanBlast(state: GameState, _dt: number) {
 }
 
 function spawnWaveEnemy(state: GameState) {
+  // Death wave: only death_hunters
+  if (state.deathWave) {
+    const enemy = createEnemy('death_hunter', state.wave);
+    applyDifficultyToEnemy(state, enemy);
+    // Make them even faster as waves progress
+    enemy.speed *= 1 + (state.wave - 30) * 0.05;
+    enemy.baseSpeed = enemy.speed;
+    state.enemies.push(enemy);
+    return;
+  }
+  
+  const isMegaBoss = state.wave === 15 || state.wave === 30;
   const isBossWave = state.wave % BOSS_WAVE_INTERVAL === 0;
 
-  if (isBossWave && state.waveEnemiesRemaining === 1) {
+  // Mega-boss spawn (last enemy of the wave)
+  if (isMegaBoss && state.waveEnemiesRemaining === 1) {
+    const bossType: EnemyType = state.wave === 15 ? 'archon' : 'oblivion';
+    const boss = createEnemy(bossType, state.wave);
+    applyDifficultyToEnemy(state, boss);
+    state.enemies.push(boss);
+    return;
+  }
+
+  if (isBossWave && !isMegaBoss && state.waveEnemiesRemaining === 1) {
     // Map-exclusive bosses
     const mapBoss: Record<string, EnemyType> = {
       'inferno': 'lava_dragon',
