@@ -143,11 +143,7 @@ const ClassSelect: React.FC<ClassSelectProps> = ({ onSelect, onBack, unlockedShi
                 style={{ background: badge.color + '22', color: badge.color }}>
                 {badge.label}
               </div>
-              {SHIP_ICONS[s.id] ? (
-                <img src={SHIP_ICONS[s.id]} alt={s.name} className="w-[100px] h-[72px] object-contain pointer-events-none" />
-              ) : (
-                <ShipCanvas shipType={s.id} />
-              )}
+              <ShipCanvas shipType={s.id} />
               <h3 className="text-sm font-bold mb-0.5" style={{ color: isLocked ? '#555' : color, fontFamily: 'Orbitron, monospace' }}>
                 {s.name}
               </h3>
