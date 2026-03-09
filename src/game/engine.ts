@@ -1370,11 +1370,18 @@ export function startWave(state: GameState) {
   
   const isMegaBoss = state.wave === 15 || state.wave === 30;
   const isBossWave = state.wave % BOSS_WAVE_INTERVAL === 0;
-  state.waveEnemiesRemaining = isMegaBoss
-    ? WAVE_BASE_ENEMIES + state.wave * 3 + 1 // extra enemies + mega boss
+  
+  // Co-op scaling: more players = more enemies
+  const playerCount = 1 + (state.coopPeers?.length || 0);
+  const coopMult = 1 + (playerCount - 1) * 0.4; // +40% per extra player
+  
+  let baseEnemies = isMegaBoss
+    ? WAVE_BASE_ENEMIES + state.wave * 3 + 1
     : isBossWave
       ? WAVE_BASE_ENEMIES + state.wave * 2 + 1
       : WAVE_BASE_ENEMIES + (state.wave - 1) * WAVE_ENEMY_INCREMENT;
+  
+  state.waveEnemiesRemaining = Math.floor(baseEnemies * coopMult);
   state.waveSpawnTimer = 0;
   state.enemiesKilledThisWave = 0;
   state.screen = 'playing';
