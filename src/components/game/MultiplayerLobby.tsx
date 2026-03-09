@@ -655,7 +655,8 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
                 <div className="grid grid-cols-2 gap-2">
                   {MAPS.map(m => (
                     <button key={m.id} 
-                      onClick={() => { if (room?.isHost) setSelectedMap(m.id); }}
+                      onClick={() => { if (room?.isHost) { playClick(); setSelectedMap(m.id); } }}
+                      onMouseEnter={() => { if (room?.isHost) playHover(); }}
                       disabled={!room?.isHost}
                       className="py-2 px-3 rounded-lg font-mono text-sm font-bold transition-all"
                       style={{
