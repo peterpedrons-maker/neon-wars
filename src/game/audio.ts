@@ -15,15 +15,18 @@ type KickStyle = 'four' | 'half' | 'broken' | 'dnb';
 
 type HatStyle = 'tight' | 'dense' | 'shuffle';
 
+type Chord = number[];
+type Progression = Chord[];
+
 interface MusicProfile {
   id: string;
   bpm: number;
-  keyCycle: number[]; // MIDI roots
+  keyCycle: ReadonlyArray<number>; // MIDI roots
   keyChangeEveryMeasures: number;
-  progressions: number[][][][]; // pool of chord progressions
-  melodyPhrases: Array<Array<MelodyStep>>;
-  scale: number[];
-  bassRhythms: number[][];
+  progressions: ReadonlyArray<Progression>; // pool of chord progressions
+  melodyPhrases: ReadonlyArray<ReadonlyArray<MelodyStep>>;
+  scale: ReadonlyArray<number>;
+  bassRhythms: ReadonlyArray<ReadonlyArray<number>>;
   masterGain: number;
   kickStyle?: KickStyle;
   hatStyle?: HatStyle;
