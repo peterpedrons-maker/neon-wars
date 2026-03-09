@@ -308,7 +308,7 @@ const HUD: React.FC<HUDProps> = ({
               {activePassives.map(p => (
                 <div key={p.id} className="relative flex flex-col items-center">
                   <div className="flex items-center justify-center" style={{
-                    width: isMobile ? 50 : 44, height: isMobile ? 50 : 44, borderRadius: 10,
+                    width: isMobile ? 40 : 44, height: isMobile ? 40 : 44, borderRadius: 10,
                     background: 'rgba(0,255,255,0.12)', border: '1.5px solid rgba(0,255,255,0.4)',
                     boxShadow: '0 0 10px rgba(0,255,255,0.15)',
                   }}>
