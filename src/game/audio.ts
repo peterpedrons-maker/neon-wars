@@ -1471,22 +1471,37 @@ function scheduleMenuMeasure() {
   menuTimers.push(timer);
 }
 
+function stopProceduralMenuOnly() {
+  menuTimers.forEach(t => clearTimeout(t));
+  menuTimers = [];
+  if (menuGain && audioCtx) {
+    try { menuGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25); } catch {}
+  }
+  menuGain = null;
+}
+
 export function startMenuMusic() {
   if (menuMusicPlaying || musicPlaying) return;
   try {
     getCtx();
     menuMusicPlaying = true;
+
+    // Start procedural immediately as fallback, then swap to MP3 once available.
     menuGain = null;
     menuMeasure = 0;
     scheduleMenuMeasure();
+
+    void ensureMp3Buffer().then(buf => {
+      if (!buf) return;
+      if (!menuMusicPlaying || musicPlaying) return;
+      stopProceduralMenuOnly();
+      startMp3Menu(buf);
+    });
   } catch {}
 }
 
 export function stopMenuMusic() {
   menuMusicPlaying = false;
-  menuTimers.forEach(t => clearTimeout(t));
-  menuTimers = [];
-  if (menuGain) {
-    try { menuGain.gain.linearRampToValueAtTime(0, audioCtx!.currentTime + 0.5); } catch {}
-  }
+  stopProceduralMenuOnly();
+  stopMp3Menu();
 }
