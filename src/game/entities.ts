@@ -154,24 +154,40 @@ export function playerAttack(player: Player, projectiles: Projectile[], abilitie
     return;
   }
 
-  // Oracle: homing shots
+  // Oracle: homing shots — shots slowly track nearest enemy after firing
   if (player.class === 'oracle') {
-    for (const offset of angles) {
-      projectiles.push(createProjectile(player.pos, player.angle + offset, player.damage, true, color, 0.9, { ...mods }));
+    const targets = enemies.filter(e => e.alive).sort((a, b) =>
+      Math.hypot(a.pos.x - player.pos.x, a.pos.y - player.pos.y) -
+      Math.hypot(b.pos.x - player.pos.x, b.pos.y - player.pos.y)
+    );
+    const totalAngles = angles.length;
+    for (let ai = 0; ai < totalAngles; ai++) {
+      const offset = angles[ai];
+      // If there's a nearby target, aim directly at it with slight spread
+      if (targets.length > 0) {
+        const target = targets[Math.min(ai, targets.length - 1)];
+        const aimAngle = Math.atan2(target.pos.y - player.pos.y, target.pos.x - player.pos.x);
+        projectiles.push(createProjectile(player.pos, aimAngle + offset * 0.5, player.damage, true, color, 0.85, { ...mods }));
+      } else {
+        projectiles.push(createProjectile(player.pos, player.angle + offset, player.damage, true, color, 0.85, { ...mods }));
+      }
     }
     return;
   }
 
-  // Nova: slow powerful shots
+  // Nova: slow powerful shots — bigger radius
   if (player.class === 'nova_ship') {
     projectiles.push(createProjectile(player.pos, player.angle, player.damage, true, color, 0.7, { ...mods, radius: 8 } as any));
     return;
   }
 
-  // Pyro: flamethrower spread
+  // Pyro: flamethrower spread — wide cone with randomized velocity for organic feel
   if (player.class === 'pyro') {
-    for (let i = -2; i <= 2; i++) {
-      projectiles.push(createProjectile(player.pos, player.angle + i * 0.1, player.damage * 0.5, true, color, 0.6 + Math.random() * 0.4, { ...mods, lifetime: 0.6 }));
+    const spread = player.tripleTimer > 0 ? 7 : 5;
+    for (let i = -Math.floor(spread / 2); i <= Math.floor(spread / 2); i++) {
+      const jitter = (Math.random() - 0.5) * 0.08;
+      const spdMult = 0.5 + Math.random() * 0.5;
+      projectiles.push(createProjectile(player.pos, player.angle + i * 0.1 + jitter, player.damage * 0.55, true, color, spdMult, { ...mods, lifetime: 0.55 + Math.random() * 0.2 }));
     }
     return;
   }
