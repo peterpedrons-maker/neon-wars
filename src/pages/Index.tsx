@@ -76,10 +76,12 @@ const Index = () => {
     return signIn(email, password);
   };
 
+  const { t } = useLanguage();
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen" style={{ background: '#000008' }}>
-        <div className="text-[#0ff] font-mono text-xl animate-pulse">Carregando...</div>
+        <div className="text-[#0ff] font-mono text-xl animate-pulse">{t('loading')}</div>
       </div>
     );
   }
