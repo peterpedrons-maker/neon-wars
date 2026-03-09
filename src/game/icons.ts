@@ -1,21 +1,4 @@
-// Game Icon Imports - AI-generated icons for all ships, upgrades, and abilities
-import shipPhantom from '@/assets/icons/ship-phantom.png';
-import shipInterceptor from '@/assets/icons/ship-interceptor.png';
-import shipTitan from '@/assets/icons/ship-titan.png';
-import shipSpectre from '@/assets/icons/ship-spectre.png';
-import shipValkyrie from '@/assets/icons/ship-valkyrie.png';
-import shipJuggernaut from '@/assets/icons/ship-juggernaut.png';
-import shipWraith from '@/assets/icons/ship-wraith.png';
-import shipSentinel from '@/assets/icons/ship-sentinel.png';
-import shipTempest from '@/assets/icons/ship-tempest.png';
-import shipVenom from '@/assets/icons/ship-venom.png';
-import shipNova from '@/assets/icons/ship-nova.png';
-import shipChronos from '@/assets/icons/ship-chronos.png';
-import shipLeviathan from '@/assets/icons/ship-leviathan.png';
-import shipRaptor from '@/assets/icons/ship-raptor.png';
-import shipOracle from '@/assets/icons/ship-oracle.png';
-import shipPyro from '@/assets/icons/ship-pyro.png';
-
+// Game Icon Imports - AI-generated icons for upgrades, abilities, shop, and achievements
 import upgradeShield from '@/assets/icons/upgrade-shield.png';
 import upgradeDamage from '@/assets/icons/upgrade-damage.png';
 import upgradeSpeed from '@/assets/icons/upgrade-speed.png';
@@ -46,24 +29,21 @@ import shopLuck from '@/assets/icons/shop-luck.png';
 import shopXp from '@/assets/icons/shop-xp.png';
 import shopDodge from '@/assets/icons/shop-dodge.png';
 
-export const SHIP_ICONS: Record<string, string> = {
-  phantom: shipPhantom,
-  interceptor: shipInterceptor,
-  titan: shipTitan,
-  spectre: shipSpectre,
-  valkyrie: shipValkyrie,
-  juggernaut: shipJuggernaut,
-  wraith: shipWraith,
-  sentinel: shipSentinel,
-  tempest: shipTempest,
-  venom: shipVenom,
-  nova_ship: shipNova,
-  chronos: shipChronos,
-  leviathan: shipLeviathan,
-  raptor: shipRaptor,
-  oracle: shipOracle,
-  pyro: shipPyro,
-};
+// Achievement icons
+import achFirstKill from '@/assets/icons/ach-first-kill.png';
+import achWave from '@/assets/icons/ach-wave.png';
+import achScore from '@/assets/icons/ach-score.png';
+import achCombo from '@/assets/icons/ach-combo.png';
+import achKills from '@/assets/icons/ach-kills.png';
+import achBoss from '@/assets/icons/ach-boss.png';
+import achShips from '@/assets/icons/ach-ships.png';
+import achExplore from '@/assets/icons/ach-explore.png';
+import achNodmg from '@/assets/icons/ach-nodmg.png';
+import achStar from '@/assets/icons/ach-star.png';
+import achDiamond from '@/assets/icons/ach-diamond.png';
+import achEye from '@/assets/icons/ach-eye.png';
+import achRuns from '@/assets/icons/ach-runs.png';
+import achPlasma from '@/assets/icons/ach-plasma.png';
 
 export const UPGRADE_ICONS: Record<string, string> = {
   hp_up: upgradeShield,
@@ -105,3 +85,25 @@ export const UI_ICONS = {
   plasma: plasmaCrystal,
   trophy: achievementTrophy,
 };
+
+// Get icon for a specific achievement based on its ID
+export function getAchievementIcon(achId: string): string | null {
+  if (achId.includes('first_kill')) return achFirstKill;
+  if (achId.includes('nodmg')) return achNodmg;
+  if (achId.includes('kill') || achId.includes('genocida') || achId.includes('apocalipse') || achId.includes('exterminador')) return achKills;
+  if (achId.includes('wave') || achId.includes('sobrevivente')) return achWave;
+  if (achId.includes('score')) return achScore;
+  if (achId.includes('combo') || achId.includes('frenesi')) return achCombo;
+  if (achId.includes('boss') || achId.includes('caçador')) return achBoss;
+  if (achId.includes('ship') || achId.includes('piloto') || achId.includes('almirante') || achId.includes('frotas')) return achShips;
+  if (achId.includes('_play') || achId.includes('explorador')) return achExplore;
+  if (achId.includes('runs') || achId.includes('persistente')) return achRuns;
+  if (achId.includes('plasma') || achId.includes('magnata')) return achPlasma;
+  if (achId.includes('lenda') || achId.includes('lendário')) return achStar;
+  if (achId.includes('deus') || achId.includes('transcendente')) return achDiamond;
+  if (achId.includes('mestre') || achId.includes('imortal') || achId.includes('elite')) return achEye;
+  if (achId.includes('destruidor')) return achCombo;
+  if (achId.includes('veterano')) return achStar;
+  if (achId.includes('dominador')) return achScore;
+  return null;
+}
