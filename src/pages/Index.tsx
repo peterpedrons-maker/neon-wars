@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ShipType, GameScreen } from '../game/types';
 import type { MapDifficulty } from '../game/maps';
-import { loadMeta, MetaProgress, ALL_MILESTONES } from '../game/meta';
+import { loadMeta, saveMeta, MetaProgress, ALL_MILESTONES } from '../game/meta';
 import { RoomInfo } from '../game/multiplayer';
+import { useAuth } from '../hooks/useAuth';
+import AuthScreen from '../components/game/AuthScreen';
 import MainMenu from '../components/game/MainMenu';
 import ClassSelect from '../components/game/ClassSelect';
 import HowToPlay from '../components/game/HowToPlay';
@@ -15,6 +17,7 @@ import CoopGameCanvas from '../components/game/CoopGameCanvas';
 import Achievements from '../components/game/Achievements';
 
 const Index = () => {
+  const { user, loading, username, signUp, signIn, signOut, saveProgress, loadProgress } = useAuth();
   const [screen, setScreen] = useState<GameScreen>('menu');
   const [playerClass, setPlayerClass] = useState<ShipType>('phantom');
   const [mapId, setMapId] = useState<string>('neon-grid');
@@ -23,8 +26,65 @@ const Index = () => {
   const [meta, setMeta] = useState<MetaProgress>(loadMeta());
   const [coopRoom, setCoopRoom] = useState<RoomInfo | null>(null);
   const [peerClass, setPeerClass] = useState<ShipType>('interceptor');
+  const [synced, setSynced] = useState(false);
 
-  const refreshMeta = () => setMeta(loadMeta());
+  // Load progress from cloud on login
+  useEffect(() => {
+    if (user && !synced) {
+      loadProgress().then(cloudMeta => {
+        if (cloudMeta) {
+          // Merge: take whichever has more progress
+          const local = loadMeta();
+          const merged = (cloudMeta.stats?.totalRuns || 0) >= (local.stats?.totalRuns || 0) ? cloudMeta : local;
+          // Ensure defaults
+          const final: MetaProgress = {
+            ...merged,
+            unlockedShips: merged.unlockedShips || ['phantom', 'interceptor', 'titan'],
+            unlockedMaps: merged.unlockedMaps || ['neon-grid'],
+            unlockedAbilities: merged.unlockedAbilities || [],
+            milestones: merged.milestones || {},
+            achievements: merged.achievements || {},
+            permBonuses: merged.permBonuses || {},
+          };
+          saveMeta(final);
+          setMeta(final);
+        }
+        setSynced(true);
+      });
+    }
+  }, [user, synced, loadProgress]);
+
+  // Save to cloud whenever meta changes
+  const updateMeta = useCallback((newMeta: MetaProgress) => {
+    saveMeta(newMeta);
+    setMeta(newMeta);
+    if (user) saveProgress(newMeta);
+  }, [user, saveProgress]);
+
+  const refreshMeta = () => {
+    const m = loadMeta();
+    setMeta(m);
+    if (user) saveProgress(m);
+  };
+
+  const handleAuth = async (mode: 'login' | 'signup', email: string, password: string, name?: string) => {
+    if (mode === 'signup') {
+      return signUp(email, password, name || 'Piloto');
+    }
+    return signIn(email, password);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen" style={{ background: '#000008' }}>
+        <div className="text-[#0ff] font-mono text-xl animate-pulse">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthScreen onAuth={handleAuth} />;
+  }
 
   const handleClassSelect = (cls: ShipType) => { setPlayerClass(cls); setScreen('map-select'); };
   const handleMapSelect = (id: string, difficulty: MapDifficulty) => {
@@ -49,6 +109,8 @@ const Index = () => {
         onShop={() => setScreen('shop')}
         onMultiplayer={() => setScreen('multiplayer-lobby')}
         onAchievements={() => setScreen('achievements')}
+        username={username}
+        onLogout={signOut}
       />
     );
   }
@@ -62,7 +124,7 @@ const Index = () => {
   }
 
   if (screen === 'shop') {
-    return <PlasmaShop meta={meta} onUpdate={(m) => setMeta(m)} onBack={() => setScreen('menu')} />;
+    return <PlasmaShop meta={meta} onUpdate={updateMeta} onBack={() => setScreen('menu')} />;
   }
 
   if (screen === 'class-select') {
