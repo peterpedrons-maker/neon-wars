@@ -22,6 +22,7 @@ const TABS: { key: 'all' | 'global' | AchievementDifficulty; label: string; colo
 
 const Achievements: React.FC<AchievementsProps> = ({ unlocked, onBack }) => {
   const [tab, setTab] = useState<string>('all');
+  useEffect(() => { startAchievementsMusic(); return () => { stopAchievementsMusic(); }; }, []);
 
   const filtered = ALL_ACHIEVEMENTS.filter(a => {
     if (tab === 'all') return true;

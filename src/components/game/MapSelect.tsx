@@ -19,6 +19,7 @@ const difficultyOptions: Array<{ id: MapDifficulty; label: string; hint: string 
 
 const MapSelect: React.FC<MapSelectProps> = ({ unlockedMaps, onSelect, onBack }) => {
   const [difficulty, setDifficulty] = useState<MapDifficulty>('medium');
+  useEffect(() => { startSelectMusic(); return () => { stopSelectMusic(); }; }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#000008] text-[#e0e8ff] select-none p-4">

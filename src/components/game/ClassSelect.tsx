@@ -36,6 +36,7 @@ const TYPE_BADGES: Record<string, { label: string; color: string }> = {
 };
 
 const ClassSelect: React.FC<ClassSelectProps> = ({ onSelect, onBack, unlockedShips }) => {
+  useEffect(() => { startSelectMusic(); return () => { stopSelectMusic(); }; }, []);
   const unlocked = unlockedShips || ['phantom', 'interceptor', 'titan'];
 
   return (
