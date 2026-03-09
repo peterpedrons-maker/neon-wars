@@ -9,7 +9,7 @@ import {
   setPublicRoomStatus, deletePublicRoom, PublicRoomInfo,
 } from '../../game/multiplayer';
 import { playClick, playHover, playBack } from '../../game/audio';
-import { SHIP_ICONS } from '../../game/icons';
+import ShipCanvas from './ShipCanvas';
 
 interface MultiplayerLobbyProps {
   unlockedShips: string[];

@@ -153,8 +153,10 @@ const PlasmaShop: React.FC<PlasmaShopProps> = ({ meta, onUpdate, onBack }) => {
               )}
               {(() => {
                 const shipId = item.id.replace('unlock_', '');
-                const iconSrc = isShip ? SHIP_ICONS[shipId] 
-                  : ABILITY_ICONS[item.id.replace('unlock_', '')] 
+                if (isShip) {
+                  return <ShipCanvas shipType={shipId as ShipType} width={56} height={40} className="mb-1" />;
+                }
+                const iconSrc = ABILITY_ICONS[item.id.replace('unlock_', '')] 
                   || SHOP_ICONS[item.id] 
                   || (item.id.startsWith('slot_') ? SHOP_ICONS['weapon_slot'] : null);
                 return iconSrc ? (
