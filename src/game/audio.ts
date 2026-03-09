@@ -675,7 +675,7 @@ function scheduleNextMeasure() {
 
   if (!musicGain) {
     musicGain = ctx.createGain();
-    musicGain.gain.value = 0.06;
+    musicGain.gain.value = 0.03;
     compressor = ctx.createDynamicsCompressor();
     compressor.threshold.value = -12;
     compressor.knee.value = 4;
