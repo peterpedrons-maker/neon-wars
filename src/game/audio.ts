@@ -1266,7 +1266,7 @@ function scheduleMenuMeasure() {
   for (let i = 0; i < 8; i++) {
     const chordNote = chord[arpPattern[i % arpPattern.length] % chord.length];
     const oct = (i % 4 === 0 ? 12 : 0);
-    const noteFreq = midiToFreq(key + 24 + chordNote + oct);
+    const noteFreq = midiToFreq(currentKey + 24 + chordNote + oct);
     const t = now + i * (beatDur / 2);
     
     const osc = ctx.createOscillator();
