@@ -2,126 +2,133 @@ import { ShipType, EnemyType } from './types';
 
 export const ARENA_W = 1600;
 export const ARENA_H = 1200;
-
-// No walls - open neon grid arena, border is the edge
 export const WALL_LEFT = 0;
 export const WALL_RIGHT = ARENA_W;
 export const WALL_TOP = 0;
 export const WALL_BOTTOM = ARENA_H;
-
-// Camera
 export const CAMERA_VIEW_W = 500;
 export const CAMERA_VIEW_H = 375;
 export const CAMERA_LERP = 0.08;
 
-// Neon color palette - Geometry Wars style
-export const COLORS = {
-  bg: '#000008',
-  arena: '#040412',
-  arenaBorder: '#0ff',
-  arenaBorderLight: '#0ff',
+export const COLORS: Record<string, string> = {
+  bg: '#000008', arena: '#040412', arenaBorder: '#0ff', arenaBorderLight: '#0ff',
   grid: 'rgba(0,255,255,0.06)',
-  // Ship types - vivid neon
-  phantom: '#bf5af2',    // purple
-  phantomGlow: '#e0b0ff',
-  interceptor: '#00e5ff', // cyan
-  interceptorGlow: '#80f0ff',
-  titan: '#ff6b00',       // orange
-  titanGlow: '#ffaa55',
-  // Keep backward compat
-  mage: '#bf5af2',
-  mageGlow: '#e0b0ff',
-  archer: '#00e5ff',
-  archerGlow: '#80f0ff',
-  warrior: '#ff6b00',
-  warriorGlow: '#ffaa55',
-  // Enemies - neon geometric
-  drone: '#39ff14',       // green
-  splitter: '#ff1493',    // pink
-  dasher: '#ffff00',      // yellow
-  tank: '#ff4500',        // red-orange
-  fire_elemental: '#ff6b00', // orange fire
-  void_ghost: '#9040ff',     // deep purple
-  crystal_golem: '#00e5ff',  // cyan crystal
-  lava_dragon: '#ff2200',   // deep red-orange
-  void_lord: '#6000c0',     // deep void purple
-  crystal_giant: '#00ffcc',  // bright crystal teal
-  archon: '#ffd700',         // golden mega-boss
-  oblivion: '#ff0000',       // blood-red final boss
-  death_hunter: '#ff0033',   // crimson death wave
-  mothership: '#ff0040',  // red
-  vortex: '#bf5af2',      // purple
-  colossus: '#00bfff',    // blue
-  // New ships
-  spectre: '#9040ff',
-  spectreGlow: '#c090ff',
-  valkyrie: '#ff1493',
-  valkyrieGlow: '#ff80b0',
-  juggernaut: '#ff4500',
-  juggernautGlow: '#ff8040',
-  // Legacy enemy color mappings
-  skeleton: '#39ff14',
-  slime: '#ff1493',
-  bat: '#ffff00',
-  darkKnight: '#ff4500',
-  dragon: '#ff0040',
-  lich: '#bf5af2',
-  golem: '#00bfff',
+  // Ships
+  phantom: '#bf5af2', phantomGlow: '#e0b0ff',
+  interceptor: '#00e5ff', interceptorGlow: '#80f0ff',
+  titan: '#ff6b00', titanGlow: '#ffaa55',
+  spectre: '#9040ff', spectreGlow: '#c090ff',
+  valkyrie: '#ff1493', valkyrieGlow: '#ff80b0',
+  juggernaut: '#ff4500', juggernautGlow: '#ff8040',
+  wraith: '#00ff88', wraithGlow: '#80ffc0',
+  sentinel: '#4488ff', sentinelGlow: '#88bbff',
+  tempest: '#88ffff', tempestGlow: '#ccffff',
+  venom: '#44ff00', venomGlow: '#88ff44',
+  nova_ship: '#ff8800', nova_shipGlow: '#ffbb44',
+  chronos: '#8888ff', chronosGlow: '#bbbbff',
+  leviathan: '#ff2244', leviathanGlow: '#ff6688',
+  raptor: '#ffff00', raptorGlow: '#ffff88',
+  oracle: '#ff44ff', oracleGlow: '#ff88ff',
+  pyro: '#ff4400', pyroGlow: '#ff8844',
+  // Legacy compat
+  mage: '#bf5af2', mageGlow: '#e0b0ff',
+  archer: '#00e5ff', archerGlow: '#80f0ff',
+  warrior: '#ff6b00', warriorGlow: '#ffaa55',
+  // Base enemies
+  drone: '#39ff14', splitter: '#ff1493', dasher: '#ffff00', tank: '#ff4500',
+  // Map enemies
+  fire_elemental: '#ff6b00', void_ghost: '#9040ff', crystal_golem: '#00e5ff',
+  ice_walker: '#88ddff', nebula_shade: '#9966ff', acid_slime: '#88ff00',
+  storm_drone: '#ffff44', undead_risen: '#668866', warp_drone: '#ff44ff',
+  prism_shard: '#ff88ff', magma_wurm: '#ff4400', quantum_shifter: '#4488ff',
+  abyss_horror: '#440088',
+  // Bosses
+  mothership: '#ff0040', vortex: '#bf5af2', colossus: '#00bfff',
+  lava_dragon: '#ff2200', void_lord: '#6000c0', crystal_giant: '#00ffcc',
+  frost_titan: '#44ccff', cosmic_horror: '#6600cc', plague_lord: '#66ff00',
+  thunder_god: '#ffff00', lich_king: '#44ff88', nexus_guardian: '#ff00ff',
+  aurora_phoenix: '#ff66aa', core_titan: '#ff6600', reality_breaker: '#0066ff',
+  void_emperor: '#220044',
+  // Mega/special
+  archon: '#ffd700', oblivion: '#ff0000', death_hunter: '#ff0033',
   // UI
-  gold: '#ffff00',
-  health: '#ff0040',
-  healthBg: '#1a0010',
-  shield: '#00e5ff',
-  xp: '#bf5af2',
-  text: '#e0e8ff',
-  textDim: '#6080aa',
-  // Power-ups
-  speedPU: '#00e5ff',
-  triplePU: '#ff1493',
-  shieldPU: '#39ff14',
-  healPU: '#ff6090',
-  // Particles
-  fire: '#ff6b00',
-  ice: '#00e5ff',
-  magic: '#bf5af2',
-  // New neon extras
-  neonCyan: '#0ff',
-  neonPink: '#ff1493',
-  neonGreen: '#39ff14',
-  neonYellow: '#ffff00',
-  neonBlue: '#00bfff',
+  gold: '#ffff00', health: '#ff0040', healthBg: '#1a0010', shield: '#00e5ff',
+  xp: '#bf5af2', text: '#e0e8ff', textDim: '#6080aa',
+  speedPU: '#00e5ff', triplePU: '#ff1493', shieldPU: '#39ff14', healPU: '#ff6090',
+  fire: '#ff6b00', ice: '#00e5ff', magic: '#bf5af2',
+  neonCyan: '#0ff', neonPink: '#ff1493', neonGreen: '#39ff14',
+  neonYellow: '#ffff00', neonBlue: '#00bfff',
 };
 
 export type PlayerClass = ShipType;
 
 export const CLASS_STATS: Record<ShipType, { hp: number; damage: number; speed: number; attackCooldown: number; specialCooldown: number; radius: number }> = {
-  phantom: { hp: 3, damage: 15, speed: 130, attackCooldown: 0.38, specialCooldown: 5, radius: 12 },
-  interceptor: { hp: 3, damage: 10, speed: 160, attackCooldown: 0.2, specialCooldown: 4, radius: 10 },
-  titan: { hp: 3, damage: 28, speed: 95, attackCooldown: 0.6, specialCooldown: 3, radius: 15 },
-  spectre: { hp: 2, damage: 20, speed: 150, attackCooldown: 0.3, specialCooldown: 4, radius: 11 },
-  valkyrie: { hp: 4, damage: 12, speed: 140, attackCooldown: 0.25, specialCooldown: 3.5, radius: 11 },
-  juggernaut: { hp: 5, damage: 35, speed: 75, attackCooldown: 0.8, specialCooldown: 6, radius: 17 },
+  phantom:     { hp: 3, damage: 15, speed: 130, attackCooldown: 0.38, specialCooldown: 5,   radius: 12 },
+  interceptor: { hp: 3, damage: 10, speed: 160, attackCooldown: 0.2,  specialCooldown: 4,   radius: 10 },
+  titan:       { hp: 3, damage: 28, speed: 95,  attackCooldown: 0.6,  specialCooldown: 3,   radius: 15 },
+  spectre:     { hp: 2, damage: 20, speed: 150, attackCooldown: 0.3,  specialCooldown: 4,   radius: 11 },
+  valkyrie:    { hp: 4, damage: 12, speed: 140, attackCooldown: 0.25, specialCooldown: 3.5, radius: 11 },
+  juggernaut:  { hp: 5, damage: 35, speed: 75,  attackCooldown: 0.8,  specialCooldown: 6,   radius: 17 },
+  wraith:      { hp: 2, damage: 18, speed: 145, attackCooldown: 0.35, specialCooldown: 4,   radius: 10 },
+  sentinel:    { hp: 4, damage: 22, speed: 80,  attackCooldown: 0.45, specialCooldown: 5,   radius: 14 },
+  tempest:     { hp: 3, damage: 14, speed: 155, attackCooldown: 0.28, specialCooldown: 3.5, radius: 11 },
+  venom:       { hp: 3, damage: 16, speed: 120, attackCooldown: 0.4,  specialCooldown: 4.5, radius: 11 },
+  nova_ship:   { hp: 2, damage: 30, speed: 110, attackCooldown: 0.55, specialCooldown: 5,   radius: 13 },
+  chronos:     { hp: 3, damage: 13, speed: 125, attackCooldown: 0.32, specialCooldown: 6,   radius: 11 },
+  leviathan:   { hp: 8, damage: 40, speed: 55,  attackCooldown: 1.0,  specialCooldown: 7,   radius: 20 },
+  raptor:      { hp: 2, damage: 11, speed: 200, attackCooldown: 0.15, specialCooldown: 3,   radius: 9 },
+  oracle:      { hp: 3, damage: 12, speed: 130, attackCooldown: 0.35, specialCooldown: 4,   radius: 11 },
+  pyro:        { hp: 3, damage: 20, speed: 115, attackCooldown: 0.42, specialCooldown: 4.5, radius: 12 },
 };
 
+// Enemy stat helper - creates compact definitions
+function es(hp: number, dmg: number, spd: number, score: number, r: number, cd: number, boss: boolean) {
+  return { hp, damage: dmg, speed: spd, score, radius: r, attackCooldown: cd, isBoss: boss };
+}
+
 export const ENEMY_STATS: Record<EnemyType, { hp: number; damage: number; speed: number; score: number; radius: number; attackCooldown: number; isBoss: boolean }> = {
-  drone: { hp: 15, damage: 10, speed: 90, score: 10, radius: 10, attackCooldown: 1, isBoss: false },
-  splitter: { hp: 20, damage: 5, speed: 60, score: 15, radius: 12, attackCooldown: 2, isBoss: false },
-  dasher: { hp: 8, damage: 12, speed: 130, score: 25, radius: 8, attackCooldown: 0.6, isBoss: false },
-  tank: { hp: 50, damage: 18, speed: 40, score: 50, radius: 16, attackCooldown: 1.5, isBoss: false },
-  fire_elemental: { hp: 30, damage: 15, speed: 70, score: 35, radius: 13, attackCooldown: 1.2, isBoss: false },
-  void_ghost: { hp: 18, damage: 20, speed: 110, score: 40, radius: 10, attackCooldown: 0.8, isBoss: false },
-  crystal_golem: { hp: 60, damage: 12, speed: 35, score: 45, radius: 18, attackCooldown: 2, isBoss: false },
-  mothership: { hp: 300, damage: 25, speed: 50, score: 500, radius: 30, attackCooldown: 2, isBoss: true },
-  vortex: { hp: 250, damage: 20, speed: 45, score: 500, radius: 28, attackCooldown: 1.5, isBoss: true },
-  colossus: { hp: 400, damage: 35, speed: 30, score: 500, radius: 35, attackCooldown: 3, isBoss: true },
-  lava_dragon: { hp: 500, damage: 30, speed: 45, score: 800, radius: 35, attackCooldown: 2, isBoss: true },
-  void_lord: { hp: 400, damage: 35, speed: 40, score: 800, radius: 32, attackCooldown: 1.8, isBoss: true },
-  crystal_giant: { hp: 600, damage: 25, speed: 25, score: 800, radius: 40, attackCooldown: 2.5, isBoss: true },
-  // Mega-bosses (wave 15 & 30)
-  archon: { hp: 2500, damage: 50, speed: 35, score: 3000, radius: 50, attackCooldown: 1.5, isBoss: true },
-  oblivion: { hp: 5000, damage: 70, speed: 40, score: 8000, radius: 55, attackCooldown: 1.2, isBoss: true },
-  // Death wave hunter
-  death_hunter: { hp: 80, damage: 40, speed: 200, score: 100, radius: 11, attackCooldown: 0.4, isBoss: false },
+  // Base
+  drone:           es(15,  10,  90,  10,  10, 1,   false),
+  splitter:        es(20,  5,   60,  15,  12, 2,   false),
+  dasher:          es(8,   12,  130, 25,  8,  0.6, false),
+  tank:            es(50,  18,  40,  50,  16, 1.5, false),
+  // Map regular enemies
+  fire_elemental:  es(30,  15,  70,  35,  13, 1.2, false),
+  void_ghost:      es(18,  20,  110, 40,  10, 0.8, false),
+  crystal_golem:   es(60,  12,  35,  45,  18, 2,   false),
+  ice_walker:      es(25,  12,  55,  30,  12, 1.5, false),
+  nebula_shade:    es(20,  18,  100, 40,  10, 0.9, false),
+  acid_slime:      es(35,  10,  50,  30,  14, 2,   false),
+  storm_drone:     es(15,  14,  140, 35,  9,  0.5, false),
+  undead_risen:    es(22,  15,  70,  30,  11, 1.2, false),
+  warp_drone:      es(16,  16,  120, 35,  9,  0.7, false),
+  prism_shard:     es(40,  8,   45,  35,  13, 1.8, false),
+  magma_wurm:      es(45,  20,  60,  45,  15, 1.3, false),
+  quantum_shifter: es(18,  22,  130, 50,  10, 0.6, false),
+  abyss_horror:    es(55,  25,  50,  60,  16, 1.5, false),
+  // Original bosses
+  mothership:      es(300,  25, 50,  500,  30, 2,   true),
+  vortex:          es(250,  20, 45,  500,  28, 1.5, true),
+  colossus:        es(400,  35, 30,  500,  35, 3,   true),
+  // Map bosses
+  lava_dragon:     es(500,  30, 45,  800,  35, 2,   true),
+  void_lord:       es(400,  35, 40,  800,  32, 1.8, true),
+  crystal_giant:   es(600,  25, 25,  800,  40, 2.5, true),
+  frost_titan:     es(450,  28, 35,  800,  36, 2.2, true),
+  cosmic_horror:   es(550,  32, 30,  900,  38, 2,   true),
+  plague_lord:     es(480,  22, 40,  850,  34, 1.8, true),
+  thunder_god:     es(500,  35, 50,  900,  32, 1.5, true),
+  lich_king:       es(520,  30, 35,  900,  35, 2,   true),
+  nexus_guardian:  es(600,  28, 25,  950,  40, 2.5, true),
+  aurora_phoenix:  es(480,  25, 55,  900,  30, 1.5, true),
+  core_titan:      es(700,  40, 20,  1000, 45, 3,   true),
+  reality_breaker: es(650,  38, 35,  1000, 38, 2,   true),
+  void_emperor:    es(800,  45, 30,  1200, 42, 2,   true),
+  // Mega-bosses
+  archon:          es(2500, 50, 35,  3000, 50, 1.5, true),
+  oblivion:        es(5000, 70, 40,  8000, 55, 1.2, true),
+  // Death wave
+  death_hunter:    es(80,   40, 200, 100,  11, 0.4, false),
 };
 
 export const WAVE_BASE_ENEMIES = 20;
