@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ALL_MAPS } from '../../game/maps';
+import { ALL_MAPS, MAP_ORDER } from '../../game/maps';
 import type { MapDifficulty } from '../../game/maps';
 import { playClick, playHover, playBack } from '../../game/audio';
 
