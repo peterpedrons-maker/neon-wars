@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Upgrade } from '../../game/types';
 import { getRandomUpgrades } from '../../game/upgrades';
 import { UPGRADE_ICONS } from '../../game/icons';
+import { useLanguage } from '../../game/i18n';
 
 interface UpgradeScreenProps {
   wave: number;
@@ -9,14 +10,15 @@ interface UpgradeScreenProps {
 }
 
 const UpgradeScreen: React.FC<UpgradeScreenProps> = ({ wave, onSelect }) => {
+  const { t } = useLanguage();
   const upgrades = useMemo(() => getRandomUpgrades(3), [wave]);
 
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/75 z-20 select-none p-4">
       <div className="text-3xl md:text-4xl font-bold mb-2 font-mono" style={{ color: '#ffff00', textShadow: '0 0 20px rgba(255,255,0,0.5)' }}>
-        Wave {wave} Completa! 🎉
+        {t('wave_complete', { n: wave })}
       </div>
-      <p className="text-[#6080aa] mb-8 text-lg font-mono">Escolha um upgrade:</p>
+      <p className="text-[#6080aa] mb-8 text-lg font-mono">{t('choose_upgrade')}</p>
 
       <div className="flex flex-col md:flex-row gap-4">
         {upgrades.map(u => (

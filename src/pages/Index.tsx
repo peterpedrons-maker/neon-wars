@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useLanguage } from '../game/i18n';
 import { ShipType, GameScreen } from '../game/types';
 import type { MapDifficulty } from '../game/maps';
 import { loadMeta, saveMeta, MetaProgress, ALL_MILESTONES } from '../game/meta';
@@ -75,10 +76,12 @@ const Index = () => {
     return signIn(email, password);
   };
 
+  const { t } = useLanguage();
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen" style={{ background: '#000008' }}>
-        <div className="text-[#0ff] font-mono text-xl animate-pulse">Carregando...</div>
+        <div className="text-[#0ff] font-mono text-xl animate-pulse">{t('loading')}</div>
       </div>
     );
   }
