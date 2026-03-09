@@ -930,12 +930,13 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
     playExplosion(e.isBoss);
 
     const color = e.isBoss ? COLORS.neonYellow : getEnemyColor(e.type);
-    state.particles.push(...createParticles(e.pos, color, e.isBoss ? 200 : 60, 400, e.isBoss ? 8 : 5));
-    state.particles.push(...createParticles(e.pos, '#ffffff', e.isBoss ? 80 : 30, 300, 4));
+    // Less dense overall, but MUCH wider spread on death
+    state.particles.push(...createParticles(e.pos, color, e.isBoss ? 160 : 45, 700, e.isBoss ? 7 : 4.5));
+    state.particles.push(...createParticles(e.pos, '#ffffff', e.isBoss ? 60 : 20, 620, 3.5));
     const secColor = e.isBoss ? '#ff1493' : COLORS.neonCyan;
-    state.particles.push(...createParticles(e.pos, secColor, e.isBoss ? 60 : 25, 250, 3.5));
-    state.particles.push(...createParticles(e.pos, COLORS.neonPink, e.isBoss ? 40 : 15, 350, 3));
-    state.particles.push(...createParticles(e.pos, COLORS.neonGreen, e.isBoss ? 30 : 12, 280, 2.5));
+    state.particles.push(...createParticles(e.pos, secColor, e.isBoss ? 50 : 18, 650, 3.2));
+    state.particles.push(...createParticles(e.pos, COLORS.neonPink, e.isBoss ? 35 : 12, 720, 3));
+    state.particles.push(...createParticles(e.pos, COLORS.neonGreen, e.isBoss ? 25 : 10, 680, 2.6));
     
     if (state.comboMultiplier >= 4) {
       state.particles.push(...createParticles(e.pos, '#ffff00', state.comboMultiplier * 3, 350, 4));
