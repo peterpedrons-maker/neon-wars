@@ -1047,10 +1047,23 @@ function applyPowerUp(state: GameState, type: string) {
 export function startWave(state: GameState) {
   state.wave++;
   setMusicIntensity(state.wave);
+  
+  // Death wave: endless fast enemies
+  if (state.deathWave) {
+    state.waveEnemiesRemaining = 50 + state.wave * 5;
+    state.waveSpawnTimer = 0;
+    state.enemiesKilledThisWave = 0;
+    state.screen = 'playing';
+    return;
+  }
+  
+  const isMegaBoss = state.wave === 15 || state.wave === 30;
   const isBossWave = state.wave % BOSS_WAVE_INTERVAL === 0;
-  state.waveEnemiesRemaining = isBossWave
-    ? WAVE_BASE_ENEMIES + state.wave * 2 + 1
-    : WAVE_BASE_ENEMIES + (state.wave - 1) * WAVE_ENEMY_INCREMENT;
+  state.waveEnemiesRemaining = isMegaBoss
+    ? WAVE_BASE_ENEMIES + state.wave * 3 + 1 // extra enemies + mega boss
+    : isBossWave
+      ? WAVE_BASE_ENEMIES + state.wave * 2 + 1
+      : WAVE_BASE_ENEMIES + (state.wave - 1) * WAVE_ENEMY_INCREMENT;
   state.waveSpawnTimer = 0;
   state.enemiesKilledThisWave = 0;
   state.screen = 'playing';
