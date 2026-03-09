@@ -1,5 +1,5 @@
-import React from 'react';
-import { playBack, playHover } from '../../game/audio';
+import React, { useEffect } from 'react';
+import { playBack, playHover, startLeaderboardMusic, stopLeaderboardMusic } from '../../game/audio';
 import { LeaderboardEntry, ShipType } from '../../game/types';
 
 interface LeaderboardProps {

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ALL_MAPS, MAP_ORDER } from '../../game/maps';
 import type { MapDifficulty } from '../../game/maps';
-import { playClick, playHover, playBack } from '../../game/audio';
+import { playClick, playHover, playBack, startSelectMusic, stopSelectMusic } from '../../game/audio';
 
 interface MapSelectProps {
   unlockedMaps: string[];

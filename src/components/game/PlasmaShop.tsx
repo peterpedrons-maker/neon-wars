@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MetaProgress, saveMeta } from '../../game/meta';
-import { playClick, playHover, playBack, playPurchase, playError } from '../../game/audio';
+import { playClick, playHover, playBack, playPurchase, playError, startShopMusic, stopShopMusic } from '../../game/audio';
 import { UI_ICONS, SHOP_ICONS, WEAPON_ICONS } from '../../game/icons';
 import ShipCanvas from './ShipCanvas';
 import { ShipType } from '../../game/types';

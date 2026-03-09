@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ALL_ACHIEVEMENTS, Achievement, AchievementDifficulty,
   DIFFICULTY_COLORS, DIFFICULTY_LABELS,
 } from '../../game/achievements';
-import { playClick, playHover, playBack } from '../../game/audio';
+import { playClick, playHover, playBack, startAchievementsMusic, stopAchievementsMusic } from '../../game/audio';
 import { getAchievementIcon } from '../../game/icons';
 
 interface AchievementsProps {

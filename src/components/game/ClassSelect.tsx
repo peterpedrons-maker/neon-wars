@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ShipType } from '../../game/types';
 import { COLORS } from '../../game/constants';
-import { playClick, playHover, playBack } from '../../game/audio';
+import { playClick, playHover, playBack, startSelectMusic, stopSelectMusic } from '../../game/audio';
 import ShipCanvas from './ShipCanvas';
 
 interface ClassSelectProps {
