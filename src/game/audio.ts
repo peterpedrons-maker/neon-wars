@@ -1,3 +1,5 @@
+import type { EnemyType } from './types';
+
 // Synthesized retro arcade sound effects + procedural music using Web Audio API
 
 let audioCtx: AudioContext | null = null;
@@ -5,113 +7,59 @@ let musicGain: GainNode | null = null;
 let musicPlaying = false;
 let musicIntensity = 1;
 
-// ===== MP3 MUSIC (restored user-provided track) =====
-const MP3_MUSIC_URL = '/music-base.mp3';
+// ===== GAME MUSIC ROUTING (map + boss themes) =====
 
-let mp3Buffer: AudioBuffer | null = null;
-let mp3LoadPromise: Promise<AudioBuffer | null> | null = null;
+type MelodyStep = [number, number]; // [scaleIndex, durationIn16ths]
 
-let mp3MenuSource: AudioBufferSourceNode | null = null;
-let mp3GameSource: AudioBufferSourceNode | null = null;
+type KickStyle = 'four' | 'half' | 'broken' | 'dnb';
 
-let mp3MenuGain: GainNode | null = null;
-let mp3GameGain: GainNode | null = null;
-let mp3GameFilter: BiquadFilterNode | null = null;
+type HatStyle = 'tight' | 'dense' | 'shuffle';
 
-async function ensureMp3Buffer(): Promise<AudioBuffer | null> {
-  if (mp3Buffer) return mp3Buffer;
-  if (mp3LoadPromise) return mp3LoadPromise;
+type Chord = number[];
+type Progression = Chord[];
 
-  mp3LoadPromise = (async () => {
-    try {
-      const ctx = getCtx();
-      const res = await fetch(MP3_MUSIC_URL, { cache: 'force-cache' });
-      if (!res.ok) throw new Error(`Failed to fetch ${MP3_MUSIC_URL}: ${res.status}`);
-      const arr = await res.arrayBuffer();
-      const buf = await ctx.decodeAudioData(arr);
-      mp3Buffer = buf;
-      return buf;
-    } catch (e) {
-      // Keep procedural music as fallback if the MP3 isn't available.
-      console.warn('[audio] MP3 music not available, using procedural fallback.', e);
-      mp3Buffer = null;
-      return null;
-    } finally {
-      // Allow retry if it failed.
-      if (!mp3Buffer) mp3LoadPromise = null;
-    }
-  })();
-
-  return mp3LoadPromise;
+interface MusicProfile {
+  id: string;
+  bpm: number;
+  keyCycle: ReadonlyArray<number>; // MIDI roots
+  keyChangeEveryMeasures: number;
+  progressions: ReadonlyArray<Progression>; // pool of chord progressions
+  melodyPhrases: ReadonlyArray<ReadonlyArray<MelodyStep>>;
+  scale: ReadonlyArray<number>;
+  bassRhythms: ReadonlyArray<ReadonlyArray<number>>;
+  masterGain: number;
+  kickStyle?: KickStyle;
+  hatStyle?: HatStyle;
+  sectionFeelOverride?: number; // when set, forces a specific "sectionFeel" in scheduleNextMeasure
 }
 
-function stopMp3Menu() {
-  try {
-    if (mp3MenuGain && audioCtx) mp3MenuGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25);
-  } catch {}
-  try { mp3MenuSource?.stop(); } catch {}
-  try { mp3MenuSource?.disconnect(); } catch {}
-  try { mp3MenuGain?.disconnect(); } catch {}
-  mp3MenuSource = null;
-  mp3MenuGain = null;
+let activeMapId = 'neon-grid';
+let activeBossType: EnemyType | null = null;
+
+let currentProfile: MusicProfile | null = null;
+let pendingProfile: MusicProfile | null = null;
+let pendingProfileReset = false;
+
+function queueProfileSwitch(profile: MusicProfile) {
+  if (currentProfile?.id === profile.id) return;
+  pendingProfile = profile;
+  pendingProfileReset = true;
 }
 
-function stopMp3Game() {
-  try {
-    if (mp3GameGain && audioCtx) mp3GameGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25);
-  } catch {}
-  try { mp3GameSource?.stop(); } catch {}
-  try { mp3GameSource?.disconnect(); } catch {}
-  try { mp3GameFilter?.disconnect(); } catch {}
-  try { mp3GameGain?.disconnect(); } catch {}
-  mp3GameSource = null;
-  mp3GameFilter = null;
-  mp3GameGain = null;
+export function setMapMusic(mapId: string) {
+  activeMapId = mapId;
+  if (!activeBossType) {
+    const p = getActiveGameProfile();
+    queueProfileSwitch(p);
+  }
 }
 
-function startMp3Menu(buf: AudioBuffer) {
-  const ctx = getCtx();
-  stopMp3Menu();
-
-  const src = ctx.createBufferSource();
-  src.buffer = buf;
-  src.loop = true;
-
-  const g = ctx.createGain();
-  // Keep the "50% lower" intent by staying conservative on volume.
-  g.gain.setValueAtTime(0.03, ctx.currentTime);
-
-  src.connect(g).connect(ctx.destination);
-  src.start();
-
-  mp3MenuSource = src;
-  mp3MenuGain = g;
+export function setBossMusic(bossType: EnemyType | null) {
+  if (activeBossType === bossType) return;
+  activeBossType = bossType;
+  const p = getActiveGameProfile();
+  queueProfileSwitch(p);
 }
-
-function startMp3Game(buf: AudioBuffer) {
-  const ctx = getCtx();
-  stopMp3Game();
-
-  const src = ctx.createBufferSource();
-  src.buffer = buf;
-  src.loop = true;
-
-  const filter = ctx.createBiquadFilter();
-  filter.type = 'lowpass';
-  filter.frequency.setValueAtTime(16000, ctx.currentTime);
-  filter.Q.setValueAtTime(0.2, ctx.currentTime);
-
-  const g = ctx.createGain();
-  g.gain.setValueAtTime(0.03, ctx.currentTime);
-
-  src.connect(filter).connect(g).connect(ctx.destination);
-  src.start();
-
-  mp3GameSource = src;
-  mp3GameFilter = filter;
-  mp3GameGain = g;
-}
-
 
 function getCtx(): AudioContext {
   if (!audioCtx) {
@@ -754,36 +702,186 @@ function playFMNote(ctx: AudioContext, dest: AudioNode, carrierFreq: number, mod
   modulator.start(t); modulator.stop(t + dur + 0.01);
 }
 
+// ===== MAP / BOSS MUSIC PROFILES =====
+
+const SCALES = {
+  naturalMinor: [0, 2, 3, 5, 7, 8, 10, 12, 14, 15, 17, 19, 20, 22, 24],
+  phrygian: [0, 1, 3, 5, 7, 8, 10, 12, 13, 15, 17, 19, 20, 22, 24],
+  harmonicMinor: [0, 2, 3, 5, 7, 8, 11, 12, 14, 15, 17, 19, 20, 23, 24],
+  mixolydian: [0, 2, 4, 5, 7, 9, 10, 12, 14, 16, 17, 19, 21, 22, 24],
+  wholeTone: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24],
+  diminished: [0, 1, 3, 4, 6, 7, 9, 10, 12, 13, 15, 16, 18, 19, 21, 22, 24],
+} as const;
+
+const phrase = (idx: number) => MELODY_PHRASES[idx] as unknown as ReadonlyArray<MelodyStep>;
+
+const MAP_MUSIC_PROFILES: Record<string, MusicProfile> = {
+  'neon-grid': {
+    id: 'map:neon-grid',
+    bpm: 138,
+    keyCycle: [33, 36, 38, 40],
+    keyChangeEveryMeasures: 64,
+    progressions: [PROGS[4], PROGS[2], PROGS[0]], // synthwave + trance + cinematic
+    melodyPhrases: [phrase(8), phrase(1), phrase(0), phrase(5)],
+    scale: SCALES.naturalMinor,
+    bassRhythms: [BASS_RHYTHMS[0], BASS_RHYTHMS[2], BASS_RHYTHMS[5]],
+    masterGain: 0.030,
+    kickStyle: 'four',
+    hatStyle: 'tight',
+  },
+  inferno: {
+    id: 'map:inferno',
+    bpm: 152,
+    keyCycle: [31, 34, 36, 38],
+    keyChangeEveryMeasures: 48,
+    progressions: [PROGS[5], PROGS[1], PROGS[6]], // aggressive + driving
+    melodyPhrases: [phrase(3), phrase(7), phrase(1)],
+    scale: SCALES.phrygian,
+    bassRhythms: [BASS_RHYTHMS[5], BASS_RHYTHMS[3], BASS_RHYTHMS[1]],
+    masterGain: 0.032,
+    kickStyle: 'broken',
+    hatStyle: 'dense',
+  },
+  void: {
+    id: 'map:void',
+    bpm: 128,
+    keyCycle: [28, 31, 33, 26],
+    keyChangeEveryMeasures: 64,
+    progressions: [PROGS[5], PROGS[0], PROGS[7]],
+    melodyPhrases: [phrase(6), phrase(9), phrase(2)],
+    scale: SCALES.diminished,
+    bassRhythms: [BASS_RHYTHMS[6], BASS_RHYTHMS[0]],
+    masterGain: 0.028,
+    kickStyle: 'half',
+    hatStyle: 'shuffle',
+  },
+  crystal: {
+    id: 'map:crystal',
+    bpm: 142,
+    keyCycle: [35, 38, 40, 43],
+    keyChangeEveryMeasures: 64,
+    progressions: [PROGS[2], PROGS[3], PROGS[7]],
+    melodyPhrases: [phrase(0), phrase(4), phrase(9)],
+    scale: SCALES.mixolydian,
+    bassRhythms: [BASS_RHYTHMS[2], BASS_RHYTHMS[0], BASS_RHYTHMS[4]],
+    masterGain: 0.030,
+    kickStyle: 'four',
+    hatStyle: 'tight',
+  },
+  singularity: {
+    id: 'map:singularity',
+    bpm: 168,
+    keyCycle: [33, 36, 38, 40],
+    keyChangeEveryMeasures: 32,
+    progressions: [PROGS[5], PROGS[1], PROGS[6]],
+    melodyPhrases: [phrase(8), phrase(3), phrase(1)],
+    scale: SCALES.diminished,
+    bassRhythms: [BASS_RHYTHMS[1], BASS_RHYTHMS[5], BASS_RHYTHMS[3]],
+    masterGain: 0.034,
+    kickStyle: 'dnb',
+    hatStyle: 'dense',
+  },
+  foundry: {
+    id: 'map:foundry',
+    bpm: 156,
+    keyCycle: [30, 33, 35, 37],
+    keyChangeEveryMeasures: 48,
+    progressions: [PROGS[1], PROGS[5], PROGS[6]],
+    melodyPhrases: [phrase(5), phrase(3), phrase(7)],
+    scale: SCALES.harmonicMinor,
+    bassRhythms: [BASS_RHYTHMS[3], BASS_RHYTHMS[5], BASS_RHYTHMS[0]],
+    masterGain: 0.032,
+    kickStyle: 'broken',
+    hatStyle: 'shuffle',
+  },
+};
+
+const DEFAULT_BOSS_PROFILE: MusicProfile = {
+  id: 'boss:generic',
+  bpm: 172,
+  keyCycle: [31, 33],
+  keyChangeEveryMeasures: 16,
+  progressions: [PROGS[5], PROGS[6]],
+  melodyPhrases: [phrase(8), phrase(1), phrase(3)],
+  scale: SCALES.diminished,
+  bassRhythms: [BASS_RHYTHMS[1], BASS_RHYTHMS[5]],
+  masterGain: 0.036,
+  kickStyle: 'dnb',
+  hatStyle: 'dense',
+  sectionFeelOverride: 4,
+};
+
+const BOSS_MUSIC_PROFILES: Partial<Record<EnemyType, MusicProfile>> = {
+  mothership: { ...DEFAULT_BOSS_PROFILE, id: 'boss:mothership', bpm: 158, scale: SCALES.wholeTone, progressions: [PROGS[2], PROGS[5]] },
+  vortex: { ...DEFAULT_BOSS_PROFILE, id: 'boss:vortex', bpm: 176, scale: SCALES.diminished, progressions: [PROGS[5], PROGS[1]] },
+  colossus: { ...DEFAULT_BOSS_PROFILE, id: 'boss:colossus', bpm: 148, kickStyle: 'half', hatStyle: 'tight', scale: SCALES.naturalMinor, progressions: [PROGS[3], PROGS[0]] },
+  fire_elemental: { ...DEFAULT_BOSS_PROFILE, id: 'boss:fire_elemental', bpm: 162, scale: SCALES.harmonicMinor, progressions: [PROGS[6], PROGS[1]] },
+  lava_dragon: { ...DEFAULT_BOSS_PROFILE, id: 'boss:lava_dragon', bpm: 166, scale: SCALES.phrygian, progressions: [PROGS[5], PROGS[6]] },
+  void_lord: { ...DEFAULT_BOSS_PROFILE, id: 'boss:void_lord', bpm: 184, scale: SCALES.diminished, progressions: [PROGS[5], PROGS[7]] },
+  crystal_giant: { ...DEFAULT_BOSS_PROFILE, id: 'boss:crystal_giant', bpm: 154, hatStyle: 'tight', scale: SCALES.mixolydian, progressions: [PROGS[2], PROGS[3]] },
+};
+
+function getActiveGameProfile(): MusicProfile {
+  if (activeBossType) {
+    return BOSS_MUSIC_PROFILES[activeBossType] ?? DEFAULT_BOSS_PROFILE;
+  }
+  return MAP_MUSIC_PROFILES[activeMapId] ?? MAP_MUSIC_PROFILES['neon-grid'];
+}
+
+function hardResetMusicState(profile: MusicProfile) {
+  currentProfile = profile;
+  pendingProfile = null;
+  pendingProfileReset = false;
+
+  currentChordIndex = 0;
+  currentProgIndex = 0;
+  measureCount = 0;
+  sectionCount = 0;
+  currentKey = profile.keyCycle[0] ?? 33;
+}
+
 function scheduleNextMeasure() {
   if (!musicPlaying || !audioCtx) return;
+
+  const desired = pendingProfileReset && pendingProfile
+    ? pendingProfile
+    : (currentProfile ?? getActiveGameProfile());
+
+  if (!currentProfile || pendingProfileReset) {
+    hardResetMusicState(desired);
+  }
+
+  const profile = currentProfile!;
+
   const ctx = audioCtx;
   const now = ctx.currentTime;
-  const bpm = 140;
+  const bpm = profile.bpm;
   const beatDur = 60 / bpm;
   const measureDur = beatDur * 4;
   const sixteenth = beatDur / 4;
 
-  const isNewSection = measureCount > 0 && measureCount % 16 === 0; // Extended to 16 measures per section
+  const isNewSection = measureCount > 0 && measureCount % 16 === 0;
   if (isNewSection) {
     sectionCount++;
-    currentProgIndex = sectionCount % PROGS.length;
-    if (measureCount % 64 === 0) { // Key change every 64 measures for much longer progression without feeling repetitive
-      const keys = [33, 36, 38, 40, 31, 28, 35, 43, 45, 33, 26, 38];
-      currentKey = keys[(sectionCount / 4 | 0) % keys.length];
-    }
+    currentProgIndex = sectionCount % profile.progressions.length;
   }
 
-  const prog = PROGS[currentProgIndex];
+  if (measureCount > 0 && measureCount % profile.keyChangeEveryMeasures === 0) {
+    const kIdx = Math.floor(measureCount / profile.keyChangeEveryMeasures) % profile.keyCycle.length;
+    currentKey = profile.keyCycle[kIdx] ?? currentKey;
+  }
+
+  const prog = profile.progressions[currentProgIndex];
   const chord = prog[currentChordIndex % prog.length];
-  // 0=intro, 1=build, 2=drop, 3=breakdown, 4=climax, 5=bridge, 6=outro
-  const sectionFeel = sectionCount % 7; 
+
+  const sectionFeel = profile.sectionFeelOverride ?? (sectionCount % 7);
   const measureInSection = measureCount % 16;
   const isFillMeasure = measureInSection === 15 || measureInSection === 7;
   const intensity = musicIntensity;
 
   if (!musicGain) {
     musicGain = ctx.createGain();
-    musicGain.gain.value = 0.03;
+    musicGain.gain.value = profile.masterGain;
     compressor = ctx.createDynamicsCompressor();
     compressor.threshold.value = -12;
     compressor.knee.value = 4;
@@ -794,15 +892,18 @@ function scheduleNextMeasure() {
     reverbGain = createReverb(ctx, musicGain);
   }
 
-  const masterVol = (0.05 + intensity * 0.012) * 0.5;
+  const masterVol = profile.masterGain * (0.82 + intensity * 0.12);
   musicGain.gain.setValueAtTime(masterVol, now);
 
-  // ============ KICK (punchy, layered) ============
-  const kickBeats = sectionFeel === 3
-    ? (isFillMeasure ? [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.25, 3.5, 3.75] : [0, 2])
-    : sectionFeel === 4
-    ? [0, 0.75, 1, 2, 2.75, 3]
-    : [0, 1, 2, 3];
+  // ============ KICK (punchy, layered) ==========
+  const kickStyle: KickStyle = profile.kickStyle ?? (sectionFeel === 3 ? 'half' : 'four');
+  const kickBeats = kickStyle === 'half'
+    ? (isFillMeasure ? [0, 1, 1.5, 2, 3] : [0, 2])
+    : kickStyle === 'dnb'
+    ? (isFillMeasure ? [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.25, 3.5, 3.75] : [0, 0.5, 1.5, 2, 2.5, 3.5])
+    : kickStyle === 'broken'
+    ? (isFillMeasure ? [0, 0.75, 1, 1.5, 2.25, 2.75, 3] : [0, 0.75, 1, 2, 2.75, 3])
+    : (isFillMeasure ? [0, 1, 2, 2.5, 3] : [0, 1, 2, 3]);
 
   for (const beat of kickBeats) {
     const t = now + beat * beatDur;
@@ -891,20 +992,29 @@ function scheduleNextMeasure() {
 
   // ============ HI-HATS (dynamic patterns) ============
   {
-    const hatPatterns: number[][] = [
-      [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
-      [1,0,1,1, 0,1,1,0, 1,0,1,1, 0,1,1,0],
-      [1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1],
-      [1,0,0,1, 0,1,0,1, 1,0,0,1, 0,1,0,1],
-      [1,1,0,1, 0,1,1,0, 1,1,0,1, 0,1,1,1], // shuffle
-    ];
-    const pIdx = Math.min(sectionFeel, hatPatterns.length - 1);
+    const hatStyle: HatStyle = profile.hatStyle ?? 'tight';
+    const hatPatterns: number[][] = hatStyle === 'dense'
+      ? [
+          [1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1],
+          [1,0,1,1, 1,0,1,1, 1,0,1,1, 1,1,0,1],
+        ]
+      : hatStyle === 'shuffle'
+      ? [
+          [1,0,0,1, 0,1,0,1, 1,0,0,1, 0,1,0,1],
+          [1,1,0,1, 0,1,1,0, 1,1,0,1, 0,1,1,1],
+        ]
+      : [
+          [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+          [1,0,1,1, 0,1,1,0, 1,0,1,1, 0,1,1,0],
+        ];
+
+    const pIdx = (sectionCount + sectionFeel + measureCount) % hatPatterns.length;
     const pattern = hatPatterns[pIdx];
 
     for (let i = 0; i < 16; i++) {
       if (!pattern[i]) continue;
       const t = now + i * sixteenth;
-      const isOpen = (i === 4 || i === 12) && sectionFeel >= 1;
+      const isOpen = (i === 4 || i === 12) && (sectionFeel >= 1 || hatStyle === 'dense');
       const isAccent = i % 4 === 0;
       const osc = ctx.createOscillator();
       const g = ctx.createGain();
@@ -912,9 +1022,9 @@ function scheduleNextMeasure() {
       osc.type = 'square';
       osc.frequency.setValueAtTime(8000 + Math.random() * 6000, t);
       f.type = 'highpass';
-      f.frequency.value = 7000;
+      f.frequency.value = 7200;
       const dur = isOpen ? 0.1 : 0.015;
-      const vol = isOpen ? 0.025 : (isAccent ? 0.016 : 0.011);
+      const vol = isOpen ? 0.028 : (isAccent ? 0.017 : (hatStyle === 'dense' ? 0.013 : 0.011));
       g.gain.setValueAtTime(vol, t);
       g.gain.exponentialRampToValueAtTime(0.001, t + dur);
       osc.connect(f).connect(g).connect(musicGain!);
@@ -924,10 +1034,11 @@ function scheduleNextMeasure() {
 
   // ============ BASS (supersaw sub + harmonic) ============
   {
-    const bpIdx = (sectionCount + sectionFeel) % BASS_RHYTHMS.length;
+    const rhythms = profile.bassRhythms.length > 0 ? profile.bassRhythms : BASS_RHYTHMS;
+    const bpIdx = (sectionCount + sectionFeel) % rhythms.length;
     const bp = sectionFeel === 3
       ? [1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0]
-      : BASS_RHYTHMS[bpIdx];
+      : rhythms[bpIdx];
 
     for (let i = 0; i < 16; i++) {
       if (!bp[i]) continue;
@@ -1060,19 +1171,18 @@ function scheduleNextMeasure() {
 
   // ============ LEAD MELODY (FM synthesis, expressive) ============
   if ((sectionFeel === 2 || sectionFeel === 4 || (sectionFeel === 1 && measureInSection >= 4)) && intensity >= 1) {
-    const minorScale = [0, 2, 3, 5, 7, 8, 10, 12, 14, 15, 17, 19, 20, 22, 24];
-    const phraseIdx = (sectionCount * 3 + measureCount) % MELODY_PHRASES.length;
-    const phrase = MELODY_PHRASES[phraseIdx];
-
+    const scale = profile.scale.length ? profile.scale : SCALES.naturalMinor;
+    const phrases = profile.melodyPhrases.length ? profile.melodyPhrases : (MELODY_PHRASES as unknown as ReadonlyArray<ReadonlyArray<MelodyStep>>);
+    const phraseIdx = (sectionCount * 3 + measureCount) % phrases.length;
+    const phrase = phrases[phraseIdx];
     let step = 0;
     for (let i = 0; i < phrase.length; i++) {
-      const [noteIdx, durSteps] = phrase[i];
+      const [noteIdx, durSteps] = phrase[i] as MelodyStep;
       if (durSteps === 0) { step++; continue; } // rest
       if (step >= 16) break;
       const t = now + step * sixteenth;
       const dur = durSteps * sixteenth;
-      const scaleDeg = noteIdx % minorScale.length;
-      const note = minorScale[scaleDeg];
+      const note = scale[noteIdx % scale.length] ?? 0;
       const noteFreq = midiToFreq(currentKey + 36 + note);
 
       // Layer 1: Square lead
@@ -1099,11 +1209,14 @@ function scheduleNextMeasure() {
       }
 
       // Portamento
-      if (durSteps === 1 && i < phrase.length - 1 && phrase[i + 1][1] > 0) {
-        const nextNote = minorScale[phrase[i + 1][0] % minorScale.length];
-        const nextFreq = midiToFreq(currentKey + 36 + nextNote);
-        osc.frequency.linearRampToValueAtTime(nextFreq, t + dur * 0.85);
-        osc2.frequency.linearRampToValueAtTime(nextFreq * 1.004, t + dur * 0.85);
+      if (durSteps === 1 && i < phrase.length - 1) {
+        const [nextIdx, nextDur] = phrase[i + 1] as MelodyStep;
+        if (nextDur > 0) {
+          const nextNote = scale[nextIdx % scale.length] ?? 0;
+          const nextFreq = midiToFreq(currentKey + 36 + nextNote);
+          osc.frequency.linearRampToValueAtTime(nextFreq, t + dur * 0.85);
+          osc2.frequency.linearRampToValueAtTime(nextFreq * 1.004, t + dur * 0.85);
+        }
       }
 
       f.type = 'lowpass';
@@ -1281,52 +1394,36 @@ function stopProceduralGameOnly() {
 export function startMusic() {
   if (musicPlaying) return;
 
-  // Ensure menu music (procedural or MP3) is stopped before starting gameplay music.
+  // Ensure menu music is stopped before starting gameplay music.
   stopMenuMusic();
 
   try {
     getCtx();
     musicPlaying = true;
 
-    // Start procedural immediately as a fallback (and for instant feedback),
-    // then swap to MP3 once it finishes loading.
+    // Hard reset so each map/boss theme starts with a clean structure.
     musicGain = null;
     compressor = null;
     reverbGain = null;
-    currentChordIndex = 0;
-    currentProgIndex = 0;
-    measureCount = 0;
-    sectionCount = 0;
-    currentKey = 33;
-    scheduleNextMeasure();
 
-    void ensureMp3Buffer().then(buf => {
-      if (!buf) return;
-      if (!musicPlaying) return;
-      stopProceduralGameOnly();
-      startMp3Game(buf);
-    });
+    hardResetMusicState(getActiveGameProfile());
+    scheduleNextMeasure();
   } catch {}
 }
 
 export function stopMusic() {
   musicPlaying = false;
   stopProceduralGameOnly();
-  stopMp3Game();
+
+  // Reset context so the next run starts deterministically.
+  currentProfile = null;
+  pendingProfile = null;
+  pendingProfileReset = false;
+  activeBossType = null;
 }
 
 export function setMusicIntensity(wave: number) {
   musicIntensity = Math.min(5, Math.max(1, Math.floor(wave / 2) + 1));
-
-  // If MP3 is active, apply subtle intensity via filter + playback rate.
-  if (mp3GameSource && mp3GameFilter && audioCtx) {
-    try {
-      const ctx = audioCtx;
-      const i = musicIntensity;
-      mp3GameFilter.frequency.setTargetAtTime(7000 + i * 1500, ctx.currentTime, 0.15);
-      mp3GameSource.playbackRate.setTargetAtTime(1 + (i - 1) * 0.02, ctx.currentTime, 0.15);
-    } catch {}
-  }
 }
 
 // ===== MENU MUSIC (Atmospheric synthwave, rich and moody) =====
@@ -1486,22 +1583,13 @@ export function startMenuMusic() {
     getCtx();
     menuMusicPlaying = true;
 
-    // Start procedural immediately as fallback, then swap to MP3 once available.
     menuGain = null;
     menuMeasure = 0;
     scheduleMenuMeasure();
-
-    void ensureMp3Buffer().then(buf => {
-      if (!buf) return;
-      if (!menuMusicPlaying || musicPlaying) return;
-      stopProceduralMenuOnly();
-      startMp3Menu(buf);
-    });
   } catch {}
 }
 
 export function stopMenuMusic() {
   menuMusicPlaying = false;
   stopProceduralMenuOnly();
-  stopMp3Menu();
 }
