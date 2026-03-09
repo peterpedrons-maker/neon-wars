@@ -892,15 +892,18 @@ function scheduleNextMeasure() {
     reverbGain = createReverb(ctx, musicGain);
   }
 
-  const masterVol = (0.05 + intensity * 0.012) * 0.5;
+  const masterVol = profile.masterGain * (0.82 + intensity * 0.12);
   musicGain.gain.setValueAtTime(masterVol, now);
 
-  // ============ KICK (punchy, layered) ============
-  const kickBeats = sectionFeel === 3
-    ? (isFillMeasure ? [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.25, 3.5, 3.75] : [0, 2])
-    : sectionFeel === 4
-    ? [0, 0.75, 1, 2, 2.75, 3]
-    : [0, 1, 2, 3];
+  // ============ KICK (punchy, layered) ==========
+  const kickStyle: KickStyle = profile.kickStyle ?? (sectionFeel === 3 ? 'half' : 'four');
+  const kickBeats = kickStyle === 'half'
+    ? (isFillMeasure ? [0, 1, 1.5, 2, 3] : [0, 2])
+    : kickStyle === 'dnb'
+    ? (isFillMeasure ? [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.25, 3.5, 3.75] : [0, 0.5, 1.5, 2, 2.5, 3.5])
+    : kickStyle === 'broken'
+    ? (isFillMeasure ? [0, 0.75, 1, 1.5, 2.25, 2.75, 3] : [0, 0.75, 1, 2, 2.75, 3])
+    : (isFillMeasure ? [0, 1, 2, 2.5, 3] : [0, 1, 2, 3]);
 
   for (const beat of kickBeats) {
     const t = now + beat * beatDur;
