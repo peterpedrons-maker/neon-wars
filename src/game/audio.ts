@@ -1648,3 +1648,396 @@ export function stopMenuMusic() {
   menuMusicPlaying = false;
   stopProceduralMenuOnly();
 }
+
+// ===== SHOP MUSIC (Upbeat, slightly more energetic than main menu) =====
+let shopMusicPlaying = false;
+let shopTimers: number[] = [];
+let shopGain: GainNode | null = null;
+let shopMeasure = 0;
+
+const SHOP_CHORDS = [
+  [[0,4,7,11,14], [9,12,16,19,23], [5,9,12,16,19], [7,11,14,17,22]],
+  [[0,3,7,10,14], [5,8,12,15,19], [7,10,14,17,21], [3,7,10,13,17]],
+];
+
+function scheduleShopMeasure() {
+  if (!shopMusicPlaying || !audioCtx) return;
+  const ctx = audioCtx;
+  const now = ctx.currentTime;
+  const bpm = 100;
+  const beatDur = 60 / bpm;
+  const measureDur = beatDur * 4;
+  const key = 36 + (Math.floor(shopMeasure / 8) % 3) * 2;
+
+  if (!shopGain) {
+    shopGain = ctx.createGain();
+    shopGain.gain.value = 0.045;
+    shopGain.connect(ctx.destination);
+  }
+
+  const prog = SHOP_CHORDS[Math.floor(shopMeasure / 4) % SHOP_CHORDS.length];
+  const chord = prog[shopMeasure % prog.length];
+
+  // Pad layer
+  for (let ci = 0; ci < Math.min(chord.length, 4); ci++) {
+    const nf = midiToFreq(key + 12 + chord[ci]);
+    for (let d = -2; d <= 2; d++) {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      const f = ctx.createBiquadFilter();
+      osc.type = d === 0 ? 'triangle' : 'sawtooth';
+      osc.frequency.setValueAtTime(nf * (1 + d * 0.005), now);
+      f.type = 'lowpass';
+      f.frequency.setValueAtTime(1200, now);
+      f.frequency.linearRampToValueAtTime(1800, now + measureDur * 0.5);
+      f.frequency.linearRampToValueAtTime(1000, now + measureDur);
+      const vol = 0.007;
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(vol, now + measureDur * 0.1);
+      g.gain.setValueAtTime(vol * 0.85, now + measureDur * 0.7);
+      g.gain.exponentialRampToValueAtTime(0.001, now + measureDur + 0.1);
+      osc.connect(f).connect(g).connect(shopGain!);
+      osc.start(now); osc.stop(now + measureDur + 0.15);
+    }
+  }
+
+  // Pluck melody (more upbeat)
+  const pluckPattern = [0, 2, 1, 3, 2, 0, 3, 1];
+  for (let i = 0; i < 8; i++) {
+    const chordNote = chord[pluckPattern[i] % chord.length];
+    const t = now + i * (beatDur / 2);
+    const nf = midiToFreq(key + 24 + chordNote);
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    const f = ctx.createBiquadFilter();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(nf, t);
+    osc.frequency.exponentialRampToValueAtTime(nf * 0.98, t + beatDur * 0.3);
+    f.type = 'bandpass';
+    f.frequency.value = nf * 2;
+    f.Q.value = 1.5;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.022, t + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.001, t + beatDur * 0.4);
+    osc.connect(f).connect(g).connect(shopGain!);
+    osc.start(t); osc.stop(t + beatDur * 0.45);
+  }
+
+  // Soft kick every 2 beats
+  for (let b = 0; b < 4; b += 2) {
+    const t = now + b * beatDur;
+    const kick = ctx.createOscillator();
+    const kg = ctx.createGain();
+    kick.type = 'sine';
+    kick.frequency.setValueAtTime(120, t);
+    kick.frequency.exponentialRampToValueAtTime(30, t + 0.12);
+    kg.gain.setValueAtTime(0.12, t);
+    kg.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+    kick.connect(kg).connect(shopGain!);
+    kick.start(t); kick.stop(t + 0.16);
+  }
+
+  // Bass
+  const bassFreq = midiToFreq(key + chord[0]);
+  const bass = ctx.createOscillator();
+  const bg = ctx.createGain();
+  bass.type = 'sine';
+  bass.frequency.setValueAtTime(bassFreq, now);
+  bg.gain.setValueAtTime(0.055, now);
+  bg.gain.exponentialRampToValueAtTime(0.001, now + measureDur * 0.6);
+  bass.connect(bg).connect(shopGain!);
+  bass.start(now); bass.stop(now + measureDur);
+
+  shopMeasure++;
+  const timer = window.setTimeout(scheduleShopMeasure, (measureDur - 0.05) * 1000);
+  shopTimers.push(timer);
+}
+
+export function startShopMusic() {
+  if (shopMusicPlaying || musicPlaying) return;
+  stopMenuMusic();
+  try {
+    getCtx();
+    shopMusicPlaying = true;
+    shopGain = null;
+    shopMeasure = 0;
+    scheduleShopMeasure();
+  } catch {}
+}
+
+export function stopShopMusic() {
+  shopMusicPlaying = false;
+  shopTimers.forEach(t => clearTimeout(t));
+  shopTimers = [];
+  if (shopGain && audioCtx) {
+    try { shopGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3); } catch {}
+  }
+  shopGain = null;
+}
+
+// ===== CLASS/MAP SELECT MUSIC (Tense, anticipatory) =====
+let selectMusicPlaying = false;
+let selectTimers: number[] = [];
+let selectGain: GainNode | null = null;
+let selectMeasure = 0;
+
+const SELECT_CHORDS = [
+  [[0,3,7,10], [5,8,12,15], [8,12,15,19], [7,10,14,17]],
+  [[0,3,7,10], [10,14,17,21], [8,12,15,19], [3,7,10,14]],
+];
+
+function scheduleSelectMeasure() {
+  if (!selectMusicPlaying || !audioCtx) return;
+  const ctx = audioCtx;
+  const now = ctx.currentTime;
+  const bpm = 110;
+  const beatDur = 60 / bpm;
+  const measureDur = beatDur * 4;
+  const key = 33 + (Math.floor(selectMeasure / 8) % 4);
+
+  if (!selectGain) {
+    selectGain = ctx.createGain();
+    selectGain.gain.value = 0.04;
+    selectGain.connect(ctx.destination);
+  }
+
+  const prog = SELECT_CHORDS[Math.floor(selectMeasure / 4) % SELECT_CHORDS.length];
+  const chord = prog[selectMeasure % prog.length];
+
+  // Dramatic string-like pad
+  for (let ci = 0; ci < chord.length; ci++) {
+    const nf = midiToFreq(key + 12 + chord[ci]);
+    const osc = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const g = ctx.createGain();
+    const f = ctx.createBiquadFilter();
+    osc.type = 'sawtooth';
+    osc2.type = 'triangle';
+    osc.frequency.setValueAtTime(nf, now);
+    osc2.frequency.setValueAtTime(nf * 1.003, now);
+    f.type = 'lowpass';
+    f.frequency.setValueAtTime(800, now);
+    f.frequency.linearRampToValueAtTime(1600, now + measureDur * 0.6);
+    f.frequency.linearRampToValueAtTime(600, now + measureDur);
+    const vol = 0.009;
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(vol, now + measureDur * 0.2);
+    g.gain.exponentialRampToValueAtTime(0.001, now + measureDur + 0.1);
+    osc.connect(f).connect(g).connect(selectGain!);
+    osc2.connect(f);
+    osc.start(now); osc.stop(now + measureDur + 0.15);
+    osc2.start(now); osc2.stop(now + measureDur + 0.15);
+  }
+
+  // Rhythmic stabs on beat 1 and 3
+  for (let b = 0; b < 4; b += 2) {
+    const t = now + b * beatDur;
+    const nf = midiToFreq(key + chord[0]);
+    for (let d = -1; d <= 1; d++) {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(nf * (1 + d * 0.01), t);
+      g.gain.setValueAtTime(0.025, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + beatDur * 0.3);
+      osc.connect(g).connect(selectGain!);
+      osc.start(t); osc.stop(t + beatDur * 0.35);
+    }
+    // Kick
+    const kick = ctx.createOscillator();
+    const kg = ctx.createGain();
+    kick.type = 'sine';
+    kick.frequency.setValueAtTime(140, t);
+    kick.frequency.exponentialRampToValueAtTime(28, t + 0.14);
+    kg.gain.setValueAtTime(0.15, t);
+    kg.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+    kick.connect(kg).connect(selectGain!);
+    kick.start(t); kick.stop(t + 0.2);
+  }
+
+  // Bass pulse
+  const bassFreq = midiToFreq(key + chord[0] - 12);
+  const bass = ctx.createOscillator();
+  const bg = ctx.createGain();
+  bass.type = 'sine';
+  bass.frequency.setValueAtTime(bassFreq, now);
+  bg.gain.setValueAtTime(0.07, now);
+  bg.gain.exponentialRampToValueAtTime(0.001, now + beatDur * 0.5);
+  bass.connect(bg).connect(selectGain!);
+  bass.start(now); bass.stop(now + beatDur * 0.6);
+
+  selectMeasure++;
+  const timer = window.setTimeout(scheduleSelectMeasure, (measureDur - 0.05) * 1000);
+  selectTimers.push(timer);
+}
+
+export function startSelectMusic() {
+  if (selectMusicPlaying || musicPlaying) return;
+  stopMenuMusic();
+  stopShopMusic();
+  try {
+    getCtx();
+    selectMusicPlaying = true;
+    selectGain = null;
+    selectMeasure = 0;
+    scheduleSelectMeasure();
+  } catch {}
+}
+
+export function stopSelectMusic() {
+  selectMusicPlaying = false;
+  selectTimers.forEach(t => clearTimeout(t));
+  selectTimers = [];
+  if (selectGain && audioCtx) {
+    try { selectGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3); } catch {}
+  }
+  selectGain = null;
+}
+
+// ===== ACHIEVEMENTS MUSIC (Celebratory, triumphant) =====
+let achMusicPlaying = false;
+let achTimers: number[] = [];
+let achGain: GainNode | null = null;
+let achMeasure = 0;
+
+const ACH_CHORDS = [
+  [[0,4,7,11], [5,9,12,16], [7,11,14,18], [0,4,7,12]],
+  [[3,7,10,14], [8,12,15,19], [5,9,12,16], [0,4,7,11]],
+];
+
+function scheduleAchMeasure() {
+  if (!achMusicPlaying || !audioCtx) return;
+  const ctx = audioCtx;
+  const now = ctx.currentTime;
+  const bpm = 116;
+  const beatDur = 60 / bpm;
+  const measureDur = beatDur * 4;
+  const key = 38 + (Math.floor(achMeasure / 8) % 3) * 2;
+
+  if (!achGain) {
+    achGain = ctx.createGain();
+    achGain.gain.value = 0.045;
+    achGain.connect(ctx.destination);
+  }
+
+  const prog = ACH_CHORDS[Math.floor(achMeasure / 4) % ACH_CHORDS.length];
+  const chord = prog[achMeasure % prog.length];
+
+  // Bright fanfare pad (major-ish chords)
+  for (let ci = 0; ci < chord.length; ci++) {
+    const nf = midiToFreq(key + 12 + chord[ci]);
+    for (let d = -1; d <= 1; d++) {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      const f = ctx.createBiquadFilter();
+      osc.type = d === 0 ? 'sine' : 'triangle';
+      osc.frequency.setValueAtTime(nf * (1 + d * 0.003), now);
+      f.type = 'lowpass';
+      f.frequency.setValueAtTime(2000, now);
+      const vol = 0.01;
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(vol, now + 0.04);
+      g.gain.setValueAtTime(vol * 0.8, now + measureDur * 0.6);
+      g.gain.exponentialRampToValueAtTime(0.001, now + measureDur + 0.1);
+      osc.connect(f).connect(g).connect(achGain!);
+      osc.start(now); osc.stop(now + measureDur + 0.15);
+    }
+  }
+
+  // Upbeat arpeggio
+  const arpPat = [0, 1, 2, 3, 2, 1, 0, 2];
+  for (let i = 0; i < 8; i++) {
+    const cn = chord[arpPat[i] % chord.length];
+    const oct = i >= 4 ? 12 : 0;
+    const t = now + i * (beatDur / 2);
+    const nf = midiToFreq(key + 24 + cn + oct);
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(nf, t);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.025, t + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.001, t + beatDur * 0.35);
+    osc.connect(g).connect(achGain!);
+    osc.start(t); osc.stop(t + beatDur * 0.4);
+  }
+
+  // Snappy hi-hat pattern
+  for (let i = 0; i < 8; i++) {
+    const t = now + i * (beatDur / 2);
+    const hat = ctx.createOscillator();
+    const hg = ctx.createGain();
+    const hf = ctx.createBiquadFilter();
+    hat.type = 'square';
+    hat.frequency.setValueAtTime(8000 + Math.random() * 4000, t);
+    hf.type = 'highpass';
+    hf.frequency.value = 6000;
+    hg.gain.setValueAtTime(i % 2 === 0 ? 0.015 : 0.008, t);
+    hg.gain.exponentialRampToValueAtTime(0.001, t + beatDur * 0.1);
+    hat.connect(hf).connect(hg).connect(achGain!);
+    hat.start(t); hat.stop(t + beatDur * 0.12);
+  }
+
+  // Kick on 1 and 3
+  for (const b of [0, 2]) {
+    const t = now + b * beatDur;
+    const kick = ctx.createOscillator();
+    const kg = ctx.createGain();
+    kick.type = 'sine';
+    kick.frequency.setValueAtTime(130, t);
+    kick.frequency.exponentialRampToValueAtTime(28, t + 0.13);
+    kg.gain.setValueAtTime(0.14, t);
+    kg.gain.exponentialRampToValueAtTime(0.001, t + 0.17);
+    kick.connect(kg).connect(achGain!);
+    kick.start(t); kick.stop(t + 0.18);
+  }
+
+  achMeasure++;
+  const timer = window.setTimeout(scheduleAchMeasure, (measureDur - 0.05) * 1000);
+  achTimers.push(timer);
+}
+
+export function startAchievementsMusic() {
+  if (achMusicPlaying || musicPlaying) return;
+  stopMenuMusic(); stopShopMusic(); stopSelectMusic();
+  try {
+    getCtx();
+    achMusicPlaying = true;
+    achGain = null;
+    achMeasure = 0;
+    scheduleAchMeasure();
+  } catch {}
+}
+
+export function stopAchievementsMusic() {
+  achMusicPlaying = false;
+  achTimers.forEach(t => clearTimeout(t));
+  achTimers = [];
+  if (achGain && audioCtx) {
+    try { achGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3); } catch {}
+  }
+  achGain = null;
+}
+
+// ===== LEADERBOARD MUSIC (Cool, competitive) =====
+export function startLeaderboardMusic() {
+  // Leaderboard reuses select music with a slightly different feel
+  startSelectMusic();
+}
+export function stopLeaderboardMusic() { stopSelectMusic(); }
+
+// ===== HOW TO PLAY MUSIC (Relaxed tutorial vibe) =====
+export function startHowToPlayMusic() {
+  // Use menu music feel for how-to-play
+  startMenuMusic();
+}
+export function stopHowToPlayMusic() { stopMenuMusic(); }
+
+// Convenience: stop ALL menu-style musics
+export function stopAllMenuMusic() {
+  stopMenuMusic();
+  stopShopMusic();
+  stopSelectMusic();
+  stopAchievementsMusic();
+}
+
