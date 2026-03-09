@@ -6,6 +6,7 @@ import {
   sendLobbyState, sendChat, LobbyState, ChatMessage,
   CoopPlayerState, CoopGameSync 
 } from '../../game/multiplayer';
+import { playClick, playHover, playBack } from '../../game/audio';
 
 interface MultiplayerLobbyProps {
   unlockedShips: string[];
