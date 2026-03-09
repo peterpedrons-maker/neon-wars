@@ -991,15 +991,24 @@ function getEnemyColor(type: EnemyType): string {
 function damagePlayer(state: GameState, damage: number) {
   const p = state.player;
   if (p.invincibleTimer > 0) return;
+
   // Dodge check
   if (state.abilities.dodge > 0 && Math.random() < state.abilities.dodge) {
-    state.particles.push(...createParticles(p.pos, '#ffffff', 8, 100, 2));
+    state.particles.push(...createParticles(p.pos, '#ffffff', 6, 140, 2));
     p.invincibleTimer = 0.3;
     return;
   }
+
+  // Armor actually reduces the chance of losing a heart
+  if (state.abilities.armor > 0 && Math.random() < state.abilities.armor) {
+    state.particles.push(...createParticles(p.pos, COLORS.neonCyan, 6, 160, 2));
+    p.invincibleTimer = 0.5;
+    return;
+  }
+
   if (p.shieldTimer > 0) {
     p.shieldTimer = 0;
-    state.particles.push(...createParticles(p.pos, COLORS.neonCyan, 15, 150, 3));
+    state.particles.push(...createParticles(p.pos, COLORS.neonCyan, 10, 200, 2.5));
     p.invincibleTimer = 0.5;
     return;
   }
@@ -1008,7 +1017,7 @@ function damagePlayer(state: GameState, damage: number) {
   p.invincibleTimer = 1.0;
   state.shakeTimer = 0.15;
   state.shakeIntensity = 5;
-  state.particles.push(...createParticles(p.pos, COLORS.health, 6, 120, 2));
+  state.particles.push(...createParticles(p.pos, COLORS.health, 4, 180, 2));
   playDamage();
 
   if (p.hp <= 0) {
