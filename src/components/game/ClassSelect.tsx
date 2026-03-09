@@ -3,31 +3,13 @@ import { ShipType } from '../../game/types';
 import { COLORS } from '../../game/constants';
 import { playClick, playHover, playBack, startSelectMusic, stopSelectMusic } from '../../game/audio';
 import ShipCanvas from './ShipCanvas';
+import { useLanguage } from '../../game/i18n';
 
 interface ClassSelectProps {
   onSelect: (cls: ShipType) => void;
   onBack: () => void;
   unlockedShips?: string[];
 }
-
-const ships: { id: ShipType; name: string; desc: string; stats: string; type: 'ranged' | 'melee' | 'special' }[] = [
-  { id: 'phantom', name: 'Phantom', desc: 'Nave ágil com disparos energéticos. Especial: Nova de plasma.', stats: 'DMG: 15 | VEL: Média', type: 'ranged' },
-  { id: 'interceptor', name: 'Interceptor', desc: 'Ultra veloz com tiro rápido. Especial: Lock-on barrage.', stats: 'DMG: 10 | VEL: Alta', type: 'ranged' },
-  { id: 'titan', name: 'Titan', desc: 'Ataque devastador em área. Especial: Onda de choque.', stats: 'DMG: 28 | VEL: Baixa', type: 'melee' },
-  { id: 'spectre', name: 'Spectre', desc: 'Furtiva com teleporte. Especial: Teleporte + explosão.', stats: 'DMG: 20 | VEL: Alta', type: 'ranged' },
-  { id: 'valkyrie', name: 'Valkyrie', desc: 'Guerreira alada, tiro duplo. Especial: Chuva de lanças.', stats: 'DMG: 12 | VEL: Média+', type: 'ranged' },
-  { id: 'juggernaut', name: 'Juggernaut', desc: 'Fortaleza indestrutível. Especial: Campo de destruição.', stats: 'DMG: 35 | VEL: Lenta', type: 'melee' },
-  { id: 'wraith', name: 'Wraith', desc: 'Fantasma que cria clones sombrios. Especial: Invisibilidade + clones.', stats: 'DMG: 18 | VEL: Alta', type: 'ranged' },
-  { id: 'sentinel', name: 'Sentinel', desc: 'Tanque com barreira protetora. Especial: Escudo + reflexão.', stats: 'DMG: 22 | VEL: Baixa', type: 'ranged' },
-  { id: 'tempest', name: 'Tempest', desc: 'Controlador de ventos. Especial: Tornado que puxa inimigos.', stats: 'DMG: 14 | VEL: Alta', type: 'ranged' },
-  { id: 'venom', name: 'Venom', desc: 'Envenenador com tiros tóxicos. Especial: Nuvem venenosa.', stats: 'DMG: 16 | VEL: Média', type: 'special' },
-  { id: 'nova_ship', name: 'Nova', desc: 'Poder destrutivo bruto. Especial: Supernova massiva.', stats: 'DMG: 30 | VEL: Média-', type: 'special' },
-  { id: 'chronos', name: 'Chronos', desc: 'Manipulador do tempo. Especial: Congela todos os inimigos.', stats: 'DMG: 13 | VEL: Média', type: 'special' },
-  { id: 'leviathan', name: 'Leviathan', desc: 'Colosso devorador. Especial: Devora e se cura.', stats: 'DMG: 40 | VEL: Lenta', type: 'melee' },
-  { id: 'raptor', name: 'Raptor', desc: 'O mais veloz. Tiro ultra-rápido. Especial: Blitz dash.', stats: 'DMG: 11 | VEL: Máxima', type: 'ranged' },
-  { id: 'oracle', name: 'Oracle', desc: 'Tiros rastreadores. Especial: Marca todos os inimigos.', stats: 'DMG: 12 | VEL: Média', type: 'special' },
-  { id: 'pyro', name: 'Pyro', desc: 'Lança-chamas devastador. Especial: Anel de fogo.', stats: 'DMG: 20 | VEL: Média-', type: 'special' },
-];
 
 const TYPE_BADGES: Record<string, { label: string; color: string }> = {
   ranged: { label: 'RANGED', color: '#0ff' },
@@ -36,13 +18,33 @@ const TYPE_BADGES: Record<string, { label: string; color: string }> = {
 };
 
 const ClassSelect: React.FC<ClassSelectProps> = ({ onSelect, onBack, unlockedShips }) => {
+  const { t } = useLanguage();
   useEffect(() => { startSelectMusic(); return () => { stopSelectMusic(); }; }, []);
   const unlocked = unlockedShips || ['phantom', 'interceptor', 'titan'];
+
+  const ships: { id: ShipType; name: string; descKey: string; stats: string; type: 'ranged' | 'melee' | 'special' }[] = [
+    { id: 'phantom', name: 'Phantom', descKey: 'ship_phantom_desc', stats: `DMG: 15 | ${t('ship_stats_vel_media')}`, type: 'ranged' },
+    { id: 'interceptor', name: 'Interceptor', descKey: 'ship_interceptor_desc', stats: `DMG: 10 | ${t('ship_stats_vel_alta')}`, type: 'ranged' },
+    { id: 'titan', name: 'Titan', descKey: 'ship_titan_desc', stats: `DMG: 28 | ${t('ship_stats_vel_baixa')}`, type: 'melee' },
+    { id: 'spectre', name: 'Spectre', descKey: 'ship_spectre_desc', stats: `DMG: 20 | ${t('ship_stats_vel_alta')}`, type: 'ranged' },
+    { id: 'valkyrie', name: 'Valkyrie', descKey: 'ship_valkyrie_desc', stats: `DMG: 12 | ${t('ship_stats_vel_media_plus')}`, type: 'ranged' },
+    { id: 'juggernaut', name: 'Juggernaut', descKey: 'ship_juggernaut_desc', stats: `DMG: 35 | ${t('ship_stats_vel_lenta')}`, type: 'melee' },
+    { id: 'wraith', name: 'Wraith', descKey: 'ship_wraith_desc', stats: `DMG: 18 | ${t('ship_stats_vel_alta')}`, type: 'ranged' },
+    { id: 'sentinel', name: 'Sentinel', descKey: 'ship_sentinel_desc', stats: `DMG: 22 | ${t('ship_stats_vel_baixa')}`, type: 'ranged' },
+    { id: 'tempest', name: 'Tempest', descKey: 'ship_tempest_desc', stats: `DMG: 14 | ${t('ship_stats_vel_alta')}`, type: 'ranged' },
+    { id: 'venom', name: 'Venom', descKey: 'ship_venom_desc', stats: `DMG: 16 | ${t('ship_stats_vel_media')}`, type: 'special' },
+    { id: 'nova_ship', name: 'Nova', descKey: 'ship_nova_ship_desc', stats: `DMG: 30 | ${t('ship_stats_vel_media_minus')}`, type: 'special' },
+    { id: 'chronos', name: 'Chronos', descKey: 'ship_chronos_desc', stats: `DMG: 13 | ${t('ship_stats_vel_media')}`, type: 'special' },
+    { id: 'leviathan', name: 'Leviathan', descKey: 'ship_leviathan_desc', stats: `DMG: 40 | ${t('ship_stats_vel_lenta')}`, type: 'melee' },
+    { id: 'raptor', name: 'Raptor', descKey: 'ship_raptor_desc', stats: `DMG: 11 | ${t('ship_stats_vel_maxima')}`, type: 'ranged' },
+    { id: 'oracle', name: 'Oracle', descKey: 'ship_oracle_desc', stats: `DMG: 12 | ${t('ship_stats_vel_media')}`, type: 'special' },
+    { id: 'pyro', name: 'Pyro', descKey: 'ship_pyro_desc', stats: `DMG: 20 | ${t('ship_stats_vel_media_minus')}`, type: 'special' },
+  ];
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#000008] text-[#e0e8ff] select-none p-4">
       <h2 className="text-3xl md:text-4xl font-bold mb-2" style={{ fontFamily: 'Orbitron, monospace', textShadow: '0 0 30px rgba(0,255,255,0.3)' }}>
-        Escolha sua Nave
+        {t('choose_ship')}
       </h2>
       <div className="w-48 h-px bg-gradient-to-r from-transparent via-[#0ff] to-transparent mb-6" />
 
@@ -77,7 +79,7 @@ const ClassSelect: React.FC<ClassSelectProps> = ({ onSelect, onBack, unlockedShi
               <h3 className="text-sm font-bold mb-0.5" style={{ color: isLocked ? '#555' : color, fontFamily: 'Orbitron, monospace' }}>
                 {s.name}
               </h3>
-              <p className="text-[9px] text-[#6080aa] text-center mb-1 leading-tight">{s.desc}</p>
+              <p className="text-[9px] text-[#6080aa] text-center mb-1 leading-tight">{t(s.descKey as any)}</p>
               <p className="text-[8px] font-mono" style={{ color: isLocked ? '#444' : color }}>{s.stats}</p>
             </button>
           );
@@ -86,7 +88,7 @@ const ClassSelect: React.FC<ClassSelectProps> = ({ onSelect, onBack, unlockedShi
 
       <button onClick={() => { playBack(); onBack(); }} onMouseEnter={playHover}
         className="text-[#6080aa] hover:text-[#0ff] transition-colors text-lg font-mono">
-        ← Voltar
+        {t('back')}
       </button>
     </div>
   );

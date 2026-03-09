@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShipType, LeaderboardEntry } from '../../game/types';
 import { Milestone } from '../../game/meta';
 import { playClick, playHover, playGameOver, playPurchase } from '../../game/audio';
+import { useLanguage } from '../../game/i18n';
 
 interface GameOverProps {
   score: number;
@@ -15,12 +16,11 @@ interface GameOverProps {
 }
 
 const GameOver: React.FC<GameOverProps> = ({ score, wave, enemiesKilled, playerClass, plasmaEarned, newMilestones, onRestart, onMenu }) => {
+  const { t } = useLanguage();
   const [name, setName] = useState('');
   const [saved, setSaved] = useState(false);
 
-  useEffect(() => {
-    playGameOver();
-  }, []);
+  useEffect(() => { playGameOver(); }, []);
 
   const saveScore = () => {
     if (!name.trim()) return;
@@ -35,18 +35,18 @@ const GameOver: React.FC<GameOverProps> = ({ score, wave, enemiesKilled, playerC
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/85 z-20 select-none p-4">
       <div className="text-5xl md:text-6xl font-bold mb-4 font-mono" style={{ color: '#ff0040', textShadow: '0 0 30px rgba(255,0,64,0.5)' }}>
-        DESTROYED
+        {t('destroyed')}
       </div>
 
       <div className="rounded-xl p-6 mb-4 text-center border" style={{ background: 'rgba(0,0,20,0.9)', borderColor: 'rgba(0,255,255,0.2)' }}>
         <div className="text-4xl font-bold font-mono mb-3" style={{ color: '#ffff00', textShadow: '0 0 15px rgba(255,255,0,0.4)' }}>{score.toLocaleString()}</div>
         <div className="flex gap-6 text-[#6080aa] font-mono mb-3">
-          <div>Wave <span className="text-[#0ff] font-bold">{wave}</span></div>
-          <div>Kills <span className="text-[#39ff14] font-bold">{enemiesKilled}</span></div>
+          <div>{t('wave_label')} <span className="text-[#0ff] font-bold">{wave}</span></div>
+          <div>{t('kills_label')} <span className="text-[#39ff14] font-bold">{enemiesKilled}</span></div>
         </div>
         <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg" style={{ background: 'rgba(191,90,242,0.15)', border: '1px solid rgba(191,90,242,0.3)' }}>
           <span className="text-xl">⚡</span>
-          <span className="font-mono font-bold" style={{ color: '#bf5af2' }}>+{plasmaEarned} Plasma</span>
+          <span className="font-mono font-bold" style={{ color: '#bf5af2' }}>+{plasmaEarned} {t('plasma')}</span>
         </div>
       </div>
 
@@ -57,7 +57,7 @@ const GameOver: React.FC<GameOverProps> = ({ score, wave, enemiesKilled, playerC
               <span className="text-2xl">{m.icon}</span>
               <div>
                 <div className="font-mono font-bold text-sm" style={{ color: '#ffff00' }}>🏆 {m.name}</div>
-                <div className="font-mono text-xs text-[#6080aa]">Desbloqueado: {m.reward.name}</div>
+                <div className="font-mono text-xs text-[#6080aa]">{t('unlocked_prefix')} {m.reward.name}</div>
               </div>
             </div>
           ))}
@@ -70,7 +70,7 @@ const GameOver: React.FC<GameOverProps> = ({ score, wave, enemiesKilled, playerC
             type="text" value={name}
             onChange={e => setName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && saveScore()}
-            placeholder="Callsign..."
+            placeholder={t('callsign')}
             maxLength={15}
             className="px-4 py-2 rounded-lg bg-[#000010] border text-[#e0e8ff] placeholder-[#203050] focus:border-[#0ff] outline-none text-center w-48 font-mono"
             style={{ borderColor: 'rgba(0,255,255,0.3)' }}
@@ -78,11 +78,11 @@ const GameOver: React.FC<GameOverProps> = ({ score, wave, enemiesKilled, playerC
           <button onClick={saveScore} onMouseEnter={playHover}
             className="px-4 py-2 rounded-lg font-bold font-mono transition-colors"
             style={{ background: 'rgba(255,255,0,0.2)', color: '#ffff00', border: '1px solid rgba(255,255,0,0.4)' }}>
-            Salvar
+            {t('save')}
           </button>
         </div>
       ) : (
-        <div className="mb-6 font-bold font-mono" style={{ color: '#39ff14', textShadow: '0 0 10px rgba(57,255,20,0.4)' }}>✅ Score saved!</div>
+        <div className="mb-6 font-bold font-mono" style={{ color: '#39ff14', textShadow: '0 0 10px rgba(57,255,20,0.4)' }}>{t('score_saved')}</div>
       )}
 
       <div className="flex gap-4">
@@ -93,12 +93,12 @@ const GameOver: React.FC<GameOverProps> = ({ score, wave, enemiesKilled, playerC
             borderColor: '#0ff',
             boxShadow: '0 0 15px rgba(0,255,255,0.2)',
           }}>
-          🚀 Jogar Novamente
+          {t('play_again')}
         </button>
         <button onClick={() => { playClick(); onMenu(); }} onMouseEnter={playHover}
           className="py-3 px-8 text-lg font-bold rounded-lg text-[#6080aa] border border-[#6080aa]/30 transition-all duration-200 hover:border-[#0ff] hover:text-[#0ff] font-mono"
           style={{ background: 'rgba(0,255,255,0.03)' }}>
-          Menu
+          {t('menu')}
         </button>
       </div>
     </div>

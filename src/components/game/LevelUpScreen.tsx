@@ -2,6 +2,7 @@ import React, { useMemo, useEffect } from 'react';
 import { Ability, getRandomAbilities } from '../../game/abilities';
 import { playClick, playHover, playLevelUp } from '../../game/audio';
 import { ABILITY_ICONS } from '../../game/icons';
+import { useLanguage } from '../../game/i18n';
 
 interface LevelUpScreenProps {
   level: number;
@@ -13,25 +14,22 @@ interface LevelUpScreenProps {
 }
 
 const LevelUpScreen: React.FC<LevelUpScreenProps> = ({ level, abilityLevels, equippedWeapons, weaponSlots, unlockedAbilities, onSelect }) => {
+  const { t } = useLanguage();
   const abilities = useMemo(() => getRandomAbilities(3, abilityLevels, weaponSlots, equippedWeapons, unlockedAbilities), [level]);
 
-  useEffect(() => {
-    playLevelUp();
-  }, []);
+  useEffect(() => { playLevelUp(); }, []);
 
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-20 select-none p-4">
-      <div
-        className="text-3xl md:text-4xl font-bold mb-1 font-mono animate-pulse"
-        style={{ color: '#ffff00', textShadow: '0 0 20px rgba(255,255,0,0.6)' }}
-      >
-        LEVEL UP! 🎉
+      <div className="text-3xl md:text-4xl font-bold mb-1 font-mono animate-pulse"
+        style={{ color: '#ffff00', textShadow: '0 0 20px rgba(255,255,0,0.6)' }}>
+        {t('level_up')}
       </div>
-      <p className="text-[#6080aa] mb-1 text-sm font-mono">Nível {level}</p>
+      <p className="text-[#6080aa] mb-1 text-sm font-mono">{t('level_label')} {level}</p>
       <p className="text-[#8090bb] mb-1 text-xs font-mono">
-        🔫 Armas: {equippedWeapons.length}/{weaponSlots} slots
+        🔫 {t('weapons_slots')}: {equippedWeapons.length}/{weaponSlots} slots
       </p>
-      <p className="text-[#8090bb] mb-4 text-base font-mono">Escolha uma habilidade:</p>
+      <p className="text-[#8090bb] mb-4 text-base font-mono">{t('choose_ability')}</p>
 
       <div className="flex flex-col md:flex-row gap-4">
         {abilities.map(a => {
@@ -39,7 +37,6 @@ const LevelUpScreen: React.FC<LevelUpScreenProps> = ({ level, abilityLevels, equ
           const isWeapon = a.category === 'weapon';
           const isNewWeapon = isWeapon && !equippedWeapons.includes(a.id);
           const borderHue = isWeapon ? 'rgba(255,100,0,0.2)' : 'rgba(0,255,255,0.2)';
-          const hoverBorder = isWeapon ? '#ff6b00' : '#0ff';
           
           return (
             <button
@@ -62,13 +59,13 @@ const LevelUpScreen: React.FC<LevelUpScreenProps> = ({ level, abilityLevels, equ
                   background: isWeapon ? 'rgba(255,100,0,0.2)' : 'rgba(0,255,255,0.2)',
                   color: isWeapon ? '#ff6b00' : '#0ff',
                 }}>
-                  {isWeapon ? '🔫 ARMA' : '⚙️ PASSIVA'}
+                  {isWeapon ? t('weapon_tag') : t('passive_tag')}
                 </span>
                 {isNewWeapon && (
                   <span className="text-[9px] px-1.5 py-0.5 rounded font-bold" style={{
                     background: 'rgba(255,255,0,0.2)', color: '#ffff00',
                   }}>
-                    NOVO
+                    {t('new_tag')}
                   </span>
                 )}
               </div>

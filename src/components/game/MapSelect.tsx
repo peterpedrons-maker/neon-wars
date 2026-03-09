@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ALL_MAPS, MAP_ORDER } from '../../game/maps';
 import type { MapDifficulty } from '../../game/maps';
 import { playClick, playHover, playBack, startSelectMusic, stopSelectMusic } from '../../game/audio';
+import { useLanguage } from '../../game/i18n';
 
 interface MapSelectProps {
   unlockedMaps: string[];
@@ -11,15 +12,16 @@ interface MapSelectProps {
 
 const mapOrder = MAP_ORDER;
 
-const difficultyOptions: Array<{ id: MapDifficulty; label: string; hint: string }> = [
-  { id: 'easy', label: 'Fácil', hint: 'Mais tranquilo' },
-  { id: 'medium', label: 'Médio', hint: 'Padrão' },
-  { id: 'hard', label: 'Difícil', hint: 'Bem puxado' },
-];
-
 const MapSelect: React.FC<MapSelectProps> = ({ unlockedMaps, onSelect, onBack }) => {
+  const { t } = useLanguage();
   const [difficulty, setDifficulty] = useState<MapDifficulty>('medium');
   useEffect(() => { startSelectMusic(); return () => { stopSelectMusic(); }; }, []);
+
+  const difficultyOptions: Array<{ id: MapDifficulty; labelKey: 'easy' | 'medium' | 'hard'; hintKey: 'easy_hint' | 'medium_hint' | 'hard_hint' }> = [
+    { id: 'easy', labelKey: 'easy', hintKey: 'easy_hint' },
+    { id: 'medium', labelKey: 'medium', hintKey: 'medium_hint' },
+    { id: 'hard', labelKey: 'hard', hintKey: 'hard_hint' },
+  ];
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#000008] text-[#e0e8ff] select-none p-4">
@@ -27,10 +29,9 @@ const MapSelect: React.FC<MapSelectProps> = ({ unlockedMaps, onSelect, onBack })
         className="text-3xl md:text-4xl font-bold mb-4"
         style={{ fontFamily: 'Orbitron, monospace', color: '#0ff', textShadow: '0 0 20px rgba(0,255,255,0.4)' }}
       >
-        Selecione o Mapa
+        {t('select_map')}
       </h2>
 
-      {/* Difficulty selector */}
       <div className="flex items-center gap-2 mb-8">
         {difficultyOptions.map(opt => (
           <button
@@ -44,9 +45,9 @@ const MapSelect: React.FC<MapSelectProps> = ({ unlockedMaps, onSelect, onBack })
               color: difficulty === opt.id ? '#ffff00' : '#6080aa',
               boxShadow: difficulty === opt.id ? '0 0 18px rgba(255,255,0,0.18)' : 'none',
             }}
-            title={opt.hint}
+            title={t(opt.hintKey)}
           >
-            {opt.label}
+            {t(opt.labelKey)}
           </button>
         ))}
       </div>
@@ -79,11 +80,11 @@ const MapSelect: React.FC<MapSelectProps> = ({ unlockedMaps, onSelect, onBack })
                 {map.name}
               </h3>
               <p className="text-xs text-[#6080aa] text-center">
-                {unlocked ? map.description : 'Complete milestones para desbloquear'}
+                {unlocked ? map.description : t('unlock_milestones')}
               </p>
               {unlocked && map.hazards.length > 0 && (
                 <div className="mt-2 text-[10px] px-2 py-0.5 rounded" style={{ background: 'rgba(255,100,0,0.15)', color: '#ff6b00' }}>
-                  ⚠️ Hazards ativos
+                  {t('hazards_active')}
                 </div>
               )}
             </button>
@@ -97,7 +98,7 @@ const MapSelect: React.FC<MapSelectProps> = ({ unlockedMaps, onSelect, onBack })
         className="py-2 px-6 text-sm font-bold rounded-lg text-[#6080aa] border border-[#6080aa]/30 transition-all duration-200 hover:border-[#0ff] hover:text-[#0ff] font-mono"
         style={{ background: 'rgba(0,255,255,0.03)' }}
       >
-        ← Voltar
+        {t('back')}
       </button>
     </div>
   );
