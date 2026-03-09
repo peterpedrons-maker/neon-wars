@@ -27,6 +27,7 @@ const Index = () => {
   const [coopRoom, setCoopRoom] = useState<RoomInfo | null>(null);
   const [peerClasses, setPeerClasses] = useState<ShipType[]>(['interceptor']);
   const [totalPlayers, setTotalPlayers] = useState(2);
+  const [synced, setSynced] = useState(false);
 
   // Load progress from cloud on login
   useEffect(() => {
