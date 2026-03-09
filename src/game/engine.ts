@@ -135,6 +135,9 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   updateFrostNova(state, dt);
   updateMissiles(state, dt);
   updateLightningRing(state, dt);
+  updateIonBeam(state, dt);
+  updateShockwave(state, dt);
+  updateSentries(state, dt);
   
   // Flame trail zones
   if (state.abilities.flameTrailDamage > 0 && Math.hypot(p.vel.x, p.vel.y) > 20) {
