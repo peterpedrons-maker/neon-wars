@@ -314,9 +314,13 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
       if (stateRef.current.screen === 'upgrade' && prevScreen === 'playing') {
         sendLevelUp(stateRef.current.level);
         setShowUpgrade(true);
-        setMyUpgradeDone(false);
+        const isDead = !stateRef.current.player.alive;
+        setMyUpgradeDone(isDead);
         setPeerUpgradeDone(false);
         setWaitingForPeer(false);
+        if (isDead) {
+          sendUpgradeDone();
+        }
       }
 
       // Send our state to peer
