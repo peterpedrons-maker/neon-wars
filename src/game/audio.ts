@@ -699,36 +699,184 @@ function playFMNote(ctx: AudioContext, dest: AudioNode, carrierFreq: number, mod
   modulator.start(t); modulator.stop(t + dur + 0.01);
 }
 
+// ===== MAP / BOSS MUSIC PROFILES =====
+
+const SCALES = {
+  naturalMinor: [0, 2, 3, 5, 7, 8, 10, 12, 14, 15, 17, 19, 20, 22, 24],
+  phrygian: [0, 1, 3, 5, 7, 8, 10, 12, 13, 15, 17, 19, 20, 22, 24],
+  harmonicMinor: [0, 2, 3, 5, 7, 8, 11, 12, 14, 15, 17, 19, 20, 23, 24],
+  mixolydian: [0, 2, 4, 5, 7, 9, 10, 12, 14, 16, 17, 19, 21, 22, 24],
+  wholeTone: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24],
+  diminished: [0, 1, 3, 4, 6, 7, 9, 10, 12, 13, 15, 16, 18, 19, 21, 22, 24],
+} as const;
+
+const MAP_MUSIC_PROFILES: Record<string, MusicProfile> = {
+  'neon-grid': {
+    id: 'map:neon-grid',
+    bpm: 138,
+    keyCycle: [33, 36, 38, 40],
+    keyChangeEveryMeasures: 64,
+    progressions: [PROGS[4], PROGS[2], PROGS[0]], // synthwave + trance + cinematic
+    melodyPhrases: [MELODY_PHRASES[8], MELODY_PHRASES[1], MELODY_PHRASES[0], MELODY_PHRASES[5]],
+    scale: SCALES.naturalMinor,
+    bassRhythms: [BASS_RHYTHMS[0], BASS_RHYTHMS[2], BASS_RHYTHMS[5]],
+    masterGain: 0.030,
+    kickStyle: 'four',
+    hatStyle: 'tight',
+  },
+  inferno: {
+    id: 'map:inferno',
+    bpm: 152,
+    keyCycle: [31, 34, 36, 38],
+    keyChangeEveryMeasures: 48,
+    progressions: [PROGS[5], PROGS[1], PROGS[6]], // aggressive + driving
+    melodyPhrases: [MELODY_PHRASES[3], MELODY_PHRASES[7], MELODY_PHRASES[1]],
+    scale: SCALES.phrygian,
+    bassRhythms: [BASS_RHYTHMS[5], BASS_RHYTHMS[3], BASS_RHYTHMS[1]],
+    masterGain: 0.032,
+    kickStyle: 'broken',
+    hatStyle: 'dense',
+  },
+  void: {
+    id: 'map:void',
+    bpm: 128,
+    keyCycle: [28, 31, 33, 26],
+    keyChangeEveryMeasures: 64,
+    progressions: [PROGS[5], PROGS[0], PROGS[7]],
+    melodyPhrases: [MELODY_PHRASES[6], MELODY_PHRASES[9], MELODY_PHRASES[2]],
+    scale: SCALES.diminished,
+    bassRhythms: [BASS_RHYTHMS[6], BASS_RHYTHMS[0]],
+    masterGain: 0.028,
+    kickStyle: 'half',
+    hatStyle: 'shuffle',
+  },
+  crystal: {
+    id: 'map:crystal',
+    bpm: 142,
+    keyCycle: [35, 38, 40, 43],
+    keyChangeEveryMeasures: 64,
+    progressions: [PROGS[2], PROGS[3], PROGS[7]],
+    melodyPhrases: [MELODY_PHRASES[0], MELODY_PHRASES[4], MELODY_PHRASES[9]],
+    scale: SCALES.mixolydian,
+    bassRhythms: [BASS_RHYTHMS[2], BASS_RHYTHMS[0], BASS_RHYTHMS[4]],
+    masterGain: 0.030,
+    kickStyle: 'four',
+    hatStyle: 'tight',
+  },
+  singularity: {
+    id: 'map:singularity',
+    bpm: 168,
+    keyCycle: [33, 36, 38, 40],
+    keyChangeEveryMeasures: 32,
+    progressions: [PROGS[5], PROGS[1], PROGS[6]],
+    melodyPhrases: [MELODY_PHRASES[8], MELODY_PHRASES[3], MELODY_PHRASES[1]],
+    scale: SCALES.diminished,
+    bassRhythms: [BASS_RHYTHMS[1], BASS_RHYTHMS[5], BASS_RHYTHMS[3]],
+    masterGain: 0.034,
+    kickStyle: 'dnb',
+    hatStyle: 'dense',
+  },
+  foundry: {
+    id: 'map:foundry',
+    bpm: 156,
+    keyCycle: [30, 33, 35, 37],
+    keyChangeEveryMeasures: 48,
+    progressions: [PROGS[1], PROGS[5], PROGS[6]],
+    melodyPhrases: [MELODY_PHRASES[5], MELODY_PHRASES[3], MELODY_PHRASES[7]],
+    scale: SCALES.harmonicMinor,
+    bassRhythms: [BASS_RHYTHMS[3], BASS_RHYTHMS[5], BASS_RHYTHMS[0]],
+    masterGain: 0.032,
+    kickStyle: 'broken',
+    hatStyle: 'shuffle',
+  },
+};
+
+const DEFAULT_BOSS_PROFILE: MusicProfile = {
+  id: 'boss:generic',
+  bpm: 172,
+  keyCycle: [31, 33],
+  keyChangeEveryMeasures: 16,
+  progressions: [PROGS[5], PROGS[6]],
+  melodyPhrases: [MELODY_PHRASES[8], MELODY_PHRASES[1], MELODY_PHRASES[3]],
+  scale: SCALES.diminished,
+  bassRhythms: [BASS_RHYTHMS[1], BASS_RHYTHMS[5]],
+  masterGain: 0.036,
+  kickStyle: 'dnb',
+  hatStyle: 'dense',
+  sectionFeelOverride: 4,
+};
+
+const BOSS_MUSIC_PROFILES: Partial<Record<EnemyType, MusicProfile>> = {
+  mothership: { ...DEFAULT_BOSS_PROFILE, id: 'boss:mothership', bpm: 158, scale: SCALES.wholeTone, progressions: [PROGS[2], PROGS[5]] },
+  vortex: { ...DEFAULT_BOSS_PROFILE, id: 'boss:vortex', bpm: 176, scale: SCALES.diminished, progressions: [PROGS[5], PROGS[1]] },
+  colossus: { ...DEFAULT_BOSS_PROFILE, id: 'boss:colossus', bpm: 148, kickStyle: 'half', hatStyle: 'tight', scale: SCALES.naturalMinor, progressions: [PROGS[3], PROGS[0]] },
+  fire_elemental: { ...DEFAULT_BOSS_PROFILE, id: 'boss:fire_elemental', bpm: 162, scale: SCALES.harmonicMinor, progressions: [PROGS[6], PROGS[1]] },
+  lava_dragon: { ...DEFAULT_BOSS_PROFILE, id: 'boss:lava_dragon', bpm: 166, scale: SCALES.phrygian, progressions: [PROGS[5], PROGS[6]] },
+  void_lord: { ...DEFAULT_BOSS_PROFILE, id: 'boss:void_lord', bpm: 184, scale: SCALES.diminished, progressions: [PROGS[5], PROGS[7]] },
+  crystal_giant: { ...DEFAULT_BOSS_PROFILE, id: 'boss:crystal_giant', bpm: 154, hatStyle: 'tight', scale: SCALES.mixolydian, progressions: [PROGS[2], PROGS[3]] },
+};
+
+function getActiveGameProfile(): MusicProfile {
+  if (activeBossType) {
+    return BOSS_MUSIC_PROFILES[activeBossType] ?? DEFAULT_BOSS_PROFILE;
+  }
+  return MAP_MUSIC_PROFILES[activeMapId] ?? MAP_MUSIC_PROFILES['neon-grid'];
+}
+
+function hardResetMusicState(profile: MusicProfile) {
+  currentProfile = profile;
+  pendingProfile = null;
+  pendingProfileReset = false;
+
+  currentChordIndex = 0;
+  currentProgIndex = 0;
+  measureCount = 0;
+  sectionCount = 0;
+  currentKey = profile.keyCycle[0] ?? 33;
+}
+
 function scheduleNextMeasure() {
   if (!musicPlaying || !audioCtx) return;
+
+  const desired = pendingProfileReset && pendingProfile
+    ? pendingProfile
+    : (currentProfile ?? getActiveGameProfile());
+
+  if (!currentProfile || pendingProfileReset) {
+    hardResetMusicState(desired);
+  }
+
+  const profile = currentProfile!;
+
   const ctx = audioCtx;
   const now = ctx.currentTime;
-  const bpm = 140;
+  const bpm = profile.bpm;
   const beatDur = 60 / bpm;
   const measureDur = beatDur * 4;
   const sixteenth = beatDur / 4;
 
-  const isNewSection = measureCount > 0 && measureCount % 16 === 0; // Extended to 16 measures per section
+  const isNewSection = measureCount > 0 && measureCount % 16 === 0;
   if (isNewSection) {
     sectionCount++;
-    currentProgIndex = sectionCount % PROGS.length;
-    if (measureCount % 64 === 0) { // Key change every 64 measures for much longer progression without feeling repetitive
-      const keys = [33, 36, 38, 40, 31, 28, 35, 43, 45, 33, 26, 38];
-      currentKey = keys[(sectionCount / 4 | 0) % keys.length];
-    }
+    currentProgIndex = sectionCount % profile.progressions.length;
   }
 
-  const prog = PROGS[currentProgIndex];
+  if (measureCount > 0 && measureCount % profile.keyChangeEveryMeasures === 0) {
+    const kIdx = Math.floor(measureCount / profile.keyChangeEveryMeasures) % profile.keyCycle.length;
+    currentKey = profile.keyCycle[kIdx] ?? currentKey;
+  }
+
+  const prog = profile.progressions[currentProgIndex];
   const chord = prog[currentChordIndex % prog.length];
-  // 0=intro, 1=build, 2=drop, 3=breakdown, 4=climax, 5=bridge, 6=outro
-  const sectionFeel = sectionCount % 7; 
+
+  const sectionFeel = profile.sectionFeelOverride ?? (sectionCount % 7);
   const measureInSection = measureCount % 16;
   const isFillMeasure = measureInSection === 15 || measureInSection === 7;
   const intensity = musicIntensity;
 
   if (!musicGain) {
     musicGain = ctx.createGain();
-    musicGain.gain.value = 0.03;
+    musicGain.gain.value = profile.masterGain;
     compressor = ctx.createDynamicsCompressor();
     compressor.threshold.value = -12;
     compressor.knee.value = 4;
