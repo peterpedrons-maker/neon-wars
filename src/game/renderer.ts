@@ -271,7 +271,11 @@ function warpPoint(px: number, py: number, sources: WarpSource[]): [number, numb
 }
 
 function drawNeonGridWarped(ctx: CanvasRenderingContext2D, time: number, state: GameState) {
-  const pulse = 0.04 + Math.sin(time * 0.5) * 0.015;
+  const currentMap = ALL_MAPS[state.mapId];
+  // Use map grid color (format: 'R,G,B' or fallback cyan)
+  const gridRGB = currentMap?.gridColor || '0,255,255';
+  const baseAlpha = currentMap?.gridAlpha ?? 0.04;
+  const pulse = baseAlpha + Math.sin(time * 0.5) * baseAlpha * 0.4;
   const sources = getWarpSources(state);
   const hasWarp = sources.length > 0;
 
@@ -290,9 +294,9 @@ function drawNeonGridWarped(ctx: CanvasRenderingContext2D, time: number, state: 
       let brightness = pulse;
       for (const s of sources) {
         const d = Math.hypot(x - s.x, y - s.y);
-        if (d < s.radius) brightness = Math.max(brightness, 0.12 * (1 - d / s.radius));
+        if (d < s.radius) brightness = Math.max(brightness, baseAlpha * 3 * (1 - d / s.radius));
       }
-      ctx.strokeStyle = `rgba(0,255,255,${brightness})`;
+      ctx.strokeStyle = `rgba(${gridRGB},${brightness})`;
       if (first) { ctx.moveTo(wx, wy); first = false; }
       else ctx.lineTo(wx, wy);
     }
@@ -308,13 +312,19 @@ function drawNeonGridWarped(ctx: CanvasRenderingContext2D, time: number, state: 
       let brightness = pulse;
       for (const s of sources) {
         const d = Math.hypot(x - s.x, y - s.y);
-        if (d < s.radius) brightness = Math.max(brightness, 0.12 * (1 - d / s.radius));
+        if (d < s.radius) brightness = Math.max(brightness, baseAlpha * 3 * (1 - d / s.radius));
       }
-      ctx.strokeStyle = `rgba(0,255,255,${brightness})`;
+      ctx.strokeStyle = `rgba(${gridRGB},${brightness})`;
       if (first) { ctx.moveTo(wx, wy); first = false; }
       else ctx.lineTo(wx, wy);
     }
     ctx.stroke();
+  }
+  
+  // Map ambient fog overlay
+  if (currentMap?.fogColor) {
+    ctx.fillStyle = currentMap.fogColor;
+    ctx.fillRect(WALL_LEFT, WALL_TOP, ARENA_W, ARENA_H);
   }
 }
 
