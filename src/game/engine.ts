@@ -315,13 +315,18 @@ function spawnWaveEnemy(state: GameState) {
       'void': 'void_lord',
       'crystal': 'crystal_giant',
     };
-    if (mapBoss[state.mapId]) {
-      state.enemies.push(createEnemy(mapBoss[state.mapId], state.wave));
+    const bossType = mapBoss[state.mapId];
+    if (bossType) {
+      const boss = createEnemy(bossType, state.wave);
+      applyDifficultyToEnemy(state, boss);
+      state.enemies.push(boss);
       return;
     }
     const bosses: EnemyType[] = ['mothership', 'vortex', 'colossus'];
-    const boss = bosses[Math.floor(Math.random() * bosses.length)];
-    state.enemies.push(createEnemy(boss, state.wave));
+    const bossType2 = bosses[Math.floor(Math.random() * bosses.length)];
+    const boss = createEnemy(bossType2, state.wave);
+    applyDifficultyToEnemy(state, boss);
+    state.enemies.push(boss);
     return;
   }
 
@@ -336,7 +341,7 @@ function spawnWaveEnemy(state: GameState) {
   if (state.wave >= 2) types.push('splitter');
   if (state.wave >= 3) types.push('dasher');
   if (state.wave >= 5) types.push('tank');
-  
+
   // Add map-specific enemies from wave 2+
   const mapEnemies = mapExclusives[state.mapId] || [];
   if (state.wave >= 2 && mapEnemies.length > 0) {
@@ -344,7 +349,9 @@ function spawnWaveEnemy(state: GameState) {
   }
 
   const type = types[Math.floor(Math.random() * types.length)];
-  state.enemies.push(createEnemy(type, state.wave));
+  const enemy = createEnemy(type, state.wave);
+  applyDifficultyToEnemy(state, enemy);
+  state.enemies.push(enemy);
 }
 
 function updateEnemies(state: GameState, dt: number) {
