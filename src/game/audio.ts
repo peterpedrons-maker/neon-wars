@@ -5,6 +5,114 @@ let musicGain: GainNode | null = null;
 let musicPlaying = false;
 let musicIntensity = 1;
 
+// ===== MP3 MUSIC (restored user-provided track) =====
+const MP3_MUSIC_URL = '/music-base.mp3';
+
+let mp3Buffer: AudioBuffer | null = null;
+let mp3LoadPromise: Promise<AudioBuffer | null> | null = null;
+
+let mp3MenuSource: AudioBufferSourceNode | null = null;
+let mp3GameSource: AudioBufferSourceNode | null = null;
+
+let mp3MenuGain: GainNode | null = null;
+let mp3GameGain: GainNode | null = null;
+let mp3GameFilter: BiquadFilterNode | null = null;
+
+async function ensureMp3Buffer(): Promise<AudioBuffer | null> {
+  if (mp3Buffer) return mp3Buffer;
+  if (mp3LoadPromise) return mp3LoadPromise;
+
+  mp3LoadPromise = (async () => {
+    try {
+      const ctx = getCtx();
+      const res = await fetch(MP3_MUSIC_URL, { cache: 'force-cache' });
+      if (!res.ok) throw new Error(`Failed to fetch ${MP3_MUSIC_URL}: ${res.status}`);
+      const arr = await res.arrayBuffer();
+      const buf = await ctx.decodeAudioData(arr);
+      mp3Buffer = buf;
+      return buf;
+    } catch (e) {
+      // Keep procedural music as fallback if the MP3 isn't available.
+      console.warn('[audio] MP3 music not available, using procedural fallback.', e);
+      mp3Buffer = null;
+      return null;
+    } finally {
+      // Allow retry if it failed.
+      if (!mp3Buffer) mp3LoadPromise = null;
+    }
+  })();
+
+  return mp3LoadPromise;
+}
+
+function stopMp3Menu() {
+  try {
+    if (mp3MenuGain && audioCtx) mp3MenuGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25);
+  } catch {}
+  try { mp3MenuSource?.stop(); } catch {}
+  try { mp3MenuSource?.disconnect(); } catch {}
+  try { mp3MenuGain?.disconnect(); } catch {}
+  mp3MenuSource = null;
+  mp3MenuGain = null;
+}
+
+function stopMp3Game() {
+  try {
+    if (mp3GameGain && audioCtx) mp3GameGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25);
+  } catch {}
+  try { mp3GameSource?.stop(); } catch {}
+  try { mp3GameSource?.disconnect(); } catch {}
+  try { mp3GameFilter?.disconnect(); } catch {}
+  try { mp3GameGain?.disconnect(); } catch {}
+  mp3GameSource = null;
+  mp3GameFilter = null;
+  mp3GameGain = null;
+}
+
+function startMp3Menu(buf: AudioBuffer) {
+  const ctx = getCtx();
+  stopMp3Menu();
+
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.loop = true;
+
+  const g = ctx.createGain();
+  // Keep the "50% lower" intent by staying conservative on volume.
+  g.gain.setValueAtTime(0.03, ctx.currentTime);
+
+  src.connect(g).connect(ctx.destination);
+  src.start();
+
+  mp3MenuSource = src;
+  mp3MenuGain = g;
+}
+
+function startMp3Game(buf: AudioBuffer) {
+  const ctx = getCtx();
+  stopMp3Game();
+
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.loop = true;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(16000, ctx.currentTime);
+  filter.Q.setValueAtTime(0.2, ctx.currentTime);
+
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.03, ctx.currentTime);
+
+  src.connect(filter).connect(g).connect(ctx.destination);
+  src.start();
+
+  mp3GameSource = src;
+  mp3GameFilter = filter;
+  mp3GameGain = g;
+}
+
+
 function getCtx(): AudioContext {
   if (!audioCtx) {
     audioCtx = new AudioContext();
@@ -1161,12 +1269,27 @@ function scheduleNextMeasure() {
   musicTimers.push(timer);
 }
 
+function stopProceduralGameOnly() {
+  musicTimers.forEach(t => clearTimeout(t));
+  musicTimers = [];
+  if (musicGain && audioCtx) {
+    try { musicGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25); } catch {}
+  }
+  musicGain = null;
+}
+
 export function startMusic() {
   if (musicPlaying) return;
+
+  // Ensure menu music (procedural or MP3) is stopped before starting gameplay music.
   stopMenuMusic();
+
   try {
     getCtx();
     musicPlaying = true;
+
+    // Start procedural immediately as a fallback (and for instant feedback),
+    // then swap to MP3 once it finishes loading.
     musicGain = null;
     compressor = null;
     reverbGain = null;
@@ -1176,20 +1299,34 @@ export function startMusic() {
     sectionCount = 0;
     currentKey = 33;
     scheduleNextMeasure();
+
+    void ensureMp3Buffer().then(buf => {
+      if (!buf) return;
+      if (!musicPlaying) return;
+      stopProceduralGameOnly();
+      startMp3Game(buf);
+    });
   } catch {}
 }
 
 export function stopMusic() {
   musicPlaying = false;
-  musicTimers.forEach(t => clearTimeout(t));
-  musicTimers = [];
-  if (musicGain) {
-    try { musicGain.gain.linearRampToValueAtTime(0, audioCtx!.currentTime + 0.5); } catch {}
-  }
+  stopProceduralGameOnly();
+  stopMp3Game();
 }
 
 export function setMusicIntensity(wave: number) {
   musicIntensity = Math.min(5, Math.max(1, Math.floor(wave / 2) + 1));
+
+  // If MP3 is active, apply subtle intensity via filter + playback rate.
+  if (mp3GameSource && mp3GameFilter && audioCtx) {
+    try {
+      const ctx = audioCtx;
+      const i = musicIntensity;
+      mp3GameFilter.frequency.setTargetAtTime(7000 + i * 1500, ctx.currentTime, 0.15);
+      mp3GameSource.playbackRate.setTargetAtTime(1 + (i - 1) * 0.02, ctx.currentTime, 0.15);
+    } catch {}
+  }
 }
 
 // ===== MENU MUSIC (Atmospheric synthwave, rich and moody) =====
@@ -1334,22 +1471,37 @@ function scheduleMenuMeasure() {
   menuTimers.push(timer);
 }
 
+function stopProceduralMenuOnly() {
+  menuTimers.forEach(t => clearTimeout(t));
+  menuTimers = [];
+  if (menuGain && audioCtx) {
+    try { menuGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25); } catch {}
+  }
+  menuGain = null;
+}
+
 export function startMenuMusic() {
   if (menuMusicPlaying || musicPlaying) return;
   try {
     getCtx();
     menuMusicPlaying = true;
+
+    // Start procedural immediately as fallback, then swap to MP3 once available.
     menuGain = null;
     menuMeasure = 0;
     scheduleMenuMeasure();
+
+    void ensureMp3Buffer().then(buf => {
+      if (!buf) return;
+      if (!menuMusicPlaying || musicPlaying) return;
+      stopProceduralMenuOnly();
+      startMp3Menu(buf);
+    });
   } catch {}
 }
 
 export function stopMenuMusic() {
   menuMusicPlaying = false;
-  menuTimers.forEach(t => clearTimeout(t));
-  menuTimers = [];
-  if (menuGain) {
-    try { menuGain.gain.linearRampToValueAtTime(0, audioCtx!.currentTime + 0.5); } catch {}
-  }
+  stopProceduralMenuOnly();
+  stopMp3Menu();
 }
