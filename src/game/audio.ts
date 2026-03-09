@@ -1214,8 +1214,9 @@ function scheduleNextMeasure() {
         if (nextDur > 0) {
           const nextNote = scale[nextIdx % scale.length] ?? 0;
           const nextFreq = midiToFreq(currentKey + 36 + nextNote);
-        osc.frequency.linearRampToValueAtTime(nextFreq, t + dur * 0.85);
-        osc2.frequency.linearRampToValueAtTime(nextFreq * 1.004, t + dur * 0.85);
+          osc.frequency.linearRampToValueAtTime(nextFreq, t + dur * 0.85);
+          osc2.frequency.linearRampToValueAtTime(nextFreq * 1.004, t + dur * 0.85);
+        }
       }
 
       f.type = 'lowpass';
