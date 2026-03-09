@@ -6,8 +6,8 @@ import { createInitialState, updateGame, startWave } from '../../game/engine';
 import { renderGame, getScale, getOffset, resetCamera } from '../../game/renderer';
 import { useIsMobile } from '../../hooks/use-mobile';
 import { loadMeta, endRun, MetaProgress } from '../../game/meta';
-import { RoomInfo, sendPlayerState, sendGameSync, CoopPlayerState, CoopGameSync, connectToRoom, leaveRoom, sendLevelUp, sendUpgradeDone } from '../../game/multiplayer';
-import { CLASS_STATS } from '../../game/constants';
+import { RoomInfo, sendPlayerState, sendGameSync, CoopPlayerState, CoopGameSync, connectToRoom, leaveRoom, sendLevelUp, sendUpgradeDone, updatePublicRoomPlayerCount, setPublicRoomStatus, deletePublicRoom } from '../../game/multiplayer';
+import { CLASS_STATS, getCoopArenaSize, MAX_PARTICLES_COOP } from '../../game/constants';
 import HUD from './HUD';
 import LevelUpScreen from './LevelUpScreen';
 import GameOver from './GameOver';
@@ -15,16 +15,15 @@ import TouchControls from './TouchControls';
 
 interface CoopGameCanvasProps {
   playerClass: ShipType;
-  peerClass: ShipType;
+  peerClasses: ShipType[];
   mapId: string;
   mapDifficulty: import('../../game/maps').MapDifficulty;
   room: RoomInfo;
   onMenu: () => void;
+  totalPlayers?: number;
 }
 
-const MAX_PARTICLES = 150; // Reduced for coop performance
-
-const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass, mapId, mapDifficulty, room, onMenu }) => {
+const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClasses, mapId, mapDifficulty, room, onMenu, totalPlayers = 2 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState | null>(null);
   const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 1, aimY: 0, shooting: false, special: false });
@@ -305,8 +304,8 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
       }
 
       // Cap particles for performance
-      if (stateRef.current.particles.length > MAX_PARTICLES) {
-        stateRef.current.particles = stateRef.current.particles.slice(-MAX_PARTICLES);
+      if (stateRef.current.particles.length > MAX_PARTICLES_COOP) {
+        stateRef.current.particles = stateRef.current.particles.slice(-MAX_PARTICLES_COOP);
       }
 
       forceUpdate(n => n + 1);

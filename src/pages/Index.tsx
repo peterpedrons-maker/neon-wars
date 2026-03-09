@@ -25,7 +25,8 @@ const Index = () => {
   const [gameKey, setGameKey] = useState(0);
   const [meta, setMeta] = useState<MetaProgress>(loadMeta());
   const [coopRoom, setCoopRoom] = useState<RoomInfo | null>(null);
-  const [peerClass, setPeerClass] = useState<ShipType>('interceptor');
+  const [peerClasses, setPeerClasses] = useState<ShipType[]>(['interceptor']);
+  const [totalPlayers, setTotalPlayers] = useState(2);
   const [synced, setSynced] = useState(false);
 
   // Load progress from cloud on login
@@ -92,9 +93,10 @@ const Index = () => {
   };
   const handleMenu = () => { refreshMeta(); setScreen('menu'); };
 
-  const handleStartCoop = (room: RoomInfo, mId: string, difficulty: MapDifficulty, myClass: ShipType, theirClass: ShipType) => {
+  const handleStartCoop = (room: RoomInfo, mId: string, difficulty: MapDifficulty, myClass: ShipType, theirClasses: ShipType[], numPlayers: number) => {
     setCoopRoom(room); setMapId(mId); setMapDifficulty(difficulty);
-    setPlayerClass(myClass); setPeerClass(theirClass);
+    setPlayerClass(myClass); setPeerClasses(theirClasses);
+    setTotalPlayers(numPlayers);
     setGameKey(k => k + 1); setScreen('playing');
   };
 
@@ -120,7 +122,7 @@ const Index = () => {
   }
 
   if (screen === 'multiplayer-lobby') {
-    return <MultiplayerLobby unlockedShips={meta.unlockedShips} onStartCoop={handleStartCoop} onBack={() => setScreen('menu')} />;
+    return <MultiplayerLobby unlockedShips={meta.unlockedShips} username={username} onStartCoop={handleStartCoop} onBack={() => setScreen('menu')} />;
   }
 
   if (screen === 'shop') {
@@ -139,7 +141,7 @@ const Index = () => {
   if (screen === 'leaderboard') return <Leaderboard onBack={() => setScreen('menu')} />;
 
   if (coopRoom) {
-    return <CoopGameCanvas key={gameKey} playerClass={playerClass} peerClass={peerClass} mapId={mapId} mapDifficulty={mapDifficulty} room={coopRoom} onMenu={handleMenu} />;
+    return <CoopGameCanvas key={gameKey} playerClass={playerClass} peerClasses={peerClasses} mapId={mapId} mapDifficulty={mapDifficulty} room={coopRoom} onMenu={handleMenu} totalPlayers={totalPlayers} />;
   }
 
   return <GameCanvas key={gameKey} playerClass={playerClass} mapId={mapId} mapDifficulty={mapDifficulty} onMenu={handleMenu} />;

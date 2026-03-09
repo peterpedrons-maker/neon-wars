@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MetaProgress, saveMeta } from '../../game/meta';
 import { playClick, playHover, playBack, playPurchase, playError } from '../../game/audio';
-import { SHIP_ICONS, ABILITY_ICONS, UI_ICONS } from '../../game/icons';
+import { SHIP_ICONS, ABILITY_ICONS, UI_ICONS, SHOP_ICONS } from '../../game/icons';
 
 export interface ShopItem {
   id: string;
@@ -151,7 +151,10 @@ const PlasmaShop: React.FC<PlasmaShopProps> = ({ meta, onUpdate, onBack }) => {
               )}
               {(() => {
                 const shipId = item.id.replace('unlock_', '');
-                const iconSrc = isShip ? SHIP_ICONS[shipId] : ABILITY_ICONS[item.id.replace('unlock_', '')] || null;
+                const iconSrc = isShip ? SHIP_ICONS[shipId] 
+                  : ABILITY_ICONS[item.id.replace('unlock_', '')] 
+                  || SHOP_ICONS[item.id] 
+                  || (item.id.startsWith('slot_') ? SHOP_ICONS['weapon_slot'] : null);
                 return iconSrc ? (
                   <img src={iconSrc} alt={item.name} className="w-10 h-10 object-contain mb-1" />
                 ) : (

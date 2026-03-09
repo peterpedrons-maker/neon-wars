@@ -29,6 +29,22 @@ import abilityMissile from '@/assets/icons/ability-missile.png';
 import abilityLightning from '@/assets/icons/ability-lightning.png';
 import abilityFlameTrail from '@/assets/icons/ability-flame-trail.png';
 import abilityPlasmaField from '@/assets/icons/ability-plasma-field.png';
+import abilityChainLightning from '@/assets/icons/ability-chain-lightning.png';
+import abilityOrbital from '@/assets/icons/ability-orbital.png';
+
+// Shop-specific icons
+import shopWeaponSlot from '@/assets/icons/shop-weapon-slot.png';
+import shopHp from '@/assets/icons/shop-hp.png';
+import shopDamage from '@/assets/icons/shop-damage.png';
+import shopSpeed from '@/assets/icons/shop-speed.png';
+import shopMagnet from '@/assets/icons/shop-magnet.png';
+import shopArmor from '@/assets/icons/shop-armor.png';
+import shopPlasmaMult from '@/assets/icons/shop-plasma-mult.png';
+import shopRegen from '@/assets/icons/shop-regen.png';
+import shopCrit from '@/assets/icons/shop-crit.png';
+import shopLuck from '@/assets/icons/shop-luck.png';
+import shopXp from '@/assets/icons/shop-xp.png';
+import shopDodge from '@/assets/icons/shop-dodge.png';
 
 export const SHIP_ICONS: Record<string, string> = {
   phantom: shipPhantom,
@@ -66,8 +82,23 @@ export const ABILITY_ICONS: Record<string, string> = {
   plasma_field: abilityPlasmaField,
   lightning_ring: abilityLightning,
   flame_trail: abilityFlameTrail,
-  chain_lightning: abilityLightning,
-  orbital: abilityMissile,
+  chain_lightning: abilityChainLightning,
+  orbital: abilityOrbital,
+};
+
+export const SHOP_ICONS: Record<string, string> = {
+  weapon_slot: shopWeaponSlot,
+  perm_hp: shopHp,
+  perm_damage: shopDamage,
+  perm_speed: shopSpeed,
+  perm_magnet: shopMagnet,
+  perm_armor: shopArmor,
+  perm_plasma_mult: shopPlasmaMult,
+  perm_regen: shopRegen,
+  perm_crit: shopCrit,
+  perm_luck: shopLuck,
+  perm_xp: shopXp,
+  perm_dodge: shopDodge,
 };
 
 export const UI_ICONS = {

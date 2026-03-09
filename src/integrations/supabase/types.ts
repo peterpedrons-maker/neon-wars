@@ -86,6 +86,45 @@ export type Database = {
         }
         Relationships: []
       }
+      public_rooms: {
+        Row: {
+          created_at: string
+          host_name: string
+          host_ship: string
+          id: string
+          map_id: string
+          max_players: number
+          player_count: number
+          room_code: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          host_name?: string
+          host_ship?: string
+          id?: string
+          map_id?: string
+          max_players?: number
+          player_count?: number
+          room_code: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          host_name?: string
+          host_ship?: string
+          id?: string
+          map_id?: string
+          max_players?: number
+          player_count?: number
+          room_code?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
