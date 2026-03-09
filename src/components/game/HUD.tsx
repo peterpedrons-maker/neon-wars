@@ -53,12 +53,11 @@ const HUD: React.FC<HUDProps> = ({
     .filter(([id, lv]) => lv > 0 && abilityMap[id]?.category === 'passive')
     .map(([id, lv]) => ({ ...abilityMap[id], lv }));
 
-  const s = isMobile ? 1.4 : 1;
+  const s = isMobile ? 1.1 : 1;
   const fs = (base: number) => `${Math.round(base * s)}px`;
 
-  // Bigger heart sizes
-  const heartW = isMobile ? 26 : 22;
-  const heartH = isMobile ? 24 : 20;
+  const heartW = isMobile ? 20 : 22;
+  const heartH = isMobile ? 18 : 20;
 
   return (
     <div className="absolute inset-0 pointer-events-none select-none z-10" style={{ fontFamily: "'Segoe UI', monospace" }}>

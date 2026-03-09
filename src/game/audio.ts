@@ -686,7 +686,7 @@ function scheduleNextMeasure() {
     reverbGain = createReverb(ctx, musicGain);
   }
 
-  const masterVol = 0.05 + intensity * 0.012;
+  const masterVol = (0.05 + intensity * 0.012) * 0.5;
   musicGain.gain.setValueAtTime(masterVol, now);
 
   // ============ KICK (punchy, layered) ============
