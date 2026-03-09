@@ -36,11 +36,11 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, mapId, mapDifficul
     const meta = loadMeta();
     metaRef.current = meta;
     const player = createPlayer(playerClass);
-    stateRef.current = createInitialState(player, mapId, meta.weaponSlots);
+    stateRef.current = createInitialState(player, mapId, meta.weaponSlots, mapDifficulty);
     startWave(stateRef.current);
     setRunResult(null);
     forceUpdate(n => n + 1);
-  }, [playerClass, mapId]);
+  }, [playerClass, mapId, mapDifficulty]);
 
   // Keyboard input
   useEffect(() => {
