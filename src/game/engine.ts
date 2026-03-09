@@ -14,6 +14,16 @@ import {
   updateSentries,
   triggerChainLightning,
   xpForLevel,
+  // New elemental weapons
+  updateChainLightningWeapon,
+  updateIceBeam,
+  updateBoomerang,
+  updateHeavyCannon,
+  updateAcidSpray,
+  updateGravityWell,
+  updateTeslaCoil,
+  updateVoidRift,
+  checkProjectileSynergy,
 } from './abilities';
 import { ALL_MAPS, createHazard, ActiveHazard } from './maps';
 import {
