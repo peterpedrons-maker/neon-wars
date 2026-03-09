@@ -342,6 +342,7 @@ function spawnWaveEnemy(state: GameState) {
       const boss = createEnemy(bossType, state.wave);
       applyDifficultyToEnemy(state, boss);
       state.enemies.push(boss);
+      setBossMusic(bossType);
       return;
     }
     const bosses: EnemyType[] = ['mothership', 'vortex', 'colossus'];
@@ -349,6 +350,7 @@ function spawnWaveEnemy(state: GameState) {
     const boss = createEnemy(bossType2, state.wave);
     applyDifficultyToEnemy(state, boss);
     state.enemies.push(boss);
+    setBossMusic(bossType2);
     return;
   }
 
