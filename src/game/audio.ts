@@ -655,21 +655,22 @@ function scheduleNextMeasure() {
   const measureDur = beatDur * 4;
   const sixteenth = beatDur / 4;
 
-  const isNewSection = measureCount > 0 && measureCount % 8 === 0;
+  const isNewSection = measureCount > 0 && measureCount % 16 === 0; // Extended to 16 measures per section
   if (isNewSection) {
     sectionCount++;
     currentProgIndex = sectionCount % PROGS.length;
-    if (measureCount % 32 === 0) {
-      const keys = [33, 36, 38, 40, 31, 28, 35, 43, 45];
+    if (measureCount % 64 === 0) { // Key change every 64 measures for much longer progression without feeling repetitive
+      const keys = [33, 36, 38, 40, 31, 28, 35, 43, 45, 33, 26, 38];
       currentKey = keys[(sectionCount / 4 | 0) % keys.length];
     }
   }
 
   const prog = PROGS[currentProgIndex];
   const chord = prog[currentChordIndex % prog.length];
-  const sectionFeel = sectionCount % 5; // 0=intro, 1=build, 2=drop, 3=breakdown, 4=climax
-  const measureInSection = measureCount % 8;
-  const isFillMeasure = measureInSection === 7;
+  // 0=intro, 1=build, 2=drop, 3=breakdown, 4=climax, 5=bridge, 6=outro
+  const sectionFeel = sectionCount % 7; 
+  const measureInSection = measureCount % 16;
+  const isFillMeasure = measureInSection === 15 || measureInSection === 7;
   const intensity = musicIntensity;
 
   if (!musicGain) {
