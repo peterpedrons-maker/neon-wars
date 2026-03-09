@@ -149,7 +149,15 @@ const PlasmaShop: React.FC<PlasmaShopProps> = ({ meta, onUpdate, onBack }) => {
               {isPassive && !maxed && (
                 <div className="absolute top-1.5 left-1.5 text-[9px] px-1 py-0.5 rounded font-bold" style={{ background: 'rgba(0,255,200,0.15)', color: '#00ffc8' }}>PASSIVA</div>
               )}
-              <span className="text-2xl mb-1">{item.icon}</span>
+              {(() => {
+                const shipId = item.id.replace('unlock_', '');
+                const iconSrc = isShip ? SHIP_ICONS[shipId] : ABILITY_ICONS[item.id.replace('unlock_', '')] || null;
+                return iconSrc ? (
+                  <img src={iconSrc} alt={item.name} className="w-10 h-10 object-contain mb-1" />
+                ) : (
+                  <span className="text-2xl mb-1">{item.icon}</span>
+                );
+              })()}
               <h3 className="text-[11px] font-bold mb-0.5" style={{ color: maxed ? '#00ff64' : '#e0e8ff' }}>{item.name}</h3>
               <p className="text-[9px] text-[#6080aa] text-center mb-1.5 leading-tight">{item.description}</p>
               
