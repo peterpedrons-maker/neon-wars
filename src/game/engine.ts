@@ -1348,11 +1348,65 @@ function bossAttack(state: GameState, boss: Enemy) {
 function updateProjectiles(state: GameState, dt: number) {
   const p = state.player;
 
+  // Check for projectile synergies (co-op and solo)
+  const playerProjs = state.projectiles.filter(pr => pr.alive && pr.fromPlayer && pr.element);
+  for (let i = 0; i < playerProjs.length; i++) {
+    for (let j = i + 1; j < playerProjs.length; j++) {
+      const p1 = playerProjs[i];
+      const p2 = playerProjs[j];
+      if (p1.element !== p2.element && dist(p1.pos, p2.pos) < p1.radius + p2.radius + 10) {
+        checkProjectileSynergy(state, p1, p2);
+        p1.alive = false;
+        p2.alive = false;
+      }
+    }
+  }
+
   for (const proj of state.projectiles) {
     if (!proj.alive) continue;
     
+    // Boomerang: reverse direction after traveling some distance
+    if (proj.boomerang && !proj.returning && proj.originPos) {
+      const distFromOrigin = dist(proj.pos, proj.originPos);
+      if (distFromOrigin > 180) {
+        proj.returning = true;
+      }
+    }
+    
+    // Boomerang return logic
+    if (proj.boomerang && proj.returning && proj.originPos) {
+      // Update origin to current player position
+      proj.originPos = { x: p.pos.x, y: p.pos.y };
+      const toPlayer = Math.atan2(p.pos.y - proj.pos.y, p.pos.x - proj.pos.x);
+      const speed = Math.hypot(proj.vel.x, proj.vel.y);
+      proj.vel.x = Math.cos(toPlayer) * speed * 1.1;
+      proj.vel.y = Math.sin(toPlayer) * speed * 1.1;
+      // If close to player, destroy
+      if (dist(proj.pos, p.pos) < 20) {
+        proj.alive = false;
+        continue;
+      }
+    }
+    
+    // Gravity pull effect
+    if (proj.gravityPull && proj.gravityPull > 0) {
+      for (const e of state.enemies) {
+        if (!e.alive) continue;
+        const d = dist(e.pos, proj.pos);
+        if (d < proj.gravityPull && d > 10) {
+          const pullStrength = 150 * (1 - d / proj.gravityPull);
+          const angle = Math.atan2(proj.pos.y - e.pos.y, proj.pos.x - e.pos.x);
+          e.pos.x += Math.cos(angle) * pullStrength * dt;
+          e.pos.y += Math.sin(angle) * pullStrength * dt;
+          // Also damage enemies in the gravity well
+          e.hp -= proj.damage * 0.3 * dt;
+          e.flashTimer = 0.02;
+        }
+      }
+    }
+    
     // Homing: player projectiles slightly track nearest enemy
-    if (proj.fromPlayer && state.abilities.homingChance > 0) {
+    if (proj.fromPlayer && state.abilities.homingChance > 0 && !proj.boomerang && !proj.gravityPull) {
       let nearest: Enemy | null = null;
       let nearestDist = 200;
       for (const e of state.enemies) {
@@ -1390,6 +1444,27 @@ function updateProjectiles(state: GameState, dt: number) {
         if (!e.alive) continue;
         if (dist(proj.pos, e.pos) < proj.radius + e.radius) {
           damageEnemy(state, e, proj.damage);
+
+          // Ice slow effect
+          if (proj.iceSlow && proj.iceSlow > 0) {
+            const base = e.baseSpeed ?? e.speed;
+            e.baseSpeed = base;
+            e.speed = base * 0.4;
+            e.slowUntil = Date.now() + proj.iceSlow;
+            state.particles.push(...createParticles(e.pos, '#88ddff', 6, 60, 2));
+          }
+          
+          // Chain lightning effect
+          if (proj.chainLightning && proj.chainLightning > 0) {
+            triggerChainLightning(state, e.pos, proj.chainLightning, proj.damage * 0.6);
+          }
+          
+          // Acid DoT effect
+          if (proj.acid && proj.acid > 0) {
+            // Add acid puddle at enemy position
+            state.flameZones.push({ x: e.pos.x, y: e.pos.y, damage: proj.damage * 0.4, lifetime: proj.acid });
+            state.particles.push(...createParticles(e.pos, '#66ff00', 5, 50, 2));
+          }
 
           // Explosion radius: damage nearby enemies too
           if (state.abilities.explosionRadius > 0) {
