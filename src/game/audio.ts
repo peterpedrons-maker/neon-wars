@@ -992,20 +992,29 @@ function scheduleNextMeasure() {
 
   // ============ HI-HATS (dynamic patterns) ============
   {
-    const hatPatterns: number[][] = [
-      [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
-      [1,0,1,1, 0,1,1,0, 1,0,1,1, 0,1,1,0],
-      [1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1],
-      [1,0,0,1, 0,1,0,1, 1,0,0,1, 0,1,0,1],
-      [1,1,0,1, 0,1,1,0, 1,1,0,1, 0,1,1,1], // shuffle
-    ];
-    const pIdx = Math.min(sectionFeel, hatPatterns.length - 1);
+    const hatStyle: HatStyle = profile.hatStyle ?? 'tight';
+    const hatPatterns: number[][] = hatStyle === 'dense'
+      ? [
+          [1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1],
+          [1,0,1,1, 1,0,1,1, 1,0,1,1, 1,1,0,1],
+        ]
+      : hatStyle === 'shuffle'
+      ? [
+          [1,0,0,1, 0,1,0,1, 1,0,0,1, 0,1,0,1],
+          [1,1,0,1, 0,1,1,0, 1,1,0,1, 0,1,1,1],
+        ]
+      : [
+          [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+          [1,0,1,1, 0,1,1,0, 1,0,1,1, 0,1,1,0],
+        ];
+
+    const pIdx = (sectionCount + sectionFeel + measureCount) % hatPatterns.length;
     const pattern = hatPatterns[pIdx];
 
     for (let i = 0; i < 16; i++) {
       if (!pattern[i]) continue;
       const t = now + i * sixteenth;
-      const isOpen = (i === 4 || i === 12) && sectionFeel >= 1;
+      const isOpen = (i === 4 || i === 12) && (sectionFeel >= 1 || hatStyle === 'dense');
       const isAccent = i % 4 === 0;
       const osc = ctx.createOscillator();
       const g = ctx.createGain();
@@ -1013,9 +1022,9 @@ function scheduleNextMeasure() {
       osc.type = 'square';
       osc.frequency.setValueAtTime(8000 + Math.random() * 6000, t);
       f.type = 'highpass';
-      f.frequency.value = 7000;
+      f.frequency.value = 7200;
       const dur = isOpen ? 0.1 : 0.015;
-      const vol = isOpen ? 0.025 : (isAccent ? 0.016 : 0.011);
+      const vol = isOpen ? 0.028 : (isAccent ? 0.017 : (hatStyle === 'dense' ? 0.013 : 0.011));
       g.gain.setValueAtTime(vol, t);
       g.gain.exponentialRampToValueAtTime(0.001, t + dur);
       osc.connect(f).connect(g).connect(musicGain!);
@@ -1025,10 +1034,11 @@ function scheduleNextMeasure() {
 
   // ============ BASS (supersaw sub + harmonic) ============
   {
-    const bpIdx = (sectionCount + sectionFeel) % BASS_RHYTHMS.length;
+    const rhythms = profile.bassRhythms.length > 0 ? profile.bassRhythms : BASS_RHYTHMS;
+    const bpIdx = (sectionCount + sectionFeel) % rhythms.length;
     const bp = sectionFeel === 3
       ? [1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0]
-      : BASS_RHYTHMS[bpIdx];
+      : rhythms[bpIdx];
 
     for (let i = 0; i < 16; i++) {
       if (!bp[i]) continue;
