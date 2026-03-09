@@ -25,8 +25,8 @@ const Index = () => {
   const [gameKey, setGameKey] = useState(0);
   const [meta, setMeta] = useState<MetaProgress>(loadMeta());
   const [coopRoom, setCoopRoom] = useState<RoomInfo | null>(null);
-  const [peerClass, setPeerClass] = useState<ShipType>('interceptor');
-  const [synced, setSynced] = useState(false);
+  const [peerClasses, setPeerClasses] = useState<ShipType[]>(['interceptor']);
+  const [totalPlayers, setTotalPlayers] = useState(2);
 
   // Load progress from cloud on login
   useEffect(() => {
