@@ -501,18 +501,24 @@ export function updateFrostNova(state: GameState, dt: number) {
     state.abilities.frostNovaTimer = state.abilities.frostNovaCooldown;
     const p = state.player;
     const dmg = 10 + state.wave * 3;
+    const now = Date.now();
+
     for (const e of state.enemies) {
       if (!e.alive) continue;
       const d = dist(e.pos, p.pos);
       if (d < state.abilities.frostNovaRadius) {
         e.hp -= dmg;
         e.flashTimer = 0.15;
-        e.speed *= 0.5; // slow
-        setTimeout(() => { if (e.alive) e.speed *= 2; }, 2000);
+        // Slow for 2s without stacking speed multipliers
+        const base = e.baseSpeed ?? e.speed;
+        e.baseSpeed = base;
+        e.speed = base * 0.5;
+        e.slowUntil = now + 2000;
       }
     }
-    state.particles.push(...createParticles(p.pos, '#80e0ff', 30, state.abilities.frostNovaRadius * 2, 3));
-    state.particles.push(...createParticles(p.pos, '#ffffff', 15, state.abilities.frostNovaRadius * 1.5, 2));
+
+    state.particles.push(...createParticles(p.pos, '#80e0ff', 20, state.abilities.frostNovaRadius * 2.4, 2.5));
+    state.particles.push(...createParticles(p.pos, '#ffffff', 10, state.abilities.frostNovaRadius * 1.8, 2));
   }
 }
 
