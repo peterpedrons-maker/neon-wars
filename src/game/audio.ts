@@ -1177,13 +1177,12 @@ function scheduleNextMeasure() {
     const phrase = phrases[phraseIdx];
     let step = 0;
     for (let i = 0; i < phrase.length; i++) {
-      const [noteIdx, durSteps] = phrase[i];
+      const [noteIdx, durSteps] = phrase[i] as MelodyStep;
       if (durSteps === 0) { step++; continue; } // rest
       if (step >= 16) break;
       const t = now + step * sixteenth;
       const dur = durSteps * sixteenth;
-      const scaleDeg = noteIdx % minorScale.length;
-      const note = minorScale[scaleDeg];
+      const note = scale[noteIdx % scale.length] ?? 0;
       const noteFreq = midiToFreq(currentKey + 36 + note);
 
       // Layer 1: Square lead
