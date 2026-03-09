@@ -1,0 +1,76 @@
+// Game Icon Imports - AI-generated icons for all ships, upgrades, and abilities
+import shipPhantom from '@/assets/icons/ship-phantom.png';
+import shipInterceptor from '@/assets/icons/ship-interceptor.png';
+import shipTitan from '@/assets/icons/ship-titan.png';
+import shipSpectre from '@/assets/icons/ship-spectre.png';
+import shipValkyrie from '@/assets/icons/ship-valkyrie.png';
+import shipJuggernaut from '@/assets/icons/ship-juggernaut.png';
+import shipWraith from '@/assets/icons/ship-wraith.png';
+import shipSentinel from '@/assets/icons/ship-sentinel.png';
+import shipTempest from '@/assets/icons/ship-tempest.png';
+import shipVenom from '@/assets/icons/ship-venom.png';
+import shipNova from '@/assets/icons/ship-nova.png';
+import shipChronos from '@/assets/icons/ship-chronos.png';
+import shipLeviathan from '@/assets/icons/ship-leviathan.png';
+import shipRaptor from '@/assets/icons/ship-raptor.png';
+import shipOracle from '@/assets/icons/ship-oracle.png';
+import shipPyro from '@/assets/icons/ship-pyro.png';
+
+import upgradeShield from '@/assets/icons/upgrade-shield.png';
+import upgradeDamage from '@/assets/icons/upgrade-damage.png';
+import upgradeSpeed from '@/assets/icons/upgrade-speed.png';
+import upgradeFirerate from '@/assets/icons/upgrade-firerate.png';
+import upgradeHeal from '@/assets/icons/upgrade-heal.png';
+import plasmaCrystal from '@/assets/icons/plasma-crystal.png';
+import achievementTrophy from '@/assets/icons/achievement-trophy.png';
+
+import abilityFrostNova from '@/assets/icons/ability-frost-nova.png';
+import abilityMissile from '@/assets/icons/ability-missile.png';
+import abilityLightning from '@/assets/icons/ability-lightning.png';
+import abilityFlameTrail from '@/assets/icons/ability-flame-trail.png';
+import abilityPlasmaField from '@/assets/icons/ability-plasma-field.png';
+
+export const SHIP_ICONS: Record<string, string> = {
+  phantom: shipPhantom,
+  interceptor: shipInterceptor,
+  titan: shipTitan,
+  spectre: shipSpectre,
+  valkyrie: shipValkyrie,
+  juggernaut: shipJuggernaut,
+  wraith: shipWraith,
+  sentinel: shipSentinel,
+  tempest: shipTempest,
+  venom: shipVenom,
+  nova_ship: shipNova,
+  chronos: shipChronos,
+  leviathan: shipLeviathan,
+  raptor: shipRaptor,
+  oracle: shipOracle,
+  pyro: shipPyro,
+};
+
+export const UPGRADE_ICONS: Record<string, string> = {
+  hp_up: upgradeShield,
+  dmg_up: upgradeDamage,
+  speed_up: upgradeSpeed,
+  attack_speed: upgradeFirerate,
+  special_cd: abilityPlasmaField,
+  regen: upgradeHeal,
+  armor: upgradeShield,
+  critical: upgradeDamage,
+};
+
+export const ABILITY_ICONS: Record<string, string> = {
+  frost_nova: abilityFrostNova,
+  missile_barrage: abilityMissile,
+  plasma_field: abilityPlasmaField,
+  lightning_ring: abilityLightning,
+  flame_trail: abilityFlameTrail,
+  chain_lightning: abilityLightning,
+  orbital: abilityMissile,
+};
+
+export const UI_ICONS = {
+  plasma: plasmaCrystal,
+  trophy: achievementTrophy,
+};
