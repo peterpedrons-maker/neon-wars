@@ -1,4 +1,5 @@
 import React from 'react';
+import { playBack, playHover } from '../../game/audio';
 
 interface HowToPlayProps {
   onBack: () => void;
