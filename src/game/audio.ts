@@ -713,6 +713,8 @@ const SCALES = {
   diminished: [0, 1, 3, 4, 6, 7, 9, 10, 12, 13, 15, 16, 18, 19, 21, 22, 24],
 } as const;
 
+const phrase = (idx: number) => MELODY_PHRASES[idx] as unknown as ReadonlyArray<MelodyStep>;
+
 const MAP_MUSIC_PROFILES: Record<string, MusicProfile> = {
   'neon-grid': {
     id: 'map:neon-grid',
@@ -720,7 +722,7 @@ const MAP_MUSIC_PROFILES: Record<string, MusicProfile> = {
     keyCycle: [33, 36, 38, 40],
     keyChangeEveryMeasures: 64,
     progressions: [PROGS[4], PROGS[2], PROGS[0]], // synthwave + trance + cinematic
-    melodyPhrases: [MELODY_PHRASES[8], MELODY_PHRASES[1], MELODY_PHRASES[0], MELODY_PHRASES[5]],
+    melodyPhrases: [phrase(8), phrase(1), phrase(0), phrase(5)],
     scale: SCALES.naturalMinor,
     bassRhythms: [BASS_RHYTHMS[0], BASS_RHYTHMS[2], BASS_RHYTHMS[5]],
     masterGain: 0.030,
@@ -733,7 +735,7 @@ const MAP_MUSIC_PROFILES: Record<string, MusicProfile> = {
     keyCycle: [31, 34, 36, 38],
     keyChangeEveryMeasures: 48,
     progressions: [PROGS[5], PROGS[1], PROGS[6]], // aggressive + driving
-    melodyPhrases: [MELODY_PHRASES[3], MELODY_PHRASES[7], MELODY_PHRASES[1]],
+    melodyPhrases: [phrase(3), phrase(7), phrase(1)],
     scale: SCALES.phrygian,
     bassRhythms: [BASS_RHYTHMS[5], BASS_RHYTHMS[3], BASS_RHYTHMS[1]],
     masterGain: 0.032,
@@ -746,7 +748,7 @@ const MAP_MUSIC_PROFILES: Record<string, MusicProfile> = {
     keyCycle: [28, 31, 33, 26],
     keyChangeEveryMeasures: 64,
     progressions: [PROGS[5], PROGS[0], PROGS[7]],
-    melodyPhrases: [MELODY_PHRASES[6], MELODY_PHRASES[9], MELODY_PHRASES[2]],
+    melodyPhrases: [phrase(6), phrase(9), phrase(2)],
     scale: SCALES.diminished,
     bassRhythms: [BASS_RHYTHMS[6], BASS_RHYTHMS[0]],
     masterGain: 0.028,
@@ -759,7 +761,7 @@ const MAP_MUSIC_PROFILES: Record<string, MusicProfile> = {
     keyCycle: [35, 38, 40, 43],
     keyChangeEveryMeasures: 64,
     progressions: [PROGS[2], PROGS[3], PROGS[7]],
-    melodyPhrases: [MELODY_PHRASES[0], MELODY_PHRASES[4], MELODY_PHRASES[9]],
+    melodyPhrases: [phrase(0), phrase(4), phrase(9)],
     scale: SCALES.mixolydian,
     bassRhythms: [BASS_RHYTHMS[2], BASS_RHYTHMS[0], BASS_RHYTHMS[4]],
     masterGain: 0.030,
@@ -772,7 +774,7 @@ const MAP_MUSIC_PROFILES: Record<string, MusicProfile> = {
     keyCycle: [33, 36, 38, 40],
     keyChangeEveryMeasures: 32,
     progressions: [PROGS[5], PROGS[1], PROGS[6]],
-    melodyPhrases: [MELODY_PHRASES[8], MELODY_PHRASES[3], MELODY_PHRASES[1]],
+    melodyPhrases: [phrase(8), phrase(3), phrase(1)],
     scale: SCALES.diminished,
     bassRhythms: [BASS_RHYTHMS[1], BASS_RHYTHMS[5], BASS_RHYTHMS[3]],
     masterGain: 0.034,
@@ -785,7 +787,7 @@ const MAP_MUSIC_PROFILES: Record<string, MusicProfile> = {
     keyCycle: [30, 33, 35, 37],
     keyChangeEveryMeasures: 48,
     progressions: [PROGS[1], PROGS[5], PROGS[6]],
-    melodyPhrases: [MELODY_PHRASES[5], MELODY_PHRASES[3], MELODY_PHRASES[7]],
+    melodyPhrases: [phrase(5), phrase(3), phrase(7)],
     scale: SCALES.harmonicMinor,
     bassRhythms: [BASS_RHYTHMS[3], BASS_RHYTHMS[5], BASS_RHYTHMS[0]],
     masterGain: 0.032,
@@ -800,7 +802,7 @@ const DEFAULT_BOSS_PROFILE: MusicProfile = {
   keyCycle: [31, 33],
   keyChangeEveryMeasures: 16,
   progressions: [PROGS[5], PROGS[6]],
-  melodyPhrases: [MELODY_PHRASES[8], MELODY_PHRASES[1], MELODY_PHRASES[3]],
+  melodyPhrases: [phrase(8), phrase(1), phrase(3)],
   scale: SCALES.diminished,
   bassRhythms: [BASS_RHYTHMS[1], BASS_RHYTHMS[5]],
   masterGain: 0.036,
