@@ -260,7 +260,7 @@ const HUD: React.FC<HUDProps> = ({
               const weaponId = equippedWeapons[i];
               const ability = weaponId ? abilityMap[weaponId] : null;
               const lv = weaponId ? (abilityLevels[weaponId] || 0) : 0;
-              const sz = isMobile ? 60 : 54;
+              const sz = isMobile ? 46 : 54;
               return (
                 <div key={i} className="relative flex flex-col items-center">
                   <div className="flex items-center justify-center" style={{
