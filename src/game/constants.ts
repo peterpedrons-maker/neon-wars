@@ -46,6 +46,9 @@ export const COLORS = {
   lava_dragon: '#ff2200',   // deep red-orange
   void_lord: '#6000c0',     // deep void purple
   crystal_giant: '#00ffcc',  // bright crystal teal
+  archon: '#ffd700',         // golden mega-boss
+  oblivion: '#ff0000',       // blood-red final boss
+  death_hunter: '#ff0033',   // crimson death wave
   mothership: '#ff0040',  // red
   vortex: '#bf5af2',      // purple
   colossus: '#00bfff',    // blue
