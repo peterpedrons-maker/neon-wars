@@ -115,6 +115,7 @@ export interface GameState {
   arenaHeight: number;
   shakeTimer: number;
   shakeIntensity: number;
+  deathWave: boolean; // true after wave 30 boss is defeated
   // Combo system
   combo: number;
   comboTimer: number;
