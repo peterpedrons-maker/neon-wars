@@ -17,13 +17,14 @@ interface CoopGameCanvasProps {
   playerClass: ShipType;
   peerClass: ShipType;
   mapId: string;
+  mapDifficulty: import('../../game/maps').MapDifficulty;
   room: RoomInfo;
   onMenu: () => void;
 }
 
 const MAX_PARTICLES = 150; // Reduced for coop performance
 
-const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass, mapId, room, onMenu }) => {
+const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass, mapId, mapDifficulty, room, onMenu }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState | null>(null);
   const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 1, aimY: 0, shooting: false, special: false });
