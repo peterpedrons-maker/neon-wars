@@ -1300,7 +1300,7 @@ function scheduleMenuMeasure() {
   }
 
   // Warm sub bass
-  const bassFreq = midiToFreq(key + chord[0]);
+  const bassFreq = midiToFreq(currentKey + chord[0]);
   const bass = ctx.createOscillator();
   const bg = ctx.createGain();
   bass.type = 'sine';
