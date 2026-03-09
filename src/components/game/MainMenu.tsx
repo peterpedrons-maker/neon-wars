@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { RunStats, Milestone } from '../../game/meta';
 import { initAudio, startMenuMusic, stopMenuMusic, playClick, playHover } from '../../game/audio';
+import { UI_ICONS } from '../../game/icons';
 
 interface MainMenuProps {
   plasma: number;
