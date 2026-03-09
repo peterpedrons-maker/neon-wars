@@ -226,6 +226,8 @@ const PlasmaShop: React.FC<PlasmaShopProps> = ({ meta, onUpdate, onBack }) => {
   const [selectedCat, setSelectedCat] = useState<ShopCategory>('all');
   const [flash, setFlash] = useState<string | null>(null);
 
+  useEffect(() => { startShopMusic(); return () => { stopShopMusic(); }; }, []);
+
   const filtered = selectedCat === 'all' ? ALL_SHOP_ITEMS : ALL_SHOP_ITEMS.filter(i => i.category === selectedCat);
 
   const handleBuy = (item: ShopItem) => {
