@@ -1000,7 +1000,10 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
     e.alive = false;
     
     // Track boss kills
-    if (e.isBoss) state.bossesKilled = (state.bossesKilled || 0) + 1;
+    if (e.isBoss) {
+      state.bossesKilled = (state.bossesKilled || 0) + 1;
+      setBossMusic(null); // Return to map music
+    }
     
     // Trigger death wave after defeating Oblivion (wave 30 boss)
     if (e.type === 'oblivion') {
