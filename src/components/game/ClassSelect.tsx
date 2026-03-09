@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { ShipType } from '../../game/types';
 import { COLORS } from '../../game/constants';
 import { playClick, playHover, playBack } from '../../game/audio';
+import { SHIP_ICONS } from '../../game/icons';
 
 interface ClassSelectProps {
   onSelect: (cls: ShipType) => void;
