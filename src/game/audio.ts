@@ -1379,52 +1379,36 @@ function stopProceduralGameOnly() {
 export function startMusic() {
   if (musicPlaying) return;
 
-  // Ensure menu music (procedural or MP3) is stopped before starting gameplay music.
+  // Ensure menu music is stopped before starting gameplay music.
   stopMenuMusic();
 
   try {
     getCtx();
     musicPlaying = true;
 
-    // Start procedural immediately as a fallback (and for instant feedback),
-    // then swap to MP3 once it finishes loading.
+    // Hard reset so each map/boss theme starts with a clean structure.
     musicGain = null;
     compressor = null;
     reverbGain = null;
-    currentChordIndex = 0;
-    currentProgIndex = 0;
-    measureCount = 0;
-    sectionCount = 0;
-    currentKey = 33;
-    scheduleNextMeasure();
 
-    void ensureMp3Buffer().then(buf => {
-      if (!buf) return;
-      if (!musicPlaying) return;
-      stopProceduralGameOnly();
-      startMp3Game(buf);
-    });
+    hardResetMusicState(getActiveGameProfile());
+    scheduleNextMeasure();
   } catch {}
 }
 
 export function stopMusic() {
   musicPlaying = false;
   stopProceduralGameOnly();
-  stopMp3Game();
+
+  // Reset context so the next run starts deterministically.
+  currentProfile = null;
+  pendingProfile = null;
+  pendingProfileReset = false;
+  activeBossType = null;
 }
 
 export function setMusicIntensity(wave: number) {
   musicIntensity = Math.min(5, Math.max(1, Math.floor(wave / 2) + 1));
-
-  // If MP3 is active, apply subtle intensity via filter + playback rate.
-  if (mp3GameSource && mp3GameFilter && audioCtx) {
-    try {
-      const ctx = audioCtx;
-      const i = musicIntensity;
-      mp3GameFilter.frequency.setTargetAtTime(7000 + i * 1500, ctx.currentTime, 0.15);
-      mp3GameSource.playbackRate.setTargetAtTime(1 + (i - 1) * 0.02, ctx.currentTime, 0.15);
-    } catch {}
-  }
 }
 
 // ===== MENU MUSIC (Atmospheric synthwave, rich and moody) =====
