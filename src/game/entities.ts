@@ -154,23 +154,11 @@ export function playerAttack(player: Player, projectiles: Projectile[], abilitie
     return;
   }
 
-  // Oracle: homing shots — shots slowly track nearest enemy after firing
+  // Oracle: precision shots — high accuracy, aims with slight predictive lead
   if (player.class === 'oracle') {
-    const targets = enemies.filter(e => e.alive).sort((a, b) =>
-      Math.hypot(a.pos.x - player.pos.x, a.pos.y - player.pos.y) -
-      Math.hypot(b.pos.x - player.pos.x, b.pos.y - player.pos.y)
-    );
-    const totalAngles = angles.length;
-    for (let ai = 0; ai < totalAngles; ai++) {
-      const offset = angles[ai];
-      // If there's a nearby target, aim directly at it with slight spread
-      if (targets.length > 0) {
-        const target = targets[Math.min(ai, targets.length - 1)];
-        const aimAngle = Math.atan2(target.pos.y - player.pos.y, target.pos.x - player.pos.x);
-        projectiles.push(createProjectile(player.pos, aimAngle + offset * 0.5, player.damage, true, color, 0.85, { ...mods }));
-      } else {
-        projectiles.push(createProjectile(player.pos, player.angle + offset, player.damage, true, color, 0.85, { ...mods }));
-      }
+    for (const offset of angles) {
+      // Oracle fires with built-in slight homing bias (engine will also apply homingChance on top)
+      projectiles.push(createProjectile(player.pos, player.angle + offset, player.damage, true, color, 0.85, { ...mods }));
     }
     return;
   }
