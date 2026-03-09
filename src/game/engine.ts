@@ -618,15 +618,10 @@ function updateCoopPeerShootingSingle(state: GameState, peer: { pos: { x: number
   if (peer.attackTimer > 0) return;
   peer.attackTimer = peer.attackCooldown;
   
-  const color = peer.shipClass === 'phantom' ? COLORS.phantom
-    : peer.shipClass === 'interceptor' ? COLORS.interceptor
-    : peer.shipClass === 'spectre' ? COLORS.spectre
-    : peer.shipClass === 'valkyrie' ? COLORS.valkyrie
-    : peer.shipClass === 'juggernaut' ? COLORS.juggernaut
-    : COLORS.titan;
+  const color = COLORS[peer.shipClass] || COLORS.phantom;
   
-  // Titan/Juggernaut are melee - damage nearby enemies directly
-  if (peer.shipClass === 'titan' || peer.shipClass === 'juggernaut') {
+  // Melee ships - damage nearby enemies directly
+  if (peer.shipClass === 'titan' || peer.shipClass === 'juggernaut' || peer.shipClass === 'leviathan') {
     for (const e of state.enemies) {
       if (!e.alive) continue;
       const d = dist(peer.pos, e.pos);
