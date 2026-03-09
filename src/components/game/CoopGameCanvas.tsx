@@ -141,7 +141,7 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
     });
 
     return () => { leaveRoom(); };
-  }, [playerClass, mapId]);
+  }, [playerClass, mapId, mapDifficulty]);
 
   // When both players have chosen upgrades, resume game
   useEffect(() => {
