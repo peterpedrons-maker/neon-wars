@@ -1209,9 +1209,11 @@ function scheduleNextMeasure() {
       }
 
       // Portamento
-      if (durSteps === 1 && i < phrase.length - 1 && phrase[i + 1][1] > 0) {
-        const nextNote = minorScale[phrase[i + 1][0] % minorScale.length];
-        const nextFreq = midiToFreq(currentKey + 36 + nextNote);
+      if (durSteps === 1 && i < phrase.length - 1) {
+        const [nextIdx, nextDur] = phrase[i + 1] as MelodyStep;
+        if (nextDur > 0) {
+          const nextNote = scale[nextIdx % scale.length] ?? 0;
+          const nextFreq = midiToFreq(currentKey + 36 + nextNote);
         osc.frequency.linearRampToValueAtTime(nextFreq, t + dur * 0.85);
         osc2.frequency.linearRampToValueAtTime(nextFreq * 1.004, t + dur * 0.85);
       }
