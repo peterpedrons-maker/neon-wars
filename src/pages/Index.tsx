@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useLanguage } from '../game/i18n';
 import { ShipType, GameScreen } from '../game/types';
 import type { MapDifficulty } from '../game/maps';
 import { loadMeta, saveMeta, MetaProgress, ALL_MILESTONES } from '../game/meta';
