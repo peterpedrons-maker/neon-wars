@@ -689,7 +689,7 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
               Sair
             </button>
             {room?.isHost && (
-              <button onClick={handleStart} disabled={!peerConnected || countdown !== null}
+              <button onClick={() => { playClick(); handleStart(); }} onMouseEnter={playHover} disabled={!peerConnected || countdown !== null}
                 className="py-3 px-8 text-lg font-bold rounded-lg text-white border font-mono transition-all hover:scale-105 disabled:opacity-30 disabled:hover:scale-100"
                 style={{ background: 'linear-gradient(135deg, rgba(0,229,255,0.2), rgba(191,90,242,0.2))', borderColor: '#0ff', boxShadow: peerConnected ? '0 0 20px rgba(0,255,255,0.3)' : 'none' }}>
                 🚀 Iniciar
