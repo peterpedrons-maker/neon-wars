@@ -53,12 +53,11 @@ const HUD: React.FC<HUDProps> = ({
     .filter(([id, lv]) => lv > 0 && abilityMap[id]?.category === 'passive')
     .map(([id, lv]) => ({ ...abilityMap[id], lv }));
 
-  const s = isMobile ? 1.4 : 1;
+  const s = isMobile ? 1.1 : 1;
   const fs = (base: number) => `${Math.round(base * s)}px`;
 
-  // Bigger heart sizes
-  const heartW = isMobile ? 26 : 22;
-  const heartH = isMobile ? 24 : 20;
+  const heartW = isMobile ? 20 : 22;
+  const heartH = isMobile ? 18 : 20;
 
   return (
     <div className="absolute inset-0 pointer-events-none select-none z-10" style={{ fontFamily: "'Segoe UI', monospace" }}>
@@ -261,7 +260,7 @@ const HUD: React.FC<HUDProps> = ({
               const weaponId = equippedWeapons[i];
               const ability = weaponId ? abilityMap[weaponId] : null;
               const lv = weaponId ? (abilityLevels[weaponId] || 0) : 0;
-              const sz = isMobile ? 60 : 54;
+              const sz = isMobile ? 46 : 54;
               return (
                 <div key={i} className="relative flex flex-col items-center">
                   <div className="flex items-center justify-center" style={{
@@ -309,7 +308,7 @@ const HUD: React.FC<HUDProps> = ({
               {activePassives.map(p => (
                 <div key={p.id} className="relative flex flex-col items-center">
                   <div className="flex items-center justify-center" style={{
-                    width: isMobile ? 50 : 44, height: isMobile ? 50 : 44, borderRadius: 10,
+                    width: isMobile ? 40 : 44, height: isMobile ? 40 : 44, borderRadius: 10,
                     background: 'rgba(0,255,255,0.12)', border: '1.5px solid rgba(0,255,255,0.4)',
                     boxShadow: '0 0 10px rgba(0,255,255,0.15)',
                   }}>
