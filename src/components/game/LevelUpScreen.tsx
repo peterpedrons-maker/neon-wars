@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect } from 'react';
 import { Ability, getRandomAbilities } from '../../game/abilities';
 import { playClick, playHover, playLevelUp } from '../../game/audio';
+import { ABILITY_ICONS } from '../../game/icons';
 
 interface LevelUpScreenProps {
   level: number;
