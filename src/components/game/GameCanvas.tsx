@@ -15,10 +15,11 @@ import TouchControls from './TouchControls';
 interface GameCanvasProps {
   playerClass: ShipType;
   mapId: string;
+  mapDifficulty: import('../../game/maps').MapDifficulty;
   onMenu: () => void;
 }
 
-const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, mapId, onMenu }) => {
+const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, mapId, mapDifficulty, onMenu }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState | null>(null);
   const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 1, aimY: 0, shooting: false, special: false });

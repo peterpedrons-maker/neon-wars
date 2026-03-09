@@ -42,6 +42,8 @@ export interface Projectile extends Entity {
   fromPlayer: boolean;
   lifetime: number;
   color: string;
+  pierce?: number;   // remaining pierces
+  ricochet?: number; // remaining ricochets
 }
 
 export interface Enemy extends Entity {

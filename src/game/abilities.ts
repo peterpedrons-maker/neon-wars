@@ -27,7 +27,23 @@ export interface AbilityState {
   critChance: number;
   projectileCount: number;
   explosionRadius: number;
-  // New weapon states
+  // Projectile modifiers (new weapons)
+  pierce: number;
+  ricochet: number;
+  // Timed weapons
+  ionBeamDamage: number;
+  ionBeamLength: number;
+  ionBeamCooldown: number;
+  ionBeamTimer: number;
+  shockwaveRadius: number;
+  shockwaveDamage: number;
+  shockwaveCooldown: number;
+  shockwaveTimer: number;
+  sentryCount: number;
+  sentryDamage: number;
+  sentryCooldown: number;
+  sentryTimer: number;
+  // Existing weapon states
   frostNovaRadius: number;
   frostNovaCooldown: number;
   frostNovaTimer: number;
@@ -41,7 +57,7 @@ export interface AbilityState {
   lightningRingDamage: number;
   lightningRingTimer: number;
   flameTrailDamage: number;
-  // New passive states
+  // Passive states
   vampirism: number;
   dodge: number;
   xpBonus: number;

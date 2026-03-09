@@ -1,7 +1,20 @@
 import {
   GameState, InputState, Player, Enemy, EnemyType, XpOrb,
 } from './types';
-import { createAbilityState, updateOrbitals, updateAura, updateRegen, updateFrostNova, updateMissiles, updateLightningRing, triggerChainLightning, xpForLevel } from './abilities';
+import {
+  createAbilityState,
+  updateOrbitals,
+  updateAura,
+  updateRegen,
+  updateFrostNova,
+  updateMissiles,
+  updateLightningRing,
+  updateIonBeam,
+  updateShockwave,
+  updateSentries,
+  triggerChainLightning,
+  xpForLevel,
+} from './abilities';
 import { ALL_MAPS, createHazard, ActiveHazard } from './maps';
 import {
   ARENA_W, ARENA_H, COLORS, WAVE_BASE_ENEMIES,

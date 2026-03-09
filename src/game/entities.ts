@@ -44,6 +44,7 @@ export function createEnemy(type: EnemyType, wave: number): Enemy {
     default: x = -SPAWN_MARGIN; y = Math.random() * ARENA_H; break;
   }
   const waveScale = 1 + (wave - 1) * 0.08;
+  const baseSpeed = s.speed * (1 + (wave - 1) * 0.02);
   return {
     pos: { x, y },
     vel: { x: 0, y: 0 },
@@ -53,7 +54,8 @@ export function createEnemy(type: EnemyType, wave: number): Enemy {
     hp: Math.floor(s.hp * waveScale),
     maxHp: Math.floor(s.hp * waveScale),
     damage: Math.floor(s.damage * (1 + (wave - 1) * 0.05)),
-    speed: s.speed * (1 + (wave - 1) * 0.02),
+    speed: baseSpeed,
+    baseSpeed,
     score: s.score,
     attackTimer: 0,
     attackCooldown: s.attackCooldown,

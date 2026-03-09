@@ -1,5 +1,15 @@
 // Map System - Visual themes + unique hazards
 
+export type MapDifficulty = 'easy' | 'medium' | 'hard';
+
+export interface MapDifficultySettings {
+  enemyHpMult: number;
+  enemyDamageMult: number;
+  enemySpeedMult: number;
+  spawnRateMult: number;   // >1 = more spawns
+  hazardRateMult: number;  // >1 = more hazards
+}
+
 export interface GameMap {
   id: string;
   name: string;
@@ -12,6 +22,8 @@ export interface GameMap {
   borderColor: string;
   ambientParticleColor: string;
   fogColor: string;
+  // Difficulties (same map, multiple challenges)
+  difficulties: Record<MapDifficulty, MapDifficultySettings>;
   // Hazards
   hazards: MapHazard[];
 }

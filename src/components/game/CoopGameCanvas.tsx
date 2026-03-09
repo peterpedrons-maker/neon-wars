@@ -118,13 +118,20 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
       onLobbyState: () => {},
       onChat: () => {},
       onLevelUp: (_level: number) => {
-        // Peer leveled up - show upgrade screen for us too
-        if (stateRef.current && stateRef.current.screen === 'playing') {
-          setShowUpgrade(true);
-          setMyUpgradeDone(false);
-          setPeerUpgradeDone(false);
-          setWaitingForPeer(false);
-          stateRef.current.screen = 'upgrade';
+        // Host leveled up - show upgrade screen for us too.
+        // IMPORTANT: if we're dead, auto-complete upgrade so living players aren't blocked.
+        if (!stateRef.current) return;
+        if (stateRef.current.screen !== 'playing') return;
+
+        setShowUpgrade(true);
+        const isDead = !stateRef.current.player.alive;
+        setMyUpgradeDone(isDead);
+        setPeerUpgradeDone(false);
+        setWaitingForPeer(false);
+        stateRef.current.screen = 'upgrade';
+
+        if (isDead) {
+          sendUpgradeDone();
         }
       },
       onUpgradeDone: () => {
