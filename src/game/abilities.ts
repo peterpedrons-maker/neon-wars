@@ -358,6 +358,118 @@ const WEAPON_ABILITIES: Ability[] = [
       state.abilities.flameTrailDamage += 10;
     },
   },
+  // === NEW ELEMENTAL WEAPONS ===
+  {
+    id: 'chain_lightning_weapon',
+    name: 'Raio Cadeia',
+    description: 'Dispara raios que saltam entre inimigos',
+    icon: '⚡',
+    maxLevel: 5,
+    category: 'weapon',
+    requiresUnlock: true,
+    apply: (state) => {
+      state.abilities.chainLightningDamage += 18;
+      state.abilities.chainLightningChains += 1;
+      state.abilities.chainLightningCooldown = Math.max(1.0, state.abilities.chainLightningCooldown - 0.25);
+    },
+  },
+  {
+    id: 'ice_beam',
+    name: 'Raio de Gelo',
+    description: 'Congela inimigos, causando slow prolongado',
+    icon: '❄️',
+    maxLevel: 5,
+    category: 'weapon',
+    requiresUnlock: true,
+    apply: (state) => {
+      state.abilities.iceBeamDamage += 12;
+      state.abilities.iceBeamSlowDuration += 0.8;
+      state.abilities.iceBeamCooldown = Math.max(0.8, state.abilities.iceBeamCooldown - 0.15);
+    },
+  },
+  {
+    id: 'boomerang',
+    name: 'Bumerangue',
+    description: 'Projétil que retorna, atingindo inimigos duas vezes',
+    icon: '🪃',
+    maxLevel: 5,
+    category: 'weapon',
+    requiresUnlock: true,
+    apply: (state) => {
+      state.abilities.boomerangDamage += 15;
+      state.abilities.boomerangCount += 1;
+      state.abilities.boomerangCooldown = Math.max(1.2, state.abilities.boomerangCooldown - 0.12);
+    },
+  },
+  {
+    id: 'heavy_cannon',
+    name: 'Canhão Pesado',
+    description: 'Disparo lento mas devastador com alto dano',
+    icon: '💀',
+    maxLevel: 5,
+    category: 'weapon',
+    requiresUnlock: true,
+    apply: (state) => {
+      state.abilities.heavyCannonDamage += 45;
+      state.abilities.heavyCannonCooldown = Math.max(1.5, state.abilities.heavyCannonCooldown - 0.2);
+    },
+  },
+  {
+    id: 'acid_spray',
+    name: 'Spray Ácido',
+    description: 'Jatos de ácido que causam dano contínuo',
+    icon: '🧪',
+    maxLevel: 4,
+    category: 'weapon',
+    requiresUnlock: true,
+    apply: (state) => {
+      state.abilities.acidSprayDamage += 8;
+      state.abilities.acidSprayTicks += 1;
+      state.abilities.acidSprayCooldown = Math.max(1.0, state.abilities.acidSprayCooldown - 0.2);
+    },
+  },
+  {
+    id: 'gravity_well',
+    name: 'Poço Gravitacional',
+    description: 'Cria zonas que puxam e esmagam inimigos',
+    icon: '🌀',
+    maxLevel: 4,
+    category: 'weapon',
+    requiresUnlock: true,
+    apply: (state) => {
+      state.abilities.gravityWellRadius += 35;
+      state.abilities.gravityWellDamage += 20;
+      state.abilities.gravityWellCooldown = Math.max(2.5, state.abilities.gravityWellCooldown - 0.3);
+    },
+  },
+  {
+    id: 'tesla_coil',
+    name: 'Bobina Tesla',
+    description: 'Arcos elétricos automáticos entre inimigos',
+    icon: '🔌',
+    maxLevel: 5,
+    category: 'weapon',
+    requiresUnlock: true,
+    apply: (state) => {
+      state.abilities.teslaCoilDamage += 10;
+      state.abilities.teslaCoilChains += 1;
+      state.abilities.teslaCoilCooldown = Math.max(0.6, state.abilities.teslaCoilCooldown - 0.12);
+    },
+  },
+  {
+    id: 'void_rift',
+    name: 'Fenda do Vazio',
+    description: 'Abre portais que sugam e destroem inimigos',
+    icon: '🕳️',
+    maxLevel: 4,
+    category: 'weapon',
+    requiresUnlock: true,
+    apply: (state) => {
+      state.abilities.voidRiftRadius += 30;
+      state.abilities.voidRiftDamage += 25;
+      state.abilities.voidRiftCooldown = Math.max(3.0, state.abilities.voidRiftCooldown - 0.35);
+    },
+  },
 ];
 
 // ===== PASSIVES (unlimited) =====
