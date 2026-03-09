@@ -92,9 +92,10 @@ const Index = () => {
   };
   const handleMenu = () => { refreshMeta(); setScreen('menu'); };
 
-  const handleStartCoop = (room: RoomInfo, mId: string, difficulty: MapDifficulty, myClass: ShipType, theirClass: ShipType) => {
+  const handleStartCoop = (room: RoomInfo, mId: string, difficulty: MapDifficulty, myClass: ShipType, theirClasses: ShipType[], numPlayers: number) => {
     setCoopRoom(room); setMapId(mId); setMapDifficulty(difficulty);
-    setPlayerClass(myClass); setPeerClass(theirClass);
+    setPlayerClass(myClass); setPeerClasses(theirClasses);
+    setTotalPlayers(numPlayers);
     setGameKey(k => k + 1); setScreen('playing');
   };
 
