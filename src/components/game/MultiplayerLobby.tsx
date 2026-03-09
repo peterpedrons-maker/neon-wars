@@ -476,11 +476,7 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, user
                         background: isSelected ? `${info.color}10` : 'rgba(0,0,8,0.95)',
                         boxShadow: isSelected ? `0 0 15px ${info.color}33` : 'none',
                       }}>
-                      {SHIP_ICONS[id] ? (
-                        <img src={SHIP_ICONS[id]} alt={info.name} className="w-12 h-12 object-contain" />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full" style={{ background: `${info.color}30` }} />
-                      )}
+                      <ShipCanvas shipType={id as ShipType} width={48} height={36} />
                       <span className="text-[10px] font-bold font-mono mt-1" style={{ color: isSelected ? info.color : '#6080aa' }}>
                         {info.name}
                       </span>
