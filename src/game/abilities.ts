@@ -57,6 +57,38 @@ export interface AbilityState {
   lightningRingDamage: number;
   lightningRingTimer: number;
   flameTrailDamage: number;
+  // NEW ELEMENTAL WEAPONS
+  chainLightningDamage: number;
+  chainLightningChains: number;
+  chainLightningCooldown: number;
+  chainLightningTimer: number;
+  iceBeamDamage: number;
+  iceBeamSlowDuration: number;
+  iceBeamCooldown: number;
+  iceBeamTimer: number;
+  boomerangDamage: number;
+  boomerangCount: number;
+  boomerangCooldown: number;
+  boomerangTimer: number;
+  heavyCannonDamage: number;
+  heavyCannonCooldown: number;
+  heavyCannonTimer: number;
+  acidSprayDamage: number;
+  acidSprayTicks: number;
+  acidSprayCooldown: number;
+  acidSprayTimer: number;
+  gravityWellRadius: number;
+  gravityWellDamage: number;
+  gravityWellCooldown: number;
+  gravityWellTimer: number;
+  teslaCoilDamage: number;
+  teslaCoilChains: number;
+  teslaCoilCooldown: number;
+  teslaCoilTimer: number;
+  voidRiftDamage: number;
+  voidRiftRadius: number;
+  voidRiftCooldown: number;
+  voidRiftTimer: number;
   // Passive states
   vampirism: number;
   dodge: number;
