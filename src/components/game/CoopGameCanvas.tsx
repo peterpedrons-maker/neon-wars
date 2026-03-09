@@ -15,11 +15,12 @@ import TouchControls from './TouchControls';
 
 interface CoopGameCanvasProps {
   playerClass: ShipType;
-  peerClass: ShipType;
+  peerClasses: ShipType[];
   mapId: string;
   mapDifficulty: import('../../game/maps').MapDifficulty;
   room: RoomInfo;
   onMenu: () => void;
+  totalPlayers?: number;
 }
 
 const MAX_PARTICLES = 150; // Reduced for coop performance
