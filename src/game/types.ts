@@ -52,6 +52,8 @@ export interface Enemy extends Entity {
   maxHp: number;
   damage: number;
   speed: number;
+  baseSpeed?: number; // used for temporary slows (e.g. Frost Nova)
+  slowUntil?: number; // epoch ms; if now < slowUntil enemy is slowed
   score: number;
   attackTimer: number;
   attackCooldown: number;
