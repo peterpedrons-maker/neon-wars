@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ShipType, GameScreen } from '../game/types';
+import type { MapDifficulty } from '../game/maps';
 import { loadMeta, MetaProgress, ALL_MILESTONES } from '../game/meta';
 import { RoomInfo } from '../game/multiplayer';
 import MainMenu from '../components/game/MainMenu';
@@ -16,6 +17,7 @@ const Index = () => {
   const [screen, setScreen] = useState<GameScreen>('menu');
   const [playerClass, setPlayerClass] = useState<ShipType>('phantom');
   const [mapId, setMapId] = useState<string>('neon-grid');
+  const [mapDifficulty, setMapDifficulty] = useState<MapDifficulty>('medium');
   const [gameKey, setGameKey] = useState(0);
   const [meta, setMeta] = useState<MetaProgress>(loadMeta());
 
@@ -30,8 +32,9 @@ const Index = () => {
     setScreen('map-select');
   };
 
-  const handleMapSelect = (id: string) => {
+  const handleMapSelect = (id: string, difficulty: MapDifficulty) => {
     setMapId(id);
+    setMapDifficulty(difficulty);
     setGameKey(k => k + 1);
     setScreen('playing');
   };
@@ -41,9 +44,16 @@ const Index = () => {
     setScreen('menu');
   };
 
-  const handleStartCoop = (room: RoomInfo, mId: string, myClass: ShipType, theirClass: ShipType) => {
+  const handleStartCoop = (
+    room: RoomInfo,
+    mId: string,
+    difficulty: MapDifficulty,
+    myClass: ShipType,
+    theirClass: ShipType,
+  ) => {
     setCoopRoom(room);
     setMapId(mId);
+    setMapDifficulty(difficulty);
     setPlayerClass(myClass);
     setPeerClass(theirClass);
     setGameKey(k => k + 1);
@@ -115,6 +125,7 @@ const Index = () => {
         playerClass={playerClass}
         peerClass={peerClass}
         mapId={mapId}
+        mapDifficulty={mapDifficulty}
         room={coopRoom}
         onMenu={handleMenu}
       />
@@ -126,6 +137,7 @@ const Index = () => {
       key={gameKey}
       playerClass={playerClass}
       mapId={mapId}
+      mapDifficulty={mapDifficulty}
       onMenu={handleMenu}
     />
   );

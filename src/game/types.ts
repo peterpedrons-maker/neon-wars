@@ -133,6 +133,7 @@ export interface GameState {
   trail: Array<{ x: number; y: number; age: number }>;
   // Map
   mapId: string;
+  mapDifficulty: import('./maps').MapDifficulty;
   hazards: import('./maps').ActiveHazard[];
   hazardSpawnTimer: number;
   // Flame trail zones

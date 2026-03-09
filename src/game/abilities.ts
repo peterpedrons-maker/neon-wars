@@ -549,37 +549,97 @@ export function updateMissiles(state: GameState, dt: number) {
   }
 }
 
-// Lightning Ring - periodic auto-strikes, projectileCount adds extra targets
-export function updateLightningRing(state: GameState, dt: number) {
-  if (state.abilities.lightningRingRadius <= 0) return;
-  state.abilities.lightningRingTimer -= dt;
-  if (state.abilities.lightningRingTimer <= 0) {
-    state.abilities.lightningRingTimer = 0.8;
-    const p = state.player;
-    let hits = 0;
-    const maxHits = 1 + state.abilities.projectileCount;
-    for (const e of state.enemies) {
-      if (!e.alive) continue;
-      if (hits >= maxHits) break;
-      const d = dist(e.pos, p.pos);
-      if (d < state.abilities.lightningRingRadius) {
-        e.hp -= state.abilities.lightningRingDamage;
-        e.flashTimer = 0.1;
-        const steps = 4;
-        for (let i = 0; i < steps; i++) {
-          const t = i / steps;
-          state.particles.push({
-            pos: { x: p.pos.x + (e.pos.x - p.pos.x) * t + (Math.random() - 0.5) * 10, y: p.pos.y + (e.pos.y - p.pos.y) * t + (Math.random() - 0.5) * 10 },
-            vel: { x: (Math.random() - 0.5) * 40, y: (Math.random() - 0.5) * 40 },
-            lifetime: 0.15, maxLifetime: 0.15,
-            color: '#80d0ff', size: 2,
-          });
-        }
-        hits++;
-      }
+// Ion Beam - periodic line strike in aim direction
+export function updateIonBeam(state: GameState, dt: number) {
+  if (state.abilities.ionBeamDamage <= 0) return;
+  state.abilities.ionBeamTimer -= dt;
+  if (state.abilities.ionBeamTimer > 0) return;
+
+  state.abilities.ionBeamTimer = state.abilities.ionBeamCooldown;
+  const p = state.player;
+  const len = state.abilities.ionBeamLength;
+  const width = 18;
+  const dx = Math.cos(p.angle);
+  const dy = Math.sin(p.angle);
+  const damage = state.abilities.ionBeamDamage + state.wave * 2;
+
+  for (const e of state.enemies) {
+    if (!e.alive) continue;
+    const ex = e.pos.x - p.pos.x;
+    const ey = e.pos.y - p.pos.y;
+    const t = ex * dx + ey * dy;
+    if (t < 0 || t > len) continue;
+    const px = p.pos.x + dx * t;
+    const py = p.pos.y + dy * t;
+    const distToLine = Math.hypot(e.pos.x - px, e.pos.y - py);
+    if (distToLine < width + e.radius) {
+      e.hp -= damage;
+      e.flashTimer = 0.12;
     }
-    if (hits === 0) state.abilities.lightningRingTimer = 0.2;
   }
+
+  // Visual sweep
+  for (let i = 0; i < 10; i++) {
+    const t = (i / 10) * len;
+    state.particles.push(...createParticles({ x: p.pos.x + dx * t, y: p.pos.y + dy * t }, '#80d0ff', 2, 260, 2));
+  }
+}
+
+// Shockwave - periodic radial burst
+export function updateShockwave(state: GameState, dt: number) {
+  if (state.abilities.shockwaveRadius <= 0) return;
+  state.abilities.shockwaveTimer -= dt;
+  if (state.abilities.shockwaveTimer > 0) return;
+
+  state.abilities.shockwaveTimer = state.abilities.shockwaveCooldown;
+  const p = state.player;
+  const r = state.abilities.shockwaveRadius;
+  const damage = state.abilities.shockwaveDamage + state.wave;
+
+  for (const e of state.enemies) {
+    if (!e.alive) continue;
+    if (dist(e.pos, p.pos) < r + e.radius) {
+      e.hp -= damage;
+      e.flashTimer = 0.1;
+    }
+  }
+
+  state.particles.push(...createParticles(p.pos, '#ffffff', 12, r * 3.5, 2.5));
+  state.particles.push(...createParticles(p.pos, COLORS.neonPink, 10, r * 3.2, 2.5));
+}
+
+// Sentry drones - periodic auto-shots
+export function updateSentries(state: GameState, dt: number) {
+  if (state.abilities.sentryCount <= 0) return;
+  state.abilities.sentryTimer -= dt;
+  if (state.abilities.sentryTimer > 0) return;
+
+  state.abilities.sentryTimer = state.abilities.sentryCooldown;
+  const p = state.player;
+  const alive = state.enemies.filter(e => e.alive);
+  if (alive.length === 0) return;
+
+  const sorted = alive.sort((a, b) => dist(a.pos, p.pos) - dist(b.pos, p.pos));
+  const shots = Math.min(state.abilities.sentryCount + state.abilities.projectileCount, sorted.length);
+
+  for (let i = 0; i < shots; i++) {
+    const t = sorted[i];
+    const angle = Math.atan2(t.pos.y - p.pos.y, t.pos.x - p.pos.x);
+    state.projectiles.push({
+      pos: { x: p.pos.x, y: p.pos.y },
+      vel: { x: Math.cos(angle) * PROJECTILE_SPEED * 0.9, y: Math.sin(angle) * PROJECTILE_SPEED * 0.9 },
+      radius: 4,
+      alive: true,
+      damage: (state.abilities.sentryDamage + p.damage * 0.25) * 0.9,
+      fromPlayer: true,
+      lifetime: 2.2,
+      color: COLORS.neonCyan,
+      pierce: Math.max(0, state.abilities.pierce - 1),
+      ricochet: state.abilities.ricochet,
+    });
+  }
+
+  state.particles.push(...createParticles(p.pos, COLORS.neonCyan, 4, 120, 2));
 }
 
 // Chain lightning on enemy death

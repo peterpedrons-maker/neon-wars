@@ -413,7 +413,7 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
     const meta = loadMeta();
     metaRef.current = meta;
     const player = createPlayer(playerClass);
-    stateRef.current = createInitialState(player, mapId, meta.weaponSlots);
+    stateRef.current = createInitialState(player, mapId, meta.weaponSlots, mapDifficulty);
     stateRef.current.isHost = room.isHost;
     startWave(stateRef.current);
     setRunResult(null);
@@ -422,7 +422,7 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
     setPeerUpgradeDone(false);
     setWaitingForPeer(false);
     forceUpdate(n => n + 1);
-  }, [playerClass, mapId]);
+  }, [playerClass, mapId, mapDifficulty]);
 
   const state = stateRef.current;
 

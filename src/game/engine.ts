@@ -1131,11 +1131,13 @@ function applyDifficultyToEnemy(state: GameState, e: Enemy) {
 function updateHazards(state: GameState, dt: number) {
   const map = ALL_MAPS[state.mapId];
   if (!map || map.hazards.length === 0) return;
-  
+
+  const diff = getDifficultySettings(state);
+
   // Spawn hazards
   state.hazardSpawnTimer -= dt;
   if (state.hazardSpawnTimer <= 0) {
-    state.hazardSpawnTimer = 8;
+    state.hazardSpawnTimer = 8 / diff.hazardRateMult;
     for (const h of map.hazards) {
       const active = state.hazards.filter(a => a.type === h.type).length;
       if (active < h.maxActive && Math.random() < h.spawnChance) {
@@ -1143,13 +1145,13 @@ function updateHazards(state: GameState, dt: number) {
       }
     }
   }
-  
+
   const p = state.player;
   for (let i = state.hazards.length - 1; i >= 0; i--) {
     const hz = state.hazards[i];
     hz.lifetime -= dt;
     if (hz.lifetime <= 0) { state.hazards.splice(i, 1); continue; }
-    
+
     // Hazard effects
     if (hz.type === 'lava_pool') {
       const d = Math.hypot(p.pos.x - hz.pos.x, p.pos.y - hz.pos.y);
@@ -1188,6 +1190,21 @@ function updateHazards(state: GameState, dt: number) {
         if (ed < hz.radius + e.radius) {
           e.hp -= 20 * dt;
           e.flashTimer = 0.03;
+        }
+      }
+    } else if (hz.type === 'crystal_shard') {
+      // Reflect projectiles passing through (keeps chaos without hard-stopping gameplay)
+      for (const proj of state.projectiles) {
+        if (!proj.alive) continue;
+        const d = Math.hypot(proj.pos.x - hz.pos.x, proj.pos.y - hz.pos.y);
+        if (d < hz.radius + proj.radius) {
+          proj.vel.x *= -1;
+          proj.vel.y *= -1;
+          if (!proj.fromPlayer) {
+            proj.fromPlayer = true;
+            proj.color = '#00e5ff';
+          }
+          state.particles.push(...createParticles(proj.pos, '#00e5ff', 3, 220, 2));
         }
       }
     }
