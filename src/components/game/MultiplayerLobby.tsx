@@ -495,11 +495,7 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, user
                     {Array.from(connectedPeers.entries()).map(([pid, peer], i) => (
                       <div key={pid} className="flex items-center gap-2 py-2 px-3 rounded-xl"
                         style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                        {SHIP_ICONS[peer.ship] ? (
-                          <img src={SHIP_ICONS[peer.ship]} alt="" className="w-8 h-8 object-contain" />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full" style={{ background: `${SHIP_INFO[peer.ship]?.color || '#fff'}30` }} />
-                        )}
+                        <ShipCanvas shipType={peer.ship} width={32} height={24} />
                         <div>
                           <span className="font-bold font-mono text-xs" style={{ color: SHIP_INFO[peer.ship]?.color || '#fff' }}>
                             {SHIP_INFO[peer.ship]?.name || 'Unknown'}
