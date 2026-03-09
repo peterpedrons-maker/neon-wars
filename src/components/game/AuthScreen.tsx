@@ -78,10 +78,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onAuth }) => {
               <input type="text" value={username} onChange={e => setUsername(e.target.value)}
                 placeholder="Ex: NeonSlayer"
                 className="w-full px-3 py-2.5 rounded-lg font-mono text-sm text-[#e0e8ff] placeholder-[#304060] outline-none transition-all focus:ring-1"
-                style={{
-                  background: 'rgba(0,10,30,0.8)', border: '1px solid rgba(0,255,255,0.1)',
-                  focusRingColor: '#0ff',
-                }}
+                style={{ background: 'rgba(0,10,30,0.8)', border: '1px solid rgba(0,255,255,0.1)' }}
                 required minLength={2} maxLength={20} />
             </div>
           )}

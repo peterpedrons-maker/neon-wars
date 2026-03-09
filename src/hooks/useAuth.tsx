@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadProgress = useCallback(async (): Promise<MetaProgress | null> => {
     if (!user) return null;
     const { data } = await supabase.from('game_progress').select('progress').eq('user_id', user.id).single();
-    return data?.progress as MetaProgress | null;
+    return data?.progress as unknown as MetaProgress | null;
   }, [user]);
 
   return (
