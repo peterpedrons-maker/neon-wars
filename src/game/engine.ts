@@ -75,7 +75,7 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
 
   // Attack
   if (input.shooting) {
-    if (p.class === 'titan' || p.class === 'juggernaut') {
+  if (p.class === 'titan' || p.class === 'juggernaut' || p.class === 'leviathan') {
       titanBlast(state, dt);
     } else {
       const prevTimer = p.attackTimer;
