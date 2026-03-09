@@ -45,14 +45,15 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
     ctx.translate(sx, sy);
   }
 
-  // Clear to deep black
-  ctx.fillStyle = COLORS.bg;
+  // Map-specific background color
+  const currentMap = ALL_MAPS[state.mapId];
+  ctx.fillStyle = currentMap?.bgColor || COLORS.bg;
   ctx.fillRect(0, 0, canvasW, canvasH);
 
   ctx.scale(scale, scale);
   ctx.translate(viewportW / 2 - camX, viewportH / 2 - camY);
 
-  // --- NEON GRID with WARP DISTORTION ---
+  // --- NEON GRID with WARP DISTORTION (map-colored) ---
   drawNeonGridWarped(ctx, time, state);
   
   // Arena border

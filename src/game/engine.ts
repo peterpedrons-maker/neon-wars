@@ -956,33 +956,282 @@ function bossAttack(state: GameState, boss: Enemy) {
       state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(angle + i * 0.1) * 320, y: Math.sin(angle + i * 0.1) * 320 }, radius: 10, alive: true, damage: boss.damage * 0.7, fromPlayer: false, lifetime: 2, color: '#44ff88' });
     }
     state.particles.push(...createParticles(boss.pos, '#668866', 20, 180, 4));
-  } else if (boss.type === 'nexus_guardian' || boss.type === 'aurora_phoenix' || boss.type === 'core_titan' || boss.type === 'reality_breaker' || boss.type === 'void_emperor') {
-    // Generic powerful boss: rotating spread + aimed burst + shockwave
-    const phase = (boss.bossPhase || 0) % 3;
+  } else if (boss.type === 'nexus_guardian') {
+    // NEXUS GUARDIAN: Portal network — opens warp rifts that shoot multi-directional burst
+    const phase = (boss.bossPhase || 0) % 4;
     if (phase === 0) {
-      for (let i = 0; i < 20; i++) {
-        const a = (Math.PI * 2 / 20) * i + Date.now() * 0.002;
-        state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(a) * 200, y: Math.sin(a) * 200 }, radius: 7, alive: true, damage: boss.damage * 0.4, fromPlayer: false, lifetime: 2.5, color: COLORS[boss.type] || '#ff00ff' });
+      // Rotating warp portal ring — 4 portals at cardinal directions that each shoot 5 bullets
+      for (let portal = 0; portal < 4; portal++) {
+        const portalA = (Math.PI / 2) * portal + Date.now() * 0.0008;
+        const px2 = boss.pos.x + Math.cos(portalA) * 120;
+        const py2 = boss.pos.y + Math.sin(portalA) * 120;
+        state.particles.push(...createParticles({ x: px2, y: py2 }, '#ff44ff', 8, 80, 2));
+        for (let i = 0; i < 5; i++) {
+          const a = (Math.PI * 2 / 5) * i + portalA;
+          state.projectiles.push({ pos: { x: px2, y: py2 }, vel: { x: Math.cos(a) * 200, y: Math.sin(a) * 200 }, radius: 5, alive: true, damage: boss.damage * 0.4, fromPlayer: false, lifetime: 2, color: '#ff00ff' });
+        }
       }
     } else if (phase === 1) {
-      for (let i = -4; i <= 4; i++) {
-        state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(angle + i * 0.08) * 380, y: Math.sin(angle + i * 0.08) * 380 }, radius: 10, alive: true, damage: boss.damage * 0.7, fromPlayer: false, lifetime: 2, color: '#ffffff' });
+      // Boss teleports to a random location and fires a dense aimed cone
+      state.particles.push(...createParticles(boss.pos, '#ff44ff', 20, 150, 3));
+      boss.pos.x = p.pos.x + (Math.random() - 0.5) * 300;
+      boss.pos.y = p.pos.y + (Math.random() - 0.5) * 300;
+      boss.pos.x = Math.max(100, Math.min(ARENA_W - 100, boss.pos.x));
+      boss.pos.y = Math.max(100, Math.min(ARENA_H - 100, boss.pos.y));
+      state.particles.push(...createParticles(boss.pos, '#ff44ff', 20, 150, 3));
+      for (let i = -6; i <= 6; i++) {
+        state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(angle + i * 0.07) * 340, y: Math.sin(angle + i * 0.07) * 340 }, radius: 8, alive: true, damage: boss.damage * 0.6, fromPlayer: false, lifetime: 2, color: '#ff00cc' });
+      }
+    } else if (phase === 2) {
+      // Expanding void ring — 3 rings at different speeds
+      for (let ring = 0; ring < 3; ring++) {
+        const spd = 120 + ring * 80;
+        const count = 10 + ring * 4;
+        const offset = ring * (Math.PI / count);
+        for (let i = 0; i < count; i++) {
+          const a = (Math.PI * 2 / count) * i + offset;
+          state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(a) * spd, y: Math.sin(a) * spd }, radius: 6 - ring, alive: true, damage: boss.damage * 0.35, fromPlayer: false, lifetime: 3, color: '#cc00ff' });
+        }
       }
     } else {
-      // Teleport + explosion
-      state.particles.push(...createParticles(boss.pos, COLORS[boss.type] || '#ff00ff', 25, 200, 4));
-      const tA = Math.random() * Math.PI * 2;
-      boss.pos.x = p.pos.x + Math.cos(tA) * 180;
-      boss.pos.y = p.pos.y + Math.sin(tA) * 180;
-      state.particles.push(...createParticles(boss.pos, COLORS[boss.type] || '#ff00ff', 25, 200, 4));
-      for (let i = 0; i < 16; i++) {
-        const a = (Math.PI * 2 / 16) * i;
-        state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(a) * 160, y: Math.sin(a) * 160 }, radius: 6, alive: true, damage: boss.damage * 0.4, fromPlayer: false, lifetime: 2, color: COLORS[boss.type] || '#ff00ff' });
+      // Spawn warp drones + laser cross
+      for (let i = 0; i < 4; i++) {
+        const wd = createEnemy('warp_drone', Math.max(1, state.wave - 1));
+        wd.pos = { x: boss.pos.x + Math.cos((i / 4) * Math.PI * 2) * 60, y: boss.pos.y + Math.sin((i / 4) * Math.PI * 2) * 60 };
+        state.enemies.push(wd);
+      }
+      for (let i = 0; i < 4; i++) {
+        const a = (Math.PI / 2) * i;
+        for (let j = 0; j < 3; j++) {
+          state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(a + j * 0.05) * 280, y: Math.sin(a + j * 0.05) * 280 }, radius: 9, alive: true, damage: boss.damage * 0.55, fromPlayer: false, lifetime: 2.5, color: '#ffffff' });
+        }
+      }
+    }
+    boss.bossPhase = (boss.bossPhase || 0) + 1;
+    state.shakeTimer = 0.3; state.shakeIntensity = 10;
+    state.particles.push(...createParticles(boss.pos, '#ff00ff', 25, 220, 4));
+  } else if (boss.type === 'aurora_phoenix') {
+    // AURORA PHOENIX: Prism beams + rebirth mechanics
+    const phase = (boss.bossPhase || 0) % 4;
+    if (phase === 0) {
+      // Rainbow prism burst — each wave different color/direction
+      const colors = ['#ff66aa', '#ff88ff', '#aa66ff', '#66aaff', '#66ffaa', '#ffff66'];
+      for (let c = 0; c < colors.length; c++) {
+        const baseA = angle + (c / colors.length) * Math.PI * 0.5;
+        for (let i = -2; i <= 2; i++) {
+          state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(baseA + i * 0.12) * (250 + c * 20), y: Math.sin(baseA + i * 0.12) * (250 + c * 20) }, radius: 5, alive: true, damage: boss.damage * 0.35, fromPlayer: false, lifetime: 2.5, color: colors[c] });
+        }
+      }
+    } else if (phase === 1) {
+      // Fire nova + dive toward player
+      for (let i = 0; i < 24; i++) {
+        const a = (Math.PI * 2 / 24) * i;
+        state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(a) * 180, y: Math.sin(a) * 180 }, radius: 6, alive: true, damage: boss.damage * 0.4, fromPlayer: false, lifetime: 2, color: '#ff88ff' });
+      }
+      // Dash toward player
+      boss.pos.x += (p.pos.x - boss.pos.x) * 0.4;
+      boss.pos.y += (p.pos.y - boss.pos.y) * 0.4;
+      state.particles.push(...createParticles(boss.pos, '#ff66aa', 30, 300, 5));
+    } else if (phase === 2) {
+      // Spiral of mixed color shots
+      const now2 = Date.now() * 0.003;
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 12; j++) {
+          const a = (Math.PI * 2 / 12) * j + now2 + i * 1.0;
+          const spd = 160 + i * 50;
+          const clr = i === 0 ? '#ff66aa' : i === 1 ? '#aa66ff' : '#66ffaa';
+          state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(a) * spd, y: Math.sin(a) * spd }, radius: 5, alive: true, damage: boss.damage * 0.3, fromPlayer: false, lifetime: 3, color: clr });
+        }
+      }
+    } else {
+      // Rebirth: teleport center, spawn prism_shards, fire cross lance
+      state.particles.push(...createParticles(boss.pos, '#ffffff', 40, 300, 6));
+      boss.pos.x = ARENA_W / 2 + (Math.random() - 0.5) * 200;
+      boss.pos.y = ARENA_H / 2 + (Math.random() - 0.5) * 200;
+      for (let i = 0; i < 3; i++) {
+        const ps = createEnemy('prism_shard', state.wave);
+        ps.pos = { x: boss.pos.x + (Math.random() - 0.5) * 100, y: boss.pos.y + (Math.random() - 0.5) * 100 };
+        state.enemies.push(ps);
+      }
+      state.particles.push(...createParticles(boss.pos, '#ff88ff', 50, 400, 7));
+      for (let i = 0; i < 8; i++) {
+        const a = (Math.PI / 4) * i;
+        for (let j = 0; j < 4; j++) {
+          state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(a + j * 0.04) * 360, y: Math.sin(a + j * 0.04) * 360 }, radius: 10, alive: true, damage: boss.damage * 0.65, fromPlayer: false, lifetime: 2, color: '#ffffff' });
+        }
       }
     }
     boss.bossPhase = (boss.bossPhase || 0) + 1;
     state.shakeTimer = 0.4; state.shakeIntensity = 12;
-    state.particles.push(...createParticles(boss.pos, COLORS[boss.type] || '#ff00ff', 35, 280, 5));
+    state.particles.push(...createParticles(boss.pos, '#ff66aa', 30, 280, 5));
+  } else if (boss.type === 'core_titan') {
+    // CORE TITAN: Magma eruptions + armor phases
+    const phase = (boss.bossPhase || 0) % 4;
+    if (phase === 0) {
+      // Lava eruption columns — 5 locations around arena
+      for (let i = 0; i < 5; i++) {
+        const rx = 150 + Math.random() * (ARENA_W - 300);
+        const ry = 150 + Math.random() * (ARENA_H - 300);
+        state.particles.push(...createParticles({ x: rx, y: ry }, '#ff4400', 20, 200, 5));
+        for (let j = 0; j < 8; j++) {
+          const a = (Math.PI * 2 / 8) * j;
+          state.projectiles.push({ pos: { x: rx, y: ry }, vel: { x: Math.cos(a) * 160, y: Math.sin(a) * 160 }, radius: 7, alive: true, damage: boss.damage * 0.45, fromPlayer: false, lifetime: 2, color: '#ff6600' });
+        }
+      }
+      state.shakeTimer = 0.5; state.shakeIntensity = 15;
+    } else if (phase === 1) {
+      // Armor barrage — heavy slow aimed shots
+      for (let i = -3; i <= 3; i++) {
+        state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(angle + i * 0.1) * 260, y: Math.sin(angle + i * 0.1) * 260 }, radius: 14, alive: true, damage: boss.damage * 0.85, fromPlayer: false, lifetime: 2.5, color: '#ff6600' });
+      }
+      // Lava trail at boss position
+      state.flameZones.push({ x: boss.pos.x, y: boss.pos.y, damage: boss.damage * 0.3, lifetime: 5 });
+    } else if (phase === 2) {
+      // Magma ring — slow close-range explosion
+      for (let i = 0; i < 20; i++) {
+        const a = (Math.PI * 2 / 20) * i;
+        state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(a) * 130, y: Math.sin(a) * 130 }, radius: 9, alive: true, damage: boss.damage * 0.5, fromPlayer: false, lifetime: 2.5, color: '#ff4400' });
+      }
+      // Spawn magma wurms
+      for (let i = 0; i < 2; i++) {
+        const mw = createEnemy('magma_wurm', Math.max(1, state.wave - 2));
+        mw.pos = { x: boss.pos.x + (Math.random() - 0.5) * 80, y: boss.pos.y + (Math.random() - 0.5) * 80 };
+        state.enemies.push(mw);
+      }
+    } else {
+      // Meltdown: global lava flood + charge toward player
+      for (let i = 0; i < 8; i++) {
+        const rx2 = 100 + Math.random() * (ARENA_W - 200);
+        const ry2 = 100 + Math.random() * (ARENA_H - 200);
+        state.flameZones.push({ x: rx2, y: ry2, damage: boss.damage * 0.25, lifetime: 6 });
+        state.particles.push(...createParticles({ x: rx2, y: ry2 }, '#ff4400', 10, 100, 3));
+      }
+      boss.pos.x += (p.pos.x - boss.pos.x) * 0.5;
+      boss.pos.y += (p.pos.y - boss.pos.y) * 0.5;
+      state.particles.push(...createParticles(boss.pos, '#ff6600', 40, 350, 7));
+      state.shakeTimer = 0.6; state.shakeIntensity = 18;
+    }
+    boss.bossPhase = (boss.bossPhase || 0) + 1;
+    state.particles.push(...createParticles(boss.pos, '#ff4400', 30, 280, 5));
+  } else if (boss.type === 'reality_breaker') {
+    // REALITY BREAKER: Quantum phase attacks — projectiles phase shift direction mid-air
+    const phase = (boss.bossPhase || 0) % 4;
+    if (phase === 0) {
+      // Quantum scatter — shots curve unpredictably (approximated by multiple angles)
+      for (let i = 0; i < 18; i++) {
+        const a = (Math.PI * 2 / 18) * i + Date.now() * 0.0015;
+        const spd = 140 + Math.sin(i * 0.7) * 60;
+        state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(a) * spd, y: Math.sin(a) * spd }, radius: 5, alive: true, damage: boss.damage * 0.35, fromPlayer: false, lifetime: 3.5, color: '#4488ff' });
+      }
+    } else if (phase === 1) {
+      // Gravity well barrage — multiple aimed + a pull zone
+      for (let i = -5; i <= 5; i++) {
+        state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(angle + i * 0.09) * 350, y: Math.sin(angle + i * 0.09) * 350 }, radius: 9, alive: true, damage: boss.damage * 0.65, fromPlayer: false, lifetime: 2, color: '#88aaff' });
+      }
+      // Teleport + dimension wave
+      state.particles.push(...createParticles(boss.pos, '#4488ff', 20, 200, 3));
+      boss.pos.x = p.pos.x + (Math.random() - 0.5) * 350;
+      boss.pos.y = p.pos.y + (Math.random() - 0.5) * 350;
+      boss.pos.x = Math.max(100, Math.min(ARENA_W - 100, boss.pos.x));
+      boss.pos.y = Math.max(100, Math.min(ARENA_H - 100, boss.pos.y));
+      state.particles.push(...createParticles(boss.pos, '#4488ff', 20, 200, 3));
+    } else if (phase === 2) {
+      // Twin spiral — 2 spiral arms rotating in opposite directions
+      const now3 = Date.now() * 0.002;
+      for (let arm = 0; arm < 2; arm++) {
+        for (let i = 0; i < 10; i++) {
+          const a = (Math.PI * 2 / 10) * i + now3 * (arm === 0 ? 1 : -1);
+          state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(a) * 190, y: Math.sin(a) * 190 }, radius: 6, alive: true, damage: boss.damage * 0.4, fromPlayer: false, lifetime: 2.5, color: arm === 0 ? '#4488ff' : '#ff4488' });
+        }
+      }
+      // Also spawn quantum shifters
+      for (let i = 0; i < 2; i++) {
+        const qs = createEnemy('quantum_shifter', Math.max(1, state.wave - 1));
+        qs.pos = { x: boss.pos.x + (Math.random() - 0.5) * 120, y: boss.pos.y + (Math.random() - 0.5) * 120 };
+        state.enemies.push(qs);
+      }
+    } else {
+      // Reality collapse — bullets from multiple arena corners, aimed cross
+      const corners = [[0, 0], [ARENA_W, 0], [ARENA_W, ARENA_H], [0, ARENA_H]];
+      for (const [cx2, cy2] of corners) {
+        const ca = Math.atan2(p.pos.y - cy2, p.pos.x - cx2);
+        for (let i = -2; i <= 2; i++) {
+          state.projectiles.push({ pos: { x: cx2, y: cy2 }, vel: { x: Math.cos(ca + i * 0.1) * 240, y: Math.sin(ca + i * 0.1) * 240 }, radius: 7, alive: true, damage: boss.damage * 0.45, fromPlayer: false, lifetime: 3, color: '#66aaff' });
+        }
+      }
+      state.shakeTimer = 0.5; state.shakeIntensity = 14;
+    }
+    boss.bossPhase = (boss.bossPhase || 0) + 1;
+    state.shakeTimer = Math.max(state.shakeTimer, 0.4); state.shakeIntensity = Math.max(state.shakeIntensity, 12);
+    state.particles.push(...createParticles(boss.pos, '#4488ff', 30, 280, 5));
+  } else if (boss.type === 'void_emperor') {
+    // VOID EMPEROR: Absolute darkness — all attacks are massive, arena-wide, draining
+    const phase = (boss.bossPhase || 0) % 5;
+    if (phase === 0) {
+      // Oblivion nova — giant ring of void shots
+      for (let i = 0; i < 28; i++) {
+        const a = (Math.PI * 2 / 28) * i;
+        state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(a) * 170, y: Math.sin(a) * 170 }, radius: 8, alive: true, damage: boss.damage * 0.45, fromPlayer: false, lifetime: 3, color: '#220044' });
+      }
+    } else if (phase === 1) {
+      // Death beams: 4 rotating aimed salvos
+      for (let b = 0; b < 4; b++) {
+        const bA = angle + (b * Math.PI / 2);
+        for (let i = -3; i <= 3; i++) {
+          state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(bA + i * 0.08) * 400, y: Math.sin(bA + i * 0.08) * 400 }, radius: 11, alive: true, damage: boss.damage * 0.75, fromPlayer: false, lifetime: 2, color: '#440088' });
+        }
+      }
+      state.shakeTimer = 0.5; state.shakeIntensity = 16;
+    } else if (phase === 2) {
+      // Void rift burst — spawn multiple void horrors
+      for (let i = 0; i < 3; i++) {
+        const ah = createEnemy('abyss_horror', Math.max(1, state.wave - 2));
+        const rA = (Math.PI * 2 / 3) * i;
+        ah.pos = { x: boss.pos.x + Math.cos(rA) * 100, y: boss.pos.y + Math.sin(rA) * 100 };
+        state.enemies.push(ah);
+      }
+      // Pull vortex
+      for (let i = 0; i < 16; i++) {
+        const a = (Math.PI * 2 / 16) * i;
+        state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(a) * 140, y: Math.sin(a) * 140 }, radius: 6, alive: true, damage: boss.damage * 0.4, fromPlayer: false, lifetime: 2.5, color: '#550077' });
+      }
+      state.particles.push(...createParticles(boss.pos, '#220044', 40, 350, 6));
+    } else if (phase === 3) {
+      // Shadow phase — teleport 4 times, each time firing a burst
+      for (let t = 0; t < 4; t++) {
+        const tA = (Math.PI / 2) * t + Date.now() * 0.001;
+        const tX = boss.pos.x + Math.cos(tA) * 150;
+        const tY = boss.pos.y + Math.sin(tA) * 150;
+        const tXc = Math.max(80, Math.min(ARENA_W - 80, tX));
+        const tYc = Math.max(80, Math.min(ARENA_H - 80, tY));
+        for (let i = 0; i < 10; i++) {
+          const a = (Math.PI * 2 / 10) * i;
+          state.projectiles.push({ pos: { x: tXc, y: tYc }, vel: { x: Math.cos(a) * 200, y: Math.sin(a) * 200 }, radius: 7, alive: true, damage: boss.damage * 0.5, fromPlayer: false, lifetime: 2, color: '#660099' });
+        }
+        state.particles.push(...createParticles({ x: tXc, y: tYc }, '#440088', 15, 150, 3));
+      }
+    } else {
+      // Emperor's Wrath — massive full-arena attack, then slow recovery
+      for (let i = 0; i < 4; i++) {
+        const eA = (Math.PI / 2) * i;
+        for (let j = 0; j < 8; j++) {
+          state.projectiles.push({ pos: { x: boss.pos.x, y: boss.pos.y }, vel: { x: Math.cos(eA + j * 0.08) * 340, y: Math.sin(eA + j * 0.08) * 340 }, radius: 12, alive: true, damage: boss.damage * 0.9, fromPlayer: false, lifetime: 2.5, color: '#ff00ff' });
+        }
+      }
+      // Gravity pulse — pull player in for 0.5s
+      const pullDx = boss.pos.x - p.pos.x;
+      const pullDy = boss.pos.y - p.pos.y;
+      const pullD = Math.hypot(pullDx, pullDy);
+      if (pullD > 1) {
+        p.pos.x += (pullDx / pullD) * 60;
+        p.pos.y += (pullDy / pullD) * 60;
+      }
+      state.shakeTimer = 0.8; state.shakeIntensity = 20;
+      state.particles.push(...createParticles(boss.pos, '#ff00ff', 60, 500, 9));
+    }
+    boss.bossPhase = (boss.bossPhase || 0) + 1;
+    state.shakeTimer = Math.max(state.shakeTimer, 0.4); state.shakeIntensity = Math.max(state.shakeIntensity, 12);
+    state.particles.push(...createParticles(boss.pos, '#440088', 35, 300, 6));
   } else if (boss.type === 'archon') {
     // Archon: Golden storm - massive spread + homing orbs + spawns tanks
     // Phase 1: wide golden spread
