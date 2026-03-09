@@ -114,6 +114,11 @@ export const ENEMY_STATS: Record<EnemyType, { hp: number; damage: number; speed:
   lava_dragon: { hp: 500, damage: 30, speed: 45, score: 800, radius: 35, attackCooldown: 2, isBoss: true },
   void_lord: { hp: 400, damage: 35, speed: 40, score: 800, radius: 32, attackCooldown: 1.8, isBoss: true },
   crystal_giant: { hp: 600, damage: 25, speed: 25, score: 800, radius: 40, attackCooldown: 2.5, isBoss: true },
+  // Mega-bosses (wave 15 & 30)
+  archon: { hp: 2500, damage: 50, speed: 35, score: 3000, radius: 50, attackCooldown: 1.5, isBoss: true },
+  oblivion: { hp: 5000, damage: 70, speed: 40, score: 8000, radius: 55, attackCooldown: 1.2, isBoss: true },
+  // Death wave hunter
+  death_hunter: { hp: 80, damage: 40, speed: 200, score: 100, radius: 11, attackCooldown: 0.4, isBoss: false },
 };
 
 export const WAVE_BASE_ENEMIES = 20;
