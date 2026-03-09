@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MetaProgress, saveMeta } from '../../game/meta';
 import { playClick, playHover, playBack, playPurchase, playError } from '../../game/audio';
+import { SHIP_ICONS, ABILITY_ICONS, UI_ICONS } from '../../game/icons';
 
 export interface ShopItem {
   id: string;
@@ -95,7 +96,7 @@ const PlasmaShop: React.FC<PlasmaShopProps> = ({ meta, onUpdate, onBack }) => {
       </h1>
       
       <div className="flex items-center gap-2 mb-4 py-2 px-5 rounded-lg" style={{ background: 'rgba(191,90,242,0.15)', border: '1px solid rgba(191,90,242,0.3)' }}>
-        <span className="text-xl">⚡</span>
+        <img src={UI_ICONS.plasma} alt="Plasma" className="w-7 h-7 object-contain" />
         <span className="font-mono font-bold text-2xl" style={{ color: '#bf5af2' }}>{meta.plasma}</span>
         <span className="font-mono text-sm text-[#6080aa]">Plasma</span>
       </div>
@@ -148,7 +149,15 @@ const PlasmaShop: React.FC<PlasmaShopProps> = ({ meta, onUpdate, onBack }) => {
               {isPassive && !maxed && (
                 <div className="absolute top-1.5 left-1.5 text-[9px] px-1 py-0.5 rounded font-bold" style={{ background: 'rgba(0,255,200,0.15)', color: '#00ffc8' }}>PASSIVA</div>
               )}
-              <span className="text-2xl mb-1">{item.icon}</span>
+              {(() => {
+                const shipId = item.id.replace('unlock_', '');
+                const iconSrc = isShip ? SHIP_ICONS[shipId] : ABILITY_ICONS[item.id.replace('unlock_', '')] || null;
+                return iconSrc ? (
+                  <img src={iconSrc} alt={item.name} className="w-10 h-10 object-contain mb-1" />
+                ) : (
+                  <span className="text-2xl mb-1">{item.icon}</span>
+                );
+              })()}
               <h3 className="text-[11px] font-bold mb-0.5" style={{ color: maxed ? '#00ff64' : '#e0e8ff' }}>{item.name}</h3>
               <p className="text-[9px] text-[#6080aa] text-center mb-1.5 leading-tight">{item.description}</p>
               

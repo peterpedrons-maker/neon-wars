@@ -14,7 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      game_progress: {
+        Row: {
+          id: string
+          progress: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          progress?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          progress?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      leaderboard: {
+        Row: {
+          created_at: string
+          id: string
+          map_id: string
+          score: number
+          ship_class: string
+          user_id: string | null
+          username: string
+          wave: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          map_id?: string
+          score?: number
+          ship_class?: string
+          user_id?: string | null
+          username: string
+          wave?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          map_id?: string
+          score?: number
+          ship_class?: string
+          user_id?: string | null
+          username?: string
+          wave?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          username?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

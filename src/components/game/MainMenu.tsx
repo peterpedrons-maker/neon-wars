@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { RunStats, Milestone } from '../../game/meta';
 import { initAudio, startMenuMusic, stopMenuMusic, playClick, playHover } from '../../game/audio';
+import { UI_ICONS } from '../../game/icons';
 
 interface MainMenuProps {
   plasma: number;
@@ -12,9 +13,11 @@ interface MainMenuProps {
   onShop: () => void;
   onMultiplayer: () => void;
   onAchievements: () => void;
+  username?: string;
+  onLogout?: () => void;
 }
 
-const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, onLeaderboard, onHowToPlay, onShop, onMultiplayer, onAchievements }) => {
+const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, onLeaderboard, onHowToPlay, onShop, onMultiplayer, onAchievements, username, onLogout }) => {
   useEffect(() => {
     initAudio();
     startMenuMusic();
@@ -34,7 +37,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, 
       </div>
 
       <div className="flex items-center gap-2 mb-4 py-2 px-5 rounded-lg" style={{ background: 'rgba(191,90,242,0.1)', border: '1px solid rgba(191,90,242,0.25)' }}>
-        <span className="text-xl">⚡</span>
+        <img src={UI_ICONS.plasma} alt="Plasma" className="w-6 h-6 object-contain" />
         <span className="font-mono font-bold text-lg" style={{ color: '#bf5af2' }}>{plasma}</span>
         <span className="font-mono text-xs text-[#6080aa]">Plasma</span>
       </div>
@@ -94,7 +97,18 @@ const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, 
         </button>
       </div>
 
-      <div className="mt-10 text-sm text-[#203050] font-mono">WASD + Mouse • Touch Friendly</div>
+      {username && (
+        <div className="mt-4 flex items-center gap-3">
+          <span className="text-xs font-mono text-[#6080aa]">👤 {username}</span>
+          {onLogout && (
+            <button onClick={() => { playClick(); onLogout(); }}
+              className="text-xs font-mono text-[#ff4060] hover:text-[#ff6080] transition-colors">
+              Sair
+            </button>
+          )}
+        </div>
+      )}
+      <div className="mt-4 text-sm text-[#203050] font-mono">WASD + Mouse • Touch Friendly</div>
     </div>
   );
 };

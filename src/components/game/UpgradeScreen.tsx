@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Upgrade } from '../../game/types';
 import { getRandomUpgrades } from '../../game/upgrades';
+import { UPGRADE_ICONS } from '../../game/icons';
 
 interface UpgradeScreenProps {
   wave: number;
@@ -37,7 +38,11 @@ const UpgradeScreen: React.FC<UpgradeScreenProps> = ({ wave, onSelect }) => {
               (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(0,0,0,0.5)';
             }}
           >
-            <span className="text-4xl mb-3">{u.icon}</span>
+            {UPGRADE_ICONS[u.id] ? (
+              <img src={UPGRADE_ICONS[u.id]} alt={u.name} className="w-12 h-12 object-contain mb-3" />
+            ) : (
+              <span className="text-4xl mb-3">{u.icon}</span>
+            )}
             <h3 className="text-xl font-bold mb-2" style={{ color: '#0ff' }}>
               {u.name}
             </h3>

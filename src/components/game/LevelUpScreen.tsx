@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect } from 'react';
 import { Ability, getRandomAbilities } from '../../game/abilities';
 import { playClick, playHover, playLevelUp } from '../../game/audio';
+import { ABILITY_ICONS } from '../../game/icons';
 
 interface LevelUpScreenProps {
   level: number;
@@ -71,7 +72,11 @@ const LevelUpScreen: React.FC<LevelUpScreenProps> = ({ level, abilityLevels, equ
                   </span>
                 )}
               </div>
-              <span className="text-4xl mb-2">{a.icon}</span>
+              {ABILITY_ICONS[a.id] ? (
+                <img src={ABILITY_ICONS[a.id]} alt={a.name} className="w-12 h-12 object-contain mb-2" />
+              ) : (
+                <span className="text-4xl mb-2">{a.icon}</span>
+              )}
               <h3 className="text-lg font-bold mb-1" style={{ color: isWeapon ? '#ff6b00' : '#0ff' }}>
                 {a.name}
               </h3>
