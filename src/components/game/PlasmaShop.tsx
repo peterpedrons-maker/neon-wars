@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MetaProgress, saveMeta } from '../../game/meta';
 import { playClick, playHover, playBack, playPurchase, playError } from '../../game/audio';
-import { SHIP_ICONS, ABILITY_ICONS, UI_ICONS } from '../../game/icons';
+import { SHIP_ICONS, ABILITY_ICONS, UI_ICONS, SHOP_ICONS } from '../../game/icons';
 
 export interface ShopItem {
   id: string;
