@@ -9,7 +9,7 @@ import {
   setPublicRoomStatus, deletePublicRoom, PublicRoomInfo,
 } from '../../game/multiplayer';
 import { playClick, playHover, playBack } from '../../game/audio';
-import { SHIP_ICONS } from '../../game/icons';
+import ShipCanvas from './ShipCanvas';
 
 interface MultiplayerLobbyProps {
   unlockedShips: string[];
@@ -404,11 +404,7 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, user
                 style={{ background: 'rgba(0,0,20,0.9)', border: '1px solid rgba(0,255,255,0.15)' }}>
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center"
                   style={{ background: `${SHIP_INFO[pr.host_ship]?.color || '#0ff'}15` }}>
-                  {SHIP_ICONS[pr.host_ship] ? (
-                    <img src={SHIP_ICONS[pr.host_ship]} alt="" className="w-8 h-8 object-contain" />
-                  ) : (
-                    <span className="text-lg">🚀</span>
-                  )}
+                  <ShipCanvas shipType={pr.host_ship as ShipType} width={36} height={28} />
                 </div>
                 <div className="flex-1 text-left">
                   <div className="font-mono font-bold text-sm" style={{ color: '#e0e8ff' }}>{pr.host_name}</div>
@@ -480,11 +476,7 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, user
                         background: isSelected ? `${info.color}10` : 'rgba(0,0,8,0.95)',
                         boxShadow: isSelected ? `0 0 15px ${info.color}33` : 'none',
                       }}>
-                      {SHIP_ICONS[id] ? (
-                        <img src={SHIP_ICONS[id]} alt={info.name} className="w-12 h-12 object-contain" />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full" style={{ background: `${info.color}30` }} />
-                      )}
+                      <ShipCanvas shipType={id as ShipType} width={48} height={36} />
                       <span className="text-[10px] font-bold font-mono mt-1" style={{ color: isSelected ? info.color : '#6080aa' }}>
                         {info.name}
                       </span>
@@ -503,11 +495,7 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, user
                     {Array.from(connectedPeers.entries()).map(([pid, peer], i) => (
                       <div key={pid} className="flex items-center gap-2 py-2 px-3 rounded-xl"
                         style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                        {SHIP_ICONS[peer.ship] ? (
-                          <img src={SHIP_ICONS[peer.ship]} alt="" className="w-8 h-8 object-contain" />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full" style={{ background: `${SHIP_INFO[peer.ship]?.color || '#fff'}30` }} />
-                        )}
+                        <ShipCanvas shipType={peer.ship} width={32} height={24} />
                         <div>
                           <span className="font-bold font-mono text-xs" style={{ color: SHIP_INFO[peer.ship]?.color || '#fff' }}>
                             {SHIP_INFO[peer.ship]?.name || 'Unknown'}

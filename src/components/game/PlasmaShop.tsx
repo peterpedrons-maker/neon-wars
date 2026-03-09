@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { MetaProgress, saveMeta } from '../../game/meta';
 import { playClick, playHover, playBack, playPurchase, playError } from '../../game/audio';
-import { SHIP_ICONS, ABILITY_ICONS, UI_ICONS, SHOP_ICONS } from '../../game/icons';
+import { ABILITY_ICONS, UI_ICONS, SHOP_ICONS } from '../../game/icons';
+import ShipCanvas from './ShipCanvas';
+import { ShipType } from '../../game/types';
 
 export interface ShopItem {
   id: string;
@@ -151,8 +153,10 @@ const PlasmaShop: React.FC<PlasmaShopProps> = ({ meta, onUpdate, onBack }) => {
               )}
               {(() => {
                 const shipId = item.id.replace('unlock_', '');
-                const iconSrc = isShip ? SHIP_ICONS[shipId] 
-                  : ABILITY_ICONS[item.id.replace('unlock_', '')] 
+                if (isShip) {
+                  return <ShipCanvas shipType={shipId as ShipType} width={56} height={40} className="mb-1" />;
+                }
+                const iconSrc = ABILITY_ICONS[item.id.replace('unlock_', '')] 
                   || SHOP_ICONS[item.id] 
                   || (item.id.startsWith('slot_') ? SHOP_ICONS['weapon_slot'] : null);
                 return iconSrc ? (

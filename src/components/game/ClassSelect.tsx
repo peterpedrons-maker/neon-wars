@@ -1,8 +1,8 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { ShipType } from '../../game/types';
 import { COLORS } from '../../game/constants';
 import { playClick, playHover, playBack } from '../../game/audio';
-import { SHIP_ICONS } from '../../game/icons';
+import ShipCanvas from './ShipCanvas';
 
 interface ClassSelectProps {
   onSelect: (cls: ShipType) => void;
@@ -28,77 +28,6 @@ const ships: { id: ShipType; name: string; desc: string; stats: string; type: 'r
   { id: 'oracle', name: 'Oracle', desc: 'Tiros rastreadores. Especial: Marca todos os inimigos.', stats: 'DMG: 12 | VEL: Média', type: 'special' },
   { id: 'pyro', name: 'Pyro', desc: 'Lança-chamas devastador. Especial: Anel de fogo.', stats: 'DMG: 20 | VEL: Média-', type: 'special' },
 ];
-
-function hexToRgba(hex: string, a: number): string {
-  if (!hex || hex[0] !== '#') return `rgba(255,255,255,${a})`;
-  const r = parseInt(hex.slice(1, 3), 16) || 255;
-  const g = parseInt(hex.slice(3, 5), 16) || 255;
-  const b = parseInt(hex.slice(5, 7), 16) || 255;
-  return `rgba(${r},${g},${b},${a})`;
-}
-
-function ShipCanvas({ shipType }: { shipType: ShipType }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animRef = useRef<number>(0);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    const w = 140, h = 100;
-    canvas.width = w * 2; canvas.height = h * 2;
-    ctx.scale(2, 2);
-    const color = COLORS[shipType] || '#fff';
-    const glow = COLORS[shipType + 'Glow'] || '#fff';
-    function loop() {
-      const time = Date.now() * 0.001;
-      ctx!.clearRect(0, 0, w, h);
-      const cx = w / 2, cy = h / 2, r = 16;
-      // Background glow
-      const bgGrad = ctx!.createRadialGradient(cx, cy, 5, cx, cy, 70);
-      bgGrad.addColorStop(0, hexToRgba(color, 0.15));
-      bgGrad.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx!.fillStyle = bgGrad;
-      ctx!.fillRect(0, 0, w, h);
-      ctx!.save();
-      ctx!.translate(cx, cy);
-      // Exhaust
-      const thrustPulse = 0.6 + Math.sin(time * 18) * 0.3;
-      ctx!.fillStyle = hexToRgba(color, thrustPulse * 0.4);
-      ctx!.beginPath();
-      ctx!.moveTo(-r * 0.4, -3); ctx!.lineTo(-r - 15, 0); ctx!.lineTo(-r * 0.4, 3);
-      ctx!.closePath(); ctx!.fill();
-      ctx!.fillStyle = hexToRgba('#fff', thrustPulse * 0.6);
-      ctx!.beginPath();
-      ctx!.moveTo(-r * 0.35, -1); ctx!.lineTo(-r - 10, 0); ctx!.lineTo(-r * 0.35, 1);
-      ctx!.closePath(); ctx!.fill();
-      // Generic ship shape
-      ctx!.shadowColor = color; ctx!.shadowBlur = 15;
-      ctx!.beginPath();
-      ctx!.moveTo(r * 1.6, 0);
-      ctx!.lineTo(r * 0.3, -r * 0.8);
-      ctx!.lineTo(-r * 0.5, -r * 0.6);
-      ctx!.lineTo(-r * 0.6, 0);
-      ctx!.lineTo(-r * 0.5, r * 0.6);
-      ctx!.lineTo(r * 0.3, r * 0.8);
-      ctx!.closePath();
-      ctx!.fillStyle = hexToRgba(color, 0.15); ctx!.fill();
-      ctx!.strokeStyle = color; ctx!.lineWidth = 1.5; ctx!.stroke();
-      // Core
-      const p = 0.4 + Math.sin(time * 3) * 0.2;
-      ctx!.fillStyle = hexToRgba(glow, p);
-      ctx!.beginPath(); ctx!.arc(r * 0.3, 0, 2, 0, Math.PI * 2); ctx!.fill();
-      ctx!.shadowBlur = 0;
-      ctx!.restore();
-      animRef.current = requestAnimationFrame(loop);
-    }
-    loop();
-    return () => cancelAnimationFrame(animRef.current);
-  }, [shipType]);
-
-  return <canvas ref={canvasRef} style={{ width: 140, height: 100 }} className="pointer-events-none" />;
-}
 
 const TYPE_BADGES: Record<string, { label: string; color: string }> = {
   ranged: { label: 'RANGED', color: '#0ff' },
@@ -143,7 +72,7 @@ const ClassSelect: React.FC<ClassSelectProps> = ({ onSelect, onBack, unlockedShi
                 style={{ background: badge.color + '22', color: badge.color }}>
                 {badge.label}
               </div>
-              <ShipCanvas shipType={s.id} />
+              <ShipCanvas shipType={s.id} width={120} height={86} />
               <h3 className="text-sm font-bold mb-0.5" style={{ color: isLocked ? '#555' : color, fontFamily: 'Orbitron, monospace' }}>
                 {s.name}
               </h3>
