@@ -1,4 +1,5 @@
 import React from 'react';
+import { playBack, playHover } from '../../game/audio';
 
 interface HowToPlayProps {
   onBack: () => void;
@@ -52,7 +53,8 @@ const HowToPlay: React.FC<HowToPlayProps> = ({ onBack }) => {
       </div>
 
       <button
-        onClick={onBack}
+        onClick={() => { playBack(); onBack(); }}
+        onMouseEnter={playHover}
         className="mt-8 text-[#6080aa] hover:text-[#0ff] transition-colors text-lg font-mono"
       >
         ← Voltar

@@ -6,6 +6,7 @@ import {
   sendLobbyState, sendChat, LobbyState, ChatMessage,
   CoopPlayerState, CoopGameSync 
 } from '../../game/multiplayer';
+import { playClick, playHover, playBack } from '../../game/audio';
 
 interface MultiplayerLobbyProps {
   unlockedShips: string[];
@@ -654,7 +655,8 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
                 <div className="grid grid-cols-2 gap-2">
                   {MAPS.map(m => (
                     <button key={m.id} 
-                      onClick={() => { if (room?.isHost) setSelectedMap(m.id); }}
+                      onClick={() => { if (room?.isHost) { playClick(); setSelectedMap(m.id); } }}
+                      onMouseEnter={() => { if (room?.isHost) playHover(); }}
                       disabled={!room?.isHost}
                       className="py-2 px-3 rounded-lg font-mono text-sm font-bold transition-all"
                       style={{
@@ -681,13 +683,13 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
 
           {/* Action buttons */}
           <div className="flex gap-3 mt-2">
-            <button onClick={handleLeave}
+            <button onClick={() => { playBack(); handleLeave(); }} onMouseEnter={playHover}
               className="py-3 px-6 text-sm font-bold rounded-lg text-[#ff4060] border border-[#ff4060]/30 font-mono transition-all hover:border-[#ff4060]"
               style={{ background: 'rgba(255,64,96,0.05)' }}>
               Sair
             </button>
             {room?.isHost && (
-              <button onClick={handleStart} disabled={!peerConnected || countdown !== null}
+              <button onClick={() => { playClick(); handleStart(); }} onMouseEnter={playHover} disabled={!peerConnected || countdown !== null}
                 className="py-3 px-8 text-lg font-bold rounded-lg text-white border font-mono transition-all hover:scale-105 disabled:opacity-30 disabled:hover:scale-100"
                 style={{ background: 'linear-gradient(135deg, rgba(0,229,255,0.2), rgba(191,90,242,0.2))', borderColor: '#0ff', boxShadow: peerConnected ? '0 0 20px rgba(0,255,255,0.3)' : 'none' }}>
                 🚀 Iniciar

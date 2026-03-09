@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ALL_MAPS } from '../../game/maps';
 import type { MapDifficulty } from '../../game/maps';
+import { playClick, playHover, playBack } from '../../game/audio';
 
 interface MapSelectProps {
   unlockedMaps: string[];
@@ -33,7 +34,8 @@ const MapSelect: React.FC<MapSelectProps> = ({ unlockedMaps, onSelect, onBack })
         {difficultyOptions.map(opt => (
           <button
             key={opt.id}
-            onClick={() => setDifficulty(opt.id)}
+            onClick={() => { playClick(); setDifficulty(opt.id); }}
+            onMouseEnter={playHover}
             className="px-4 py-2 rounded-lg font-mono text-sm font-bold border transition-all duration-200"
             style={{
               background: difficulty === opt.id ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
@@ -57,18 +59,14 @@ const MapSelect: React.FC<MapSelectProps> = ({ unlockedMaps, onSelect, onBack })
           return (
             <button
               key={id}
-              onClick={() => unlocked && onSelect(id, difficulty)}
+              onClick={() => { if (unlocked) { playClick(); onSelect(id, difficulty); } }}
+              onMouseEnter={() => { if (unlocked) playHover(); }}
               disabled={!unlocked}
               className="flex flex-col items-center p-6 rounded-xl border transition-all duration-200 hover:scale-105 active:scale-95 w-64 font-mono disabled:opacity-40 disabled:hover:scale-100"
               style={{
                 borderColor: unlocked ? map.borderColor + '40' : 'rgba(100,100,100,0.2)',
                 background: unlocked ? map.bgColor : 'rgba(20,20,30,0.8)',
                 boxShadow: unlocked ? `0 4px 20px ${map.borderColor}20` : 'none',
-              }}
-              onMouseEnter={e => {
-                if (!unlocked) return;
-                (e.currentTarget as HTMLElement).style.borderColor = map.borderColor;
-                (e.currentTarget as HTMLElement).style.boxShadow = `0 0 25px ${map.borderColor}40`;
               }}
               onMouseLeave={e => {
                 (e.currentTarget as HTMLElement).style.borderColor = unlocked ? map.borderColor + '40' : 'rgba(100,100,100,0.2)';
@@ -93,7 +91,8 @@ const MapSelect: React.FC<MapSelectProps> = ({ unlockedMaps, onSelect, onBack })
       </div>
 
       <button
-        onClick={onBack}
+        onClick={() => { playBack(); onBack(); }}
+        onMouseEnter={playHover}
         className="py-2 px-6 text-sm font-bold rounded-lg text-[#6080aa] border border-[#6080aa]/30 transition-all duration-200 hover:border-[#0ff] hover:text-[#0ff] font-mono"
         style={{ background: 'rgba(0,255,255,0.03)' }}
       >

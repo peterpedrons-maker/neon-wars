@@ -401,6 +401,138 @@ export function playWaveComplete() {
   } catch {}
 }
 
+// ===== UI SOUND EFFECTS =====
+
+export function playClick() {
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1200, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.06);
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(2400, ctx.currentTime);
+    osc2.frequency.exponentialRampToValueAtTime(1600, ctx.currentTime + 0.04);
+    gain.gain.setValueAtTime(0.06, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+    osc.connect(gain).connect(ctx.destination);
+    osc2.connect(gain);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.08);
+    osc2.start(ctx.currentTime); osc2.stop(ctx.currentTime + 0.06);
+  } catch {}
+}
+
+export function playHover() {
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1800, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.03);
+    gain.gain.setValueAtTime(0.02, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.04);
+  } catch {}
+}
+
+export function playBack() {
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(600, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.1);
+  } catch {}
+}
+
+export function playPurchase() {
+  try {
+    const ctx = getCtx();
+    const notes = [800, 1000, 1300, 1600];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.05);
+      gain.gain.setValueAtTime(0.06, ctx.currentTime + i * 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.05 + 0.12);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(ctx.currentTime + i * 0.05); osc.stop(ctx.currentTime + i * 0.05 + 0.12);
+    });
+  } catch {}
+}
+
+export function playError() {
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(200, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.04, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.15);
+  } catch {}
+}
+
+export function playLevelUp() {
+  try {
+    const ctx = getCtx();
+    const notes = [600, 800, 1000, 1200, 1500, 1800];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc2.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.06);
+      osc2.frequency.setValueAtTime(freq * 1.5, ctx.currentTime + i * 0.06);
+      gain.gain.setValueAtTime(0.07, ctx.currentTime + i * 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.06 + 0.25);
+      osc.connect(gain).connect(ctx.destination);
+      osc2.connect(gain);
+      osc.start(ctx.currentTime + i * 0.06); osc.stop(ctx.currentTime + i * 0.06 + 0.25);
+      osc2.start(ctx.currentTime + i * 0.06); osc2.stop(ctx.currentTime + i * 0.06 + 0.25);
+    });
+    // Shimmer
+    const shim = ctx.createOscillator();
+    const sg = ctx.createGain();
+    shim.type = 'sine';
+    shim.frequency.setValueAtTime(4000, ctx.currentTime + 0.25);
+    shim.frequency.exponentialRampToValueAtTime(2000, ctx.currentTime + 0.6);
+    sg.gain.setValueAtTime(0.03, ctx.currentTime + 0.25);
+    sg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+    shim.connect(sg).connect(ctx.destination);
+    shim.start(ctx.currentTime + 0.25); shim.stop(ctx.currentTime + 0.62);
+  } catch {}
+}
+
+export function playNavigate() {
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(900, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.06);
+    gain.gain.setValueAtTime(0.04, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.08);
+  } catch {}
+}
+
 // ===== PREMIUM MUSIC ENGINE =====
 // Multi-layered electronic music with proper song structure, FM synthesis, sidechaining
 
@@ -418,6 +550,10 @@ const PROGS = [
   [[0,3,7,10],[8,12,15,19],[5,8,12,17],[7,10,14,17]],
   // Aggressive: i - bII - bVII - i(8va)
   [[0,3,7,10],[1,5,8,13],[10,14,17,22],[12,15,19,24]],
+  // Extended Journey 1: i - v - bVI - bIII
+  [[0,3,7,10],[7,10,14,19],[8,12,15,20],[3,7,10,15]],
+  // Extended Journey 2: iv - i - bVII - bVI
+  [[5,8,12,17],[0,3,7,12],[10,14,17,21],[8,12,15,19]],
 ];
 
 // Catchy melody phrases [scaleIndex, durationIn16ths]
@@ -438,6 +574,10 @@ const MELODY_PHRASES = [
   [[12,3],[9,1],[7,2],[5,2],[4,1],[2,1],[0,4],[2,2],[4,2]],
   // Trance gate
   [[7,1],[0,0],[7,1],[0,0],[5,1],[0,0],[4,1],[0,0],[2,1],[0,0],[4,1],[0,0],[7,1],[0,0],[9,1],[0,0]],
+  // Cyberpunk run
+  [[0,1],[12,1],[0,1],[10,1],[0,1],[9,1],[0,1],[7,1],[0,1],[5,1],[0,1],[4,1],[0,1],[2,1],[0,2]],
+  // Mystic drift
+  [[4,4],[7,2],[9,2],[12,4],[14,4],[12,2],[9,2],[7,8]],
 ];
 
 // Bass patterns (16th note grid)
@@ -447,6 +587,8 @@ const BASS_RHYTHMS = [
   [1,0,0,1,0,1,0,0,1,0,0,1,0,1,0,0],
   [1,1,0,1,1,0,1,0,1,1,0,1,1,0,1,0],
   [1,0,0,0,1,0,0,1,0,0,1,0,0,0,1,0],
+  [1,0,1,1,0,1,0,1,1,0,1,1,0,1,0,1], // Syncopated
+  [1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0], // Sparse deep
 ];
 
 let musicTimers: number[] = [];
@@ -513,21 +655,22 @@ function scheduleNextMeasure() {
   const measureDur = beatDur * 4;
   const sixteenth = beatDur / 4;
 
-  const isNewSection = measureCount > 0 && measureCount % 8 === 0;
+  const isNewSection = measureCount > 0 && measureCount % 16 === 0; // Extended to 16 measures per section
   if (isNewSection) {
     sectionCount++;
     currentProgIndex = sectionCount % PROGS.length;
-    if (measureCount % 32 === 0) {
-      const keys = [33, 36, 38, 40, 31, 28, 35, 43, 45];
+    if (measureCount % 64 === 0) { // Key change every 64 measures for much longer progression without feeling repetitive
+      const keys = [33, 36, 38, 40, 31, 28, 35, 43, 45, 33, 26, 38];
       currentKey = keys[(sectionCount / 4 | 0) % keys.length];
     }
   }
 
   const prog = PROGS[currentProgIndex];
   const chord = prog[currentChordIndex % prog.length];
-  const sectionFeel = sectionCount % 5; // 0=intro, 1=build, 2=drop, 3=breakdown, 4=climax
-  const measureInSection = measureCount % 8;
-  const isFillMeasure = measureInSection === 7;
+  // 0=intro, 1=build, 2=drop, 3=breakdown, 4=climax, 5=bridge, 6=outro
+  const sectionFeel = sectionCount % 7; 
+  const measureInSection = measureCount % 16;
+  const isFillMeasure = measureInSection === 15 || measureInSection === 7;
   const intensity = musicIntensity;
 
   if (!musicGain) {
@@ -1055,11 +1198,13 @@ let menuTimers: number[] = [];
 let menuGain: GainNode | null = null;
 let menuMeasure = 0;
 
-const MENU_CHORDS = [
-  [[0,3,7,10,14], [8,12,15,19,22], [3,7,10,14,17], [10,14,17,21,24]],
-  [[0,3,7,10,14], [5,8,12,15,19], [8,12,15,19,22], [7,11,14,17,22]],
-  [[0,4,7,11,14], [5,9,12,16,19], [7,11,14,17,22], [3,7,10,14,17]],
-];
+  const MENU_CHORDS = [
+    [[0,3,7,10,14], [8,12,15,19,22], [3,7,10,14,17], [10,14,17,21,24]],
+    [[0,3,7,10,14], [5,8,12,15,19], [8,12,15,19,22], [7,11,14,17,22]],
+    [[0,4,7,11,14], [5,9,12,16,19], [7,11,14,17,22], [3,7,10,14,17]],
+    [[5,8,12,15,19], [0,3,7,10,14], [10,14,17,21,24], [8,12,15,19,22]], // Expanded progression
+    [[3,7,10,14,17], [10,14,17,21,24], [5,8,12,15,19], [7,11,14,17,22]], // Mystic progression
+  ];
 
 function scheduleMenuMeasure() {
   if (!menuMusicPlaying || !audioCtx) return;
@@ -1076,13 +1221,17 @@ function scheduleMenuMeasure() {
     menuGain.connect(ctx.destination);
   }
 
+  // Slower tempo for more atmospheric feel
   const progIdx = Math.floor(menuMeasure / 4) % MENU_CHORDS.length;
   const prog = MENU_CHORDS[progIdx];
   const chord = prog[menuMeasure % prog.length];
+  
+  // Modulate key every 16 measures for variety
+  const currentKey = key + (Math.floor(menuMeasure / 16) % 3) * 2;
 
   // Lush pad (7 voices supersaw)
-  for (let ci = 0; ci < Math.min(chord.length, 4); ci++) {
-    const noteFreq = midiToFreq(key + 12 + chord[ci]);
+  for (let ci = 0; ci < Math.min(chord.length, 5); ci++) {
+    const noteFreq = midiToFreq(currentKey + 12 + chord[ci]);
     for (let d = -3; d <= 3; d++) {
       const osc = ctx.createOscillator();
       const g = ctx.createGain();
@@ -1117,7 +1266,7 @@ function scheduleMenuMeasure() {
   for (let i = 0; i < 8; i++) {
     const chordNote = chord[arpPattern[i % arpPattern.length] % chord.length];
     const oct = (i % 4 === 0 ? 12 : 0);
-    const noteFreq = midiToFreq(key + 24 + chordNote + oct);
+    const noteFreq = midiToFreq(currentKey + 24 + chordNote + oct);
     const t = now + i * (beatDur / 2);
     
     const osc = ctx.createOscillator();
@@ -1151,7 +1300,7 @@ function scheduleMenuMeasure() {
   }
 
   // Warm sub bass
-  const bassFreq = midiToFreq(key + chord[0]);
+  const bassFreq = midiToFreq(currentKey + chord[0]);
   const bass = ctx.createOscillator();
   const bg = ctx.createGain();
   bass.type = 'sine';
