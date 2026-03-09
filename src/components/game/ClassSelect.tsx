@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { ShipType } from '../../game/types';
+import { playClick, playHover, playBack, playNavigate } from '../../game/audio';
 
 interface ClassSelectProps {
   onSelect: (cls: ShipType) => void;
@@ -17,21 +18,13 @@ const ships: { id: ShipType; name: string; desc: string; stats: string; locked?:
 ];
 
 const shipColors: Record<string, string> = {
-  phantom: '#bf5af2',
-  interceptor: '#00e5ff',
-  titan: '#ff6b00',
-  spectre: '#9040ff',
-  valkyrie: '#ff1493',
-  juggernaut: '#ff4500',
+  phantom: '#bf5af2', interceptor: '#00e5ff', titan: '#ff6b00',
+  spectre: '#9040ff', valkyrie: '#ff1493', juggernaut: '#ff4500',
 };
 
 const shipGlows: Record<string, string> = {
-  phantom: '#e0b0ff',
-  interceptor: '#80f0ff',
-  titan: '#ffaa55',
-  spectre: '#c090ff',
-  valkyrie: '#ff80b0',
-  juggernaut: '#ff8040',
+  phantom: '#e0b0ff', interceptor: '#80f0ff', titan: '#ffaa55',
+  spectre: '#c090ff', valkyrie: '#ff80b0', juggernaut: '#ff8040',
 };
 
 function hexToRgba(hex: string, a: number): string {
@@ -43,28 +36,23 @@ function hexToRgba(hex: string, a: number): string {
 
 function drawShipPreview(ctx: CanvasRenderingContext2D, shipType: ShipType, w: number, h: number, time: number) {
   ctx.clearRect(0, 0, w, h);
-  
   const color = shipColors[shipType];
   const glow = shipGlows[shipType];
   const cx = w / 2;
   const cy = h / 2;
   const r = 18;
 
-  // Background glow
   const bgGrad = ctx.createRadialGradient(cx, cy, 5, cx, cy, 80);
   bgGrad.addColorStop(0, hexToRgba(color, 0.15));
   bgGrad.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, w, h);
-
   ctx.save();
   ctx.translate(cx, cy);
 
-  // Engine exhaust
   const thrustPulse = 0.6 + Math.sin(time * 18) * 0.3;
   const thrustLen = 18;
   const exhaustSpread = shipType === 'titan' ? 6 : shipType === 'phantom' ? 4 : 3;
-  
   for (let i = -1; i <= 1; i += 2) {
     const oy = i * exhaustSpread;
     ctx.fillStyle = hexToRgba(color, thrustPulse * 0.4);
@@ -87,18 +75,12 @@ function drawShipPreview(ctx: CanvasRenderingContext2D, shipType: ShipType, w: n
   if (shipType === 'phantom') {
     ctx.beginPath();
     ctx.moveTo(r * 1.8, 0);
-    ctx.lineTo(r * 0.6, -r * 0.25);
-    ctx.lineTo(r * 0.1, -r * 0.35);
-    ctx.lineTo(-r * 0.3, -r * 1.2);
-    ctx.lineTo(-r * 0.7, -r * 1.0);
-    ctx.lineTo(-r * 0.55, -r * 0.25);
-    ctx.lineTo(-r * 0.7, -r * 0.15);
-    ctx.lineTo(-r * 0.7, r * 0.15);
-    ctx.lineTo(-r * 0.55, r * 0.25);
-    ctx.lineTo(-r * 0.7, r * 1.0);
-    ctx.lineTo(-r * 0.3, r * 1.2);
-    ctx.lineTo(r * 0.1, r * 0.35);
-    ctx.lineTo(r * 0.6, r * 0.25);
+    ctx.lineTo(r * 0.6, -r * 0.25); ctx.lineTo(r * 0.1, -r * 0.35);
+    ctx.lineTo(-r * 0.3, -r * 1.2); ctx.lineTo(-r * 0.7, -r * 1.0);
+    ctx.lineTo(-r * 0.55, -r * 0.25); ctx.lineTo(-r * 0.7, -r * 0.15);
+    ctx.lineTo(-r * 0.7, r * 0.15); ctx.lineTo(-r * 0.55, r * 0.25);
+    ctx.lineTo(-r * 0.7, r * 1.0); ctx.lineTo(-r * 0.3, r * 1.2);
+    ctx.lineTo(r * 0.1, r * 0.35); ctx.lineTo(r * 0.6, r * 0.25);
     ctx.closePath();
     ctx.fillStyle = hexToRgba(color, 0.15); ctx.fill();
     ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
@@ -116,14 +98,10 @@ function drawShipPreview(ctx: CanvasRenderingContext2D, shipType: ShipType, w: n
   } else if (shipType === 'interceptor') {
     ctx.beginPath();
     ctx.moveTo(r * 2.0, 0);
-    ctx.lineTo(r * 0.8, -r * 0.2);
-    ctx.lineTo(r * 0.3, -r * 0.35);
-    ctx.lineTo(-r * 0.2, -r * 0.3);
-    ctx.lineTo(-r * 0.5, -r * 0.15);
-    ctx.lineTo(-r * 0.5, r * 0.15);
-    ctx.lineTo(-r * 0.2, r * 0.3);
-    ctx.lineTo(r * 0.3, r * 0.35);
-    ctx.lineTo(r * 0.8, r * 0.2);
+    ctx.lineTo(r * 0.8, -r * 0.2); ctx.lineTo(r * 0.3, -r * 0.35);
+    ctx.lineTo(-r * 0.2, -r * 0.3); ctx.lineTo(-r * 0.5, -r * 0.15);
+    ctx.lineTo(-r * 0.5, r * 0.15); ctx.lineTo(-r * 0.2, r * 0.3);
+    ctx.lineTo(r * 0.3, r * 0.35); ctx.lineTo(r * 0.8, r * 0.2);
     ctx.closePath();
     ctx.fillStyle = hexToRgba(color, 0.12); ctx.fill();
     ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.stroke();
@@ -168,7 +146,6 @@ function drawShipPreview(ctx: CanvasRenderingContext2D, shipType: ShipType, w: n
     ctx.fillStyle = hexToRgba(glow, cannonPulse);
     ctx.beginPath(); ctx.arc(r * 1.3, 0, 2.5, 0, Math.PI * 2); ctx.fill();
   } else if (shipType === 'spectre') {
-    // Curved stealth blade with phase shimmer
     const phase = Math.sin(time * 5) * 0.15;
     ctx.globalAlpha = 0.85 + phase;
     ctx.beginPath();
@@ -193,7 +170,6 @@ function drawShipPreview(ctx: CanvasRenderingContext2D, shipType: ShipType, w: n
     ctx.beginPath(); ctx.arc(r * 0.3, 0, 2, 0, Math.PI * 2); ctx.fill();
     ctx.globalAlpha = 1;
   } else if (shipType === 'valkyrie') {
-    // Angular wings spread wide
     ctx.beginPath();
     ctx.moveTo(r * 1.8, 0);
     ctx.lineTo(r * 0.5, -r * 0.3); ctx.lineTo(r * 0.1, -r * 0.4);
@@ -215,7 +191,6 @@ function drawShipPreview(ctx: CanvasRenderingContext2D, shipType: ShipType, w: n
     ctx.beginPath(); ctx.arc(-r * 0.2, -r * 1.35, 1.8, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(-r * 0.2, r * 1.35, 1.8, 0, Math.PI * 2); ctx.fill();
   } else if (shipType === 'juggernaut') {
-    // Bulky hexagonal fortress
     const sides = 6;
     ctx.beginPath();
     for (let i = 0; i <= sides; i++) {
@@ -251,11 +226,9 @@ function drawShipPreview(ctx: CanvasRenderingContext2D, shipType: ShipType, w: n
     }
   }
 
-  // Cockpit glow
   const cockpitPulse = 0.4 + Math.sin(time * 2) * 0.15;
   ctx.fillStyle = hexToRgba('#ffffff', cockpitPulse);
   ctx.beginPath(); ctx.arc(r * 0.4, 0, 2, 0, Math.PI * 2); ctx.fill();
-
   ctx.restore();
 }
 
@@ -268,30 +241,19 @@ function ShipCanvas({ shipType }: { shipType: ShipType }) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
-    const w = 160;
-    const h = 120;
-    canvas.width = w * 2;
-    canvas.height = h * 2;
+    const w = 160; const h = 120;
+    canvas.width = w * 2; canvas.height = h * 2;
     ctx.scale(2, 2);
-
     function loop() {
       const time = Date.now() * 0.001;
       drawShipPreview(ctx!, shipType, w, h, time);
       animRef.current = requestAnimationFrame(loop);
     }
     loop();
-
     return () => cancelAnimationFrame(animRef.current);
   }, [shipType]);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{ width: 160, height: 120 }}
-      className="pointer-events-none"
-    />
-  );
+  return <canvas ref={canvasRef} style={{ width: 160, height: 120 }} className="pointer-events-none" />;
 }
 
 const ClassSelect: React.FC<ClassSelectProps> = ({ onSelect, onBack, unlockedShips }) => {
@@ -310,7 +272,8 @@ const ClassSelect: React.FC<ClassSelectProps> = ({ onSelect, onBack, unlockedShi
           return (
             <button
               key={s.id}
-              onClick={() => !isLocked && onSelect(s.id)}
+              onClick={() => { if (!isLocked) { playClick(); onSelect(s.id); } }}
+              onMouseEnter={() => { if (!isLocked) playHover(); }}
               disabled={isLocked}
               className="flex flex-col items-center p-5 rounded-xl border transition-all duration-300 hover:scale-105 active:scale-95 w-56 relative"
               style={{
@@ -339,7 +302,8 @@ const ClassSelect: React.FC<ClassSelectProps> = ({ onSelect, onBack, unlockedShi
       </div>
 
       <button
-        onClick={onBack}
+        onClick={() => { playBack(); onBack(); }}
+        onMouseEnter={playHover}
         className="text-[#6080aa] hover:text-[#0ff] transition-colors text-lg font-mono"
       >
         ← Voltar

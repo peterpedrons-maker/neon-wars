@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { Ability, getRandomAbilities } from '../../game/abilities';
+import { playClick, playHover, playLevelUp } from '../../game/audio';
 
 interface LevelUpScreenProps {
   level: number;
@@ -12,6 +13,10 @@ interface LevelUpScreenProps {
 
 const LevelUpScreen: React.FC<LevelUpScreenProps> = ({ level, abilityLevels, equippedWeapons, weaponSlots, unlockedAbilities, onSelect }) => {
   const abilities = useMemo(() => getRandomAbilities(3, abilityLevels, weaponSlots, equippedWeapons, unlockedAbilities), [level]);
+
+  useEffect(() => {
+    playLevelUp();
+  }, []);
 
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-20 select-none p-4">
@@ -38,16 +43,13 @@ const LevelUpScreen: React.FC<LevelUpScreenProps> = ({ level, abilityLevels, equ
           return (
             <button
               key={a.id}
-              onClick={() => onSelect(a)}
+              onClick={() => { playClick(); onSelect(a); }}
+              onMouseEnter={playHover}
               className="flex flex-col items-center p-5 rounded-xl border transition-all duration-200 hover:scale-105 active:scale-95 w-52 font-mono"
               style={{
                 borderColor: borderHue,
                 background: 'rgba(0,0,20,0.95)',
                 boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.borderColor = hoverBorder;
-                (e.currentTarget as HTMLElement).style.boxShadow = `0 0 25px ${isWeapon ? 'rgba(255,100,0,0.3)' : 'rgba(0,255,255,0.3)'}`;
               }}
               onMouseLeave={e => {
                 (e.currentTarget as HTMLElement).style.borderColor = borderHue;
@@ -63,8 +65,7 @@ const LevelUpScreen: React.FC<LevelUpScreenProps> = ({ level, abilityLevels, equ
                 </span>
                 {isNewWeapon && (
                   <span className="text-[9px] px-1.5 py-0.5 rounded font-bold" style={{
-                    background: 'rgba(255,255,0,0.2)',
-                    color: '#ffff00',
+                    background: 'rgba(255,255,0,0.2)', color: '#ffff00',
                   }}>
                     NOVO
                   </span>
@@ -77,14 +78,10 @@ const LevelUpScreen: React.FC<LevelUpScreenProps> = ({ level, abilityLevels, equ
               <p className="text-xs text-[#6080aa] text-center mb-2">{a.description}</p>
               <div className="flex gap-1">
                 {Array.from({ length: a.maxLevel }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-2 h-2 rounded-full"
-                    style={{
-                      background: i <= currentLv ? (isWeapon ? '#ff6b00' : '#0ff') : '#1a2040',
-                      boxShadow: i <= currentLv ? `0 0 4px ${isWeapon ? '#ff6b00' : '#0ff'}` : 'none',
-                    }}
-                  />
+                  <div key={i} className="w-2 h-2 rounded-full" style={{
+                    background: i <= currentLv ? (isWeapon ? '#ff6b00' : '#0ff') : '#1a2040',
+                    boxShadow: i <= currentLv ? `0 0 4px ${isWeapon ? '#ff6b00' : '#0ff'}` : 'none',
+                  }} />
                 ))}
               </div>
             </button>

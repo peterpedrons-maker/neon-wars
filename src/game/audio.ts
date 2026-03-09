@@ -401,6 +401,138 @@ export function playWaveComplete() {
   } catch {}
 }
 
+// ===== UI SOUND EFFECTS =====
+
+export function playClick() {
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1200, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.06);
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(2400, ctx.currentTime);
+    osc2.frequency.exponentialRampToValueAtTime(1600, ctx.currentTime + 0.04);
+    gain.gain.setValueAtTime(0.06, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+    osc.connect(gain).connect(ctx.destination);
+    osc2.connect(gain);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.08);
+    osc2.start(ctx.currentTime); osc2.stop(ctx.currentTime + 0.06);
+  } catch {}
+}
+
+export function playHover() {
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1800, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.03);
+    gain.gain.setValueAtTime(0.02, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.04);
+  } catch {}
+}
+
+export function playBack() {
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(600, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.1);
+  } catch {}
+}
+
+export function playPurchase() {
+  try {
+    const ctx = getCtx();
+    const notes = [800, 1000, 1300, 1600];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.05);
+      gain.gain.setValueAtTime(0.06, ctx.currentTime + i * 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.05 + 0.12);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(ctx.currentTime + i * 0.05); osc.stop(ctx.currentTime + i * 0.05 + 0.12);
+    });
+  } catch {}
+}
+
+export function playError() {
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(200, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.04, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.15);
+  } catch {}
+}
+
+export function playLevelUp() {
+  try {
+    const ctx = getCtx();
+    const notes = [600, 800, 1000, 1200, 1500, 1800];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc2.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.06);
+      osc2.frequency.setValueAtTime(freq * 1.5, ctx.currentTime + i * 0.06);
+      gain.gain.setValueAtTime(0.07, ctx.currentTime + i * 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.06 + 0.25);
+      osc.connect(gain).connect(ctx.destination);
+      osc2.connect(gain);
+      osc.start(ctx.currentTime + i * 0.06); osc.stop(ctx.currentTime + i * 0.06 + 0.25);
+      osc2.start(ctx.currentTime + i * 0.06); osc2.stop(ctx.currentTime + i * 0.06 + 0.25);
+    });
+    // Shimmer
+    const shim = ctx.createOscillator();
+    const sg = ctx.createGain();
+    shim.type = 'sine';
+    shim.frequency.setValueAtTime(4000, ctx.currentTime + 0.25);
+    shim.frequency.exponentialRampToValueAtTime(2000, ctx.currentTime + 0.6);
+    sg.gain.setValueAtTime(0.03, ctx.currentTime + 0.25);
+    sg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+    shim.connect(sg).connect(ctx.destination);
+    shim.start(ctx.currentTime + 0.25); shim.stop(ctx.currentTime + 0.62);
+  } catch {}
+}
+
+export function playNavigate() {
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(900, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.06);
+    gain.gain.setValueAtTime(0.04, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.08);
+  } catch {}
+}
+
 // ===== PREMIUM MUSIC ENGINE =====
 // Multi-layered electronic music with proper song structure, FM synthesis, sidechaining
 

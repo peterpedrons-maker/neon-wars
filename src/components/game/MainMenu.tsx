@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { RunStats, Milestone } from '../../game/meta';
-import { initAudio, startMenuMusic, stopMenuMusic } from '../../game/audio';
+import { initAudio, startMenuMusic, stopMenuMusic, playClick, playHover, playNavigate } from '../../game/audio';
 
 interface MainMenuProps {
   plasma: number;
@@ -19,6 +19,11 @@ const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, 
     startMenuMusic();
     return () => { stopMenuMusic(); };
   }, []);
+
+  const handleClick = (fn: () => void) => {
+    playClick();
+    fn();
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#000008] text-[#e0e8ff] select-none">
@@ -68,7 +73,8 @@ const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, 
       {/* Menu buttons */}
       <div className="flex flex-col gap-4 w-72">
         <button
-          onClick={onPlay}
+          onClick={() => handleClick(onPlay)}
+          onMouseEnter={playHover}
           className="py-4 px-8 text-xl font-bold rounded-lg text-white border transition-all duration-200 hover:scale-105 active:scale-95 font-mono"
           style={{
             background: 'linear-gradient(135deg, rgba(0,229,255,0.2), rgba(191,90,242,0.2))',
@@ -79,28 +85,32 @@ const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, 
           🚀 Jogar
         </button>
         <button
-          onClick={onMultiplayer}
+          onClick={() => handleClick(onMultiplayer)}
+          onMouseEnter={playHover}
           className="py-3 px-8 text-lg font-bold rounded-lg text-[#39ff14] border border-[#39ff14]/30 transition-all duration-200 hover:border-[#39ff14] hover:shadow-[0_0_15px_rgba(57,255,20,0.3)] font-mono"
           style={{ background: 'rgba(57,255,20,0.05)' }}
         >
           🎮 Multiplayer Coop
         </button>
         <button
-          onClick={onShop}
+          onClick={() => handleClick(onShop)}
+          onMouseEnter={playHover}
           className="py-3 px-8 text-lg font-bold rounded-lg text-[#bf5af2] border border-[#bf5af2]/30 transition-all duration-200 hover:border-[#bf5af2] hover:shadow-[0_0_15px_rgba(191,90,242,0.3)] font-mono"
           style={{ background: 'rgba(191,90,242,0.05)' }}
         >
           ⚡ Loja de Plasma
         </button>
         <button
-          onClick={onLeaderboard}
+          onClick={() => handleClick(onLeaderboard)}
+          onMouseEnter={playHover}
           className="py-3 px-8 text-lg font-bold rounded-lg text-[#ffff00] border border-[#ffff00]/30 transition-all duration-200 hover:border-[#ffff00] hover:shadow-[0_0_15px_rgba(255,255,0,0.2)] font-mono"
           style={{ background: 'rgba(255,255,0,0.05)' }}
         >
           🏆 Leaderboard
         </button>
         <button
-          onClick={onHowToPlay}
+          onClick={() => handleClick(onHowToPlay)}
+          onMouseEnter={playHover}
           className="py-3 px-8 text-lg font-bold rounded-lg text-[#6080aa] border border-[#6080aa]/30 transition-all duration-200 hover:border-[#0ff] hover:text-[#0ff] font-mono"
           style={{ background: 'rgba(0,255,255,0.03)' }}
         >

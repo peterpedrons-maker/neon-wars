@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShipType, LeaderboardEntry } from '../../game/types';
 import { Milestone } from '../../game/meta';
+import { playClick, playHover, playGameOver, playPurchase } from '../../game/audio';
 
 interface GameOverProps {
   score: number;
@@ -17,8 +18,13 @@ const GameOver: React.FC<GameOverProps> = ({ score, wave, enemiesKilled, playerC
   const [name, setName] = useState('');
   const [saved, setSaved] = useState(false);
 
+  useEffect(() => {
+    playGameOver();
+  }, []);
+
   const saveScore = () => {
     if (!name.trim()) return;
+    playPurchase();
     const entries: LeaderboardEntry[] = JSON.parse(localStorage.getItem('neon-wars-lb') || '[]');
     entries.push({ name: name.trim(), score, wave, class: playerClass, date: new Date().toISOString() });
     entries.sort((a, b) => b.score - a.score);
@@ -38,14 +44,12 @@ const GameOver: React.FC<GameOverProps> = ({ score, wave, enemiesKilled, playerC
           <div>Wave <span className="text-[#0ff] font-bold">{wave}</span></div>
           <div>Kills <span className="text-[#39ff14] font-bold">{enemiesKilled}</span></div>
         </div>
-        {/* Plasma earned */}
         <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg" style={{ background: 'rgba(191,90,242,0.15)', border: '1px solid rgba(191,90,242,0.3)' }}>
           <span className="text-xl">⚡</span>
           <span className="font-mono font-bold" style={{ color: '#bf5af2' }}>+{plasmaEarned} Plasma</span>
         </div>
       </div>
 
-      {/* New milestones */}
       {newMilestones.length > 0 && (
         <div className="mb-4 flex flex-col gap-2">
           {newMilestones.map(m => (
@@ -63,8 +67,7 @@ const GameOver: React.FC<GameOverProps> = ({ score, wave, enemiesKilled, playerC
       {!saved ? (
         <div className="flex gap-2 mb-6">
           <input
-            type="text"
-            value={name}
+            type="text" value={name}
             onChange={e => setName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && saveScore()}
             placeholder="Callsign..."
@@ -72,11 +75,9 @@ const GameOver: React.FC<GameOverProps> = ({ score, wave, enemiesKilled, playerC
             className="px-4 py-2 rounded-lg bg-[#000010] border text-[#e0e8ff] placeholder-[#203050] focus:border-[#0ff] outline-none text-center w-48 font-mono"
             style={{ borderColor: 'rgba(0,255,255,0.3)' }}
           />
-          <button
-            onClick={saveScore}
+          <button onClick={saveScore} onMouseEnter={playHover}
             className="px-4 py-2 rounded-lg font-bold font-mono transition-colors"
-            style={{ background: 'rgba(255,255,0,0.2)', color: '#ffff00', border: '1px solid rgba(255,255,0,0.4)' }}
-          >
+            style={{ background: 'rgba(255,255,0,0.2)', color: '#ffff00', border: '1px solid rgba(255,255,0,0.4)' }}>
             Salvar
           </button>
         </div>
@@ -85,22 +86,18 @@ const GameOver: React.FC<GameOverProps> = ({ score, wave, enemiesKilled, playerC
       )}
 
       <div className="flex gap-4">
-        <button
-          onClick={onRestart}
+        <button onClick={() => { playClick(); onRestart(); }} onMouseEnter={playHover}
           className="py-3 px-8 text-lg font-bold rounded-lg text-white border transition-all duration-200 hover:scale-105 active:scale-95 font-mono"
           style={{
             background: 'linear-gradient(135deg, rgba(0,229,255,0.2), rgba(191,90,242,0.2))',
             borderColor: '#0ff',
             boxShadow: '0 0 15px rgba(0,255,255,0.2)',
-          }}
-        >
+          }}>
           🚀 Jogar Novamente
         </button>
-        <button
-          onClick={onMenu}
+        <button onClick={() => { playClick(); onMenu(); }} onMouseEnter={playHover}
           className="py-3 px-8 text-lg font-bold rounded-lg text-[#6080aa] border border-[#6080aa]/30 transition-all duration-200 hover:border-[#0ff] hover:text-[#0ff] font-mono"
-          style={{ background: 'rgba(0,255,255,0.03)' }}
-        >
+          style={{ background: 'rgba(0,255,255,0.03)' }}>
           Menu
         </button>
       </div>
