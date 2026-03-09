@@ -304,8 +304,8 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClasse
       }
 
       // Cap particles for performance
-      if (stateRef.current.particles.length > MAX_PARTICLES) {
-        stateRef.current.particles = stateRef.current.particles.slice(-MAX_PARTICLES);
+      if (stateRef.current.particles.length > MAX_PARTICLES_COOP) {
+        stateRef.current.particles = stateRef.current.particles.slice(-MAX_PARTICLES_COOP);
       }
 
       forceUpdate(n => n + 1);

@@ -140,7 +140,7 @@ const Index = () => {
   if (screen === 'leaderboard') return <Leaderboard onBack={() => setScreen('menu')} />;
 
   if (coopRoom) {
-    return <CoopGameCanvas key={gameKey} playerClass={playerClass} peerClass={peerClass} mapId={mapId} mapDifficulty={mapDifficulty} room={coopRoom} onMenu={handleMenu} />;
+    return <CoopGameCanvas key={gameKey} playerClass={playerClass} peerClasses={peerClasses} mapId={mapId} mapDifficulty={mapDifficulty} room={coopRoom} onMenu={handleMenu} totalPlayers={totalPlayers} />;
   }
 
   return <GameCanvas key={gameKey} playerClass={playerClass} mapId={mapId} mapDifficulty={mapDifficulty} onMenu={handleMenu} />;
