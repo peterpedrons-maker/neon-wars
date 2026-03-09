@@ -149,6 +149,15 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   updateIonBeam(state, dt);
   updateShockwave(state, dt);
   updateSentries(state, dt);
+  // NEW ELEMENTAL WEAPONS
+  updateChainLightningWeapon(state, dt);
+  updateIceBeam(state, dt);
+  updateBoomerang(state, dt);
+  updateHeavyCannon(state, dt);
+  updateAcidSpray(state, dt);
+  updateGravityWell(state, dt);
+  updateTeslaCoil(state, dt);
+  updateVoidRift(state, dt);
   
   // Flame trail zones
   if (state.abilities.flameTrailDamage > 0 && Math.hypot(p.vel.x, p.vel.y) > 20) {
