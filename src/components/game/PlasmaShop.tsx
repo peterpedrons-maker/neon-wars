@@ -4,13 +4,14 @@ import { playClick, playHover, playBack, playPurchase, playError, startShopMusic
 import { UI_ICONS, SHOP_ICONS, WEAPON_ICONS } from '../../game/icons';
 import ShipCanvas from './ShipCanvas';
 import { ShipType } from '../../game/types';
+import { useLanguage } from '../../game/i18n';
 
 export interface ShopItem {
   id: string;
   name: string;
   description: string;
-  icon?: string; // image src (preferred)
-  emoji?: string; // fallback emoji
+  icon?: string;
+  emoji?: string;
   cost: number;
   maxPurchases: number;
   category: 'weapon_slot' | 'permanent_stat' | 'weapon_unlock' | 'ship_unlock' | 'permanent_passive' | 'base_weapon' | 'elemental_weapon';
@@ -20,7 +21,6 @@ export interface ShopItem {
   badgeColor?: string;
 }
 
-// ─── Helper: read/write weapon upgrade levels on meta ───────────────────────
 function getWeaponLevel(meta: MetaProgress, id: string): number {
   return (meta as any).weaponUpgrades?.[id] ?? 0;
 }
@@ -28,191 +28,6 @@ function setWeaponLevel(meta: MetaProgress, id: string, level: number) {
   if (!(meta as any).weaponUpgrades) (meta as any).weaponUpgrades = {};
   (meta as any).weaponUpgrades[id] = level;
 }
-
-// ─── BASE WEAPONS (always visible, upgradeable 5 levels) ─────────────────────
-const BASE_WEAPON_ITEMS: ShopItem[] = [
-  {
-    id: 'upg_orbitals', name: 'Orbital Drones', description: '+1 drone orbital que causa dano ao contato',
-    icon: WEAPON_ICONS.orbitals, cost: 60, maxPurchases: 5, category: 'base_weapon',
-    apply: (m) => { setWeaponLevel(m, 'orbitals', getWeaponLevel(m, 'orbitals') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'orbitals'), badge: 'BASE',
-  },
-  {
-    id: 'upg_aura', name: 'Neon Aura', description: 'Aura de dano ao redor da nave',
-    icon: WEAPON_ICONS.aura, cost: 70, maxPurchases: 5, category: 'base_weapon',
-    apply: (m) => { setWeaponLevel(m, 'aura', getWeaponLevel(m, 'aura') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'aura'), badge: 'BASE',
-  },
-  {
-    id: 'upg_chain', name: 'Raio Cadeia', description: 'Eliminar inimigo causa dano em cadeia',
-    icon: WEAPON_ICONS.chain, cost: 80, maxPurchases: 5, category: 'base_weapon',
-    apply: (m) => { setWeaponLevel(m, 'chain', getWeaponLevel(m, 'chain') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'chain'), badge: 'BASE',
-  },
-  {
-    id: 'upg_multishot', name: 'Multi-Tiro', description: '+1 projétil por disparo',
-    icon: WEAPON_ICONS.multishot, cost: 90, maxPurchases: 3, category: 'base_weapon',
-    apply: (m) => { setWeaponLevel(m, 'multishot', getWeaponLevel(m, 'multishot') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'multishot'), badge: 'BASE',
-  },
-  {
-    id: 'upg_explosion', name: 'Proj. Explosivo', description: 'Projéteis explodem ao acertar',
-    icon: WEAPON_ICONS.explosion, cost: 100, maxPurchases: 4, category: 'base_weapon',
-    apply: (m) => { setWeaponLevel(m, 'explosion', getWeaponLevel(m, 'explosion') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'explosion'), badge: 'BASE',
-  },
-  {
-    id: 'upg_homing', name: 'Auto-Mira', description: 'Chance de projéteis perseguirem inimigos',
-    icon: WEAPON_ICONS.homing, cost: 90, maxPurchases: 5, category: 'base_weapon',
-    apply: (m) => { setWeaponLevel(m, 'homing', getWeaponLevel(m, 'homing') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'homing'), badge: 'BASE',
-  },
-  {
-    id: 'upg_piercing_rounds', name: 'Balas Perfurantes', description: 'Projéteis atravessam inimigos',
-    icon: WEAPON_ICONS.piercing_rounds, cost: 80, maxPurchases: 4, category: 'base_weapon',
-    apply: (m) => { setWeaponLevel(m, 'piercing_rounds', getWeaponLevel(m, 'piercing_rounds') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'piercing_rounds'), badge: 'BASE',
-  },
-  {
-    id: 'upg_ricochet_rounds', name: 'Ricochete', description: 'Projéteis ricocheteiam em outro alvo',
-    icon: WEAPON_ICONS.ricochet_rounds, cost: 80, maxPurchases: 4, category: 'base_weapon',
-    apply: (m) => { setWeaponLevel(m, 'ricochet_rounds', getWeaponLevel(m, 'ricochet_rounds') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'ricochet_rounds'), badge: 'BASE',
-  },
-  {
-    id: 'upg_ion_beam', name: 'Ion Beam', description: 'Feixe periódico na direção da mira',
-    icon: WEAPON_ICONS.ion_beam, cost: 110, maxPurchases: 5, category: 'base_weapon',
-    apply: (m) => { setWeaponLevel(m, 'ion_beam', getWeaponLevel(m, 'ion_beam') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'ion_beam'), badge: 'BASE',
-  },
-  {
-    id: 'upg_shockwave_emitter', name: 'Shockwave', description: 'Explosão periódica ao redor da nave',
-    icon: WEAPON_ICONS.shockwave_emitter, cost: 110, maxPurchases: 5, category: 'base_weapon',
-    apply: (m) => { setWeaponLevel(m, 'shockwave_emitter', getWeaponLevel(m, 'shockwave_emitter') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'shockwave_emitter'), badge: 'BASE',
-  },
-  {
-    id: 'upg_sentry_drones', name: 'Sentry Drones', description: 'Drones automáticos disparam nos inimigos',
-    icon: WEAPON_ICONS.sentry_drones, cost: 100, maxPurchases: 5, category: 'base_weapon',
-    apply: (m) => { setWeaponLevel(m, 'sentry_drones', getWeaponLevel(m, 'sentry_drones') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'sentry_drones'), badge: 'BASE',
-  },
-];
-
-// ─── ELEMENTAL WEAPONS (always visible, upgradeable) ─────────────────────────
-const ELEMENTAL_WEAPON_ITEMS: ShopItem[] = [
-  {
-    id: 'upg_frost_nova', name: 'Frost Nova', description: 'Explosão que congela inimigos próximos',
-    icon: WEAPON_ICONS.frost_nova, cost: 90, maxPurchases: 5, category: 'elemental_weapon',
-    apply: (m) => { setWeaponLevel(m, 'frost_nova', getWeaponLevel(m, 'frost_nova') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'frost_nova'), badge: 'GELO', badgeColor: '#00cfff',
-  },
-  {
-    id: 'upg_missile_barrage', name: 'Missile Barrage', description: 'Mísseis teleguiados automáticos',
-    icon: WEAPON_ICONS.missile_barrage, cost: 120, maxPurchases: 5, category: 'elemental_weapon',
-    apply: (m) => { setWeaponLevel(m, 'missile_barrage', getWeaponLevel(m, 'missile_barrage') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'missile_barrage'), badge: 'MÍSSIL', badgeColor: '#ff6b00',
-  },
-  {
-    id: 'upg_plasma_field', name: 'Plasma Field', description: 'Zonas de plasma no chão',
-    icon: WEAPON_ICONS.plasma_field, cost: 130, maxPurchases: 4, category: 'elemental_weapon',
-    apply: (m) => { setWeaponLevel(m, 'plasma_field', getWeaponLevel(m, 'plasma_field') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'plasma_field'), badge: 'PLASMA', badgeColor: '#bf5af2',
-  },
-  {
-    id: 'upg_lightning_ring', name: 'Lightning Ring', description: 'Raios automáticos atingem inimigos',
-    icon: WEAPON_ICONS.lightning_ring, cost: 130, maxPurchases: 5, category: 'elemental_weapon',
-    apply: (m) => { setWeaponLevel(m, 'lightning_ring', getWeaponLevel(m, 'lightning_ring') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'lightning_ring'), badge: 'RAIO', badgeColor: '#ffe033',
-  },
-  {
-    id: 'upg_flame_trail', name: 'Flame Trail', description: 'Rastro de fogo ao se mover',
-    icon: WEAPON_ICONS.flame_trail, cost: 110, maxPurchases: 4, category: 'elemental_weapon',
-    apply: (m) => { setWeaponLevel(m, 'flame_trail', getWeaponLevel(m, 'flame_trail') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'flame_trail'), badge: 'FOGO', badgeColor: '#ff4400',
-  },
-  {
-    id: 'upg_chain_lightning_weapon', name: 'Raio Cadeia+', description: 'Raios que saltam entre inimigos',
-    icon: WEAPON_ICONS.chain_lightning_weapon, cost: 140, maxPurchases: 5, category: 'elemental_weapon',
-    apply: (m) => { setWeaponLevel(m, 'chain_lightning_weapon', getWeaponLevel(m, 'chain_lightning_weapon') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'chain_lightning_weapon'), badge: 'ARC', badgeColor: '#33aaff',
-  },
-  {
-    id: 'upg_ice_beam', name: 'Raio de Gelo', description: 'Congela inimigos com slow prolongado',
-    icon: WEAPON_ICONS.ice_beam, cost: 120, maxPurchases: 5, category: 'elemental_weapon',
-    apply: (m) => { setWeaponLevel(m, 'ice_beam', getWeaponLevel(m, 'ice_beam') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'ice_beam'), badge: 'SLOW', badgeColor: '#00d4ff',
-  },
-  {
-    id: 'upg_boomerang', name: 'Bumerangue', description: 'Projétil que retorna, atingindo duas vezes',
-    icon: WEAPON_ICONS.boomerang, cost: 110, maxPurchases: 5, category: 'elemental_weapon',
-    apply: (m) => { setWeaponLevel(m, 'boomerang', getWeaponLevel(m, 'boomerang') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'boomerang'), badge: 'VOLTA', badgeColor: '#cc88ff',
-  },
-  {
-    id: 'upg_heavy_cannon', name: 'Canhão Pesado', description: 'Disparo lento mas devastador',
-    icon: WEAPON_ICONS.heavy_cannon, cost: 150, maxPurchases: 5, category: 'elemental_weapon',
-    apply: (m) => { setWeaponLevel(m, 'heavy_cannon', getWeaponLevel(m, 'heavy_cannon') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'heavy_cannon'), badge: 'PODER', badgeColor: '#ff6600',
-  },
-  {
-    id: 'upg_acid_spray', name: 'Spray Ácido', description: 'Ácido que causa dano contínuo (DoT)',
-    icon: WEAPON_ICONS.acid_spray, cost: 110, maxPurchases: 4, category: 'elemental_weapon',
-    apply: (m) => { setWeaponLevel(m, 'acid_spray', getWeaponLevel(m, 'acid_spray') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'acid_spray'), badge: 'ÁCIDO', badgeColor: '#44ff44',
-  },
-  {
-    id: 'upg_gravity_well', name: 'Poço Gravitacional', description: 'Zones que puxam e esmagam inimigos',
-    icon: WEAPON_ICONS.gravity_well, cost: 160, maxPurchases: 4, category: 'elemental_weapon',
-    apply: (m) => { setWeaponLevel(m, 'gravity_well', getWeaponLevel(m, 'gravity_well') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'gravity_well'), badge: 'GRAV', badgeColor: '#aa44ff',
-  },
-  {
-    id: 'upg_tesla_coil', name: 'Bobina Tesla', description: 'Arcos elétricos automáticos entre inimigos',
-    icon: WEAPON_ICONS.tesla_coil, cost: 130, maxPurchases: 5, category: 'elemental_weapon',
-    apply: (m) => { setWeaponLevel(m, 'tesla_coil', getWeaponLevel(m, 'tesla_coil') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'tesla_coil'), badge: 'TESLA', badgeColor: '#44aaff',
-  },
-  {
-    id: 'upg_void_rift', name: 'Fenda do Vazio', description: 'Portais que sugam e destroem inimigos',
-    icon: WEAPON_ICONS.void_rift, cost: 180, maxPurchases: 4, category: 'elemental_weapon',
-    apply: (m) => { setWeaponLevel(m, 'void_rift', getWeaponLevel(m, 'void_rift') + 1); },
-    purchased: (m) => getWeaponLevel(m, 'void_rift'), badge: 'VAZIO', badgeColor: '#9900cc',
-  },
-];
-
-// ─── SHIPS, SLOTS, PERMANENT STATS (unchanged) ───────────────────────────────
-const OTHER_SHOP_ITEMS: ShopItem[] = [
-  // === SHIP UNLOCKS ===
-  { id: 'unlock_spectre', name: 'Spectre', description: 'Nave furtiva com teleporte. Alta velocidade, baixa vida.', emoji: '🌀', cost: 200, maxPurchases: 1, category: 'ship_unlock', apply: (m) => { if (!m.unlockedShips.includes('spectre')) m.unlockedShips.push('spectre'); }, purchased: (m) => m.unlockedShips.includes('spectre') ? 1 : 0 },
-  { id: 'unlock_valkyrie', name: 'Valkyrie', description: 'Guerreira alada com tiro duplo e chuva de lanças.', emoji: '🦅', cost: 300, maxPurchases: 1, category: 'ship_unlock', apply: (m) => { if (!m.unlockedShips.includes('valkyrie')) m.unlockedShips.push('valkyrie'); }, purchased: (m) => m.unlockedShips.includes('valkyrie') ? 1 : 0 },
-  { id: 'unlock_juggernaut', name: 'Juggernaut', description: 'Fortaleza indestrutível. 5 HP base, dano massivo.', emoji: '🛡️', cost: 500, maxPurchases: 1, category: 'ship_unlock', apply: (m) => { if (!m.unlockedShips.includes('juggernaut')) m.unlockedShips.push('juggernaut'); }, purchased: (m) => m.unlockedShips.includes('juggernaut') ? 1 : 0 },
-  { id: 'unlock_sentinel', name: 'Sentinel', description: 'Tanque com barreira. Especial: Escudo + reflexão.', emoji: '🏰', cost: 350, maxPurchases: 1, category: 'ship_unlock', apply: (m) => { if (!m.unlockedShips.includes('sentinel')) m.unlockedShips.push('sentinel'); }, purchased: (m) => m.unlockedShips.includes('sentinel') ? 1 : 0 },
-  { id: 'unlock_venom', name: 'Venom', description: 'Envenenador com tiros tóxicos persistentes.', emoji: '🐍', cost: 400, maxPurchases: 1, category: 'ship_unlock', apply: (m) => { if (!m.unlockedShips.includes('venom')) m.unlockedShips.push('venom'); }, purchased: (m) => m.unlockedShips.includes('venom') ? 1 : 0 },
-  { id: 'unlock_nova_ship', name: 'Nova', description: 'Poder bruto. Especial: Supernova devastadora.', emoji: '💫', cost: 450, maxPurchases: 1, category: 'ship_unlock', apply: (m) => { if (!m.unlockedShips.includes('nova_ship')) m.unlockedShips.push('nova_ship'); }, purchased: (m) => m.unlockedShips.includes('nova_ship') ? 1 : 0 },
-  { id: 'unlock_leviathan', name: 'Leviathan', description: 'Colosso devorador. 8 HP, dano extremo.', emoji: '🐉', cost: 600, maxPurchases: 1, category: 'ship_unlock', apply: (m) => { if (!m.unlockedShips.includes('leviathan')) m.unlockedShips.push('leviathan'); }, purchased: (m) => m.unlockedShips.includes('leviathan') ? 1 : 0 },
-  { id: 'unlock_oracle', name: 'Oracle', description: 'Tiros rastreadores inteligentes.', emoji: '🔮', cost: 400, maxPurchases: 1, category: 'ship_unlock', apply: (m) => { if (!m.unlockedShips.includes('oracle')) m.unlockedShips.push('oracle'); }, purchased: (m) => m.unlockedShips.includes('oracle') ? 1 : 0 },
-  { id: 'unlock_pyro', name: 'Pyro', description: 'Lança-chamas devastador de curto alcance.', emoji: '🔥', cost: 350, maxPurchases: 1, category: 'ship_unlock', apply: (m) => { if (!m.unlockedShips.includes('pyro')) m.unlockedShips.push('pyro'); }, purchased: (m) => m.unlockedShips.includes('pyro') ? 1 : 0 },
-  // === WEAPON SLOTS ===
-  { id: 'slot_4', name: '+1 Slot de Arma', description: 'Equipe até 4 armas por run', emoji: '🔫', cost: 100, maxPurchases: 1, category: 'weapon_slot', apply: (m) => { m.weaponSlots = Math.max(m.weaponSlots, 4); }, purchased: (m) => m.weaponSlots >= 4 ? 1 : 0 },
-  { id: 'slot_5', name: '+1 Slot de Arma', description: 'Equipe até 5 armas por run', emoji: '🔫', cost: 300, maxPurchases: 1, category: 'weapon_slot', apply: (m) => { m.weaponSlots = Math.max(m.weaponSlots, 5); }, purchased: (m) => m.weaponSlots >= 5 ? 1 : 0 },
-  { id: 'slot_6', name: '+1 Slot de Arma', description: 'Equipe até 6 armas por run', emoji: '🔫', cost: 600, maxPurchases: 1, category: 'weapon_slot', apply: (m) => { m.weaponSlots = Math.max(m.weaponSlots, 6); }, purchased: (m) => m.weaponSlots >= 6 ? 1 : 0 },
-  // === PERMANENT STATS ===
-  { id: 'perm_hp', name: '+1 HP Máximo', description: 'Começa cada run com +1 HP', emoji: '❤️', cost: 80, maxPurchases: 5, category: 'permanent_stat', apply: (m) => { m.permBonuses = m.permBonuses || {}; m.permBonuses.hp = (m.permBonuses.hp || 0) + 1; }, purchased: (m) => m.permBonuses?.hp || 0 },
-  { id: 'perm_damage', name: '+10% Dano Base', description: 'Bônus de dano permanente', emoji: '⚔️', cost: 100, maxPurchases: 5, category: 'permanent_stat', apply: (m) => { m.permBonuses = m.permBonuses || {}; m.permBonuses.damage = (m.permBonuses.damage || 0) + 0.1; }, purchased: (m) => Math.round((m.permBonuses?.damage || 0) / 0.1) },
-  { id: 'perm_speed', name: '+5% Velocidade', description: 'Move mais rápido desde o início', emoji: '🏃', cost: 60, maxPurchases: 5, category: 'permanent_stat', apply: (m) => { m.permBonuses = m.permBonuses || {}; m.permBonuses.speed = (m.permBonuses.speed || 0) + 0.05; }, purchased: (m) => Math.round((m.permBonuses?.speed || 0) / 0.05) },
-  { id: 'perm_magnet', name: '+20% XP Magnet', description: 'Coleta XP de mais longe', emoji: '🧲', cost: 50, maxPurchases: 5, category: 'permanent_stat', apply: (m) => { m.permBonuses = m.permBonuses || {}; m.permBonuses.magnet = (m.permBonuses.magnet || 0) + 0.2; }, purchased: (m) => Math.round((m.permBonuses?.magnet || 0) / 0.2) },
-  { id: 'perm_armor', name: '+10% Redução Dano', description: 'Recebe menos dano permanentemente', emoji: '🛡️', cost: 120, maxPurchases: 3, category: 'permanent_stat', apply: (m) => { m.permBonuses = m.permBonuses || {}; m.permBonuses.armor = (m.permBonuses.armor || 0) + 0.1; }, purchased: (m) => Math.round((m.permBonuses?.armor || 0) / 0.1) },
-  { id: 'perm_plasma_mult', name: '+10% Plasma Ganho', description: 'Ganha mais plasma por run', emoji: '💎', cost: 200, maxPurchases: 5, category: 'permanent_stat', apply: (m) => { m.permBonuses = m.permBonuses || {}; m.permBonuses.plasmaMultiplier = (m.permBonuses.plasmaMultiplier || 0) + 0.1; }, purchased: (m) => Math.round((m.permBonuses?.plasmaMultiplier || 0) / 0.1) },
-  // === PERMANENT PASSIVES ===
-  { id: 'perm_regen', name: 'Regeneração', description: 'Regenera 1 HP a cada 30s em todas as runs', emoji: '💚', cost: 250, maxPurchases: 3, category: 'permanent_passive', apply: (m) => { m.permBonuses = m.permBonuses || {}; (m.permBonuses as any).regenLevel = ((m.permBonuses as any).regenLevel || 0) + 1; }, purchased: (m) => (m.permBonuses as any)?.regenLevel || 0 },
-  { id: 'perm_crit', name: 'Precisão Crítica', description: '+5% de chance de crítico em todas as runs', emoji: '🎯', cost: 180, maxPurchases: 5, category: 'permanent_passive', apply: (m) => { m.permBonuses = m.permBonuses || {}; (m.permBonuses as any).critBonus = ((m.permBonuses as any).critBonus || 0) + 0.05; }, purchased: (m) => Math.round(((m.permBonuses as any)?.critBonus || 0) / 0.05) },
-  { id: 'perm_luck', name: 'Fortuna', description: '+5% chance de drop de power-up', emoji: '🍀', cost: 150, maxPurchases: 5, category: 'permanent_passive', apply: (m) => { m.permBonuses = m.permBonuses || {}; (m.permBonuses as any).luckBonus = ((m.permBonuses as any).luckBonus || 0) + 0.05; }, purchased: (m) => Math.round(((m.permBonuses as any)?.luckBonus || 0) / 0.05) },
-  { id: 'perm_xp', name: 'Experiência+', description: '+10% XP ganho em todas as runs', emoji: '📖', cost: 160, maxPurchases: 5, category: 'permanent_passive', apply: (m) => { m.permBonuses = m.permBonuses || {}; (m.permBonuses as any).xpBonusPerm = ((m.permBonuses as any).xpBonusPerm || 0) + 0.1; }, purchased: (m) => Math.round(((m.permBonuses as any)?.xpBonusPerm || 0) / 0.1) },
-  { id: 'perm_dodge', name: 'Evasão Instintiva', description: '+3% chance de esquivar dano', emoji: '💨', cost: 220, maxPurchases: 5, category: 'permanent_passive', apply: (m) => { m.permBonuses = m.permBonuses || {}; (m.permBonuses as any).dodgeBonus = ((m.permBonuses as any).dodgeBonus || 0) + 0.03; }, purchased: (m) => Math.round(((m.permBonuses as any)?.dodgeBonus || 0) / 0.03) },
-];
-
-const ALL_SHOP_ITEMS: ShopItem[] = [...BASE_WEAPON_ITEMS, ...ELEMENTAL_WEAPON_ITEMS, ...OTHER_SHOP_ITEMS];
 
 interface PlasmaShopProps {
   meta: MetaProgress;
@@ -223,11 +38,74 @@ interface PlasmaShopProps {
 type ShopCategory = 'all' | 'base_weapon' | 'elemental_weapon' | 'ship_unlock' | 'weapon_slot' | 'permanent_stat' | 'permanent_passive';
 
 const PlasmaShop: React.FC<PlasmaShopProps> = ({ meta, onUpdate, onBack }) => {
+  const { t, lang } = useLanguage();
   const [selectedCat, setSelectedCat] = useState<ShopCategory>('all');
   const [flash, setFlash] = useState<string | null>(null);
 
   useEffect(() => { startShopMusic(); return () => { stopShopMusic(); }; }, []);
 
+  // Build shop items with translations
+  const BASE_WEAPON_ITEMS: ShopItem[] = [
+    { id: 'upg_orbitals', name: 'Orbital Drones', description: t('shop_orbital_desc'), icon: WEAPON_ICONS.orbitals, cost: 60, maxPurchases: 5, category: 'base_weapon', apply: (m) => { setWeaponLevel(m, 'orbitals', getWeaponLevel(m, 'orbitals') + 1); }, purchased: (m) => getWeaponLevel(m, 'orbitals'), badge: t('badge_base') },
+    { id: 'upg_aura', name: 'Neon Aura', description: t('shop_aura_desc'), icon: WEAPON_ICONS.aura, cost: 70, maxPurchases: 5, category: 'base_weapon', apply: (m) => { setWeaponLevel(m, 'aura', getWeaponLevel(m, 'aura') + 1); }, purchased: (m) => getWeaponLevel(m, 'aura'), badge: t('badge_base') },
+    { id: 'upg_chain', name: lang === 'pt' ? 'Raio Cadeia' : 'Chain Ray', description: t('shop_chain_desc'), icon: WEAPON_ICONS.chain, cost: 80, maxPurchases: 5, category: 'base_weapon', apply: (m) => { setWeaponLevel(m, 'chain', getWeaponLevel(m, 'chain') + 1); }, purchased: (m) => getWeaponLevel(m, 'chain'), badge: t('badge_base') },
+    { id: 'upg_multishot', name: 'Multi-Shot', description: t('shop_multishot_desc'), icon: WEAPON_ICONS.multishot, cost: 90, maxPurchases: 3, category: 'base_weapon', apply: (m) => { setWeaponLevel(m, 'multishot', getWeaponLevel(m, 'multishot') + 1); }, purchased: (m) => getWeaponLevel(m, 'multishot'), badge: t('badge_base') },
+    { id: 'upg_explosion', name: lang === 'pt' ? 'Proj. Explosivo' : 'Explosive Proj.', description: t('shop_explosion_desc'), icon: WEAPON_ICONS.explosion, cost: 100, maxPurchases: 4, category: 'base_weapon', apply: (m) => { setWeaponLevel(m, 'explosion', getWeaponLevel(m, 'explosion') + 1); }, purchased: (m) => getWeaponLevel(m, 'explosion'), badge: t('badge_base') },
+    { id: 'upg_homing', name: lang === 'pt' ? 'Auto-Mira' : 'Auto-Aim', description: t('shop_homing_desc'), icon: WEAPON_ICONS.homing, cost: 90, maxPurchases: 5, category: 'base_weapon', apply: (m) => { setWeaponLevel(m, 'homing', getWeaponLevel(m, 'homing') + 1); }, purchased: (m) => getWeaponLevel(m, 'homing'), badge: t('badge_base') },
+    { id: 'upg_piercing_rounds', name: lang === 'pt' ? 'Balas Perfurantes' : 'Piercing Rounds', description: t('shop_piercing_desc'), icon: WEAPON_ICONS.piercing_rounds, cost: 80, maxPurchases: 4, category: 'base_weapon', apply: (m) => { setWeaponLevel(m, 'piercing_rounds', getWeaponLevel(m, 'piercing_rounds') + 1); }, purchased: (m) => getWeaponLevel(m, 'piercing_rounds'), badge: t('badge_base') },
+    { id: 'upg_ricochet_rounds', name: lang === 'pt' ? 'Ricochete' : 'Ricochet', description: t('shop_ricochet_desc'), icon: WEAPON_ICONS.ricochet_rounds, cost: 80, maxPurchases: 4, category: 'base_weapon', apply: (m) => { setWeaponLevel(m, 'ricochet_rounds', getWeaponLevel(m, 'ricochet_rounds') + 1); }, purchased: (m) => getWeaponLevel(m, 'ricochet_rounds'), badge: t('badge_base') },
+    { id: 'upg_ion_beam', name: 'Ion Beam', description: t('shop_ion_desc'), icon: WEAPON_ICONS.ion_beam, cost: 110, maxPurchases: 5, category: 'base_weapon', apply: (m) => { setWeaponLevel(m, 'ion_beam', getWeaponLevel(m, 'ion_beam') + 1); }, purchased: (m) => getWeaponLevel(m, 'ion_beam'), badge: t('badge_base') },
+    { id: 'upg_shockwave_emitter', name: 'Shockwave', description: t('shop_shockwave_desc'), icon: WEAPON_ICONS.shockwave_emitter, cost: 110, maxPurchases: 5, category: 'base_weapon', apply: (m) => { setWeaponLevel(m, 'shockwave_emitter', getWeaponLevel(m, 'shockwave_emitter') + 1); }, purchased: (m) => getWeaponLevel(m, 'shockwave_emitter'), badge: t('badge_base') },
+    { id: 'upg_sentry_drones', name: 'Sentry Drones', description: t('shop_sentry_desc'), icon: WEAPON_ICONS.sentry_drones, cost: 100, maxPurchases: 5, category: 'base_weapon', apply: (m) => { setWeaponLevel(m, 'sentry_drones', getWeaponLevel(m, 'sentry_drones') + 1); }, purchased: (m) => getWeaponLevel(m, 'sentry_drones'), badge: t('badge_base') },
+  ];
+
+  const ELEMENTAL_WEAPON_ITEMS: ShopItem[] = [
+    { id: 'upg_frost_nova', name: 'Frost Nova', description: t('shop_frost_desc'), icon: WEAPON_ICONS.frost_nova, cost: 90, maxPurchases: 5, category: 'elemental_weapon', apply: (m) => { setWeaponLevel(m, 'frost_nova', getWeaponLevel(m, 'frost_nova') + 1); }, purchased: (m) => getWeaponLevel(m, 'frost_nova'), badge: t('badge_ice'), badgeColor: '#00cfff' },
+    { id: 'upg_missile_barrage', name: 'Missile Barrage', description: t('shop_missile_desc'), icon: WEAPON_ICONS.missile_barrage, cost: 120, maxPurchases: 5, category: 'elemental_weapon', apply: (m) => { setWeaponLevel(m, 'missile_barrage', getWeaponLevel(m, 'missile_barrage') + 1); }, purchased: (m) => getWeaponLevel(m, 'missile_barrage'), badge: t('badge_missile'), badgeColor: '#ff6b00' },
+    { id: 'upg_plasma_field', name: 'Plasma Field', description: t('shop_plasma_field_desc'), icon: WEAPON_ICONS.plasma_field, cost: 130, maxPurchases: 4, category: 'elemental_weapon', apply: (m) => { setWeaponLevel(m, 'plasma_field', getWeaponLevel(m, 'plasma_field') + 1); }, purchased: (m) => getWeaponLevel(m, 'plasma_field'), badge: t('badge_plasma'), badgeColor: '#bf5af2' },
+    { id: 'upg_lightning_ring', name: 'Lightning Ring', description: t('shop_lightning_desc'), icon: WEAPON_ICONS.lightning_ring, cost: 130, maxPurchases: 5, category: 'elemental_weapon', apply: (m) => { setWeaponLevel(m, 'lightning_ring', getWeaponLevel(m, 'lightning_ring') + 1); }, purchased: (m) => getWeaponLevel(m, 'lightning_ring'), badge: t('badge_lightning'), badgeColor: '#ffe033' },
+    { id: 'upg_flame_trail', name: 'Flame Trail', description: t('shop_flame_desc'), icon: WEAPON_ICONS.flame_trail, cost: 110, maxPurchases: 4, category: 'elemental_weapon', apply: (m) => { setWeaponLevel(m, 'flame_trail', getWeaponLevel(m, 'flame_trail') + 1); }, purchased: (m) => getWeaponLevel(m, 'flame_trail'), badge: t('badge_fire'), badgeColor: '#ff4400' },
+    { id: 'upg_chain_lightning_weapon', name: lang === 'pt' ? 'Raio Cadeia+' : 'Chain Lightning+', description: t('shop_chain_lightning_desc'), icon: WEAPON_ICONS.chain_lightning_weapon, cost: 140, maxPurchases: 5, category: 'elemental_weapon', apply: (m) => { setWeaponLevel(m, 'chain_lightning_weapon', getWeaponLevel(m, 'chain_lightning_weapon') + 1); }, purchased: (m) => getWeaponLevel(m, 'chain_lightning_weapon'), badge: t('badge_arc'), badgeColor: '#33aaff' },
+    { id: 'upg_ice_beam', name: lang === 'pt' ? 'Raio de Gelo' : 'Ice Beam', description: t('shop_ice_beam_desc'), icon: WEAPON_ICONS.ice_beam, cost: 120, maxPurchases: 5, category: 'elemental_weapon', apply: (m) => { setWeaponLevel(m, 'ice_beam', getWeaponLevel(m, 'ice_beam') + 1); }, purchased: (m) => getWeaponLevel(m, 'ice_beam'), badge: t('badge_slow'), badgeColor: '#00d4ff' },
+    { id: 'upg_boomerang', name: lang === 'pt' ? 'Bumerangue' : 'Boomerang', description: t('shop_boomerang_desc'), icon: WEAPON_ICONS.boomerang, cost: 110, maxPurchases: 5, category: 'elemental_weapon', apply: (m) => { setWeaponLevel(m, 'boomerang', getWeaponLevel(m, 'boomerang') + 1); }, purchased: (m) => getWeaponLevel(m, 'boomerang'), badge: t('badge_return'), badgeColor: '#cc88ff' },
+    { id: 'upg_heavy_cannon', name: lang === 'pt' ? 'Canhão Pesado' : 'Heavy Cannon', description: t('shop_heavy_cannon_desc'), icon: WEAPON_ICONS.heavy_cannon, cost: 150, maxPurchases: 5, category: 'elemental_weapon', apply: (m) => { setWeaponLevel(m, 'heavy_cannon', getWeaponLevel(m, 'heavy_cannon') + 1); }, purchased: (m) => getWeaponLevel(m, 'heavy_cannon'), badge: t('badge_power'), badgeColor: '#ff6600' },
+    { id: 'upg_acid_spray', name: lang === 'pt' ? 'Spray Ácido' : 'Acid Spray', description: t('shop_acid_desc'), icon: WEAPON_ICONS.acid_spray, cost: 110, maxPurchases: 4, category: 'elemental_weapon', apply: (m) => { setWeaponLevel(m, 'acid_spray', getWeaponLevel(m, 'acid_spray') + 1); }, purchased: (m) => getWeaponLevel(m, 'acid_spray'), badge: t('badge_acid'), badgeColor: '#44ff44' },
+    { id: 'upg_gravity_well', name: lang === 'pt' ? 'Poço Gravitacional' : 'Gravity Well', description: t('shop_gravity_desc'), icon: WEAPON_ICONS.gravity_well, cost: 160, maxPurchases: 4, category: 'elemental_weapon', apply: (m) => { setWeaponLevel(m, 'gravity_well', getWeaponLevel(m, 'gravity_well') + 1); }, purchased: (m) => getWeaponLevel(m, 'gravity_well'), badge: t('badge_grav'), badgeColor: '#aa44ff' },
+    { id: 'upg_tesla_coil', name: lang === 'pt' ? 'Bobina Tesla' : 'Tesla Coil', description: t('shop_tesla_desc'), icon: WEAPON_ICONS.tesla_coil, cost: 130, maxPurchases: 5, category: 'elemental_weapon', apply: (m) => { setWeaponLevel(m, 'tesla_coil', getWeaponLevel(m, 'tesla_coil') + 1); }, purchased: (m) => getWeaponLevel(m, 'tesla_coil'), badge: t('badge_tesla'), badgeColor: '#44aaff' },
+    { id: 'upg_void_rift', name: lang === 'pt' ? 'Fenda do Vazio' : 'Void Rift', description: t('shop_void_desc'), icon: WEAPON_ICONS.void_rift, cost: 180, maxPurchases: 4, category: 'elemental_weapon', apply: (m) => { setWeaponLevel(m, 'void_rift', getWeaponLevel(m, 'void_rift') + 1); }, purchased: (m) => getWeaponLevel(m, 'void_rift'), badge: t('badge_void'), badgeColor: '#9900cc' },
+  ];
+
+  const OTHER_SHOP_ITEMS: ShopItem[] = [
+    // Ships
+    { id: 'unlock_spectre', name: 'Spectre', description: t('shop_spectre_desc'), emoji: '🌀', cost: 200, maxPurchases: 1, category: 'ship_unlock', apply: (m) => { if (!m.unlockedShips.includes('spectre')) m.unlockedShips.push('spectre'); }, purchased: (m) => m.unlockedShips.includes('spectre') ? 1 : 0 },
+    { id: 'unlock_valkyrie', name: 'Valkyrie', description: t('shop_valkyrie_desc'), emoji: '🦅', cost: 300, maxPurchases: 1, category: 'ship_unlock', apply: (m) => { if (!m.unlockedShips.includes('valkyrie')) m.unlockedShips.push('valkyrie'); }, purchased: (m) => m.unlockedShips.includes('valkyrie') ? 1 : 0 },
+    { id: 'unlock_juggernaut', name: 'Juggernaut', description: t('shop_juggernaut_desc'), emoji: '🛡️', cost: 500, maxPurchases: 1, category: 'ship_unlock', apply: (m) => { if (!m.unlockedShips.includes('juggernaut')) m.unlockedShips.push('juggernaut'); }, purchased: (m) => m.unlockedShips.includes('juggernaut') ? 1 : 0 },
+    { id: 'unlock_sentinel', name: 'Sentinel', description: t('shop_sentinel_desc'), emoji: '🏰', cost: 350, maxPurchases: 1, category: 'ship_unlock', apply: (m) => { if (!m.unlockedShips.includes('sentinel')) m.unlockedShips.push('sentinel'); }, purchased: (m) => m.unlockedShips.includes('sentinel') ? 1 : 0 },
+    { id: 'unlock_venom', name: 'Venom', description: t('shop_venom_desc'), emoji: '🐍', cost: 400, maxPurchases: 1, category: 'ship_unlock', apply: (m) => { if (!m.unlockedShips.includes('venom')) m.unlockedShips.push('venom'); }, purchased: (m) => m.unlockedShips.includes('venom') ? 1 : 0 },
+    { id: 'unlock_nova_ship', name: 'Nova', description: t('shop_nova_desc'), emoji: '💫', cost: 450, maxPurchases: 1, category: 'ship_unlock', apply: (m) => { if (!m.unlockedShips.includes('nova_ship')) m.unlockedShips.push('nova_ship'); }, purchased: (m) => m.unlockedShips.includes('nova_ship') ? 1 : 0 },
+    { id: 'unlock_leviathan', name: 'Leviathan', description: t('shop_leviathan_desc'), emoji: '🐉', cost: 600, maxPurchases: 1, category: 'ship_unlock', apply: (m) => { if (!m.unlockedShips.includes('leviathan')) m.unlockedShips.push('leviathan'); }, purchased: (m) => m.unlockedShips.includes('leviathan') ? 1 : 0 },
+    { id: 'unlock_oracle', name: 'Oracle', description: t('shop_oracle_desc'), emoji: '🔮', cost: 400, maxPurchases: 1, category: 'ship_unlock', apply: (m) => { if (!m.unlockedShips.includes('oracle')) m.unlockedShips.push('oracle'); }, purchased: (m) => m.unlockedShips.includes('oracle') ? 1 : 0 },
+    { id: 'unlock_pyro', name: 'Pyro', description: t('shop_pyro_desc'), emoji: '🔥', cost: 350, maxPurchases: 1, category: 'ship_unlock', apply: (m) => { if (!m.unlockedShips.includes('pyro')) m.unlockedShips.push('pyro'); }, purchased: (m) => m.unlockedShips.includes('pyro') ? 1 : 0 },
+    // Slots
+    { id: 'slot_4', name: '+1 Weapon Slot', description: lang === 'pt' ? 'Equipe até 4 armas por run' : 'Equip up to 4 weapons per run', emoji: '🔫', cost: 100, maxPurchases: 1, category: 'weapon_slot', apply: (m) => { m.weaponSlots = Math.max(m.weaponSlots, 4); }, purchased: (m) => m.weaponSlots >= 4 ? 1 : 0 },
+    { id: 'slot_5', name: '+1 Weapon Slot', description: lang === 'pt' ? 'Equipe até 5 armas por run' : 'Equip up to 5 weapons per run', emoji: '🔫', cost: 300, maxPurchases: 1, category: 'weapon_slot', apply: (m) => { m.weaponSlots = Math.max(m.weaponSlots, 5); }, purchased: (m) => m.weaponSlots >= 5 ? 1 : 0 },
+    { id: 'slot_6', name: '+1 Weapon Slot', description: lang === 'pt' ? 'Equipe até 6 armas por run' : 'Equip up to 6 weapons per run', emoji: '🔫', cost: 600, maxPurchases: 1, category: 'weapon_slot', apply: (m) => { m.weaponSlots = Math.max(m.weaponSlots, 6); }, purchased: (m) => m.weaponSlots >= 6 ? 1 : 0 },
+    // Stats
+    { id: 'perm_hp', name: t('shop_hp_name'), description: t('shop_hp_desc'), emoji: '❤️', cost: 80, maxPurchases: 5, category: 'permanent_stat', apply: (m) => { m.permBonuses = m.permBonuses || {}; m.permBonuses.hp = (m.permBonuses.hp || 0) + 1; }, purchased: (m) => m.permBonuses?.hp || 0 },
+    { id: 'perm_damage', name: t('shop_damage_name'), description: t('shop_damage_desc'), emoji: '⚔️', cost: 100, maxPurchases: 5, category: 'permanent_stat', apply: (m) => { m.permBonuses = m.permBonuses || {}; m.permBonuses.damage = (m.permBonuses.damage || 0) + 0.1; }, purchased: (m) => Math.round((m.permBonuses?.damage || 0) / 0.1) },
+    { id: 'perm_speed', name: t('shop_speed_name'), description: t('shop_speed_desc'), emoji: '🏃', cost: 60, maxPurchases: 5, category: 'permanent_stat', apply: (m) => { m.permBonuses = m.permBonuses || {}; m.permBonuses.speed = (m.permBonuses.speed || 0) + 0.05; }, purchased: (m) => Math.round((m.permBonuses?.speed || 0) / 0.05) },
+    { id: 'perm_magnet', name: t('shop_magnet_name'), description: t('shop_magnet_desc'), emoji: '🧲', cost: 50, maxPurchases: 5, category: 'permanent_stat', apply: (m) => { m.permBonuses = m.permBonuses || {}; m.permBonuses.magnet = (m.permBonuses.magnet || 0) + 0.2; }, purchased: (m) => Math.round((m.permBonuses?.magnet || 0) / 0.2) },
+    { id: 'perm_armor', name: t('shop_armor_name'), description: t('shop_armor_desc'), emoji: '🛡️', cost: 120, maxPurchases: 3, category: 'permanent_stat', apply: (m) => { m.permBonuses = m.permBonuses || {}; m.permBonuses.armor = (m.permBonuses.armor || 0) + 0.1; }, purchased: (m) => Math.round((m.permBonuses?.armor || 0) / 0.1) },
+    { id: 'perm_plasma_mult', name: t('shop_plasma_mult_name'), description: t('shop_plasma_mult_desc'), emoji: '💎', cost: 200, maxPurchases: 5, category: 'permanent_stat', apply: (m) => { m.permBonuses = m.permBonuses || {}; m.permBonuses.plasmaMultiplier = (m.permBonuses.plasmaMultiplier || 0) + 0.1; }, purchased: (m) => Math.round((m.permBonuses?.plasmaMultiplier || 0) / 0.1) },
+    // Passives
+    { id: 'perm_regen', name: t('shop_regen_name'), description: t('shop_regen_desc'), emoji: '💚', cost: 250, maxPurchases: 3, category: 'permanent_passive', apply: (m) => { m.permBonuses = m.permBonuses || {}; (m.permBonuses as any).regenLevel = ((m.permBonuses as any).regenLevel || 0) + 1; }, purchased: (m) => (m.permBonuses as any)?.regenLevel || 0 },
+    { id: 'perm_crit', name: t('shop_crit_name'), description: t('shop_crit_desc'), emoji: '🎯', cost: 180, maxPurchases: 5, category: 'permanent_passive', apply: (m) => { m.permBonuses = m.permBonuses || {}; (m.permBonuses as any).critBonus = ((m.permBonuses as any).critBonus || 0) + 0.05; }, purchased: (m) => Math.round(((m.permBonuses as any)?.critBonus || 0) / 0.05) },
+    { id: 'perm_luck', name: t('shop_luck_name'), description: t('shop_luck_desc'), emoji: '🍀', cost: 150, maxPurchases: 5, category: 'permanent_passive', apply: (m) => { m.permBonuses = m.permBonuses || {}; (m.permBonuses as any).luckBonus = ((m.permBonuses as any).luckBonus || 0) + 0.05; }, purchased: (m) => Math.round(((m.permBonuses as any)?.luckBonus || 0) / 0.05) },
+    { id: 'perm_xp', name: t('shop_xp_name'), description: t('shop_xp_desc'), emoji: '📖', cost: 160, maxPurchases: 5, category: 'permanent_passive', apply: (m) => { m.permBonuses = m.permBonuses || {}; (m.permBonuses as any).xpBonusPerm = ((m.permBonuses as any).xpBonusPerm || 0) + 0.1; }, purchased: (m) => Math.round(((m.permBonuses as any)?.xpBonusPerm || 0) / 0.1) },
+    { id: 'perm_dodge', name: t('shop_dodge_name'), description: t('shop_dodge_desc'), emoji: '💨', cost: 220, maxPurchases: 5, category: 'permanent_passive', apply: (m) => { m.permBonuses = m.permBonuses || {}; (m.permBonuses as any).dodgeBonus = ((m.permBonuses as any).dodgeBonus || 0) + 0.03; }, purchased: (m) => Math.round(((m.permBonuses as any)?.dodgeBonus || 0) / 0.03) },
+  ];
+
+  const ALL_SHOP_ITEMS: ShopItem[] = [...BASE_WEAPON_ITEMS, ...ELEMENTAL_WEAPON_ITEMS, ...OTHER_SHOP_ITEMS];
   const filtered = selectedCat === 'all' ? ALL_SHOP_ITEMS : ALL_SHOP_ITEMS.filter(i => i.category === selectedCat);
 
   const handleBuy = (item: ShopItem) => {
@@ -244,26 +122,26 @@ const PlasmaShop: React.FC<PlasmaShopProps> = ({ meta, onUpdate, onBack }) => {
     setTimeout(() => setFlash(null), 400);
   };
 
-  const catButtons: { key: ShopCategory; label: string; emoji: string }[] = [
-    { key: 'all', label: 'Tudo', emoji: '🛒' },
-    { key: 'base_weapon', label: 'Armas Base', emoji: '🔱' },
-    { key: 'elemental_weapon', label: 'Elementais', emoji: '⚡' },
-    { key: 'ship_unlock', label: 'Naves', emoji: '🚀' },
-    { key: 'weapon_slot', label: 'Slots', emoji: '🔫' },
-    { key: 'permanent_stat', label: 'Stats', emoji: '📈' },
-    { key: 'permanent_passive', label: 'Passivas', emoji: '🍀' },
+  const catButtons: { key: ShopCategory; labelKey: string; emoji: string }[] = [
+    { key: 'all', labelKey: 'shop_all', emoji: '🛒' },
+    { key: 'base_weapon', labelKey: 'shop_base_weapons', emoji: '🔱' },
+    { key: 'elemental_weapon', labelKey: 'shop_elemental', emoji: '⚡' },
+    { key: 'ship_unlock', labelKey: 'shop_ships', emoji: '🚀' },
+    { key: 'weapon_slot', labelKey: 'shop_slots', emoji: '🔫' },
+    { key: 'permanent_stat', labelKey: 'shop_stats', emoji: '📈' },
+    { key: 'permanent_passive', labelKey: 'shop_passives', emoji: '🍀' },
   ];
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#000008] text-[#e0e8ff] select-none p-4">
       <h1 className="text-4xl md:text-5xl font-bold mb-2 font-mono" style={{ color: '#bf5af2', textShadow: '0 0 30px rgba(191,90,242,0.4)' }}>
-        ⚡ PLASMA SHOP
+        {t('shop_title')}
       </h1>
       
       <div className="flex items-center gap-2 mb-4 py-2 px-5 rounded-lg" style={{ background: 'rgba(191,90,242,0.15)', border: '1px solid rgba(191,90,242,0.3)' }}>
         <img src={UI_ICONS.plasma} alt="Plasma" className="w-7 h-7 object-contain" />
         <span className="font-mono font-bold text-2xl" style={{ color: '#bf5af2' }}>{meta.plasma}</span>
-        <span className="font-mono text-sm text-[#6080aa]">Plasma</span>
+        <span className="font-mono text-sm text-[#6080aa]">{t('plasma')}</span>
       </div>
 
       <div className="flex flex-wrap gap-1.5 mb-4 justify-center">
@@ -277,7 +155,7 @@ const PlasmaShop: React.FC<PlasmaShopProps> = ({ meta, onUpdate, onBack }) => {
               border: `1px solid ${selectedCat === c.key ? 'rgba(191,90,242,0.6)' : 'rgba(255,255,255,0.08)'}`,
               color: selectedCat === c.key ? '#bf5af2' : '#6080aa',
             }}>
-            {c.emoji} {c.label}
+            {c.emoji} {t(c.labelKey as any)}
           </button>
         ))}
       </div>
@@ -293,13 +171,8 @@ const PlasmaShop: React.FC<PlasmaShopProps> = ({ meta, onUpdate, onBack }) => {
           const isBase = item.category === 'base_weapon';
           const isElemental = item.category === 'elemental_weapon';
 
-          const badgeColor = item.badgeColor ?? (
-            isBase ? '#0af' :
-            isShip ? '#ff6b00' :
-            item.category === 'permanent_passive' ? '#00ffc8' :
-            '#bf5af2'
-          );
-          const badge = item.badge ?? (isBase ? 'BASE' : isShip ? 'NAVE' : item.category === 'permanent_passive' ? 'PASSIVA' : null);
+          const badgeColor = item.badgeColor ?? (isBase ? '#0af' : isShip ? '#ff6b00' : item.category === 'permanent_passive' ? '#00ffc8' : '#bf5af2');
+          const badge = item.badge ?? (isBase ? t('badge_base') : isShip ? t('badge_nave') : item.category === 'permanent_passive' ? t('badge_passiva') : null);
 
           return (
             <button key={item.id}
@@ -359,7 +232,7 @@ const PlasmaShop: React.FC<PlasmaShopProps> = ({ meta, onUpdate, onBack }) => {
       <button onClick={() => { playBack(); onBack(); }} onMouseEnter={playHover}
         className="py-2.5 px-6 text-base font-bold rounded-lg text-[#6080aa] border border-[#6080aa]/30 transition-all duration-200 hover:border-[#0ff] hover:text-[#0ff] font-mono"
         style={{ background: 'rgba(0,255,255,0.03)' }}>
-        ← Voltar
+        {t('back')}
       </button>
     </div>
   );
