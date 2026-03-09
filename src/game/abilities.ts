@@ -887,3 +887,405 @@ export function triggerChainLightning(state: GameState, origin: { x: number; y: 
     triggerChainLightning(state, closest.pos, bounces - 1, damage * 0.8);
   }
 }
+
+// === NEW ELEMENTAL WEAPON UPDATE FUNCTIONS ===
+
+// Chain Lightning Weapon - fires arcing projectiles
+export function updateChainLightningWeapon(state: GameState, dt: number) {
+  if (state.abilities.chainLightningChains <= 0) return;
+  state.abilities.chainLightningTimer -= dt;
+  if (state.abilities.chainLightningTimer > 0) return;
+  
+  state.abilities.chainLightningTimer = state.abilities.chainLightningCooldown;
+  const p = state.player;
+  const alive = state.enemies.filter(e => e.alive);
+  if (alive.length === 0) return;
+  
+  const nearest = alive.sort((a, b) => dist(a.pos, p.pos) - dist(b.pos, p.pos))[0];
+  const angle = Math.atan2(nearest.pos.y - p.pos.y, nearest.pos.x - p.pos.x);
+  
+  state.projectiles.push({
+    pos: { x: p.pos.x, y: p.pos.y },
+    vel: { x: Math.cos(angle) * PROJECTILE_SPEED * 0.9, y: Math.sin(angle) * PROJECTILE_SPEED * 0.9 },
+    radius: 6, alive: true, damage: state.abilities.chainLightningDamage + state.wave * 2, fromPlayer: true,
+    lifetime: 2, color: '#00ffff',
+    element: 'lightning',
+    chainLightning: state.abilities.chainLightningChains,
+  });
+  
+  state.particles.push(...createParticles(p.pos, '#00ffff', 6, 80, 2));
+}
+
+// Ice Beam - fires freezing projectiles
+export function updateIceBeam(state: GameState, dt: number) {
+  if (state.abilities.iceBeamDamage <= 0) return;
+  state.abilities.iceBeamTimer -= dt;
+  if (state.abilities.iceBeamTimer > 0) return;
+  
+  state.abilities.iceBeamTimer = state.abilities.iceBeamCooldown;
+  const p = state.player;
+  
+  // Fire ice projectile in aim direction
+  state.projectiles.push({
+    pos: { x: p.pos.x, y: p.pos.y },
+    vel: { x: Math.cos(p.angle) * PROJECTILE_SPEED * 0.7, y: Math.sin(p.angle) * PROJECTILE_SPEED * 0.7 },
+    radius: 8, alive: true, damage: state.abilities.iceBeamDamage + state.wave, fromPlayer: true,
+    lifetime: 2.5, color: '#88ddff',
+    element: 'ice',
+    iceSlow: state.abilities.iceBeamSlowDuration * 1000, // ms
+  });
+  
+  state.particles.push(...createParticles(p.pos, '#88ddff', 5, 60, 2));
+}
+
+// Boomerang - projectiles that return
+export function updateBoomerang(state: GameState, dt: number) {
+  if (state.abilities.boomerangCount <= 0) return;
+  state.abilities.boomerangTimer -= dt;
+  if (state.abilities.boomerangTimer > 0) return;
+  
+  state.abilities.boomerangTimer = state.abilities.boomerangCooldown;
+  const p = state.player;
+  
+  const count = state.abilities.boomerangCount;
+  for (let i = 0; i < count; i++) {
+    const offset = (i - (count - 1) / 2) * 0.3;
+    state.projectiles.push({
+      pos: { x: p.pos.x, y: p.pos.y },
+      vel: { x: Math.cos(p.angle + offset) * PROJECTILE_SPEED * 0.8, y: Math.sin(p.angle + offset) * PROJECTILE_SPEED * 0.8 },
+      radius: 7, alive: true, damage: state.abilities.boomerangDamage + state.wave * 1.5, fromPlayer: true,
+      lifetime: 4, color: '#ffaa00',
+      boomerang: true,
+      returning: false,
+      originPos: { x: p.pos.x, y: p.pos.y },
+      pierce: 99, // infinite pierce for boomerang
+    });
+  }
+  
+  state.particles.push(...createParticles(p.pos, '#ffaa00', 4, 60, 2));
+}
+
+// Heavy Cannon - slow but devastating
+export function updateHeavyCannon(state: GameState, dt: number) {
+  if (state.abilities.heavyCannonDamage <= 0) return;
+  state.abilities.heavyCannonTimer -= dt;
+  if (state.abilities.heavyCannonTimer > 0) return;
+  
+  state.abilities.heavyCannonTimer = state.abilities.heavyCannonCooldown;
+  const p = state.player;
+  
+  state.projectiles.push({
+    pos: { x: p.pos.x, y: p.pos.y },
+    vel: { x: Math.cos(p.angle) * PROJECTILE_SPEED * 0.4, y: Math.sin(p.angle) * PROJECTILE_SPEED * 0.4 },
+    radius: 14, alive: true, damage: state.abilities.heavyCannonDamage + state.wave * 3, fromPlayer: true,
+    lifetime: 4, color: '#ff4444',
+    heavy: true,
+    pierce: 2, // pierces 2 enemies
+  });
+  
+  // Screen shake for heavy shot
+  state.shakeTimer = 0.1;
+  state.shakeIntensity = 4;
+  state.particles.push(...createParticles(p.pos, '#ff4444', 8, 100, 3));
+}
+
+// Acid Spray - DoT damage
+export function updateAcidSpray(state: GameState, dt: number) {
+  if (state.abilities.acidSprayDamage <= 0) return;
+  state.abilities.acidSprayTimer -= dt;
+  if (state.abilities.acidSprayTimer > 0) return;
+  
+  state.abilities.acidSprayTimer = state.abilities.acidSprayCooldown;
+  const p = state.player;
+  
+  // Spray 5 acid droplets in a cone
+  for (let i = -2; i <= 2; i++) {
+    const spread = i * 0.2;
+    const speedVar = 0.7 + Math.random() * 0.4;
+    state.projectiles.push({
+      pos: { x: p.pos.x, y: p.pos.y },
+      vel: { x: Math.cos(p.angle + spread) * PROJECTILE_SPEED * speedVar, y: Math.sin(p.angle + spread) * PROJECTILE_SPEED * speedVar },
+      radius: 5, alive: true, damage: state.abilities.acidSprayDamage, fromPlayer: true,
+      lifetime: 1.5, color: '#66ff00',
+      element: 'acid',
+      acid: state.abilities.acidSprayTicks,
+    });
+  }
+  
+  state.particles.push(...createParticles(p.pos, '#66ff00', 6, 80, 2));
+}
+
+// Gravity Well - creates pulling zones
+export function updateGravityWell(state: GameState, dt: number) {
+  if (state.abilities.gravityWellRadius <= 0) return;
+  state.abilities.gravityWellTimer -= dt;
+  if (state.abilities.gravityWellTimer > 0) return;
+  
+  state.abilities.gravityWellTimer = state.abilities.gravityWellCooldown;
+  const p = state.player;
+  
+  // Create gravity zone projectile
+  const alive = state.enemies.filter(e => e.alive);
+  if (alive.length === 0) return;
+  
+  // Target densest enemy cluster
+  const target = alive[Math.floor(Math.random() * Math.min(3, alive.length))];
+  
+  state.projectiles.push({
+    pos: { x: target.pos.x, y: target.pos.y },
+    vel: { x: 0, y: 0 },
+    radius: state.abilities.gravityWellRadius, alive: true, damage: state.abilities.gravityWellDamage, fromPlayer: true,
+    lifetime: 2.5, color: '#9966ff',
+    element: 'gravity',
+    gravityPull: state.abilities.gravityWellRadius * 1.5,
+  });
+  
+  state.particles.push(...createParticles(target.pos, '#9966ff', 15, 150, 3));
+}
+
+// Tesla Coil - auto chains between enemies
+export function updateTeslaCoil(state: GameState, dt: number) {
+  if (state.abilities.teslaCoilDamage <= 0) return;
+  state.abilities.teslaCoilTimer -= dt;
+  if (state.abilities.teslaCoilTimer > 0) return;
+  
+  state.abilities.teslaCoilTimer = state.abilities.teslaCoilCooldown;
+  const p = state.player;
+  const range = 150;
+  
+  const alive = state.enemies.filter(e => e.alive && dist(e.pos, p.pos) < range);
+  if (alive.length === 0) {
+    state.abilities.teslaCoilTimer = 0.3;
+    return;
+  }
+  
+  // Start chain from nearest enemy
+  const nearest = alive.sort((a, b) => dist(a.pos, p.pos) - dist(b.pos, p.pos))[0];
+  
+  // Draw lightning to first target
+  drawLightningArc(state, p.pos, nearest.pos, '#00ffff');
+  nearest.hp -= state.abilities.teslaCoilDamage + state.wave;
+  nearest.flashTimer = 0.1;
+  
+  // Chain to nearby enemies
+  let current = nearest;
+  const hit = new Set([nearest]);
+  for (let c = 0; c < state.abilities.teslaCoilChains; c++) {
+    let nextTarget: Enemy | null = null;
+    let nextDist = 120;
+    for (const e of state.enemies) {
+      if (!e.alive || hit.has(e)) continue;
+      const d = dist(e.pos, current.pos);
+      if (d < nextDist) {
+        nextDist = d;
+        nextTarget = e;
+      }
+    }
+    if (nextTarget) {
+      drawLightningArc(state, current.pos, nextTarget.pos, '#00ffff');
+      nextTarget.hp -= state.abilities.teslaCoilDamage * 0.8;
+      nextTarget.flashTimer = 0.08;
+      hit.add(nextTarget);
+      current = nextTarget;
+    }
+  }
+}
+
+// Void Rift - opens portals that damage enemies
+export function updateVoidRift(state: GameState, dt: number) {
+  if (state.abilities.voidRiftRadius <= 0) return;
+  state.abilities.voidRiftTimer -= dt;
+  if (state.abilities.voidRiftTimer > 0) return;
+  
+  state.abilities.voidRiftTimer = state.abilities.voidRiftCooldown;
+  const p = state.player;
+  
+  // Create void rift at aim position (200 units ahead)
+  const rx = p.pos.x + Math.cos(p.angle) * 150;
+  const ry = p.pos.y + Math.sin(p.angle) * 150;
+  
+  state.projectiles.push({
+    pos: { x: rx, y: ry },
+    vel: { x: 0, y: 0 },
+    radius: state.abilities.voidRiftRadius, alive: true, damage: state.abilities.voidRiftDamage, fromPlayer: true,
+    lifetime: 3, color: '#660099',
+    element: 'void',
+    gravityPull: state.abilities.voidRiftRadius * 2,
+  });
+  
+  state.particles.push(...createParticles({ x: rx, y: ry }, '#9933ff', 20, 200, 4));
+}
+
+// Helper function to draw lightning arcs
+function drawLightningArc(state: GameState, from: { x: number; y: number }, to: { x: number; y: number }, color: string) {
+  const steps = 5;
+  for (let i = 0; i < steps; i++) {
+    const t = i / steps;
+    const jitter = i > 0 && i < steps - 1 ? (Math.random() - 0.5) * 15 : 0;
+    state.particles.push({
+      pos: {
+        x: from.x + (to.x - from.x) * t + jitter,
+        y: from.y + (to.y - from.y) * t + jitter,
+      },
+      vel: { x: (Math.random() - 0.5) * 30, y: (Math.random() - 0.5) * 30 },
+      lifetime: 0.15,
+      maxLifetime: 0.15,
+      color,
+      size: 2.5,
+    });
+  }
+}
+
+// === SYNERGY SYSTEM ===
+export interface SynergyEffect {
+  fire_ice: 'steam_explosion'; // Fire + Ice = Steam explosion
+  fire_lightning: 'plasma_burst'; // Fire + Lightning = Plasma
+  ice_lightning: 'shatter'; // Ice + Lightning = Shatter
+  acid_fire: 'toxic_flame'; // Acid + Fire = Toxic flames
+  gravity_lightning: 'emp'; // Gravity + Lightning = EMP
+  void_fire: 'hellfire'; // Void + Fire = Hellfire
+}
+
+export function checkProjectileSynergy(state: GameState, proj1: any, proj2: any) {
+  if (!proj1.element || !proj2.element || proj1.element === 'none' || proj2.element === 'none') return;
+  if (proj1.element === proj2.element) return;
+  
+  const elem1 = proj1.element;
+  const elem2 = proj2.element;
+  const midX = (proj1.pos.x + proj2.pos.x) / 2;
+  const midY = (proj1.pos.y + proj2.pos.y) / 2;
+  
+  // Fire + Ice = Steam Explosion
+  if ((elem1 === 'fire' && elem2 === 'ice') || (elem1 === 'ice' && elem2 === 'fire')) {
+    createSteamExplosion(state, midX, midY, (proj1.damage + proj2.damage) * 1.5);
+  }
+  // Fire + Lightning = Plasma Burst
+  else if ((elem1 === 'fire' && elem2 === 'lightning') || (elem1 === 'lightning' && elem2 === 'fire')) {
+    createPlasmaBurst(state, midX, midY, (proj1.damage + proj2.damage) * 1.8);
+  }
+  // Ice + Lightning = Shatter
+  else if ((elem1 === 'ice' && elem2 === 'lightning') || (elem1 === 'lightning' && elem2 === 'ice')) {
+    createShatterEffect(state, midX, midY, (proj1.damage + proj2.damage) * 1.6);
+  }
+  // Acid + Fire = Toxic Flame
+  else if ((elem1 === 'acid' && elem2 === 'fire') || (elem1 === 'fire' && elem2 === 'acid')) {
+    createToxicFlame(state, midX, midY, (proj1.damage + proj2.damage) * 1.4);
+  }
+  // Gravity + Lightning = EMP
+  else if ((elem1 === 'gravity' && elem2 === 'lightning') || (elem1 === 'lightning' && elem2 === 'gravity')) {
+    createEMPBurst(state, midX, midY, (proj1.damage + proj2.damage) * 2.0);
+  }
+  // Void + Fire = Hellfire
+  else if ((elem1 === 'void' && elem2 === 'fire') || (elem1 === 'fire' && elem2 === 'void')) {
+    createHellfireBurst(state, midX, midY, (proj1.damage + proj2.damage) * 2.2);
+  }
+}
+
+function createSteamExplosion(state: GameState, x: number, y: number, damage: number) {
+  const radius = 80;
+  for (const e of state.enemies) {
+    if (!e.alive) continue;
+    if (dist(e.pos, { x, y }) < radius + e.radius) {
+      e.hp -= damage;
+      e.flashTimer = 0.2;
+      // Also slow enemies
+      e.slowUntil = Date.now() + 1500;
+      e.speed = (e.baseSpeed ?? e.speed) * 0.5;
+    }
+  }
+  state.particles.push(...createParticles({ x, y }, '#ffffff', 30, radius * 2, 4));
+  state.particles.push(...createParticles({ x, y }, '#88ccff', 20, radius * 1.5, 3));
+  state.shakeTimer = 0.2;
+  state.shakeIntensity = 6;
+}
+
+function createPlasmaBurst(state: GameState, x: number, y: number, damage: number) {
+  const radius = 100;
+  for (const e of state.enemies) {
+    if (!e.alive) continue;
+    if (dist(e.pos, { x, y }) < radius + e.radius) {
+      e.hp -= damage;
+      e.flashTimer = 0.25;
+    }
+  }
+  state.particles.push(...createParticles({ x, y }, '#ff00ff', 40, radius * 2, 5));
+  state.particles.push(...createParticles({ x, y }, '#00ffff', 25, radius * 1.8, 4));
+  state.shakeTimer = 0.3;
+  state.shakeIntensity = 10;
+}
+
+function createShatterEffect(state: GameState, x: number, y: number, damage: number) {
+  // Creates ice shards that fly outward
+  for (let i = 0; i < 12; i++) {
+    const angle = (Math.PI * 2 / 12) * i;
+    state.projectiles.push({
+      pos: { x, y },
+      vel: { x: Math.cos(angle) * 300, y: Math.sin(angle) * 300 },
+      radius: 4, alive: true, damage: damage / 4, fromPlayer: true,
+      lifetime: 0.8, color: '#88ddff',
+      element: 'ice',
+    });
+  }
+  state.particles.push(...createParticles({ x, y }, '#88ddff', 35, 150, 3));
+  state.shakeTimer = 0.15;
+  state.shakeIntensity = 5;
+}
+
+function createToxicFlame(state: GameState, x: number, y: number, damage: number) {
+  const radius = 70;
+  for (const e of state.enemies) {
+    if (!e.alive) continue;
+    if (dist(e.pos, { x, y }) < radius + e.radius) {
+      e.hp -= damage;
+      e.flashTimer = 0.15;
+    }
+  }
+  // Leave toxic zone
+  state.flameZones.push({ x, y, damage: damage * 0.3, lifetime: 4 });
+  state.particles.push(...createParticles({ x, y }, '#88ff00', 25, radius * 1.5, 4));
+  state.particles.push(...createParticles({ x, y }, '#ff6600', 15, radius * 1.2, 3));
+}
+
+function createEMPBurst(state: GameState, x: number, y: number, damage: number) {
+  const radius = 120;
+  for (const e of state.enemies) {
+    if (!e.alive) continue;
+    if (dist(e.pos, { x, y }) < radius + e.radius) {
+      e.hp -= damage;
+      e.flashTimer = 0.3;
+      // Stun (massive slow)
+      e.slowUntil = Date.now() + 3000;
+      e.speed = (e.baseSpeed ?? e.speed) * 0.2;
+    }
+  }
+  state.particles.push(...createParticles({ x, y }, '#00ffff', 50, radius * 2, 4));
+  state.particles.push(...createParticles({ x, y }, '#ffffff', 30, radius * 1.5, 3));
+  state.shakeTimer = 0.4;
+  state.shakeIntensity = 12;
+}
+
+function createHellfireBurst(state: GameState, x: number, y: number, damage: number) {
+  const radius = 90;
+  for (const e of state.enemies) {
+    if (!e.alive) continue;
+    if (dist(e.pos, { x, y }) < radius + e.radius) {
+      e.hp -= damage;
+      e.flashTimer = 0.25;
+    }
+  }
+  // Create expanding fire ring
+  for (let i = 0; i < 16; i++) {
+    const angle = (Math.PI * 2 / 16) * i;
+    state.projectiles.push({
+      pos: { x, y },
+      vel: { x: Math.cos(angle) * 200, y: Math.sin(angle) * 200 },
+      radius: 6, alive: true, damage: damage / 5, fromPlayer: true,
+      lifetime: 1.2, color: '#ff4400',
+      element: 'fire',
+    });
+  }
+  state.particles.push(...createParticles({ x, y }, '#ff0000', 40, radius * 2, 5));
+  state.particles.push(...createParticles({ x, y }, '#660099', 25, radius * 1.5, 4));
+  state.shakeTimer = 0.35;
+  state.shakeIntensity = 14;
+}
