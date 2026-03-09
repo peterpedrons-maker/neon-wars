@@ -1968,6 +1968,49 @@ function drawProjectile(ctx: CanvasRenderingContext2D, p: Projectile, time: numb
   ctx.save();
   ctx.translate(p.pos.x, p.pos.y);
 
+  // Special elemental visuals
+  if ((p as any).element === 'lightning' || (p as any).chainLightning) {
+    // Lightning: electric arcs
+    ctx.strokeStyle = '#00ffff';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2 + time * 10;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(a) * p.radius * 2 + (Math.random() - 0.5) * 4, Math.sin(a) * p.radius * 2 + (Math.random() - 0.5) * 4);
+      ctx.stroke();
+    }
+  } else if ((p as any).element === 'ice' || (p as any).iceSlow) {
+    // Ice: snowflake pattern
+    ctx.strokeStyle = '#88ddff';
+    ctx.lineWidth = 0.8;
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(a) * p.radius * 1.5, Math.sin(a) * p.radius * 1.5);
+      ctx.stroke();
+    }
+  } else if ((p as any).boomerang) {
+    // Boomerang: spinning curved shape
+    ctx.rotate(time * 15);
+    ctx.beginPath();
+    ctx.arc(0, 0, p.radius, 0, Math.PI * 1.5);
+    ctx.strokeStyle = p.color;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  } else if ((p as any).gravityPull) {
+    // Gravity well: swirling effect
+    const spiralAlpha = 0.3 + Math.sin(time * 5) * 0.2;
+    for (let i = 0; i < 3; i++) {
+      ctx.strokeStyle = hexToRgba(p.color, spiralAlpha * (1 - i * 0.25));
+      ctx.lineWidth = 2 - i * 0.5;
+      ctx.beginPath();
+      ctx.arc(0, 0, p.radius * (0.3 + i * 0.35), time * 5 + i, time * 5 + i + Math.PI * 1.5);
+      ctx.stroke();
+    }
+  }
+
   // Trail glow
   const tg = ctx.createRadialGradient(0, 0, 1, 0, 0, p.radius * 4);
   tg.addColorStop(0, hexToRgba(p.color, 0.4));
