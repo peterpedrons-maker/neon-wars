@@ -910,6 +910,11 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
     // Track boss kills
     if (e.isBoss) state.bossesKilled = (state.bossesKilled || 0) + 1;
     
+    // Trigger death wave after defeating Oblivion (wave 30 boss)
+    if (e.type === 'oblivion') {
+      state.deathWave = true;
+    }
+    
     // Vampirism
     if (state.abilities.vampirism > 0 && Math.random() < state.abilities.vampirism) {
       state.player.hp = Math.min(state.player.maxHp, state.player.hp + 1);
