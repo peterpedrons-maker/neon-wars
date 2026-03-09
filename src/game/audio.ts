@@ -1230,8 +1230,8 @@ function scheduleMenuMeasure() {
   const currentKey = key + (Math.floor(menuMeasure / 16) % 3) * 2;
 
   // Lush pad (7 voices supersaw)
-  for (let ci = 0; ci < Math.min(chord.length, 4); ci++) {
-    const noteFreq = midiToFreq(key + 12 + chord[ci]);
+  for (let ci = 0; ci < Math.min(chord.length, 5); ci++) {
+    const noteFreq = midiToFreq(currentKey + 12 + chord[ci]);
     for (let d = -3; d <= 3; d++) {
       const osc = ctx.createOscillator();
       const g = ctx.createGain();
