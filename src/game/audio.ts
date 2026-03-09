@@ -1171,10 +1171,10 @@ function scheduleNextMeasure() {
 
   // ============ LEAD MELODY (FM synthesis, expressive) ============
   if ((sectionFeel === 2 || sectionFeel === 4 || (sectionFeel === 1 && measureInSection >= 4)) && intensity >= 1) {
-    const minorScale = [0, 2, 3, 5, 7, 8, 10, 12, 14, 15, 17, 19, 20, 22, 24];
-    const phraseIdx = (sectionCount * 3 + measureCount) % MELODY_PHRASES.length;
-    const phrase = MELODY_PHRASES[phraseIdx];
-
+    const scale = profile.scale.length ? profile.scale : SCALES.naturalMinor;
+    const phrases = profile.melodyPhrases.length ? profile.melodyPhrases : (MELODY_PHRASES as unknown as ReadonlyArray<ReadonlyArray<MelodyStep>>);
+    const phraseIdx = (sectionCount * 3 + measureCount) % phrases.length;
+    const phrase = phrases[phraseIdx];
     let step = 0;
     for (let i = 0; i < phrase.length; i++) {
       const [noteIdx, durSteps] = phrase[i];
