@@ -1,5 +1,15 @@
 // Map System - Visual themes + unique hazards
 
+export type MapDifficulty = 'easy' | 'medium' | 'hard';
+
+export interface MapDifficultySettings {
+  enemyHpMult: number;
+  enemyDamageMult: number;
+  enemySpeedMult: number;
+  spawnRateMult: number;   // >1 = more spawns
+  hazardRateMult: number;  // >1 = more hazards
+}
+
 export interface GameMap {
   id: string;
   name: string;
@@ -12,6 +22,8 @@ export interface GameMap {
   borderColor: string;
   ambientParticleColor: string;
   fogColor: string;
+  // Difficulties (same map, multiple challenges)
+  difficulties: Record<MapDifficulty, MapDifficultySettings>;
   // Hazards
   hazards: MapHazard[];
 }
@@ -36,6 +48,11 @@ export const ALL_MAPS: Record<string, GameMap> = {
     borderColor: '#0ff',
     ambientParticleColor: '#0ff',
     fogColor: 'rgba(0,0,8,0.4)',
+    difficulties: {
+      easy: { enemyHpMult: 0.9, enemyDamageMult: 0.9, enemySpeedMult: 0.95, spawnRateMult: 0.9, hazardRateMult: 0.9 },
+      medium: { enemyHpMult: 1, enemyDamageMult: 1, enemySpeedMult: 1, spawnRateMult: 1, hazardRateMult: 1 },
+      hard: { enemyHpMult: 1.25, enemyDamageMult: 1.25, enemySpeedMult: 1.12, spawnRateMult: 1.18, hazardRateMult: 1.05 },
+    },
     hazards: [],
   },
   'inferno': {
@@ -49,6 +66,11 @@ export const ALL_MAPS: Record<string, GameMap> = {
     borderColor: '#ff4500',
     ambientParticleColor: '#ff6b00',
     fogColor: 'rgba(10,2,0,0.4)',
+    difficulties: {
+      easy: { enemyHpMult: 0.95, enemyDamageMult: 0.9, enemySpeedMult: 0.95, spawnRateMult: 0.92, hazardRateMult: 0.85 },
+      medium: { enemyHpMult: 1.05, enemyDamageMult: 1.05, enemySpeedMult: 1.02, spawnRateMult: 1.05, hazardRateMult: 1 },
+      hard: { enemyHpMult: 1.35, enemyDamageMult: 1.35, enemySpeedMult: 1.12, spawnRateMult: 1.25, hazardRateMult: 1.2 },
+    },
     hazards: [{ type: 'lava_pool', spawnChance: 0.6, maxActive: 5 }],
   },
   'void': {
@@ -62,6 +84,11 @@ export const ALL_MAPS: Record<string, GameMap> = {
     borderColor: '#8000ff',
     ambientParticleColor: '#bf5af2',
     fogColor: 'rgba(3,0,8,0.5)',
+    difficulties: {
+      easy: { enemyHpMult: 0.95, enemyDamageMult: 0.95, enemySpeedMult: 0.98, spawnRateMult: 0.95, hazardRateMult: 0.9 },
+      medium: { enemyHpMult: 1.1, enemyDamageMult: 1.1, enemySpeedMult: 1.05, spawnRateMult: 1.08, hazardRateMult: 1.05 },
+      hard: { enemyHpMult: 1.4, enemyDamageMult: 1.4, enemySpeedMult: 1.18, spawnRateMult: 1.3, hazardRateMult: 1.25 },
+    },
     hazards: [{ type: 'black_hole', spawnChance: 0.4, maxActive: 3 }],
   },
   'crystal': {
@@ -75,7 +102,48 @@ export const ALL_MAPS: Record<string, GameMap> = {
     borderColor: '#00e5ff',
     ambientParticleColor: '#00e5ff',
     fogColor: 'rgba(0,8,8,0.3)',
+    difficulties: {
+      easy: { enemyHpMult: 0.95, enemyDamageMult: 0.95, enemySpeedMult: 0.98, spawnRateMult: 0.95, hazardRateMult: 0.9 },
+      medium: { enemyHpMult: 1.08, enemyDamageMult: 1.08, enemySpeedMult: 1.03, spawnRateMult: 1.05, hazardRateMult: 1 },
+      hard: { enemyHpMult: 1.35, enemyDamageMult: 1.35, enemySpeedMult: 1.14, spawnRateMult: 1.25, hazardRateMult: 1.15 },
+    },
     hazards: [{ type: 'crystal_shard', spawnChance: 0.5, maxActive: 6 }],
+  },
+  'singularity': {
+    id: 'singularity',
+    name: 'Singularity',
+    description: 'Void hardcore com gravidade brutal',
+    icon: '🌀',
+    bgColor: '#02000a',
+    gridColor: '120,40,255',
+    gridAlpha: 0.025,
+    borderColor: '#a855f7',
+    ambientParticleColor: '#a855f7',
+    fogColor: 'rgba(2,0,10,0.55)',
+    difficulties: {
+      easy: { enemyHpMult: 1.0, enemyDamageMult: 1.0, enemySpeedMult: 1.0, spawnRateMult: 1.0, hazardRateMult: 1.0 },
+      medium: { enemyHpMult: 1.2, enemyDamageMult: 1.2, enemySpeedMult: 1.08, spawnRateMult: 1.15, hazardRateMult: 1.3 },
+      hard: { enemyHpMult: 1.6, enemyDamageMult: 1.6, enemySpeedMult: 1.22, spawnRateMult: 1.45, hazardRateMult: 1.7 },
+    },
+    hazards: [{ type: 'black_hole', spawnChance: 0.65, maxActive: 5 }],
+  },
+  'foundry': {
+    id: 'foundry',
+    name: 'Foundry',
+    description: 'Fábrica incandescente cheia de lava',
+    icon: '🏭',
+    bgColor: '#080100',
+    gridColor: '255,120,0',
+    gridAlpha: 0.028,
+    borderColor: '#ff6b00',
+    ambientParticleColor: '#ff6b00',
+    fogColor: 'rgba(8,1,0,0.45)',
+    difficulties: {
+      easy: { enemyHpMult: 0.95, enemyDamageMult: 0.95, enemySpeedMult: 0.98, spawnRateMult: 0.95, hazardRateMult: 1.0 },
+      medium: { enemyHpMult: 1.1, enemyDamageMult: 1.1, enemySpeedMult: 1.05, spawnRateMult: 1.1, hazardRateMult: 1.25 },
+      hard: { enemyHpMult: 1.45, enemyDamageMult: 1.45, enemySpeedMult: 1.15, spawnRateMult: 1.3, hazardRateMult: 1.6 },
+    },
+    hazards: [{ type: 'lava_pool', spawnChance: 0.75, maxActive: 7 }],
   },
 };
 

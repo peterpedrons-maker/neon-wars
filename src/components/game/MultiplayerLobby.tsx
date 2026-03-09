@@ -9,7 +9,13 @@ import {
 
 interface MultiplayerLobbyProps {
   unlockedShips: string[];
-  onStartCoop: (room: RoomInfo, mapId: string, playerClass: ShipType, peerClass: ShipType) => void;
+  onStartCoop: (
+    room: RoomInfo,
+    mapId: string,
+    difficulty: import('../../game/maps').MapDifficulty,
+    playerClass: ShipType,
+    peerClass: ShipType,
+  ) => void;
   onBack: () => void;
 }
 
@@ -410,7 +416,7 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
         if (count <= 0) {
           const sd = startDataRef.current;
           if (sd) {
-            onStartCoop(newRoom, sd.mapId, selectedShipRef.current, sd.hostClass as ShipType);
+            onStartCoop(newRoom, sd.mapId, 'medium', selectedShipRef.current, sd.hostClass as ShipType);
           }
         }
       },
@@ -428,7 +434,7 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
             if (count <= 0) {
               clearInterval(countdownRef.current!);
               countdownRef.current = null;
-              onStartCoop(newRoom, selectedMapRef.current, selectedShipRef.current, peerShipRef.current);
+              onStartCoop(newRoom, selectedMapRef.current, 'medium', selectedShipRef.current, peerShipRef.current);
             }
           }, 1000);
         }

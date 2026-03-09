@@ -17,13 +17,14 @@ interface CoopGameCanvasProps {
   playerClass: ShipType;
   peerClass: ShipType;
   mapId: string;
+  mapDifficulty: import('../../game/maps').MapDifficulty;
   room: RoomInfo;
   onMenu: () => void;
 }
 
 const MAX_PARTICLES = 150; // Reduced for coop performance
 
-const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass, mapId, room, onMenu }) => {
+const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass, mapId, mapDifficulty, room, onMenu }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState | null>(null);
   const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 1, aimY: 0, shooting: false, special: false });
@@ -52,7 +53,7 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
     const meta = loadMeta();
     metaRef.current = meta;
     const player = createPlayer(playerClass);
-    stateRef.current = createInitialState(player, mapId, meta.weaponSlots);
+    stateRef.current = createInitialState(player, mapId, meta.weaponSlots, mapDifficulty);
     stateRef.current.isHost = room.isHost;
     stateRef.current.localPlayerId = room.playerId;
     startWave(stateRef.current);
@@ -118,13 +119,20 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
       onLobbyState: () => {},
       onChat: () => {},
       onLevelUp: (_level: number) => {
-        // Peer leveled up - show upgrade screen for us too
-        if (stateRef.current && stateRef.current.screen === 'playing') {
-          setShowUpgrade(true);
-          setMyUpgradeDone(false);
-          setPeerUpgradeDone(false);
-          setWaitingForPeer(false);
-          stateRef.current.screen = 'upgrade';
+        // Host leveled up - show upgrade screen for us too.
+        // IMPORTANT: if we're dead, auto-complete upgrade so living players aren't blocked.
+        if (!stateRef.current) return;
+        if (stateRef.current.screen !== 'playing') return;
+
+        setShowUpgrade(true);
+        const isDead = !stateRef.current.player.alive;
+        setMyUpgradeDone(isDead);
+        setPeerUpgradeDone(false);
+        setWaitingForPeer(false);
+        stateRef.current.screen = 'upgrade';
+
+        if (isDead) {
+          sendUpgradeDone();
         }
       },
       onUpgradeDone: () => {
@@ -133,7 +141,7 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
     });
 
     return () => { leaveRoom(); };
-  }, [playerClass, mapId]);
+  }, [playerClass, mapId, mapDifficulty]);
 
   // When both players have chosen upgrades, resume game
   useEffect(() => {
@@ -307,9 +315,13 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
       if (stateRef.current.screen === 'upgrade' && prevScreen === 'playing') {
         sendLevelUp(stateRef.current.level);
         setShowUpgrade(true);
-        setMyUpgradeDone(false);
+        const isDead = !stateRef.current.player.alive;
+        setMyUpgradeDone(isDead);
         setPeerUpgradeDone(false);
         setWaitingForPeer(false);
+        if (isDead) {
+          sendUpgradeDone();
+        }
       }
 
       // Send our state to peer
@@ -401,7 +413,7 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
     const meta = loadMeta();
     metaRef.current = meta;
     const player = createPlayer(playerClass);
-    stateRef.current = createInitialState(player, mapId, meta.weaponSlots);
+    stateRef.current = createInitialState(player, mapId, meta.weaponSlots, mapDifficulty);
     stateRef.current.isHost = room.isHost;
     startWave(stateRef.current);
     setRunResult(null);
@@ -410,7 +422,7 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClass,
     setPeerUpgradeDone(false);
     setWaitingForPeer(false);
     forceUpdate(n => n + 1);
-  }, [playerClass, mapId]);
+  }, [playerClass, mapId, mapDifficulty]);
 
   const state = stateRef.current;
 

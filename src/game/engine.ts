@@ -1,7 +1,20 @@
 import {
   GameState, InputState, Player, Enemy, EnemyType, XpOrb,
 } from './types';
-import { createAbilityState, updateOrbitals, updateAura, updateRegen, updateFrostNova, updateMissiles, updateLightningRing, triggerChainLightning, xpForLevel } from './abilities';
+import {
+  createAbilityState,
+  updateOrbitals,
+  updateAura,
+  updateRegen,
+  updateFrostNova,
+  updateMissiles,
+  updateLightningRing,
+  updateIonBeam,
+  updateShockwave,
+  updateSentries,
+  triggerChainLightning,
+  xpForLevel,
+} from './abilities';
 import { ALL_MAPS, createHazard, ActiveHazard } from './maps';
 import {
   ARENA_W, ARENA_H, COLORS, WAVE_BASE_ENEMIES,
@@ -88,7 +101,8 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   if (state.waveEnemiesRemaining > 0) {
     state.waveSpawnTimer -= dt;
     if (state.waveSpawnTimer <= 0) {
-      state.waveSpawnTimer = WAVE_SPAWN_INTERVAL / (1 + state.wave * 0.05);
+      const diff = getDifficultySettings(state);
+      state.waveSpawnTimer = (WAVE_SPAWN_INTERVAL / (1 + state.wave * 0.05)) / diff.spawnRateMult;
       spawnWaveEnemy(state);
       state.waveEnemiesRemaining--;
     }
@@ -122,6 +136,9 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   updateFrostNova(state, dt);
   updateMissiles(state, dt);
   updateLightningRing(state, dt);
+  updateIonBeam(state, dt);
+  updateShockwave(state, dt);
+  updateSentries(state, dt);
   
   // Flame trail zones
   if (state.abilities.flameTrailDamage > 0 && Math.hypot(p.vel.x, p.vel.y) > 20) {
@@ -298,13 +315,18 @@ function spawnWaveEnemy(state: GameState) {
       'void': 'void_lord',
       'crystal': 'crystal_giant',
     };
-    if (mapBoss[state.mapId]) {
-      state.enemies.push(createEnemy(mapBoss[state.mapId], state.wave));
+    const bossType = mapBoss[state.mapId];
+    if (bossType) {
+      const boss = createEnemy(bossType, state.wave);
+      applyDifficultyToEnemy(state, boss);
+      state.enemies.push(boss);
       return;
     }
     const bosses: EnemyType[] = ['mothership', 'vortex', 'colossus'];
-    const boss = bosses[Math.floor(Math.random() * bosses.length)];
-    state.enemies.push(createEnemy(boss, state.wave));
+    const bossType2 = bosses[Math.floor(Math.random() * bosses.length)];
+    const boss = createEnemy(bossType2, state.wave);
+    applyDifficultyToEnemy(state, boss);
+    state.enemies.push(boss);
     return;
   }
 
@@ -319,7 +341,7 @@ function spawnWaveEnemy(state: GameState) {
   if (state.wave >= 2) types.push('splitter');
   if (state.wave >= 3) types.push('dasher');
   if (state.wave >= 5) types.push('tank');
-  
+
   // Add map-specific enemies from wave 2+
   const mapEnemies = mapExclusives[state.mapId] || [];
   if (state.wave >= 2 && mapEnemies.length > 0) {
@@ -327,7 +349,9 @@ function spawnWaveEnemy(state: GameState) {
   }
 
   const type = types[Math.floor(Math.random() * types.length)];
-  state.enemies.push(createEnemy(type, state.wave));
+  const enemy = createEnemy(type, state.wave);
+  applyDifficultyToEnemy(state, enemy);
+  state.enemies.push(enemy);
 }
 
 function updateEnemies(state: GameState, dt: number) {
@@ -339,6 +363,16 @@ function updateEnemies(state: GameState, dt: number) {
     if (!e.alive) {
       e.flashTimer -= dt;
       continue;
+    }
+
+    // Apply temporary slows (e.g. Frost Nova)
+    const base = e.baseSpeed ?? e.speed;
+    e.baseSpeed = base;
+    if (e.slowUntil && Date.now() < e.slowUntil) {
+      e.speed = base * 0.5;
+    } else {
+      e.speed = base;
+      e.slowUntil = undefined;
     }
 
     e.flashTimer = Math.max(0, e.flashTimer - dt);
@@ -778,9 +812,8 @@ function updateProjectiles(state: GameState, dt: number) {
       for (const e of state.enemies) {
         if (!e.alive) continue;
         if (dist(proj.pos, e.pos) < proj.radius + e.radius) {
-          proj.alive = false;
           damageEnemy(state, e, proj.damage);
-          
+
           // Explosion radius: damage nearby enemies too
           if (state.abilities.explosionRadius > 0) {
             const expR = state.abilities.explosionRadius;
@@ -791,9 +824,38 @@ function updateProjectiles(state: GameState, dt: number) {
                 e2.flashTimer = 0.08;
               }
             }
-            state.particles.push(...createParticles(proj.pos, '#ff6b00', 12, expR, 3));
-            state.particles.push(...createParticles(proj.pos, '#ffff00', 6, expR * 0.6, 2));
+            state.particles.push(...createParticles(proj.pos, '#ff6b00', 8, expR * 1.6, 2.5));
+            state.particles.push(...createParticles(proj.pos, '#ffff00', 4, expR * 1.2, 2));
           }
+
+          // Pierce / Ricochet logic
+          if (proj.pierce && proj.pierce > 0) {
+            proj.pierce -= 1;
+            // nudge forward to avoid re-colliding same enemy this frame
+            const vlen = Math.hypot(proj.vel.x, proj.vel.y) || 1;
+            proj.pos.x += (proj.vel.x / vlen) * (e.radius + 6);
+            proj.pos.y += (proj.vel.y / vlen) * (e.radius + 6);
+          } else if (proj.ricochet && proj.ricochet > 0) {
+            proj.ricochet -= 1;
+            let nearest: Enemy | null = null;
+            let nearestDist = 99999;
+            for (const e2 of state.enemies) {
+              if (!e2.alive || e2 === e) continue;
+              const d2 = dist(e2.pos, proj.pos);
+              if (d2 < nearestDist) { nearestDist = d2; nearest = e2; }
+            }
+            if (nearest) {
+              const a = Math.atan2(nearest.pos.y - proj.pos.y, nearest.pos.x - proj.pos.x);
+              const spd = Math.hypot(proj.vel.x, proj.vel.y);
+              proj.vel.x = Math.cos(a) * spd;
+              proj.vel.y = Math.sin(a) * spd;
+            } else {
+              proj.alive = false;
+            }
+          } else {
+            proj.alive = false;
+          }
+
           break;
         }
       }
@@ -810,15 +872,16 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
   // Crit check
   if (state.abilities.critChance > 0 && Math.random() < state.abilities.critChance) {
     damage *= 2;
-    state.particles.push(...createParticles(e.pos, '#ffff00', 8, 150, 3));
+    state.particles.push(...createParticles(e.pos, '#ffff00', 5, 220, 2.5));
   }
-  
+
   e.hp -= damage;
   e.flashTimer = 0.1;
   playHit();
-  state.particles.push(...createParticles(e.pos, COLORS.neonYellow, 15, 180, 3));
-  state.particles.push(...createParticles(e.pos, '#ffffff', 8, 120, 2));
-  state.particles.push(...createParticles(e.pos, getEnemyColor(e.type), 10, 150, 2.5));
+  // Lower general particle density (better perf) — deaths still go chaotic
+  state.particles.push(...createParticles(e.pos, COLORS.neonYellow, 8, 220, 2.5));
+  state.particles.push(...createParticles(e.pos, '#ffffff', 4, 160, 2));
+  state.particles.push(...createParticles(e.pos, getEnemyColor(e.type), 6, 200, 2.2));
 
   if (e.hp <= 0) {
     e.alive = false;
@@ -867,12 +930,13 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
     playExplosion(e.isBoss);
 
     const color = e.isBoss ? COLORS.neonYellow : getEnemyColor(e.type);
-    state.particles.push(...createParticles(e.pos, color, e.isBoss ? 200 : 60, 400, e.isBoss ? 8 : 5));
-    state.particles.push(...createParticles(e.pos, '#ffffff', e.isBoss ? 80 : 30, 300, 4));
+    // Less dense overall, but MUCH wider spread on death
+    state.particles.push(...createParticles(e.pos, color, e.isBoss ? 160 : 45, 700, e.isBoss ? 7 : 4.5));
+    state.particles.push(...createParticles(e.pos, '#ffffff', e.isBoss ? 60 : 20, 620, 3.5));
     const secColor = e.isBoss ? '#ff1493' : COLORS.neonCyan;
-    state.particles.push(...createParticles(e.pos, secColor, e.isBoss ? 60 : 25, 250, 3.5));
-    state.particles.push(...createParticles(e.pos, COLORS.neonPink, e.isBoss ? 40 : 15, 350, 3));
-    state.particles.push(...createParticles(e.pos, COLORS.neonGreen, e.isBoss ? 30 : 12, 280, 2.5));
+    state.particles.push(...createParticles(e.pos, secColor, e.isBoss ? 50 : 18, 650, 3.2));
+    state.particles.push(...createParticles(e.pos, COLORS.neonPink, e.isBoss ? 35 : 12, 720, 3));
+    state.particles.push(...createParticles(e.pos, COLORS.neonGreen, e.isBoss ? 25 : 10, 680, 2.6));
     
     if (state.comboMultiplier >= 4) {
       state.particles.push(...createParticles(e.pos, '#ffff00', state.comboMultiplier * 3, 350, 4));
@@ -927,15 +991,24 @@ function getEnemyColor(type: EnemyType): string {
 function damagePlayer(state: GameState, damage: number) {
   const p = state.player;
   if (p.invincibleTimer > 0) return;
+
   // Dodge check
   if (state.abilities.dodge > 0 && Math.random() < state.abilities.dodge) {
-    state.particles.push(...createParticles(p.pos, '#ffffff', 8, 100, 2));
+    state.particles.push(...createParticles(p.pos, '#ffffff', 6, 140, 2));
     p.invincibleTimer = 0.3;
     return;
   }
+
+  // Armor actually reduces the chance of losing a heart
+  if (state.abilities.armor > 0 && Math.random() < state.abilities.armor) {
+    state.particles.push(...createParticles(p.pos, COLORS.neonCyan, 6, 160, 2));
+    p.invincibleTimer = 0.5;
+    return;
+  }
+
   if (p.shieldTimer > 0) {
     p.shieldTimer = 0;
-    state.particles.push(...createParticles(p.pos, COLORS.neonCyan, 15, 150, 3));
+    state.particles.push(...createParticles(p.pos, COLORS.neonCyan, 10, 200, 2.5));
     p.invincibleTimer = 0.5;
     return;
   }
@@ -944,7 +1017,7 @@ function damagePlayer(state: GameState, damage: number) {
   p.invincibleTimer = 1.0;
   state.shakeTimer = 0.15;
   state.shakeIntensity = 5;
-  state.particles.push(...createParticles(p.pos, COLORS.health, 6, 120, 2));
+  state.particles.push(...createParticles(p.pos, COLORS.health, 4, 180, 2));
   playDamage();
 
   if (p.hp <= 0) {
@@ -983,7 +1056,12 @@ export function startWave(state: GameState) {
   state.screen = 'playing';
 }
 
-export function createInitialState(player: Player, mapId: string = 'neon-grid', weaponSlots: number = 3): GameState {
+export function createInitialState(
+  player: Player,
+  mapId: string = 'neon-grid',
+  weaponSlots: number = 3,
+  mapDifficulty: import('./maps').MapDifficulty = 'medium',
+): GameState {
   initAudio();
   startMusic();
   return {
@@ -1018,6 +1096,7 @@ export function createInitialState(player: Player, mapId: string = 'neon-grid', 
     regenAccumulator: 0,
     trail: [],
     mapId,
+    mapDifficulty,
     hazards: [],
     hazardSpawnTimer: 5,
     flameZones: [],
@@ -1027,14 +1106,38 @@ export function createInitialState(player: Player, mapId: string = 'neon-grid', 
   };
 }
 
+function getDifficultySettings(state: GameState) {
+  const map = ALL_MAPS[state.mapId];
+  const d = map?.difficulties?.[state.mapDifficulty];
+  return d ?? {
+    enemyHpMult: 1,
+    enemyDamageMult: 1,
+    enemySpeedMult: 1,
+    spawnRateMult: 1,
+    hazardRateMult: 1,
+  };
+}
+
+function applyDifficultyToEnemy(state: GameState, e: Enemy) {
+  const d = getDifficultySettings(state);
+  e.hp = Math.max(1, Math.floor(e.hp * d.enemyHpMult));
+  e.maxHp = Math.max(1, Math.floor(e.maxHp * d.enemyHpMult));
+  e.damage = Math.max(1, Math.floor(e.damage * d.enemyDamageMult));
+  const base = e.baseSpeed ?? e.speed;
+  e.speed = base * d.enemySpeedMult;
+  e.baseSpeed = e.speed;
+}
+
 function updateHazards(state: GameState, dt: number) {
   const map = ALL_MAPS[state.mapId];
   if (!map || map.hazards.length === 0) return;
-  
+
+  const diff = getDifficultySettings(state);
+
   // Spawn hazards
   state.hazardSpawnTimer -= dt;
   if (state.hazardSpawnTimer <= 0) {
-    state.hazardSpawnTimer = 8;
+    state.hazardSpawnTimer = 8 / diff.hazardRateMult;
     for (const h of map.hazards) {
       const active = state.hazards.filter(a => a.type === h.type).length;
       if (active < h.maxActive && Math.random() < h.spawnChance) {
@@ -1042,13 +1145,13 @@ function updateHazards(state: GameState, dt: number) {
       }
     }
   }
-  
+
   const p = state.player;
   for (let i = state.hazards.length - 1; i >= 0; i--) {
     const hz = state.hazards[i];
     hz.lifetime -= dt;
     if (hz.lifetime <= 0) { state.hazards.splice(i, 1); continue; }
-    
+
     // Hazard effects
     if (hz.type === 'lava_pool') {
       const d = Math.hypot(p.pos.x - hz.pos.x, p.pos.y - hz.pos.y);
@@ -1087,6 +1190,21 @@ function updateHazards(state: GameState, dt: number) {
         if (ed < hz.radius + e.radius) {
           e.hp -= 20 * dt;
           e.flashTimer = 0.03;
+        }
+      }
+    } else if (hz.type === 'crystal_shard') {
+      // Reflect projectiles passing through (keeps chaos without hard-stopping gameplay)
+      for (const proj of state.projectiles) {
+        if (!proj.alive) continue;
+        const d = Math.hypot(proj.pos.x - hz.pos.x, proj.pos.y - hz.pos.y);
+        if (d < hz.radius + proj.radius) {
+          proj.vel.x *= -1;
+          proj.vel.y *= -1;
+          if (!proj.fromPlayer) {
+            proj.fromPlayer = true;
+            proj.color = '#00e5ff';
+          }
+          state.particles.push(...createParticles(proj.pos, '#00e5ff', 3, 220, 2));
         }
       }
     }

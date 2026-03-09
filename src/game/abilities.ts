@@ -27,7 +27,23 @@ export interface AbilityState {
   critChance: number;
   projectileCount: number;
   explosionRadius: number;
-  // New weapon states
+  // Projectile modifiers (new weapons)
+  pierce: number;
+  ricochet: number;
+  // Timed weapons
+  ionBeamDamage: number;
+  ionBeamLength: number;
+  ionBeamCooldown: number;
+  ionBeamTimer: number;
+  shockwaveRadius: number;
+  shockwaveDamage: number;
+  shockwaveCooldown: number;
+  shockwaveTimer: number;
+  sentryCount: number;
+  sentryDamage: number;
+  sentryCooldown: number;
+  sentryTimer: number;
+  // Existing weapon states
   frostNovaRadius: number;
   frostNovaCooldown: number;
   frostNovaTimer: number;
@@ -41,7 +57,7 @@ export interface AbilityState {
   lightningRingDamage: number;
   lightningRingTimer: number;
   flameTrailDamage: number;
-  // New passive states
+  // Passive states
   vampirism: number;
   dodge: number;
   xpBonus: number;
@@ -61,6 +77,20 @@ export function createAbilityState(): AbilityState {
     critChance: 0,
     projectileCount: 0,
     explosionRadius: 0,
+    pierce: 0,
+    ricochet: 0,
+    ionBeamDamage: 0,
+    ionBeamLength: 420,
+    ionBeamCooldown: 3.5,
+    ionBeamTimer: 0,
+    shockwaveRadius: 0,
+    shockwaveDamage: 0,
+    shockwaveCooldown: 4.0,
+    shockwaveTimer: 0,
+    sentryCount: 0,
+    sentryDamage: 0,
+    sentryCooldown: 1.4,
+    sentryTimer: 0,
     frostNovaRadius: 0,
     frostNovaCooldown: 5,
     frostNovaTimer: 0,
@@ -140,6 +170,63 @@ const WEAPON_ABILITIES: Ability[] = [
     maxLevel: 5,
     category: 'weapon',
     apply: (state) => { state.abilities.homingChance += 0.15; },
+  },
+  {
+    id: 'piercing_rounds',
+    name: 'Balas Perfurantes',
+    description: 'Projéteis atravessam inimigos (+1 perfuração)',
+    icon: '🧿',
+    maxLevel: 4,
+    category: 'weapon',
+    apply: (state) => { state.abilities.pierce += 1; },
+  },
+  {
+    id: 'ricochet_rounds',
+    name: 'Ricochete',
+    description: 'Projéteis ricocheteiam em outro alvo (+1 ricochete)',
+    icon: '🪩',
+    maxLevel: 4,
+    category: 'weapon',
+    apply: (state) => { state.abilities.ricochet += 1; },
+  },
+  {
+    id: 'ion_beam',
+    name: 'Ion Beam',
+    description: 'Feixe periódico na direção da mira',
+    icon: '📡',
+    maxLevel: 5,
+    category: 'weapon',
+    apply: (state) => {
+      state.abilities.ionBeamDamage += 20;
+      state.abilities.ionBeamLength += 60;
+      state.abilities.ionBeamCooldown = Math.max(1.2, state.abilities.ionBeamCooldown - 0.35);
+    },
+  },
+  {
+    id: 'shockwave_emitter',
+    name: 'Shockwave',
+    description: 'Explosão periódica ao redor da nave',
+    icon: '💫',
+    maxLevel: 5,
+    category: 'weapon',
+    apply: (state) => {
+      state.abilities.shockwaveRadius += 45;
+      state.abilities.shockwaveDamage += 14;
+      state.abilities.shockwaveCooldown = Math.max(1.5, state.abilities.shockwaveCooldown - 0.35);
+    },
+  },
+  {
+    id: 'sentry_drones',
+    name: 'Sentry Drones',
+    description: 'Drones automáticos disparam nos inimigos',
+    icon: '🤖',
+    maxLevel: 5,
+    category: 'weapon',
+    apply: (state) => {
+      state.abilities.sentryCount += 1;
+      state.abilities.sentryDamage += 6;
+      state.abilities.sentryCooldown = Math.max(0.5, state.abilities.sentryCooldown - 0.12);
+    },
   },
   // === NEW WEAPONS (unlockable) ===
   {
@@ -414,18 +501,24 @@ export function updateFrostNova(state: GameState, dt: number) {
     state.abilities.frostNovaTimer = state.abilities.frostNovaCooldown;
     const p = state.player;
     const dmg = 10 + state.wave * 3;
+    const now = Date.now();
+
     for (const e of state.enemies) {
       if (!e.alive) continue;
       const d = dist(e.pos, p.pos);
       if (d < state.abilities.frostNovaRadius) {
         e.hp -= dmg;
         e.flashTimer = 0.15;
-        e.speed *= 0.5; // slow
-        setTimeout(() => { if (e.alive) e.speed *= 2; }, 2000);
+        // Slow for 2s without stacking speed multipliers
+        const base = e.baseSpeed ?? e.speed;
+        e.baseSpeed = base;
+        e.speed = base * 0.5;
+        e.slowUntil = now + 2000;
       }
     }
-    state.particles.push(...createParticles(p.pos, '#80e0ff', 30, state.abilities.frostNovaRadius * 2, 3));
-    state.particles.push(...createParticles(p.pos, '#ffffff', 15, state.abilities.frostNovaRadius * 1.5, 2));
+
+    state.particles.push(...createParticles(p.pos, '#80e0ff', 20, state.abilities.frostNovaRadius * 2.4, 2.5));
+    state.particles.push(...createParticles(p.pos, '#ffffff', 10, state.abilities.frostNovaRadius * 1.8, 2));
   }
 }
 
@@ -476,10 +569,15 @@ export function updateLightningRing(state: GameState, dt: number) {
         for (let i = 0; i < steps; i++) {
           const t = i / steps;
           state.particles.push({
-            pos: { x: p.pos.x + (e.pos.x - p.pos.x) * t + (Math.random() - 0.5) * 10, y: p.pos.y + (e.pos.y - p.pos.y) * t + (Math.random() - 0.5) * 10 },
+            pos: {
+              x: p.pos.x + (e.pos.x - p.pos.x) * t + (Math.random() - 0.5) * 10,
+              y: p.pos.y + (e.pos.y - p.pos.y) * t + (Math.random() - 0.5) * 10,
+            },
             vel: { x: (Math.random() - 0.5) * 40, y: (Math.random() - 0.5) * 40 },
-            lifetime: 0.15, maxLifetime: 0.15,
-            color: '#80d0ff', size: 2,
+            lifetime: 0.15,
+            maxLifetime: 0.15,
+            color: '#80d0ff',
+            size: 2,
           });
         }
         hits++;
@@ -487,6 +585,99 @@ export function updateLightningRing(state: GameState, dt: number) {
     }
     if (hits === 0) state.abilities.lightningRingTimer = 0.2;
   }
+}
+
+// Ion Beam - periodic line strike in aim direction
+export function updateIonBeam(state: GameState, dt: number) {
+  if (state.abilities.ionBeamDamage <= 0) return;
+  state.abilities.ionBeamTimer -= dt;
+  if (state.abilities.ionBeamTimer > 0) return;
+
+  state.abilities.ionBeamTimer = state.abilities.ionBeamCooldown;
+  const p = state.player;
+  const len = state.abilities.ionBeamLength;
+  const width = 18;
+  const dx = Math.cos(p.angle);
+  const dy = Math.sin(p.angle);
+  const damage = state.abilities.ionBeamDamage + state.wave * 2;
+
+  for (const e of state.enemies) {
+    if (!e.alive) continue;
+    const ex = e.pos.x - p.pos.x;
+    const ey = e.pos.y - p.pos.y;
+    const t = ex * dx + ey * dy;
+    if (t < 0 || t > len) continue;
+    const px = p.pos.x + dx * t;
+    const py = p.pos.y + dy * t;
+    const distToLine = Math.hypot(e.pos.x - px, e.pos.y - py);
+    if (distToLine < width + e.radius) {
+      e.hp -= damage;
+      e.flashTimer = 0.12;
+    }
+  }
+
+  // Visual sweep
+  for (let i = 0; i < 10; i++) {
+    const t = (i / 10) * len;
+    state.particles.push(...createParticles({ x: p.pos.x + dx * t, y: p.pos.y + dy * t }, '#80d0ff', 2, 260, 2));
+  }
+}
+
+// Shockwave - periodic radial burst
+export function updateShockwave(state: GameState, dt: number) {
+  if (state.abilities.shockwaveRadius <= 0) return;
+  state.abilities.shockwaveTimer -= dt;
+  if (state.abilities.shockwaveTimer > 0) return;
+
+  state.abilities.shockwaveTimer = state.abilities.shockwaveCooldown;
+  const p = state.player;
+  const r = state.abilities.shockwaveRadius;
+  const damage = state.abilities.shockwaveDamage + state.wave;
+
+  for (const e of state.enemies) {
+    if (!e.alive) continue;
+    if (dist(e.pos, p.pos) < r + e.radius) {
+      e.hp -= damage;
+      e.flashTimer = 0.1;
+    }
+  }
+
+  state.particles.push(...createParticles(p.pos, '#ffffff', 12, r * 3.5, 2.5));
+  state.particles.push(...createParticles(p.pos, COLORS.neonPink, 10, r * 3.2, 2.5));
+}
+
+// Sentry drones - periodic auto-shots
+export function updateSentries(state: GameState, dt: number) {
+  if (state.abilities.sentryCount <= 0) return;
+  state.abilities.sentryTimer -= dt;
+  if (state.abilities.sentryTimer > 0) return;
+
+  state.abilities.sentryTimer = state.abilities.sentryCooldown;
+  const p = state.player;
+  const alive = state.enemies.filter(e => e.alive);
+  if (alive.length === 0) return;
+
+  const sorted = alive.sort((a, b) => dist(a.pos, p.pos) - dist(b.pos, p.pos));
+  const shots = Math.min(state.abilities.sentryCount + state.abilities.projectileCount, sorted.length);
+
+  for (let i = 0; i < shots; i++) {
+    const t = sorted[i];
+    const angle = Math.atan2(t.pos.y - p.pos.y, t.pos.x - p.pos.x);
+    state.projectiles.push({
+      pos: { x: p.pos.x, y: p.pos.y },
+      vel: { x: Math.cos(angle) * PROJECTILE_SPEED * 0.9, y: Math.sin(angle) * PROJECTILE_SPEED * 0.9 },
+      radius: 4,
+      alive: true,
+      damage: (state.abilities.sentryDamage + p.damage * 0.25) * 0.9,
+      fromPlayer: true,
+      lifetime: 2.2,
+      color: COLORS.neonCyan,
+      pierce: Math.max(0, state.abilities.pierce - 1),
+      ricochet: state.abilities.ricochet,
+    });
+  }
+
+  state.particles.push(...createParticles(p.pos, COLORS.neonCyan, 4, 120, 2));
 }
 
 // Chain lightning on enemy death

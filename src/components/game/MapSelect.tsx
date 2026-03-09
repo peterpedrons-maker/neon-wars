@@ -1,23 +1,52 @@
-import React from 'react';
-import { ALL_MAPS, GameMap } from '../../game/maps';
+import React, { useState } from 'react';
+import { ALL_MAPS } from '../../game/maps';
+import type { MapDifficulty } from '../../game/maps';
 
 interface MapSelectProps {
   unlockedMaps: string[];
-  onSelect: (mapId: string) => void;
+  onSelect: (mapId: string, difficulty: MapDifficulty) => void;
   onBack: () => void;
 }
 
-const mapOrder = ['neon-grid', 'inferno', 'void', 'crystal'];
+const mapOrder = ['neon-grid', 'inferno', 'void', 'crystal', 'singularity', 'foundry'];
+
+const difficultyOptions: Array<{ id: MapDifficulty; label: string; hint: string }> = [
+  { id: 'easy', label: 'Fácil', hint: 'Mais tranquilo' },
+  { id: 'medium', label: 'Médio', hint: 'Padrão' },
+  { id: 'hard', label: 'Difícil', hint: 'Bem puxado' },
+];
 
 const MapSelect: React.FC<MapSelectProps> = ({ unlockedMaps, onSelect, onBack }) => {
+  const [difficulty, setDifficulty] = useState<MapDifficulty>('medium');
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#000008] text-[#e0e8ff] select-none p-4">
       <h2
-        className="text-3xl md:text-4xl font-bold mb-8"
+        className="text-3xl md:text-4xl font-bold mb-4"
         style={{ fontFamily: 'Orbitron, monospace', color: '#0ff', textShadow: '0 0 20px rgba(0,255,255,0.4)' }}
       >
         Selecione o Mapa
       </h2>
+
+      {/* Difficulty selector */}
+      <div className="flex items-center gap-2 mb-8">
+        {difficultyOptions.map(opt => (
+          <button
+            key={opt.id}
+            onClick={() => setDifficulty(opt.id)}
+            className="px-4 py-2 rounded-lg font-mono text-sm font-bold border transition-all duration-200"
+            style={{
+              background: difficulty === opt.id ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
+              borderColor: difficulty === opt.id ? '#ffff00' : 'rgba(255,255,255,0.12)',
+              color: difficulty === opt.id ? '#ffff00' : '#6080aa',
+              boxShadow: difficulty === opt.id ? '0 0 18px rgba(255,255,0,0.18)' : 'none',
+            }}
+            title={opt.hint}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         {mapOrder.map(id => {
@@ -28,7 +57,7 @@ const MapSelect: React.FC<MapSelectProps> = ({ unlockedMaps, onSelect, onBack })
           return (
             <button
               key={id}
-              onClick={() => unlocked && onSelect(id)}
+              onClick={() => unlocked && onSelect(id, difficulty)}
               disabled={!unlocked}
               className="flex flex-col items-center p-6 rounded-xl border transition-all duration-200 hover:scale-105 active:scale-95 w-64 font-mono disabled:opacity-40 disabled:hover:scale-100"
               style={{

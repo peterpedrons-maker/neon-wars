@@ -44,6 +44,7 @@ export function createEnemy(type: EnemyType, wave: number): Enemy {
     default: x = -SPAWN_MARGIN; y = Math.random() * ARENA_H; break;
   }
   const waveScale = 1 + (wave - 1) * 0.08;
+  const baseSpeed = s.speed * (1 + (wave - 1) * 0.02);
   return {
     pos: { x, y },
     vel: { x: 0, y: 0 },
@@ -53,7 +54,8 @@ export function createEnemy(type: EnemyType, wave: number): Enemy {
     hp: Math.floor(s.hp * waveScale),
     maxHp: Math.floor(s.hp * waveScale),
     damage: Math.floor(s.damage * (1 + (wave - 1) * 0.05)),
-    speed: s.speed * (1 + (wave - 1) * 0.02),
+    speed: baseSpeed,
+    baseSpeed,
     score: s.score,
     attackTimer: 0,
     attackCooldown: s.attackCooldown,
@@ -64,7 +66,15 @@ export function createEnemy(type: EnemyType, wave: number): Enemy {
   };
 }
 
-export function createProjectile(pos: Vec2, angle: number, damage: number, fromPlayer: boolean, color: string, speedMult = 1): Projectile {
+export function createProjectile(
+  pos: Vec2,
+  angle: number,
+  damage: number,
+  fromPlayer: boolean,
+  color: string,
+  speedMult = 1,
+  mods?: Partial<Projectile>,
+): Projectile {
   return {
     pos: { x: pos.x, y: pos.y },
     vel: { x: Math.cos(angle) * PROJECTILE_SPEED * speedMult, y: Math.sin(angle) * PROJECTILE_SPEED * speedMult },
@@ -74,6 +84,7 @@ export function createProjectile(pos: Vec2, angle: number, damage: number, fromP
     fromPlayer,
     lifetime: PROJECTILE_LIFETIME,
     color,
+    ...mods,
   };
 }
 
@@ -136,14 +147,16 @@ export function playerAttack(player: Player, projectiles: Projectile[], abilitie
 
   const extraProjectiles = abilities?.projectileCount || 0;
   const baseAngles = player.tripleTimer > 0 ? [-0.2, 0, 0.2] : [0];
-  
+
   // Add extra projectile spread
   let angles = [...baseAngles];
   for (let i = 1; i <= extraProjectiles; i++) {
     angles.push(i * 0.12);
     angles.push(-i * 0.12);
   }
-  
+
+  const mods = abilities ? { pierce: abilities.pierce || 0, ricochet: abilities.ricochet || 0 } : undefined;
+
   // Valkyrie shoots double base + extra
   if (player.class === 'valkyrie') {
     const vAngles = [-0.08, 0.08];
@@ -152,14 +165,14 @@ export function playerAttack(player: Player, projectiles: Projectile[], abilitie
       vAngles.push(-0.08 - i * 0.12);
     }
     for (const offset of vAngles) {
-      projectiles.push(createProjectile(player.pos, player.angle + offset, player.damage, true, color, 1.2));
+      projectiles.push(createProjectile(player.pos, player.angle + offset, player.damage, true, color, 1.2, mods));
     }
     return;
   }
-  
+
   const speedMult = player.class === 'interceptor' ? 1.3 : player.class === 'spectre' ? 1.5 : 1;
   for (const offset of angles) {
-    projectiles.push(createProjectile(player.pos, player.angle + offset, player.damage, true, color, speedMult));
+    projectiles.push(createProjectile(player.pos, player.angle + offset, player.damage, true, color, speedMult, mods));
   }
 }
 

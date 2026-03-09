@@ -42,6 +42,8 @@ export interface Projectile extends Entity {
   fromPlayer: boolean;
   lifetime: number;
   color: string;
+  pierce?: number;   // remaining pierces
+  ricochet?: number; // remaining ricochets
 }
 
 export interface Enemy extends Entity {
@@ -50,6 +52,8 @@ export interface Enemy extends Entity {
   maxHp: number;
   damage: number;
   speed: number;
+  baseSpeed?: number; // used for temporary slows (e.g. Frost Nova)
+  slowUntil?: number; // epoch ms; if now < slowUntil enemy is slowed
   score: number;
   attackTimer: number;
   attackCooldown: number;
@@ -129,6 +133,7 @@ export interface GameState {
   trail: Array<{ x: number; y: number; age: number }>;
   // Map
   mapId: string;
+  mapDifficulty: import('./maps').MapDifficulty;
   hazards: import('./maps').ActiveHazard[];
   hazardSpawnTimer: number;
   // Flame trail zones

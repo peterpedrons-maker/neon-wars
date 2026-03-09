@@ -15,10 +15,11 @@ import TouchControls from './TouchControls';
 interface GameCanvasProps {
   playerClass: ShipType;
   mapId: string;
+  mapDifficulty: import('../../game/maps').MapDifficulty;
   onMenu: () => void;
 }
 
-const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, mapId, onMenu }) => {
+const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, mapId, mapDifficulty, onMenu }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState | null>(null);
   const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 1, aimY: 0, shooting: false, special: false });
@@ -35,11 +36,11 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, mapId, onMenu }) =
     const meta = loadMeta();
     metaRef.current = meta;
     const player = createPlayer(playerClass);
-    stateRef.current = createInitialState(player, mapId, meta.weaponSlots);
+    stateRef.current = createInitialState(player, mapId, meta.weaponSlots, mapDifficulty);
     startWave(stateRef.current);
     setRunResult(null);
     forceUpdate(n => n + 1);
-  }, [playerClass, mapId]);
+  }, [playerClass, mapId, mapDifficulty]);
 
   // Keyboard input
   useEffect(() => {
@@ -187,11 +188,11 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, mapId, onMenu }) =
     const meta = loadMeta();
     metaRef.current = meta;
     const player = createPlayer(playerClass);
-    stateRef.current = createInitialState(player, mapId, meta.weaponSlots);
+    stateRef.current = createInitialState(player, mapId, meta.weaponSlots, mapDifficulty);
     startWave(stateRef.current);
     setRunResult(null);
     forceUpdate(n => n + 1);
-  }, [playerClass, mapId]);
+  }, [playerClass, mapId, mapDifficulty]);
 
   const state = stateRef.current;
 
