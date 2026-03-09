@@ -9,7 +9,7 @@ interface MapSelectProps {
   onBack: () => void;
 }
 
-const mapOrder = ['neon-grid', 'inferno', 'void', 'crystal', 'singularity', 'foundry'];
+const mapOrder = MAP_ORDER;
 
 const difficultyOptions: Array<{ id: MapDifficulty; label: string; hint: string }> = [
   { id: 'easy', label: 'Fácil', hint: 'Mais tranquilo' },

@@ -1612,30 +1612,15 @@ function drawPowerUp(ctx: CanvasRenderingContext2D, pu: PowerUp, time: number) {
 // ---- Utility ----
 
 function getShipColor(cls: string): string {
-  const map: Record<string, string> = {
-    phantom: COLORS.phantom, interceptor: COLORS.interceptor, titan: COLORS.titan,
-    spectre: COLORS.spectre, valkyrie: COLORS.valkyrie, juggernaut: COLORS.juggernaut,
-  };
-  return map[cls] || COLORS.phantom;
+  return COLORS[cls] || COLORS.phantom;
 }
 
 function getShipGlow(cls: string): string {
-  const map: Record<string, string> = {
-    phantom: COLORS.phantomGlow, interceptor: COLORS.interceptorGlow, titan: COLORS.titanGlow,
-    spectre: COLORS.spectreGlow, valkyrie: COLORS.valkyrieGlow, juggernaut: COLORS.juggernautGlow,
-  };
-  return map[cls] || COLORS.phantomGlow;
+  return COLORS[cls + 'Glow'] || COLORS.phantomGlow;
 }
 
 function getEnemyColor(type: string): string {
-  const map: Record<string, string> = {
-    drone: COLORS.drone, splitter: COLORS.splitter, dasher: COLORS.dasher,
-    tank: COLORS.tank, mothership: COLORS.mothership, vortex: COLORS.vortex, colossus: COLORS.colossus,
-    fire_elemental: COLORS.fire_elemental, void_ghost: COLORS.void_ghost, crystal_golem: COLORS.crystal_golem,
-    lava_dragon: COLORS.lava_dragon, void_lord: COLORS.void_lord, crystal_giant: COLORS.crystal_giant,
-    archon: (COLORS as any).archon || '#ffd700', oblivion: (COLORS as any).oblivion || '#ff0000', death_hunter: (COLORS as any).death_hunter || '#ff0033',
-  };
-  return map[type] || '#fff';
+  return COLORS[type] || '#fff';
 }
 
 function hexToRgba(hex: string, alpha: number): string {

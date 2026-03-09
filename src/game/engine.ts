@@ -310,7 +310,6 @@ function spawnWaveEnemy(state: GameState) {
   if (state.deathWave) {
     const enemy = createEnemy('death_hunter', state.wave);
     applyDifficultyToEnemy(state, enemy);
-    // Make them even faster as waves progress
     enemy.speed *= 1 + (state.wave - 30) * 0.05;
     enemy.baseSpeed = enemy.speed;
     state.enemies.push(enemy);
@@ -319,6 +318,7 @@ function spawnWaveEnemy(state: GameState) {
   
   const isMegaBoss = state.wave === 15 || state.wave === 30;
   const isBossWave = state.wave % BOSS_WAVE_INTERVAL === 0;
+  const map = ALL_MAPS[state.mapId];
 
   // Mega-boss spawn (last enemy of the wave)
   if (isMegaBoss && state.waveEnemiesRemaining === 1) {
@@ -330,44 +330,24 @@ function spawnWaveEnemy(state: GameState) {
     return;
   }
 
+  // Map-specific boss on boss waves
   if (isBossWave && !isMegaBoss && state.waveEnemiesRemaining === 1) {
-    // Map-exclusive bosses
-    const mapBoss: Record<string, EnemyType> = {
-      'inferno': 'lava_dragon',
-      'void': 'void_lord',
-      'crystal': 'crystal_giant',
-    };
-    const bossType = mapBoss[state.mapId];
-    if (bossType) {
-      const boss = createEnemy(bossType, state.wave);
-      applyDifficultyToEnemy(state, boss);
-      state.enemies.push(boss);
-      setBossMusic(bossType);
-      return;
-    }
-    const bosses: EnemyType[] = ['mothership', 'vortex', 'colossus'];
-    const bossType2 = bosses[Math.floor(Math.random() * bosses.length)];
-    const boss = createEnemy(bossType2, state.wave);
+    const bossType = map?.bossEnemy || (['mothership', 'vortex', 'colossus'] as EnemyType[])[Math.floor(Math.random() * 3)];
+    const boss = createEnemy(bossType, state.wave);
     applyDifficultyToEnemy(state, boss);
     state.enemies.push(boss);
-    setBossMusic(bossType2);
+    setBossMusic(bossType);
     return;
   }
 
-  // Map-exclusive enemies
-  const mapExclusives: Record<string, EnemyType[]> = {
-    'inferno': ['fire_elemental'],
-    'void': ['void_ghost'],
-    'crystal': ['crystal_golem'],
-  };
-
+  // Regular enemies
   const types: EnemyType[] = ['drone'];
   if (state.wave >= 2) types.push('splitter');
   if (state.wave >= 3) types.push('dasher');
   if (state.wave >= 5) types.push('tank');
 
   // Add map-specific enemies from wave 2+
-  const mapEnemies = mapExclusives[state.mapId] || [];
+  const mapEnemies = map?.regularEnemies || [];
   if (state.wave >= 2 && mapEnemies.length > 0) {
     types.push(...mapEnemies);
   }

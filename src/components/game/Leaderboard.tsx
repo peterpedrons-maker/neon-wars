@@ -6,7 +6,7 @@ interface LeaderboardProps {
   onBack: () => void;
 }
 
-const shipIcons: Record<ShipType, string> = { phantom: '👻', interceptor: '⚡', titan: '💥', spectre: '🌀', valkyrie: '🦅', juggernaut: '🛡️' };
+const shipIcons: Partial<Record<ShipType, string>> = { phantom: '👻', interceptor: '⚡', titan: '💥', spectre: '🌀', valkyrie: '🦅', juggernaut: '🛡️', wraith: '👤', sentinel: '🏰', tempest: '🌪️', venom: '🐍', nova_ship: '💫', chronos: '⏳', leviathan: '🐋', raptor: '🦅', oracle: '🔮', pyro: '🔥' };
 
 const Leaderboard: React.FC<LeaderboardProps> = ({ onBack }) => {
   const entries: LeaderboardEntry[] = JSON.parse(localStorage.getItem('neon-wars-lb') || '[]');
