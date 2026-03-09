@@ -334,25 +334,29 @@ const LobbyChat: React.FC<{
 };
 
 // ── Main Lobby ──
-const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onStartCoop, onBack }) => {
-  const [mode, setMode] = useState<'choose' | 'lobby'>('choose');
+const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, username, onStartCoop, onBack }) => {
+  const [mode, setMode] = useState<'choose' | 'lobby' | 'browse'>('choose');
   const [room, setRoom] = useState<RoomInfo | null>(null);
   const [joinCode, setJoinCode] = useState('');
-  const [peerConnected, setPeerConnected] = useState(false);
+  const [connectedPeers, setConnectedPeers] = useState<Set<string>>(new Set());
   const [selectedShip, setSelectedShip] = useState<ShipType>('phantom');
   const [selectedMap, setSelectedMap] = useState('neon-grid');
-  const [peerShip, setPeerShip] = useState<ShipType>('interceptor');
+  const [peerShips, setPeerShips] = useState<Record<string, ShipType>>({});
   const [status, setStatus] = useState('');
   const [countdown, setCountdown] = useState<number | null>(null);
   const [waitingConfirm, setWaitingConfirm] = useState<{ mapId: string; hostClass: string } | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [publicRooms, setPublicRooms] = useState<PublicRoomInfo[]>([]);
+  const [loadingRooms, setLoadingRooms] = useState(false);
   
+  const peerConnected = connectedPeers.size > 0;
   const channelRef = useRef<any>(null);
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
   const startDataRef = useRef<{ mapId: string; hostClass: string } | null>(null);
   const selectedShipRef = useRef(selectedShip);
   const selectedMapRef = useRef(selectedMap);
-  const peerShipRef = useRef(peerShip);
+  const peerShipsRef = useRef(peerShips);
+  const connectedPeersRef = useRef(connectedPeers);
   const roomRef = useRef(room);
   selectedShipRef.current = selectedShip;
   selectedMapRef.current = selectedMap;
