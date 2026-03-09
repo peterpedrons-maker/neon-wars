@@ -549,6 +549,44 @@ export function updateMissiles(state: GameState, dt: number) {
   }
 }
 
+// Lightning Ring - periodic auto-strikes, projectileCount adds extra targets
+export function updateLightningRing(state: GameState, dt: number) {
+  if (state.abilities.lightningRingRadius <= 0) return;
+  state.abilities.lightningRingTimer -= dt;
+  if (state.abilities.lightningRingTimer <= 0) {
+    state.abilities.lightningRingTimer = 0.8;
+    const p = state.player;
+    let hits = 0;
+    const maxHits = 1 + state.abilities.projectileCount;
+    for (const e of state.enemies) {
+      if (!e.alive) continue;
+      if (hits >= maxHits) break;
+      const d = dist(e.pos, p.pos);
+      if (d < state.abilities.lightningRingRadius) {
+        e.hp -= state.abilities.lightningRingDamage;
+        e.flashTimer = 0.1;
+        const steps = 4;
+        for (let i = 0; i < steps; i++) {
+          const t = i / steps;
+          state.particles.push({
+            pos: {
+              x: p.pos.x + (e.pos.x - p.pos.x) * t + (Math.random() - 0.5) * 10,
+              y: p.pos.y + (e.pos.y - p.pos.y) * t + (Math.random() - 0.5) * 10,
+            },
+            vel: { x: (Math.random() - 0.5) * 40, y: (Math.random() - 0.5) * 40 },
+            lifetime: 0.15,
+            maxLifetime: 0.15,
+            color: '#80d0ff',
+            size: 2,
+          });
+        }
+        hits++;
+      }
+    }
+    if (hits === 0) state.abilities.lightningRingTimer = 0.2;
+  }
+}
+
 // Ion Beam - periodic line strike in aim direction
 export function updateIonBeam(state: GameState, dt: number) {
   if (state.abilities.ionBeamDamage <= 0) return;
