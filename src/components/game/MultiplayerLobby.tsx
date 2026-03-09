@@ -683,7 +683,7 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, onSt
 
           {/* Action buttons */}
           <div className="flex gap-3 mt-2">
-            <button onClick={handleLeave}
+            <button onClick={() => { playBack(); handleLeave(); }} onMouseEnter={playHover}
               className="py-3 px-6 text-sm font-bold rounded-lg text-[#ff4060] border border-[#ff4060]/30 font-mono transition-all hover:border-[#ff4060]"
               style={{ background: 'rgba(255,64,96,0.05)' }}>
               Sair
