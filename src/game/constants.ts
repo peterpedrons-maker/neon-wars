@@ -10,6 +10,17 @@ export const CAMERA_VIEW_W = 500;
 export const CAMERA_VIEW_H = 375;
 export const CAMERA_LERP = 0.08;
 
+// Co-op arena scaling
+export function getCoopArenaSize(playerCount: number): { w: number; h: number } {
+  if (playerCount <= 2) return { w: 1600, h: 1200 };
+  if (playerCount <= 4) return { w: 2000, h: 1500 };
+  return { w: 2400, h: 1800 }; // 5-6 players
+}
+
+// Particle limits
+export const MAX_PARTICLES_SOLO = 200;
+export const MAX_PARTICLES_COOP = 80;
+
 export const COLORS: Record<string, string> = {
   bg: '#000008', arena: '#040412', arenaBorder: '#0ff', arenaBorderLight: '#0ff',
   grid: 'rgba(0,255,255,0.06)',
