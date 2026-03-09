@@ -358,21 +358,33 @@ function drawComboIndicator(ctx: CanvasRenderingContext2D, state: GameState, tim
   ctx.restore();
 }
 
-function drawArenaBorder(ctx: CanvasRenderingContext2D, time: number) {
+function drawArenaBorder(ctx: CanvasRenderingContext2D, time: number, state: GameState) {
+  const currentMap = ALL_MAPS[state.mapId];
+  const borderColor = currentMap?.borderColor || '#0ff';
   const glow = 0.6 + Math.sin(time * 2) * 0.2;
   
   // Outer glow
-  ctx.shadowColor = '#0ff';
-  ctx.shadowBlur = 20;
-  ctx.strokeStyle = `rgba(0,255,255,${glow})`;
+  ctx.shadowColor = borderColor;
+  ctx.shadowBlur = 22;
+  ctx.strokeStyle = hexToRgba(borderColor, glow);
   ctx.lineWidth = 2;
   ctx.strokeRect(0, 0, ARENA_W, ARENA_H);
   ctx.shadowBlur = 0;
 
   // Inner bright line
-  ctx.strokeStyle = `rgba(0,255,255,${glow * 0.5})`;
+  ctx.strokeStyle = hexToRgba(borderColor, glow * 0.5);
   ctx.lineWidth = 1;
   ctx.strokeRect(2, 2, ARENA_W - 4, ARENA_H - 4);
+  
+  // Map ambient particles at corners
+  if (Math.random() < 0.15 && currentMap?.ambientParticleColor) {
+    const cx2 = Math.random() < 0.5 ? 0 : ARENA_W;
+    const cy2 = Math.random() * ARENA_H;
+    ctx.fillStyle = hexToRgba(currentMap.ambientParticleColor, 0.3 + Math.random() * 0.4);
+    ctx.beginPath();
+    ctx.arc(cx2 + (Math.random() - 0.5) * 30, cy2, 1 + Math.random() * 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 function drawPlayerGlow(ctx: CanvasRenderingContext2D, p: Player, time: number) {
