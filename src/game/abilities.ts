@@ -171,6 +171,63 @@ const WEAPON_ABILITIES: Ability[] = [
     category: 'weapon',
     apply: (state) => { state.abilities.homingChance += 0.15; },
   },
+  {
+    id: 'piercing_rounds',
+    name: 'Balas Perfurantes',
+    description: 'Projéteis atravessam inimigos (+1 perfuração)',
+    icon: '🧿',
+    maxLevel: 4,
+    category: 'weapon',
+    apply: (state) => { state.abilities.pierce += 1; },
+  },
+  {
+    id: 'ricochet_rounds',
+    name: 'Ricochete',
+    description: 'Projéteis ricocheteiam em outro alvo (+1 ricochete)',
+    icon: '🪩',
+    maxLevel: 4,
+    category: 'weapon',
+    apply: (state) => { state.abilities.ricochet += 1; },
+  },
+  {
+    id: 'ion_beam',
+    name: 'Ion Beam',
+    description: 'Feixe periódico na direção da mira',
+    icon: '📡',
+    maxLevel: 5,
+    category: 'weapon',
+    apply: (state) => {
+      state.abilities.ionBeamDamage += 20;
+      state.abilities.ionBeamLength += 60;
+      state.abilities.ionBeamCooldown = Math.max(1.2, state.abilities.ionBeamCooldown - 0.35);
+    },
+  },
+  {
+    id: 'shockwave_emitter',
+    name: 'Shockwave',
+    description: 'Explosão periódica ao redor da nave',
+    icon: '💫',
+    maxLevel: 5,
+    category: 'weapon',
+    apply: (state) => {
+      state.abilities.shockwaveRadius += 45;
+      state.abilities.shockwaveDamage += 14;
+      state.abilities.shockwaveCooldown = Math.max(1.5, state.abilities.shockwaveCooldown - 0.35);
+    },
+  },
+  {
+    id: 'sentry_drones',
+    name: 'Sentry Drones',
+    description: 'Drones automáticos disparam nos inimigos',
+    icon: '🤖',
+    maxLevel: 5,
+    category: 'weapon',
+    apply: (state) => {
+      state.abilities.sentryCount += 1;
+      state.abilities.sentryDamage += 6;
+      state.abilities.sentryCooldown = Math.max(0.5, state.abilities.sentryCooldown - 0.12);
+    },
+  },
   // === NEW WEAPONS (unlockable) ===
   {
     id: 'frost_nova',
