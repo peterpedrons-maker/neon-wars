@@ -1269,12 +1269,27 @@ function scheduleNextMeasure() {
   musicTimers.push(timer);
 }
 
+function stopProceduralGameOnly() {
+  musicTimers.forEach(t => clearTimeout(t));
+  musicTimers = [];
+  if (musicGain && audioCtx) {
+    try { musicGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25); } catch {}
+  }
+  musicGain = null;
+}
+
 export function startMusic() {
   if (musicPlaying) return;
+
+  // Ensure menu music (procedural or MP3) is stopped before starting gameplay music.
   stopMenuMusic();
+
   try {
     getCtx();
     musicPlaying = true;
+
+    // Start procedural immediately as a fallback (and for instant feedback),
+    // then swap to MP3 once it finishes loading.
     musicGain = null;
     compressor = null;
     reverbGain = null;
@@ -1284,20 +1299,34 @@ export function startMusic() {
     sectionCount = 0;
     currentKey = 33;
     scheduleNextMeasure();
+
+    void ensureMp3Buffer().then(buf => {
+      if (!buf) return;
+      if (!musicPlaying) return;
+      stopProceduralGameOnly();
+      startMp3Game(buf);
+    });
   } catch {}
 }
 
 export function stopMusic() {
   musicPlaying = false;
-  musicTimers.forEach(t => clearTimeout(t));
-  musicTimers = [];
-  if (musicGain) {
-    try { musicGain.gain.linearRampToValueAtTime(0, audioCtx!.currentTime + 0.5); } catch {}
-  }
+  stopProceduralGameOnly();
+  stopMp3Game();
 }
 
 export function setMusicIntensity(wave: number) {
   musicIntensity = Math.min(5, Math.max(1, Math.floor(wave / 2) + 1));
+
+  // If MP3 is active, apply subtle intensity via filter + playback rate.
+  if (mp3GameSource && mp3GameFilter && audioCtx) {
+    try {
+      const ctx = audioCtx;
+      const i = musicIntensity;
+      mp3GameFilter.frequency.setTargetAtTime(7000 + i * 1500, ctx.currentTime, 0.15);
+      mp3GameSource.playbackRate.setTargetAtTime(1 + (i - 1) * 0.02, ctx.currentTime, 0.15);
+    } catch {}
+  }
 }
 
 // ===== MENU MUSIC (Atmospheric synthwave, rich and moody) =====
