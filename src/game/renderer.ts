@@ -872,7 +872,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
     ctx.moveTo(r * 0.3, r * 0.25); ctx.lineTo(-r * 0.35, r * 1.0);
     ctx.stroke();
 
-  } else {
+  } else if (p.class === 'juggernaut') {
     // === JUGGERNAUT: Bulky hexagonal fortress ===
     const sides = 6;
     ctx.beginPath();
@@ -886,7 +886,6 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
     ctx.closePath();
     ctx.fillStyle = hexToRgba(color, 0.2 + speedRatio * 0.05); ctx.fill();
     ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.stroke();
-    // Inner armor hex
     ctx.strokeStyle = hexToRgba(glowColor, 0.3); ctx.lineWidth = 1;
     ctx.beginPath();
     for (let i = 0; i <= sides; i++) {
@@ -897,25 +896,17 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
       if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
     }
     ctx.closePath(); ctx.stroke();
-    // Cross armor plating
     ctx.strokeStyle = hexToRgba(glowColor, 0.15); ctx.lineWidth = 0.6;
     ctx.beginPath();
     ctx.moveTo(-r * 0.8, 0); ctx.lineTo(r * 0.8, 0);
     ctx.moveTo(0, -r * 0.7); ctx.lineTo(0, r * 0.7);
     ctx.stroke();
-    // Triple turret barrels
     for (const side of [-1, 0, 1]) {
       ctx.fillStyle = hexToRgba(color, 0.5);
       ctx.fillRect(r * 0.9, side * r * 0.35 - 1.5, r * 0.6, 3);
       ctx.strokeStyle = color; ctx.lineWidth = 0.8;
       ctx.strokeRect(r * 0.9, side * r * 0.35 - 1.5, r * 0.6, 3);
-      const barrelHeat = attackProg > 0.3 ? (attackProg - 0.3) / 0.7 : 0;
-      if (barrelHeat > 0) {
-        ctx.fillStyle = hexToRgba('#ffffff', barrelHeat * 0.4);
-        ctx.beginPath(); ctx.arc(r * 1.5, side * r * 0.35, 2 + barrelHeat * 2, 0, Math.PI * 2); ctx.fill();
-      }
     }
-    // Massive reactor core
     const corePulse = 0.4 + Math.sin(time * 2) * 0.2 + attackFlare * 0.3;
     const coreGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, r * 0.5);
     coreGrad.addColorStop(0, hexToRgba('#ffffff', corePulse));
@@ -923,7 +914,6 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
     coreGrad.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = coreGrad;
     ctx.beginPath(); ctx.arc(0, 0, r * 0.5, 0, Math.PI * 2); ctx.fill();
-    // Corner armor nodes
     for (let i = 0; i < sides; i++) {
       const a = (i / sides) * Math.PI * 2 - Math.PI / 6;
       const nx = Math.cos(a) * r * 1.25;
@@ -932,6 +922,310 @@ function drawPlayer(ctx: CanvasRenderingContext2D, p: Player, time: number) {
       ctx.fillStyle = hexToRgba(glowColor, nodePulse);
       ctx.beginPath(); ctx.arc(nx, ny, 2, 0, Math.PI * 2); ctx.fill();
     }
+
+  } else if (p.class === 'wraith') {
+    // === WRAITH: Ghostly phase ship with dashed outline ===
+    const phase = 0.6 + Math.sin(time * 6) * 0.2;
+    ctx.globalAlpha = phase;
+    ctx.beginPath();
+    ctx.moveTo(r * 1.8, 0);
+    ctx.bezierCurveTo(r * 1.0, -r * 0.6, -r * 0.2, -r * 0.8, -r * 0.6, -r * 0.5);
+    ctx.lineTo(-r * 0.7, 0);
+    ctx.lineTo(-r * 0.6, r * 0.5);
+    ctx.bezierCurveTo(-r * 0.2, r * 0.8, r * 1.0, r * 0.6, r * 1.8, 0);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.1); ctx.fill();
+    ctx.setLineDash([5, 4]);
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.setLineDash([]);
+    // Ghost trail copies
+    for (let i = 1; i <= 3; i++) {
+      ctx.fillStyle = hexToRgba(color, 0.04 * (4 - i));
+      ctx.beginPath(); ctx.arc(-i * 7, 0, r * 0.6, 0, Math.PI * 2); ctx.fill();
+    }
+    // Core eye
+    const eyePulse = 0.5 + Math.sin(time * 7) * 0.4;
+    ctx.fillStyle = hexToRgba('#ffffff', eyePulse);
+    ctx.beginPath(); ctx.arc(r * 0.4, 0, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+
+  } else if (p.class === 'sentinel') {
+    // === SENTINEL: Shield-bearing fortress ===
+    ctx.beginPath();
+    ctx.moveTo(r * 1.2, 0);
+    ctx.lineTo(r * 0.4, -r * 0.5);
+    ctx.lineTo(-r * 0.3, -r * 0.7);
+    ctx.lineTo(-r * 0.8, -r * 0.5);
+    ctx.lineTo(-r * 0.8, r * 0.5);
+    ctx.lineTo(-r * 0.3, r * 0.7);
+    ctx.lineTo(r * 0.4, r * 0.5);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.18); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+    // Shield arc in front
+    const shPulse = 0.4 + Math.sin(time * 3) * 0.2;
+    ctx.strokeStyle = hexToRgba(glowColor, shPulse); ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(r * 0.5, 0, r * 0.8, -0.8, 0.8); ctx.stroke();
+    ctx.strokeStyle = hexToRgba(glowColor, shPulse * 0.5); ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(r * 0.5, 0, r * 1.0, -0.6, 0.6); ctx.stroke();
+    // Inner reactor
+    const sGrad = ctx.createRadialGradient(-r * 0.1, 0, 0, -r * 0.1, 0, r * 0.35);
+    sGrad.addColorStop(0, hexToRgba('#ffffff', 0.5));
+    sGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = sGrad;
+    ctx.beginPath(); ctx.arc(-r * 0.1, 0, r * 0.35, 0, Math.PI * 2); ctx.fill();
+
+  } else if (p.class === 'tempest') {
+    // === TEMPEST: Sleek wind/lightning fast ship ===
+    ctx.beginPath();
+    ctx.moveTo(r * 2.2, 0);
+    ctx.lineTo(r * 0.5, -r * 0.3);
+    ctx.lineTo(-r * 0.1, -r * 0.5);
+    ctx.lineTo(-r * 0.5, -r * 0.3);
+    ctx.lineTo(-r * 0.4, 0);
+    ctx.lineTo(-r * 0.5, r * 0.3);
+    ctx.lineTo(-r * 0.1, r * 0.5);
+    ctx.lineTo(r * 0.5, r * 0.3);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.12 + speedRatio * 0.08); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.stroke();
+    // Lightning arcs along body
+    const arcPulse = 0.3 + Math.sin(time * 12) * 0.3;
+    ctx.strokeStyle = hexToRgba('#ffffff', arcPulse); ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(r * 1.5, -r * 0.1);
+    ctx.lineTo(r * 0.8, -r * 0.25 + Math.sin(time * 20) * 2);
+    ctx.lineTo(r * 0.3, -r * 0.1 + Math.sin(time * 25) * 1.5);
+    ctx.lineTo(-r * 0.2, -r * 0.2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(r * 1.5, r * 0.1);
+    ctx.lineTo(r * 0.8, r * 0.25 + Math.sin(time * 22) * 2);
+    ctx.lineTo(r * 0.3, r * 0.1 + Math.sin(time * 27) * 1.5);
+    ctx.lineTo(-r * 0.2, r * 0.2);
+    ctx.stroke();
+    // Speed afterimage
+    if (speed > p.speed * 0.3) {
+      for (let i = 1; i <= 3; i++) {
+        ctx.fillStyle = hexToRgba(color, 0.06 * (4 - i));
+        ctx.beginPath(); ctx.ellipse(-i * 6, 0, r * 0.4, r * 0.15, 0, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
+  } else if (p.class === 'venom') {
+    // === VENOM: Organic dripping shape ===
+    ctx.beginPath();
+    ctx.moveTo(r * 1.6, 0);
+    ctx.quadraticCurveTo(r * 0.8, -r * 0.5, 0, -r * 0.6);
+    ctx.quadraticCurveTo(-r * 0.5, -r * 0.5, -r * 0.6, -r * 0.2);
+    ctx.quadraticCurveTo(-r * 0.7, 0, -r * 0.6, r * 0.2);
+    ctx.quadraticCurveTo(-r * 0.5, r * 0.5, 0, r * 0.6);
+    ctx.quadraticCurveTo(r * 0.8, r * 0.5, r * 1.6, 0);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.15); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+    // Drip particles
+    for (let i = 0; i < 4; i++) {
+      const dy = Math.sin(time * 3 + i * 1.5) * r * 0.3 + r * 0.4;
+      const dx = -r * 0.3 + i * r * 0.2;
+      const dAlpha = 0.3 + Math.sin(time * 4 + i) * 0.2;
+      ctx.fillStyle = hexToRgba(color, dAlpha);
+      ctx.beginPath(); ctx.arc(dx, dy, 1.5, 0, Math.PI * 2); ctx.fill();
+    }
+    // Toxic eye
+    ctx.fillStyle = hexToRgba('#ffffff', 0.6);
+    ctx.beginPath(); ctx.arc(r * 0.4, -r * 0.1, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = hexToRgba(color, 0.8);
+    ctx.beginPath(); ctx.arc(r * 0.4, -r * 0.1, 1, 0, Math.PI * 2); ctx.fill();
+
+  } else if (p.class === 'nova_ship') {
+    // === NOVA: Star-shaped explosive ship ===
+    const starPulse = 1 + Math.sin(time * 4) * 0.06;
+    ctx.save(); ctx.scale(starPulse, starPulse);
+    ctx.beginPath();
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
+      const outerR = i % 2 === 0 ? r * 1.4 : r * 0.6;
+      if (i === 0) ctx.moveTo(Math.cos(a) * outerR, Math.sin(a) * outerR);
+      else ctx.lineTo(Math.cos(a) * outerR, Math.sin(a) * outerR);
+    }
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.15); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.restore();
+    // Inner energy orb
+    const orbPulse = 0.5 + Math.sin(time * 5) * 0.3;
+    const nGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.5);
+    nGrad.addColorStop(0, hexToRgba('#ffffff', orbPulse));
+    nGrad.addColorStop(0.5, hexToRgba(color, orbPulse * 0.5));
+    nGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = nGrad;
+    ctx.beginPath(); ctx.arc(0, 0, r * 0.5, 0, Math.PI * 2); ctx.fill();
+    // Expanding ring effect
+    const ringPhase = (time * 1.5) % 1;
+    ctx.strokeStyle = hexToRgba(color, (1 - ringPhase) * 0.3);
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(0, 0, r * 0.5 + ringPhase * r, 0, Math.PI * 2); ctx.stroke();
+
+  } else if (p.class === 'chronos') {
+    // === CHRONOS: Clockwork time ship ===
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 1.1, 0, Math.PI * 2);
+    ctx.fillStyle = hexToRgba(color, 0.12); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+    // Clock hands
+    ctx.strokeStyle = hexToRgba('#ffffff', 0.7); ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(Math.cos(time * 2) * r * 0.8, Math.sin(time * 2) * r * 0.8);
+    ctx.stroke();
+    ctx.strokeStyle = hexToRgba(glowColor, 0.5); ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(Math.cos(time * 8) * r * 0.5, Math.sin(time * 8) * r * 0.5);
+    ctx.stroke();
+    // Hour markers
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      const mx = Math.cos(a) * r * 0.95;
+      const my = Math.sin(a) * r * 0.95;
+      ctx.fillStyle = hexToRgba(glowColor, 0.5);
+      ctx.beginPath(); ctx.arc(mx, my, 1, 0, Math.PI * 2); ctx.fill();
+    }
+    // Nose pointer
+    ctx.fillStyle = hexToRgba(color, 0.8);
+    ctx.beginPath();
+    ctx.moveTo(r * 1.5, 0);
+    ctx.lineTo(r * 1.1, -r * 0.15);
+    ctx.lineTo(r * 1.1, r * 0.15);
+    ctx.closePath(); ctx.fill();
+
+  } else if (p.class === 'leviathan') {
+    // === LEVIATHAN: Massive whale-like beast ===
+    ctx.beginPath();
+    ctx.moveTo(r * 1.8, 0);
+    ctx.bezierCurveTo(r * 1.2, -r * 0.7, r * 0.2, -r * 0.9, -r * 0.4, -r * 0.7);
+    ctx.bezierCurveTo(-r * 0.8, -r * 0.5, -r * 1.0, -r * 0.2, -r * 1.0, 0);
+    ctx.bezierCurveTo(-r * 1.0, r * 0.2, -r * 0.8, r * 0.5, -r * 0.4, r * 0.7);
+    ctx.bezierCurveTo(r * 0.2, r * 0.9, r * 1.2, r * 0.7, r * 1.8, 0);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.2); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.stroke();
+    // Armor ridges
+    for (let i = 0; i < 4; i++) {
+      const rx = r * 0.6 - i * r * 0.35;
+      ctx.strokeStyle = hexToRgba(glowColor, 0.2);
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.ellipse(rx, 0, r * 0.15, r * 0.5, 0, 0, Math.PI * 2); ctx.stroke();
+    }
+    // Maw
+    const mawPulse = 0.4 + Math.sin(time * 3) * 0.2;
+    ctx.fillStyle = hexToRgba('#ffffff', mawPulse);
+    ctx.beginPath(); ctx.arc(r * 1.4, 0, r * 0.25, 0, Math.PI * 2); ctx.fill();
+    // Melee range indicator
+    if (p.attackTimer > p.attackCooldown * 0.3) {
+      const biteProg = (p.attackTimer / p.attackCooldown - 0.3) / 0.7;
+      ctx.beginPath(); ctx.arc(0, 0, WARRIOR_ATTACK_RANGE * 1.3, p.angle - 1, p.angle - 1 + 1.5 * (1 - biteProg));
+      const bGrad = ctx.createRadialGradient(0, 0, r, 0, 0, WARRIOR_ATTACK_RANGE * 1.3);
+      bGrad.addColorStop(0, hexToRgba(color, 0.4 * biteProg));
+      bGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = bGrad; ctx.fill();
+    }
+
+  } else if (p.class === 'raptor') {
+    // === RAPTOR: Ultra-sleek needle shape ===
+    ctx.beginPath();
+    ctx.moveTo(r * 2.5, 0);
+    ctx.lineTo(r * 0.5, -r * 0.2);
+    ctx.lineTo(-r * 0.2, -r * 0.4);
+    ctx.lineTo(-r * 0.5, -r * 0.15);
+    ctx.lineTo(-r * 0.5, r * 0.15);
+    ctx.lineTo(-r * 0.2, r * 0.4);
+    ctx.lineTo(r * 0.5, r * 0.2);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.12 + speedRatio * 0.1); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.stroke();
+    // Speed streaks
+    const streakAlpha = Math.min(0.5, speedRatio * 0.6);
+    if (streakAlpha > 0.05) {
+      ctx.strokeStyle = hexToRgba(color, streakAlpha); ctx.lineWidth = 0.6;
+      for (let i = -2; i <= 2; i++) {
+        const len = 12 + speedRatio * 30 + Math.sin(time * 15 + i * 4) * 4;
+        ctx.beginPath(); ctx.moveTo(-r * 0.5, i * 2); ctx.lineTo(-r - len, i * 2.5); ctx.stroke();
+      }
+    }
+    // Nose light
+    ctx.fillStyle = hexToRgba('#ffffff', 0.7 + Math.sin(time * 10) * 0.2);
+    ctx.beginPath(); ctx.arc(r * 2.2, 0, 1, 0, Math.PI * 2); ctx.fill();
+
+  } else if (p.class === 'oracle') {
+    // === ORACLE: Mystical eye/diamond shape ===
+    ctx.beginPath();
+    ctx.moveTo(r * 1.6, 0);
+    ctx.quadraticCurveTo(r * 0.5, -r * 0.7, -r * 0.3, -r * 0.5);
+    ctx.quadraticCurveTo(-r * 0.6, 0, -r * 0.3, r * 0.5);
+    ctx.quadraticCurveTo(r * 0.5, r * 0.7, r * 1.6, 0);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.12); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+    // Third eye
+    const eyeScale = 0.7 + Math.sin(time * 4) * 0.15;
+    ctx.fillStyle = hexToRgba('#ffffff', 0.6 * eyeScale);
+    ctx.beginPath(); ctx.ellipse(r * 0.3, 0, r * 0.35, r * 0.2 * eyeScale, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = hexToRgba(color, 0.8);
+    ctx.beginPath(); ctx.arc(r * 0.3, 0, r * 0.12, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(r * 0.3, 0, r * 0.05, 0, Math.PI * 2); ctx.fill();
+    // Mystical runes orbiting
+    for (let i = 0; i < 6; i++) {
+      const a = time * 2 + (i / 6) * Math.PI * 2;
+      const ox = Math.cos(a) * r * 1.3;
+      const oy = Math.sin(a) * r * 1.3;
+      ctx.fillStyle = hexToRgba(glowColor, 0.3 + Math.sin(time * 5 + i) * 0.2);
+      ctx.beginPath(); ctx.arc(ox, oy, 1.5, 0, Math.PI * 2); ctx.fill();
+    }
+
+  } else if (p.class === 'pyro') {
+    // === PYRO: Flame-wreathed ship ===
+    ctx.beginPath();
+    ctx.moveTo(r * 1.6, 0);
+    ctx.lineTo(r * 0.5, -r * 0.4);
+    ctx.lineTo(-r * 0.3, -r * 0.5);
+    ctx.lineTo(-r * 0.6, -r * 0.2);
+    ctx.lineTo(-r * 0.6, r * 0.2);
+    ctx.lineTo(-r * 0.3, r * 0.5);
+    ctx.lineTo(r * 0.5, r * 0.4);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.15); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+    // Flame wreath around body
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2 + time * 4;
+      const flameR = r * 1.1 + Math.sin(time * 10 + i * 2) * r * 0.2;
+      const fx = Math.cos(a) * flameR;
+      const fy = Math.sin(a) * flameR;
+      const fAlpha = 0.3 + Math.sin(time * 8 + i) * 0.2;
+      ctx.fillStyle = hexToRgba(i % 2 === 0 ? '#ff4400' : '#ffaa00', fAlpha);
+      ctx.beginPath(); ctx.arc(fx, fy, 2 + Math.sin(time * 12 + i) * 1, 0, Math.PI * 2); ctx.fill();
+    }
+    // Nose flamethrower glow
+    const flamePulse = 0.4 + Math.sin(time * 8) * 0.3;
+    const fGrad = ctx.createRadialGradient(r * 1.2, 0, 0, r * 1.2, 0, r * 0.6);
+    fGrad.addColorStop(0, hexToRgba('#ffaa00', flamePulse));
+    fGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = fGrad;
+    ctx.beginPath(); ctx.arc(r * 1.2, 0, r * 0.6, 0, Math.PI * 2); ctx.fill();
+
+  } else {
+    // === FALLBACK: Generic diamond ===
+    ctx.beginPath();
+    ctx.moveTo(r * 1.5, 0);
+    ctx.lineTo(0, -r * 0.8);
+    ctx.lineTo(-r * 0.8, 0);
+    ctx.lineTo(0, r * 0.8);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.15); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
   }
 
   // Cockpit/nose glow (all ships)
