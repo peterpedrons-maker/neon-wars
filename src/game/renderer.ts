@@ -56,8 +56,8 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
   // --- NEON GRID with WARP DISTORTION (map-colored) ---
   drawNeonGridWarped(ctx, time, state);
   
-  // Arena border
-  drawArenaBorder(ctx, time);
+  // Arena border (map-colored)
+  drawArenaBorder(ctx, time, state);
 
   // Player ambient glow
   if (state.player.alive) {
