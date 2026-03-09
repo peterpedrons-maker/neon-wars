@@ -812,9 +812,8 @@ function updateProjectiles(state: GameState, dt: number) {
       for (const e of state.enemies) {
         if (!e.alive) continue;
         if (dist(proj.pos, e.pos) < proj.radius + e.radius) {
-          proj.alive = false;
           damageEnemy(state, e, proj.damage);
-          
+
           // Explosion radius: damage nearby enemies too
           if (state.abilities.explosionRadius > 0) {
             const expR = state.abilities.explosionRadius;
@@ -825,9 +824,38 @@ function updateProjectiles(state: GameState, dt: number) {
                 e2.flashTimer = 0.08;
               }
             }
-            state.particles.push(...createParticles(proj.pos, '#ff6b00', 12, expR, 3));
-            state.particles.push(...createParticles(proj.pos, '#ffff00', 6, expR * 0.6, 2));
+            state.particles.push(...createParticles(proj.pos, '#ff6b00', 8, expR * 1.6, 2.5));
+            state.particles.push(...createParticles(proj.pos, '#ffff00', 4, expR * 1.2, 2));
           }
+
+          // Pierce / Ricochet logic
+          if (proj.pierce && proj.pierce > 0) {
+            proj.pierce -= 1;
+            // nudge forward to avoid re-colliding same enemy this frame
+            const vlen = Math.hypot(proj.vel.x, proj.vel.y) || 1;
+            proj.pos.x += (proj.vel.x / vlen) * (e.radius + 6);
+            proj.pos.y += (proj.vel.y / vlen) * (e.radius + 6);
+          } else if (proj.ricochet && proj.ricochet > 0) {
+            proj.ricochet -= 1;
+            let nearest: Enemy | null = null;
+            let nearestDist = 99999;
+            for (const e2 of state.enemies) {
+              if (!e2.alive || e2 === e) continue;
+              const d2 = dist(e2.pos, proj.pos);
+              if (d2 < nearestDist) { nearestDist = d2; nearest = e2; }
+            }
+            if (nearest) {
+              const a = Math.atan2(nearest.pos.y - proj.pos.y, nearest.pos.x - proj.pos.x);
+              const spd = Math.hypot(proj.vel.x, proj.vel.y);
+              proj.vel.x = Math.cos(a) * spd;
+              proj.vel.y = Math.sin(a) * spd;
+            } else {
+              proj.alive = false;
+            }
+          } else {
+            proj.alive = false;
+          }
+
           break;
         }
       }
