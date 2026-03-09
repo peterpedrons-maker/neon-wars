@@ -101,7 +101,8 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   if (state.waveEnemiesRemaining > 0) {
     state.waveSpawnTimer -= dt;
     if (state.waveSpawnTimer <= 0) {
-      state.waveSpawnTimer = WAVE_SPAWN_INTERVAL / (1 + state.wave * 0.05);
+      const diff = getDifficultySettings(state);
+      state.waveSpawnTimer = (WAVE_SPAWN_INTERVAL / (1 + state.wave * 0.05)) / diff.spawnRateMult;
       spawnWaveEnemy(state);
       state.waveEnemiesRemaining--;
     }
