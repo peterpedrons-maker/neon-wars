@@ -66,7 +66,15 @@ export function createEnemy(type: EnemyType, wave: number): Enemy {
   };
 }
 
-export function createProjectile(pos: Vec2, angle: number, damage: number, fromPlayer: boolean, color: string, speedMult = 1): Projectile {
+export function createProjectile(
+  pos: Vec2,
+  angle: number,
+  damage: number,
+  fromPlayer: boolean,
+  color: string,
+  speedMult = 1,
+  mods?: Partial<Projectile>,
+): Projectile {
   return {
     pos: { x: pos.x, y: pos.y },
     vel: { x: Math.cos(angle) * PROJECTILE_SPEED * speedMult, y: Math.sin(angle) * PROJECTILE_SPEED * speedMult },
@@ -76,6 +84,7 @@ export function createProjectile(pos: Vec2, angle: number, damage: number, fromP
     fromPlayer,
     lifetime: PROJECTILE_LIFETIME,
     color,
+    ...mods,
   };
 }
 
