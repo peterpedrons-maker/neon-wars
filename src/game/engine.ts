@@ -1056,7 +1056,12 @@ export function startWave(state: GameState) {
   state.screen = 'playing';
 }
 
-export function createInitialState(player: Player, mapId: string = 'neon-grid', weaponSlots: number = 3): GameState {
+export function createInitialState(
+  player: Player,
+  mapId: string = 'neon-grid',
+  weaponSlots: number = 3,
+  mapDifficulty: import('./maps').MapDifficulty = 'medium',
+): GameState {
   initAudio();
   startMusic();
   return {
@@ -1091,6 +1096,7 @@ export function createInitialState(player: Player, mapId: string = 'neon-grid', 
     regenAccumulator: 0,
     trail: [],
     mapId,
+    mapDifficulty,
     hazards: [],
     hazardSpawnTimer: 5,
     flameZones: [],
@@ -1098,6 +1104,28 @@ export function createInitialState(player: Player, mapId: string = 'neon-grid', 
     coopPeers: [],
     enemiesKilledThisWave: 0,
   };
+}
+
+function getDifficultySettings(state: GameState) {
+  const map = ALL_MAPS[state.mapId];
+  const d = map?.difficulties?.[state.mapDifficulty];
+  return d ?? {
+    enemyHpMult: 1,
+    enemyDamageMult: 1,
+    enemySpeedMult: 1,
+    spawnRateMult: 1,
+    hazardRateMult: 1,
+  };
+}
+
+function applyDifficultyToEnemy(state: GameState, e: Enemy) {
+  const d = getDifficultySettings(state);
+  e.hp = Math.max(1, Math.floor(e.hp * d.enemyHpMult));
+  e.maxHp = Math.max(1, Math.floor(e.maxHp * d.enemyHpMult));
+  e.damage = Math.max(1, Math.floor(e.damage * d.enemyDamageMult));
+  const base = e.baseSpeed ?? e.speed;
+  e.speed = base * d.enemySpeedMult;
+  e.baseSpeed = e.speed;
 }
 
 function updateHazards(state: GameState, dt: number) {
