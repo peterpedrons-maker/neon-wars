@@ -74,22 +74,41 @@ export const COLORS: Record<string, string> = {
 export type PlayerClass = ShipType;
 
 export const CLASS_STATS: Record<ShipType, { hp: number; damage: number; speed: number; attackCooldown: number; specialCooldown: number; radius: number }> = {
-  phantom:     { hp: 3, damage: 15, speed: 130, attackCooldown: 0.38, specialCooldown: 5,   radius: 12 },
-  interceptor: { hp: 3, damage: 10, speed: 160, attackCooldown: 0.2,  specialCooldown: 4,   radius: 10 },
-  titan:       { hp: 3, damage: 28, speed: 95,  attackCooldown: 0.6,  specialCooldown: 3,   radius: 15 },
-  spectre:     { hp: 2, damage: 20, speed: 150, attackCooldown: 0.3,  specialCooldown: 4,   radius: 11 },
-  valkyrie:    { hp: 4, damage: 12, speed: 140, attackCooldown: 0.25, specialCooldown: 3.5, radius: 11 },
-  juggernaut:  { hp: 5, damage: 35, speed: 75,  attackCooldown: 0.8,  specialCooldown: 6,   radius: 17 },
-  wraith:      { hp: 2, damage: 18, speed: 145, attackCooldown: 0.35, specialCooldown: 4,   radius: 10 },
-  sentinel:    { hp: 4, damage: 22, speed: 80,  attackCooldown: 0.45, specialCooldown: 5,   radius: 14 },
-  tempest:     { hp: 3, damage: 14, speed: 155, attackCooldown: 0.28, specialCooldown: 3.5, radius: 11 },
-  venom:       { hp: 3, damage: 16, speed: 120, attackCooldown: 0.4,  specialCooldown: 4.5, radius: 11 },
-  nova_ship:   { hp: 2, damage: 30, speed: 110, attackCooldown: 0.55, specialCooldown: 5,   radius: 13 },
-  chronos:     { hp: 3, damage: 13, speed: 125, attackCooldown: 0.32, specialCooldown: 6,   radius: 11 },
-  leviathan:   { hp: 8, damage: 40, speed: 55,  attackCooldown: 1.0,  specialCooldown: 7,   radius: 20 },
-  raptor:      { hp: 2, damage: 11, speed: 200, attackCooldown: 0.15, specialCooldown: 3,   radius: 9 },
-  oracle:      { hp: 3, damage: 12, speed: 130, attackCooldown: 0.35, specialCooldown: 4,   radius: 11 },
-  pyro:        { hp: 3, damage: 20, speed: 115, attackCooldown: 0.42, specialCooldown: 4.5, radius: 12 },
+  // ─── Tier 1: Starter ships ───────────────────────────────────────────────────
+  // Phantom: balanced DPS, stealth nova special. Good all-rounder.
+  phantom:     { hp: 3, damage: 16, speed: 135, attackCooldown: 0.35, specialCooldown: 5,   radius: 12 },
+  // Interceptor: low dmg per shot but blazing fire rate + lock-on special.
+  interceptor: { hp: 3, damage: 11, speed: 165, attackCooldown: 0.18, specialCooldown: 3.5, radius: 10 },
+  // Titan: melee tank — high base damage, melee range, shockwave special.
+  titan:       { hp: 4, damage: 32, speed: 100, attackCooldown: 0.55, specialCooldown: 3,   radius: 15 },
+  // Spectre: glass cannon — blink + ghost explosion. High burst.
+  spectre:     { hp: 2, damage: 22, speed: 155, attackCooldown: 0.28, specialCooldown: 3.5, radius: 11 },
+  // Valkyrie: twin guns, wide spread; lances special.
+  valkyrie:    { hp: 4, damage: 13, speed: 140, attackCooldown: 0.22, specialCooldown: 3.5, radius: 11 },
+  // ─── Tier 2: Advanced ships ──────────────────────────────────────────────────
+  // Juggernaut: armored bruiser — melee AoE. Tanky and devastating up close.
+  juggernaut:  { hp: 6, damage: 38, speed: 80,  attackCooldown: 0.75, specialCooldown: 5.5, radius: 17 },
+  // Wraith: assassin — fast, phase-shift special, shadow clones.
+  wraith:      { hp: 2, damage: 20, speed: 150, attackCooldown: 0.32, specialCooldown: 3.5, radius: 10 },
+  // Sentinel: defensive fortress — shield burst, barrier deploy special.
+  sentinel:    { hp: 5, damage: 24, speed: 85,  attackCooldown: 0.42, specialCooldown: 4.5, radius: 14 },
+  // Tempest: storm craft — fast with tornado pull/blast special.
+  tempest:     { hp: 3, damage: 15, speed: 158, attackCooldown: 0.26, specialCooldown: 3,   radius: 11 },
+  // Venom: poison specialist — lingering projectiles + toxic cloud.
+  venom:       { hp: 3, damage: 18, speed: 122, attackCooldown: 0.38, specialCooldown: 4,   radius: 11 },
+  // ─── Tier 3: Elite ships ─────────────────────────────────────────────────────
+  // Nova: slow heavy shots + supernova AoE. Big damage, slow fire.
+  nova_ship:   { hp: 3, damage: 32, speed: 112, attackCooldown: 0.52, specialCooldown: 4.5, radius: 13 },
+  // Chronos: time mage — time freeze special, balanced stats.
+  chronos:     { hp: 3, damage: 15, speed: 128, attackCooldown: 0.30, specialCooldown: 5.5, radius: 11 },
+  // Leviathan: mega-tank — 8 hp, devour special that heals on kill.
+  leviathan:   { hp: 8, damage: 45, speed: 60,  attackCooldown: 0.95, specialCooldown: 6.5, radius: 20 },
+  // Raptor: hyper-speed micro-fighter — wall-of-bullets blitz dash.
+  raptor:      { hp: 2, damage: 13, speed: 210, attackCooldown: 0.13, specialCooldown: 2.5, radius: 9  },
+  // Oracle: mystic — aims at nearest enemy automatically; marks all enemies.
+  oracle:      { hp: 3, damage: 14, speed: 132, attackCooldown: 0.33, specialCooldown: 3.5, radius: 11 },
+  // Pyro: flamethrower — wide spread, low lifetime; inferno ring special.
+  pyro:        { hp: 3, damage: 21, speed: 118, attackCooldown: 0.38, specialCooldown: 4,   radius: 12 },
 };
 
 // Enemy stat helper - creates compact definitions

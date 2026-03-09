@@ -45,18 +45,19 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, canv
     ctx.translate(sx, sy);
   }
 
-  // Clear to deep black
-  ctx.fillStyle = COLORS.bg;
+  // Map-specific background color
+  const currentMap = ALL_MAPS[state.mapId];
+  ctx.fillStyle = currentMap?.bgColor || COLORS.bg;
   ctx.fillRect(0, 0, canvasW, canvasH);
 
   ctx.scale(scale, scale);
   ctx.translate(viewportW / 2 - camX, viewportH / 2 - camY);
 
-  // --- NEON GRID with WARP DISTORTION ---
+  // --- NEON GRID with WARP DISTORTION (map-colored) ---
   drawNeonGridWarped(ctx, time, state);
   
-  // Arena border
-  drawArenaBorder(ctx, time);
+  // Arena border (map-colored)
+  drawArenaBorder(ctx, time, state);
 
   // Player ambient glow
   if (state.player.alive) {
@@ -270,7 +271,11 @@ function warpPoint(px: number, py: number, sources: WarpSource[]): [number, numb
 }
 
 function drawNeonGridWarped(ctx: CanvasRenderingContext2D, time: number, state: GameState) {
-  const pulse = 0.04 + Math.sin(time * 0.5) * 0.015;
+  const currentMap = ALL_MAPS[state.mapId];
+  // Use map grid color (format: 'R,G,B' or fallback cyan)
+  const gridRGB = currentMap?.gridColor || '0,255,255';
+  const baseAlpha = currentMap?.gridAlpha ?? 0.04;
+  const pulse = baseAlpha + Math.sin(time * 0.5) * baseAlpha * 0.4;
   const sources = getWarpSources(state);
   const hasWarp = sources.length > 0;
 
@@ -289,9 +294,9 @@ function drawNeonGridWarped(ctx: CanvasRenderingContext2D, time: number, state: 
       let brightness = pulse;
       for (const s of sources) {
         const d = Math.hypot(x - s.x, y - s.y);
-        if (d < s.radius) brightness = Math.max(brightness, 0.12 * (1 - d / s.radius));
+        if (d < s.radius) brightness = Math.max(brightness, baseAlpha * 3 * (1 - d / s.radius));
       }
-      ctx.strokeStyle = `rgba(0,255,255,${brightness})`;
+      ctx.strokeStyle = `rgba(${gridRGB},${brightness})`;
       if (first) { ctx.moveTo(wx, wy); first = false; }
       else ctx.lineTo(wx, wy);
     }
@@ -307,13 +312,19 @@ function drawNeonGridWarped(ctx: CanvasRenderingContext2D, time: number, state: 
       let brightness = pulse;
       for (const s of sources) {
         const d = Math.hypot(x - s.x, y - s.y);
-        if (d < s.radius) brightness = Math.max(brightness, 0.12 * (1 - d / s.radius));
+        if (d < s.radius) brightness = Math.max(brightness, baseAlpha * 3 * (1 - d / s.radius));
       }
-      ctx.strokeStyle = `rgba(0,255,255,${brightness})`;
+      ctx.strokeStyle = `rgba(${gridRGB},${brightness})`;
       if (first) { ctx.moveTo(wx, wy); first = false; }
       else ctx.lineTo(wx, wy);
     }
     ctx.stroke();
+  }
+  
+  // Map ambient fog overlay
+  if (currentMap?.fogColor) {
+    ctx.fillStyle = currentMap.fogColor;
+    ctx.fillRect(WALL_LEFT, WALL_TOP, ARENA_W, ARENA_H);
   }
 }
 
@@ -347,21 +358,33 @@ function drawComboIndicator(ctx: CanvasRenderingContext2D, state: GameState, tim
   ctx.restore();
 }
 
-function drawArenaBorder(ctx: CanvasRenderingContext2D, time: number) {
+function drawArenaBorder(ctx: CanvasRenderingContext2D, time: number, state: GameState) {
+  const currentMap = ALL_MAPS[state.mapId];
+  const borderColor = currentMap?.borderColor || '#0ff';
   const glow = 0.6 + Math.sin(time * 2) * 0.2;
   
   // Outer glow
-  ctx.shadowColor = '#0ff';
-  ctx.shadowBlur = 20;
-  ctx.strokeStyle = `rgba(0,255,255,${glow})`;
+  ctx.shadowColor = borderColor;
+  ctx.shadowBlur = 22;
+  ctx.strokeStyle = hexToRgba(borderColor, glow);
   ctx.lineWidth = 2;
   ctx.strokeRect(0, 0, ARENA_W, ARENA_H);
   ctx.shadowBlur = 0;
 
   // Inner bright line
-  ctx.strokeStyle = `rgba(0,255,255,${glow * 0.5})`;
+  ctx.strokeStyle = hexToRgba(borderColor, glow * 0.5);
   ctx.lineWidth = 1;
   ctx.strokeRect(2, 2, ARENA_W - 4, ARENA_H - 4);
+  
+  // Map ambient particles at corners
+  if (Math.random() < 0.15 && currentMap?.ambientParticleColor) {
+    const cx2 = Math.random() < 0.5 ? 0 : ARENA_W;
+    const cy2 = Math.random() * ARENA_H;
+    ctx.fillStyle = hexToRgba(currentMap.ambientParticleColor, 0.3 + Math.random() * 0.4);
+    ctx.beginPath();
+    ctx.arc(cx2 + (Math.random() - 0.5) * 30, cy2, 1 + Math.random() * 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 function drawPlayerGlow(ctx: CanvasRenderingContext2D, p: Player, time: number) {

@@ -154,24 +154,28 @@ export function playerAttack(player: Player, projectiles: Projectile[], abilitie
     return;
   }
 
-  // Oracle: homing shots
+  // Oracle: precision shots — high accuracy, aims with slight predictive lead
   if (player.class === 'oracle') {
     for (const offset of angles) {
-      projectiles.push(createProjectile(player.pos, player.angle + offset, player.damage, true, color, 0.9, { ...mods }));
+      // Oracle fires with built-in slight homing bias (engine will also apply homingChance on top)
+      projectiles.push(createProjectile(player.pos, player.angle + offset, player.damage, true, color, 0.85, { ...mods }));
     }
     return;
   }
 
-  // Nova: slow powerful shots
+  // Nova: slow powerful shots — bigger radius
   if (player.class === 'nova_ship') {
     projectiles.push(createProjectile(player.pos, player.angle, player.damage, true, color, 0.7, { ...mods, radius: 8 } as any));
     return;
   }
 
-  // Pyro: flamethrower spread
+  // Pyro: flamethrower spread — wide cone with randomized velocity for organic feel
   if (player.class === 'pyro') {
-    for (let i = -2; i <= 2; i++) {
-      projectiles.push(createProjectile(player.pos, player.angle + i * 0.1, player.damage * 0.5, true, color, 0.6 + Math.random() * 0.4, { ...mods, lifetime: 0.6 }));
+    const spread = player.tripleTimer > 0 ? 7 : 5;
+    for (let i = -Math.floor(spread / 2); i <= Math.floor(spread / 2); i++) {
+      const jitter = (Math.random() - 0.5) * 0.08;
+      const spdMult = 0.5 + Math.random() * 0.5;
+      projectiles.push(createProjectile(player.pos, player.angle + i * 0.1 + jitter, player.damage * 0.55, true, color, spdMult, { ...mods, lifetime: 0.55 + Math.random() * 0.2 }));
     }
     return;
   }
