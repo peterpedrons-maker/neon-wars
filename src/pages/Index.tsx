@@ -122,7 +122,7 @@ const Index = () => {
   }
 
   if (screen === 'multiplayer-lobby') {
-    return <MultiplayerLobby unlockedShips={meta.unlockedShips} onStartCoop={handleStartCoop} onBack={() => setScreen('menu')} />;
+    return <MultiplayerLobby unlockedShips={meta.unlockedShips} username={username} onStartCoop={handleStartCoop} onBack={() => setScreen('menu')} />;
   }
 
   if (screen === 'shop') {
