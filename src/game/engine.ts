@@ -365,6 +365,16 @@ function updateEnemies(state: GameState, dt: number) {
       continue;
     }
 
+    // Apply temporary slows (e.g. Frost Nova)
+    const base = e.baseSpeed ?? e.speed;
+    e.baseSpeed = base;
+    if (e.slowUntil && Date.now() < e.slowUntil) {
+      e.speed = base * 0.5;
+    } else {
+      e.speed = base;
+      e.slowUntil = undefined;
+    }
+
     e.flashTimer = Math.max(0, e.flashTimer - dt);
     e.attackTimer = Math.max(0, e.attackTimer - dt);
 
