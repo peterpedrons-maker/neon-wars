@@ -4,18 +4,22 @@ import {
   RoomInfo, createRoom, joinRoom, connectToRoom, 
   leaveRoom, sendStartGame, sendCountdown, sendGuestConfirm,
   sendLobbyState, sendChat, LobbyState, ChatMessage,
-  CoopPlayerState, CoopGameSync 
+  CoopPlayerState, CoopGameSync,
+  createPublicRoom, fetchPublicRooms, updatePublicRoomPlayerCount,
+  setPublicRoomStatus, deletePublicRoom, PublicRoomInfo,
 } from '../../game/multiplayer';
 import { playClick, playHover, playBack } from '../../game/audio';
 
 interface MultiplayerLobbyProps {
   unlockedShips: string[];
+  username?: string;
   onStartCoop: (
     room: RoomInfo,
     mapId: string,
     difficulty: import('../../game/maps').MapDifficulty,
     playerClass: ShipType,
-    peerClass: ShipType,
+    peerClasses: ShipType[],
+    totalPlayers: number,
   ) => void;
   onBack: () => void;
 }
