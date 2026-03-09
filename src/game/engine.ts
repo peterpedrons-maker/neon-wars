@@ -872,15 +872,16 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
   // Crit check
   if (state.abilities.critChance > 0 && Math.random() < state.abilities.critChance) {
     damage *= 2;
-    state.particles.push(...createParticles(e.pos, '#ffff00', 8, 150, 3));
+    state.particles.push(...createParticles(e.pos, '#ffff00', 5, 220, 2.5));
   }
-  
+
   e.hp -= damage;
   e.flashTimer = 0.1;
   playHit();
-  state.particles.push(...createParticles(e.pos, COLORS.neonYellow, 15, 180, 3));
-  state.particles.push(...createParticles(e.pos, '#ffffff', 8, 120, 2));
-  state.particles.push(...createParticles(e.pos, getEnemyColor(e.type), 10, 150, 2.5));
+  // Lower general particle density (better perf) — deaths still go chaotic
+  state.particles.push(...createParticles(e.pos, COLORS.neonYellow, 8, 220, 2.5));
+  state.particles.push(...createParticles(e.pos, '#ffffff', 4, 160, 2));
+  state.particles.push(...createParticles(e.pos, getEnemyColor(e.type), 6, 200, 2.2));
 
   if (e.hp <= 0) {
     e.alive = false;
