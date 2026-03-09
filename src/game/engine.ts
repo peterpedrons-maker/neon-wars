@@ -1452,9 +1452,15 @@ function getDifficultySettings(state: GameState) {
 
 function applyDifficultyToEnemy(state: GameState, e: Enemy) {
   const d = getDifficultySettings(state);
-  e.hp = Math.max(1, Math.floor(e.hp * d.enemyHpMult));
-  e.maxHp = Math.max(1, Math.floor(e.maxHp * d.enemyHpMult));
-  e.damage = Math.max(1, Math.floor(e.damage * d.enemyDamageMult));
+  
+  // Co-op scaling: bosses get much harder with more players
+  const playerCount = 1 + (state.coopPeers?.length || 0);
+  const coopHpMult = e.isBoss ? (1 + (playerCount - 1) * 0.6) : (1 + (playerCount - 1) * 0.2);
+  const coopDmgMult = e.isBoss ? (1 + (playerCount - 1) * 0.25) : 1;
+  
+  e.hp = Math.max(1, Math.floor(e.hp * d.enemyHpMult * coopHpMult));
+  e.maxHp = Math.max(1, Math.floor(e.maxHp * d.enemyHpMult * coopHpMult));
+  e.damage = Math.max(1, Math.floor(e.damage * d.enemyDamageMult * coopDmgMult));
   const base = e.baseSpeed ?? e.speed;
   e.speed = base * d.enemySpeedMult;
   e.baseSpeed = e.speed;
