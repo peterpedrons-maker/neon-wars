@@ -1568,22 +1568,13 @@ export function startMenuMusic() {
     getCtx();
     menuMusicPlaying = true;
 
-    // Start procedural immediately as fallback, then swap to MP3 once available.
     menuGain = null;
     menuMeasure = 0;
     scheduleMenuMeasure();
-
-    void ensureMp3Buffer().then(buf => {
-      if (!buf) return;
-      if (!menuMusicPlaying || musicPlaying) return;
-      stopProceduralMenuOnly();
-      startMp3Menu(buf);
-    });
   } catch {}
 }
 
 export function stopMenuMusic() {
   menuMusicPlaying = false;
   stopProceduralMenuOnly();
-  stopMp3Menu();
 }
