@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { RunStats, Milestone } from '../../game/meta';
-import { initAudio, startMenuMusic, stopMenuMusic, playClick, playHover } from '../../game/audio';
+import { initAudio, startMenuMusic, stopMenuMusic, stopAllMenuMusic, playClick, playHover } from '../../game/audio';
 import { UI_ICONS } from '../../game/icons';
 
 interface MainMenuProps {
