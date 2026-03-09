@@ -1103,6 +1103,7 @@ export function createInitialState(
     plasmaZones: [],
     coopPeers: [],
     enemiesKilledThisWave: 0,
+    deathWave: false,
   };
 }
 
