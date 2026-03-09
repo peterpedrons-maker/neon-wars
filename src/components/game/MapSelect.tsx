@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ALL_MAPS } from '../../game/maps';
+import { ALL_MAPS, MAP_ORDER } from '../../game/maps';
 import type { MapDifficulty } from '../../game/maps';
 import { playClick, playHover, playBack } from '../../game/audio';
 
@@ -9,7 +9,7 @@ interface MapSelectProps {
   onBack: () => void;
 }
 
-const mapOrder = ['neon-grid', 'inferno', 'void', 'crystal', 'singularity', 'foundry'];
+const mapOrder = MAP_ORDER;
 
 const difficultyOptions: Array<{ id: MapDifficulty; label: string; hint: string }> = [
   { id: 'easy', label: 'Fácil', hint: 'Mais tranquilo' },
