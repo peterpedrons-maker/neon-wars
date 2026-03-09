@@ -47,9 +47,22 @@ export interface Player extends Entity {
   emote?: { text: string; timer: number };
 }
 
+export type ElementType = 'fire' | 'ice' | 'lightning' | 'acid' | 'void' | 'plasma' | 'gravity' | 'none';
+
 export interface Projectile extends Entity {
   damage: number; fromPlayer: boolean; lifetime: number; color: string;
   pierce?: number; ricochet?: number;
+  // Elemental properties
+  element?: ElementType;
+  chainLightning?: number; // chains to X enemies
+  iceSlow?: number; // slow duration
+  boomerang?: boolean;
+  returning?: boolean;
+  heavy?: boolean; // slower but more damage
+  acid?: number; // DoT ticks
+  gravityPull?: number; // pull radius
+  ownerId?: string; // for coop synergies
+  originPos?: { x: number; y: number }; // for boomerang return
 }
 
 export interface Enemy extends Entity {
