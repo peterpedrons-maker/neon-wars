@@ -6,6 +6,7 @@ export interface RoomInfo {
   roomCode: string;
   isHost: boolean;
   playerId: string;
+  isPublic?: boolean;
 }
 
 export interface CoopPlayerState {
@@ -15,7 +16,7 @@ export interface CoopPlayerState {
   hp: number;
   maxHp: number;
   alive: boolean;
-  dead: boolean; // true if they died and need revive
+  dead: boolean;
   shipClass: string;
   shieldTimer: number;
   invincibleTimer: number;
@@ -34,6 +35,7 @@ export interface CoopGameSync {
   level: number;
   xpToNext: number;
   hostPlayer: CoopPlayerState;
+  playerCount?: number;
 }
 
 export interface LobbyState {
@@ -41,6 +43,7 @@ export interface LobbyState {
   mapId: string;
   playerId: string;
   isHost: boolean;
+  playerLabel?: string;
 }
 
 export interface ChatMessage {
@@ -48,6 +51,18 @@ export interface ChatMessage {
   text: string;
   isHost: boolean;
   timestamp: number;
+}
+
+export interface PublicRoomInfo {
+  id: string;
+  room_code: string;
+  host_name: string;
+  host_ship: string;
+  map_id: string;
+  player_count: number;
+  max_players: number;
+  status: string;
+  created_at: string;
 }
 
 let channel: RealtimeChannel | null = null;
@@ -64,11 +79,12 @@ function generatePlayerId(): string {
   return 'p_' + Math.random().toString(36).substring(2, 10);
 }
 
-export function createRoom(): RoomInfo {
+export function createRoom(isPublic: boolean = false): RoomInfo {
   const room: RoomInfo = {
     roomCode: generateRoomCode(),
     isHost: true,
     playerId: generatePlayerId(),
+    isPublic,
   };
   currentRoom = room;
   return room;
@@ -84,14 +100,50 @@ export function joinRoom(roomCode: string): RoomInfo {
   return room;
 }
 
+// Public room management
+export async function createPublicRoom(hostName: string, hostShip: string, mapId: string, roomCode: string): Promise<void> {
+  await supabase.from('public_rooms').insert({
+    room_code: roomCode,
+    host_name: hostName,
+    host_ship: hostShip,
+    map_id: mapId,
+    player_count: 1,
+    max_players: 6,
+    status: 'waiting',
+  });
+}
+
+export async function fetchPublicRooms(): Promise<PublicRoomInfo[]> {
+  const { data } = await supabase
+    .from('public_rooms')
+    .select('*')
+    .eq('status', 'waiting')
+    .lt('player_count', 6)
+    .order('created_at', { ascending: false })
+    .limit(20);
+  return (data || []) as PublicRoomInfo[];
+}
+
+export async function updatePublicRoomPlayerCount(roomCode: string, count: number): Promise<void> {
+  await supabase.from('public_rooms').update({ player_count: count, updated_at: new Date().toISOString() }).eq('room_code', roomCode);
+}
+
+export async function setPublicRoomStatus(roomCode: string, status: string): Promise<void> {
+  await supabase.from('public_rooms').update({ status, updated_at: new Date().toISOString() }).eq('room_code', roomCode);
+}
+
+export async function deletePublicRoom(roomCode: string): Promise<void> {
+  await supabase.from('public_rooms').delete().eq('room_code', roomCode);
+}
+
 export interface RoomCallbacks {
-  onPeerJoin: () => void;
-  onPeerLeave: () => void;
+  onPeerJoin: (playerId?: string) => void;
+  onPeerLeave: (playerId?: string) => void;
   onPeerState: (state: CoopPlayerState) => void;
   onGameSync: (sync: CoopGameSync) => void;
   onStartGame: (data: { mapId: string; hostClass: string }) => void;
   onCountdown: (count: number) => void;
-  onConfirm: () => void;
+  onConfirm: (playerId?: string) => void;
   onLobbyState: (state: LobbyState) => void;
   onChat: (msg: ChatMessage) => void;
   onLevelUp: (level: number) => void;
@@ -112,20 +164,18 @@ export function connectToRoom(
 
   channel
     .on('broadcast', { event: 'player_join' }, ({ payload }) => {
-      callbacks.onPeerJoin();
-      // When we receive a join, send back an ack so the other side knows we're here
+      callbacks.onPeerJoin(payload?.playerId);
       channel!.send({ type: 'broadcast', event: 'player_ack', payload: { playerId: room.playerId, isHost: room.isHost } });
     })
-    .on('broadcast', { event: 'player_ack' }, () => {
-      // Receiving an ack means the other player is already in the room
-      callbacks.onPeerJoin();
+    .on('broadcast', { event: 'player_ack' }, ({ payload }) => {
+      callbacks.onPeerJoin(payload?.playerId);
     })
-    .on('broadcast', { event: 'player_leave' }, () => callbacks.onPeerLeave())
+    .on('broadcast', { event: 'player_leave' }, ({ payload }) => callbacks.onPeerLeave(payload?.playerId))
     .on('broadcast', { event: 'player_state' }, ({ payload }) => callbacks.onPeerState(payload as CoopPlayerState))
     .on('broadcast', { event: 'game_sync' }, ({ payload }) => callbacks.onGameSync(payload as CoopGameSync))
     .on('broadcast', { event: 'start_game' }, ({ payload }) => callbacks.onStartGame(payload as { mapId: string; hostClass: string }))
     .on('broadcast', { event: 'countdown' }, ({ payload }) => callbacks.onCountdown((payload as any).count))
-    .on('broadcast', { event: 'guest_confirm' }, () => callbacks.onConfirm())
+    .on('broadcast', { event: 'guest_confirm' }, ({ payload }) => callbacks.onConfirm((payload as any)?.playerId))
     .on('broadcast', { event: 'lobby_state' }, ({ payload }) => callbacks.onLobbyState(payload as LobbyState))
     .on('broadcast', { event: 'chat' }, ({ payload }) => callbacks.onChat(payload as ChatMessage))
     .on('broadcast', { event: 'level_up' }, ({ payload }) => callbacks.onLevelUp((payload as any).level))
@@ -159,9 +209,9 @@ export function sendCountdown(count: number) {
   channel.send({ type: 'broadcast', event: 'countdown', payload: { count } });
 }
 
-export function sendGuestConfirm() {
+export function sendGuestConfirm(playerId?: string) {
   if (!channel) return;
-  channel.send({ type: 'broadcast', event: 'guest_confirm', payload: {} });
+  channel.send({ type: 'broadcast', event: 'guest_confirm', payload: { playerId } });
 }
 
 export function sendLobbyState(state: LobbyState) {
