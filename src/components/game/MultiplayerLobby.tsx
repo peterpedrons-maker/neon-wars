@@ -9,7 +9,13 @@ import {
 
 interface MultiplayerLobbyProps {
   unlockedShips: string[];
-  onStartCoop: (room: RoomInfo, mapId: string, playerClass: ShipType, peerClass: ShipType) => void;
+  onStartCoop: (
+    room: RoomInfo,
+    mapId: string,
+    difficulty: import('../../game/maps').MapDifficulty,
+    playerClass: ShipType,
+    peerClass: ShipType,
+  ) => void;
   onBack: () => void;
 }
 
