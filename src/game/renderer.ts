@@ -1633,6 +1633,7 @@ function getEnemyColor(type: string): string {
     tank: COLORS.tank, mothership: COLORS.mothership, vortex: COLORS.vortex, colossus: COLORS.colossus,
     fire_elemental: COLORS.fire_elemental, void_ghost: COLORS.void_ghost, crystal_golem: COLORS.crystal_golem,
     lava_dragon: COLORS.lava_dragon, void_lord: COLORS.void_lord, crystal_giant: COLORS.crystal_giant,
+    archon: (COLORS as any).archon || '#ffd700', oblivion: (COLORS as any).oblivion || '#ff0000', death_hunter: (COLORS as any).death_hunter || '#ff0033',
   };
   return map[type] || '#fff';
 }
