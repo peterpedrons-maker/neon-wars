@@ -322,7 +322,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const t = useCallback((key: TranslationKey, replacements?: Record<string, string | number>): string => {
     const entry = translations[key];
     if (!entry) return key;
-    let text = entry[lang] || entry['pt'] || key;
+    let text: string = entry[lang] || entry['pt'] || key;
     if (replacements) {
       Object.entries(replacements).forEach(([k, v]) => {
         text = text.replace(`{${k}}`, String(v));
