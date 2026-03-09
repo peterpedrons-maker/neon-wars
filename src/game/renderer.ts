@@ -1612,8 +1612,196 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy, time: number, state?
     ctx.fillStyle = cGrad;
     ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.4, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
-  } else {
+  } else if (e.type === 'ice_walker') {
+    // Crystalline snowflake
+    ctx.save(); ctx.rotate(rot * 0.5);
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      ctx.strokeStyle = hexToRgba(color, 0.6); ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(a) * e.radius, Math.sin(a) * e.radius); ctx.stroke();
+      // Branch tips
+      const bx = Math.cos(a) * e.radius * 0.7;
+      const by = Math.sin(a) * e.radius * 0.7;
+      ctx.strokeStyle = hexToRgba(color, 0.4); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(bx, by);
+      ctx.lineTo(bx + Math.cos(a + 0.5) * 4, by + Math.sin(a + 0.5) * 4); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(bx, by);
+      ctx.lineTo(bx + Math.cos(a - 0.5) * 4, by + Math.sin(a - 0.5) * 4); ctx.stroke();
+    }
+    const iGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, e.radius * 0.4);
+    iGrad.addColorStop(0, hexToRgba('#ffffff', 0.5)); iGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = iGrad; ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+
+  } else if (e.type === 'nebula_shade') {
+    // Swirling nebula cloud
+    const drift = Math.sin(time * 3) * 0.2;
+    ctx.globalAlpha = 0.5 + Math.sin(time * 4) * 0.15;
+    for (let i = 0; i < 3; i++) {
+      const a = time * 2 + i * 2.1;
+      const cx = Math.cos(a) * e.radius * 0.3;
+      const cy = Math.sin(a) * e.radius * 0.3;
+      const nGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, e.radius * (0.7 + i * 0.15));
+      nGrad.addColorStop(0, hexToRgba(color, 0.3)); nGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = nGrad;
+      ctx.beginPath(); ctx.arc(cx, cy, e.radius * (0.7 + i * 0.15), 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = hexToRgba('#ffffff', 0.5);
+    ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+
+  } else if (e.type === 'acid_slime') {
+    // Blobby wobbling shape
+    const wobble = Math.sin(time * 5) * 0.12;
+    ctx.save(); ctx.scale(1 + wobble, 1 - wobble);
     ctx.beginPath(); ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
+    ctx.fillStyle = hexToRgba(color, 0.25); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+    // Drip bubbles
+    for (let i = 0; i < 4; i++) {
+      const ba = time * 3 + i * 1.5;
+      const bx = Math.cos(ba) * e.radius * 0.5;
+      const by = Math.sin(ba) * e.radius * 0.5;
+      ctx.fillStyle = hexToRgba('#ccff00', 0.4);
+      ctx.beginPath(); ctx.arc(bx, by, 2, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+
+  } else if (e.type === 'storm_drone') {
+    // Fast angular drone with lightning
+    ctx.save(); ctx.rotate(rot * 3);
+    ctx.beginPath();
+    ctx.moveTo(e.radius, 0); ctx.lineTo(0, -e.radius * 0.8);
+    ctx.lineTo(-e.radius * 0.6, 0); ctx.lineTo(0, e.radius * 0.8);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.15); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.restore();
+    // Spark
+    if (Math.sin(time * 15) > 0.5) {
+      ctx.strokeStyle = hexToRgba('#ffffff', 0.7); ctx.lineWidth = 0.8;
+      const sa = Math.random() * Math.PI * 2;
+      ctx.beginPath(); ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(sa) * e.radius * 1.2, Math.sin(sa) * e.radius * 1.2); ctx.stroke();
+    }
+
+  } else if (e.type === 'undead_risen') {
+    // Skeletal shape
+    ctx.beginPath(); ctx.arc(0, -e.radius * 0.3, e.radius * 0.5, 0, Math.PI * 2); // skull
+    ctx.fillStyle = hexToRgba(color, 0.2); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.stroke();
+    // Body
+    ctx.strokeStyle = hexToRgba(color, 0.4); ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, e.radius * 0.6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-e.radius * 0.4, e.radius * 0.2); ctx.lineTo(e.radius * 0.4, e.radius * 0.2); ctx.stroke();
+    // Eyes
+    ctx.fillStyle = hexToRgba('#ffffff', 0.6);
+    ctx.beginPath(); ctx.arc(-e.radius * 0.15, -e.radius * 0.35, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(e.radius * 0.15, -e.radius * 0.35, 1.5, 0, Math.PI * 2); ctx.fill();
+
+  } else if (e.type === 'warp_drone') {
+    // Flickering teleporter
+    const warpAlpha = 0.4 + Math.sin(time * 8) * 0.3;
+    ctx.globalAlpha = warpAlpha;
+    ctx.save(); ctx.rotate(rot * 2);
+    drawNeonShape(ctx, 5, e.radius, color);
+    ctx.restore();
+    // Warp ring
+    ctx.strokeStyle = hexToRgba(color, 0.3); ctx.lineWidth = 1;
+    ctx.setLineDash([2, 3]); ctx.lineDashOffset = time * 20;
+    ctx.beginPath(); ctx.arc(0, 0, e.radius + 5, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+
+  } else if (e.type === 'prism_shard') {
+    // Rotating prism
+    ctx.save(); ctx.rotate(rot);
+    ctx.beginPath();
+    ctx.moveTo(0, -e.radius); ctx.lineTo(e.radius * 0.7, e.radius * 0.5);
+    ctx.lineTo(-e.radius * 0.7, e.radius * 0.5); ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.15); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.restore();
+    // Rainbow refraction
+    const colors = ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff', '#8800ff'];
+    for (let i = 0; i < 6; i++) {
+      const a = time * 3 + (i / 6) * Math.PI * 2;
+      ctx.fillStyle = hexToRgba(colors[i], 0.3);
+      ctx.beginPath(); ctx.arc(Math.cos(a) * e.radius * 0.5, Math.sin(a) * e.radius * 0.5, 1.5, 0, Math.PI * 2); ctx.fill();
+    }
+
+  } else if (e.type === 'magma_wurm') {
+    // Segmented worm
+    for (let i = 3; i >= 0; i--) {
+      const segX = -i * e.radius * 0.4;
+      const segR = e.radius * (1 - i * 0.15);
+      const segAlpha = 0.2 - i * 0.03;
+      ctx.fillStyle = hexToRgba(color, segAlpha);
+      ctx.beginPath(); ctx.arc(segX, Math.sin(time * 4 + i) * 2, segR, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = hexToRgba(color, 0.4 - i * 0.08); ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    // Head glow
+    const mGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, e.radius * 0.5);
+    mGrad.addColorStop(0, hexToRgba('#ffff00', 0.5)); mGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = mGrad; ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.5, 0, Math.PI * 2); ctx.fill();
+
+  } else if (e.type === 'quantum_shifter') {
+    // Glitching/splitting double image
+    const glitch = Math.sin(time * 15) > 0.7 ? 4 : 0;
+    for (const offset of [glitch, -glitch]) {
+      ctx.save(); ctx.translate(offset, 0);
+      ctx.globalAlpha = offset === 0 ? 0.8 : 0.3;
+      ctx.beginPath(); ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
+      ctx.fillStyle = hexToRgba(color, 0.15); ctx.fill();
+      ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.stroke();
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+
+  } else if (e.type === 'abyss_horror') {
+    // Tentacled horror
+    ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.6, 0, Math.PI * 2);
+    ctx.fillStyle = hexToRgba(color, 0.25); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+    // Tentacles
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2 + time * 1.5;
+      const tLen = e.radius + Math.sin(time * 3 + i * 0.8) * e.radius * 0.3;
+      ctx.strokeStyle = hexToRgba(color, 0.4); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(Math.cos(a) * e.radius * 0.5, Math.sin(a) * e.radius * 0.5);
+      const midA = a + Math.sin(time * 4 + i) * 0.3;
+      ctx.quadraticCurveTo(Math.cos(midA) * tLen * 0.7, Math.sin(midA) * tLen * 0.7,
+        Math.cos(a) * tLen, Math.sin(a) * tLen);
+      ctx.stroke();
+    }
+    // Eye
+    ctx.fillStyle = hexToRgba('#ffffff', 0.6 + Math.sin(time * 5) * 0.3);
+    ctx.beginPath(); ctx.arc(0, 0, e.radius * 0.2, 0, Math.PI * 2); ctx.fill();
+
+  } else if (e.type === 'death_hunter') {
+    // Menacing red fast hunter
+    const faceAngle = rot * 4;
+    ctx.save(); ctx.rotate(faceAngle);
+    ctx.beginPath();
+    ctx.moveTo(e.radius * 1.4, 0);
+    ctx.lineTo(-e.radius * 0.6, -e.radius * 0.8);
+    ctx.lineTo(-e.radius * 0.3, 0);
+    ctx.lineTo(-e.radius * 0.6, e.radius * 0.8);
+    ctx.closePath();
+    ctx.fillStyle = hexToRgba(color, 0.3); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+    ctx.restore();
+    // Red glow
+    const dGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, e.radius * 1.5);
+    dGrad.addColorStop(0, hexToRgba(color, 0.3)); dGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = dGrad; ctx.beginPath(); ctx.arc(0, 0, e.radius * 1.5, 0, Math.PI * 2); ctx.fill();
+
+  } else {
+    // Fallback: glowing circle
+    ctx.beginPath(); ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
+    ctx.fillStyle = hexToRgba(color, 0.1); ctx.fill();
     ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
   }
 

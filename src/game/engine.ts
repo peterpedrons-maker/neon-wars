@@ -556,6 +556,146 @@ function updateEnemies(state: GameState, dt: number) {
         state.shakeIntensity = 4;
         state.particles.push(...createParticles(e.pos, '#00e5ff', 15, 150, 4));
       }
+    } else if (e.type === 'ice_walker') {
+      // Ice Walker: slow advance, periodically freezes nearby then shatters
+      if (d > 0) {
+        e.pos.x += (dx / d) * e.speed * dt;
+        e.pos.y += (dy / d) * e.speed * dt;
+      }
+      if (!e.shootTimer) e.shootTimer = 3;
+      e.shootTimer -= dt;
+      if (e.shootTimer <= 0 && d < 200) {
+        e.shootTimer = 3 + Math.random();
+        for (let i = 0; i < 8; i++) {
+          const a = (i / 8) * Math.PI * 2;
+          state.projectiles.push({ pos: { x: e.pos.x, y: e.pos.y }, vel: { x: Math.cos(a) * 100, y: Math.sin(a) * 100 }, radius: 4, alive: true, damage: e.damage, fromPlayer: false, lifetime: 1.5, color: '#88ddff' });
+        }
+        state.particles.push(...createParticles(e.pos, '#88ddff', 8, 80, 2));
+      }
+    } else if (e.type === 'nebula_shade') {
+      // Nebula Shade: fast, weaves erratically
+      const weave = Math.sin(Date.now() * 0.008 + e.pos.y * 0.05) * 80;
+      if (d > 0) {
+        const perpX = -dy / d;
+        const perpY = dx / d;
+        e.pos.x += ((dx / d) * e.speed + perpX * weave) * dt;
+        e.pos.y += ((dy / d) * e.speed + perpY * weave) * dt;
+      }
+      if (Math.random() < 0.15) state.particles.push(...createParticles(e.pos, '#9966ff', 1, 30, 1.5));
+    } else if (e.type === 'acid_slime') {
+      // Acid Slime: slow, leaves acid trail
+      if (d > 0) {
+        e.pos.x += (dx / d) * e.speed * dt;
+        e.pos.y += (dy / d) * e.speed * dt;
+      }
+      if (Math.random() < 0.1) {
+        state.flameZones.push({ x: e.pos.x, y: e.pos.y, damage: e.damage * 0.3, lifetime: 4 });
+      }
+    } else if (e.type === 'storm_drone') {
+      // Storm Drone: very fast, orbits then dashes
+      if (!e.dashState) e.dashState = 'tracking';
+      if (!e.dashTimer) e.dashTimer = 0;
+      e.dashTimer -= dt;
+      if (e.dashState === 'tracking') {
+        if (d > 60) {
+          const orbitAngle = Math.atan2(dy, dx) + Math.PI / 2;
+          e.pos.x += Math.cos(orbitAngle) * e.speed * dt;
+          e.pos.y += Math.sin(orbitAngle) * e.speed * dt;
+          e.pos.x += (dx / d) * e.speed * 0.2 * dt;
+          e.pos.y += (dy / d) * e.speed * 0.2 * dt;
+        }
+        if (e.dashTimer <= 0 && d < 250) {
+          e.dashState = 'dashing'; e.dashTimer = 0.3; e.dashAngle = Math.atan2(dy, dx);
+        }
+        if (e.dashTimer <= 0) e.dashTimer = 0.8 + Math.random() * 0.5;
+      } else if (e.dashState === 'dashing') {
+        e.pos.x += Math.cos(e.dashAngle!) * e.speed * 3 * dt;
+        e.pos.y += Math.sin(e.dashAngle!) * e.speed * 3 * dt;
+        if (e.dashTimer <= 0) { e.dashState = 'cooldown'; e.dashTimer = 0.5; }
+      } else {
+        if (e.dashTimer <= 0) { e.dashState = 'tracking'; e.dashTimer = 0.5; }
+      }
+    } else if (e.type === 'undead_risen') {
+      // Undead: slow shamble toward player
+      if (d > 0) {
+        e.pos.x += (dx / d) * e.speed * dt;
+        e.pos.y += (dy / d) * e.speed * dt;
+      }
+    } else if (e.type === 'warp_drone') {
+      // Warp Drone: teleports around, shoots at player
+      if (!e.dashTimer) e.dashTimer = 1.5;
+      e.dashTimer -= dt;
+      if (e.dashTimer <= 0) {
+        e.dashTimer = 1.5 + Math.random() * 1.5;
+        const tA = Math.random() * Math.PI * 2;
+        const tD = 60 + Math.random() * 120;
+        state.particles.push(...createParticles(e.pos, '#ff44ff', 8, 100, 2));
+        e.pos.x = targetX + Math.cos(tA) * tD;
+        e.pos.y = targetY + Math.sin(tA) * tD;
+        state.particles.push(...createParticles(e.pos, '#ff44ff', 8, 100, 2));
+        // Shoot on arrival
+        const shootA = Math.atan2(targetY - e.pos.y, targetX - e.pos.x);
+        state.projectiles.push({ pos: { x: e.pos.x, y: e.pos.y }, vel: { x: Math.cos(shootA) * 200, y: Math.sin(shootA) * 200 }, radius: 4, alive: true, damage: e.damage, fromPlayer: false, lifetime: 2, color: '#ff44ff' });
+      }
+      if (d > 0) {
+        e.pos.x += (dx / d) * e.speed * 0.3 * dt;
+        e.pos.y += (dy / d) * e.speed * 0.3 * dt;
+      }
+    } else if (e.type === 'prism_shard') {
+      // Prism Shard: slow, reflects projectiles (handled in hazard-like way)
+      if (d > 0) {
+        e.pos.x += (dx / d) * e.speed * dt;
+        e.pos.y += (dy / d) * e.speed * dt;
+      }
+    } else if (e.type === 'magma_wurm') {
+      // Magma Wurm: charges then burrows, shoots fire on surface
+      if (!e.dashState) e.dashState = 'tracking';
+      if (!e.dashTimer) e.dashTimer = 0;
+      e.dashTimer -= dt;
+      if (e.dashState === 'tracking') {
+        if (d > 0) { e.pos.x += (dx / d) * e.speed * dt; e.pos.y += (dy / d) * e.speed * dt; }
+        if (e.dashTimer <= 0 && d < 200) {
+          e.dashState = 'dashing'; e.dashTimer = 0.5; e.dashAngle = Math.atan2(dy, dx);
+        }
+        if (e.dashTimer <= 0) e.dashTimer = 2;
+      } else if (e.dashState === 'dashing') {
+        e.pos.x += Math.cos(e.dashAngle!) * e.speed * 2.5 * dt;
+        e.pos.y += Math.sin(e.dashAngle!) * e.speed * 2.5 * dt;
+        state.flameZones.push({ x: e.pos.x, y: e.pos.y, damage: e.damage * 0.4, lifetime: 3 });
+        if (e.dashTimer <= 0) { e.dashState = 'cooldown'; e.dashTimer = 1.5; }
+      } else {
+        if (e.dashTimer <= 0) { e.dashState = 'tracking'; e.dashTimer = 1; }
+      }
+    } else if (e.type === 'quantum_shifter') {
+      // Quantum Shifter: very fast, teleports on hit, unpredictable movement
+      const zigzag = Math.sin(Date.now() * 0.01 + e.pos.x * 0.1) * 100;
+      if (d > 0) {
+        const perpX = -dy / d; const perpY = dx / d;
+        e.pos.x += ((dx / d) * e.speed + perpX * zigzag) * dt;
+        e.pos.y += ((dy / d) * e.speed + perpY * zigzag) * dt;
+      }
+    } else if (e.type === 'abyss_horror') {
+      // Abyss Horror: slow approach, periodic tentacle burst
+      if (d > 0) {
+        e.pos.x += (dx / d) * e.speed * dt;
+        e.pos.y += (dy / d) * e.speed * dt;
+      }
+      if (!e.shootTimer) e.shootTimer = 3;
+      e.shootTimer -= dt;
+      if (e.shootTimer <= 0 && d < 300) {
+        e.shootTimer = 2.5 + Math.random();
+        for (let i = 0; i < 10; i++) {
+          const a = (i / 10) * Math.PI * 2;
+          state.projectiles.push({ pos: { x: e.pos.x, y: e.pos.y }, vel: { x: Math.cos(a) * 120, y: Math.sin(a) * 120 }, radius: 5, alive: true, damage: e.damage * 0.5, fromPlayer: false, lifetime: 1.5, color: '#440088' });
+        }
+        state.particles.push(...createParticles(e.pos, '#440088', 12, 100, 3));
+      }
+    } else if (e.type === 'death_hunter') {
+      // Death Hunter: extremely fast, homes directly
+      if (d > 0) {
+        e.pos.x += (dx / d) * e.speed * dt;
+        e.pos.y += (dy / d) * e.speed * dt;
+      }
     } else {
       // Default: move toward player (bosses etc)
       if (d > 0) {
