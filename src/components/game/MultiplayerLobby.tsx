@@ -360,6 +360,8 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, user
   const roomRef = useRef(room);
   selectedShipRef.current = selectedShip;
   selectedMapRef.current = selectedMap;
+  peerShipsRef.current = peerShips;
+  connectedPeersRef.current = connectedPeers;
   peerShipRef.current = peerShip;
   roomRef.current = room;
 
