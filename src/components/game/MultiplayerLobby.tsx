@@ -404,11 +404,7 @@ const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({ unlockedShips, user
                 style={{ background: 'rgba(0,0,20,0.9)', border: '1px solid rgba(0,255,255,0.15)' }}>
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center"
                   style={{ background: `${SHIP_INFO[pr.host_ship]?.color || '#0ff'}15` }}>
-                  {SHIP_ICONS[pr.host_ship] ? (
-                    <img src={SHIP_ICONS[pr.host_ship]} alt="" className="w-8 h-8 object-contain" />
-                  ) : (
-                    <span className="text-lg">🚀</span>
-                  )}
+                  <ShipCanvas shipType={pr.host_ship as ShipType} width={36} height={28} />
                 </div>
                 <div className="flex-1 text-left">
                   <div className="font-mono font-bold text-sm" style={{ color: '#e0e8ff' }}>{pr.host_name}</div>
