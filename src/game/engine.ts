@@ -30,7 +30,7 @@ import {
   playShootPhantom, playShootInterceptor, playShootTitan,
   playExplosion, playCombo, playPowerUp, playSpecial,
   playHit, playDamage, playGameOver, playWaveComplete, initAudio,
-  startMusic, stopMusic, setMusicIntensity,
+  startMusic, stopMusic, setMusicIntensity, setBossMusic,
 } from './audio';
 
 const WAVE_SPAWN_INTERVAL = 0.35;
