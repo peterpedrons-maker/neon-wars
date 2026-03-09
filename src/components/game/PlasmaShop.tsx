@@ -96,7 +96,7 @@ const PlasmaShop: React.FC<PlasmaShopProps> = ({ meta, onUpdate, onBack }) => {
       </h1>
       
       <div className="flex items-center gap-2 mb-4 py-2 px-5 rounded-lg" style={{ background: 'rgba(191,90,242,0.15)', border: '1px solid rgba(191,90,242,0.3)' }}>
-        <span className="text-xl">⚡</span>
+        <img src={UI_ICONS.plasma} alt="Plasma" className="w-7 h-7 object-contain" />
         <span className="font-mono font-bold text-2xl" style={{ color: '#bf5af2' }}>{meta.plasma}</span>
         <span className="font-mono text-sm text-[#6080aa]">Plasma</span>
       </div>
