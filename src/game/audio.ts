@@ -5,6 +5,114 @@ let musicGain: GainNode | null = null;
 let musicPlaying = false;
 let musicIntensity = 1;
 
+// ===== MP3 MUSIC (restored user-provided track) =====
+const MP3_MUSIC_URL = '/music-base.mp3';
+
+let mp3Buffer: AudioBuffer | null = null;
+let mp3LoadPromise: Promise<AudioBuffer | null> | null = null;
+
+let mp3MenuSource: AudioBufferSourceNode | null = null;
+let mp3GameSource: AudioBufferSourceNode | null = null;
+
+let mp3MenuGain: GainNode | null = null;
+let mp3GameGain: GainNode | null = null;
+let mp3GameFilter: BiquadFilterNode | null = null;
+
+async function ensureMp3Buffer(): Promise<AudioBuffer | null> {
+  if (mp3Buffer) return mp3Buffer;
+  if (mp3LoadPromise) return mp3LoadPromise;
+
+  mp3LoadPromise = (async () => {
+    try {
+      const ctx = getCtx();
+      const res = await fetch(MP3_MUSIC_URL, { cache: 'force-cache' });
+      if (!res.ok) throw new Error(`Failed to fetch ${MP3_MUSIC_URL}: ${res.status}`);
+      const arr = await res.arrayBuffer();
+      const buf = await ctx.decodeAudioData(arr);
+      mp3Buffer = buf;
+      return buf;
+    } catch (e) {
+      // Keep procedural music as fallback if the MP3 isn't available.
+      console.warn('[audio] MP3 music not available, using procedural fallback.', e);
+      mp3Buffer = null;
+      return null;
+    } finally {
+      // Allow retry if it failed.
+      if (!mp3Buffer) mp3LoadPromise = null;
+    }
+  })();
+
+  return mp3LoadPromise;
+}
+
+function stopMp3Menu() {
+  try {
+    if (mp3MenuGain && audioCtx) mp3MenuGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25);
+  } catch {}
+  try { mp3MenuSource?.stop(); } catch {}
+  try { mp3MenuSource?.disconnect(); } catch {}
+  try { mp3MenuGain?.disconnect(); } catch {}
+  mp3MenuSource = null;
+  mp3MenuGain = null;
+}
+
+function stopMp3Game() {
+  try {
+    if (mp3GameGain && audioCtx) mp3GameGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25);
+  } catch {}
+  try { mp3GameSource?.stop(); } catch {}
+  try { mp3GameSource?.disconnect(); } catch {}
+  try { mp3GameFilter?.disconnect(); } catch {}
+  try { mp3GameGain?.disconnect(); } catch {}
+  mp3GameSource = null;
+  mp3GameFilter = null;
+  mp3GameGain = null;
+}
+
+function startMp3Menu(buf: AudioBuffer) {
+  const ctx = getCtx();
+  stopMp3Menu();
+
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.loop = true;
+
+  const g = ctx.createGain();
+  // Keep the "50% lower" intent by staying conservative on volume.
+  g.gain.setValueAtTime(0.03, ctx.currentTime);
+
+  src.connect(g).connect(ctx.destination);
+  src.start();
+
+  mp3MenuSource = src;
+  mp3MenuGain = g;
+}
+
+function startMp3Game(buf: AudioBuffer) {
+  const ctx = getCtx();
+  stopMp3Game();
+
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.loop = true;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(16000, ctx.currentTime);
+  filter.Q.setValueAtTime(0.2, ctx.currentTime);
+
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.03, ctx.currentTime);
+
+  src.connect(filter).connect(g).connect(ctx.destination);
+  src.start();
+
+  mp3GameSource = src;
+  mp3GameFilter = filter;
+  mp3GameGain = g;
+}
+
+
 function getCtx(): AudioContext {
   if (!audioCtx) {
     audioCtx = new AudioContext();
