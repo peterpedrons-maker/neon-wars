@@ -30,7 +30,7 @@ import {
   playShootPhantom, playShootInterceptor, playShootTitan,
   playExplosion, playCombo, playPowerUp, playSpecial,
   playHit, playDamage, playGameOver, playWaveComplete, initAudio,
-  startMusic, stopMusic, setMusicIntensity,
+  startMusic, stopMusic, setMusicIntensity, setBossMusic,
 } from './audio';
 
 const WAVE_SPAWN_INTERVAL = 0.35;
@@ -306,9 +306,31 @@ function titanBlast(state: GameState, _dt: number) {
 }
 
 function spawnWaveEnemy(state: GameState) {
+  // Death wave: only death_hunters
+  if (state.deathWave) {
+    const enemy = createEnemy('death_hunter', state.wave);
+    applyDifficultyToEnemy(state, enemy);
+    // Make them even faster as waves progress
+    enemy.speed *= 1 + (state.wave - 30) * 0.05;
+    enemy.baseSpeed = enemy.speed;
+    state.enemies.push(enemy);
+    return;
+  }
+  
+  const isMegaBoss = state.wave === 15 || state.wave === 30;
   const isBossWave = state.wave % BOSS_WAVE_INTERVAL === 0;
 
-  if (isBossWave && state.waveEnemiesRemaining === 1) {
+  // Mega-boss spawn (last enemy of the wave)
+  if (isMegaBoss && state.waveEnemiesRemaining === 1) {
+    const bossType: EnemyType = state.wave === 15 ? 'archon' : 'oblivion';
+    const boss = createEnemy(bossType, state.wave);
+    applyDifficultyToEnemy(state, boss);
+    state.enemies.push(boss);
+    setBossMusic(bossType);
+    return;
+  }
+
+  if (isBossWave && !isMegaBoss && state.waveEnemiesRemaining === 1) {
     // Map-exclusive bosses
     const mapBoss: Record<string, EnemyType> = {
       'inferno': 'lava_dragon',
@@ -320,6 +342,7 @@ function spawnWaveEnemy(state: GameState) {
       const boss = createEnemy(bossType, state.wave);
       applyDifficultyToEnemy(state, boss);
       state.enemies.push(boss);
+      setBossMusic(bossType);
       return;
     }
     const bosses: EnemyType[] = ['mothership', 'vortex', 'colossus'];
@@ -327,6 +350,7 @@ function spawnWaveEnemy(state: GameState) {
     const boss = createEnemy(bossType2, state.wave);
     applyDifficultyToEnemy(state, boss);
     state.enemies.push(boss);
+    setBossMusic(bossType2);
     return;
   }
 
@@ -765,6 +789,97 @@ function bossAttack(state: GameState, boss: Enemy) {
     state.shakeTimer = 0.4;
     state.shakeIntensity = 10;
     state.particles.push(...createParticles(boss.pos, '#00ffcc', 30, 250, 5));
+  } else if (boss.type === 'archon') {
+    // Archon: Golden storm - massive spread + homing orbs + spawns tanks
+    // Phase 1: wide golden spread
+    for (let i = 0; i < 20; i++) {
+      const a = (Math.PI * 2 / 20) * i + Date.now() * 0.002;
+      state.projectiles.push({
+        pos: { x: boss.pos.x, y: boss.pos.y },
+        vel: { x: Math.cos(a) * 240, y: Math.sin(a) * 240 },
+        radius: 8, alive: true, damage: boss.damage * 0.5, fromPlayer: false,
+        lifetime: 2.5, color: '#ffd700',
+      });
+    }
+    // Phase 2: aimed triple lance
+    for (let i = -2; i <= 2; i++) {
+      state.projectiles.push({
+        pos: { x: boss.pos.x, y: boss.pos.y },
+        vel: { x: Math.cos(angle + i * 0.15) * 380, y: Math.sin(angle + i * 0.15) * 380 },
+        radius: 12, alive: true, damage: boss.damage, fromPlayer: false,
+        lifetime: 2, color: '#fff700',
+      });
+    }
+    // Spawn reinforcements
+    for (let i = 0; i < 3; i++) {
+      const t = createEnemy('tank', state.wave);
+      t.pos = { x: boss.pos.x + (Math.random() - 0.5) * 80, y: boss.pos.y + (Math.random() - 0.5) * 80 };
+      state.enemies.push(t);
+    }
+    state.shakeTimer = 0.5;
+    state.shakeIntensity = 12;
+    state.particles.push(...createParticles(boss.pos, '#ffd700', 40, 300, 6));
+  } else if (boss.type === 'oblivion') {
+    // Oblivion: Ultimate devastation - multi-phase attack
+    const phase = (boss.bossPhase || 0) % 3;
+    if (phase === 0) {
+      // Blood nova - expanding rings
+      for (let ring = 0; ring < 3; ring++) {
+        for (let i = 0; i < 16; i++) {
+          const a = (Math.PI * 2 / 16) * i + ring * 0.13;
+          const spd = 160 + ring * 60;
+          state.projectiles.push({
+            pos: { x: boss.pos.x, y: boss.pos.y },
+            vel: { x: Math.cos(a) * spd, y: Math.sin(a) * spd },
+            radius: 7, alive: true, damage: boss.damage * 0.4, fromPlayer: false,
+            lifetime: 2.5, color: '#ff0000',
+          });
+        }
+      }
+    } else if (phase === 1) {
+      // Death beam - concentrated burst at player
+      for (let i = -3; i <= 3; i++) {
+        state.projectiles.push({
+          pos: { x: boss.pos.x, y: boss.pos.y },
+          vel: { x: Math.cos(angle + i * 0.06) * 450, y: Math.sin(angle + i * 0.06) * 450 },
+          radius: 14, alive: true, damage: boss.damage * 0.8, fromPlayer: false,
+          lifetime: 2, color: '#ff0033',
+        });
+      }
+    } else {
+      // Void summon + teleport
+      for (let i = 0; i < 4; i++) {
+        const rA = Math.random() * Math.PI * 2;
+        const d2 = 60 + Math.random() * 100;
+        const tx = p.pos.x + Math.cos(rA) * d2;
+        const ty = p.pos.y + Math.sin(rA) * d2;
+        for (let j = 0; j < 10; j++) {
+          const a = (j / 10) * Math.PI * 2;
+          state.projectiles.push({
+            pos: { x: tx, y: ty },
+            vel: { x: Math.cos(a) * 150, y: Math.sin(a) * 150 },
+            radius: 6, alive: true, damage: boss.damage * 0.35, fromPlayer: false,
+            lifetime: 1.5, color: '#880000',
+          });
+        }
+      }
+      // Teleport
+      state.particles.push(...createParticles(boss.pos, '#ff0000', 30, 200, 4));
+      const tA = Math.random() * Math.PI * 2;
+      boss.pos.x = p.pos.x + Math.cos(tA) * 180;
+      boss.pos.y = p.pos.y + Math.sin(tA) * 180;
+      state.particles.push(...createParticles(boss.pos, '#ff0000', 30, 200, 4));
+      // Spawn void ghosts
+      for (let i = 0; i < 2; i++) {
+        const vg = createEnemy('void_ghost', state.wave);
+        vg.pos = { x: boss.pos.x + (Math.random() - 0.5) * 60, y: boss.pos.y + (Math.random() - 0.5) * 60 };
+        state.enemies.push(vg);
+      }
+    }
+    boss.bossPhase = (boss.bossPhase || 0) + 1;
+    state.shakeTimer = 0.6;
+    state.shakeIntensity = 16;
+    state.particles.push(...createParticles(boss.pos, '#ff0000', 50, 350, 7));
   }
 }
 
@@ -887,7 +1002,15 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
     e.alive = false;
     
     // Track boss kills
-    if (e.isBoss) state.bossesKilled = (state.bossesKilled || 0) + 1;
+    if (e.isBoss) {
+      state.bossesKilled = (state.bossesKilled || 0) + 1;
+      setBossMusic(null); // Return to map music
+    }
+    
+    // Trigger death wave after defeating Oblivion (wave 30 boss)
+    if (e.type === 'oblivion') {
+      state.deathWave = true;
+    }
     
     // Vampirism
     if (state.abilities.vampirism > 0 && Math.random() < state.abilities.vampirism) {
@@ -984,6 +1107,7 @@ function getEnemyColor(type: EnemyType): string {
     tank: COLORS.tank, mothership: COLORS.mothership, vortex: COLORS.vortex, colossus: COLORS.colossus,
     fire_elemental: COLORS.fire_elemental, void_ghost: COLORS.void_ghost, crystal_golem: COLORS.crystal_golem,
     lava_dragon: COLORS.lava_dragon, void_lord: COLORS.void_lord, crystal_giant: COLORS.crystal_giant,
+    archon: (COLORS as any).archon || '#ffd700', oblivion: (COLORS as any).oblivion || '#ff0000', death_hunter: (COLORS as any).death_hunter || '#ff0033',
   };
   return map[type] || '#fff';
 }
@@ -1047,10 +1171,23 @@ function applyPowerUp(state: GameState, type: string) {
 export function startWave(state: GameState) {
   state.wave++;
   setMusicIntensity(state.wave);
+  
+  // Death wave: endless fast enemies
+  if (state.deathWave) {
+    state.waveEnemiesRemaining = 50 + state.wave * 5;
+    state.waveSpawnTimer = 0;
+    state.enemiesKilledThisWave = 0;
+    state.screen = 'playing';
+    return;
+  }
+  
+  const isMegaBoss = state.wave === 15 || state.wave === 30;
   const isBossWave = state.wave % BOSS_WAVE_INTERVAL === 0;
-  state.waveEnemiesRemaining = isBossWave
-    ? WAVE_BASE_ENEMIES + state.wave * 2 + 1
-    : WAVE_BASE_ENEMIES + (state.wave - 1) * WAVE_ENEMY_INCREMENT;
+  state.waveEnemiesRemaining = isMegaBoss
+    ? WAVE_BASE_ENEMIES + state.wave * 3 + 1 // extra enemies + mega boss
+    : isBossWave
+      ? WAVE_BASE_ENEMIES + state.wave * 2 + 1
+      : WAVE_BASE_ENEMIES + (state.wave - 1) * WAVE_ENEMY_INCREMENT;
   state.waveSpawnTimer = 0;
   state.enemiesKilledThisWave = 0;
   state.screen = 'playing';
@@ -1103,6 +1240,7 @@ export function createInitialState(
     plasmaZones: [],
     coopPeers: [],
     enemiesKilledThisWave: 0,
+    deathWave: false,
   };
 }
 

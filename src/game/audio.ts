@@ -819,6 +819,8 @@ const BOSS_MUSIC_PROFILES: Partial<Record<EnemyType, MusicProfile>> = {
   lava_dragon: { ...DEFAULT_BOSS_PROFILE, id: 'boss:lava_dragon', bpm: 166, scale: SCALES.phrygian, progressions: [PROGS[5], PROGS[6]] },
   void_lord: { ...DEFAULT_BOSS_PROFILE, id: 'boss:void_lord', bpm: 184, scale: SCALES.diminished, progressions: [PROGS[5], PROGS[7]] },
   crystal_giant: { ...DEFAULT_BOSS_PROFILE, id: 'boss:crystal_giant', bpm: 154, hatStyle: 'tight', scale: SCALES.mixolydian, progressions: [PROGS[2], PROGS[3]] },
+  archon: { ...DEFAULT_BOSS_PROFILE, id: 'boss:archon', bpm: 190, scale: SCALES.harmonicMinor, progressions: [PROGS[6], PROGS[5]], masterGain: 0.28, keyCycle: [41.2, 36.7, 46.2, 32.7] },
+  oblivion: { ...DEFAULT_BOSS_PROFILE, id: 'boss:oblivion', bpm: 200, scale: SCALES.diminished, progressions: [PROGS[7], PROGS[5]], masterGain: 0.3, keyCycle: [30.87, 27.5, 36.7, 24.5] },
 };
 
 function getActiveGameProfile(): MusicProfile {
