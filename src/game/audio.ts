@@ -1221,9 +1221,13 @@ function scheduleMenuMeasure() {
     menuGain.connect(ctx.destination);
   }
 
+  // Slower tempo for more atmospheric feel
   const progIdx = Math.floor(menuMeasure / 4) % MENU_CHORDS.length;
   const prog = MENU_CHORDS[progIdx];
   const chord = prog[menuMeasure % prog.length];
+  
+  // Modulate key every 16 measures for variety
+  const currentKey = key + (Math.floor(menuMeasure / 16) % 3) * 2;
 
   // Lush pad (7 voices supersaw)
   for (let ci = 0; ci < Math.min(chord.length, 4); ci++) {
