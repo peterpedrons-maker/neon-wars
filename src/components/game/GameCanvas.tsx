@@ -21,6 +21,7 @@ interface GameCanvasProps {
 
 const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, mapId, mapDifficulty, onMenu }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const sizeRef = useRef({ w: window.innerWidth, h: window.innerHeight, dpr: 1 });
   const stateRef = useRef<GameState | null>(null);
   const inputRef = useRef<InputState>({ moveX: 0, moveY: 0, aimX: 1, aimY: 0, shooting: false, special: false });
   const keysRef = useRef<Set<string>>(new Set());
@@ -63,10 +64,11 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, mapId, mapDifficul
     if (!canvas) return;
     const onMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
-      const scale = getScale(canvas.width, canvas.height);
-      const offset = getOffset(canvas.width, canvas.height);
-      const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
-      const my = (e.clientY - rect.top) * (canvas.height / rect.height);
+      const { w, h } = sizeRef.current;
+      const scale = getScale(w, h);
+      const offset = getOffset(w, h);
+      const mx = (e.clientX - rect.left) * (w / rect.width);
+      const my = (e.clientY - rect.top) * (h / rect.height);
       const worldX = (mx - offset.x) / scale;
       const worldY = (my - offset.y) / scale;
       if (stateRef.current) {
@@ -96,17 +98,27 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, mapId, mapDifficul
     };
   }, []);
 
-  // Resize canvas
+  // Resize canvas (device-pixel-ratio aware so text/lines stay crisp on mobile screens)
   useEffect(() => {
     const resize = () => {
       const canvas = canvasRef.current;
       if (!canvas) return;
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+      sizeRef.current = { w, h, dpr };
     };
     resize();
     window.addEventListener('resize', resize);
-    return () => window.removeEventListener('resize', resize);
+    window.addEventListener('orientationchange', resize);
+    return () => {
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('orientationchange', resize);
+    };
   }, []);
 
   // Game loop
@@ -156,7 +168,9 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, mapId, mapDifficul
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
-      renderGame(ctx, stateRef.current, canvas.width, canvas.height);
+      const { w, h, dpr } = sizeRef.current;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      renderGame(ctx, stateRef.current, w, h);
     };
     frameRef.current = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frameRef.current);
