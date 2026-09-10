@@ -440,7 +440,7 @@ const CoopGameCanvas: React.FC<CoopGameCanvasProps> = ({ playerClass, peerClasse
   const state = stateRef.current;
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-[#08061a]">
+    <div className="relative w-screen h-screen overflow-hidden bg-[#08061a]" style={{ touchAction: 'none' }}>
       <canvas ref={canvasRef} className="block w-full h-full" />
 
       {/* Coop indicator */}
