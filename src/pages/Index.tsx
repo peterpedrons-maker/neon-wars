@@ -16,7 +16,6 @@ import PlasmaShop from '../components/game/PlasmaShop';
 import MultiplayerLobby from '../components/game/MultiplayerLobby';
 import CoopGameCanvas from '../components/game/CoopGameCanvas';
 import Achievements from '../components/game/Achievements';
-import InstallPrompt from '../components/game/InstallPrompt';
 
 const Index = () => {
   const { user, loading, username, signUp, signIn, signOut, saveProgress, loadProgress } = useAuth();
@@ -106,21 +105,18 @@ const Index = () => {
 
   if (screen === 'menu') {
     return (
-      <>
-        <MainMenu
-          plasma={meta.plasma} stats={meta.stats}
-          milestones={ALL_MILESTONES.filter(m => meta.milestones[m.id])}
-          onPlay={() => { setCoopRoom(null); setScreen('class-select'); }}
-          onLeaderboard={() => setScreen('leaderboard')}
-          onHowToPlay={() => setScreen('how-to-play')}
-          onShop={() => setScreen('shop')}
-          onMultiplayer={() => setScreen('multiplayer-lobby')}
-          onAchievements={() => setScreen('achievements')}
-          username={username}
-          onLogout={signOut}
-        />
-        <InstallPrompt />
-      </>
+      <MainMenu
+        plasma={meta.plasma} stats={meta.stats}
+        milestones={ALL_MILESTONES.filter(m => meta.milestones[m.id])}
+        onPlay={() => { setCoopRoom(null); setScreen('class-select'); }}
+        onLeaderboard={() => setScreen('leaderboard')}
+        onHowToPlay={() => setScreen('how-to-play')}
+        onShop={() => setScreen('shop')}
+        onMultiplayer={() => setScreen('multiplayer-lobby')}
+        onAchievements={() => setScreen('achievements')}
+        username={username}
+        onLogout={signOut}
+      />
     );
   }
 
