@@ -20,6 +20,14 @@ const translations = {
   plasma: { pt: 'Plasma', en: 'Plasma' },
   language: { pt: '🌐 EN', en: '🌐 PT' },
 
+  // ===== INSTALL PROMPT =====
+  install_title: { pt: 'Instalar Neon Wars', en: 'Install Neon Wars' },
+  install_body: { pt: 'Instale o jogo na tela inicial para jogar em tela cheia, sem a barra do navegador, e até offline.', en: 'Install the game on your home screen to play fullscreen, without the browser bar, and even offline.' },
+  install_ios_body: { pt: 'Toque em Compartilhar', en: 'Tap Share' },
+  install_ios_step: { pt: 'e depois em "Adicionar à Tela de Início" para instalar o jogo.', en: 'then "Add to Home Screen" to install the game.' },
+  install_button: { pt: '📲 Instalar', en: '📲 Install' },
+  install_later: { pt: 'Agora não', en: 'Not now' },
+
   // ===== AUTH =====
   auth_subtitle: { pt: 'Arena de Sobrevivência Cósmica', en: 'Cosmic Survival Arena' },
   login: { pt: '🔑 ENTRAR', en: '🔑 LOGIN' },
