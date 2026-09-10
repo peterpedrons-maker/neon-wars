@@ -7,6 +7,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import { LanguageProvider } from "./game/i18n";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import InstallPrompt from "./components/game/InstallPrompt";
 
 const queryClient = new QueryClient();
 
@@ -17,6 +18,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <InstallPrompt />
           <BrowserRouter basename={import.meta.env.BASE_URL}>
             <Routes>
               <Route path="/" element={<Index />} />

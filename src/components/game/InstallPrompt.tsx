@@ -4,6 +4,7 @@ import { playClick } from '../../game/audio';
 
 const DISMISS_KEY = 'neonwars_install_dismissed_at';
 const DISMISS_DAYS = 7;
+const AUTO_SHOW_DELAY_MS = 1200;
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -29,14 +30,24 @@ function wasRecentlyDismissed() {
   return days < DISMISS_DAYS;
 }
 
+/**
+ * Shows an install prompt automatically shortly after the app loads —
+ * like a native app-store installer would — rather than waiting on the
+ * browser's own `beforeinstallprompt` timing, which is gated by opaque
+ * engagement heuristics and may not fire on a first visit at all.
+ *
+ * If the native event does arrive (immediately, or while this is already
+ * showing) the CTA upgrades to a real "Instalar" button wired to it;
+ * otherwise it falls back to manual instructions for the platform.
+ */
 const InstallPrompt: React.FC = () => {
   const { t } = useLanguage();
   const [deferredEvent, setDeferredEvent] = useState<BeforeInstallPromptEvent | null>(null);
-  const [showIOSHint, setShowIOSHint] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [eligible] = useState(() => !isStandalone() && !wasRecentlyDismissed());
 
   useEffect(() => {
-    if (isStandalone() || wasRecentlyDismissed()) return;
+    if (!eligible) return;
 
     const onBeforeInstall = (e: Event) => {
       e.preventDefault();
@@ -51,20 +62,14 @@ const InstallPrompt: React.FC = () => {
     window.addEventListener('beforeinstallprompt', onBeforeInstall);
     window.addEventListener('appinstalled', onInstalled);
 
-    // Safari (iOS/iPadOS) never fires beforeinstallprompt — show manual
-    // "Add to Home Screen" instructions instead, after a short delay so
-    // it doesn't compete with the login/menu screen for attention.
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    if (isIOS()) {
-      timer = setTimeout(() => { setShowIOSHint(true); setVisible(true); }, 1500);
-    }
+    const timer = setTimeout(() => setVisible(true), AUTO_SHOW_DELAY_MS);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', onBeforeInstall);
       window.removeEventListener('appinstalled', onInstalled);
-      if (timer) clearTimeout(timer);
+      clearTimeout(timer);
     };
-  }, []);
+  }, [eligible]);
 
   const dismiss = () => {
     playClick();
@@ -86,6 +91,12 @@ const InstallPrompt: React.FC = () => {
 
   if (!visible) return null;
 
+  const bodyText = deferredEvent
+    ? t('install_body')
+    : isIOS()
+      ? <>{t('install_ios_body')} <span style={{ color: '#0ff' }}>⎋</span> {t('install_ios_step')}</>
+      : t('install_generic_body');
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: 'rgba(0,0,8,0.75)' }}>
       <div className="w-full max-w-sm rounded-2xl p-6 text-center font-mono"
@@ -95,16 +106,10 @@ const InstallPrompt: React.FC = () => {
           {t('install_title')}
         </h2>
 
-        {showIOSHint ? (
-          <p className="text-sm text-[#a0b0d0] mb-5 leading-relaxed">
-            {t('install_ios_body')} <span style={{ color: '#0ff' }}>⎋</span> {t('install_ios_step')}
-          </p>
-        ) : (
-          <p className="text-sm text-[#a0b0d0] mb-5 leading-relaxed">{t('install_body')}</p>
-        )}
+        <p className="text-sm text-[#a0b0d0] mb-5 leading-relaxed">{bodyText}</p>
 
         <div className="flex flex-col gap-2">
-          {!showIOSHint && (
+          {deferredEvent && (
             <button onClick={install}
               className="py-3 px-6 text-base font-bold rounded-lg text-white transition-all active:scale-95"
               style={{ background: 'linear-gradient(135deg, rgba(0,229,255,0.25), rgba(191,90,242,0.25))', border: '1px solid #0ff', boxShadow: '0 0 15px rgba(0,255,255,0.25)' }}>

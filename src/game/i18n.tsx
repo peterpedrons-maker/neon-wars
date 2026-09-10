@@ -25,6 +25,7 @@ const translations = {
   install_body: { pt: 'Instale o jogo na tela inicial para jogar em tela cheia, sem a barra do navegador, e até offline.', en: 'Install the game on your home screen to play fullscreen, without the browser bar, and even offline.' },
   install_ios_body: { pt: 'Toque em Compartilhar', en: 'Tap Share' },
   install_ios_step: { pt: 'e depois em "Adicionar à Tela de Início" para instalar o jogo.', en: 'then "Add to Home Screen" to install the game.' },
+  install_generic_body: { pt: 'Toque no menu ⋮ do navegador e escolha "Instalar app" ou "Adicionar à tela inicial".', en: 'Tap the browser\'s ⋮ menu and choose "Install app" or "Add to Home Screen".' },
   install_button: { pt: '📲 Instalar', en: '📲 Install' },
   install_later: { pt: 'Agora não', en: 'Not now' },
 
