@@ -211,7 +211,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ playerClass, mapId, mapDifficul
   const state = stateRef.current;
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-[#08061a]">
+    <div className="relative w-screen h-screen overflow-hidden bg-[#08061a]" style={{ touchAction: 'none' }}>
       <canvas ref={canvasRef} className="block w-full h-full" />
 
       {state && state.screen === 'playing' && (

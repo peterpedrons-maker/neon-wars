@@ -42,6 +42,7 @@ import {
   playHit, playDamage, playGameOver, playWaveComplete, initAudio,
   startMusic, stopMusic, setMusicIntensity, setBossMusic,
 } from './audio';
+import { haptics } from './haptics';
 
 const WAVE_SPAWN_INTERVAL = 0.35;
 
@@ -122,6 +123,7 @@ export function updateGame(state: GameState, input: InputState, dt: number): voi
   const aliveEnemies = state.enemies.filter(e => e.alive).length;
   if (state.waveEnemiesRemaining <= 0 && aliveEnemies === 0) {
     playWaveComplete();
+    haptics.waveComplete();
     startWave(state);
   }
 
@@ -1588,6 +1590,7 @@ function damageEnemy(state: GameState, e: Enemy, damage: number) {
     }
 
     playExplosion(e.isBoss);
+    if (e.isBoss) haptics.bossKill();
 
     const color = e.isBoss ? COLORS.neonYellow : getEnemyColor(e.type);
     // Less dense overall, but MUCH wider spread on death
@@ -1673,6 +1676,7 @@ function damagePlayer(state: GameState, damage: number) {
   state.shakeIntensity = 5;
   state.particles.push(...createParticles(p.pos, COLORS.health, 4, 180, 2));
   playDamage();
+  haptics.playerDamaged();
 
   if (p.hp <= 0) {
     p.hp = 0;
@@ -1682,6 +1686,7 @@ function damagePlayer(state: GameState, damage: number) {
     state.particles.push(...createParticles(p.pos, '#ffffff', 20, 200, 3));
     stopMusic();
     playGameOver();
+    haptics.playerDeath();
   }
 }
 

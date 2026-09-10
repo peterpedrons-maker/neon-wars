@@ -109,8 +109,9 @@ All colors MUST be HSL.
   body {
     position: fixed;
     inset: 0;
-    overflow: hidden;
-    touch-action: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    touch-action: pan-y;
     -webkit-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
@@ -118,6 +119,6 @@ All colors MUST be HSL.
   }
 
   #root {
-    height: 100%;
+    min-height: 100%;
   }
 }

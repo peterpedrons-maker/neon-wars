@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect } from 'react';
 import { Ability, getRandomAbilities } from '../../game/abilities';
 import { playClick, playHover, playLevelUp } from '../../game/audio';
+import { haptics } from '../../game/haptics';
 import { ABILITY_ICONS } from '../../game/icons';
 import { useLanguage } from '../../game/i18n';
 
@@ -17,7 +18,7 @@ const LevelUpScreen: React.FC<LevelUpScreenProps> = ({ level, abilityLevels, equ
   const { t } = useLanguage();
   const abilities = useMemo(() => getRandomAbilities(3, abilityLevels, weaponSlots, equippedWeapons, unlockedAbilities), [level]);
 
-  useEffect(() => { playLevelUp(); }, []);
+  useEffect(() => { playLevelUp(); haptics.levelUp(); }, []);
 
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-20 select-none p-4">
