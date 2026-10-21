@@ -303,7 +303,7 @@ h4.sec{margin:6px 0 0;font-family:var(--f-display);font-size:15px;color:var(--ou
     <ol>
       <li><div><b>Praça</b>Cada prédio tem o seu menu. Faça os passos 1 e 2 e parta.</div></li>
       <li><div><b>Missão</b>No Quadro de Missões, veja o mapa e os inimigos que podem aparecer. Mapa 1 é sempre igual; o resto muda.</div></li>
-      <li><div><b>Grupo</b>Na Taverna, toque num herói pra ler a ficha: função e como ele joga. Escolha 5 heróis.</div></li>
+      <li><div><b>Grupo</b>Na Taverna, toque num herói pra contratar. Escolha 5 heróis.</div></li>
       <li><div><b>Formação</b>Posicione cada herói numa casa dourada. Morro dá +2 de acerto.</div></li>
       <li><div><b>Batalha</b>O jogo joga sozinho. Acompanhe os dados, use 2x, 4x ou Pular, e o botão Mapa pra ver tudo.</div></li>
       <li><div><b>Fases</b>Vença pra ir ao próximo mapa. Quem caiu volta Exausto. Cada herói ganha XP só pelo que faz em pé.</div></li>
@@ -731,7 +731,7 @@ const cam=new THREE.OrthographicCamera(-6,6,6,-6,0.1,100);
 const CAM_OFF=new THREE.Vector3(5.2,9.5,9.8);
 const AZ=Math.atan2(CAM_OFF.x,CAM_OFF.z), SIN_E=CAM_OFF.y/CAM_OFF.length();
 const VX=-22, VZ=0;
-const camT=new THREE.Vector3(VX,0.3,VZ+0.3); cam.zoom=0.8;
+const camT=new THREE.Vector3(VX,0.3,VZ+0.3); cam.zoom=0.95;
 const shakeO={v:0};
 function applyCam(){
   const sx=(Math.random()-0.5)*shakeO.v, sy=(Math.random()-0.5)*shakeO.v;
@@ -746,7 +746,7 @@ function aimCam(x,y,z,zoom,dur=1.1){
   gsap.killTweensOf(camT);gsap.killTweensOf(cam);
   return gsap.timeline().to(camT,{x,y,z,duration:dur,ease:'power2.inOut'},0).to(cam,{zoom,duration:dur,ease:'power2.inOut',onUpdate:()=>cam.updateProjectionMatrix()},0);
 }
-const VIEW={village:[VX,0.3,VZ+0.3,0.8],tavern:[VX,1.1,VZ-2.1,1.9],board:[0,0.3,0.2,1]};
+const VIEW={village:[VX,0.3,VZ+0.3,0.95],tavern:[VX,1.1,VZ-2.1,1.9],board:[0,0.3,0.2,1]};
 const aim=(v,d)=>aimCam(...VIEW[v],d);
 scene.add(new THREE.HemisphereLight(0xfff1d6,0x3a2b20,0.65));
 const sun=new THREE.DirectionalLight(0xffe2b0,0.95); sun.position.set(-4,10,6); scene.add(sun);
@@ -1294,7 +1294,7 @@ function renderTavern(){
   <div class="head"><div><div class="eyebrow">Taverna do Javali Torto</div><h2>Monte seu grupo</h2></div>
     <div class="btns"><button class="btn ghost sm" data-act="toVillage">Praça</button><button class="btn ghost sm" data-act="reroll" ${rerolls?'':'disabled'}>Sortear (${rerolls})</button></div></div>
   ${partyBar()}
-  <p class="hint">Toque num herói pra ver a ficha: função, como ele joga e equipamento.</p>
+  <p class="hint">Toque num herói pra contratar ou dispensar do grupo.</p>
   <div class="pool">${draw.map(h=>`
     <button class="pc" data-hero="${h.id}" aria-pressed="${selected.has(h.id)}">
       ${sc[h.sur]>1?'<span class="sib">Irmãos</span>':''}<span class="tick">✓</span>
@@ -1356,7 +1356,7 @@ PI_.addEventListener('click',e=>{
   const bld=t.closest('[data-bld]');if(bld){openBld(bld.dataset.bld);return;}
   const mp=t.closest('[data-map]');if(mp){renderBrief(+mp.dataset.map);return;}
   const pm=t.closest('[data-pickmap]');if(pm){run.mission=+pm.dataset.pickmap;goVillage();return;}
-  const hero=t.closest('[data-hero]');if(hero){renderSheet(+hero.dataset.hero);return;}
+  const hero=t.closest('[data-hero]');if(hero){const id=+hero.dataset.hero;if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderTavern();return;}
   const nav=t.closest('[data-nav]');if(nav){const i=draw.findIndex(h=>h.id===tvFocus);renderSheet(draw[(i+ +nav.dataset.nav+draw.length)%draw.length].id);return;}
   const hire=t.closest('[data-hire]');if(hire){const id=+hire.dataset.hire;if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderSheet(id);return;}
   const sl=t.closest('[data-slot]');if(sl){selected.delete(+sl.dataset.slot);view==='sheet'?renderSheet(tvFocus):renderTavern();return;}
