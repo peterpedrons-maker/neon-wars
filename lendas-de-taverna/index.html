@@ -135,8 +135,9 @@ h1{font-size:24px} h2{font-size:20px} h3{font-size:17px}
 .res-title{font-size:42px;color:var(--ouro);text-shadow:0 4px 0 var(--tinta)}
 .res-title.lose{color:var(--sangue)}
 .box{background:var(--madeira);border:2px solid var(--borda);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
-.eqslots{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
-.eqslot{all:unset;cursor:pointer;font-size:11px;padding:5px 8px;border-radius:5px;background:var(--sombra);border:1.5px solid var(--borda);color:var(--papel-2)}
+.eqslots{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.eqslot{all:unset;box-sizing:border-box;cursor:pointer;font-size:11px;padding:5px 8px;border-radius:5px;background:var(--sombra);border:1.5px solid var(--borda);color:var(--papel-2)}
+.eqslot.off{cursor:default;opacity:.55;font-style:italic}
 .invrow{display:flex;flex-direction:column;gap:4px;padding:8px 0;border-bottom:1px dashed var(--borda)}
 .invrow:last-child{border-bottom:none}
 .invrow>span{font-size:13px;font-weight:600;color:var(--papel)}
@@ -422,7 +423,7 @@ const CLASSES={
     dica:'Coloque nas pontas, perto do morro.',
     armas:[['Adagas gêmeas',0,0],['Rapieira',1,-1],['Punhal envenenado',0,1]],
     armad:[['Colete de couro',0,0],['Capa sombria',-1,2],['Gibão leve',1,-2]]},
-  mago:{nome:'Mago',papel:'Dano à distância',hp:14,atk:5,def:11,mov:3,alc:4,dmg:[2,6,1],ini:2,per:1,
+  mago:{nome:'Mago',papel:'Dano à distância',twoHanded:true,hp:14,atk:5,def:11,mov:3,alc:4,dmg:[2,6,1],ini:2,per:1,
     resumo:'Raio arcano de longe.',
     como:['Atira em quem estiver ao alcance de 4 casas, escolhendo o mais ferido.','Prefere ficar longe da briga. É frágil: proteja-o.'],
     dica:'Coloque atrás, com um guerreiro na frente.',
@@ -434,13 +435,13 @@ const CLASSES={
     dica:'Coloque no meio do grupo, na segunda fileira.',
     armas:[['Maça sagrada',0,0],['Cajado santo',1,-1],['Martelo de luz',0,1]],
     armad:[['Hábito bento',0,0],['Cota leve',1,-2],['Manto reforçado',-1,3]]},
-  arqueiro:{nome:'Arqueiro',papel:'Atirador',hp:17,atk:4,def:12,mov:3,alc:5,dmg:[1,8,1],ini:3,per:2,
+  arqueiro:{nome:'Arqueiro',papel:'Atirador',twoHanded:true,hp:17,atk:4,def:12,mov:3,alc:5,dmg:[1,8,1],ini:3,per:2,
     resumo:'Muito preciso no alto.',
     como:['Alcance 5. Procura morros: do alto ganha +4 de acerto.','Atira no inimigo mais ferido ao alcance e mantém distância.'],
     dica:'Coloque num morro, atrás da linha de frente.',
     armas:[['Arco curto',1,-1],['Arco longo',0,0],['Arco composto',0,1]],
     armad:[['Gibão verde',0,0],['Capa de caça',1,-2],['Colete acolchoado',-1,3]]},
-  bardo:{nome:'Bardo',papel:'Suporte (bônus)',hp:17,atk:2,def:12,mov:3,alc:3,dmg:[1,4,1],ini:2,per:2,
+  bardo:{nome:'Bardo',papel:'Suporte (bônus)',twoHanded:true,hp:17,atk:2,def:12,mov:3,alc:3,dmg:[1,4,1],ini:2,per:2,
     resumo:'Inspira: +2 no acerto.',
     como:['Todo turno toca uma balada pra um aliado a até 4 casas: +2 no próximo acerto.','Depois ataca de média distância (alcance 3).'],
     dica:'Coloque no centro, perto dos atacantes.',
@@ -458,7 +459,9 @@ const TRAITS=[
 ];
 /* ================= Equipamento: itens que dropam durante a run =================
    Vale só pra run atual (reseta a cada nova run) — resolve o problema de ficar
-   fácil demais ao rejogar fases iniciais com itens achados em fases avançadas. */
+   fácil demais ao rejogar fases iniciais com itens achados em fases avançadas.
+   8 peças por herói: arma, mão secundária, cabeça, corpo, mãos, pés e 2 acessórios.
+   Classes de arma de duas mãos (mago, arqueiro, bardo) não usam mão secundária. */
 const RARITY={
   1:{nome:'Comum',cor:'#b8b2a4'},
   2:{nome:'Raro',cor:'#4caf50'},
@@ -466,40 +469,104 @@ const RARITY={
   4:{nome:'Épico',cor:'#a855f7'},
   5:{nome:'Lendário',cor:'#e9b949'},
 };
+const SLOT_INFO={
+  weapon:{label:'Arma',icon:'⚔️'},
+  offhand:{label:'Mão secundária',icon:'🛡️'},
+  head:{label:'Cabeça',icon:'🪖'},
+  body:{label:'Corpo',icon:'🧥'},
+  hands:{label:'Mãos',icon:'🧤'},
+  feet:{label:'Pés',icon:'👢'},
+  acc1:{label:'Acessório 1',icon:'💍'},
+  acc2:{label:'Acessório 2',icon:'📿'},
+};
 const ITEMS=[
-  // ===== Comum =====
+  // ===== Arma (weapon) =====
   {id:'lamina_simples',nome:'Lâmina Simples',slot:'weapon',rar:1,icon:'⚔️',desc:'+1 ATQ',mods:{atk:1}},
   {id:'adaga_enferrujada',nome:'Adaga Enferrujada',slot:'weapon',rar:1,icon:'🗡️',desc:'+1 Movimento',mods:{mov:1}},
   {id:'cajado_rustico',nome:'Cajado Rústico',slot:'weapon',rar:1,icon:'🪵',desc:'+1 Alcance',mods:{alc:1}},
-  {id:'anel_couro',nome:'Anel de Couro',slot:'trinket',rar:1,icon:'💍',desc:'+2 PV máx',mods:{maxhp:2}},
-  {id:'bota_surrada',nome:'Bota Surrada',slot:'trinket',rar:1,icon:'👢',desc:'+1 Movimento',mods:{mov:1}},
-  {id:'pingente_simples',nome:'Pingente Sem Graça',slot:'trinket',rar:1,icon:'📿',desc:'+1 DEF',mods:{def:1}},
-  // ===== Raro =====
   {id:'lamina_afiada',nome:'Lâmina Afiada',slot:'weapon',rar:2,icon:'⚔️',desc:'+2 ATQ',mods:{atk:2}},
   {id:'machado_ferro',nome:'Machado de Ferro',slot:'weapon',rar:2,icon:'🪓',desc:'+2 dano, −1 DEF',mods:{dmgBonus:2,def:-1}},
   {id:'arco_reforcado',nome:'Arco Reforçado',slot:'weapon',rar:2,icon:'🏹',desc:'+1 ATQ, +1 Alcance',mods:{atk:1,alc:1}},
-  {id:'anel_vigor',nome:'Anel de Vigor',slot:'trinket',rar:2,icon:'💍',desc:'+4 PV máx',mods:{maxhp:4}},
-  {id:'bota_elfica',nome:'Bota Élfica',slot:'trinket',rar:2,icon:'👢',desc:'+1 Movimento, +1 DEF',mods:{mov:1,def:1}},
-  {id:'escudo_pequeno',nome:'Escudo Pequeno',slot:'trinket',rar:2,icon:'🛡️',desc:'+2 DEF',mods:{def:2}},
-  // ===== Mágico =====
   {id:'cajado_arcano',nome:'Cajado Arcano',slot:'weapon',rar:3,icon:'🔮',desc:'+2 ATQ, +1 Alcance',mods:{atk:2,alc:1}},
   {id:'adaga_encantada',nome:'Adaga Encantada',slot:'weapon',rar:3,icon:'🗡️',desc:'+2 ATQ, +1 Movimento',mods:{atk:2,mov:1}},
   {id:'martelo_runico',nome:'Martelo Rúnico',slot:'weapon',rar:3,icon:'🔨',desc:'+4 dano, −1 Movimento',mods:{dmgBonus:4,mov:-1}},
-  {id:'amuleto_sorte',nome:'Amuleto da Sorte',slot:'trinket',rar:3,icon:'🍀',desc:'Crítico com 19+',mods:{crit:1}},
-  {id:'capa_elfica',nome:'Capa Élfica',slot:'trinket',rar:3,icon:'🧥',desc:'+2 DEF, +1 Movimento',mods:{def:2,mov:1}},
-  {id:'pedra_poder',nome:'Pedra do Poder',slot:'trinket',rar:3,icon:'💎',desc:'+2 ATQ, +2 DEF',mods:{atk:2,def:2}},
-  // ===== Épico =====
   {id:'lamina_dragao',nome:'Lâmina do Dragão',slot:'weapon',rar:4,icon:'🗡️',desc:'+3 ATQ, +6 dano',mods:{atk:3,dmgBonus:6}},
   {id:'cetro_celestial',nome:'Cetro Celestial',slot:'weapon',rar:4,icon:'🔮',desc:'+3 ATQ, +2 Alcance',mods:{atk:3,alc:2}},
   {id:'garra_sombria',nome:'Garra Sombria',slot:'weapon',rar:4,icon:'🦅',desc:'+3 ATQ, +2 Movimento, −1 DEF',mods:{atk:3,mov:2,def:-1}},
-  {id:'coracao_titan',nome:'Coração de Titã',slot:'trinket',rar:4,icon:'❤️',desc:'+10 PV máx, +2 DEF',mods:{maxhp:10,def:2}},
-  {id:'botas_vento',nome:'Botas do Vento',slot:'trinket',rar:4,icon:'🌬️',desc:'+2 Movimento, +1 Alcance',mods:{mov:2,alc:1}},
-  {id:'anel_destino',nome:'Anel do Destino',slot:'trinket',rar:4,icon:'💫',desc:'Crítico com 18+, +1 ATQ',mods:{crit:2,atk:1}},
-  // ===== Lendário =====
   {id:'excalibur_partida',nome:'Excalibur Partida',slot:'weapon',rar:5,icon:'⚔️',desc:'+4 ATQ, +8 dano, +1 Alcance',mods:{atk:4,dmgBonus:8,alc:1}},
   {id:'cajado_infinito',nome:'Cajado do Infinito',slot:'weapon',rar:5,icon:'✨',desc:'+4 ATQ, +3 Alcance, Crítico com 19+',mods:{atk:4,alc:3,crit:1}},
-  {id:'coroa_eterna',nome:'Coroa Eterna',slot:'trinket',rar:5,icon:'👑',desc:'+12 PV máx, +3 DEF, +1 Movimento',mods:{maxhp:12,def:3,mov:1}},
-  {id:'reliquia_caos',nome:'Relíquia do Caos',slot:'trinket',rar:5,icon:'🌀',desc:'+4 ATQ, +4 DEF, Crítico com 18+',mods:{atk:4,def:4,crit:2}},
+  // ===== Mão secundária (offhand) — só p/ guerreiro, ladino, clérigo =====
+  {id:'broquel_madeira',nome:'Broquel de Madeira',slot:'offhand',rar:1,icon:'🛡️',desc:'+1 DEF',mods:{def:1}},
+  {id:'adaga_reserva',nome:'Adaga de Reserva',slot:'offhand',rar:1,icon:'🗡️',desc:'+1 ATQ',mods:{atk:1}},
+  {id:'escudo_pequeno',nome:'Escudo Pequeno',slot:'offhand',rar:2,icon:'🛡️',desc:'+2 DEF',mods:{def:2}},
+  {id:'livro_rezas',nome:'Livro de Rezas',slot:'offhand',rar:2,icon:'📖',desc:'+3 PV máx',mods:{maxhp:3}},
+  {id:'escudo_espelhado',nome:'Escudo Espelhado',slot:'offhand',rar:3,icon:'🪞',desc:'+2 DEF, Crítico com 19+',mods:{def:2,crit:1}},
+  {id:'adaga_sombra',nome:'Adaga das Sombras',slot:'offhand',rar:3,icon:'🗡️',desc:'+2 ATQ, +1 Movimento',mods:{atk:2,mov:1}},
+  {id:'egide_draconica',nome:'Égide Dracônica',slot:'offhand',rar:4,icon:'🐉',desc:'+4 DEF, +4 PV máx',mods:{def:4,maxhp:4}},
+  {id:'tomo_arcano',nome:'Tomo Arcano',slot:'offhand',rar:4,icon:'📘',desc:'+3 ATQ, +1 Alcance',mods:{atk:3,alc:1}},
+  {id:'escudo_aurora',nome:'Escudo da Aurora',slot:'offhand',rar:5,icon:'🌅',desc:'+5 DEF, +8 PV máx',mods:{def:5,maxhp:8}},
+  {id:'adaga_eclipse',nome:'Adaga do Eclipse',slot:'offhand',rar:5,icon:'🌒',desc:'+4 ATQ, +2 Movimento, Crítico com 18+',mods:{atk:4,mov:2,crit:2}},
+  // ===== Cabeça (head) =====
+  {id:'elmo_recruta',nome:'Elmo de Recruta',slot:'head',rar:1,icon:'🪖',desc:'+1 DEF',mods:{def:1}},
+  {id:'capuz_viajante',nome:'Capuz do Viajante',slot:'head',rar:1,icon:'🧢',desc:'+1 Movimento',mods:{mov:1}},
+  {id:'elmo_ferro',nome:'Elmo de Ferro',slot:'head',rar:2,icon:'🪖',desc:'+2 DEF, −1 Movimento',mods:{def:2,mov:-1}},
+  {id:'capuz_batedor',nome:'Capuz do Batedor',slot:'head',rar:2,icon:'🥷',desc:'+2 pra achar segredos, +1 Movimento',mods:{per:2,mov:1}},
+  {id:'coroa_arcana',nome:'Coroa Arcana',slot:'head',rar:3,icon:'🔮',desc:'+2 ATQ, +1 Alcance',mods:{atk:2,alc:1}},
+  {id:'elmo_cornos',nome:'Elmo com Chifres',slot:'head',rar:3,icon:'🤘',desc:'+4 dano, −1 DEF',mods:{dmgBonus:4,def:-1}},
+  {id:'elmo_campeao',nome:'Elmo do Campeão',slot:'head',rar:4,icon:'⚜️',desc:'+3 DEF, +4 PV máx',mods:{def:3,maxhp:4}},
+  {id:'capuz_sussurros',nome:'Capuz dos Sussurros',slot:'head',rar:4,icon:'🌀',desc:'+3 pra achar segredos, Crítico com 19+',mods:{per:3,crit:1}},
+  {id:'mascara_vazio',nome:'Máscara do Vazio',slot:'head',rar:5,icon:'🎭',desc:'+5 ATQ, Crítico com 18+',mods:{atk:5,crit:2}},
+  {id:'coroa_eterna',nome:'Coroa Eterna',slot:'head',rar:5,icon:'👑',desc:'+12 PV máx, +3 DEF, +1 Movimento',mods:{maxhp:12,def:3,mov:1}},
+  // ===== Corpo (body) =====
+  {id:'gibao_simples',nome:'Gibão Simples',slot:'body',rar:1,icon:'🧥',desc:'+2 PV máx',mods:{maxhp:2}},
+  {id:'colete_couro',nome:'Colete de Couro',slot:'body',rar:1,icon:'🦺',desc:'+1 DEF',mods:{def:1}},
+  {id:'cota_malha_leve',nome:'Cota de Malha Leve',slot:'body',rar:2,icon:'⛓️',desc:'+4 PV máx, +1 DEF',mods:{maxhp:4,def:1}},
+  {id:'manto_viajante',nome:'Manto do Viajante',slot:'body',rar:2,icon:'🧳',desc:'+1 Movimento, +2 PV máx',mods:{mov:1,maxhp:2}},
+  {id:'capa_elfica',nome:'Capa Élfica',slot:'body',rar:3,icon:'🧵',desc:'+2 DEF, +1 Movimento',mods:{def:2,mov:1}},
+  {id:'tunica_arcana',nome:'Túnica Arcana',slot:'body',rar:3,icon:'✨',desc:'+2 ATQ, +3 PV máx',mods:{atk:2,maxhp:3}},
+  {id:'couraca_dragao',nome:'Couraça de Dragão',slot:'body',rar:4,icon:'🐲',desc:'+6 PV máx, +3 DEF',mods:{maxhp:6,def:3}},
+  {id:'manto_sombrio',nome:'Manto Sombrio',slot:'body',rar:4,icon:'🌑',desc:'+2 ATQ, +2 Movimento',mods:{atk:2,mov:2}},
+  {id:'armadura_titanica',nome:'Armadura Titânica',slot:'body',rar:5,icon:'🗿',desc:'+5 DEF, +12 PV máx',mods:{def:5,maxhp:12}},
+  {id:'vestes_arquimago',nome:'Vestes do Arquimago',slot:'body',rar:5,icon:'🌟',desc:'+4 ATQ, +8 PV máx',mods:{atk:4,maxhp:8}},
+  // ===== Mãos (hands) =====
+  {id:'luvas_couro',nome:'Luvas de Couro',slot:'hands',rar:1,icon:'🧤',desc:'+1 ATQ',mods:{atk:1}},
+  {id:'manoplas_simples',nome:'Manoplas Simples',slot:'hands',rar:1,icon:'👊',desc:'+1 DEF',mods:{def:1}},
+  {id:'luvas_reforcadas',nome:'Luvas Reforçadas',slot:'hands',rar:2,icon:'🧤',desc:'+2 ATQ',mods:{atk:2}},
+  {id:'manoplas_ferro',nome:'Manoplas de Ferro',slot:'hands',rar:2,icon:'👊',desc:'+2 DEF, −1 Movimento',mods:{def:2,mov:-1}},
+  {id:'luvas_precisao',nome:'Luvas da Precisão',slot:'hands',rar:3,icon:'🎯',desc:'+1 ATQ, Crítico com 19+',mods:{atk:1,crit:1}},
+  {id:'manoplas_runicas',nome:'Manoplas Rúnicas',slot:'hands',rar:3,icon:'🔸',desc:'+2 DEF, +2 ATQ',mods:{def:2,atk:2}},
+  {id:'luvas_assassino',nome:'Luvas do Assassino',slot:'hands',rar:4,icon:'🗡️',desc:'+3 ATQ, +1 Movimento',mods:{atk:3,mov:1}},
+  {id:'manoplas_titan',nome:'Manoplas do Titã',slot:'hands',rar:4,icon:'💪',desc:'+4 dano, +2 DEF',mods:{dmgBonus:4,def:2}},
+  {id:'luvas_vento_cortante',nome:'Luvas do Vento Cortante',slot:'hands',rar:5,icon:'🌪️',desc:'+4 ATQ, +2 Movimento, Crítico com 18+',mods:{atk:4,mov:2,crit:2}},
+  {id:'manoplas_juizo',nome:'Manoplas do Juízo',slot:'hands',rar:5,icon:'⚖️',desc:'+3 ATQ, +3 DEF, +6 dano',mods:{atk:3,def:3,dmgBonus:6}},
+  // ===== Pés (feet) =====
+  {id:'bota_surrada',nome:'Bota Surrada',slot:'feet',rar:1,icon:'👢',desc:'+1 Movimento',mods:{mov:1}},
+  {id:'sandalias_couro',nome:'Sandálias de Couro',slot:'feet',rar:1,icon:'🩴',desc:'+1 DEF',mods:{def:1}},
+  {id:'bota_elfica',nome:'Bota Élfica',slot:'feet',rar:2,icon:'👢',desc:'+1 Movimento, +1 DEF',mods:{mov:1,def:1}},
+  {id:'botas_corredor',nome:'Botas do Corredor',slot:'feet',rar:2,icon:'👟',desc:'+2 Movimento',mods:{mov:2}},
+  {id:'botas_elfas_reais',nome:'Botas Élficas Reais',slot:'feet',rar:3,icon:'🍃',desc:'+2 Movimento, +1 DEF',mods:{mov:2,def:1}},
+  {id:'grevas_ferro',nome:'Grevas de Ferro',slot:'feet',rar:3,icon:'⚙️',desc:'+3 DEF, −1 Movimento',mods:{def:3,mov:-1}},
+  {id:'botas_vento',nome:'Botas do Vento',slot:'feet',rar:4,icon:'🌬️',desc:'+2 Movimento, +1 Alcance',mods:{mov:2,alc:1}},
+  {id:'grevas_campeao',nome:'Grevas do Campeão',slot:'feet',rar:4,icon:'🏆',desc:'+3 DEF, +4 PV máx',mods:{def:3,maxhp:4}},
+  {id:'botas_vento_norte',nome:'Botas do Vento Norte',slot:'feet',rar:5,icon:'❄️',desc:'+3 Movimento, +2 Alcance',mods:{mov:3,alc:2}},
+  {id:'grevas_eternas',nome:'Grevas Eternas',slot:'feet',rar:5,icon:'♾️',desc:'+5 DEF, +8 PV máx, +1 Movimento',mods:{def:5,maxhp:8,mov:1}},
+  // ===== Acessórios (accessory — usa os 2 slots de acessório) =====
+  {id:'anel_couro',nome:'Anel de Couro',slot:'accessory',rar:1,icon:'💍',desc:'+2 PV máx',mods:{maxhp:2}},
+  {id:'pingente_simples',nome:'Pingente Sem Graça',slot:'accessory',rar:1,icon:'📿',desc:'+1 DEF',mods:{def:1}},
+  {id:'bracelete_latao',nome:'Bracelete de Latão',slot:'accessory',rar:1,icon:'📿',desc:'+1 Movimento',mods:{mov:1}},
+  {id:'anel_vigor',nome:'Anel de Vigor',slot:'accessory',rar:2,icon:'💍',desc:'+4 PV máx',mods:{maxhp:4}},
+  {id:'anel_foco',nome:'Anel do Foco',slot:'accessory',rar:2,icon:'💍',desc:'+1 ATQ, +1 DEF',mods:{atk:1,def:1}},
+  {id:'amuleto_viajante',nome:'Amuleto do Viajante',slot:'accessory',rar:2,icon:'📿',desc:'+2 Movimento',mods:{mov:2}},
+  {id:'amuleto_sorte',nome:'Amuleto da Sorte',slot:'accessory',rar:3,icon:'🍀',desc:'Crítico com 19+',mods:{crit:1}},
+  {id:'pedra_poder',nome:'Pedra do Poder',slot:'accessory',rar:3,icon:'💎',desc:'+2 ATQ, +2 DEF',mods:{atk:2,def:2}},
+  {id:'colar_videntes',nome:'Colar dos Videntes',slot:'accessory',rar:3,icon:'🔮',desc:'+3 pra achar segredos, +1 Alcance',mods:{per:3,alc:1}},
+  {id:'coracao_titan',nome:'Coração de Titã',slot:'accessory',rar:4,icon:'❤️',desc:'+10 PV máx, +2 DEF',mods:{maxhp:10,def:2}},
+  {id:'anel_destino',nome:'Anel do Destino',slot:'accessory',rar:4,icon:'💫',desc:'Crítico com 18+, +1 ATQ',mods:{crit:2,atk:1}},
+  {id:'anel_fera',nome:'Anel da Fera',slot:'accessory',rar:4,icon:'💍',desc:'+3 ATQ, +1 Movimento',mods:{atk:3,mov:1}},
+  {id:'talisma_guardiao',nome:'Talismã do Guardião',slot:'accessory',rar:4,icon:'🧿',desc:'+3 DEF, +6 PV máx',mods:{def:3,maxhp:6}},
+  {id:'reliquia_caos',nome:'Relíquia do Caos',slot:'accessory',rar:5,icon:'🌀',desc:'+4 ATQ, +4 DEF, Crítico com 18+',mods:{atk:4,def:4,crit:2}},
+  {id:'anel_eternidade',nome:'Anel da Eternidade',slot:'accessory',rar:5,icon:'💍',desc:'+14 PV máx, +2 DEF',mods:{maxhp:14,def:2}},
+  {id:'coracao_fenix',nome:'Coração de Fênix',slot:'accessory',rar:5,icon:'🔥',desc:'+4 ATQ, Crítico com 18+, +1 Alcance',mods:{atk:4,crit:2,alc:1}},
 ];
 function rollItem(rar){return pick(ITEMS.filter(i=>i.rar===rar));}
 function rollRarity(min){
@@ -514,9 +581,15 @@ function applyMods(h,mods,sign){
   if(mods.def)h.def+=sign*mods.def;
   if(mods.mov)h.mov+=sign*mods.mov;
   if(mods.alc)h.alc+=sign*mods.alc;
+  if(mods.per)h.per+=sign*mods.per;
   if(mods.dmgBonus)h.dmg[2]+=sign*mods.dmgBonus;
   if(mods.crit)h.critBonus=(h.critBonus||0)+sign*mods.crit;
   if(mods.maxhp){h.maxhp=Math.max(1,h.maxhp+sign*mods.maxhp);h.hp=Math.max(1,Math.min(h.maxhp,h.hp+sign*mods.maxhp));}
+}
+function canEquip(h,item){return !(item.slot==='offhand'&&CLASSES[h.cls].twoHanded);}
+function slotKeyFor(h,item){
+  if(item.slot==='accessory')return !h.equip.acc1?'acc1':!h.equip.acc2?'acc2':'acc1';
+  return item.slot;
 }
 function equipItem(h,slot,item){
   const prev=h.equip[slot];
@@ -1208,7 +1281,8 @@ function makeHero(used,cls){
     atk:b.atk+jit([0,0,0,1,-1])+arma[1]+(trait.id==='fanfarrao'?2:0),
     def:b.def+jit([0,0,0,1,-1])+arm[1]+(trait.id==='covarde'?3:0)-(trait.id==='bruto'?2:0),
     mov:b.mov,alc:b.alc,dmg:[b.dmg[0],b.dmg[1],b.dmg[2]+arma[2]],ini:b.ini+jit([0,0,1,-1]),per:b.per,
-    look:{hair:pick(HAIR),skin:pick(SKIN),beard:R()<0.4},r:null,c:null,equip:{weapon:null,trinket:null}};
+    look:{hair:pick(HAIR),skin:pick(SKIN),beard:R()<0.4},r:null,c:null,
+    equip:{weapon:null,offhand:null,head:null,body:null,hands:null,feet:null,acc1:null,acc2:null}};
   h.hp=h.maxhp;h.nome=`${h.first} ${h.sur}`;
   h.sprite=heroSprite(h);h.portrait=h.sprite.toDataURL();
   return h;
@@ -1454,12 +1528,17 @@ function renderPlace(){
   ${stepper(3)}
   <div class="head"><div><div class="eyebrow">Fase ${run.phaseNo} · Mapa ${mp.n}</div><h2>${mp.nome}</h2></div>
     <div class="tags"><span class="tag">Grupo de ${party.length} · ×${MULT[party.length].toFixed(1).replace('.',',')}</span>${fams.map(f=>`<span class="tag fam">Irmãos ${f} +1</span>`).join('')}</div></div>
-  <div class="roster">${party.map(h=>`<button class="chip ${h.r!=null?'ok':''}" data-hid="${h.id}" aria-pressed="${selHero===h}"><img src="${h.portrait}" alt=""><span>${h.first}${h.equip.weapon?h.equip.weapon.icon:''}${h.equip.trinket?h.equip.trinket.icon:''}</span><small>${h.exausto?'Exausto':h.r!=null?'✓ no mapa':selHero===h?'toque o mapa':CLASSES[h.cls].nome}</small></button>`).join('')}</div>
+  <div class="roster">${party.map(h=>`<button class="chip ${h.r!=null?'ok':''}" data-hid="${h.id}" aria-pressed="${selHero===h}"><img src="${h.portrait}" alt=""><span>${h.first}${gearBadge(h)}</span><small>${h.exausto?'Exausto':h.r!=null?'✓ no mapa':selHero===h?'toque o mapa':CLASSES[h.cls].nome}</small></button>`).join('')}</div>
   <p class="hint" id="hint">${hint||'Toque num herói e depois numa casa dourada do mapa.'}</p>
   <div class="legend"><span><i class="lg free"></i>Casa livre</span><span><i class="lg hill"></i>Morro: +2 de acerto</span>${SECRET?'<span><i class="lg wall"></i>Parede suspeita</span>':''}<button class="btn ghost sm ov" data-act="overview">Ver mapa todo</button></div>
   <div class="actions">${run.phaseNo===1?'<button class="btn ghost" data-act="toVillage">Voltar</button>':''}<button class="btn ghost" data-act="equip">🎒 Equipar${run.inventory.length?` (${run.inventory.length})`:''}</button><button class="btn ghost" data-act="auto">Automático</button><button class="btn" data-act="start" ${all?'':'disabled'}>${all?'Começar batalha':`Falta posicionar ${left}`}</button></div>`;
 }
 const rarTag=it=>`<b style="color:${RARITY[it.rar].cor}">${RARITY[it.rar].nome}</b>`;
+const EQ_SLOTS=['weapon','offhand','head','body','hands','feet','acc1','acc2'];
+function gearBadge(h){
+  const n=EQ_SLOTS.reduce((a,s)=>a+(h.equip[s]?1:0),0);if(!n)return'';
+  return` ${h.equip.weapon?h.equip.weapon.icon:SLOT_INFO.weapon.icon}${n>1?` +${n-1}`:''}`;
+}
 function renderEquip(){
   view='equip';
   PI_.innerHTML=`
@@ -1471,18 +1550,21 @@ function renderEquip(){
         <div style="display:flex;align-items:center;gap:8px">
           <img src="${h.portrait}" alt="" style="width:28px;height:34px;image-rendering:pixelated">
           <div style="flex:1;min-width:0">
-            <b class="nm">${h.first}</b><span class="cl"> · ${CLASSES[h.cls].nome}</span>
+            <b class="nm">${h.first}</b><span class="cl"> · ${CLASSES[h.cls].nome}${CLASSES[h.cls].twoHanded?' · arma de duas mãos':''}</span>
           </div>
         </div>
         <div class="eqslots">
-          <button class="eqslot" data-equnhero="${h.id}" data-equnslot="weapon">${h.equip.weapon?`${h.equip.weapon.icon} ${h.equip.weapon.nome} · ${rarTag(h.equip.weapon)} (guardar)`:'⚔️ Arma: vazio'}</button>
-          <button class="eqslot" data-equnhero="${h.id}" data-equnslot="trinket">${h.equip.trinket?`${h.equip.trinket.icon} ${h.equip.trinket.nome} · ${rarTag(h.equip.trinket)} (guardar)`:'💍 Relíquia: vazio'}</button>
+          ${EQ_SLOTS.map(s=>{
+            if(s==='offhand'&&CLASSES[h.cls].twoHanded)return`<span class="eqslot off">${SLOT_INFO.offhand.icon} Mão secundária: ocupada pela arma</span>`;
+            const it=h.equip[s];
+            return`<button class="eqslot" data-equnhero="${h.id}" data-equnslot="${s}">${it?`${it.icon} ${it.nome} · ${rarTag(it)} (guardar)`:`${SLOT_INFO[s].icon} ${SLOT_INFO[s].label}: vazio`}</button>`;
+          }).join('')}
         </div>
       </div>`).join('')}
     <div class="box">
       <h3>Mochila (${run.inventory.length})</h3>
-      ${run.inventory.length?run.inventory.map((it,i)=>`<div class="invrow"><span>${it.icon} ${it.nome} · ${rarTag(it)}</span><small>${it.desc}</small>
-        <div class="invpick">${party.map(h=>`<button class="btn ghost sm" data-eqpick="${i}" data-eqhero="${h.id}">${h.first}</button>`).join('')}</div>
+      ${run.inventory.length?run.inventory.map((it,i)=>`<div class="invrow"><span>${it.icon} ${it.nome} · ${rarTag(it)} · <i>${SLOT_INFO[it.slot]?SLOT_INFO[it.slot].label:'Acessório'}</i></span><small>${it.desc}</small>
+        <div class="invpick">${party.filter(h=>canEquip(h,it)).map(h=>`<button class="btn ghost sm" data-eqpick="${i}" data-eqhero="${h.id}">${h.first}</button>`).join('')}</div>
       </div>`).join(''):'<p class="note">Nenhum item ainda. Derrote inimigos pra conseguir equipamentos.</p>'}
     </div>
   </div>`;
@@ -1504,7 +1586,7 @@ PI_.addEventListener('click',e=>{
   const nav=t.closest('[data-nav]');if(nav){const i=draw.findIndex(h=>h.id===tvFocus);renderSheet(draw[(i+ +nav.dataset.nav+draw.length)%draw.length].id);return;}
   const hire=t.closest('[data-hire]');if(hire){const id=+hire.dataset.hire;if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderSheet(id);return;}
   const sl=t.closest('[data-slot]');if(sl){selected.delete(+sl.dataset.slot);view==='sheet'?renderSheet(tvFocus):renderTavern();return;}
-  const eqp=t.closest('[data-eqpick]');if(eqp){const h=party.find(x=>x.id===+eqp.dataset.eqhero),item=run.inventory[+eqp.dataset.eqpick];if(h&&item)equipItem(h,item.slot,item);renderEquip();return;}
+  const eqp=t.closest('[data-eqpick]');if(eqp){const h=party.find(x=>x.id===+eqp.dataset.eqhero),item=run.inventory[+eqp.dataset.eqpick];if(h&&item&&canEquip(h,item))equipItem(h,slotKeyFor(h,item),item);renderEquip();return;}
   const equn=t.closest('[data-equnslot]');if(equn){const h=party.find(x=>x.id===+equn.dataset.equnhero);if(h)unequipItem(h,equn.dataset.equnslot);renderEquip();return;}
   const chip=t.closest('.chip');
   if(chip){selHero=party.find(h=>h.id===+chip.dataset.hid);hint=`${selHero.first} (${CLASSES[selHero.cls].nome}): ${COMO[selHero.cls].campo} Toque numa casa dourada.`;renderPlace();if(selHero.grp)pulse(selHero.grp.position,'#e9b949',0.8,0.5);return;}
