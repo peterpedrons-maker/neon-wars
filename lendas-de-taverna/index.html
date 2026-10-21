@@ -34,11 +34,15 @@ body{height:100%;margin:0;background:var(--mesa);color:var(--papel);font-family:
 .tilt.bot{bottom:0;height:14%;mask-image:linear-gradient(transparent,#000);-webkit-mask-image:linear-gradient(transparent,#000)}
 #hud{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 #flash{position:absolute;inset:0;pointer-events:none;opacity:0;background:var(--papel)}
-.hp{position:absolute;width:40px;height:7px;background:var(--sombra);border:1px solid var(--tinta);transform:translate(-50%,-100%);border-radius:1px;overflow:hidden}
-.hp b{position:absolute;left:0;top:0;bottom:0;background:var(--papel);transition:width .5s .3s}
-.hp i{position:relative;display:block;height:100%;background:var(--vida);transition:width .15s}
-.hp.enemy i{background:var(--sangue)}
-.hp.low i{background:var(--ouro)}
+.hp{position:absolute;display:flex;align-items:center;gap:3px;transform:translate(-50%,-100%)}
+.hp img{width:12px;height:15px;image-rendering:pixelated;border-radius:2px;box-shadow:0 0 0 1px var(--tinta);flex:0 0 auto}
+.hp .hpinfo{display:flex;flex-direction:column;gap:1px;min-width:0}
+.hp .hpname{font-family:var(--f-display);font-size:8px;line-height:1;color:var(--papel);text-shadow:0 1px 0 var(--tinta),0 0 3px var(--tinta);white-space:nowrap;max-width:46px;overflow:hidden;text-overflow:ellipsis}
+.hp .bar{position:relative;width:34px;height:6px;background:var(--sombra);border:1px solid var(--tinta);border-radius:1px;overflow:hidden}
+.hp .bar b{position:absolute;left:0;top:0;bottom:0;background:var(--papel);transition:width .5s .3s}
+.hp .bar i{position:relative;display:block;height:100%;background:var(--vida);transition:width .15s}
+.hp.enemy .bar i{background:var(--sangue)}
+.hp.low .bar i{background:var(--ouro)}
 .float{position:absolute;font-family:var(--f-display);font-weight:700;font-size:18px;transform:translate(-50%,-100%);text-shadow:0 2px 0 var(--tinta),0 0 6px var(--tinta);white-space:nowrap;color:var(--papel)}
 .float.crit{color:var(--ouro);font-size:28px}
 .float.heal{color:var(--vida);font-size:20px}
@@ -124,6 +128,13 @@ h1{font-size:24px} h2{font-size:20px} h3{font-size:17px}
 .res-title{font-size:42px;color:var(--ouro);text-shadow:0 4px 0 var(--tinta)}
 .res-title.lose{color:var(--sangue)}
 .box{background:var(--madeira);border:2px solid var(--borda);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.eqslots{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.eqslot{all:unset;cursor:pointer;font-size:11px;padding:5px 8px;border-radius:5px;background:var(--sombra);border:1.5px solid var(--borda);color:var(--papel-2)}
+.invrow{display:flex;flex-direction:column;gap:4px;padding:8px 0;border-bottom:1px dashed var(--borda)}
+.invrow:last-child{border-bottom:none}
+.invrow>span{font-size:13px;font-weight:600;color:var(--papel)}
+.invrow small{font-size:11px;color:var(--nevoa)}
+.invpick{display:flex;gap:4px;flex-wrap:wrap}
 .moment{background:var(--papel);color:var(--tinta);border:none;box-shadow:0 4px 0 var(--sombra)}
 .moment .eyebrow{color:var(--ouro-2)}
 .moment p{margin:0;font-family:var(--f-display);font-size:18px;line-height:1.3}
@@ -167,12 +178,15 @@ button.slot{cursor:pointer}
 .pmult b{font-family:var(--f-display);font-size:24px;line-height:1;color:var(--ouro);font-variant-numeric:tabular-nums}
 .pmult small{font-size:11px;color:var(--papel-2)}
 
-.pool{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:3px 3px 6px;align-content:start}
-.pc{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;padding:14px 3px 6px;background:var(--papel);color:var(--tinta);border-radius:6px;border:2px solid transparent;box-shadow:0 3px 0 var(--sombra)}
-.pc img{width:36px;height:43px;image-rendering:pixelated}
-.pc .nm{font-size:13px;line-height:1.1;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pc .cl{font-size:10px;margin:0;text-align:center;white-space:nowrap}
-.pc .tr{font-size:9px;font-weight:600;background:var(--tinta);color:var(--papel);padding:1px 5px;border-radius:3px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pool{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:3px 3px 6px;align-content:start}
+.pc{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:flex;align-items:flex-start;gap:8px;min-width:0;padding:14px 8px 8px;background:var(--papel);color:var(--tinta);border-radius:6px;border:2px solid transparent;box-shadow:0 3px 0 var(--sombra)}
+.pc img{width:36px;height:43px;image-rendering:pixelated;flex:0 0 auto}
+.pc .pcbody{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.pc .nm{font-size:13px;line-height:1.1;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--f-display)}
+.pc .cl{font-size:10px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc .pcstats{font-size:9px;font-variant-numeric:tabular-nums;color:var(--tinta-2);white-space:nowrap}
+.pc .tr{align-self:flex-start;font-size:9px;font-weight:600;background:var(--tinta);color:var(--papel);padding:1px 5px;border-radius:3px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc .pcgear{font-size:8px;color:var(--tinta-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pc .sib{position:absolute;top:3px;left:3px;font-size:8px;font-weight:600;background:var(--ouro);color:var(--tinta);padding:1px 4px;border-radius:2px}
 .pc[aria-pressed="true"]{background:var(--papel-2);border-color:var(--ouro-2);box-shadow:0 0 0 2px var(--ouro),0 3px 0 var(--sombra)}
 .pc.focus{outline:2px solid var(--mana);outline-offset:1px}
@@ -378,6 +392,7 @@ const SFX={
   dice(){sNoise({dur:0.35,gain:0.09,freq:2500,q:0.4,type:'bandpass'});},
   land(){sTone(180,{type:'square',dur:0.04,gain:0.15,release:0.04});},
   secret(){[0,0.1,0.2,0.32].forEach((d,i)=>sTone(523.25*(1.5**(i*0.5)),{type:'triangle',dur:0.22,gain:0.17,delay:d,release:0.2}));},
+  loot(){sTone(660,{type:'triangle',dur:0.1,gain:0.14,release:0.08});sTone(880,{type:'triangle',dur:0.12,gain:0.14,delay:0.07,release:0.1});},
 };
 // Som de clique genérico pra qualquer botão/elemento interativo da UI.
 document.addEventListener('click',e=>{
@@ -433,6 +448,51 @@ const TRAITS=[
   {id:'veterano',nome:'Veterano',desc:'+8 PV.'},
   {id:'curioso',nome:'Curioso',desc:'Vai investigar coisas estranhas no mapa.'},
 ];
+/* ================= Equipamento: itens que dropam durante a run =================
+   Vale só pra run atual (reseta a cada nova run) — resolve o problema de ficar
+   fácil demais ao rejogar fases iniciais com itens achados em fases avançadas. */
+const ITEMS=[
+  {id:'lamina',nome:'Lâmina Rúnica',slot:'weapon',rar:1,icon:'⚔️',desc:'+1 ATQ',mods:{atk:1}},
+  {id:'machado',nome:'Machado Brutal',slot:'weapon',rar:1,icon:'🪓',desc:'+2 dano, −1 DEF',mods:{dmgBonus:2,def:-1}},
+  {id:'adaga',nome:'Adaga Veloz',slot:'weapon',rar:1,icon:'🗡️',desc:'+1 ATQ, +1 Movimento',mods:{atk:1,mov:1}},
+  {id:'cajado',nome:'Cajado Arcano',slot:'weapon',rar:2,icon:'🔮',desc:'+1 ATQ, +1 Alcance',mods:{atk:1,alc:1}},
+  {id:'martelo',nome:'Martelo Pesado',slot:'weapon',rar:2,icon:'🔨',desc:'+3 dano, −1 Movimento',mods:{dmgBonus:3,mov:-1}},
+  {id:'anel',nome:'Anel de Vigor',slot:'trinket',rar:1,icon:'💍',desc:'+4 PV máx',mods:{maxhp:4}},
+  {id:'bota',nome:'Bota Élfica',slot:'trinket',rar:1,icon:'👢',desc:'+1 Movimento',mods:{mov:1}},
+  {id:'escudo',nome:'Escudo Pequeno',slot:'trinket',rar:1,icon:'🛡️',desc:'+2 DEF',mods:{def:2}},
+  {id:'amuleto',nome:'Amuleto da Sorte',slot:'trinket',rar:2,icon:'🍀',desc:'Crítico com 19+',mods:{crit:1}},
+  {id:'capa',nome:'Capa das Sombras',slot:'trinket',rar:2,icon:'🧥',desc:'+1 DEF, −2 PV máx',mods:{def:1,maxhp:-2}},
+  {id:'pedra',nome:'Pedra do Poder',slot:'trinket',rar:2,icon:'💎',desc:'+1 ATQ, +1 DEF',mods:{atk:1,def:1}},
+];
+function rollItem(rar){return pick(ITEMS.filter(i=>i.rar===rar));}
+function applyMods(h,mods,sign){
+  if(mods.atk)h.atk+=sign*mods.atk;
+  if(mods.def)h.def+=sign*mods.def;
+  if(mods.mov)h.mov+=sign*mods.mov;
+  if(mods.alc)h.alc+=sign*mods.alc;
+  if(mods.dmgBonus)h.dmg[2]+=sign*mods.dmgBonus;
+  if(mods.crit)h.critBonus=(h.critBonus||0)+sign*mods.crit;
+  if(mods.maxhp){h.maxhp=Math.max(1,h.maxhp+sign*mods.maxhp);h.hp=Math.max(1,Math.min(h.maxhp,h.hp+sign*mods.maxhp));}
+}
+function equipItem(h,slot,item){
+  const prev=h.equip[slot];
+  if(prev){applyMods(h,prev.mods,-1);run.inventory.push(prev);}
+  const idx=run.inventory.indexOf(item);if(idx>-1)run.inventory.splice(idx,1);
+  h.equip[slot]=item;applyMods(h,item.mods,1);
+}
+function unequipItem(h,slot){
+  const item=h.equip[slot];if(!item)return;
+  applyMods(h,item.mods,-1);h.equip[slot]=null;run.inventory.push(item);
+}
+function dropLoot(t){
+  const chance=t.kind==='ogro'?1:0.14;
+  if(R()>=chance)return;
+  const rar=t.kind==='ogro'||R()<0.2?2:1;
+  const item=rollItem(rar);if(!item)return;
+  run.inventory.push(item);
+  SFX.loot();floatText(t,item.icon,'gold');
+  addLog(`🎁 Item encontrado: ${item.nome}`,'gold');
+}
 const ENEMIES={
   goblin:{nome:'Goblin',ia:'rush',hp:9,atk:3,def:12,mov:4,alc:1,dmg:[1,6,1],ini:3,pts:100,
     resumo:'Corre direto pro herói mais próximo.'},
@@ -1102,7 +1162,7 @@ function makeHero(used,cls){
     atk:b.atk+jit([0,0,0,1,-1])+arma[1]+(trait.id==='fanfarrao'?2:0),
     def:b.def+jit([0,0,0,1,-1])+arm[1]+(trait.id==='covarde'?3:0)-(trait.id==='bruto'?2:0),
     mov:b.mov,alc:b.alc,dmg:[b.dmg[0],b.dmg[1],b.dmg[2]+arma[2]],ini:b.ini+jit([0,0,1,-1]),per:b.per,
-    look:{hair:pick(HAIR),skin:pick(SKIN),beard:R()<0.4},r:null,c:null};
+    look:{hair:pick(HAIR),skin:pick(SKIN),beard:R()<0.4},r:null,c:null,equip:{weapon:null,trinket:null}};
   h.hp=h.maxhp;h.nome=`${h.first} ${h.sur}`;
   h.sprite=heroSprite(h);h.portrait=h.sprite.toDataURL();
   return h;
@@ -1133,8 +1193,11 @@ function buildUnit(u){
   plane.userData={unit:u};
   scene.add(grp);
   Object.assign(u,{grp,pivot,plane,mat,sz});
-  const hp=document.createElement('div');hp.className='hp'+(u.side==='enemy'?' enemy':'');hp.innerHTML='<b></b><i></i>';hud.appendChild(hp);
+  const hp=document.createElement('div');hp.className='hp'+(u.side==='enemy'?' enemy':'');
+  hp.innerHTML=`<img src="${u.portrait}" alt=""><div class="hpinfo"><span class="hpname"></span><div class="bar"><b></b><i></i></div></div>`;
+  hud.appendChild(hp);
   u.hpEl=hp;u.hpFill=hp.querySelector('i');u.hpGhost=hp.querySelector('b');
+  hp.querySelector('.hpname').textContent=u.first;
   grp.position.set(wx(u.c),topY(u.r,u.c),wz(u.r));
 }
 function disposeUnit(u){
@@ -1195,7 +1258,7 @@ const COMO={
   bardo:{campo:'Mantém distância média (alcance 3).',inimigos:'Ataca o mais ferido ao alcance, com golpe fraco.',aliados:'Todo turno inspira um aliado a até 4 casas: +2 no próximo acerto.'},
 };
 const IA_TXT={rush:'Avança',skirmish:'Atira de longe',flank:'Caça os frágeis',healer:'Cura aliados',guard:'Vigia o posto'};
-let run={mission:null,map:0,phaseNo:0,results:[],party:[],enemyList:null,total:0};
+let run={mission:null,map:0,phaseNo:0,results:[],party:[],enemyList:null,total:0,inventory:[]};
 let view='hub',tvFocus=null;
 function loadProg(){try{return +localStorage.getItem('lendas_prog_v1')||0;}catch(e){return 0;}}
 function saveProg(n){try{if(n>loadProg())localStorage.setItem('lendas_prog_v1',String(n));}catch(e){}}
@@ -1298,7 +1361,14 @@ function renderTavern(){
   <div class="pool">${draw.map(h=>`
     <button class="pc" data-hero="${h.id}" aria-pressed="${selected.has(h.id)}">
       ${sc[h.sur]>1?'<span class="sib">Irmãos</span>':''}<span class="tick">✓</span>
-      <img src="${h.portrait}" alt=""><span class="nm">${h.first}</span><span class="cl">${CLASSES[h.cls].nome}</span><span class="tr">${CLASSES[h.cls].papel}</span>
+      <img src="${h.portrait}" alt="">
+      <div class="pcbody">
+        <span class="nm">${h.first}</span>
+        <span class="cl">${CLASSES[h.cls].nome} · ${CLASSES[h.cls].papel}</span>
+        <span class="pcstats">❤${h.maxhp} ⚔${h.atk} 🛡${h.def} 🏃${h.mov} 🎯${h.alc}</span>
+        <span class="tr">${h.trait.nome}</span>
+        <span class="pcgear">${h.arma} · ${h.armadura}</span>
+      </div>
     </button>`).join('')}</div>
   <button class="btn cta" data-act="toVillage" ${n>=5?'':'disabled'}>${n>=5?'Confirmar grupo':`Escolha mais ${5-n}`}</button>`;
 }
@@ -1338,10 +1408,37 @@ function renderPlace(){
   ${stepper(3)}
   <div class="head"><div><div class="eyebrow">Fase ${run.phaseNo} · Mapa ${mp.n}</div><h2>${mp.nome}</h2></div>
     <div class="tags"><span class="tag">Grupo de ${party.length} · ×${MULT[party.length].toFixed(1).replace('.',',')}</span>${fams.map(f=>`<span class="tag fam">Irmãos ${f} +1</span>`).join('')}</div></div>
-  <div class="roster">${party.map(h=>`<button class="chip ${h.r!=null?'ok':''}" data-hid="${h.id}" aria-pressed="${selHero===h}"><img src="${h.portrait}" alt=""><span>${h.first}</span><small>${h.exausto?'Exausto':h.r!=null?'✓ no mapa':selHero===h?'toque o mapa':CLASSES[h.cls].nome}</small></button>`).join('')}</div>
+  <div class="roster">${party.map(h=>`<button class="chip ${h.r!=null?'ok':''}" data-hid="${h.id}" aria-pressed="${selHero===h}"><img src="${h.portrait}" alt=""><span>${h.first}${h.equip.weapon?h.equip.weapon.icon:''}${h.equip.trinket?h.equip.trinket.icon:''}</span><small>${h.exausto?'Exausto':h.r!=null?'✓ no mapa':selHero===h?'toque o mapa':CLASSES[h.cls].nome}</small></button>`).join('')}</div>
   <p class="hint" id="hint">${hint||'Toque num herói e depois numa casa dourada do mapa.'}</p>
   <div class="legend"><span><i class="lg free"></i>Casa livre</span><span><i class="lg hill"></i>Morro: +2 de acerto</span>${SECRET?'<span><i class="lg wall"></i>Parede suspeita</span>':''}<button class="btn ghost sm ov" data-act="overview">Ver mapa todo</button></div>
-  <div class="actions">${run.phaseNo===1?'<button class="btn ghost" data-act="toVillage">Voltar</button>':''}<button class="btn ghost" data-act="auto">Automático</button><button class="btn" data-act="start" ${all?'':'disabled'}>${all?'Começar batalha':`Falta posicionar ${left}`}</button></div>`;
+  <div class="actions">${run.phaseNo===1?'<button class="btn ghost" data-act="toVillage">Voltar</button>':''}<button class="btn ghost" data-act="equip">🎒 Equipar${run.inventory.length?` (${run.inventory.length})`:''}</button><button class="btn ghost" data-act="auto">Automático</button><button class="btn" data-act="start" ${all?'':'disabled'}>${all?'Começar batalha':`Falta posicionar ${left}`}</button></div>`;
+}
+function renderEquip(){
+  view='equip';
+  PI_.innerHTML=`
+  <div class="head"><div><div class="eyebrow">Inventário da run</div><h2>Equipar itens</h2></div><button class="btn ghost sm" data-act="toPlace">Voltar ao mapa</button></div>
+  <p class="hint">Itens valem só pra esta run — somem quando ela terminar. Toque num item da mochila e escolha quem equipa.</p>
+  <div class="scroll">
+    ${party.map(h=>`
+      <div class="box">
+        <div style="display:flex;align-items:center;gap:8px">
+          <img src="${h.portrait}" alt="" style="width:28px;height:34px;image-rendering:pixelated">
+          <div style="flex:1;min-width:0">
+            <b class="nm">${h.first}</b><span class="cl"> · ${CLASSES[h.cls].nome}</span>
+          </div>
+        </div>
+        <div class="eqslots">
+          <button class="eqslot" data-equnhero="${h.id}" data-equnslot="weapon">${h.equip.weapon?`${h.equip.weapon.icon} ${h.equip.weapon.nome} (guardar)`:'⚔️ Arma: vazio'}</button>
+          <button class="eqslot" data-equnhero="${h.id}" data-equnslot="trinket">${h.equip.trinket?`${h.equip.trinket.icon} ${h.equip.trinket.nome} (guardar)`:'💍 Relíquia: vazio'}</button>
+        </div>
+      </div>`).join('')}
+    <div class="box">
+      <h3>Mochila (${run.inventory.length})</h3>
+      ${run.inventory.length?run.inventory.map((it,i)=>`<div class="invrow"><span>${it.icon} ${it.nome}</span><small>${it.desc}</small>
+        <div class="invpick">${party.map(h=>`<button class="btn ghost sm" data-eqpick="${i}" data-eqhero="${h.id}">${h.first}</button>`).join('')}</div>
+      </div>`).join(''):'<p class="note">Nenhum item ainda. Derrote inimigos pra conseguir equipamentos.</p>'}
+    </div>
+  </div>`;
 }
 function renderBattle(){
   $('#speedbar').innerHTML=[1,2,4].map(s=>`<button class="spd" data-spd="${s}" aria-pressed="${speed===s}">${s}x</button>`).join('')+'<button class="spd" data-act="overview" data-hud="1" aria-pressed="false">Mapa</button><button class="spd" data-act="skip">Pular</button>';
@@ -1360,6 +1457,8 @@ PI_.addEventListener('click',e=>{
   const nav=t.closest('[data-nav]');if(nav){const i=draw.findIndex(h=>h.id===tvFocus);renderSheet(draw[(i+ +nav.dataset.nav+draw.length)%draw.length].id);return;}
   const hire=t.closest('[data-hire]');if(hire){const id=+hire.dataset.hire;if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderSheet(id);return;}
   const sl=t.closest('[data-slot]');if(sl){selected.delete(+sl.dataset.slot);view==='sheet'?renderSheet(tvFocus):renderTavern();return;}
+  const eqp=t.closest('[data-eqpick]');if(eqp){const h=party.find(x=>x.id===+eqp.dataset.eqhero),item=run.inventory[+eqp.dataset.eqpick];if(h&&item)equipItem(h,item.slot,item);renderEquip();return;}
+  const equn=t.closest('[data-equnslot]');if(equn){const h=party.find(x=>x.id===+equn.dataset.equnhero);if(h)unequipItem(h,equn.dataset.equnslot);renderEquip();return;}
   const chip=t.closest('.chip');
   if(chip){selHero=party.find(h=>h.id===+chip.dataset.hid);hint=`${selHero.first} (${CLASSES[selHero.cls].nome}): ${COMO[selHero.cls].campo} Toque numa casa dourada.`;renderPlace();if(selHero.grp)pulse(selHero.grp.position,'#e9b949',0.8,0.5);return;}
   const spd=t.closest('[data-spd]');
@@ -1371,6 +1470,8 @@ PI_.addEventListener('click',e=>{
   if(act==='toTavern')renderTavern();
   if(act==='reroll'&&rerolls>0){rerolls--;newDraw();renderTavern();}
   if(act==='depart')departRun();
+  if(act==='equip')renderEquip();
+  if(act==='toPlace')renderPlace();
   if(act==='auto')autoPlace();
   if(act==='overview')overviewCam();
   if(act==='start')startBattle();
@@ -1541,7 +1642,7 @@ async function attack(u,t){
   if(u.inspired)parts.push([2,'balada']);
   if(sibActive(u))parts.push([1,'irmãos']);
   if(u.secretBuff)parts.push([1,'relíquia']);
-  const roll=ri(1,20),critMin=u.trait&&u.trait.id==='sortudo'?19:20,sum=roll+parts.reduce((a,p)=>a+p[0],0);
+  const roll=ri(1,20),critMin=20-(u.critBonus||0)-(u.trait&&u.trait.id==='sortudo'?1:0),sum=roll+parts.reduce((a,p)=>a+p[0],0);
   const crit=roll>=critMin,hit=crit||(roll!==1&&sum>=t.def);
   showCallout(u,`${u.alc>1?'➶':'⚔'} Ataca ${t.first}`);followMid(u,t);
   tRing.visible=true;tRing.position.set(t.grp.position.x,t.grp.position.y+0.09,t.grp.position.z);tRing.scale.setScalar(t.big?1.25:1);
@@ -1587,6 +1688,7 @@ function kill(t,src,crit){
   if(t.side==='enemy'){
     xp(src,Math.round(t.pts/4));stats.kills.push(t);addLog(`${t.first} foi derrotado (+${t.pts})`,'gold');
     setTimeout(()=>{},0);floatText(t,`+${t.pts}`,'gold');
+    dropLoot(t);
     if(t.kind==='ogro'){stats.hl.push({w:8,t:`${src.first} derrubou o Ogro Chefe${crit?' com um crítico':''}.`});shakeCam(0.4,0.6);flash('#e9b949',0.3);}
     else if(crit)stats.hl.push({w:6,t:`${src.first} tirou um crítico e derrubou ${t.first} de uma vez.`});
   }else{addLog(`${t.first} caiu em combate`,'bad');flash('#d4503f',0.25);stats.hl.push({w:3,t:`${t.first} caiu no turno ${stats.round}, lutando contra ${src.first}.`});}
@@ -1844,7 +1946,7 @@ function newRun(){
   tombs.forEach(t=>{scene.remove(t);t.geometry.dispose();});tombs=[];
   if(chest){scene.remove(chest);chest=null;}
   newSeed();rerolls=1;stats=null;active=null;camMode='follow';
-  const keep=run.mission;run={mission:keep,map:0,phaseNo:0,results:[],party:[],enemyList:null,total:0};
+  const keep=run.mission;run={mission:keep,map:0,phaseNo:0,results:[],party:[],enemyList:null,total:0,inventory:[]};
   applyLevel(mapOf(keep||1),mapOf(keep||1).seed);buildBoard();spawnEnemies(rollEnemies(LV.mp));newDraw();goVillage();
 }
 
