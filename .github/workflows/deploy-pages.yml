@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - claude/test-game-new-repo-ja24p9
+      - claude/add-lendas-de-taverna
   workflow_dispatch:
 
 permissions:
@@ -26,6 +27,8 @@ jobs:
           node-version: 22
       - run: npm ci
       - run: npm run build
+      - name: Add standalone static sub-sites
+        run: cp -r lendas-de-taverna dist/lendas-de-taverna
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
