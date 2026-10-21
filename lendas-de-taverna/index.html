@@ -34,15 +34,21 @@ body{height:100%;margin:0;background:var(--mesa);color:var(--papel);font-family:
 .tilt.bot{bottom:0;height:14%;mask-image:linear-gradient(transparent,#000);-webkit-mask-image:linear-gradient(transparent,#000)}
 #hud{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 #flash{position:absolute;inset:0;pointer-events:none;opacity:0;background:var(--papel)}
-.hp{position:absolute;display:flex;align-items:center;gap:3px;transform:translate(-50%,-100%)}
-.hp img{width:12px;height:15px;image-rendering:pixelated;border-radius:2px;box-shadow:0 0 0 1px var(--tinta);flex:0 0 auto}
-.hp .hpinfo{display:flex;flex-direction:column;gap:1px;min-width:0}
-.hp .hpname{font-family:var(--f-display);font-size:8px;line-height:1;color:var(--papel);text-shadow:0 1px 0 var(--tinta),0 0 3px var(--tinta);white-space:nowrap;max-width:46px;overflow:hidden;text-overflow:ellipsis}
-.hp .bar{position:relative;width:34px;height:6px;background:var(--sombra);border:1px solid var(--tinta);border-radius:1px;overflow:hidden}
-.hp .bar b{position:absolute;left:0;top:0;bottom:0;background:var(--papel);transition:width .5s .3s}
-.hp .bar i{position:relative;display:block;height:100%;background:var(--vida);transition:width .15s}
-.hp.enemy .bar i{background:var(--sangue)}
-.hp.low .bar i{background:var(--ouro)}
+/* Barra fixa de unidades (retrato + nome + vida), estilo Final Fantasy Tactics —
+   embaixo da tela, em vez de flutuar em cima de cada unidade no tabuleiro 3D. */
+#unitbar{position:absolute;left:0;right:0;bottom:0;display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;
+  padding:8px max(10px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));
+  background:linear-gradient(to top,rgba(0,0,0,.6),transparent);pointer-events:none}
+.ucard{flex:0 0 auto;display:flex;align-items:center;gap:6px;background:var(--veu);border:2px solid var(--borda);border-radius:8px;padding:4px 10px 4px 4px}
+.ucard.e{border-color:var(--sangue)}
+.ucard img{width:28px;height:34px;image-rendering:pixelated;border-radius:4px;flex:0 0 auto}
+.ucard .uinfo{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ucard .uname{font-family:var(--f-display);font-size:11px;color:var(--papel);white-space:nowrap;max-width:76px;overflow:hidden;text-overflow:ellipsis}
+.ucard .bar{position:relative;width:64px;height:7px;background:var(--sombra);border:1px solid var(--tinta);border-radius:1px;overflow:hidden}
+.ucard .bar b{position:absolute;left:0;top:0;bottom:0;background:var(--papel);transition:width .5s .3s}
+.ucard .bar i{position:relative;display:block;height:100%;background:var(--vida);transition:width .15s}
+.ucard.e .bar i{background:var(--sangue)}
+.ucard.low .bar i{background:var(--ouro)}
 .float{position:absolute;font-family:var(--f-display);font-weight:700;font-size:18px;transform:translate(-50%,-100%);text-shadow:0 2px 0 var(--tinta),0 0 6px var(--tinta);white-space:nowrap;color:var(--papel)}
 .float.crit{color:var(--ouro);font-size:28px}
 .float.heal{color:var(--vida);font-size:20px}
@@ -57,12 +63,13 @@ body{height:100%;margin:0;background:var(--mesa);color:var(--papel);font-family:
 .bubble::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-bottom:0;border-top-color:var(--papel)}
 .bubble em{display:block;font-style:normal;font-family:var(--f-display);font-size:11px;color:var(--tinta-2)}
 
-#order{position:absolute;top:48px;left:0;right:0;display:flex;gap:4px;justify-content:center;flex-wrap:wrap;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));pointer-events:none}
-#order .oc{width:28px;height:32px;border-radius:4px;background:var(--madeira);border:2px solid var(--borda);display:grid;place-items:center;overflow:hidden}
+#order{position:absolute;top:44px;left:max(8px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;align-items:center;gap:5px;pointer-events:none}
+#order .ordlabel{font-family:var(--f-display);font-size:9px;letter-spacing:.06em;color:var(--papel-2);text-shadow:0 1px 0 var(--tinta);margin-bottom:1px;white-space:nowrap}
+#order .oc{width:24px;height:28px;border-radius:4px;background:var(--madeira);border:2px solid var(--borda);overflow:hidden;transition:width .2s,height .2s,box-shadow .2s}
 #order .oc.e{border-color:var(--sangue)}
-#order .oc.on{border-color:var(--ouro);transform:translateY(3px);box-shadow:0 0 0 2px var(--ouro-2)}
+#order .oc.on{width:36px;height:42px;border-color:var(--ouro);box-shadow:0 0 0 2px var(--ouro-2),0 0 10px rgba(233,185,73,.55)}
 #order .oc.dead{opacity:.25}
-#order img{width:22px;height:26px;image-rendering:pixelated}
+#order .oc img{width:100%;height:100%;image-rendering:pixelated;object-fit:cover;display:block}
 
 #dice{position:absolute;left:50%;top:92px;transform:translateX(-50%);display:flex;align-items:center;gap:4px;width:max-content;max-width:calc(100% - 32px);pointer-events:none}
 .dtext{min-width:0;font-size:12px;line-height:1.35;background:var(--veu);border:2px solid var(--borda);border-radius:8px;padding:8px 12px}
@@ -293,7 +300,7 @@ h4.sec{margin:6px 0 0;font-family:var(--f-display);font-size:15px;color:var(--ou
 .rbar.two .btn{flex:1}
 .legend .ov{margin-left:auto;padding:5px 9px}
 .spd[aria-pressed="true"][data-act=overview]{background:var(--ouro);border-color:var(--ouro-2);color:var(--tinta)}
-@media (prefers-reduced-motion: reduce){ .pc,.hp i,.hp b{transition:none} }
+@media (prefers-reduced-motion: reduce){ .pc,.ucard i,.ucard b,#order .oc{transition:none} }
 </style>
 </head>
 <body>
@@ -304,6 +311,7 @@ h4.sec{margin:6px 0 0;font-family:var(--f-display);font-size:15px;color:var(--ou
     <div class="tilt top"></div><div class="tilt bot"></div>
     <div id="hud"></div>
     <div id="order" hidden></div>
+    <div id="unitbar" hidden></div>
     <div id="bhud" hidden><div class="turn">Turno <b id="round">1</b></div><div class="speed" id="speedbar"></div></div>
     <div id="dice" hidden><div id="dieslot"><span id="dnum">20</span></div><div class="dtext"><div id="dwho"></div><div id="dcalc"></div><div id="dres"></div></div></div>
     <div id="feed"></div>
@@ -451,20 +459,56 @@ const TRAITS=[
 /* ================= Equipamento: itens que dropam durante a run =================
    Vale só pra run atual (reseta a cada nova run) — resolve o problema de ficar
    fácil demais ao rejogar fases iniciais com itens achados em fases avançadas. */
+const RARITY={
+  1:{nome:'Comum',cor:'#b8b2a4'},
+  2:{nome:'Raro',cor:'#4caf50'},
+  3:{nome:'Mágico',cor:'#4a90d9'},
+  4:{nome:'Épico',cor:'#a855f7'},
+  5:{nome:'Lendário',cor:'#e9b949'},
+};
 const ITEMS=[
-  {id:'lamina',nome:'Lâmina Rúnica',slot:'weapon',rar:1,icon:'⚔️',desc:'+1 ATQ',mods:{atk:1}},
-  {id:'machado',nome:'Machado Brutal',slot:'weapon',rar:1,icon:'🪓',desc:'+2 dano, −1 DEF',mods:{dmgBonus:2,def:-1}},
-  {id:'adaga',nome:'Adaga Veloz',slot:'weapon',rar:1,icon:'🗡️',desc:'+1 ATQ, +1 Movimento',mods:{atk:1,mov:1}},
-  {id:'cajado',nome:'Cajado Arcano',slot:'weapon',rar:2,icon:'🔮',desc:'+1 ATQ, +1 Alcance',mods:{atk:1,alc:1}},
-  {id:'martelo',nome:'Martelo Pesado',slot:'weapon',rar:2,icon:'🔨',desc:'+3 dano, −1 Movimento',mods:{dmgBonus:3,mov:-1}},
-  {id:'anel',nome:'Anel de Vigor',slot:'trinket',rar:1,icon:'💍',desc:'+4 PV máx',mods:{maxhp:4}},
-  {id:'bota',nome:'Bota Élfica',slot:'trinket',rar:1,icon:'👢',desc:'+1 Movimento',mods:{mov:1}},
-  {id:'escudo',nome:'Escudo Pequeno',slot:'trinket',rar:1,icon:'🛡️',desc:'+2 DEF',mods:{def:2}},
-  {id:'amuleto',nome:'Amuleto da Sorte',slot:'trinket',rar:2,icon:'🍀',desc:'Crítico com 19+',mods:{crit:1}},
-  {id:'capa',nome:'Capa das Sombras',slot:'trinket',rar:2,icon:'🧥',desc:'+1 DEF, −2 PV máx',mods:{def:1,maxhp:-2}},
-  {id:'pedra',nome:'Pedra do Poder',slot:'trinket',rar:2,icon:'💎',desc:'+1 ATQ, +1 DEF',mods:{atk:1,def:1}},
+  // ===== Comum =====
+  {id:'lamina_simples',nome:'Lâmina Simples',slot:'weapon',rar:1,icon:'⚔️',desc:'+1 ATQ',mods:{atk:1}},
+  {id:'adaga_enferrujada',nome:'Adaga Enferrujada',slot:'weapon',rar:1,icon:'🗡️',desc:'+1 Movimento',mods:{mov:1}},
+  {id:'cajado_rustico',nome:'Cajado Rústico',slot:'weapon',rar:1,icon:'🪵',desc:'+1 Alcance',mods:{alc:1}},
+  {id:'anel_couro',nome:'Anel de Couro',slot:'trinket',rar:1,icon:'💍',desc:'+2 PV máx',mods:{maxhp:2}},
+  {id:'bota_surrada',nome:'Bota Surrada',slot:'trinket',rar:1,icon:'👢',desc:'+1 Movimento',mods:{mov:1}},
+  {id:'pingente_simples',nome:'Pingente Sem Graça',slot:'trinket',rar:1,icon:'📿',desc:'+1 DEF',mods:{def:1}},
+  // ===== Raro =====
+  {id:'lamina_afiada',nome:'Lâmina Afiada',slot:'weapon',rar:2,icon:'⚔️',desc:'+2 ATQ',mods:{atk:2}},
+  {id:'machado_ferro',nome:'Machado de Ferro',slot:'weapon',rar:2,icon:'🪓',desc:'+2 dano, −1 DEF',mods:{dmgBonus:2,def:-1}},
+  {id:'arco_reforcado',nome:'Arco Reforçado',slot:'weapon',rar:2,icon:'🏹',desc:'+1 ATQ, +1 Alcance',mods:{atk:1,alc:1}},
+  {id:'anel_vigor',nome:'Anel de Vigor',slot:'trinket',rar:2,icon:'💍',desc:'+4 PV máx',mods:{maxhp:4}},
+  {id:'bota_elfica',nome:'Bota Élfica',slot:'trinket',rar:2,icon:'👢',desc:'+1 Movimento, +1 DEF',mods:{mov:1,def:1}},
+  {id:'escudo_pequeno',nome:'Escudo Pequeno',slot:'trinket',rar:2,icon:'🛡️',desc:'+2 DEF',mods:{def:2}},
+  // ===== Mágico =====
+  {id:'cajado_arcano',nome:'Cajado Arcano',slot:'weapon',rar:3,icon:'🔮',desc:'+2 ATQ, +1 Alcance',mods:{atk:2,alc:1}},
+  {id:'adaga_encantada',nome:'Adaga Encantada',slot:'weapon',rar:3,icon:'🗡️',desc:'+2 ATQ, +1 Movimento',mods:{atk:2,mov:1}},
+  {id:'martelo_runico',nome:'Martelo Rúnico',slot:'weapon',rar:3,icon:'🔨',desc:'+4 dano, −1 Movimento',mods:{dmgBonus:4,mov:-1}},
+  {id:'amuleto_sorte',nome:'Amuleto da Sorte',slot:'trinket',rar:3,icon:'🍀',desc:'Crítico com 19+',mods:{crit:1}},
+  {id:'capa_elfica',nome:'Capa Élfica',slot:'trinket',rar:3,icon:'🧥',desc:'+2 DEF, +1 Movimento',mods:{def:2,mov:1}},
+  {id:'pedra_poder',nome:'Pedra do Poder',slot:'trinket',rar:3,icon:'💎',desc:'+2 ATQ, +2 DEF',mods:{atk:2,def:2}},
+  // ===== Épico =====
+  {id:'lamina_dragao',nome:'Lâmina do Dragão',slot:'weapon',rar:4,icon:'🗡️',desc:'+3 ATQ, +6 dano',mods:{atk:3,dmgBonus:6}},
+  {id:'cetro_celestial',nome:'Cetro Celestial',slot:'weapon',rar:4,icon:'🔮',desc:'+3 ATQ, +2 Alcance',mods:{atk:3,alc:2}},
+  {id:'garra_sombria',nome:'Garra Sombria',slot:'weapon',rar:4,icon:'🦅',desc:'+3 ATQ, +2 Movimento, −1 DEF',mods:{atk:3,mov:2,def:-1}},
+  {id:'coracao_titan',nome:'Coração de Titã',slot:'trinket',rar:4,icon:'❤️',desc:'+10 PV máx, +2 DEF',mods:{maxhp:10,def:2}},
+  {id:'botas_vento',nome:'Botas do Vento',slot:'trinket',rar:4,icon:'🌬️',desc:'+2 Movimento, +1 Alcance',mods:{mov:2,alc:1}},
+  {id:'anel_destino',nome:'Anel do Destino',slot:'trinket',rar:4,icon:'💫',desc:'Crítico com 18+, +1 ATQ',mods:{crit:2,atk:1}},
+  // ===== Lendário =====
+  {id:'excalibur_partida',nome:'Excalibur Partida',slot:'weapon',rar:5,icon:'⚔️',desc:'+4 ATQ, +8 dano, +1 Alcance',mods:{atk:4,dmgBonus:8,alc:1}},
+  {id:'cajado_infinito',nome:'Cajado do Infinito',slot:'weapon',rar:5,icon:'✨',desc:'+4 ATQ, +3 Alcance, Crítico com 19+',mods:{atk:4,alc:3,crit:1}},
+  {id:'coroa_eterna',nome:'Coroa Eterna',slot:'trinket',rar:5,icon:'👑',desc:'+12 PV máx, +3 DEF, +1 Movimento',mods:{maxhp:12,def:3,mov:1}},
+  {id:'reliquia_caos',nome:'Relíquia do Caos',slot:'trinket',rar:5,icon:'🌀',desc:'+4 ATQ, +4 DEF, Crítico com 18+',mods:{atk:4,def:4,crit:2}},
 ];
 function rollItem(rar){return pick(ITEMS.filter(i=>i.rar===rar));}
+function rollRarity(min){
+  const weights=[[1,50],[2,28],[3,14],[4,6],[5,2]].filter(w=>w[0]>=min);
+  const total=weights.reduce((a,w)=>a+w[1],0);
+  let r=R()*total;
+  for(const w of weights){if(r<w[1])return w[0];r-=w[1];}
+  return weights[weights.length-1][0];
+}
 function applyMods(h,mods,sign){
   if(mods.atk)h.atk+=sign*mods.atk;
   if(mods.def)h.def+=sign*mods.def;
@@ -485,13 +529,15 @@ function unequipItem(h,slot){
   applyMods(h,item.mods,-1);h.equip[slot]=null;run.inventory.push(item);
 }
 function dropLoot(t){
-  const chance=t.kind==='ogro'?1:0.14;
+  const chance=t.kind==='ogro'?1:0.16;
   if(R()>=chance)return;
-  const rar=t.kind==='ogro'||R()<0.2?2:1;
+  const rar=rollRarity(t.kind==='ogro'?3:1);
   const item=rollItem(rar);if(!item)return;
   run.inventory.push(item);
-  SFX.loot();floatText(t,item.icon,'gold');
-  addLog(`🎁 Item encontrado: ${item.nome}`,'gold');
+  item.rar>=4?SFX.secret():SFX.loot();
+  floatText(t,item.icon,'gold');
+  addLog(`🎁 ${RARITY[item.rar].nome}: ${item.nome}`,'gold');
+  if(item.rar>=4)stats.hl.push({w:item.rar===5?9:5,t:`O grupo encontrou ${item.nome}, um item ${RARITY[item.rar].nome.toLowerCase()}.`});
 }
 const ENEMIES={
   goblin:{nome:'Goblin',ia:'rush',hp:9,atk:3,def:12,mov:4,alc:1,dmg:[1,6,1],ini:3,pts:100,
@@ -1193,11 +1239,11 @@ function buildUnit(u){
   plane.userData={unit:u};
   scene.add(grp);
   Object.assign(u,{grp,pivot,plane,mat,sz});
-  const hp=document.createElement('div');hp.className='hp'+(u.side==='enemy'?' enemy':'');
-  hp.innerHTML=`<img src="${u.portrait}" alt=""><div class="hpinfo"><span class="hpname"></span><div class="bar"><b></b><i></i></div></div>`;
-  hud.appendChild(hp);
+  const hp=document.createElement('div');hp.className='ucard'+(u.side==='enemy'?' e':'');
+  hp.innerHTML=`<img src="${u.portrait}" alt=""><div class="uinfo"><span class="uname"></span><div class="bar"><b></b><i></i></div></div>`;
+  $('#unitbar').appendChild(hp);
   u.hpEl=hp;u.hpFill=hp.querySelector('i');u.hpGhost=hp.querySelector('b');
-  hp.querySelector('.hpname').textContent=u.first;
+  hp.querySelector('.uname').textContent=u.first;
   grp.position.set(wx(u.c),topY(u.r,u.c),wz(u.r));
 }
 function disposeUnit(u){
@@ -1236,7 +1282,7 @@ function addLog(t,cls=''){
 }
 function renderOrder(){
   const el=$('#order');if(!stats)return;
-  el.innerHTML=stats.order.map(u=>`<div class="oc ${u.side==='enemy'?'e':''} ${u===active?'on':''} ${u.alive?'':'dead'}"><img src="${u.portrait}" alt=""></div>`).join('');
+  el.innerHTML='<div class="ordlabel">TURNO ↓</div>'+stats.order.map(u=>`<div class="oc ${u.side==='enemy'?'e':''} ${u===active?'on':''} ${u.alive?'':'dead'}"><img src="${u.portrait}" alt=""></div>`).join('');
 }
 
 /* ================= Painel ================= */
@@ -1413,6 +1459,7 @@ function renderPlace(){
   <div class="legend"><span><i class="lg free"></i>Casa livre</span><span><i class="lg hill"></i>Morro: +2 de acerto</span>${SECRET?'<span><i class="lg wall"></i>Parede suspeita</span>':''}<button class="btn ghost sm ov" data-act="overview">Ver mapa todo</button></div>
   <div class="actions">${run.phaseNo===1?'<button class="btn ghost" data-act="toVillage">Voltar</button>':''}<button class="btn ghost" data-act="equip">🎒 Equipar${run.inventory.length?` (${run.inventory.length})`:''}</button><button class="btn ghost" data-act="auto">Automático</button><button class="btn" data-act="start" ${all?'':'disabled'}>${all?'Começar batalha':`Falta posicionar ${left}`}</button></div>`;
 }
+const rarTag=it=>`<b style="color:${RARITY[it.rar].cor}">${RARITY[it.rar].nome}</b>`;
 function renderEquip(){
   view='equip';
   PI_.innerHTML=`
@@ -1428,13 +1475,13 @@ function renderEquip(){
           </div>
         </div>
         <div class="eqslots">
-          <button class="eqslot" data-equnhero="${h.id}" data-equnslot="weapon">${h.equip.weapon?`${h.equip.weapon.icon} ${h.equip.weapon.nome} (guardar)`:'⚔️ Arma: vazio'}</button>
-          <button class="eqslot" data-equnhero="${h.id}" data-equnslot="trinket">${h.equip.trinket?`${h.equip.trinket.icon} ${h.equip.trinket.nome} (guardar)`:'💍 Relíquia: vazio'}</button>
+          <button class="eqslot" data-equnhero="${h.id}" data-equnslot="weapon">${h.equip.weapon?`${h.equip.weapon.icon} ${h.equip.weapon.nome} · ${rarTag(h.equip.weapon)} (guardar)`:'⚔️ Arma: vazio'}</button>
+          <button class="eqslot" data-equnhero="${h.id}" data-equnslot="trinket">${h.equip.trinket?`${h.equip.trinket.icon} ${h.equip.trinket.nome} · ${rarTag(h.equip.trinket)} (guardar)`:'💍 Relíquia: vazio'}</button>
         </div>
       </div>`).join('')}
     <div class="box">
       <h3>Mochila (${run.inventory.length})</h3>
-      ${run.inventory.length?run.inventory.map((it,i)=>`<div class="invrow"><span>${it.icon} ${it.nome}</span><small>${it.desc}</small>
+      ${run.inventory.length?run.inventory.map((it,i)=>`<div class="invrow"><span>${it.icon} ${it.nome} · ${rarTag(it)}</span><small>${it.desc}</small>
         <div class="invpick">${party.map(h=>`<button class="btn ghost sm" data-eqpick="${i}" data-eqhero="${h.id}">${h.first}</button>`).join('')}</div>
       </div>`).join(''):'<p class="note">Nenhum item ainda. Derrote inimigos pra conseguir equipamentos.</p>'}
     </div>
@@ -1780,7 +1827,7 @@ async function startBattle(){
   const all=[...heroesAlive(),...enemiesAlive()];
   all.forEach(u=>u.initRoll=ri(1,20)+u.ini+R());
   stats.order=all.sort((a,b)=>b.initRoll-a.initRoll);
-  $('#order').hidden=false;renderOrder();
+  $('#order').hidden=false;$('#unitbar').hidden=false;renderOrder();
   await banner('Batalha!');
   for(let round=1;round<=24;round++){
     stats.round=round;const re=$('#round');if(re){re.textContent=round;gsap.fromTo(re,{scale:1.6,color:'#e9b949'},{scale:1,color:'#efe2c4',duration:0.4});}
@@ -1941,7 +1988,7 @@ function finalResult(win,cash){
   res.scrollTop=0;gsap.from(res.querySelector('.res'),{y:30,opacity:0,duration:0.4});
 }
 function newRun(){
-  $('#result').hidden=true;$('#order').hidden=true;$('#bhud').hidden=true;$('#feed').innerHTML='';diceEl.hidden=true;
+  $('#result').hidden=true;$('#order').hidden=true;$('#unitbar').hidden=true;$('#unitbar').innerHTML='';$('#bhud').hidden=true;$('#feed').innerHTML='';diceEl.hidden=true;
   party.forEach(disposeUnit);party=[];
   tombs.forEach(t=>{scene.remove(t);t.geometry.dispose();});tombs=[];
   if(chest){scene.remove(chest);chest=null;}
@@ -1958,7 +2005,7 @@ function loop(t){
   for(const u of units()){
     if(!u.grp)continue;
     if(u.alive!==false)u.pivot.scale.y=1+Math.sin(s*2.4+u.id*1.7)*0.025;
-    if(u.hpEl&&u.alive!==false){const [x,y]=screenOf(u);u.hpEl.style.left=x+'px';u.hpEl.style.top=y+'px';const f=(u.hp/u.maxhp*100)+'%';u.hpFill.style.width=f;u.hpGhost.style.width=f;u.hpEl.classList.toggle('low',u.side==='hero'&&u.hp/u.maxhp<=0.35);}
+    if(u.hpEl&&u.alive!==false){const f=(u.hp/u.maxhp*100)+'%';u.hpFill.style.width=f;u.hpGhost.style.width=f;u.hpEl.classList.toggle('low',u.side==='hero'&&u.hp/u.maxhp<=0.35);}
   }
   villagers.forEach(v=>{v.pivot.scale.y=1+Math.sin(s*2.4+v.id)*0.02;});
   if(active&&active.grp){ring.position.set(active.grp.position.x,active.grp.position.y+0.09,active.grp.position.z);ring.material.opacity=0.65+Math.sin(s*6)*0.3;}
