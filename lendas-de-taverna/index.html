@@ -303,7 +303,7 @@ h4.sec{margin:6px 0 0;font-family:var(--f-display);font-size:15px;color:var(--ou
     <ol>
       <li><div><b>Praça</b>Cada prédio tem o seu menu. Faça os passos 1 e 2 e parta.</div></li>
       <li><div><b>Missão</b>No Quadro de Missões, veja o mapa e os inimigos que podem aparecer. Mapa 1 é sempre igual; o resto muda.</div></li>
-      <li><div><b>Grupo</b>Na Taverna, toque num herói pra ler a ficha: função e como ele joga. Escolha de 3 a 5.</div></li>
+      <li><div><b>Grupo</b>Na Taverna, toque num herói pra ler a ficha: função e como ele joga. Escolha 5 heróis.</div></li>
       <li><div><b>Formação</b>Posicione cada herói numa casa dourada. Morro dá +2 de acerto.</div></li>
       <li><div><b>Batalha</b>O jogo joga sozinho. Acompanhe os dados, use 2x, 4x ou Pular, e o botão Mapa pra ver tudo.</div></li>
       <li><div><b>Fases</b>Vença pra ir ao próximo mapa. Quem caiu volta Exausto. Cada herói ganha XP só pelo que faz em pé.</div></li>
@@ -330,6 +330,59 @@ const pick=a=>a[Math.floor(R()*a.length)];
 const vpick=a=>a[Math.floor(Math.random()*a.length)];
 const dice=(n,s)=>{let t=0;for(let i=0;i<n;i++)t+=ri(1,s);return t;};
 const wait=ms=>new Promise(res=>gsap.delayedCall(ms/1000,res));
+
+/* ================= Áudio: SFX sintetizados via Web Audio API =================
+   Tudo gerado na hora (osciladores + ruído filtrado), sem arquivos externos,
+   pra manter o jogo num único HTML autocontido. */
+let actx=null,master=null;
+function ensureAudio(){
+  if(actx)return actx;
+  try{actx=new (window.AudioContext||window.webkitAudioContext)();
+    master=actx.createGain();master.gain.value=0.5;master.connect(actx.destination);
+  }catch(_){}
+  return actx;
+}
+['pointerdown','touchstart','keydown'].forEach(ev=>window.addEventListener(ev,()=>{
+  ensureAudio();if(actx&&actx.state==='suspended')actx.resume();
+},{once:true,passive:true}));
+
+function sTone(freq,{type='sine',dur=0.12,gain=0.3,attack=0.005,release=0.08,sweep=0,delay=0}={}){
+  if(!actx)return;const t0=actx.currentTime+delay;
+  const osc=actx.createOscillator(),g=actx.createGain();
+  osc.type=type;osc.frequency.setValueAtTime(freq,t0);
+  if(sweep)osc.frequency.exponentialRampToValueAtTime(Math.max(20,freq+sweep),t0+dur);
+  g.gain.setValueAtTime(0.0001,t0);g.gain.linearRampToValueAtTime(gain,t0+attack);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur+release);
+  osc.connect(g);g.connect(master);osc.start(t0);osc.stop(t0+dur+release+0.02);
+}
+function sNoise({dur=0.12,gain=0.3,freq=1200,q=0.7,type='bandpass',delay=0}={}){
+  if(!actx)return;const t0=actx.currentTime+delay;
+  const buf=actx.createBuffer(1,Math.max(1,Math.floor(actx.sampleRate*dur)),actx.sampleRate);
+  const d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  const src=actx.createBufferSource();src.buffer=buf;
+  const filt=actx.createBiquadFilter();filt.type=type;filt.frequency.value=freq;filt.Q.value=q;
+  const g=actx.createGain();g.gain.setValueAtTime(gain,t0);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  src.connect(filt);filt.connect(g);g.connect(master);src.start(t0);src.stop(t0+dur+0.02);
+}
+const SFX={
+  click(){sTone(880,{type:'square',dur:0.03,gain:0.1,release:0.03});},
+  move(){sNoise({dur:0.08,gain:0.09,freq:380,q:0.9,type:'lowpass'});},
+  swing(){sNoise({dur:0.08,gain:0.16,freq:2200,q:1.2,type:'bandpass'});},
+  hit(){sNoise({dur:0.1,gain:0.26,freq:900,q:0.8,type:'lowpass'});sTone(140,{type:'sine',dur:0.08,gain:0.2,release:0.06});},
+  crit(){sNoise({dur:0.14,gain:0.32,freq:1500,q:0.6,type:'bandpass'});sTone(220,{type:'sawtooth',dur:0.14,gain:0.22,sweep:120,release:0.1});sTone(660,{type:'triangle',dur:0.12,gain:0.16,delay:0.04,release:0.08});},
+  miss(){sNoise({dur:0.14,gain:0.09,freq:2600,q:0.5,type:'highpass'});},
+  shoot(){sNoise({dur:0.16,gain:0.11,freq:3200,q:0.8,type:'highpass'});},
+  cast(){sTone(520,{type:'sine',dur:0.22,gain:0.13,sweep:260,release:0.18});sTone(780,{type:'sine',dur:0.18,gain:0.09,delay:0.05,sweep:160,release:0.15});},
+  heal(){[0,0.08,0.16].forEach((d,i)=>sTone(440*(1.26**i),{type:'sine',dur:0.18,gain:0.15,delay:d,release:0.2}));},
+  kill(){sNoise({dur:0.22,gain:0.2,freq:260,q:0.7,type:'lowpass'});sTone(90,{type:'sine',dur:0.2,gain:0.16,sweep:-40,release:0.2});},
+  dice(){sNoise({dur:0.35,gain:0.09,freq:2500,q:0.4,type:'bandpass'});},
+  land(){sTone(180,{type:'square',dur:0.04,gain:0.15,release:0.04});},
+  secret(){[0,0.1,0.2,0.32].forEach((d,i)=>sTone(523.25*(1.5**(i*0.5)),{type:'triangle',dur:0.22,gain:0.17,delay:d,release:0.2}));},
+};
+// Som de clique genérico pra qualquer botão/elemento interativo da UI.
+document.addEventListener('click',e=>{
+  if(e.target.closest('button,.pc,.chip,.slot,.place,.spd,.td,.oc'))SFX.click();
+},true);
 const fmt=n=>n.toLocaleString('pt-BR');
 
 /* ================= Dados ================= */
@@ -682,6 +735,10 @@ const camT=new THREE.Vector3(VX,0.3,VZ+0.3); cam.zoom=0.8;
 const shakeO={v:0};
 function applyCam(){
   const sx=(Math.random()-0.5)*shakeO.v, sy=(Math.random()-0.5)*shakeO.v;
+  // The sun follows the current view target so its shadow frustum only
+  // ever has to cover whichever area (village or board) is on screen,
+  // instead of spanning the whole 34-unit gap between the two.
+  sun.position.set(camT.x-4,camT.y+10,camT.z+6);sun.target.position.set(camT.x,camT.y,camT.z);
   cam.position.set(camT.x+CAM_OFF.x+sx,camT.y+CAM_OFF.y+sy,camT.z+CAM_OFF.z);
   cam.lookAt(camT.x+sx,camT.y+sy,camT.z);cam.updateMatrixWorld();
 }
@@ -691,8 +748,16 @@ function aimCam(x,y,z,zoom,dur=1.1){
 }
 const VIEW={village:[VX,0.3,VZ+0.3,0.8],tavern:[VX,1.1,VZ-2.1,1.9],board:[0,0.3,0.2,1]};
 const aim=(v,d)=>aimCam(...VIEW[v],d);
-scene.add(new THREE.HemisphereLight(0xfff1d6,0x3a2b20,0.9));
-const sun=new THREE.DirectionalLight(0xffe2b0,0.75); sun.position.set(-4,10,6); scene.add(sun);
+scene.add(new THREE.HemisphereLight(0xfff1d6,0x3a2b20,0.65));
+const sun=new THREE.DirectionalLight(0xffe2b0,0.95); sun.position.set(-4,10,6); scene.add(sun);
+scene.add(sun.target);
+sun.castShadow=true;
+sun.shadow.mapSize.set(1024,1024);
+sun.shadow.camera.left=-10;sun.shadow.camera.right=10;sun.shadow.camera.top=10;sun.shadow.camera.bottom=-10;
+sun.shadow.camera.near=1;sun.shadow.camera.far=30;
+sun.shadow.bias=-0.0015;
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 
 function resize(){
   const w=stage.clientWidth,h=stage.clientHeight; if(!w||!h)return;
@@ -788,6 +853,7 @@ function buildBoard(){
       zm.rotation.x=-Math.PI/2;zm.position.set(x,ty+0.012,z);zm.visible=false;boardGroup.add(zm);zoneMarks.set(k(r,c),zm);
     }
   }
+  boardGroup.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
 }
 const mkRing=col=>{const m=new THREE.Mesh(new THREE.RingGeometry(0.4,0.5,28),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.9,depthWrite:false,side:THREE.DoubleSide}));m.rotation.x=-Math.PI/2;m.visible=false;scene.add(m);return m;};
 const ring=mkRing('#e9b949'), tRing=mkRing('#d4503f');
@@ -870,8 +936,10 @@ function building(id,o){
   as.position.set(5.9,0.95,1.55);village.add(as);
   // estrada que liga a vila ao tabuleiro, pela mesa
   const pathT=ptex('#7a5c3b',['#6b4e30','#8a6a45'],{repeat:[11,1]});
-  const pm=new THREE.Mesh(new THREE.PlaneGeometry(11,1),new THREE.MeshLambertMaterial({map:pathT}));pm.rotation.x=-Math.PI/2;pm.position.set(VX+6.5+5.5,-0.3,0.6);scene.add(pm);
+  const pm=new THREE.Mesh(new THREE.PlaneGeometry(11,1),new THREE.MeshLambertMaterial({map:pathT}));pm.rotation.x=-Math.PI/2;pm.position.set(VX+6.5+5.5,-0.3,0.6);pm.receiveShadow=true;scene.add(pm);
 })();
+village.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+table.receiveShadow=true;
 
 /* ---------- Moradores ---------- */
 function standee(sprite,sz,parent){
@@ -1150,14 +1218,14 @@ helpEl.addEventListener('click',e=>{if(e.target===helpEl||e.target.closest('[dat
 /* ---------- Praça: passo a passo ---------- */
 function renderVillage(){
   view='hub';setMode('village');
-  const m=run.mission?mapOf(run.mission):null,np=selected.size,ready=m&&np>=3,best=bestRun();
+  const m=run.mission?mapOf(run.mission):null,np=selected.size,ready=m&&np>=5,best=bestRun();
   PI_.innerHTML=`
   ${stepper(1)}
   <div class="head"><div><div class="eyebrow">Vila de Brumavale</div><h2>O que fazer agora?</h2></div>
     <div class="btns">${best?`<span class="tag">Melhor run: ${fmt(best)}</span>`:''}<button class="btn ghost sm" data-act="help">Como jogar</button></div></div>
   <div class="todo">
     <button class="td ${m?'ok':''}" data-bld="board"><i>${m?'✓':'1'}</i><span><b>Quadro de Missões</b><small>${m?`Mapa ${m.n}: ${m.nome}`:'Escolha onde lutar'}</small></span><em>›</em></button>
-    <button class="td ${np>=3?'ok':''}" data-bld="tavern"><i>${np>=3?'✓':'2'}</i><span><b>Taverna</b><small>${np>=3?`${np} heróis no grupo`:'Monte o grupo (3 a 5 heróis)'}</small></span><em>›</em></button>
+    <button class="td ${np>=5?'ok':''}" data-bld="tavern"><i>${np>=5?'✓':'2'}</i><span><b>Taverna</b><small>${np>=5?`${np} heróis no grupo`:'Monte o grupo (5 heróis)'}</small></span><em>›</em></button>
   </div>
   <p class="hint" id="hint">${hint||'Toque nos prédios da vila ou nos botões acima. Cada prédio abre o seu menu.'}</p>
   <div class="places"><span class="plab">Outros lugares</span>${['temple','forge','market','well'].map(id=>`<button class="place soon" data-bld="${id}">${PLACES[id].nome.split(' ')[0]}</button>`).join('')}</div>
@@ -1215,8 +1283,8 @@ function partyBar(){
   const sel=draw.filter(h=>selected.has(h.id)),n=sel.length;
   const sur={};sel.forEach(h=>sur[h.sur]=(sur[h.sur]||0)+1);const fams=Object.keys(sur).filter(x=>sur[x]>1);
   return `<div class="party"><div class="slots">${Array.from({length:5},(_,i)=>{const h=sel[i];
-    return h?`<button class="slot full" data-slot="${h.id}" aria-label="Tirar ${h.first} do grupo"><img src="${h.portrait}" alt=""></button>`:`<span class="slot ${i<3?'req':''}">+</span>`;}).join('')}</div>
-    <div class="pmult">${n>=3?`<b>×${MULT[n].toFixed(1).replace('.',',')}</b><small>${fams.length?`Irmãos ${fams.join(', ')} +1`:`pontos · grupo de ${n}`}</small>`:`<b>${n}/5</b><small>escolha de 3 a 5</small>`}</div></div>`;
+    return h?`<button class="slot full" data-slot="${h.id}" aria-label="Tirar ${h.first} do grupo"><img src="${h.portrait}" alt=""></button>`:`<span class="slot req">+</span>`;}).join('')}</div>
+    <div class="pmult">${n>=5?`<b>×${MULT[n].toFixed(1).replace('.',',')}</b><small>${fams.length?`Irmãos ${fams.join(', ')} +1`:'grupo completo'}</small>`:`<b>${n}/5</b><small>escolha 5 heróis</small>`}</div></div>`;
 }
 function renderTavern(){
   view='tavern';tvFocus=null;setMode('tavern');
@@ -1232,7 +1300,7 @@ function renderTavern(){
       ${sc[h.sur]>1?'<span class="sib">Irmãos</span>':''}<span class="tick">✓</span>
       <img src="${h.portrait}" alt=""><span class="nm">${h.first}</span><span class="cl">${CLASSES[h.cls].nome}</span><span class="tr">${CLASSES[h.cls].papel}</span>
     </button>`).join('')}</div>
-  <button class="btn cta" data-act="toVillage" ${n>=3?'':'disabled'}>${n>=3?'Confirmar grupo':`Escolha mais ${3-n}`}</button>`;
+  <button class="btn cta" data-act="toVillage" ${n>=5?'':'disabled'}>${n>=5?'Confirmar grupo':`Escolha mais ${5-n}`}</button>`;
 }
 function rangeGrid(r,col){
   const Q=5;let h='';
@@ -1327,6 +1395,7 @@ function tileInfo(r,c){
   return isZone(r,c)?'Grama. Casa livre pra posicionar.':'Grama.';
 }
 function onTile(r,c,unit){
+  SFX.click();
   if(unit){r=unit.r;c=unit.c;}
   const occ=unitAt(r,c);
   if(occ&&occ.side==='hero'&&(!selHero||selHero===occ||selHero.r!=null&&!isZone(r,c))){selHero=occ;hint=`${occ.first} selecionado. Toque em outra casa dourada pra mover.`;pulse(occ.grp.position,'#e9b949',0.8,0.5);renderPlace();return;}
@@ -1376,7 +1445,7 @@ canvas.addEventListener('pointerup',e=>{
   ray.setFromCamera(ndc,cam);
   if(phase==='village'){
     const hits=ray.intersectObjects(villagePicks,true);
-    for(const h of hits){let o=h.object;while(o&&!(o.userData&&o.userData.bld))o=o.parent;if(o){openBld(o.userData.bld);return;}}
+    for(const h of hits){let o=h.object;while(o&&!(o.userData&&o.userData.bld))o=o.parent;if(o){SFX.click();openBld(o.userData.bld);return;}}
     return;
   }
   if(phase!=='place')return;
@@ -1431,7 +1500,7 @@ function chooseTarget(u,foes,reach){
 }
 async function moveAlong(u,path){
   if(!path.length)return;
-  previewPath(path,u.side==='hero'?'#79a8ec':'#d4503f');await wait(180);
+  previewPath(path,u.side==='hero'?'#79a8ec':'#d4503f');SFX.move();await wait(180);
   for(const p of path){
     const tx=wx(p.c),tz=wz(p.r),ty=topY(p.r,p.c),y0=u.grp.position.y,peak=Math.max(y0,ty)+0.28;
     u.r=p.r;u.c=p.c;
@@ -1441,14 +1510,14 @@ async function moveAlong(u,path){
 }
 async function showRoll({who,roll,parts=[],target,tlabel,outcome,label,numText,calcHtml}){
   diceEl.hidden=false;diceEl.dataset.out='';dWho.textContent=who;dCalc.textContent='rolando o d20…';dRes.textContent='';
-  tumbleDie();
+  tumbleDie();SFX.dice();
   const o={v:0,n:-1};
   await gsap.to(o,{v:1,duration:0.6,ease:'none',onUpdate:()=>{const n=Math.floor(o.v*14);if(n!==o.n){o.n=n;dNum.textContent=1+Math.floor(Math.random()*20);}}});
   dNum.textContent=numText||roll;
   const sum=roll+parts.reduce((a,p)=>a+p[0],0);
   dCalc.innerHTML=calcHtml||`${roll}${parts.map(p=>` <span>+${p[0]} ${p[1]}</span>`).join('')} = <b>${sum}</b> vs ${tlabel} ${target}`;
   dRes.textContent=label;diceEl.dataset.out=outcome;
-  landDie(roll===1&&!numText?'fumble':outcome);
+  landDie(roll===1&&!numText?'fumble':outcome);SFX.land();
   await wait(380);
 }
 const sibActive=u=>u.sib&&party.some(o=>o!==u&&o.alive&&o.r!=null&&o.sur===u.sur);
@@ -1457,7 +1526,7 @@ async function projectile(u,t){
   const mg=u.cls==='mago';const a=u.grp.position,b=t.grp.position;
   const m=mg?new THREE.Mesh(new THREE.SphereGeometry(0.13,10,10),new THREE.MeshBasicMaterial({color:'#9fdcff'})):new THREE.Mesh(new THREE.BoxGeometry(0.04,0.04,0.42),new THREE.MeshBasicMaterial({color:'#f0dfb0'}));
   m.position.set(a.x,a.y+0.75,a.z);scene.add(m);
-  if(mg){pulse(a,'#79a8ec',0.9,0.4,0.1);burst({x:a.x,y:a.y,z:a.z},{n:8,colors:['#9fdcff','#ffffff'],spread:0.35,up:0.6,y:0.7,life:0.4});}
+  if(mg){SFX.cast();pulse(a,'#79a8ec',0.9,0.4,0.1);burst({x:a.x,y:a.y,z:a.z},{n:8,colors:['#9fdcff','#ffffff'],spread:0.35,up:0.6,y:0.7,life:0.4});}
   const peak=Math.max(a.y,b.y)+(mg?0.9:1.4),prev=m.position.clone();let n=0;
   const tl=gsap.timeline({onUpdate:()=>{
     if(mg){if((n++)%2===0)burst(m.position,{n:1,colors:['#9fdcff','#ffffff','#5b8fd9'],spread:0.08,up:0.08,life:0.35,size:0.9,y:0});}
@@ -1480,11 +1549,11 @@ async function attack(u,t){
   await showRoll({who:`${u.first} ataca ${t.first}`,roll,parts,target:t.def,tlabel:'DEF',outcome:crit?'crit':hit?'hit':'miss',label:crit?'CRÍTICO!':hit?'Acertou':roll===1?'Falha crítica':'Errou'});
   if(u.inspired){u.inspired=false;}
   const p=u.grp.position,ox=p.x,oz=p.z,dx=t.c-u.c,dz=t.r-u.r,len=Math.hypot(dx,dz)||1;
-  if(u.alc>1){await gsap.timeline().to(p,{x:ox-dx/len*0.12,z:oz-dz/len*0.12,duration:0.08}).to(p,{x:ox,z:oz,duration:0.1});await projectile(u,t);}
-  else await gsap.timeline().to(p,{x:ox+dx/len*0.32,z:oz+dz/len*0.32,duration:0.12,ease:'power2.in'}).to(p,{x:ox,z:oz,duration:0.18,ease:'power2.out'});
+  if(u.alc>1){SFX.shoot();await gsap.timeline().to(p,{x:ox-dx/len*0.12,z:oz-dz/len*0.12,duration:0.08}).to(p,{x:ox,z:oz,duration:0.1});await projectile(u,t);}
+  else{SFX.swing();await gsap.timeline().to(p,{x:ox+dx/len*0.32,z:oz+dz/len*0.32,duration:0.12,ease:'power2.in'}).to(p,{x:ox,z:oz,duration:0.18,ease:'power2.out'});}
   clearLine();
   if(!hit){
-    floatText(t,'errou','miss');gsap.fromTo(t.plane.position,{x:0},{x:0.24,duration:0.1,yoyo:true,repeat:1,ease:'power1.out'});
+    SFX.miss();floatText(t,'errou','miss');gsap.fromTo(t.plane.position,{x:0},{x:0.24,duration:0.1,yoyo:true,repeat:1,ease:'power1.out'});
     burst(t.grp.position,{n:5,colors:['#d8d2c4'],spread:0.5,up:0.2,y:0.5,life:0.3,size:0.6});
     addLog(`${u.first} errou ${t.first} (${sum} vs ${t.def})`,'mut');tRing.visible=false;await wait(220);return;
   }
@@ -1502,6 +1571,7 @@ async function attack(u,t){
   damage(t,dmg,u,crit);tRing.visible=false;await wait(280);
 }
 function damage(t,dmg,src,crit){
+  crit?SFX.crit():SFX.hit();
   t.hp=Math.max(0,t.hp-dmg);floatText(t,crit?`-${dmg}!`:`-${dmg}`,crit?'crit':'');
   gsap.fromTo(t.mat.color,{r:1,g:0.2,b:0.2},{r:1,g:1,b:1,duration:0.45});
   gsap.fromTo(t.plane.position,{x:-0.1},{x:0,duration:0.4,ease:'elastic.out(1,0.3)'});
@@ -1509,6 +1579,7 @@ function damage(t,dmg,src,crit){
   if(t.hp<=0)kill(t,src,crit);
 }
 function kill(t,src,crit){
+  SFX.kill();
   t.alive=false;t.diedRound=stats.round;if(t.hpEl)t.hpEl.hidden=true;
   gsap.to(t.pivot.rotation,{x:-1.45,duration:0.5,ease:'bounce.out',onComplete:()=>burst(t.grp.position,{n:16,colors:['#9a948a','#c9c2b4','#6a655d'],spread:0.8,up:0.25,y:0.1,life:0.6})});
   gsap.to(t.mat.color,{r:0.5,g:0.5,b:0.5,duration:0.3,delay:0.1});
@@ -1530,7 +1601,7 @@ async function heal(u,w){
   pulse(u.grp.position,'#6cc35e',0.9,0.5);await wait(250);
   const amt=dice(2,4)+2,before=w.hp;w.hp=Math.min(w.maxhp,w.hp+amt);
   await showRoll({who:`${u.first} reza por ${w===u?'si mesmo':w.first}`,roll:amt,numText:'+'+amt,calcHtml:'Cura: <span>2d4 +2</span>',outcome:'hit',label:`+${w.hp-before} PV`});
-  pulse(w.grp.position,'#6cc35e',1.2,0.7);burst(w.grp.position,{n:14,colors:['#8ee07e','#d9ffd0','#6cc35e'],spread:0.35,up:1.3,y:0.2,life:0.9,size:0.9});
+  SFX.heal();pulse(w.grp.position,'#6cc35e',1.2,0.7);burst(w.grp.position,{n:14,colors:['#8ee07e','#d9ffd0','#6cc35e'],spread:0.35,up:1.3,y:0.2,life:0.9,size:0.9});
   floatText(w,`+${w.hp-before}`,'heal');gsap.fromTo(w.mat.color,{r:0.5,g:1,b:0.5},{r:1,g:1,b:1,duration:0.7});
   xp(u,Math.max(5,(w.hp-before)*2));
   addLog(`${u.first} curou ${w===u?'a si mesmo':w.first} (+${w.hp-before})`,'heal');
@@ -1549,7 +1620,7 @@ async function checkSecret(u){
   await showRoll({who:`${u.first} examina a parede rachada`,roll,parts,target:15,tlabel:'CD',outcome:ok?'crit':'miss',label:ok?'Achou uma passagem!':'Não viu nada'});
   if(!ok){addLog(`${u.first} examinou a parede, mas não achou nada (${sum} vs 15)`,'mut');return;}
   stats.secret=true;stats.secretBy=u;xp(u,30);
-  shakeCam(0.2,0.5);burst({x:wp.x,y:0,z:wp.z},{n:22,colors:['#8d918b','#6a6e69','#a0a49e'],spread:0.9,up:0.6,y:0.6,life:0.7,fall:true,size:1.4});
+  SFX.secret();shakeCam(0.2,0.5);burst({x:wp.x,y:0,z:wp.z},{n:22,colors:['#8d918b','#6a6e69','#a0a49e'],spread:0.9,up:0.6,y:0.6,life:0.7,fall:true,size:1.4});
   await gsap.timeline().to(wallMesh.scale,{y:0.2,duration:0.5,ease:'power2.in'},0).to(wallMesh.position,{y:0.12,duration:0.5,ease:'power2.in'},0);
   chest=new THREE.Mesh(new THREE.PlaneGeometry(0.75,0.64),new THREE.MeshBasicMaterial({map:nearestTex(chestSprite()),transparent:true,alphaTest:0.5,side:THREE.DoubleSide}));
   chest.position.set(wp.x,0.6,wp.z);chest.rotation.y=AZ;scene.add(chest);
