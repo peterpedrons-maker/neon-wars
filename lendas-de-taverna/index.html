@@ -20,6 +20,11 @@
 }
 html{height:100%;box-sizing:border-box}
 *,*::before,*::after{box-sizing:border-box}
+/* #help, #dice, #order and #bhud each declare their own `display` by ID,
+   which outranks the browser's default `[hidden]{display:none}` rule —
+   so toggling the `hidden` attribute on them did nothing visually. This
+   is what made the first "Entendi" dialog impossible to dismiss. */
+[hidden]{display:none !important}
 body{height:100%;margin:0;background:var(--mesa);color:var(--papel);font-family:var(--f-body);overflow:hidden;-webkit-tap-highlight-color:transparent}
 #app{position:relative;height:100%;display:flex;flex-direction:column}
 #stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:var(--mesa)}
