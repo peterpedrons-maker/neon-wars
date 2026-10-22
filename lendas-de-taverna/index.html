@@ -1325,7 +1325,9 @@ function buildUnit(u){
   Object.assign(u,{grp,pivot,plane,mat,sz});
   const hp=document.createElement('div');hp.className='ucard'+(u.side==='enemy'?' e':'');
   hp.innerHTML=`<img src="${u.portrait}" alt=""><div class="uinfo"><span class="uname"></span><div class="bar"><b></b><i></i></div></div>`;
-  $('#unitbar').appendChild(hp);
+  const bar=$('#unitbar');
+  if(u.side==='hero'){const firstEnemy=bar.querySelector('.ucard.e');firstEnemy?bar.insertBefore(hp,firstEnemy):bar.appendChild(hp);}
+  else bar.appendChild(hp);
   u.hpEl=hp;u.hpFill=hp.querySelector('i');u.hpGhost=hp.querySelector('b');
   hp.querySelector('.uname').textContent=u.first;
   grp.position.set(wx(u.c),topY(u.r,u.c),wz(u.r));
@@ -2270,7 +2272,7 @@ function loop(t){
   villagers.forEach(v=>{v.pivot.scale.y=1+Math.sin(s*2.4+v.id)*0.02;});
   if(active&&active.grp){ring.position.set(active.grp.position.x,active.grp.position.y+0.09,active.grp.position.z);ring.material.opacity=0.65+Math.sin(s*6)*0.3;}
   if(tRing.visible)tRing.material.opacity=0.6+Math.sin(s*10)*0.35;
-  if(callout&&callout.u.grp){const [x,y]=screenOf(callout.u,0.32);callout.el.style.left=x+'px';callout.el.style.top=y+'px';}
+  if(callout&&callout.u.grp){const [x,y]=screenOf(callout.u,0.32);callout.el.style.left=Math.max(x,96)+'px';callout.el.style.top=Math.max(y,50)+'px';}
   if(bubble){const p=bubble.v.grp.getWorldPosition(new THREE.Vector3());p.y+=bubble.v.sz+0.25;const [x,y]=worldToScreen(p);bubble.el.style.left=x+'px';bubble.el.style.top=y+'px';}
   renderer.render(scene,cam);renderDie();
 }
