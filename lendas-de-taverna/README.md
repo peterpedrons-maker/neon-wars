@@ -17,3 +17,8 @@ python3 -m http.server 8080
 https://peterpedrons-maker.github.io/neon-wars/lendas-de-taverna/
 
 (Faz parte do deploy do repositório `neon-wars` — ver `.github/workflows/deploy-pages.yml`.)
+
+## Documentação
+
+- [`DESIGN.md`](DESIGN.md) — decisões de design, sistemas implementados e roadmap.
+- [`EQUIPAMENTOS.md`](EQUIPAMENTOS.md) — catálogo completo de itens do jogo.
