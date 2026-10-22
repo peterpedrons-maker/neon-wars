@@ -1367,6 +1367,43 @@ function makeEnemy(s){
   return {id:uid++,side:'enemy',kind:s.kind,ia:b.ia,first,nome:b.nome,maxhp:hp,hp,atk:b.atk+(sc>1.1?1:0)+(sc>1.25?1:0),def:b.def+(sc>1.2?1:0),mov:b.mov,alc:b.alc,dmg:b.dmg,ini:b.ini,pts:b.pts,big:b.big,
     r:s.r,c:s.c,alive:true,aggro:false,sprite:enemyCache[s.kind].sp,portrait:enemyCache[s.kind].url};
 }
+/* Rig de herói: em vez de 1 plano só, recorta o mesmo canvas 40x48 do
+   heroSprite em pedaços (pernas, tronco, cabeça, braço da arma) e monta
+   cada um como seu próprio plano com UV apontando pro recorte certo —
+   mesmo pixel art, zero textura nova, só a MESMA textura fatiada. Cada
+   pedaço entra num THREE.Group pivotado na junta (quadril/ombro/pescoço)
+   pra poder girar de verdade (perna andando, braço erguendo a arma). */
+function partPlane(tex,W,H,px,py,pw,ph,sx,sy){
+  const geo=new THREE.PlaneGeometry(1,1);
+  const uv=geo.attributes.uv;
+  const u0=px/W,u1=(px+pw)/W,v0=1-(py+ph)/H,v1=1-py/H;
+  uv.setXY(0,u0,v1);uv.setXY(1,u1,v1);uv.setXY(2,u0,v0);uv.setXY(3,u1,v0);uv.needsUpdate=true;
+  const mat=new THREE.MeshBasicMaterial({map:tex,transparent:true,alphaTest:0.5,side:THREE.DoubleSide});
+  const mesh=new THREE.Mesh(geo,mat);mesh.scale.set(pw*sx,ph*sy,1);
+  return mesh;
+}
+function buildHeroRig(sprite,sz){
+  const tex=nearestTex(sprite);
+  const W=40,H=48,sx=(sz*20/24)/W,sy=sz/H,halfW=(sz*20/24)/2;
+  const cx=(px,pw)=>-halfW+(px+pw/2)*sx, cy=(py,ph)=>sz-(py+ph/2)*sy;
+  const rig=new THREE.Group();const mats=[];
+  const mk=(px,py,pw,ph,z)=>{const m=partPlane(tex,W,H,px,py,pw,ph,sx,sy);m.position.z=z||0;mats.push(m.material);return m;};
+  // pernas — cada uma pivotada no quadril pra balançar ao andar
+  const hipY=cy(36,0);
+  const mkLeg=px=>{const g=new THREE.Group();g.position.set(cx(px,8),hipY,0);const part=mk(px,36,8,12);part.position.set(0,cy(36,12)-hipY,0);g.add(part);rig.add(g);return g;};
+  const legL=mkLeg(12),legR=mkLeg(20);
+  // tronco (corpo+braço livre, fixo) — fica embaixo das outras peças
+  const torso=mk(0,20,28,16,0);torso.position.set(0,0,0);rig.add(torso);
+  // cabeça — pivotada no pescoço pra um leve bob
+  const neckY=cy(20,0);
+  const headG=new THREE.Group();headG.position.set(0,neckY,0);
+  const headPart=mk(6,0,24,22,0.002);headPart.position.set(cx(6,24),cy(0,22)-neckY,0);headG.add(headPart);rig.add(headG);
+  // braço com a arma — pivotado no ombro pra erguer de verdade no ataque
+  const shoY=cy(20,0);
+  const armG=new THREE.Group();armG.position.set(cx(28,12),shoY,0);
+  const armPart=mk(28,4,12,32,0.001);armPart.position.set(0,cy(4,32)-shoY,0);armG.add(armPart);rig.add(armG);
+  return {rig,legL,legR,headG,armG,mats};
+}
 function buildUnit(u){
   const grp=new THREE.Group();
   const base=new THREE.Mesh(new THREE.CylinderGeometry(0.34,0.38,0.08,22),new THREE.MeshLambertMaterial({color:u.side==='hero'?'#2b4466':'#6a221d'}));
@@ -1376,13 +1413,22 @@ function buildUnit(u){
   const sh=new THREE.Mesh(new THREE.CircleGeometry(0.44,20),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.3,depthWrite:false}));
   sh.rotation.x=-Math.PI/2;sh.position.y=0.006;grp.add(sh);
   const sz=u.big?1.8:1.3;
-  const mat=new THREE.MeshBasicMaterial({map:nearestTex(u.sprite),transparent:true,alphaTest:0.5,side:THREE.DoubleSide});
-  const plane=new THREE.Mesh(new THREE.PlaneGeometry(sz*20/24,sz),mat);
   const pivot=new THREE.Group();pivot.rotation.order='YXZ';pivot.rotation.y=AZ;pivot.position.y=0.08;
-  plane.position.y=sz/2;pivot.add(plane);grp.add(pivot);
-  plane.userData={unit:u};
+  let plane,mat,mats,legL,legR,armG,headG;
+  if(u.side==='hero'){
+    const rigP=buildHeroRig(u.sprite,sz);
+    plane=rigP.rig;mats=rigP.mats;mat=mats[0];legL=rigP.legL;legR=rigP.legR;armG=rigP.armG;headG=rigP.headG;
+    pivot.add(plane);
+  }else{
+    mat=new THREE.MeshBasicMaterial({map:nearestTex(u.sprite),transparent:true,alphaTest:0.5,side:THREE.DoubleSide});
+    mats=[mat];
+    plane=new THREE.Mesh(new THREE.PlaneGeometry(sz*20/24,sz),mat);
+    plane.position.y=sz/2;pivot.add(plane);
+    plane.userData={unit:u};
+  }
+  grp.add(pivot);
   scene.add(grp);
-  Object.assign(u,{grp,pivot,plane,mat,sz});
+  Object.assign(u,{grp,pivot,plane,mat,mats,sz,legL,legR,armG,headG});
   const hp=document.createElement('div');hp.className='ucard'+(u.side==='enemy'?' e':'');
   hp.innerHTML=`<img src="${u.portrait}" alt=""><div class="uinfo"><span class="uname"></span><div class="bar"><b></b><i></i></div></div>`;
   const bar=$('#unitbar');
@@ -1996,6 +2042,7 @@ async function moveAlong(u,path){
   for(const p of path){
     const tx=wx(p.c),tz=wz(p.r),ty=topY(p.r,p.c),y0=u.grp.position.y,peak=Math.max(y0,ty)+0.28;
     u.r=p.r;u.c=p.c;
+    swingLegs(u,0.2);
     await gsap.timeline().to(u.grp.position,{x:tx,z:tz,duration:0.2,ease:'none'},0).to(u.grp.position,{y:peak,duration:0.1,ease:'power1.out'},0).to(u.grp.position,{y:ty,duration:0.1,ease:'power1.in'},0.1);
     burst(u.grp.position,{n:3,colors:['#c9b28a','#a08a62'],spread:0.3,up:0.1,y:0.03,life:0.3,size:0.7});
   }
@@ -2027,6 +2074,29 @@ async function projectile(u,t){
   tl.to(m.position,{x:b.x,z:b.z,duration:0.32,ease:'none'},0).to(m.position,{y:peak,duration:0.16,ease:'power1.out'},0).to(m.position,{y:b.y+0.7,duration:0.16,ease:'power1.in'},0.16);
   await tl;scene.remove(m);m.geometry.dispose();m.material.dispose();
 }
+function swingArm(u,fwdDur,backDur){
+  if(!u.armG)return;
+  gsap.timeline()
+    .to(u.armG.rotation,{z:1.0,duration:fwdDur*0.5,ease:'power2.out'},0)
+    .to(u.armG.rotation,{z:-0.75,duration:fwdDur*0.5,ease:'power3.in'})
+    .to(u.armG.rotation,{z:0,duration:backDur,ease:'power2.out'});
+}
+function drawBow(u,dur){
+  if(!u.armG)return;
+  gsap.timeline()
+    .to(u.armG.rotation,{z:0.55,duration:dur*0.4,ease:'power1.out'},0)
+    .to(u.armG.rotation,{z:0,duration:dur*0.6,ease:'power2.in'});
+}
+function swingLegs(u,dur){
+  if(!u.legL)return;
+  gsap.timeline()
+    .to(u.legL.rotation,{x:0.5,duration:dur/2,ease:'sine.inOut'},0)
+    .to(u.legR.rotation,{x:-0.5,duration:dur/2,ease:'sine.inOut'},0)
+    .to(u.legL.rotation,{x:-0.5,duration:dur/2,ease:'sine.inOut'},dur/2)
+    .to(u.legR.rotation,{x:0.5,duration:dur/2,ease:'sine.inOut'},dur/2)
+    .to(u.legL.rotation,{x:0,duration:0.12,ease:'power2.out'},dur)
+    .to(u.legR.rotation,{x:0,duration:0.12,ease:'power2.out'},dur);
+}
 async function attack(u,t){
   const parts=[[u.atk,'ATQ']];const hu=hOf(u.r,u.c),ht=hOf(t.r,t.c);
   if(hu>ht)parts.push([u.cls==='arqueiro'?4:2,'alto']);
@@ -2041,8 +2111,8 @@ async function attack(u,t){
   await showRoll({who:`${u.first} ataca ${t.first}`,roll,parts,target:t.def,tlabel:'DEF',outcome:crit?'crit':hit?'hit':'miss',label:crit?'CRÍTICO!':hit?'Acertou':roll===1?'Falha crítica':'Errou'});
   if(u.inspired){u.inspired=false;}
   const p=u.grp.position,ox=p.x,oz=p.z,dx=t.c-u.c,dz=t.r-u.r,len=Math.hypot(dx,dz)||1;
-  if(u.alc>1){SFX.shoot();await gsap.timeline().to(p,{x:ox-dx/len*0.12,z:oz-dz/len*0.12,duration:0.08}).to(p,{x:ox,z:oz,duration:0.1});await projectile(u,t);}
-  else{SFX.swing();await gsap.timeline().to(p,{x:ox+dx/len*0.32,z:oz+dz/len*0.32,duration:0.12,ease:'power2.in'}).to(p,{x:ox,z:oz,duration:0.18,ease:'power2.out'});}
+  if(u.alc>1){SFX.shoot();drawBow(u,0.3);await gsap.timeline().to(p,{x:ox-dx/len*0.12,z:oz-dz/len*0.12,duration:0.08}).to(p,{x:ox,z:oz,duration:0.1});await projectile(u,t);}
+  else{SFX.swing();swingArm(u,0.12,0.18);await gsap.timeline().to(p,{x:ox+dx/len*0.32,z:oz+dz/len*0.32,duration:0.12,ease:'power2.in'}).to(p,{x:ox,z:oz,duration:0.18,ease:'power2.out'});}
   clearLine();
   if(!hit){
     SFX.miss();floatText(t,'errou','miss');gsap.fromTo(t.plane.position,{x:0},{x:0.24,duration:0.1,yoyo:true,repeat:1,ease:'power1.out'});
@@ -2062,11 +2132,24 @@ async function attack(u,t){
   addLog(`${crit?'CRÍTICO! ':''}${u.first} ${VERB[u.cls||u.kind]} ${t.first}: ${dmg} de dano`,u.side==='hero'?(crit?'gold':'good'):'bad');
   damage(t,dmg,u,crit);tRing.visible=false;await wait(280);
 }
+function tintUnit(u,from,to,duration,delay=0){
+  const mats=u.mats||[u.mat],c=mats[0].color;
+  return gsap.fromTo(c,{...from},{...to,duration,delay,onUpdate:()=>{for(let i=1;i<mats.length;i++)mats[i].color.copy(c);}});
+}
+function tintUnitTo(u,to,duration,delay=0){
+  const mats=u.mats||[u.mat],c=mats[0].color;
+  return gsap.to(c,{...to,duration,delay,onUpdate:()=>{for(let i=1;i<mats.length;i++)mats[i].color.copy(c);}});
+}
+function fadeUnit(u,opacity,opts={}){
+  const mats=u.mats||[u.mat];
+  return gsap.to(mats[0],{opacity,...opts,onUpdate:()=>{for(let i=1;i<mats.length;i++)mats[i].opacity=mats[0].opacity;}});
+}
 function damage(t,dmg,src,crit){
   crit?SFX.crit():SFX.hit();
   t.hp=Math.max(0,t.hp-dmg);floatText(t,crit?`-${dmg}!`:`-${dmg}`,crit?'crit':'');
-  gsap.fromTo(t.mat.color,{r:1,g:0.2,b:0.2},{r:1,g:1,b:1,duration:0.45});
+  tintUnit(t,{r:1,g:0.2,b:0.2},{r:1,g:1,b:1},0.45);
   gsap.fromTo(t.plane.position,{x:-0.1},{x:0,duration:0.4,ease:'elastic.out(1,0.3)'});
+  gsap.fromTo(t.plane.rotation,{z:t.side==='hero'?0.22:-0.22},{z:0,duration:0.4,ease:'back.out(2)'});
   gsap.fromTo(t.pivot.scale,{x:1.15},{x:1,duration:0.25});
   if(t.hp<=0)kill(t,src,crit);
 }
@@ -2074,8 +2157,8 @@ function kill(t,src,crit){
   SFX.kill();
   t.alive=false;t.diedRound=stats.round;if(t.hpEl)t.hpEl.hidden=true;
   gsap.to(t.pivot.rotation,{x:-1.45,duration:0.5,ease:'bounce.out',onComplete:()=>burst(t.grp.position,{n:16,colors:['#9a948a','#c9c2b4','#6a655d'],spread:0.8,up:0.25,y:0.1,life:0.6})});
-  gsap.to(t.mat.color,{r:0.5,g:0.5,b:0.5,duration:0.3,delay:0.1});
-  gsap.to(t.mat,{opacity:0,delay:1,duration:0.5,onComplete:()=>{if(t.grp)t.grp.visible=false;if(t.side==='hero')addTomb(t);}});
+  tintUnitTo(t,{r:0.5,g:0.5,b:0.5},0.3,0.1);
+  fadeUnit(t,0,{delay:1,duration:0.5,onComplete:()=>{if(t.grp)t.grp.visible=false;if(t.side==='hero')addTomb(t);}});
   if(t.side==='enemy'){
     xp(src,Math.round(t.pts/4));stats.kills.push(t);addLog(`${t.first} foi derrotado (+${t.pts})`,'gold');
     setTimeout(()=>{},0);floatText(t,`+${t.pts}`,'gold');
@@ -2095,7 +2178,7 @@ async function heal(u,w){
   const amt=dice(2,4)+2+(u.healBonus||0),before=w.hp;w.hp=Math.min(w.maxhp,w.hp+amt);
   await showRoll({who:`${u.first} reza por ${w===u?'si mesmo':w.first}`,roll:amt,numText:'+'+amt,calcHtml:`Cura: <span>2d4 +2${u.healBonus?' +'+u.healBonus+' Fé':''}</span>`,outcome:'hit',label:`+${w.hp-before} PV`});
   SFX.heal();pulse(w.grp.position,'#6cc35e',1.2,0.7);burst(w.grp.position,{n:14,colors:['#8ee07e','#d9ffd0','#6cc35e'],spread:0.35,up:1.3,y:0.2,life:0.9,size:0.9});
-  floatText(w,`+${w.hp-before}`,'heal');gsap.fromTo(w.mat.color,{r:0.5,g:1,b:0.5},{r:1,g:1,b:1,duration:0.7});
+  floatText(w,`+${w.hp-before}`,'heal');tintUnit(w,{r:0.5,g:1,b:0.5},{r:1,g:1,b:1},0.7);
   xp(u,Math.max(5,(w.hp-before)*2));
   addLog(`${u.first} curou ${w===u?'a si mesmo':w.first} (+${w.hp-before})`,'heal');
   if(w!==u&&before<=w.maxhp*0.3)stats.hl.push({w:5,t:`${w.first} estava por um fio (${before} PV) e foi salvo pela cura de ${u.first}.`});
