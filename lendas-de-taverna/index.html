@@ -997,12 +997,21 @@ const table=new THREE.Mesh(new THREE.PlaneGeometry(90,60),new THREE.MeshLambertM
 table.rotation.x=-Math.PI/2;table.position.set(-10,-0.32,0);scene.add(table);
 
 let trees=[];
+const LEAF_MATS={};
+const leafMat=col=>{
+  if(!LEAF_MATS[col])LEAF_MATS[col]=M(ptex(col,[shade(col,24),shade(col,-26),shade(col,42)],{size:24,n:60}));
+  return LEAF_MATS[col];
+};
+const BARK_MAT=M(ptex('#5a3a22',[shade('#5a3a22',18),shade('#5a3a22',-18)],{size:8,n:16}));
 function makeTree(parent,x,y,z,s=1){
   const g=new THREE.Group();g.position.set(x,y,z);g.scale.setScalar(s);parent.add(g);
-  const tr=new THREE.Mesh(new THREE.BoxGeometry(0.22,0.5,0.22),new THREE.MeshLambertMaterial({color:'#5a3a22'}));tr.position.y=0.25;g.add(tr);
+  const tr=new THREE.Mesh(new THREE.BoxGeometry(0.22,0.5,0.22),BARK_MAT);tr.position.y=0.25;g.add(tr);
+  // galho fino saindo do tronco, pra dar pra diferenciar galho de folhagem
+  const branch=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.06,0.06),BARK_MAT);
+  branch.position.set(0.18,0.44,0.05);branch.rotation.z=-0.35;g.add(branch);
   const foliage=new THREE.Group();foliage.position.y=0.5;g.add(foliage);
-  const f1=new THREE.Mesh(new THREE.BoxGeometry(0.8,0.55,0.8),new THREE.MeshLambertMaterial({color:'#2f5e2c'}));f1.position.y=0.25;foliage.add(f1);
-  const f2=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.4,0.5),new THREE.MeshLambertMaterial({color:'#3d7a37'}));f2.position.y=0.7;foliage.add(f2);
+  const f1=new THREE.Mesh(new THREE.BoxGeometry(0.8,0.55,0.8),leafMat('#2f5e2c'));f1.position.y=0.25;foliage.add(f1);
+  const f2=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.4,0.5),leafMat('#3d7a37'));f2.position.y=0.7;foliage.add(f2);
   g.userData={sway:R()*Math.PI*2,foliage,board:parent===boardGroup};
   trees.push(g);
   return g;
@@ -1019,7 +1028,11 @@ function biomeMats(b){
     floresta:[['#3f6e34',['#4e7e3d','#33592b','#5b8c46']],['#55853f',['#679a4c','#456f33','#76ab5a']],['#54392a',['#45301f','#654532'],'#33592b']],
     deserto:[['#d9b777',['#e5c88e','#c9a561','#efd8a6']],['#e2c488',['#eed5a0','#cfae6e','#f4e2b8']],['#a67c45',['#8f6a38','#b98d52'],'#d9b777']],
   }[b];
-  BM[b]={grass:M(ptex(P[0][0],P[0][1])),hill:M(ptex(P[1][0],P[1][1])),dirt:M(ptex(P[2][0],P[2][1],{edge:P[2][2]}))};
+  // 3 variantes de cada (sementes de especk diferentes) pra ladrilhos vizinhos
+  // não ficarem todos idênticos — antes só existia 1 textura por bioma,
+  // repetida em todo ladrilho.
+  const variants=(col,specks)=>Array.from({length:3},()=>M(ptex(col,specks)));
+  BM[b]={grass:variants(P[0][0],P[0][1]),hill:variants(P[1][0],P[1][1]),dirt:M(ptex(P[2][0],P[2][1],{edge:P[2][2]}))};
   return BM[b];
 }
 const SG={};const sbox=(w,h,d)=>{const key=w+'_'+h+'_'+d;if(!SG[key]){SG[key]=new THREE.BoxGeometry(w,h,d);SG[key].userData.shared=true;}return SG[key];};
@@ -1049,7 +1062,7 @@ function buildBoard(){
     if(ch==='w'){mesh=new THREE.Mesh(sbox(1,0.16,1),waterMat);mesh.position.set(x,0.08,z);waterTiles.push(mesh);}
     else{
       const h=0.3+hOf(r,c)*0.4;
-      const top=ch==='b'?mats.bridge:hOf(r,c)>0?bm.hill:bm.grass;
+      const top=ch==='b'?mats.bridge:hOf(r,c)>0?pick(bm.hill):pick(bm.grass);
       mesh=new THREE.Mesh(sbox(0.97,h,0.97),[bm.dirt,bm.dirt,top,bm.dirt,bm.dirt,bm.dirt]);
       mesh.position.set(x,h/2,z);
     }
@@ -1094,7 +1107,7 @@ function building(id,o){
 }
 (function buildVillage(){
   vbox(13,0.3,11,'#2a1f17',0,-0.16,0);
-  vplane(12.6,10.6,ptex('#5d8f3f',['#6ea64b','#4e7c34','#7fb356'],{repeat:[12,10]}),0,0.002,0);
+  vplane(12.6,10.6,ptex('#5d8f3f',['#6ea64b','#4e7c34','#7fb356'],{size:48,n:300,repeat:[4,3.33]}),0,0.002,0);
   const road=(w,d,x,z,y)=>vplane(w,d,ptex('#8a6a45',['#7a5c3b','#9a7a52','#6b4e30'],{repeat:[w,d]}),x,y,z);
   road(12.6,1.2,0,0.6,0.006);road(1.2,10.6,0,0,0.008);road(3.6,3.6,0,0.6,0.01);
   // Taverna
