@@ -85,26 +85,43 @@ faixa saudável (~55%–80%) o jogo inteiro. Isso é trabalho de balanceamento
 contínuo, não um número fixo — fica marcado aqui pra nunca ser esquecido
 quando as dungeons de cada tier forem desenhadas.
 
-## Raridade (dentro de um tier)
-
-| Raridade | O que muda |
-|---|---|
-| Comum | 1 atributo primário, metade inferior da faixa do tier |
-| Raro | 1 atributo primário, metade superior da faixa + 1 bônus pequeno fixo (DEF ou PV) |
-| Mágico | 2 atributos primários rolados |
-| Épico | 2 atributos primários + chance de rolar Dano Crítico ou Resistência Mágica como 3º |
-| Lendário | não rola — escrito à mão, sempre no topo do tier, nome e lore próprios |
-
 ## Atributos primários
 
 5 atributos (ver `DESIGN.md` pro mapeamento completo por classe/subclasse):
 **Força, Destreza, Inteligência, Vitalidade, Fé**. Alimentam dano/PV/crítico
 por fórmula — nunca ATQ/DEF brutos diretamente (mesma disciplina acima).
 
-Em armadura/acessório, o atributo sorteado é **independente do grupo de
-peso** — um Elmo Leve pode rolar Força do mesmo jeito que um Elmo Pesado pode
-rolar Inteligência. O grupo de peso (Leve/Média/Pesada) decide só a
-**aparência/família visual** do item, não o atributo.
+O grupo de peso (Leve/Média/Pesada) decide só a **aparência/família visual**
+do item — quem decide **quais atributos podem rolar** é o grupo de afixo do
+slot, abaixo.
+
+## Grupos de afixo por slot
+
+Item sortear qualquer um dos 5 atributos em qualquer slot soava incoerente
+(um peitoral de armadura pesada rolando Inteligência, por exemplo) — por
+isso cada slot pertence a um **grupo de afixo**, que restringe o que pode
+rolar ali. Só os acessórios ficam livres de verdade, igual anel/amuleto em
+qualquer ARPG.
+
+| Grupo | Atributos possíveis | Slots |
+|---|---|---|
+| Defensivo | DEF, Resistência Mágica, Vitalidade | Corpo, Cabeça, Mão secundária (quando é escudo) |
+| Ofensivo | Força, Destreza, Inteligência | Mãos, Mão secundária (quando é adaga/tomo de conjurador) |
+| Utilidade | Destreza, Vitalidade | Pés |
+| Livre | qualquer um dos 5 | Acessório 1 e Acessório 2 |
+
+Mão secundária muda de grupo dependendo da família do item (escudo =
+defensivo, adaga/tomo = ofensivo) — mesma lógica de família usada nas armas.
+
+## Raridade (dentro de um tier)
+
+| Raridade | O que muda |
+|---|---|
+| Comum | 1 atributo do grupo do slot (garantido — nunca cai peça fora do papel dela), metade inferior da faixa do tier |
+| Raro | 1 atributo do grupo + 1 bônus pequeno fixo (DEF ou PV), metade superior da faixa |
+| Mágico | 2 atributos do grupo |
+| Épico | 2 atributos do grupo + 1 rolagem que pode **quebrar o grupo** (Dano Crítico, Resistência Mágica, ou um atributo fora do grupo — o momento raro de "caiu uma peça incrível mas inesperada") |
+| Lendário | não rola — escrito à mão, sempre no topo do tier, nome e lore próprios |
 
 ## Atributos secundários (novos, rolam a partir de Épico)
 
