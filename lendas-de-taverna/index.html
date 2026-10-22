@@ -819,6 +819,7 @@ function heroSprite(h){
   return pixelCanvas(40,48,P=>{
     P(14,36,4,8,pants);P(22,36,4,8,pants);P(14,44,4,2,boot);P(22,44,4,2,boot);
     P(12,22,16,14,shirt);P(8,22,4,12,shirt);P(28,22,4,12,shirt);P(8,34,4,2,skin);P(28,34,4,2,skin);
+    P(12,22,3,14,shade(shirt,-20));P(25,22,3,14,shade(shirt,22));P(19,22,1,14,shade(shirt,-14));
     P(12,32,16,2,'#5a3a22');
     P(16,20,8,2,skin);P(14,8,12,12,skin);P(16,14,2,2,'#1b130e');P(22,14,2,2,'#1b130e');
     const hairDef=()=>{P(14,6,12,4,hair);P(12,8,2,6,hair);P(26,8,2,6,hair);};
@@ -995,17 +996,21 @@ const woodTex=ptex('#3b2a1e',['#33241a','#45321f','#2e2017'],{size:64,n:500,draw
 const table=new THREE.Mesh(new THREE.PlaneGeometry(90,60),new THREE.MeshLambertMaterial({map:woodTex}));
 table.rotation.x=-Math.PI/2;table.position.set(-10,-0.32,0);scene.add(table);
 
+let trees=[];
 function makeTree(parent,x,y,z,s=1){
   const g=new THREE.Group();g.position.set(x,y,z);g.scale.setScalar(s);parent.add(g);
   const tr=new THREE.Mesh(new THREE.BoxGeometry(0.22,0.5,0.22),new THREE.MeshLambertMaterial({color:'#5a3a22'}));tr.position.y=0.25;g.add(tr);
-  const f1=new THREE.Mesh(new THREE.BoxGeometry(0.8,0.55,0.8),new THREE.MeshLambertMaterial({color:'#2f5e2c'}));f1.position.y=0.75;g.add(f1);
-  const f2=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.4,0.5),new THREE.MeshLambertMaterial({color:'#3d7a37'}));f2.position.y=1.2;g.add(f2);
+  const foliage=new THREE.Group();foliage.position.y=0.5;g.add(foliage);
+  const f1=new THREE.Mesh(new THREE.BoxGeometry(0.8,0.55,0.8),new THREE.MeshLambertMaterial({color:'#2f5e2c'}));f1.position.y=0.25;foliage.add(f1);
+  const f2=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.4,0.5),new THREE.MeshLambertMaterial({color:'#3d7a37'}));f2.position.y=0.7;foliage.add(f2);
+  g.userData={sway:R()*Math.PI*2,foliage,board:parent===boardGroup};
+  trees.push(g);
   return g;
 }
 
 /* ---------- Tabuleiro da batalha (reconstruído a cada fase) ---------- */
 const boardGroup=new THREE.Group();scene.add(boardGroup);
-const pickables=[], zoneMarks=new Map(); let wallMesh=null;
+const pickables=[], zoneMarks=new Map(); let wallMesh=null; let waterTiles=[];
 const BM={};
 function biomeMats(b){
   if(BM[b])return BM[b];
@@ -1030,6 +1035,8 @@ function makeCactus(parent,x,y,z){
 function clearBoard(){
   boardGroup.children.slice().forEach(o=>{boardGroup.remove(o);o.traverse(x=>{if(x.geometry&&!x.geometry.userData.shared)x.geometry.dispose();});});
   pickables.length=0;zoneMarks.clear();wallMesh=null;
+  trees=trees.filter(tr=>!tr.userData.board);
+  waterTiles.length=0;
 }
 function buildBoard(){
   clearBoard();
@@ -1039,7 +1046,7 @@ function buildBoard(){
   const rockCol=bio==='deserto'?'#a5755a':'#7d817c';
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
     const ch=cell(r,c),x=wx(c),z=wz(r);let mesh;
-    if(ch==='w'){mesh=new THREE.Mesh(sbox(1,0.16,1),waterMat);mesh.position.set(x,0.08,z);}
+    if(ch==='w'){mesh=new THREE.Mesh(sbox(1,0.16,1),waterMat);mesh.position.set(x,0.08,z);waterTiles.push(mesh);}
     else{
       const h=0.3+hOf(r,c)*0.4;
       const top=ch==='b'?mats.bridge:hOf(r,c)>0?bm.hill:bm.grass;
@@ -2327,6 +2334,8 @@ function loop(t){
   requestAnimationFrame(loop);const s=t/1000;
   applyCam();
   waterTex.offset.x=Math.sin(s*0.6)*0.04;waterTex.offset.y=s*0.03;
+  waterTiles.forEach(wt=>{wt.position.y=0.08+Math.sin(s*1.4+(wt.userData.r+wt.userData.c)*0.6)*0.015;});
+  trees.forEach(tr=>{tr.userData.foliage.rotation.z=Math.sin(s*0.8+tr.userData.sway)*0.05;tr.userData.foliage.rotation.x=Math.sin(s*0.6+tr.userData.sway*1.3)*0.025;});
   for(const u of units()){
     if(!u.grp)continue;
     if(u.alive!==false)u.pivot.scale.y=1+Math.sin(s*2.4+u.id*1.7)*0.025;
