@@ -1451,25 +1451,61 @@ function lpcStack(paths,w,h){
   });
 }
 function lpcTex(c){const t=new THREE.CanvasTexture(c);t.magFilter=t.minFilter=THREE.NearestFilter;t.generateMipmaps=false;t.userData=t.userData||{};t.userData.lpcShared=true;return t;}
+function lpcStackOversize(bodyPaths,behindPath,frontPath){
+  // armas "pesadas" (espada, maça, florete) desenham o golpe num quadro
+  // 3x maior (192x192 em vez de 64x64) pra lâmina/cabo poder passar da
+  // silhueta do corpo — o corpo normal entra centralizado nesse quadro
+  // maior, com a parte de trás da arma atrás e a da frente por cima.
+  const C=192,bw=64,cols=6,rows=4;
+  return Promise.all([Promise.all(bodyPaths.map(lpcImg)),lpcImg(behindPath),lpcImg(frontPath)])
+    .then(([bodyImgs,behindImg,frontImg])=>{
+      const c=document.createElement('canvas');c.width=C*cols;c.height=C*rows;
+      const g=c.getContext('2d');g.imageSmoothingEnabled=false;
+      g.drawImage(behindImg,0,0);
+      for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
+        const dx=col*C+(C-bw)/2,dy=row*C+(C-bw)/2;
+        bodyImgs.forEach(im=>g.drawImage(im,col*bw,row*bw,bw,bw,dx,dy,bw,bw));
+      }
+      g.drawImage(frontImg,0,0);
+      return c;
+    });
+}
 const LPC_RECIPES={
-  ladino:{
-    walk:['body/bodies/male/walk.png','eyes/human/adult/neutral/walk/blue.png','legs/pantaloons/male/walk.png','torso/armour/leather/male/walk.png','weapon/sword/dagger/walk/dagger.png','hat/cloth/hood/adult/walk.png'],
+  ladino:{action:'slash',walk:['body/bodies/male/walk.png','eyes/human/adult/neutral/walk/blue.png','legs/pantaloons/male/walk.png','torso/armour/leather/male/walk.png','weapon/sword/dagger/walk/dagger.png','hat/cloth/hood/adult/walk.png'],
     slash:['body/bodies/male/slash.png','eyes/human/adult/neutral/slash/blue.png','legs/pantaloons/male/slash.png','torso/armour/leather/male/slash.png','weapon/sword/dagger/slash/dagger.png','hat/cloth/hood/adult/slash.png'],
-    hurt:['body/bodies/male/hurt.png','eyes/human/adult/neutral/hurt/blue.png','legs/pantaloons/male/hurt.png','torso/armour/leather/male/hurt.png','weapon/sword/dagger/hurt/dagger.png','hat/cloth/hood/adult/hurt.png'],
-  },
+    hurt:['body/bodies/male/hurt.png','eyes/human/adult/neutral/hurt/blue.png','legs/pantaloons/male/hurt.png','torso/armour/leather/male/hurt.png','weapon/sword/dagger/hurt/dagger.png','hat/cloth/hood/adult/hurt.png']},
+  arqueiro:{action:'shoot',walk:['body/bodies/male/walk.png','eyes/human/adult/neutral/walk/blue.png','legs/pantaloons/male/walk.png','torso/armour/leather/male/walk.png','hair/page/adult/walk.png','weapon/ranged/bow/recurve/walk/background/medium.png','weapon/ranged/bow/recurve/walk/foreground.png','quiver/walk/quiver.png'],
+    shoot:['body/bodies/male/shoot.png','eyes/human/adult/neutral/shoot/blue.png','legs/pantaloons/male/shoot.png','torso/armour/leather/male/shoot.png','hair/page/adult/shoot.png','weapon/ranged/bow/recurve/universal/shoot/background.png','weapon/ranged/bow/recurve/universal/shoot/foreground.png','quiver/shoot/quiver.png'],
+    hurt:['body/bodies/male/hurt.png','eyes/human/adult/neutral/hurt/blue.png','legs/pantaloons/male/hurt.png','torso/armour/leather/male/hurt.png','hair/page/adult/hurt.png']},
+  mago:{action:'spellcast',walk:['body/bodies/female/walk.png','eyes/human/adult/neutral/walk/blue.png','torso/clothes/robe/female/walk/_brown.png','hat/magic/wizard/base/adult/walk/navy.png'],
+    spellcast:['body/bodies/female/spellcast.png','eyes/human/adult/neutral/spellcast/blue.png','torso/clothes/robe/female/spellcast/_brown.png','hat/magic/wizard/base/adult/spellcast/navy.png'],
+    hurt:['body/bodies/female/hurt.png','eyes/human/adult/neutral/hurt/blue.png','torso/clothes/robe/female/hurt/_brown.png']},
+  guerreiro:{action:'slash',oversize:true,walk:['body/bodies/male/walk.png','eyes/human/adult/neutral/walk/blue.png','legs/pantaloons/male/walk.png','torso/armour/plate/male/walk.png','hair/page/adult/walk.png','shield/round/walk/silver.png'],
+    hurt:['body/bodies/male/hurt.png','eyes/human/adult/neutral/hurt/blue.png','legs/pantaloons/male/hurt.png','torso/armour/plate/male/hurt.png','hair/page/adult/hurt.png'],
+    actionBody:['body/bodies/male/slash.png','eyes/human/adult/neutral/slash/blue.png','legs/pantaloons/male/slash.png','torso/armour/plate/male/slash.png','hair/page/adult/slash.png','shield/round/slash/silver.png'],
+    actionBehind:'weapon/sword/longsword/attack_slash/behind/longsword.png',actionFront:'weapon/sword/longsword/attack_slash/longsword.png'},
+  clerigo:{action:'slash',oversize:true,walk:['body/bodies/male/walk.png','eyes/human/adult/neutral/walk/blue.png','legs/pantaloons/male/walk.png','torso/chainmail/male/walk.png'],
+    hurt:['body/bodies/male/hurt.png','eyes/human/adult/neutral/hurt/blue.png','legs/pantaloons/male/hurt.png','torso/chainmail/male/hurt.png'],
+    actionBody:['body/bodies/male/slash.png','eyes/human/adult/neutral/slash/blue.png','legs/pantaloons/male/slash.png','torso/chainmail/male/slash.png'],
+    actionBehind:'weapon/blunt/mace/attack_slash/behind/mace.png',actionFront:'weapon/blunt/mace/attack_slash/mace.png'},
+  bardo:{action:'slash',oversize:true,walk:['body/bodies/male/walk.png','eyes/human/adult/neutral/walk/blue.png','legs/pantaloons/male/walk.png','torso/clothes/longsleeve/formal/male/walk.png','hat/cloth/leather_cap/feather/adult/walk.png'],
+    hurt:['body/bodies/male/hurt.png','eyes/human/adult/neutral/hurt/blue.png','legs/pantaloons/male/hurt.png','torso/clothes/longsleeve/formal/male/hurt.png','hat/cloth/leather_cap/feather/adult/hurt.png'],
+    actionBody:['body/bodies/male/slash.png','eyes/human/adult/neutral/slash/blue.png','legs/pantaloons/male/slash.png','torso/clothes/longsleeve/formal/male/slash.png','hat/cloth/leather_cap/feather/adult/slash.png'],
+    actionBehind:'weapon/sword/rapier/attack_slash/behind/rapier.png',actionFront:'weapon/sword/rapier/attack_slash/rapier.png'},
 };
+const LPC_ACTION_DIMS={slash:[384,256,6,4],shoot:[832,256,13,4],spellcast:[448,256,7,4]};
 function lpcBuild(cls){
   if(LPC_CACHE[cls])return LPC_CACHE[cls];
-  const rec=LPC_RECIPES[cls];
-  const p=Promise.all([
-    lpcStack(rec.walk,576,256),
-    lpcStack(rec.slash,384,256),
-    lpcStack(rec.hurt,384,64),
-  ]).then(([walkC,slashC,hurtC])=>({
-    walk:{tex:lpcTex(walkC),cols:9,rows:4},
-    slash:{tex:lpcTex(slashC),cols:6,rows:4},
-    hurt:{tex:lpcTex(hurtC),cols:6,rows:1},
-  }));
+  const rec=LPC_RECIPES[cls],action=rec.action;
+  const jobs=[lpcStack(rec.walk,576,256),lpcStack(rec.hurt,384,64)];
+  if(rec.oversize)jobs.push(lpcStackOversize(rec.actionBody,rec.actionBehind,rec.actionFront));
+  else jobs.push(lpcStack(rec[action],LPC_ACTION_DIMS[action][0],LPC_ACTION_DIMS[action][1]));
+  const p=Promise.all(jobs).then(([walkC,hurtC,actionC])=>{
+    const out={walk:{tex:lpcTex(walkC),cols:9,rows:4},hurt:{tex:lpcTex(hurtC),cols:6,rows:1}};
+    const dims=rec.oversize?[1152,768,6,4]:LPC_ACTION_DIMS[action];
+    out[action]={tex:lpcTex(actionC),cols:dims[2],rows:dims[3]};
+    return out;
+  });
   LPC_CACHE[cls]=p;
   return p;
 }
@@ -1487,12 +1523,12 @@ function tickLPC(u,s){
   if(L.since==null)L.since=s;
   const sheet=L.sheets[L.state]||L.sheets.walk;
   const row=sheet.rows>1?L.row:0;
-  const fps=L.state==='hurt'?10:L.state==='slash'?12:8;
+  const fps=L.state==='hurt'?10:L.state===L.action?12:8;
   let f=Math.floor((s-L.since)*fps);
   let done=false;
   if(L.state==='stand')f=0;
   else if(L.state==='walk')f=f%sheet.cols;
-  else{ // slash / hurt: toca uma vez só
+  else{ // ação/dano: toca uma vez só
     if(f>=sheet.cols){f=sheet.cols-1;done=true;}
   }
   if(L.mat.map!==sheet.tex){L.mat.map=sheet.tex;L.mat.needsUpdate=true;}
@@ -1503,7 +1539,7 @@ function lpcHeroMesh(cls,sz){
   const geo=new THREE.PlaneGeometry(1,1);
   const mat=new THREE.MeshBasicMaterial({transparent:true,alphaTest:0.5,side:THREE.DoubleSide});
   const mesh=new THREE.Mesh(geo,mat);mesh.position.y=sz/2;mesh.scale.set(sz,sz,1);
-  const lpc={state:'stand',since:null,row:2,sheets:null,geo,mat};
+  const lpc={state:'stand',since:null,row:2,sheets:null,geo,mat,action:LPC_RECIPES[cls].action};
   lpcBuild(cls).then(sheets=>{lpc.sheets=sheets;});
   return {mesh,mat,lpc};
 }
@@ -2229,8 +2265,8 @@ async function attack(u,t){
   await showRoll({who:`${u.first} ataca ${t.first}`,roll,parts,target:t.def,tlabel:'DEF',outcome:crit?'crit':hit?'hit':'miss',label:crit?'CRÍTICO!':hit?'Acertou':roll===1?'Falha crítica':'Errou'});
   if(u.inspired){u.inspired=false;}
   const p=u.grp.position,ox=p.x,oz=p.z,dx=t.c-u.c,dz=t.r-u.r,len=Math.hypot(dx,dz)||1;
-  if(u.alc>1){SFX.shoot();drawBow(u,0.3);await gsap.timeline().to(p,{x:ox-dx/len*0.12,z:oz-dz/len*0.12,duration:0.08}).to(p,{x:ox,z:oz,duration:0.1});await projectile(u,t);}
-  else{SFX.swing();swingArm(u,0.12,0.18);lpcSetState(u,'slash');await gsap.timeline().to(p,{x:ox+dx/len*0.32,z:oz+dz/len*0.32,duration:0.12,ease:'power2.in'}).to(p,{x:ox,z:oz,duration:0.18,ease:'power2.out'});}
+  if(u.alc>1){SFX.shoot();drawBow(u,0.3);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox-dx/len*0.12,z:oz-dz/len*0.12,duration:0.08}).to(p,{x:ox,z:oz,duration:0.1});await projectile(u,t);}
+  else{SFX.swing();swingArm(u,0.12,0.18);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox+dx/len*0.32,z:oz+dz/len*0.32,duration:0.12,ease:'power2.in'}).to(p,{x:ox,z:oz,duration:0.18,ease:'power2.out'});}
   clearLine();
   if(!hit){
     SFX.miss();floatText(t,'errou','miss');gsap.fromTo(t.plane.position,{x:0},{x:0.24,duration:0.1,yoyo:true,repeat:1,ease:'power1.out'});
