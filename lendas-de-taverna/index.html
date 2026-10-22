@@ -1293,7 +1293,10 @@ function makeHero(used,cls){
     mov:b.mov,alc:b.alc,dmg:[b.dmg[0],b.dmg[1],b.dmg[2]+arma[2]],ini:b.ini+jit([0,0,1,-1]),per:b.per,
     look:{hair:pick(HAIR),skin:pick(SKIN),beard:R()<0.4},r:null,c:null,
     equip:{weapon:null,offhand:null,head:null,body:null,hands:null,feet:null,acc1:null,acc2:null}};
-  h.hp=h.maxhp;h.nome=`${h.first} ${h.sur}`;
+  h.hp=h.maxhp;
+  h.attrs={};ATTR_NAMES.forEach(a=>h.attrs[a]=Math.max(1,ATTR_BASE[cls][a]+jit([0,0,0,1,-1])));
+  recomputeAttrBonus(h);
+  h.nome=`${h.first} ${h.sur}`;
   h.sprite=heroSprite(h);h.portrait=h.sprite.toDataURL();
   return h;
 }
@@ -1414,10 +1417,46 @@ function levelForXp(total){
   while(xp>=cost){xp-=cost;lvl++;cost=Math.round(cost*1.18);}
   return lvl;
 }
+/* ---------- Atributos primários (ver DESIGN.md / EQUIPAMENTOS.md) ----------
+   5 atributos — Força, Destreza, Inteligência, Vitalidade, Fé — alimentam
+   dano/PV/cura/crítico por fórmula, nunca ATQ/DEF diretamente (disciplina de
+   combate: o d20 não pode parar de importar com o tempo). Valores e divisores
+   são placeholder, a recalibrar com playtest — mesmo espírito do resto do
+   sistema de progressão. Paladino/Monge e a divergência por subclasse entram
+   quando classes/subclasses forem implementadas (ver roadmap). */
+const ATTR_NAMES=['forca','destreza','inteligencia','vitalidade','fe'];
+const ATTR_BASE={
+  guerreiro:{forca:10,destreza:4,inteligencia:2,vitalidade:6,fe:2},
+  ladino:{forca:3,destreza:10,inteligencia:4,vitalidade:4,fe:2},
+  mago:{forca:1,destreza:4,inteligencia:10,vitalidade:3,fe:2},
+  clerigo:{forca:2,destreza:3,inteligencia:3,vitalidade:5,fe:10},
+  arqueiro:{forca:3,destreza:10,inteligencia:3,vitalidade:4,fe:2},
+  bardo:{forca:2,destreza:7,inteligencia:7,vitalidade:4,fe:2},
+};
+const CLASS_PRIMARY={guerreiro:['forca'],ladino:['destreza'],mago:['inteligencia'],
+  clerigo:['fe'],arqueiro:['destreza'],bardo:['inteligencia','destreza']};
+function recomputeAttrBonus(h){
+  const a=h.attrs;
+  const dmg=Math.floor((a.forca+a.inteligencia)/3);
+  const crit=Math.floor(a.destreza/10);
+  const hpFromVit=Math.floor(a.vitalidade/2);
+  const heal=Math.floor(a.fe/3);
+  const prev=h.attrBonus||{dmg:0,crit:0,hp:0,heal:0};
+  h.dmg[2]+=dmg-prev.dmg;
+  h.critBonus=(h.critBonus||0)+crit-prev.crit;
+  const hpDelta=hpFromVit-prev.hp;
+  h.maxhp+=hpDelta;h.hp=Math.min(h.maxhp,h.hp+Math.max(0,hpDelta));
+  h.healBonus=heal;
+  h.attrBonus={dmg,crit,hp:hpFromVit,heal};
+}
 function applyLevelUps(h){
   if(!h.level)h.level=1;
   const target=levelForXp(h.xpTotal);
-  while(h.level<target){h.level++;h.maxhp+=1;h.hp=Math.min(h.maxhp,h.hp+1);}
+  while(h.level<target){
+    h.level++;h.maxhp+=1;h.hp=Math.min(h.maxhp,h.hp+1);
+    CLASS_PRIMARY[h.cls].forEach(a=>h.attrs[a]++);
+    recomputeAttrBonus(h);
+  }
 }
 function serializeHero(h){
   const equip={};EQ_SLOTS.forEach(s=>equip[s]=h.equip[s]?h.equip[s].id:null);
@@ -1425,7 +1464,8 @@ function serializeHero(h){
     maxhp:h.maxhp,hp:h.hp,atk:h.atk,def:h.def,mov:h.mov,alc:h.alc,dmg:h.dmg,ini:h.ini,per:h.per,
     critBonus:h.critBonus||0,look:h.look,arma:h.arma,armadura:h.armadura,
     xpTotal:h.xpTotal||0,xpRun:h.xpRun||0,level:h.level||1,
-    injured:!!h.injured,injuredMissionsLeft:h.injuredMissionsLeft||0,benchXpBonus:h.benchXpBonus||0,equip};
+    injured:!!h.injured,injuredMissionsLeft:h.injuredMissionsLeft||0,benchXpBonus:h.benchXpBonus||0,
+    attrs:h.attrs,attrBonus:h.attrBonus,equip};
 }
 function hydrateHero(s){
   const trait=TRAITS.find(x=>x.id===s.traitId)||TRAITS[0];
@@ -1434,6 +1474,8 @@ function hydrateHero(s){
     critBonus:s.critBonus||0,look:s.look,arma:s.arma,armadura:s.armadura,
     xpTotal:s.xpTotal||0,xpRun:s.xpRun||0,xp:0,level:s.level||1,
     injured:!!s.injured,injuredMissionsLeft:s.injuredMissionsLeft||0,benchXpBonus:s.benchXpBonus||0,
+    attrs:s.attrs?{...s.attrs}:{...ATTR_BASE[s.cls]},
+    attrBonus:s.attrBonus||{dmg:0,crit:0,hp:0,heal:0},healBonus:s.attrBonus?s.attrBonus.heal:0,
     r:null,c:null,equip:{}};
   EQ_SLOTS.forEach(sl=>{const id=s.equip&&s.equip[sl];h.equip[sl]=id?ITEMS.find(i=>i.id===id)||null:null;});
   h.sprite=heroSprite(h);h.portrait=h.sprite.toDataURL();
@@ -1642,12 +1684,18 @@ function gearBadge(h){
   const n=EQ_SLOTS.reduce((a,s)=>a+(h.equip[s]?1:0),0);if(!n)return'';
   return` ${h.equip.weapon?h.equip.weapon.icon:SLOT_INFO.weapon.icon}${n>1?` +${n-1}`:''}`;
 }
+const ATTR_LABEL={forca:'Força',destreza:'Destreza',inteligencia:'Inteligência',vitalidade:'Vitalidade',fe:'Fé'};
+function attrLine(h){
+  if(!h.attrs)return'';
+  return ATTR_NAMES.map(a=>`${ATTR_LABEL[a]} ${h.attrs[a]}`).join(' · ');
+}
 function heroEquipBox(h,ns){
   return `<div class="box">
     <div style="display:flex;align-items:center;gap:8px">
       <img src="${h.portrait}" alt="" style="width:28px;height:34px;image-rendering:pixelated">
       <div style="flex:1;min-width:0">
         <b class="nm">${h.first}</b><span class="cl"> · ${CLASSES[h.cls].nome}${CLASSES[h.cls].twoHanded?' · arma de duas mãos':''}</span>
+        <div class="note" style="margin:2px 0 0">${attrLine(h)}</div>
       </div>
     </div>
     <div class="eqslots">
@@ -1987,8 +2035,8 @@ function addTomb(t){
 async function heal(u,w){
   showCallout(u,`✚ Cura ${w===u?'a si mesmo':w.first}`);
   pulse(u.grp.position,'#6cc35e',0.9,0.5);await wait(250);
-  const amt=dice(2,4)+2,before=w.hp;w.hp=Math.min(w.maxhp,w.hp+amt);
-  await showRoll({who:`${u.first} reza por ${w===u?'si mesmo':w.first}`,roll:amt,numText:'+'+amt,calcHtml:'Cura: <span>2d4 +2</span>',outcome:'hit',label:`+${w.hp-before} PV`});
+  const amt=dice(2,4)+2+(u.healBonus||0),before=w.hp;w.hp=Math.min(w.maxhp,w.hp+amt);
+  await showRoll({who:`${u.first} reza por ${w===u?'si mesmo':w.first}`,roll:amt,numText:'+'+amt,calcHtml:`Cura: <span>2d4 +2${u.healBonus?' +'+u.healBonus+' Fé':''}</span>`,outcome:'hit',label:`+${w.hp-before} PV`});
   SFX.heal();pulse(w.grp.position,'#6cc35e',1.2,0.7);burst(w.grp.position,{n:14,colors:['#8ee07e','#d9ffd0','#6cc35e'],spread:0.35,up:1.3,y:0.2,life:0.9,size:0.9});
   floatText(w,`+${w.hp-before}`,'heal');gsap.fromTo(w.mat.color,{r:0.5,g:1,b:0.5},{r:1,g:1,b:1,duration:0.7});
   xp(u,Math.max(5,(w.hp-before)*2));
