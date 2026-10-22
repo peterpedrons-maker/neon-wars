@@ -204,6 +204,8 @@ button.slot{cursor:pointer}
 .pc .pcgear{font-size:8px;color:var(--tinta-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pc .sib{position:absolute;top:3px;left:3px;font-size:8px;font-weight:600;background:var(--ouro);color:var(--tinta);padding:1px 4px;border-radius:2px}
 .pc[aria-pressed="true"]{background:var(--papel-2);border-color:var(--ouro-2);box-shadow:0 0 0 2px var(--ouro),0 3px 0 var(--sombra)}
+.pc.injured{opacity:.55;cursor:default}
+.pc.injured .pcstats{color:var(--sangue)}
 .pc.focus{outline:2px solid var(--mana);outline-offset:1px}
 .tick{position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:var(--ouro);color:var(--tinta);display:none;place-items:center;font-size:10px;font-weight:700}
 .pc[aria-pressed="true"] .tick{display:grid}
@@ -1284,6 +1286,7 @@ function makeHero(used,cls){
   cls=cls||pick(Object.keys(CLASSES));
   const b=CLASSES[cls],trait=pick(TRAITS),arma=pick(b.armas),arm=pick(b.armad);
   const h={id:uid++,side:'hero',cls,first,sur:pick(SUR),trait,arma:arma[0],armadura:arm[0],xp:0,xpTotal:0,xpRun:0,level:1,
+    injured:false,injuredMissionsLeft:0,benchXpBonus:0,
     maxhp:Math.max(8,b.hp+ri(-2,2)+arm[2]+(trait.id==='veterano'?8:0)),
     atk:b.atk+jit([0,0,0,1,-1])+arma[1]+(trait.id==='fanfarrao'?2:0),
     def:b.def+jit([0,0,0,1,-1])+arm[1]+(trait.id==='covarde'?3:0)-(trait.id==='bruto'?2:0),
@@ -1334,9 +1337,12 @@ function disposeUnit(u){
 }
 
 /* ================= Estado ================= */
-const ROSTER_CAP=10,BENCH_XP_SHARE=0.5;
+/* Números abaixo são todos placeholder, ajustados por sensação de jogo —
+   vão ser recalibrados quando a árvore de habilidades/equipamentos
+   entrar e puder somar bônus (benchXpBonus) em cima do básico. */
+const ROSTER_CAP=10,BENCH_XP_SHARE=0.2,GOLD_PER_SCORE=0.1,INJURY_MISSIONS=2,INJURY_RUSH_BASE=40,INJURY_RUSH_PER_LEVEL=15;
 let draw=[],selected=new Set(),rerolls=1,party=[],enemies=[],phase='village',selHero=null,active=null,stats=null,logLines=[],tombs=[],chest=null,speed=1,hint='';
-let roster=[],stash=[],stashFilter='all',stashSel=null,stashView='items';
+let roster=[],stash=[],stashFilter='all',stashSel=null,stashView='items',gold=0;
 const units=()=>[...party.filter(h=>h.r!=null),...enemies];
 const heroesAlive=()=>party.filter(h=>h.alive&&h.r!=null);
 const enemiesAlive=()=>enemies.filter(e=>e.alive);
@@ -1374,7 +1380,7 @@ const PLACES={
   board:{nome:'Quadro de Missões'},
   tavern:{nome:'Taverna do Javali Torto'},
   stash:{nome:'Cofre da Guilda'},
-  temple:{nome:'Templo da Aurora',txt:'Em breve: reviver um herói caído, uma vez por temporada.'},
+  temple:{nome:'Templo da Aurora'},
   forge:{nome:'Forja do velho Brasa',txt:'Em breve: a árvore de habilidades de cada classe. Heróis ganham XP de classe em toda missão.'},
   market:{nome:'Mercado',txt:'Em breve: comprar poções antes de sair em missão.'},
   well:{nome:'Poço da praça',txt:'Dizem que tem um anel lá no fundo… Em breve.'},
@@ -1416,21 +1422,24 @@ function serializeHero(h){
   return {id:h.id,cls:h.cls,first:h.first,sur:h.sur,nome:h.nome,traitId:h.trait.id,
     maxhp:h.maxhp,hp:h.hp,atk:h.atk,def:h.def,mov:h.mov,alc:h.alc,dmg:h.dmg,ini:h.ini,per:h.per,
     critBonus:h.critBonus||0,look:h.look,arma:h.arma,armadura:h.armadura,
-    xpTotal:h.xpTotal||0,xpRun:h.xpRun||0,level:h.level||1,equip};
+    xpTotal:h.xpTotal||0,xpRun:h.xpRun||0,level:h.level||1,
+    injured:!!h.injured,injuredMissionsLeft:h.injuredMissionsLeft||0,benchXpBonus:h.benchXpBonus||0,equip};
 }
 function hydrateHero(s){
   const trait=TRAITS.find(x=>x.id===s.traitId)||TRAITS[0];
   const h={id:s.id,side:'hero',cls:s.cls,first:s.first,sur:s.sur,nome:s.nome,trait,
     maxhp:s.maxhp,hp:s.hp,atk:s.atk,def:s.def,mov:s.mov,alc:s.alc,dmg:s.dmg.slice(),ini:s.ini,per:s.per,
     critBonus:s.critBonus||0,look:s.look,arma:s.arma,armadura:s.armadura,
-    xpTotal:s.xpTotal||0,xpRun:s.xpRun||0,xp:0,level:s.level||1,r:null,c:null,equip:{}};
+    xpTotal:s.xpTotal||0,xpRun:s.xpRun||0,xp:0,level:s.level||1,
+    injured:!!s.injured,injuredMissionsLeft:s.injuredMissionsLeft||0,benchXpBonus:s.benchXpBonus||0,
+    r:null,c:null,equip:{}};
   EQ_SLOTS.forEach(sl=>{const id=s.equip&&s.equip[sl];h.equip[sl]=id?ITEMS.find(i=>i.id===id)||null:null;});
   h.sprite=heroSprite(h);h.portrait=h.sprite.toDataURL();
   return h;
 }
 function saveGame(){
   try{
-    localStorage.setItem(SAVE_KEY,JSON.stringify({v:1,nextUid:uid,mission:run.mission,
+    localStorage.setItem(SAVE_KEY,JSON.stringify({v:1,nextUid:uid,mission:run.mission,gold,
       roster:roster.map(serializeHero),stash:stash.map(it=>it.id)}));
   }catch(e){}
 }
@@ -1438,7 +1447,7 @@ function loadGame(){
   try{
     const raw=localStorage.getItem(SAVE_KEY);if(!raw)return null;
     const s=JSON.parse(raw);
-    return {nextUid:s.nextUid||1,mission:s.mission||null,
+    return {nextUid:s.nextUid||1,mission:s.mission||null,gold:s.gold||0,
       roster:(s.roster||[]).map(hydrateHero),
       stash:(s.stash||[]).map(id=>ITEMS.find(i=>i.id===id)).filter(Boolean)};
   }catch(e){return null;}
@@ -1461,16 +1470,17 @@ helpEl.addEventListener('click',e=>{if(e.target===helpEl||e.target.closest('[dat
 function renderVillage(){
   view='hub';setMode('village');
   const m=run.mission?mapOf(run.mission):null,np=selected.size,ready=m&&np>=5,best=bestRun();
+  const injuredN=roster.filter(h=>h.injured).length;
   PI_.innerHTML=`
   ${stepper(1)}
   <div class="head"><div><div class="eyebrow">Vila de Brumavale</div><h2>O que fazer agora?</h2></div>
-    <div class="btns">${best?`<span class="tag">Melhor run: ${fmt(best)}</span>`:''}<button class="btn ghost sm" data-act="help">Como jogar</button></div></div>
+    <div class="btns"><span class="tag">💰 ${fmt(gold)} ouro</span>${best?`<span class="tag">Melhor run: ${fmt(best)}</span>`:''}<button class="btn ghost sm" data-act="help">Como jogar</button></div></div>
   <div class="todo">
     <button class="td ${m?'ok':''}" data-bld="board"><i>${m?'✓':'1'}</i><span><b>Quadro de Missões</b><small>${m?`Mapa ${m.n}: ${m.nome}`:'Escolha onde lutar'}</small></span><em>›</em></button>
     <button class="td ${np>=5?'ok':''}" data-bld="tavern"><i>${np>=5?'✓':'2'}</i><span><b>Taverna</b><small>${np>=5?`${np} heróis no grupo`:'Monte o grupo (5 heróis)'}</small></span><em>›</em></button>
   </div>
-  <p class="hint" id="hint">${hint||'Toque nos prédios da vila ou nos botões acima. Cada prédio abre o seu menu.'}</p>
-  <div class="places"><span class="plab">Outros lugares</span>${['stash','temple','forge','market','well'].map(id=>`<button class="place ${id==='stash'?'':'soon'}" data-bld="${id}">${PLACES[id].nome.split(' ')[0]}${id==='stash'&&stash.length?` (${stash.length})`:''}</button>`).join('')}</div>
+  <p class="hint" id="hint">${hint||(injuredN?`${injuredN} ${injuredN>1?'heróis estão':'herói está'} se recuperando no Templo da Aurora.`:'Toque nos prédios da vila ou nos botões acima. Cada prédio abre o seu menu.')}</p>
+  <div class="places"><span class="plab">Outros lugares</span>${['stash','temple','forge','market','well'].map(id=>`<button class="place ${id==='stash'||id==='temple'?'':'soon'}" data-bld="${id}">${PLACES[id].nome.split(' ')[0]}${id==='stash'&&stash.length?` (${stash.length})`:''}${id==='temple'&&injuredN?` (${injuredN})`:''}</button>`).join('')}</div>
   <button class="btn cta" data-act="depart" ${ready?'':'disabled'}>${ready?'Partir pra missão':'Complete os passos 1 e 2'}</button>`;
 }
 function goVillage(){hint='';renderVillage();aim('village');}
@@ -1479,6 +1489,7 @@ function openBld(id){
   if(id==='board'){renderMissions();}
   else if(id==='tavern'){enterTavern();return;}
   else if(id==='stash'){renderStash();return;}
+  else if(id==='temple'){renderTemple();return;}
   else if(PLACES[id]){view='info';setMode('village');renderInfo(id);}
   const b=BLD[id];if(b)aimCam(VX+b.x,0.7,VZ+b.z,1.6,0.9);
 }
@@ -1547,13 +1558,13 @@ function renderTavern(){
   ${partyBar()}
   <p class="hint">Toque num herói do seu elenco pra escalar ou tirar do grupo ativo (até 5). Quem fica de banco continua no elenco e ganha ${Math.round(BENCH_XP_SHARE*100)}% do XP da missão.</p>
   <div class="pool">${roster.map(h=>`
-    <button class="pc" data-roster="${h.id}" aria-pressed="${selected.has(h.id)}">
+    <button class="pc ${h.injured?'injured':''}" data-roster="${h.id}" aria-pressed="${selected.has(h.id)}" ${h.injured?'aria-disabled="true"':''}>
       ${sc[h.sur]>1?'<span class="sib">Irmãos</span>':''}<span class="tick">✓</span>
       <img src="${h.portrait}" alt="">
       <div class="pcbody">
         <span class="nm">${h.first}</span>
         <span class="cl">${CLASSES[h.cls].nome} · ${CLASSES[h.cls].papel}</span>
-        <span class="pcstats">Nv.${h.level||1} · ❤${h.maxhp} ⚔${h.atk} 🛡${h.def} 🏃${h.mov} 🎯${h.alc}</span>
+        ${h.injured?`<span class="pcstats">🤕 Recuperando (${h.injuredMissionsLeft})</span>`:`<span class="pcstats">Nv.${h.level||1} · ❤${h.maxhp} ⚔${h.atk} 🛡${h.def} 🏃${h.mov} 🎯${h.alc}</span>`}
         <span class="tr">${h.trait.nome}</span>
         <span class="pcgear">${gearBadge(h)||'sem equipamento'}</span>
       </div>
@@ -1684,6 +1695,26 @@ function renderStash(){
     </div>`:''}
   `:`<div class="scroll">${roster.length?roster.map(h=>heroEquipBox(h,'steq')).join(''):'<p class="note">Recrute heróis na taverna primeiro.</p>'}</div>`}`;
 }
+function injuryRushCost(h){return INJURY_RUSH_BASE+(h.level||1)*INJURY_RUSH_PER_LEVEL;}
+function renderTemple(){
+  view='temple';setMode('village');
+  const injured=roster.filter(h=>h.injured);
+  PI_.innerHTML=`
+  <div class="head"><div><div class="eyebrow">Vila de Brumavale</div><h2>Templo da Aurora</h2></div><button class="btn ghost sm" data-act="toVillage">Praça</button></div>
+  <p class="hint">💰 ${fmt(gold)} ouro. Herói ferido se recupera sozinho com o tempo (uma missão concluída = um passo), ou pague pra acelerar.</p>
+  <div class="scroll">
+    ${injured.length?injured.map(h=>{const cost=injuryRushCost(h);return`
+    <div class="box">
+      <div style="display:flex;align-items:center;gap:8px">
+        <img src="${h.portrait}" alt="" style="width:28px;height:34px;image-rendering:pixelated">
+        <div style="flex:1;min-width:0"><b class="nm">${h.first}</b><span class="cl"> · ${CLASSES[h.cls].nome} · Nv.${h.level||1}</span>
+          <div class="note">🤕 Recuperando — faltam ${h.injuredMissionsLeft} ${h.injuredMissionsLeft===1?'missão':'missões'} pra voltar sozinho.</div>
+        </div>
+      </div>
+      <button class="btn ${gold>=cost?'':'ghost'} sm" data-healhero="${h.id}" ${gold>=cost?'':'disabled'}>Curar agora por ${fmt(cost)} ouro</button>
+    </div>`;}).join(''):'<p class="note">Ninguém precisa de cuidados agora. Seu elenco todo está pronto pra lutar.</p>'}
+  </div>`;
+}
 function renderBattle(){
   $('#speedbar').innerHTML=[1,2,4].map(s=>`<button class="spd" data-spd="${s}" aria-pressed="${speed===s}">${s}x</button>`).join('')+'<button class="spd" data-act="overview" data-hud="1" aria-pressed="false">Mapa</button><button class="spd" data-act="skip">Pular</button>';
   $('#round').textContent='1';$('#bhud').hidden=false;$('#feed').innerHTML='';
@@ -1703,7 +1734,8 @@ PI_.addEventListener('click',e=>{
   const sl=t.closest('[data-slot]');if(sl){selected.delete(+sl.dataset.slot);view==='sheet'?renderSheet(tvFocus):renderTavern();return;}
   const eqp=t.closest('[data-eqpick]');if(eqp){const h=party.find(x=>x.id===+eqp.dataset.eqhero),item=run.inventory[+eqp.dataset.eqpick];if(h&&item&&canEquip(h,item))equipItem(h,slotKeyFor(h,item),item,run.inventory);renderEquip();return;}
   const equn=t.closest('[data-equnslot]');if(equn){const h=party.find(x=>x.id===+equn.dataset.equnhero);if(h)unequipItem(h,equn.dataset.equnslot,run.inventory);renderEquip();return;}
-  const ros=t.closest('[data-roster]');if(ros){const id=+ros.dataset.roster;if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderTavern();return;}
+  const ros=t.closest('[data-roster]');if(ros){const id=+ros.dataset.roster,rh=roster.find(x=>x.id===id);if(rh&&rh.injured){renderTavern();return;}if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderTavern();return;}
+  const heal=t.closest('[data-healhero]');if(heal){const h=roster.find(x=>x.id===+heal.dataset.healhero);if(h&&h.injured){const cost=injuryRushCost(h);if(gold>=cost){gold-=cost;h.injured=false;h.injuredMissionsLeft=0;h.hp=h.maxhp;saveGame();}}renderTemple();return;}
   const rec=t.closest('[data-recruit]');if(rec){recruitHero(+rec.dataset.recruit);renderRecruit();return;}
   const sv=t.closest('[data-stashview]');if(sv){stashView=sv.dataset.stashview;stashSel=null;renderStash();return;}
   const stb=t.closest('[data-stashtab]');if(stb){stashFilter=stb.dataset.stashtab;stashSel=null;renderStash();return;}
@@ -2125,12 +2157,14 @@ function finish(){
   const cxp=loadClassXP();
   party.forEach(h=>{h.bonus=!!h.alive;if(h.bonus)h.xp+=50;h.xpRun=(h.xpRun||0)+h.xp;h.xpTotal=(h.xpTotal||0)+h.xp;applyLevelUps(h);cxp[h.cls]=(cxp[h.cls]||0)+h.xp;});
   const avgXp=party.length?Math.round(party.reduce((a,h)=>a+h.xp,0)/party.length):0;
-  roster.filter(h=>!party.includes(h)).forEach(h=>{h.xpTotal=(h.xpTotal||0)+Math.round(avgXp*BENCH_XP_SHARE);applyLevelUps(h);});
+  roster.filter(h=>!party.includes(h)).forEach(h=>{h.xpTotal=(h.xpTotal||0)+Math.round(avgXp*(BENCH_XP_SHARE+(h.benchXpBonus||0)));applyLevelUps(h);});
   saveClassXP(cxp);
   if(win)saveProg(run.map);
-  stash.push(...run.inventory);run.inventory=[];
+  // Ouro: ganho pela fase. Fica aqui (não em finalResult) porque recompensa
+  // deve chegar assim que a fase é vencida, mesmo que o jogador siga pra próxima.
+  const goldGain=win?Math.round(sub*GOLD_PER_SCORE):0;gold+=goldGain;
   saveGame();
-  run.results.push({n:LV.mp.n,nome:LV.mp.nome,rows,sub,win,round:stats.round,moment:moment.t,xpRows:party.map(h=>({h,xp:h.xp,alive:h.alive,bonus:h.bonus}))});
+  run.results.push({n:LV.mp.n,nome:LV.mp.nome,rows,sub,win,round:stats.round,moment:moment.t,goldGain,xpRows:party.map(h=>({h,xp:h.xp,alive:h.alive,bonus:h.bonus}))});
   phase='result';
   const next=win&&mapOf(run.map+1)&&unlocked(run.map+1);
   if(next)phaseBoard();else finalResult(win);
@@ -2143,7 +2177,7 @@ function phaseBoard(){
   res.innerHTML=`<div class="res">
     <div><div class="eyebrow">Fase ${run.phaseNo} concluída · Mapa ${r.n}</div><h1 class="res-title">Vitória!</h1>
     <p class="sub">${r.nome}: o grupo limpou o mapa em ${r.round} turnos.</p></div>
-    <div class="bigscore"><span>Pontos da fase</span><b id="tot">0</b><small>Run até agora: ${fmt(Math.round(runSub()*mult))} pontos (grupo de ${run.party.length} ×${mult.toFixed(1).replace('.',',')})</small></div>
+    <div class="bigscore"><span>Pontos da fase</span><b id="tot">0</b><small>Run até agora: ${fmt(Math.round(runSub()*mult))} pontos (grupo de ${run.party.length} ×${mult.toFixed(1).replace('.',',')})${r.goldGain?` · 💰 +${fmt(r.goldGain)}`:''}</small></div>
     <div class="box moment"><div class="eyebrow">Momento da batalha</div><p>${r.moment}</p></div>
     <div class="box"><h3>Quadro de XP</h3>
       <div class="xpb">${r.xpRows.slice().sort((a,b)=>b.xp-a.xp).map(x=>`<div class="xr ${x.alive?'':'dead'}"><img src="${x.h.portrait}" alt=""><div><b>${x.h.first}${x.xp===top&&top>0?' ★':''}</b><small>${CLASSES[x.h.cls].nome} · ${x.alive?'vivo: +50 de bônus':'caiu: sem bônus'}</small></div><b class="xv">+${x.xp}</b></div>`).join('')}</div>
@@ -2164,6 +2198,19 @@ function saveRank(a){try{localStorage.setItem('lendas_rank_v1',JSON.stringify(a.
 function getName(){try{return localStorage.getItem('lendas_nome')||'Você';}catch(e){return 'Você';}}
 function finalResult(win,cash){
   gsap.globalTimeline.timeScale(1);
+  // A run termina aqui de vez (vitória completa, derrota ou saída manual).
+  // É só agora que o descanso mid-run (volta curado na próxima fase) vira
+  // "ferido" de verdade: quem não sobreviveu até aqui só volta a poder ser
+  // escalado depois de curar no Templo (ou o tempo passar sozinho).
+  roster.forEach(h=>{
+    if(h.injured){
+      h.injuredMissionsLeft=Math.max(0,h.injuredMissionsLeft-1);
+      if(h.injuredMissionsLeft===0){h.injured=false;h.hp=Math.max(h.hp,Math.round(h.maxhp*0.75));}
+    }
+  });
+  party.forEach(h=>{if(!h.alive){h.injured=true;h.injuredMissionsLeft=INJURY_MISSIONS;selected.delete(h.id);}});
+  stash.push(...run.inventory);run.inventory=[];
+  saveGame();
   const last=run.results[run.results.length-1],mult=MULT[run.party.length],sub=runSub(),total=Math.round(sub*mult);
   const complete=win&&!cash&&!mapOf(run.map+1);
   const rank=loadRank();const entry={nome:getName(),pts:total,id:Date.now()};rank.push(entry);rank.sort((a,b)=>b.pts-a.pts);saveRank(rank);
@@ -2177,13 +2224,17 @@ function finalResult(win,cash){
   };
   const title=complete?'Campanha concluída!':cash?'Run encerrada':win?'Vitória!':'Derrota';
   const subt=complete?`O grupo venceu todos os mapas disponíveis (${run.results.length}).`:cash?`O grupo voltou pra casa depois de ${run.results.length} ${run.results.length>1?'fases':'fase'}.`:win?'':last.round>=24&&heroesAlive().length?'O tempo acabou e o grupo recuou.':`O grupo caiu no mapa ${last.n}, turno ${last.round}.`;
+  const goldTotal=run.results.reduce((a,r)=>a+(r.goldGain||0),0);
+  const fallen=run.party.filter(h=>h.injured);
   res.innerHTML=`<div class="res">
     <div><div class="eyebrow">Fim da run</div><h1 class="res-title ${complete||cash||win?'':'lose'}">${title}</h1><p class="sub">${subt}</p></div>
     <div class="bigscore"><span>Pontuação da run</span><b id="tot">0</b><small id="rkpos"></small></div>
+    ${goldTotal?`<div class="box"><div class="eyebrow">Ouro ganho</div><p>💰 +${fmt(goldTotal)} (total no cofre: ${fmt(gold)})</p></div>`:''}
     <div class="box moment"><div class="eyebrow">Momento da run</div><p>${last.moment}</p></div>
     <details class="box score"><summary>Como os pontos foram feitos</summary><table>${run.results.map(r=>`<tr><td>Mapa ${r.n}: ${r.nome}</td><td>+${fmt(r.sub)}</td></tr>`).join('')}
       <tr><td>Grupo de ${run.party.length}</td><td>×${mult.toFixed(1).replace('.',',')}</td></tr></table></details>
-    <details class="box"><summary>O grupo · XP da run</summary><div class="people">${run.party.map(h=>`<div class="person ${h.alive?'':'dead'}"><img src="${h.portrait}" alt=""><div>${h.alive?'':'✝ '}<b>${h.nome}</b> <em>· ${CLASSES[h.cls].nome} · +${h.xpRun} XP</em></div></div>`).join('')}</div></details>
+    <details class="box"><summary>O grupo · XP da run</summary><div class="people">${run.party.map(h=>`<div class="person ${h.injured?'dead':''}"><img src="${h.portrait}" alt=""><div>${h.injured?'🤕 ':''}<b>${h.nome}</b> <em>· ${CLASSES[h.cls].nome} · +${h.xpRun} XP${h.injured?' · se recuperando':''}</em></div></div>`).join('')}</div></details>
+    ${fallen.length?`<div class="box"><div class="eyebrow">Feridos</div><p>${fallen.map(h=>h.first).join(', ')} ${fallen.length>1?'precisam':'precisa'} descansar no Templo da Aurora antes de voltar a lutar — o tempo passa sozinho, ou pague ouro pra acelerar.</p></div>`:''}
     <div class="box rank"><h3>Ranking</h3>
       <label class="namefield" for="nome">Seu nome<input id="nome" maxlength="16" value="${entry.nome.replace(/"/g,'')}"></label>
       <ol id="rk"></ol><p class="note">Ranking salvo neste aparelho. Os amigos são simulados até o online entrar.</p></div>
@@ -2225,7 +2276,7 @@ function loop(t){
 }
 
 /* ================= Início ================= */
-(()=>{const SAVED=loadGame();if(SAVED){uid=SAVED.nextUid;roster=SAVED.roster;stash=SAVED.stash;if(SAVED.mission)run.mission=SAVED.mission;}})();
+(()=>{const SAVED=loadGame();if(SAVED){uid=SAVED.nextUid;roster=SAVED.roster;stash=SAVED.stash;gold=SAVED.gold||0;if(SAVED.mission)run.mission=SAVED.mission;}})();
 applyLevel(MAPS[0],MAPS[0].seed);buildBoard();spawnEnemies(rollEnemies(LV.mp));newDraw();setMode('village');renderVillage();try{if(localStorage.getItem('lendas_help')!=='2')setTimeout(showHelp,700);}catch(_){}resize();applyCam();cam.updateProjectionMatrix();requestAnimationFrame(loop);
 })();
 </script>
