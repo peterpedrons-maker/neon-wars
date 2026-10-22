@@ -1398,10 +1398,13 @@ function buildHeroRig(sprite,sz){
   const neckY=cy(20,0);
   const headG=new THREE.Group();headG.position.set(0,neckY,0);
   const headPart=mk(6,0,24,22,0.002);headPart.position.set(cx(6,24),cy(0,22)-neckY,0);headG.add(headPart);rig.add(headG);
-  // braço com a arma — pivotado no ombro pra erguer de verdade no ataque
-  const shoY=cy(20,0);
-  const armG=new THREE.Group();armG.position.set(cx(28,12),shoY,0);
-  const armPart=mk(28,4,12,32,0.001);armPart.position.set(0,cy(4,32)-shoY,0);armG.add(armPart);rig.add(armG);
+  // braço com a arma — pivotado bem na costura do ombro (não no centro do
+  // braço!) pra girar de verdade preso ao tronco, sem abrir buraco quando
+  // levanta a arma. Um resquício do braço entra 2px no tronco (overlap)
+  // pra esconder qualquer costura residual quando gira.
+  const shoX=cx(26,0),shoY=cy(20,0);
+  const armG=new THREE.Group();armG.position.set(shoX,shoY,0);
+  const armPart=mk(26,4,14,32,0.001);armPart.position.set(cx(26,14)-shoX,cy(4,32)-shoY,0);armG.add(armPart);rig.add(armG);
   return {rig,legL,legR,headG,armG,mats};
 }
 function buildUnit(u){
@@ -2077,8 +2080,8 @@ async function projectile(u,t){
 function swingArm(u,fwdDur,backDur){
   if(!u.armG)return;
   gsap.timeline()
-    .to(u.armG.rotation,{z:1.0,duration:fwdDur*0.5,ease:'power2.out'},0)
-    .to(u.armG.rotation,{z:-0.75,duration:fwdDur*0.5,ease:'power3.in'})
+    .to(u.armG.rotation,{z:0.7,duration:fwdDur*0.5,ease:'power2.out'},0)
+    .to(u.armG.rotation,{z:-0.5,duration:fwdDur*0.5,ease:'power3.in'})
     .to(u.armG.rotation,{z:0,duration:backDur,ease:'power2.out'});
 }
 function drawBow(u,dur){
