@@ -1471,26 +1471,30 @@ function lpcStackOversize(bodyPaths,behindPath,frontPath){
     });
 }
 const LPC_RECIPES={
-  ladino:{action:'slash',walk:['body/bodies/male/walk.png','eyes/human/adult/neutral/walk/blue.png','legs/pantaloons/male/walk.png','torso/armour/leather/male/walk.png','weapon/sword/dagger/walk/dagger.png','hat/cloth/hood/adult/walk.png'],
-    slash:['body/bodies/male/slash.png','eyes/human/adult/neutral/slash/blue.png','legs/pantaloons/male/slash.png','torso/armour/leather/male/slash.png','weapon/sword/dagger/slash/dagger.png','hat/cloth/hood/adult/slash.png'],
-    hurt:['body/bodies/male/hurt.png','eyes/human/adult/neutral/hurt/blue.png','legs/pantaloons/male/hurt.png','torso/armour/leather/male/hurt.png','weapon/sword/dagger/hurt/dagger.png','hat/cloth/hood/adult/hurt.png']},
-  arqueiro:{action:'shoot',walk:['body/bodies/male/walk.png','eyes/human/adult/neutral/walk/blue.png','legs/pantaloons/male/walk.png','torso/armour/leather/male/walk.png','hair/page/adult/walk.png','weapon/ranged/bow/recurve/walk/background/medium.png','weapon/ranged/bow/recurve/walk/foreground.png','quiver/walk/quiver.png'],
-    shoot:['body/bodies/male/shoot.png','eyes/human/adult/neutral/shoot/blue.png','legs/pantaloons/male/shoot.png','torso/armour/leather/male/shoot.png','hair/page/adult/shoot.png','weapon/ranged/bow/recurve/universal/shoot/background.png','weapon/ranged/bow/recurve/universal/shoot/foreground.png','quiver/shoot/quiver.png'],
-    hurt:['body/bodies/male/hurt.png','eyes/human/adult/neutral/hurt/blue.png','legs/pantaloons/male/hurt.png','torso/armour/leather/male/hurt.png','hair/page/adult/hurt.png']},
-  mago:{action:'spellcast',walk:['body/bodies/female/walk.png','eyes/human/adult/neutral/walk/blue.png','torso/clothes/robe/female/walk/_brown.png','hat/magic/wizard/base/adult/walk/navy.png'],
-    spellcast:['body/bodies/female/spellcast.png','eyes/human/adult/neutral/spellcast/blue.png','torso/clothes/robe/female/spellcast/_brown.png','hat/magic/wizard/base/adult/spellcast/navy.png'],
-    hurt:['body/bodies/female/hurt.png','eyes/human/adult/neutral/hurt/blue.png','torso/clothes/robe/female/hurt/_brown.png']},
-  guerreiro:{action:'slash',oversize:true,walk:['body/bodies/male/walk.png','eyes/human/adult/neutral/walk/blue.png','legs/pantaloons/male/walk.png','torso/armour/plate/male/walk.png','hair/page/adult/walk.png','shield/round/walk/silver.png'],
-    hurt:['body/bodies/male/hurt.png','eyes/human/adult/neutral/hurt/blue.png','legs/pantaloons/male/hurt.png','torso/armour/plate/male/hurt.png','hair/page/adult/hurt.png'],
-    actionBody:['body/bodies/male/slash.png','eyes/human/adult/neutral/slash/blue.png','legs/pantaloons/male/slash.png','torso/armour/plate/male/slash.png','hair/page/adult/slash.png','shield/round/slash/silver.png'],
+  // "head/heads/human/..." é o rosto de verdade (cabeça + olhos já
+  // prontos) — sem essa camada o corpo-base não tem rosto nenhum, só
+  // pescoço pra cima vazio (é assim que o pacote vem, cabeça é peça
+  // separada do corpo, igual orelha/cabelo/barba).
+  ladino:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/armour/leather/male/walk.png','weapon/sword/dagger/walk/dagger.png','hat/cloth/hood/adult/walk.png'],
+    slash:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/armour/leather/male/slash.png','weapon/sword/dagger/slash/dagger.png','hat/cloth/hood/adult/slash.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/armour/leather/male/hurt.png','weapon/sword/dagger/hurt/dagger.png','hat/cloth/hood/adult/hurt.png']},
+  arqueiro:{action:'shoot',walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/armour/leather/male/walk.png','hair/page/adult/walk.png','weapon/ranged/bow/recurve/walk/background/medium.png','weapon/ranged/bow/recurve/walk/foreground.png','quiver/walk/quiver.png'],
+    shoot:['body/bodies/male/shoot.png','head/heads/human/male/shoot.png','legs/pantaloons/male/shoot.png','torso/armour/leather/male/shoot.png','hair/page/adult/shoot.png','weapon/ranged/bow/recurve/universal/shoot/background.png','weapon/ranged/bow/recurve/universal/shoot/foreground.png','quiver/shoot/quiver.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/armour/leather/male/hurt.png','hair/page/adult/hurt.png']},
+  mago:{action:'spellcast',walk:['body/bodies/female/walk.png','head/heads/human/female/walk.png','torso/clothes/robe/female/walk/_brown.png','hat/magic/wizard/base/adult/walk/navy.png'],
+    spellcast:['body/bodies/female/spellcast.png','head/heads/human/female/spellcast.png','torso/clothes/robe/female/spellcast/_brown.png','hat/magic/wizard/base/adult/spellcast/navy.png'],
+    hurt:['body/bodies/female/hurt.png','head/heads/human/female/hurt.png','torso/clothes/robe/female/hurt/_brown.png']},
+  guerreiro:{action:'slash',oversize:true,walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/armour/plate/male/walk.png','hair/page/adult/walk.png','shield/round/walk/silver.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/armour/plate/male/hurt.png','hair/page/adult/hurt.png'],
+    actionBody:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/armour/plate/male/slash.png','hair/page/adult/slash.png','shield/round/slash/silver.png'],
     actionBehind:'weapon/sword/longsword/attack_slash/behind/longsword.png',actionFront:'weapon/sword/longsword/attack_slash/longsword.png'},
-  clerigo:{action:'slash',oversize:true,walk:['body/bodies/male/walk.png','eyes/human/adult/neutral/walk/blue.png','legs/pantaloons/male/walk.png','torso/chainmail/male/walk.png'],
-    hurt:['body/bodies/male/hurt.png','eyes/human/adult/neutral/hurt/blue.png','legs/pantaloons/male/hurt.png','torso/chainmail/male/hurt.png'],
-    actionBody:['body/bodies/male/slash.png','eyes/human/adult/neutral/slash/blue.png','legs/pantaloons/male/slash.png','torso/chainmail/male/slash.png'],
+  clerigo:{action:'slash',oversize:true,walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/chainmail/male/walk.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/chainmail/male/hurt.png'],
+    actionBody:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/chainmail/male/slash.png'],
     actionBehind:'weapon/blunt/mace/attack_slash/behind/mace.png',actionFront:'weapon/blunt/mace/attack_slash/mace.png'},
-  bardo:{action:'slash',oversize:true,walk:['body/bodies/male/walk.png','eyes/human/adult/neutral/walk/blue.png','legs/pantaloons/male/walk.png','torso/clothes/longsleeve/formal/male/walk.png','hat/cloth/leather_cap/feather/adult/walk.png'],
-    hurt:['body/bodies/male/hurt.png','eyes/human/adult/neutral/hurt/blue.png','legs/pantaloons/male/hurt.png','torso/clothes/longsleeve/formal/male/hurt.png','hat/cloth/leather_cap/feather/adult/hurt.png'],
-    actionBody:['body/bodies/male/slash.png','eyes/human/adult/neutral/slash/blue.png','legs/pantaloons/male/slash.png','torso/clothes/longsleeve/formal/male/slash.png','hat/cloth/leather_cap/feather/adult/slash.png'],
+  bardo:{action:'slash',oversize:true,walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/clothes/longsleeve/formal/male/walk.png','hat/cloth/leather_cap/feather/adult/walk.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/clothes/longsleeve/formal/male/hurt.png','hat/cloth/leather_cap/feather/adult/hurt.png'],
+    actionBody:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/clothes/longsleeve/formal/male/slash.png','hat/cloth/leather_cap/feather/adult/slash.png'],
     actionBehind:'weapon/sword/rapier/attack_slash/behind/rapier.png',actionFront:'weapon/sword/rapier/attack_slash/rapier.png'},
 };
 const LPC_ACTION_DIMS={slash:[384,256,6,4],shoot:[832,256,13,4],spellcast:[448,256,7,4]};
