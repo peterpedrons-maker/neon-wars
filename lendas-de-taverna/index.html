@@ -1428,6 +1428,85 @@ function buildHeroRig(sprite,sz){
   const REST=0.16;armG.rotation.z=REST;armG.userData.rest=REST;
   return {rig,legL,legR,headG,armG,mats};
 }
+/* ================= Sprites LPC (sprite sheet real, sem desenhar nada) =================
+   Substitui aos poucos o rig de partes 3D por animação 2D de verdade:
+   empilha as camadas PNG do pacote num canvas só por estado (andar/golpe/
+   dano), e troca o UV do plano a cada quadro — a mesma técnica de recorte
+   por UV já usada no rig, só que lendo quadros de uma folha pronta em vez
+   de fatiar um canvas desenhado em código. */
+const LPC_BASE='assets/lpc/';
+const LPC_CACHE={};
+function lpcImg(path){
+  return new Promise((res,rej)=>{
+    const im=new Image();im.onload=()=>res(im);im.onerror=()=>rej(new Error('lpc: '+path));
+    im.src=LPC_BASE+path;
+  });
+}
+function lpcStack(paths,w,h){
+  return Promise.all(paths.map(lpcImg)).then(imgs=>{
+    const c=document.createElement('canvas');c.width=w;c.height=h;
+    const g=c.getContext('2d');g.imageSmoothingEnabled=false;
+    imgs.forEach(im=>g.drawImage(im,0,0));
+    return c;
+  });
+}
+function lpcTex(c){const t=new THREE.CanvasTexture(c);t.magFilter=t.minFilter=THREE.NearestFilter;t.generateMipmaps=false;t.userData=t.userData||{};t.userData.lpcShared=true;return t;}
+const LPC_RECIPES={
+  ladino:{
+    walk:['body/bodies/male/walk.png','eyes/human/adult/neutral/walk/blue.png','legs/pantaloons/male/walk.png','torso/armour/leather/male/walk.png','weapon/sword/dagger/walk/dagger.png','hat/cloth/hood/adult/walk.png'],
+    slash:['body/bodies/male/slash.png','eyes/human/adult/neutral/slash/blue.png','legs/pantaloons/male/slash.png','torso/armour/leather/male/slash.png','weapon/sword/dagger/slash/dagger.png','hat/cloth/hood/adult/slash.png'],
+    hurt:['body/bodies/male/hurt.png','eyes/human/adult/neutral/hurt/blue.png','legs/pantaloons/male/hurt.png','torso/armour/leather/male/hurt.png','weapon/sword/dagger/hurt/dagger.png','hat/cloth/hood/adult/hurt.png'],
+  },
+};
+function lpcBuild(cls){
+  if(LPC_CACHE[cls])return LPC_CACHE[cls];
+  const rec=LPC_RECIPES[cls];
+  const p=Promise.all([
+    lpcStack(rec.walk,576,256),
+    lpcStack(rec.slash,384,256),
+    lpcStack(rec.hurt,384,64),
+  ]).then(([walkC,slashC,hurtC])=>({
+    walk:{tex:lpcTex(walkC),cols:9,rows:4},
+    slash:{tex:lpcTex(slashC),cols:6,rows:4},
+    hurt:{tex:lpcTex(hurtC),cols:6,rows:1},
+  }));
+  LPC_CACHE[cls]=p;
+  return p;
+}
+function lpcSetUV(geo,col,row,cols,rows){
+  const u0=col/cols,u1=(col+1)/cols,v0=1-(row+1)/rows,v1=1-row/rows;
+  const uv=geo.attributes.uv;
+  uv.setXY(0,u0,v1);uv.setXY(1,u1,v1);uv.setXY(2,u0,v0);uv.setXY(3,u1,v0);uv.needsUpdate=true;
+}
+function lpcSetState(u,state){
+  if(!u.lpc||u.lpc.state===state)return;
+  u.lpc.state=state;u.lpc.since=null;
+}
+function tickLPC(u,s){
+  const L=u.lpc;if(!L||!L.sheets)return;
+  if(L.since==null)L.since=s;
+  const sheet=L.sheets[L.state]||L.sheets.walk;
+  const row=sheet.rows>1?L.row:0;
+  const fps=L.state==='hurt'?10:L.state==='slash'?12:8;
+  let f=Math.floor((s-L.since)*fps);
+  let done=false;
+  if(L.state==='stand')f=0;
+  else if(L.state==='walk')f=f%sheet.cols;
+  else{ // slash / hurt: toca uma vez só
+    if(f>=sheet.cols){f=sheet.cols-1;done=true;}
+  }
+  if(L.mat.map!==sheet.tex){L.mat.map=sheet.tex;L.mat.needsUpdate=true;}
+  lpcSetUV(L.geo,f,row,sheet.cols,sheet.rows);
+  if(done&&L.state!=='stand'&&L.state!=='walk'){lpcSetState(u,'stand');if(L.onDone){const cb=L.onDone;L.onDone=null;cb();}}
+}
+function lpcHeroMesh(cls,sz){
+  const geo=new THREE.PlaneGeometry(1,1);
+  const mat=new THREE.MeshBasicMaterial({transparent:true,alphaTest:0.5,side:THREE.DoubleSide});
+  const mesh=new THREE.Mesh(geo,mat);mesh.position.y=sz/2;mesh.scale.set(sz,sz,1);
+  const lpc={state:'stand',since:null,row:2,sheets:null,geo,mat};
+  lpcBuild(cls).then(sheets=>{lpc.sheets=sheets;});
+  return {mesh,mat,lpc};
+}
 function buildUnit(u){
   const grp=new THREE.Group();
   const base=new THREE.Mesh(new THREE.CylinderGeometry(0.34,0.38,0.08,22),new THREE.MeshLambertMaterial({color:u.side==='hero'?'#2b4466':'#6a221d'}));
@@ -1439,7 +1518,11 @@ function buildUnit(u){
   const sz=u.big?1.8:1.3;
   const pivot=new THREE.Group();pivot.rotation.order='YXZ';pivot.rotation.y=AZ;pivot.position.y=0.08;
   let plane,mat,mats,legL,legR,armG,headG;
-  if(u.side==='hero'){
+  if(u.side==='hero'&&LPC_RECIPES[u.cls]){
+    const lp=lpcHeroMesh(u.cls,sz);
+    plane=lp.mesh;mat=lp.mat;mats=[mat];pivot.add(plane);
+    u.lpc=lp.lpc;
+  }else if(u.side==='hero'){
     const rigP=buildHeroRig(u.sprite,sz);
     plane=rigP.rig;mats=rigP.mats;mat=mats[0];legL=rigP.legL;legR=rigP.legR;armG=rigP.armG;headG=rigP.headG;
     pivot.add(plane);
@@ -1464,7 +1547,14 @@ function buildUnit(u){
 }
 function disposeUnit(u){
   if(!u.grp)return;scene.remove(u.grp);
-  u.grp.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){if(o.material.map)o.material.map.dispose();o.material.dispose();}});
+  u.grp.traverse(o=>{
+    if(o.geometry)o.geometry.dispose();
+    if(!o.material)return;
+    (Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{
+      if(m.map&&!(m.map.userData&&m.map.userData.lpcShared))m.map.dispose();
+      m.dispose();
+    });
+  });
   u.grp=null;if(u.hpEl)u.hpEl.remove();u.hpEl=null;
 }
 
@@ -2063,6 +2153,7 @@ function chooseTarget(u,foes,reach){
 async function moveAlong(u,path){
   if(!path.length)return;
   previewPath(path,u.side==='hero'?'#79a8ec':'#d4503f');SFX.move();await wait(180);
+  lpcSetState(u,'walk');
   for(const p of path){
     const tx=wx(p.c),tz=wz(p.r),ty=topY(p.r,p.c),y0=u.grp.position.y,peak=Math.max(y0,ty)+0.28;
     u.r=p.r;u.c=p.c;
@@ -2070,6 +2161,7 @@ async function moveAlong(u,path){
     await gsap.timeline().to(u.grp.position,{x:tx,z:tz,duration:0.2,ease:'none'},0).to(u.grp.position,{y:peak,duration:0.1,ease:'power1.out'},0).to(u.grp.position,{y:ty,duration:0.1,ease:'power1.in'},0.1);
     burst(u.grp.position,{n:3,colors:['#c9b28a','#a08a62'],spread:0.3,up:0.1,y:0.03,life:0.3,size:0.7});
   }
+  lpcSetState(u,'stand');
 }
 async function showRoll({who,roll,parts=[],target,tlabel,outcome,label,numText,calcHtml}){
   diceEl.hidden=false;diceEl.dataset.out='';dWho.textContent=who;dCalc.textContent='rolando o d20…';dRes.textContent='';
@@ -2138,7 +2230,7 @@ async function attack(u,t){
   if(u.inspired){u.inspired=false;}
   const p=u.grp.position,ox=p.x,oz=p.z,dx=t.c-u.c,dz=t.r-u.r,len=Math.hypot(dx,dz)||1;
   if(u.alc>1){SFX.shoot();drawBow(u,0.3);await gsap.timeline().to(p,{x:ox-dx/len*0.12,z:oz-dz/len*0.12,duration:0.08}).to(p,{x:ox,z:oz,duration:0.1});await projectile(u,t);}
-  else{SFX.swing();swingArm(u,0.12,0.18);await gsap.timeline().to(p,{x:ox+dx/len*0.32,z:oz+dz/len*0.32,duration:0.12,ease:'power2.in'}).to(p,{x:ox,z:oz,duration:0.18,ease:'power2.out'});}
+  else{SFX.swing();swingArm(u,0.12,0.18);lpcSetState(u,'slash');await gsap.timeline().to(p,{x:ox+dx/len*0.32,z:oz+dz/len*0.32,duration:0.12,ease:'power2.in'}).to(p,{x:ox,z:oz,duration:0.18,ease:'power2.out'});}
   clearLine();
   if(!hit){
     SFX.miss();floatText(t,'errou','miss');gsap.fromTo(t.plane.position,{x:0},{x:0.24,duration:0.1,yoyo:true,repeat:1,ease:'power1.out'});
@@ -2177,6 +2269,7 @@ function damage(t,dmg,src,crit){
   gsap.fromTo(t.plane.position,{x:-0.1},{x:0,duration:0.4,ease:'elastic.out(1,0.3)'});
   gsap.fromTo(t.plane.rotation,{z:t.side==='hero'?0.22:-0.22},{z:0,duration:0.4,ease:'back.out(2)'});
   gsap.fromTo(t.pivot.scale,{x:1.15},{x:1,duration:0.25});
+  if(t.hp>0)lpcSetState(t,'hurt');
   if(t.hp<=0)kill(t,src,crit);
 }
 function kill(t,src,crit){
@@ -2483,6 +2576,7 @@ function loop(t){
   for(const u of units()){
     if(!u.grp)continue;
     if(u.alive!==false)u.pivot.scale.y=1+Math.sin(s*2.4+u.id*1.7)*0.025;
+    if(u.lpc)tickLPC(u,s);
     if(u.hpEl&&u.alive!==false){const f=(u.hp/u.maxhp*100)+'%';u.hpFill.style.width=f;u.hpGhost.style.width=f;u.hpEl.classList.toggle('low',u.side==='hero'&&u.hp/u.maxhp<=0.35);}
   }
   villagers.forEach(v=>{v.pivot.scale.y=1+Math.sin(s*2.4+v.id)*0.02;});
