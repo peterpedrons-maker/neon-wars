@@ -1496,6 +1496,21 @@ const LPC_RECIPES={
     hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/clothes/longsleeve/formal/male/hurt.png','hat/cloth/leather_cap/feather/adult/hurt.png'],
     actionBody:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/clothes/longsleeve/formal/male/slash.png','hat/cloth/leather_cap/feather/adult/slash.png'],
     actionBehind:'weapon/sword/rapier/attack_slash/behind/rapier.png',actionFront:'weapon/sword/rapier/attack_slash/rapier.png'},
+  // inimigos — cabeça de orc/goblin trocada no mesmo corpo humano, igual
+  // reskin de "cabeça" que o pacote já foi feito pra suportar
+  goblin:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/goblin/adult/walk.png','legs/pantaloons/male/walk.png','weapon/sword/dagger/walk/dagger.png'],
+    slash:['body/bodies/male/slash.png','head/heads/goblin/adult/slash.png','legs/pantaloons/male/slash.png','weapon/sword/dagger/slash/dagger.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/goblin/adult/hurt.png','legs/pantaloons/male/hurt.png','weapon/sword/dagger/hurt/dagger.png']},
+  gobarq:{action:'shoot',walk:['body/bodies/male/walk.png','head/heads/goblin/adult/walk.png','legs/pantaloons/male/walk.png','weapon/ranged/bow/recurve/walk/background/medium.png','weapon/ranged/bow/recurve/walk/foreground.png','quiver/walk/quiver.png'],
+    shoot:['body/bodies/male/shoot.png','head/heads/goblin/adult/shoot.png','legs/pantaloons/male/shoot.png','weapon/ranged/bow/recurve/universal/shoot/background.png','weapon/ranged/bow/recurve/universal/shoot/foreground.png','quiver/shoot/quiver.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/goblin/adult/hurt.png','legs/pantaloons/male/hurt.png']},
+  guarda:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/orc/male/walk.png','legs/pantaloons/male/walk.png','torso/chainmail/male/walk.png','weapon/sword/dagger/walk/dagger.png'],
+    slash:['body/bodies/male/slash.png','head/heads/orc/male/slash.png','legs/pantaloons/male/slash.png','torso/chainmail/male/slash.png','weapon/sword/dagger/slash/dagger.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/orc/male/hurt.png','legs/pantaloons/male/hurt.png','torso/chainmail/male/hurt.png']},
+  ogro:{action:'slash',oversize:true,walk:['body/bodies/muscular/walk.png','head/heads/orc/male/walk.png'],
+    hurt:['body/bodies/muscular/hurt.png','head/heads/orc/male/hurt.png'],
+    actionBody:['body/bodies/muscular/slash.png','head/heads/orc/male/slash.png'],
+    actionBehind:'weapon/blunt/waraxe/attack_slash/behind/waraxe.png',actionFront:'weapon/blunt/waraxe/attack_slash/waraxe.png'},
 };
 const LPC_ACTION_DIMS={slash:[384,256,6,4],shoot:[832,256,13,4],spellcast:[448,256,7,4]};
 function lpcBuild(cls){
@@ -1558,8 +1573,9 @@ function buildUnit(u){
   const sz=u.big?1.8:1.3;
   const pivot=new THREE.Group();pivot.rotation.order='YXZ';pivot.rotation.y=AZ;pivot.position.y=0.08;
   let plane,mat,mats,legL,legR,armG,headG;
-  if(u.side==='hero'&&LPC_RECIPES[u.cls]){
-    const lp=lpcHeroMesh(u.cls,sz);
+  const lpcKey=u.side==='hero'?u.cls:u.kind;
+  if(LPC_RECIPES[lpcKey]){
+    const lp=lpcHeroMesh(lpcKey,sz);
     plane=lp.mesh;mat=lp.mat;mats=[mat];pivot.add(plane);
     u.lpc=lp.lpc;
   }else if(u.side==='hero'){
