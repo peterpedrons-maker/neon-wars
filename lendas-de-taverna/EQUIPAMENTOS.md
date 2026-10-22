@@ -1,151 +1,156 @@
-# Relatório de equipamentos — estado atual
+# Sistema de equipamento — especificação (v2)
 
-Gerado a partir do catálogo real em `index.html` (constante `ITEMS`), não escrito
-à mão — se o jogo mudar, este arquivo pode ficar desatualizado até a próxima
-geração. Serve pra responder "o que já existe hoje", antes de decidir o que
-muda com classes/subclasses.
+Este arquivo substitui a v1 (catálogo fixo de 80 itens). Depois da conversa
+sobre itens estilo ARPG, **não existe mais uma lista fixa de itens pra
+listar** — existe uma **receita de geração**. Este documento é essa receita:
+os moldes, as fórmulas de rolagem, e exemplos concretos de itens que elas
+produziriam. O catálogo "final" só existe no momento em que um item realmente
+dropa, calculado em cima dessas regras.
 
-## Resumo
+**Status: especificação travada, implementação em código ainda não começou.**
+Ver `DESIGN.md` → seção Roadmap pra saber o que precisa existir no código
+antes desse sistema rodar de verdade (classes/subclasses, atributos
+primários, DEF mágica).
 
-- **80 itens** no total, em **8 posições de equipamento** por herói: arma, mão
-  secundária, cabeça, corpo, mãos, pés e 2 acessórios (o slot `accessory`
-  preenche o primeiro dos dois que estiver livre).
-- **5 raridades**: Comum, Raro, Mágico, Épico, Lendário — cor própria na UI,
-  mas por enquanto só cosmética (nenhuma raridade dá efeito especial ainda,
-  só "mais número" nos mods).
-- Classes de arma de duas mãos (**Mago, Arqueiro, Bardo** — e também o futuro
-  Monge, se mantivermos ele como marcial sem arma de uma mão) não podem usar
-  o slot de mão secundária.
-- **Nenhum item tem efeito de gatilho hoje** — tudo é soma direta de atributo
-  (`atk`, `def`, `mov`, `alc`, `per`, `dmgBonus`, `crit`, `maxhp`). Isso é
-  exatamente o que a conversa de gatilhos/subclasses vai precisar mudar pros
-  itens de raridade mais alta.
-- **Itens podem repetir.** Hoje não existe nenhum controle de "já caiu esse
-  item" — o sorteio de loot (`rollItem`) pode entregar a mesma Lâmina do
-  Dragão duas vezes na mesma campanha. Isso ficou pendente de uma conversa
-  anterior (sobre itens únicos de verdade) que foi pausada quando decidimos
-  mudar de roguelite pra campanha contínua — vale retomar.
-- **Nenhum item tem lore/texto de sabor** — só a descrição mecânica (`desc`).
-- Equipamento hoje é **genérico por slot**, não por classe/subclasse: um
-  Piromante e um Geomante, por exemplo, poderiam equipar exatamente os mesmos
-  itens. Se a gente quiser afinidade de equipamento por subclasse (ex.: o
-  Geomante prefere itens de DEF, o Piromante prefere itens de ATQ/crítico),
-  isso ainda não existe e precisa ser desenhado.
+## Os 3 eixos do item
 
-## Catálogo completo
+Todo item não-lendário é definido por três coisas independentes, igual
+ARPGs de verdade (Diablo, PoE):
 
-## Arma (14 itens)
+1. **Tier** (1 a 12, travado pelo nível do personagem) — define o **teto**
+   de poder do item. Um item tier 9 nunca perde pra um tier 3, não importa a
+   raridade.
+2. **Raridade** (Comum → Lendário) — define **quantos atributos** o item rola
+   e quão perto do topo da faixa daquele tier. Raridade não pula tier.
+3. **Atributo sorteado** (só em cabeça/corpo/mãos/pés/mão secundária/acessório
+   — **arma nunca rola**, fica de fora) — qual dos 5 atributos primários o
+   item carrega. Sorteado de forma uniforme entre os 5, independente do grupo
+   de peso da armadura (ver `DESIGN.md`).
 
-| Raridade | Nome | Ícone | Efeito |
+**Exceção: Lendário não rola.** Item lendário é escrito à mão, com nome
+próprio, sempre no topo do tier em que existe, e normalmente amarrado a uma
+dungeon de endgame específica (ver seção própria). Isso resolve o "itens
+únicos de verdade" que ficou pendente desde o começo da conversa sobre
+equipamento.
+
+## Tiers (nível 1 a 60)
+
+| Tier | Nível mínimo |
+|---|---|
+| 1 | 1 |
+| 2 | 3 |
+| 3 | 6 |
+| 4 | 10 |
+| 5 | 15 |
+| 6 | 21 |
+| 7 | 28 |
+| 8 | 36 |
+| 9 | 42 |
+| 10 | 48 |
+| 11 | 54 |
+| 12 | 60 |
+
+Intervalo sempre crescente (desbloqueia rápido no início, mais espaçado no
+fim) — **sem reacelerar perto do 60**: o clímax é o próprio nível máximo, não
+uma crista no meio do caminho. Ver `DESIGN.md` pro motivo dessa escolha.
+
+## Disciplina de poder (por que o d20 continua importando no tier 12)
+
+Regra central, não-negociável pra qualquer item gerado: **ATQ e DEF (os
+números que entram na rolagem de 1-20) crescem pouco e devagar; dano, PV e
+crítico crescem muito**. Isso existe pra o dado nunca virar decoração, mesmo
+no fim do jogo — ver a conversa completa em `DESIGN.md`.
+
+Fórmulas de referência (ilustrativas, ajustar por sensação de jogo depois
+que existir conteúdo pra testar):
+
+```
+atkBudget(tier)      = round(tier × 0.8)        // total de ATQ de equip. no tier
+dmgDiceCount(tier)    = 1 + floor((tier-1) / 3)  // quantos dados de dano
+dmgDieSize(tier)      = tier <= 3 ? 6 : tier <= 6 ? 8 : 10
+dmgBonusBudget(tier)  = tier × 2                 // bônus fixo de dano
+```
+
+| Tier | ATQ total (equip.) | Dado de dano | Bônus de dano |
 |---|---|---|---|
-| Comum | Lâmina Simples | ⚔️ | +1 ATQ |
-| Comum | Adaga Enferrujada | 🗡️ | +1 Movimento |
-| Comum | Cajado Rústico | 🪵 | +1 Alcance |
-| Raro | Lâmina Afiada | ⚔️ | +2 ATQ |
-| Raro | Machado de Ferro | 🪓 | +2 dano, −1 DEF |
-| Raro | Arco Reforçado | 🏹 | +1 ATQ, +1 Alcance |
-| Mágico | Cajado Arcano | 🔮 | +2 ATQ, +1 Alcance |
-| Mágico | Adaga Encantada | 🗡️ | +2 ATQ, +1 Movimento |
-| Mágico | Martelo Rúnico | 🔨 | +4 dano, −1 Movimento |
-| Épico | Lâmina do Dragão | 🗡️ | +3 ATQ, +6 dano |
-| Épico | Cetro Celestial | 🔮 | +3 ATQ, +2 Alcance |
-| Épico | Garra Sombria | 🦅 | +3 ATQ, +2 Movimento, −1 DEF |
-| Lendário | Excalibur Partida | ⚔️ | +4 ATQ, +8 dano, +1 Alcance |
-| Lendário | Cajado do Infinito | ✨ | +4 ATQ, +3 Alcance, Crítico com 19+ |
+| 1 | +1 | 1d6 | +2 |
+| 4 | +3 | 2d8 | +8 |
+| 7 | +6 | 3d10 | +14 |
+| 10 | +8 | 4d10 | +20 |
+| 12 | +10 | 4d10 | +24 |
 
-## Mão secundária (10 itens)
+A DEF dos inimigos de cada dungeon precisa escalar em paralelo com o ATQ
+total esperado pra quem está naquele tier, mantendo a chance de acerto numa
+faixa saudável (~55%–80%) o jogo inteiro. Isso é trabalho de balanceamento
+contínuo, não um número fixo — fica marcado aqui pra nunca ser esquecido
+quando as dungeons de cada tier forem desenhadas.
 
-| Raridade | Nome | Ícone | Efeito |
-|---|---|---|---|
-| Comum | Broquel de Madeira | 🛡️ | +1 DEF |
-| Comum | Adaga de Reserva | 🗡️ | +1 ATQ |
-| Raro | Escudo Pequeno | 🛡️ | +2 DEF |
-| Raro | Livro de Rezas | 📖 | +3 PV máx |
-| Mágico | Escudo Espelhado | 🪞 | +2 DEF, Crítico com 19+ |
-| Mágico | Adaga das Sombras | 🗡️ | +2 ATQ, +1 Movimento |
-| Épico | Égide Dracônica | 🐉 | +4 DEF, +4 PV máx |
-| Épico | Tomo Arcano | 📘 | +3 ATQ, +1 Alcance |
-| Lendário | Escudo da Aurora | 🌅 | +5 DEF, +8 PV máx |
-| Lendário | Adaga do Eclipse | 🌒 | +4 ATQ, +2 Movimento, Crítico com 18+ |
+## Raridade (dentro de um tier)
 
-## Cabeça (10 itens)
+| Raridade | O que muda |
+|---|---|
+| Comum | 1 atributo primário, metade inferior da faixa do tier |
+| Raro | 1 atributo primário, metade superior da faixa + 1 bônus pequeno fixo (DEF ou PV) |
+| Mágico | 2 atributos primários rolados |
+| Épico | 2 atributos primários + chance de rolar Dano Crítico ou Resistência Mágica como 3º |
+| Lendário | não rola — escrito à mão, sempre no topo do tier, nome e lore próprios |
 
-| Raridade | Nome | Ícone | Efeito |
-|---|---|---|---|
-| Comum | Elmo de Recruta | 🪖 | +1 DEF |
-| Comum | Capuz do Viajante | 🧢 | +1 Movimento |
-| Raro | Elmo de Ferro | 🪖 | +2 DEF, −1 Movimento |
-| Raro | Capuz do Batedor | 🥷 | +2 pra achar segredos, +1 Movimento |
-| Mágico | Coroa Arcana | 🔮 | +2 ATQ, +1 Alcance |
-| Mágico | Elmo com Chifres | 🤘 | +4 dano, −1 DEF |
-| Épico | Elmo do Campeão | ⚜️ | +3 DEF, +4 PV máx |
-| Épico | Capuz dos Sussurros | 🌀 | +3 pra achar segredos, Crítico com 19+ |
-| Lendário | Máscara do Vazio | 🎭 | +5 ATQ, Crítico com 18+ |
-| Lendário | Coroa Eterna | 👑 | +12 PV máx, +3 DEF, +1 Movimento |
+## Atributos primários
 
-## Corpo (10 itens)
+5 atributos (ver `DESIGN.md` pro mapeamento completo por classe/subclasse):
+**Força, Destreza, Inteligência, Vitalidade, Fé**. Alimentam dano/PV/crítico
+por fórmula — nunca ATQ/DEF brutos diretamente (mesma disciplina acima).
 
-| Raridade | Nome | Ícone | Efeito |
-|---|---|---|---|
-| Comum | Gibão Simples | 🧥 | +2 PV máx |
-| Comum | Colete de Couro | 🦺 | +1 DEF |
-| Raro | Cota de Malha Leve | ⛓️ | +4 PV máx, +1 DEF |
-| Raro | Manto do Viajante | 🧳 | +1 Movimento, +2 PV máx |
-| Mágico | Capa Élfica | 🧵 | +2 DEF, +1 Movimento |
-| Mágico | Túnica Arcana | ✨ | +2 ATQ, +3 PV máx |
-| Épico | Couraça de Dragão | 🐲 | +6 PV máx, +3 DEF |
-| Épico | Manto Sombrio | 🌑 | +2 ATQ, +2 Movimento |
-| Lendário | Armadura Titânica | 🗿 | +5 DEF, +12 PV máx |
-| Lendário | Vestes do Arquimago | 🌟 | +4 ATQ, +8 PV máx |
+Em armadura/acessório, o atributo sorteado é **independente do grupo de
+peso** — um Elmo Leve pode rolar Força do mesmo jeito que um Elmo Pesado pode
+rolar Inteligência. O grupo de peso (Leve/Média/Pesada) decide só a
+**aparência/família visual** do item, não o atributo.
 
-## Mãos (10 itens)
+## Atributos secundários (novos, rolam a partir de Épico)
 
-| Raridade | Nome | Ícone | Efeito |
-|---|---|---|---|
-| Comum | Luvas de Couro | 🧤 | +1 ATQ |
-| Comum | Manoplas Simples | 👊 | +1 DEF |
-| Raro | Luvas Reforçadas | 🧤 | +2 ATQ |
-| Raro | Manoplas de Ferro | 👊 | +2 DEF, −1 Movimento |
-| Mágico | Luvas da Precisão | 🎯 | +1 ATQ, Crítico com 19+ |
-| Mágico | Manoplas Rúnicas | 🔸 | +2 DEF, +2 ATQ |
-| Épico | Luvas do Assassino | 🗡️ | +3 ATQ, +1 Movimento |
-| Épico | Manoplas do Titã | 💪 | +4 dano, +2 DEF |
-| Lendário | Luvas do Vento Cortante | 🌪️ | +4 ATQ, +2 Movimento, Crítico com 18+ |
-| Lendário | Manoplas do Juízo | ⚖️ | +3 ATQ, +3 DEF, +6 dano |
+- **Dano Crítico** — multiplicador de dano em cima de um acerto crítico
+  (hoje crítico só dobra os dados; isso daria um dial adicional).
+- **Resistência Mágica** — defesa separada da DEF física, só entra em jogo
+  contra ataques marcados como mágicos (Mago, magia do Clérigo/Paladino).
 
-## Pés (10 itens)
+## Armas (não rolam — curadas por família)
 
-| Raridade | Nome | Ícone | Efeito |
-|---|---|---|---|
-| Comum | Bota Surrada | 👢 | +1 Movimento |
-| Comum | Sandálias de Couro | 🩴 | +1 DEF |
-| Raro | Bota Élfica | 👢 | +1 Movimento, +1 DEF |
-| Raro | Botas do Corredor | 👟 | +2 Movimento |
-| Mágico | Botas Élficas Reais | 🍃 | +2 Movimento, +1 DEF |
-| Mágico | Grevas de Ferro | ⚙️ | +3 DEF, −1 Movimento |
-| Épico | Botas do Vento | 🌬️ | +2 Movimento, +1 Alcance |
-| Épico | Grevas do Campeão | 🏆 | +3 DEF, +4 PV máx |
-| Lendário | Botas do Vento Norte | ❄️ | +3 Movimento, +2 Alcance |
-| Lendário | Grevas Eternas | ♾️ | +5 DEF, +8 PV máx, +1 Movimento |
+Arma é o único slot sem rolagem — fica fixa, igual ao catálogo antigo, só
+que agora organizada por **família de arma** (não por classe individual, pra
+não precisar de 8 catálogos separados) e repetida em cada um dos 12 tiers:
 
-## Acessório (16 itens)
+| Família | Classes que usam |
+|---|---|
+| Armas de corte/impacto (físico corpo-a-corpo) | Guerreiro, Paladino, Monge, Ladino |
+| Arcos | Arqueiro |
+| Cajados/varinhas (arcano) | Mago, Bardo |
+| Símbolos sagrados (maças, cajados santos) | Clérigo |
 
-| Raridade | Nome | Ícone | Efeito |
-|---|---|---|---|
-| Comum | Anel de Couro | 💍 | +2 PV máx |
-| Comum | Pingente Sem Graça | 📿 | +1 DEF |
-| Comum | Bracelete de Latão | 📿 | +1 Movimento |
-| Raro | Anel de Vigor | 💍 | +4 PV máx |
-| Raro | Anel do Foco | 💍 | +1 ATQ, +1 DEF |
-| Raro | Amuleto do Viajante | 📿 | +2 Movimento |
-| Mágico | Amuleto da Sorte | 🍀 | Crítico com 19+ |
-| Mágico | Pedra do Poder | 💎 | +2 ATQ, +2 DEF |
-| Mágico | Colar dos Videntes | 🔮 | +3 pra achar segredos, +1 Alcance |
-| Épico | Coração de Titã | ❤️ | +10 PV máx, +2 DEF |
-| Épico | Anel do Destino | 💫 | Crítico com 18+, +1 ATQ |
-| Épico | Anel da Fera | 💍 | +3 ATQ, +1 Movimento |
-| Épico | Talismã do Guardião | 🧿 | +3 DEF, +6 PV máx |
-| Lendário | Relíquia do Caos | 🌀 | +4 ATQ, +4 DEF, Crítico com 18+ |
-| Lendário | Anel da Eternidade | 💍 | +14 PV máx, +2 DEF |
-| Lendário | Coração de Fênix | 🔥 | +4 ATQ, Crítico com 18+, +1 Alcance |
+Cada família ganha 1-2 armas nomeadas por tier, seguindo a disciplina de
+poder acima (ATQ quase parado, dano crescendo). Esse catálogo ainda precisa
+ser escrito tier a tier — é conteúdo pendente, não uma decisão em aberto.
 
+## Dungeons de endgame (tier 9-12 / nível 42-60)
+
+Em vez de um pool genérico de "4 opções aleatórias" no fim do jogo, cada
+tier alto tem **múltiplas dungeons distintas**, cada uma com:
+- Tabela de drop própria (os atributos/famílias de item que ela favorece).
+- 1-2 itens Lendários exclusivos daquela dungeon (motivo concreto pra
+  farmar ali e não em outro lugar).
+- Dificuldade própria — mais difícil que a média do tier, de propósito,
+  pra justificar o loot melhor.
+
+Lista de dungeons específicas ainda não existe — fica como próximo passo de
+conteúdo depois que o sistema base estiver implementado.
+
+## O que falta pra isso rodar (resumo — detalhe completo em `DESIGN.md`)
+
+1. Classes/subclasses no código (hoje só as 6 originais existem, sem
+   Paladino/Monge, sem nenhuma subclasse).
+2. Os 5 atributos primários como campo do herói + fórmula que os converte em
+   atk/def/dano/PV/crítico.
+3. DEF mágica como stat separado + marcação de ataque físico/mágico.
+4. Motor de rolagem de item (molde + tier + raridade → instância com valores
+   sorteados) substituindo o catálogo fixo atual.
+5. Serialização de save por instância de item (cada item agora é único, não
+   só uma referência a um id de catálogo).
