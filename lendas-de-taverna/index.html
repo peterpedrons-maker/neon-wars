@@ -1393,7 +1393,7 @@ function buildHeroRig(sprite,sz){
   const mkLeg=px=>{const g=new THREE.Group();g.position.set(cx(px,8),hipY,0);const part=mk(px,36,8,12);part.position.set(0,cy(36,12)-hipY,0);g.add(part);rig.add(g);return g;};
   const legL=mkLeg(12),legR=mkLeg(20);
   // tronco (corpo+braço livre, fixo) — fica embaixo das outras peças
-  const torso=mk(0,20,28,16,0);torso.position.set(0,0,0);rig.add(torso);
+  const torso=mk(0,20,28,16,0);torso.position.set(cx(0,28),cy(20,16),0);rig.add(torso);
   // cabeça — pivotada no pescoço pra um leve bob
   const neckY=cy(20,0);
   const headG=new THREE.Group();headG.position.set(0,neckY,0);
