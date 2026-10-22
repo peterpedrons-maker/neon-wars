@@ -832,15 +832,18 @@ function heroSprite(h){
         P(18,2,4,2,'#c8463c');P(19,2,2,1,'#e2726a');
         if(L.beard)P(16,18,8,2,hair);
         // espada — lâmina com fio claro de um lado e sombra do outro
-        P(32,10,2,22,'#d7dde3');P(33,10,1,22,'#9aa3ab');P(32,10,1,3,'#f5f8fb');
-        P(30,30,6,2,'#b38b3c');P(32,32,2,4,'#5a3a22');
+        P(32,8,2,20,'#d7dde3');P(33,8,1,20,'#9aa3ab');P(32,8,1,3,'#f5f8fb');
+        P(30,28,6,2,'#b38b3c');
+        // mão empunhando o cabo — dedos visíveis dos dois lados do cabo
+        P(29,30,8,6,skin);P(29,30,8,1,shade(skin,-25));P(32,30,2,6,'#5a3a22');
         // escudo — base + aro claro + emblema
         P(2,22,8,12,'#8b3a2e');P(2,22,8,2,'#a8493b');P(2,32,8,2,'#6e2c22');
         P(3,23,6,10,'#7a3227');P(4,26,4,4,'#e2b04a');P(5,27,2,2,'#f3d27a');
         break;
       case 'ladino':
         P(12,4,16,6,'#2f4a37');P(10,8,2,12,'#2f4a37');P(28,8,2,12,'#2f4a37');P(14,16,12,4,'#22252a');
-        P(32,26,2,8,'#d7dde3');P(32,34,2,2,'#5a3a22');P(6,26,2,8,'#d7dde3');P(6,34,2,2,'#5a3a22');
+        P(32,24,2,8,'#d7dde3');P(30,32,6,5,skin);P(30,32,6,1,shade(skin,-25));P(32,33,2,4,'#5a3a22');
+        P(6,26,2,8,'#d7dde3');P(6,34,2,2,'#5a3a22');
         P(12,22,16,2,'#2f4a37');break;
       case 'mago':
         P(12,34,16,12,shirt);P(12,44,16,2,'#e9b949');P(16,22,8,12,'#7652ad');
@@ -850,10 +853,12 @@ function heroSprite(h){
       case 'clerigo':
         hairDef();P(16,22,8,14,'#d8a93a');P(18,24,4,8,'#fffaf0');P(16,26,8,2,'#fffaf0');
         if(L.beard)P(16,18,8,2,hair);
-        P(32,18,2,16,'#6b4a2b');P(30,14,6,6,'#9aa3ab');break;
+        P(32,14,2,16,'#6b4a2b');P(30,10,6,6,'#9aa3ab');
+        P(29,28,8,6,skin);P(29,28,8,1,shade(skin,-25));P(32,28,2,8,shade('#6b4a2b',-10));break;
       case 'arqueiro':
         hairDef();P(12,6,16,4,'#3d5f2c');P(26,2,2,6,'#c8463c');
         P(32,12,2,4,'#8b5a2b');P(34,16,2,16,'#8b5a2b');P(32,32,2,4,'#8b5a2b');P(30,14,2,20,'#e8e2d0');
+        P(27,20,5,6,skin);P(27,20,5,1,shade(skin,-25));
         P(6,16,4,12,'#6b4a2b');P(6,14,2,2,'#e8e2d0');P(8,12,2,2,'#e8e2d0');break;
       case 'bardo':
         hairDef();P(12,26,16,2,'#e2b04a');P(10,6,20,4,'#5a2a6b');P(28,0,2,8,'#e9b949');
@@ -1405,6 +1410,9 @@ function buildHeroRig(sprite,sz){
   const shoX=cx(26,0),shoY=cy(20,0);
   const armG=new THREE.Group();armG.position.set(shoX,shoY,0);
   const armPart=mk(26,4,14,32,0.001);armPart.position.set(cx(26,14)-shoX,cy(4,32)-shoY,0);armG.add(armPart);rig.add(armG);
+  // postura de prontidão — a arma fica num ângulo leve em vez de reta e
+  // paralela ao corpo, pra parecer segurada de verdade, não só encostada
+  const REST=0.16;armG.rotation.z=REST;armG.userData.rest=REST;
   return {rig,legL,legR,headG,armG,mats};
 }
 function buildUnit(u){
@@ -2079,16 +2087,18 @@ async function projectile(u,t){
 }
 function swingArm(u,fwdDur,backDur){
   if(!u.armG)return;
+  const rest=u.armG.userData.rest||0;
   gsap.timeline()
-    .to(u.armG.rotation,{z:0.7,duration:fwdDur*0.5,ease:'power2.out'},0)
-    .to(u.armG.rotation,{z:-0.5,duration:fwdDur*0.5,ease:'power3.in'})
-    .to(u.armG.rotation,{z:0,duration:backDur,ease:'power2.out'});
+    .to(u.armG.rotation,{z:rest+0.7,duration:fwdDur*0.5,ease:'power2.out'},0)
+    .to(u.armG.rotation,{z:rest-0.5,duration:fwdDur*0.5,ease:'power3.in'})
+    .to(u.armG.rotation,{z:rest,duration:backDur,ease:'power2.out'});
 }
 function drawBow(u,dur){
   if(!u.armG)return;
+  const rest=u.armG.userData.rest||0;
   gsap.timeline()
-    .to(u.armG.rotation,{z:0.55,duration:dur*0.4,ease:'power1.out'},0)
-    .to(u.armG.rotation,{z:0,duration:dur*0.6,ease:'power2.in'});
+    .to(u.armG.rotation,{z:rest+0.55,duration:dur*0.4,ease:'power1.out'},0)
+    .to(u.armG.rotation,{z:rest,duration:dur*0.6,ease:'power2.in'});
 }
 function swingLegs(u,dur){
   if(!u.legL)return;
