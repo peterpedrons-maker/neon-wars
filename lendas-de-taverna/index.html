@@ -138,6 +138,13 @@ h1{font-size:24px} h2{font-size:20px} h3{font-size:17px}
 .eqslots{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
 .eqslot{all:unset;box-sizing:border-box;cursor:pointer;font-size:11px;padding:5px 8px;border-radius:5px;background:var(--sombra);border:1.5px solid var(--borda);color:var(--papel-2)}
 .eqslot.off{cursor:default;opacity:.55;font-style:italic}
+.stashtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.stashtab{all:unset;cursor:pointer;font-size:11px;padding:4px 10px;border-radius:12px;background:var(--sombra);border:1.5px solid var(--borda);color:var(--papel-2)}
+.stashtab.on{background:var(--ouro);color:var(--tinta);border-color:var(--ouro-2);font-weight:600}
+.stashgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:7px;margin-bottom:10px}
+.stashtile{all:unset;box-sizing:border-box;cursor:pointer;width:100%;aspect-ratio:1;display:grid;place-items:center;font-size:22px;border-radius:7px;background:var(--sombra);border:2px solid var(--borda)}
+.stashtile.sel{box-shadow:0 0 0 2px var(--mana)}
+.stashdetail{background:var(--madeira);border:2px solid var(--borda);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
 .invrow{display:flex;flex-direction:column;gap:4px;padding:8px 0;border-bottom:1px dashed var(--borda)}
 .invrow:last-child{border-bottom:none}
 .invrow>span{font-size:13px;font-weight:600;color:var(--papel)}
@@ -326,7 +333,7 @@ h4.sec{margin:6px 0 0;font-family:var(--f-display);font-size:15px;color:var(--ou
     <ol>
       <li><div><b>Praça</b>Cada prédio tem o seu menu. Faça os passos 1 e 2 e parta.</div></li>
       <li><div><b>Missão</b>No Quadro de Missões, veja o mapa e os inimigos que podem aparecer. Mapa 1 é sempre igual; o resto muda.</div></li>
-      <li><div><b>Grupo</b>Na Taverna, toque num herói pra contratar. Escolha 5 heróis.</div></li>
+      <li><div><b>Grupo</b>Na Taverna, recrute heróis pro seu elenco — eles ficam com você pra sempre. Escolha 5 pra ir à próxima missão; o resto fica de banco e ganha XP reduzido.</div></li>
       <li><div><b>Formação</b>Posicione cada herói numa casa dourada. Morro dá +2 de acerto.</div></li>
       <li><div><b>Batalha</b>O jogo joga sozinho. Acompanhe os dados, use 2x, 4x ou Pular, e o botão Mapa pra ver tudo.</div></li>
       <li><div><b>Fases</b>Vença pra ir ao próximo mapa. Quem caiu volta Exausto. Cada herói ganha XP só pelo que faz em pé.</div></li>
@@ -591,15 +598,15 @@ function slotKeyFor(h,item){
   if(item.slot==='accessory')return !h.equip.acc1?'acc1':!h.equip.acc2?'acc2':'acc1';
   return item.slot;
 }
-function equipItem(h,slot,item){
+function equipItem(h,slot,item,pool){
   const prev=h.equip[slot];
-  if(prev){applyMods(h,prev.mods,-1);run.inventory.push(prev);}
-  const idx=run.inventory.indexOf(item);if(idx>-1)run.inventory.splice(idx,1);
+  if(prev){applyMods(h,prev.mods,-1);pool.push(prev);}
+  const idx=pool.indexOf(item);if(idx>-1)pool.splice(idx,1);
   h.equip[slot]=item;applyMods(h,item.mods,1);
 }
-function unequipItem(h,slot){
+function unequipItem(h,slot,pool){
   const item=h.equip[slot];if(!item)return;
-  applyMods(h,item.mods,-1);h.equip[slot]=null;run.inventory.push(item);
+  applyMods(h,item.mods,-1);h.equip[slot]=null;pool.push(item);
 }
 function dropLoot(t){
   const chance=t.kind==='ogro'?1:0.16;
@@ -1276,7 +1283,7 @@ function makeHero(used,cls){
   let first;do{first=pick(FIRST);}while(used.has(first));used.add(first);
   cls=cls||pick(Object.keys(CLASSES));
   const b=CLASSES[cls],trait=pick(TRAITS),arma=pick(b.armas),arm=pick(b.armad);
-  const h={id:uid++,side:'hero',cls,first,sur:pick(SUR),trait,arma:arma[0],armadura:arm[0],xp:0,
+  const h={id:uid++,side:'hero',cls,first,sur:pick(SUR),trait,arma:arma[0],armadura:arm[0],xp:0,xpTotal:0,xpRun:0,level:1,
     maxhp:Math.max(8,b.hp+ri(-2,2)+arm[2]+(trait.id==='veterano'?8:0)),
     atk:b.atk+jit([0,0,0,1,-1])+arma[1]+(trait.id==='fanfarrao'?2:0),
     def:b.def+jit([0,0,0,1,-1])+arm[1]+(trait.id==='covarde'?3:0)-(trait.id==='bruto'?2:0),
@@ -1327,13 +1334,15 @@ function disposeUnit(u){
 }
 
 /* ================= Estado ================= */
+const ROSTER_CAP=10,BENCH_XP_SHARE=0.5;
 let draw=[],selected=new Set(),rerolls=1,party=[],enemies=[],phase='village',selHero=null,active=null,stats=null,logLines=[],tombs=[],chest=null,speed=1,hint='';
+let roster=[],stash=[],stashFilter='all',stashSel=null,stashView='items';
 const units=()=>[...party.filter(h=>h.r!=null),...enemies];
 const heroesAlive=()=>party.filter(h=>h.alive&&h.r!=null);
 const enemiesAlive=()=>enemies.filter(e=>e.alive);
 const unitAt=(r,c)=>units().find(u=>u.alive!==false&&u.r===r&&u.c===c);
 
-function newDraw(){const used=new Set();const cl=Object.keys(CLASSES).sort(()=>R()-0.5);cl.push(pick(cl),pick(cl));draw=cl.map(c=>makeHero(used,c));selected.clear();}
+function newDraw(){const used=new Set();const cl=Object.keys(CLASSES).sort(()=>R()-0.5);cl.push(pick(cl),pick(cl));draw=cl.map(c=>makeHero(used,c));}
 function spawnEnemies(list){enemies.forEach(disposeUnit);enemies=placeEnemies(list).map(makeEnemy);enemies.forEach(buildUnit);}
 
 /* ================= HUD ================= */
@@ -1364,6 +1373,7 @@ function renderOrder(){
 const PLACES={
   board:{nome:'Quadro de Missões'},
   tavern:{nome:'Taverna do Javali Torto'},
+  stash:{nome:'Cofre da Guilda'},
   temple:{nome:'Templo da Aurora',txt:'Em breve: reviver um herói caído, uma vez por temporada.'},
   forge:{nome:'Forja do velho Brasa',txt:'Em breve: a árvore de habilidades de cada classe. Heróis ganham XP de classe em toda missão.'},
   market:{nome:'Mercado',txt:'Em breve: comprar poções antes de sair em missão.'},
@@ -1384,6 +1394,55 @@ function loadProg(){try{return +localStorage.getItem('lendas_prog_v1')||0;}catch
 function saveProg(n){try{if(n>loadProg())localStorage.setItem('lendas_prog_v1',String(n));}catch(e){}}
 function loadClassXP(){try{return JSON.parse(localStorage.getItem('lendas_classxp_v1')||'{}');}catch(e){return {};}}
 function saveClassXP(o){try{localStorage.setItem('lendas_classxp_v1',JSON.stringify(o));}catch(e){}}
+
+/* ================= Elenco persistente (save local) =================
+   Nada disso sincroniza entre aparelhos — vive só no localStorage deste
+   navegador. Curva de nível e bônus por nível são de propósito simples
+   agora: vão ser recalibrados quando a árvore de habilidades e os tiers
+   de item entrarem em cena. */
+const SAVE_KEY='lendas_save_v1';
+function levelForXp(total){
+  let lvl=1,cost=100,xp=total||0;
+  while(xp>=cost){xp-=cost;lvl++;cost=Math.round(cost*1.18);}
+  return lvl;
+}
+function applyLevelUps(h){
+  if(!h.level)h.level=1;
+  const target=levelForXp(h.xpTotal);
+  while(h.level<target){h.level++;h.maxhp+=1;h.hp=Math.min(h.maxhp,h.hp+1);}
+}
+function serializeHero(h){
+  const equip={};EQ_SLOTS.forEach(s=>equip[s]=h.equip[s]?h.equip[s].id:null);
+  return {id:h.id,cls:h.cls,first:h.first,sur:h.sur,nome:h.nome,traitId:h.trait.id,
+    maxhp:h.maxhp,hp:h.hp,atk:h.atk,def:h.def,mov:h.mov,alc:h.alc,dmg:h.dmg,ini:h.ini,per:h.per,
+    critBonus:h.critBonus||0,look:h.look,arma:h.arma,armadura:h.armadura,
+    xpTotal:h.xpTotal||0,xpRun:h.xpRun||0,level:h.level||1,equip};
+}
+function hydrateHero(s){
+  const trait=TRAITS.find(x=>x.id===s.traitId)||TRAITS[0];
+  const h={id:s.id,side:'hero',cls:s.cls,first:s.first,sur:s.sur,nome:s.nome,trait,
+    maxhp:s.maxhp,hp:s.hp,atk:s.atk,def:s.def,mov:s.mov,alc:s.alc,dmg:s.dmg.slice(),ini:s.ini,per:s.per,
+    critBonus:s.critBonus||0,look:s.look,arma:s.arma,armadura:s.armadura,
+    xpTotal:s.xpTotal||0,xpRun:s.xpRun||0,xp:0,level:s.level||1,r:null,c:null,equip:{}};
+  EQ_SLOTS.forEach(sl=>{const id=s.equip&&s.equip[sl];h.equip[sl]=id?ITEMS.find(i=>i.id===id)||null:null;});
+  h.sprite=heroSprite(h);h.portrait=h.sprite.toDataURL();
+  return h;
+}
+function saveGame(){
+  try{
+    localStorage.setItem(SAVE_KEY,JSON.stringify({v:1,nextUid:uid,mission:run.mission,
+      roster:roster.map(serializeHero),stash:stash.map(it=>it.id)}));
+  }catch(e){}
+}
+function loadGame(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);if(!raw)return null;
+    const s=JSON.parse(raw);
+    return {nextUid:s.nextUid||1,mission:s.mission||null,
+      roster:(s.roster||[]).map(hydrateHero),
+      stash:(s.stash||[]).map(id=>ITEMS.find(i=>i.id===id)).filter(Boolean)};
+  }catch(e){return null;}
+}
 const unlocked=n=>n<=loadProg()+1;
 const mapOf=n=>MAPS.find(m=>m.n===n);
 function ePortrait(kind){
@@ -1411,7 +1470,7 @@ function renderVillage(){
     <button class="td ${np>=5?'ok':''}" data-bld="tavern"><i>${np>=5?'✓':'2'}</i><span><b>Taverna</b><small>${np>=5?`${np} heróis no grupo`:'Monte o grupo (5 heróis)'}</small></span><em>›</em></button>
   </div>
   <p class="hint" id="hint">${hint||'Toque nos prédios da vila ou nos botões acima. Cada prédio abre o seu menu.'}</p>
-  <div class="places"><span class="plab">Outros lugares</span>${['temple','forge','market','well'].map(id=>`<button class="place soon" data-bld="${id}">${PLACES[id].nome.split(' ')[0]}</button>`).join('')}</div>
+  <div class="places"><span class="plab">Outros lugares</span>${['stash','temple','forge','market','well'].map(id=>`<button class="place ${id==='stash'?'':'soon'}" data-bld="${id}">${PLACES[id].nome.split(' ')[0]}${id==='stash'&&stash.length?` (${stash.length})`:''}</button>`).join('')}</div>
   <button class="btn cta" data-act="depart" ${ready?'':'disabled'}>${ready?'Partir pra missão':'Complete os passos 1 e 2'}</button>`;
 }
 function goVillage(){hint='';renderVillage();aim('village');}
@@ -1419,6 +1478,7 @@ function openBld(id){
   hint='';
   if(id==='board'){renderMissions();}
   else if(id==='tavern'){enterTavern();return;}
+  else if(id==='stash'){renderStash();return;}
   else if(PLACES[id]){view='info';setMode('village');renderInfo(id);}
   const b=BLD[id];if(b)aimCam(VX+b.x,0.7,VZ+b.z,1.6,0.9);
 }
@@ -1461,26 +1521,57 @@ function renderBrief(n){
 
 /* ---------- Taverna ---------- */
 const surCount=()=>{const sc={};draw.forEach(h=>sc[h.sur]=(sc[h.sur]||0)+1);return sc;};
+const rosterSibCount=()=>{const sc={};roster.forEach(h=>sc[h.sur]=(sc[h.sur]||0)+1);return sc;};
 function enterTavern(){hint='';view='tavern';tvFocus=null;setMode('tavern');renderTavern();aim('tavern');}
 function partyBar(){
-  const sel=draw.filter(h=>selected.has(h.id)),n=sel.length;
+  const sel=roster.filter(h=>selected.has(h.id)),n=sel.length;
   const sur={};sel.forEach(h=>sur[h.sur]=(sur[h.sur]||0)+1);const fams=Object.keys(sur).filter(x=>sur[x]>1);
   return `<div class="party"><div class="slots">${Array.from({length:5},(_,i)=>{const h=sel[i];
     return h?`<button class="slot full" data-slot="${h.id}" aria-label="Tirar ${h.first} do grupo"><img src="${h.portrait}" alt=""></button>`:`<span class="slot req">+</span>`;}).join('')}</div>
     <div class="pmult">${n>=5?`<b>×${MULT[n].toFixed(1).replace('.',',')}</b><small>${fams.length?`Irmãos ${fams.join(', ')} +1`:'grupo completo'}</small>`:`<b>${n}/5</b><small>escolha 5 heróis</small>`}</div></div>`;
 }
+function recruitHero(id){
+  if(roster.length>=ROSTER_CAP)return;
+  const i=draw.findIndex(h=>h.id===id);if(i<0)return;
+  const [h]=draw.splice(i,1);
+  roster.push(h);
+  saveGame();
+}
 function renderTavern(){
   view='tavern';tvFocus=null;setMode('tavern');
-  const sc=surCount(),n=selected.size;
+  const sc=rosterSibCount(),n=selected.size,full=roster.length>=ROSTER_CAP;
   PI_.innerHTML=`
   ${stepper(2)}
   <div class="head"><div><div class="eyebrow">Taverna do Javali Torto</div><h2>Monte seu grupo</h2></div>
-    <div class="btns"><button class="btn ghost sm" data-act="toVillage">Praça</button><button class="btn ghost sm" data-act="reroll" ${rerolls?'':'disabled'}>Sortear (${rerolls})</button></div></div>
+    <div class="btns"><button class="btn ghost sm" data-act="toVillage">Praça</button></div></div>
   ${partyBar()}
-  <p class="hint">Toque num herói pra contratar ou dispensar do grupo.</p>
-  <div class="pool">${draw.map(h=>`
-    <button class="pc" data-hero="${h.id}" aria-pressed="${selected.has(h.id)}">
+  <p class="hint">Toque num herói do seu elenco pra escalar ou tirar do grupo ativo (até 5). Quem fica de banco continua no elenco e ganha ${Math.round(BENCH_XP_SHARE*100)}% do XP da missão.</p>
+  <div class="pool">${roster.map(h=>`
+    <button class="pc" data-roster="${h.id}" aria-pressed="${selected.has(h.id)}">
       ${sc[h.sur]>1?'<span class="sib">Irmãos</span>':''}<span class="tick">✓</span>
+      <img src="${h.portrait}" alt="">
+      <div class="pcbody">
+        <span class="nm">${h.first}</span>
+        <span class="cl">${CLASSES[h.cls].nome} · ${CLASSES[h.cls].papel}</span>
+        <span class="pcstats">Nv.${h.level||1} · ❤${h.maxhp} ⚔${h.atk} 🛡${h.def} 🏃${h.mov} 🎯${h.alc}</span>
+        <span class="tr">${h.trait.nome}</span>
+        <span class="pcgear">${gearBadge(h)||'sem equipamento'}</span>
+      </div>
+    </button>`).join('')}</div>
+  ${roster.length?'':'<p class="note">Seu elenco está vazio. Recrute heróis novos pra começar.</p>'}
+  <div class="btns" style="margin-top:8px"><button class="btn ghost" data-act="recruit">${full?`Elenco cheio (${ROSTER_CAP})`:`Recrutar novos heróis (${roster.length}/${ROSTER_CAP})`}</button></div>
+  <button class="btn cta" data-act="toVillage" ${n>=5?'':'disabled'}>${n>=5?'Confirmar grupo':`Escolha mais ${5-n}`}</button>`;
+}
+function renderRecruit(){
+  view='recruit';setMode('tavern');
+  const sc=surCount(),full=roster.length>=ROSTER_CAP;
+  PI_.innerHTML=`
+  <div class="head"><div><div class="eyebrow">Taverna do Javali Torto</div><h2>Recrutar heróis</h2></div>
+    <div class="btns"><button class="btn ghost sm" data-act="reroll" ${rerolls?'':'disabled'}>Sortear (${rerolls})</button><button class="btn ghost sm" data-act="toTavern">Voltar ao elenco</button></div></div>
+  <p class="hint">${full?`Seu elenco está cheio (${ROSTER_CAP}). Não dá pra contratar mais até abrir vaga.`:'Toque em "Contratar" pra somar um herói novo ao seu elenco — ele fica com você pra sempre, não só nesta run.'}</p>
+  <div class="pool">${draw.map(h=>`
+    <button class="pc" data-recruit="${h.id}" ${full?'disabled':''}>
+      ${sc[h.sur]>1?'<span class="sib">Irmãos</span>':''}
       <img src="${h.portrait}" alt="">
       <div class="pcbody">
         <span class="nm">${h.first}</span>
@@ -1489,8 +1580,7 @@ function renderTavern(){
         <span class="tr">${h.trait.nome}</span>
         <span class="pcgear">${h.arma} · ${h.armadura}</span>
       </div>
-    </button>`).join('')}</div>
-  <button class="btn cta" data-act="toVillage" ${n>=5?'':'disabled'}>${n>=5?'Confirmar grupo':`Escolha mais ${5-n}`}</button>`;
+    </button>`).join('')}</div>`;
 }
 function rangeGrid(r,col){
   const Q=5;let h='';
@@ -1539,28 +1629,30 @@ function gearBadge(h){
   const n=EQ_SLOTS.reduce((a,s)=>a+(h.equip[s]?1:0),0);if(!n)return'';
   return` ${h.equip.weapon?h.equip.weapon.icon:SLOT_INFO.weapon.icon}${n>1?` +${n-1}`:''}`;
 }
+function heroEquipBox(h,ns){
+  return `<div class="box">
+    <div style="display:flex;align-items:center;gap:8px">
+      <img src="${h.portrait}" alt="" style="width:28px;height:34px;image-rendering:pixelated">
+      <div style="flex:1;min-width:0">
+        <b class="nm">${h.first}</b><span class="cl"> · ${CLASSES[h.cls].nome}${CLASSES[h.cls].twoHanded?' · arma de duas mãos':''}</span>
+      </div>
+    </div>
+    <div class="eqslots">
+      ${EQ_SLOTS.map(s=>{
+        if(s==='offhand'&&CLASSES[h.cls].twoHanded)return`<span class="eqslot off">${SLOT_INFO.offhand.icon} Mão secundária: ocupada pela arma</span>`;
+        const it=h.equip[s];
+        return`<button class="eqslot" data-${ns}unhero="${h.id}" data-${ns}unslot="${s}">${it?`${it.icon} ${it.nome} · ${rarTag(it)} (guardar)`:`${SLOT_INFO[s].icon} ${SLOT_INFO[s].label}: vazio`}</button>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
 function renderEquip(){
   view='equip';
   PI_.innerHTML=`
-  <div class="head"><div><div class="eyebrow">Inventário da run</div><h2>Equipar itens</h2></div><button class="btn ghost sm" data-act="toPlace">Voltar ao mapa</button></div>
-  <p class="hint">Itens valem só pra esta run — somem quando ela terminar. Toque num item da mochila e escolha quem equipa.</p>
+  <div class="head"><div><div class="eyebrow">Mochila da missão</div><h2>Equipar itens</h2></div><button class="btn ghost sm" data-act="toPlace">Voltar ao mapa</button></div>
+  <p class="hint">Achados nesta missão que não forem equipados vão pro Cofre da Guilda, na vila, quando ela terminar. Toque num item da mochila e escolha quem equipa.</p>
   <div class="scroll">
-    ${party.map(h=>`
-      <div class="box">
-        <div style="display:flex;align-items:center;gap:8px">
-          <img src="${h.portrait}" alt="" style="width:28px;height:34px;image-rendering:pixelated">
-          <div style="flex:1;min-width:0">
-            <b class="nm">${h.first}</b><span class="cl"> · ${CLASSES[h.cls].nome}${CLASSES[h.cls].twoHanded?' · arma de duas mãos':''}</span>
-          </div>
-        </div>
-        <div class="eqslots">
-          ${EQ_SLOTS.map(s=>{
-            if(s==='offhand'&&CLASSES[h.cls].twoHanded)return`<span class="eqslot off">${SLOT_INFO.offhand.icon} Mão secundária: ocupada pela arma</span>`;
-            const it=h.equip[s];
-            return`<button class="eqslot" data-equnhero="${h.id}" data-equnslot="${s}">${it?`${it.icon} ${it.nome} · ${rarTag(it)} (guardar)`:`${SLOT_INFO[s].icon} ${SLOT_INFO[s].label}: vazio`}</button>`;
-          }).join('')}
-        </div>
-      </div>`).join('')}
+    ${party.map(h=>heroEquipBox(h,'eq')).join('')}
     <div class="box">
       <h3>Mochila (${run.inventory.length})</h3>
       ${run.inventory.length?run.inventory.map((it,i)=>`<div class="invrow"><span>${it.icon} ${it.nome} · ${rarTag(it)} · <i>${SLOT_INFO[it.slot]?SLOT_INFO[it.slot].label:'Acessório'}</i></span><small>${it.desc}</small>
@@ -1568,6 +1660,29 @@ function renderEquip(){
       </div>`).join(''):'<p class="note">Nenhum item ainda. Derrote inimigos pra conseguir equipamentos.</p>'}
     </div>
   </div>`;
+}
+function renderStash(){
+  view='stash';setMode('village');
+  const tabs=['all','weapon','offhand','head','body','hands','feet','accessory'];
+  const tabLabel=k=>k==='all'?'Todos':(SLOT_INFO[k]?SLOT_INFO[k].label:'Acessório');
+  const items=stash.map((it,i)=>({it,i})).filter(({it})=>stashFilter==='all'||it.slot===stashFilter);
+  const sel=stashSel!=null?stash[stashSel]:null;
+  PI_.innerHTML=`
+  <div class="head"><div><div class="eyebrow">Vila de Brumavale</div><h2>Cofre da Guilda</h2></div><button class="btn ghost sm" data-act="toVillage">Praça</button></div>
+  <p class="hint">Itens guardados aqui valem pra sempre: equipe em qualquer herói do seu elenco a qualquer momento, mesmo fora de missão.</p>
+  <div class="stashtabs">
+    <button class="stashtab ${stashView==='items'?'on':''}" data-stashview="items">🎒 Itens (${stash.length})</button>
+    <button class="stashtab ${stashView==='heroes'?'on':''}" data-stashview="heroes">🧑‍🤝‍🧑 Heróis</button>
+  </div>
+  ${stashView==='items'?`
+    <div class="stashtabs">${tabs.map(k=>`<button class="stashtab ${stashFilter===k?'on':''}" data-stashtab="${k}">${tabLabel(k)}</button>`).join('')}</div>
+    ${items.length?`<div class="stashgrid">${items.map(({it,i})=>`<button class="stashtile ${stashSel===i?'sel':''}" style="border-color:${RARITY[it.rar].cor}" data-stashtile="${i}" aria-label="${it.nome}">${it.icon}</button>`).join('')}</div>`:'<p class="note">Nenhum item aqui ainda. Derrote inimigos em missão pra encontrar equipamentos.</p>'}
+    ${sel?`<div class="stashdetail">
+      <div><b style="color:${RARITY[sel.rar].cor}">${sel.icon} ${sel.nome}</b> · ${rarTag(sel)} · <i>${SLOT_INFO[sel.slot]?SLOT_INFO[sel.slot].label:'Acessório'}</i></div>
+      <small>${sel.desc}</small>
+      <div class="invpick">${roster.filter(h=>canEquip(h,sel)).map(h=>`<button class="btn ghost sm" data-stashequip="${h.id}">Equipar em ${h.first}</button>`).join('')||'<span class="note">Nenhum herói no elenco pode usar este item.</span>'}</div>
+    </div>`:''}
+  `:`<div class="scroll">${roster.length?roster.map(h=>heroEquipBox(h,'steq')).join(''):'<p class="note">Recrute heróis na taverna primeiro.</p>'}</div>`}`;
 }
 function renderBattle(){
   $('#speedbar').innerHTML=[1,2,4].map(s=>`<button class="spd" data-spd="${s}" aria-pressed="${speed===s}">${s}x</button>`).join('')+'<button class="spd" data-act="overview" data-hud="1" aria-pressed="false">Mapa</button><button class="spd" data-act="skip">Pular</button>';
@@ -1586,8 +1701,15 @@ PI_.addEventListener('click',e=>{
   const nav=t.closest('[data-nav]');if(nav){const i=draw.findIndex(h=>h.id===tvFocus);renderSheet(draw[(i+ +nav.dataset.nav+draw.length)%draw.length].id);return;}
   const hire=t.closest('[data-hire]');if(hire){const id=+hire.dataset.hire;if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderSheet(id);return;}
   const sl=t.closest('[data-slot]');if(sl){selected.delete(+sl.dataset.slot);view==='sheet'?renderSheet(tvFocus):renderTavern();return;}
-  const eqp=t.closest('[data-eqpick]');if(eqp){const h=party.find(x=>x.id===+eqp.dataset.eqhero),item=run.inventory[+eqp.dataset.eqpick];if(h&&item&&canEquip(h,item))equipItem(h,slotKeyFor(h,item),item);renderEquip();return;}
-  const equn=t.closest('[data-equnslot]');if(equn){const h=party.find(x=>x.id===+equn.dataset.equnhero);if(h)unequipItem(h,equn.dataset.equnslot);renderEquip();return;}
+  const eqp=t.closest('[data-eqpick]');if(eqp){const h=party.find(x=>x.id===+eqp.dataset.eqhero),item=run.inventory[+eqp.dataset.eqpick];if(h&&item&&canEquip(h,item))equipItem(h,slotKeyFor(h,item),item,run.inventory);renderEquip();return;}
+  const equn=t.closest('[data-equnslot]');if(equn){const h=party.find(x=>x.id===+equn.dataset.equnhero);if(h)unequipItem(h,equn.dataset.equnslot,run.inventory);renderEquip();return;}
+  const ros=t.closest('[data-roster]');if(ros){const id=+ros.dataset.roster;if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderTavern();return;}
+  const rec=t.closest('[data-recruit]');if(rec){recruitHero(+rec.dataset.recruit);renderRecruit();return;}
+  const sv=t.closest('[data-stashview]');if(sv){stashView=sv.dataset.stashview;stashSel=null;renderStash();return;}
+  const stb=t.closest('[data-stashtab]');if(stb){stashFilter=stb.dataset.stashtab;stashSel=null;renderStash();return;}
+  const sti=t.closest('[data-stashtile]');if(sti){stashSel=+sti.dataset.stashtile;renderStash();return;}
+  const steq=t.closest('[data-stashequip]');if(steq){const h=roster.find(x=>x.id===+steq.dataset.stashequip),item=stashSel!=null?stash[stashSel]:null;if(h&&item&&canEquip(h,item)){equipItem(h,slotKeyFor(h,item),item,stash);stashSel=null;saveGame();}renderStash();return;}
+  const stequn=t.closest('[data-steqnslot]');if(stequn){const h=roster.find(x=>x.id===+stequn.dataset.steqnhero);if(h){unequipItem(h,stequn.dataset.steqnslot,stash);saveGame();}renderStash();return;}
   const chip=t.closest('.chip');
   if(chip){selHero=party.find(h=>h.id===+chip.dataset.hid);hint=`${selHero.first} (${CLASSES[selHero.cls].nome}): ${COMO[selHero.cls].campo} Toque numa casa dourada.`;renderPlace();if(selHero.grp)pulse(selHero.grp.position,'#e9b949',0.8,0.5);return;}
   const spd=t.closest('[data-spd]');
@@ -1597,7 +1719,8 @@ PI_.addEventListener('click',e=>{
   if(act==='toVillage'){if(phase==='place'){party.forEach(h=>{disposeUnit(h);h.r=h.c=null;});party=[];zoneVisible(false);}goVillage();}
   if(act==='toMissions')renderMissions();
   if(act==='toTavern')renderTavern();
-  if(act==='reroll'&&rerolls>0){rerolls--;newDraw();renderTavern();}
+  if(act==='recruit')renderRecruit();
+  if(act==='reroll'&&rerolls>0){rerolls--;newDraw();renderRecruit();}
   if(act==='depart')departRun();
   if(act==='equip')renderEquip();
   if(act==='toPlace')renderPlace();
@@ -1953,7 +2076,7 @@ function resetHero(h,first){
 }
 function departRun(){
   newSeed();
-  run={...run,map:run.mission,phaseNo:1,results:[],party:draw.filter(h=>selected.has(h.id))};
+  run={...run,map:run.mission,phaseNo:1,results:[],party:roster.filter(h=>selected.has(h.id))};
   party.forEach(disposeUnit);party=run.party;
   startPhase();
 }
@@ -2000,9 +2123,13 @@ function finish(){
   const sub=rows.reduce((a,r)=>a+r[1],0);
   // XP: bônus só pra quem terminou a fase vivo
   const cxp=loadClassXP();
-  party.forEach(h=>{h.bonus=!!h.alive;if(h.bonus)h.xp+=50;h.xpRun+=h.xp;cxp[h.cls]=(cxp[h.cls]||0)+h.xp;});
+  party.forEach(h=>{h.bonus=!!h.alive;if(h.bonus)h.xp+=50;h.xpRun=(h.xpRun||0)+h.xp;h.xpTotal=(h.xpTotal||0)+h.xp;applyLevelUps(h);cxp[h.cls]=(cxp[h.cls]||0)+h.xp;});
+  const avgXp=party.length?Math.round(party.reduce((a,h)=>a+h.xp,0)/party.length):0;
+  roster.filter(h=>!party.includes(h)).forEach(h=>{h.xpTotal=(h.xpTotal||0)+Math.round(avgXp*BENCH_XP_SHARE);applyLevelUps(h);});
   saveClassXP(cxp);
   if(win)saveProg(run.map);
+  stash.push(...run.inventory);run.inventory=[];
+  saveGame();
   run.results.push({n:LV.mp.n,nome:LV.mp.nome,rows,sub,win,round:stats.round,moment:moment.t,xpRows:party.map(h=>({h,xp:h.xp,alive:h.alive,bonus:h.bonus}))});
   phase='result';
   const next=win&&mapOf(run.map+1)&&unlocked(run.map+1);
@@ -2060,7 +2187,7 @@ function finalResult(win,cash){
     <div class="box rank"><h3>Ranking</h3>
       <label class="namefield" for="nome">Seu nome<input id="nome" maxlength="16" value="${entry.nome.replace(/"/g,'')}"></label>
       <ol id="rk"></ol><p class="note">Ranking salvo neste aparelho. Os amigos são simulados até o online entrar.</p></div>
-    <p class="note">Os heróis não voltam: a próxima run começa com um grupo novo. Seed da run: #${SEED}</p></div>
+    <p class="note">O grupo continua com você: seu elenco e seu equipamento ficam salvos neste aparelho. Seed da run: #${SEED}</p></div>
     <div class="rbar"><button class="btn cta" id="newrun">Voltar pra vila</button></div>`;
   renderRank();
   const tc={v:0};gsap.to(tc,{v:total,duration:1.2,delay:0.4,ease:'power2.out',onUpdate:()=>{const el=$('#tot');if(el)el.textContent=fmt(Math.round(tc.v));}});
@@ -2098,6 +2225,7 @@ function loop(t){
 }
 
 /* ================= Início ================= */
+(()=>{const SAVED=loadGame();if(SAVED){uid=SAVED.nextUid;roster=SAVED.roster;stash=SAVED.stash;if(SAVED.mission)run.mission=SAVED.mission;}})();
 applyLevel(MAPS[0],MAPS[0].seed);buildBoard();spawnEnemies(rollEnemies(LV.mp));newDraw();setMode('village');renderVillage();try{if(localStorage.getItem('lendas_help')!=='2')setTimeout(showHelp,700);}catch(_){}resize();applyCam();cam.updateProjectionMatrix();requestAnimationFrame(loop);
 })();
 </script>
