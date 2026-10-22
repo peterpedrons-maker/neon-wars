@@ -810,38 +810,53 @@ function heroSprite(h){
   const C={guerreiro:['#7d8a96','#4a4f57','#3a2a1c'],ladino:['#3b4049','#2b2e33','#22201d'],mago:['#5a3d8a','#5a3d8a','#2a1d3a'],
     clerigo:['#e6e0cf','#bdb6a2','#6b4a2b'],arqueiro:['#4f7a3a','#6b4a2b','#3b2a1b'],bardo:['#b2385a','#3a2a5a','#2a1d14']}[h.cls];
   const [shirt,pants,boot]=C;
-  return pixelCanvas(20,24,P=>{
-    P(7,18,2,4,pants);P(11,18,2,4,pants);P(7,22,2,1,boot);P(11,22,2,1,boot);
-    P(6,11,8,7,shirt);P(4,11,2,6,shirt);P(14,11,2,6,shirt);P(4,17,2,1,skin);P(14,17,2,1,skin);
-    P(6,16,8,1,'#5a3a22');
-    P(8,10,4,1,skin);P(7,4,6,6,skin);P(8,7,1,1,'#1b130e');P(11,7,1,1,'#1b130e');
-    const hairDef=()=>{P(7,3,6,2,hair);P(6,4,1,3,hair);P(13,4,1,3,hair);};
+  /* Canvas em 40x48 (2x de 20x24) — a proporção 20:24 é usada noutro lugar
+     (`sz*20/24` na geometria do plano 3D), então só dobramos a resolução
+     sem mexer nessa relação. Guerreiro já ganhou o tratamento de sombra/luz
+     de verdade (aproveitando os pixels extras); as outras classes ainda
+     usam as coordenadas antigas só escaladas ×2 — mesmo visual de antes,
+     prontas pra receber o mesmo tratamento numa próxima passada. */
+  return pixelCanvas(40,48,P=>{
+    P(14,36,4,8,pants);P(22,36,4,8,pants);P(14,44,4,2,boot);P(22,44,4,2,boot);
+    P(12,22,16,14,shirt);P(8,22,4,12,shirt);P(28,22,4,12,shirt);P(8,34,4,2,skin);P(28,34,4,2,skin);
+    P(12,32,16,2,'#5a3a22');
+    P(16,20,8,2,skin);P(14,8,12,12,skin);P(16,14,2,2,'#1b130e');P(22,14,2,2,'#1b130e');
+    const hairDef=()=>{P(14,6,12,4,hair);P(12,8,2,6,hair);P(26,8,2,6,hair);};
     switch(h.cls){
       case 'guerreiro':
-        P(7,12,2,3,'#a9b6c2');P(6,2,8,4,'#8e9aa5');P(7,6,6,1,'#4a525a');P(9,1,2,1,'#c8463c');
-        if(L.beard)P(8,9,4,1,hair);
-        P(16,5,1,11,'#d7dde3');P(15,15,3,1,'#b38b3c');P(16,16,1,2,'#5a3a22');
-        P(1,11,4,6,'#8b3a2e');P(2,13,2,2,'#e2b04a');break;
+        // elmo — base + sombra embaixo + brilho em cima, pra dar volume de verdade
+        P(14,24,4,6,'#a9b6c2');
+        P(12,4,16,8,'#8e9aa5');P(13,5,14,2,'#c7ccd1');P(13,10,14,2,'#5f6870');
+        P(14,12,12,2,'#4a525a');P(14,12,12,1,'#363d43');
+        P(18,2,4,2,'#c8463c');P(19,2,2,1,'#e2726a');
+        if(L.beard)P(16,18,8,2,hair);
+        // espada — lâmina com fio claro de um lado e sombra do outro
+        P(32,10,2,22,'#d7dde3');P(33,10,1,22,'#9aa3ab');P(32,10,1,3,'#f5f8fb');
+        P(30,30,6,2,'#b38b3c');P(32,32,2,4,'#5a3a22');
+        // escudo — base + aro claro + emblema
+        P(2,22,8,12,'#8b3a2e');P(2,22,8,2,'#a8493b');P(2,32,8,2,'#6e2c22');
+        P(3,23,6,10,'#7a3227');P(4,26,4,4,'#e2b04a');P(5,27,2,2,'#f3d27a');
+        break;
       case 'ladino':
-        P(6,2,8,3,'#2f4a37');P(5,4,1,6,'#2f4a37');P(14,4,1,6,'#2f4a37');P(7,8,6,2,'#22252a');
-        P(16,13,1,4,'#d7dde3');P(16,17,1,1,'#5a3a22');P(3,13,1,4,'#d7dde3');P(3,17,1,1,'#5a3a22');
-        P(6,11,8,1,'#2f4a37');break;
+        P(12,4,16,6,'#2f4a37');P(10,8,2,12,'#2f4a37');P(28,8,2,12,'#2f4a37');P(14,16,12,4,'#22252a');
+        P(32,26,2,8,'#d7dde3');P(32,34,2,2,'#5a3a22');P(6,26,2,8,'#d7dde3');P(6,34,2,2,'#5a3a22');
+        P(12,22,16,2,'#2f4a37');break;
       case 'mago':
-        P(6,17,8,6,shirt);P(6,22,8,1,'#e9b949');P(8,11,4,6,'#7652ad');
-        P(9,0,2,1,'#5a3d8a');P(8,1,4,1,'#5a3d8a');P(7,2,6,2,'#5a3d8a');P(4,4,12,1,'#4a2f73');P(7,3,6,1,'#e9b949');
-        P(8,9,4,2,L.beard?'#e8e4da':skin);
-        P(2,6,1,16,'#6b4a2b');P(1,3,3,3,'#7fd3ff');break;
+        P(12,34,16,12,shirt);P(12,44,16,2,'#e9b949');P(16,22,8,12,'#7652ad');
+        P(18,0,4,2,'#5a3d8a');P(16,2,8,2,'#5a3d8a');P(14,4,12,4,'#5a3d8a');P(8,8,24,2,'#4a2f73');P(14,6,12,2,'#e9b949');
+        P(16,18,8,4,L.beard?'#e8e4da':skin);
+        P(4,12,2,32,'#6b4a2b');P(2,6,6,6,'#7fd3ff');break;
       case 'clerigo':
-        hairDef();P(8,11,4,7,'#d8a93a');P(9,12,2,4,'#fffaf0');P(8,13,4,1,'#fffaf0');
-        if(L.beard)P(8,9,4,1,hair);
-        P(16,9,1,8,'#6b4a2b');P(15,7,3,3,'#9aa3ab');break;
+        hairDef();P(16,22,8,14,'#d8a93a');P(18,24,4,8,'#fffaf0');P(16,26,8,2,'#fffaf0');
+        if(L.beard)P(16,18,8,2,hair);
+        P(32,18,2,16,'#6b4a2b');P(30,14,6,6,'#9aa3ab');break;
       case 'arqueiro':
-        hairDef();P(6,3,8,2,'#3d5f2c');P(13,1,1,3,'#c8463c');
-        P(16,6,1,2,'#8b5a2b');P(17,8,1,8,'#8b5a2b');P(16,16,1,2,'#8b5a2b');P(15,7,1,10,'#e8e2d0');
-        P(3,8,2,6,'#6b4a2b');P(3,7,1,1,'#e8e2d0');P(4,6,1,1,'#e8e2d0');break;
+        hairDef();P(12,6,16,4,'#3d5f2c');P(26,2,2,6,'#c8463c');
+        P(32,12,2,4,'#8b5a2b');P(34,16,2,16,'#8b5a2b');P(32,32,2,4,'#8b5a2b');P(30,14,2,20,'#e8e2d0');
+        P(6,16,4,12,'#6b4a2b');P(6,14,2,2,'#e8e2d0');P(8,12,2,2,'#e8e2d0');break;
       case 'bardo':
-        hairDef();P(6,13,8,1,'#e2b04a');P(5,3,10,2,'#5a2a6b');P(14,0,1,4,'#e9b949');
-        P(11,14,4,3,'#a0662f');P(14,10,1,4,'#5a3a22');P(12,15,1,1,'#2a1d14');break;
+        hairDef();P(12,26,16,2,'#e2b04a');P(10,6,20,4,'#5a2a6b');P(28,0,2,8,'#e9b949');
+        P(22,28,8,6,'#a0662f');P(28,20,2,8,'#5a3a22');P(24,30,2,2,'#2a1d14');break;
     }
   });
 }
