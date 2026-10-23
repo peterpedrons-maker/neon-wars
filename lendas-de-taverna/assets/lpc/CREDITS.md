@@ -28,6 +28,10 @@ Licenças: CC-BY-SA 3.0, GPL 3.0
 Autores: bluecarrot16, Napsio, JaidynReiman, Johannes Sjölund (wulax), Stephen Challener (Redshrike), Sander Frenken (castelonia), Benjamin K. Smith (BenCreating)
 Licenças: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
 
+**head/heads/human** (rosto dos heróis humanos e do Mago)
+Autores: bluecarrot16, Benjamin K. Smith (BenCreating), Stephen Challener (Redshrike)
+Licenças: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+
 **eyes/human** (olhos)
 Autores: equipe-base LPC (bluecarrot16, Johannes Sjölund (wulax) e colaboradores do projeto)
 Licenças: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
@@ -107,6 +111,10 @@ Licenças: OGA-BY 3.0+, GPL 3.0, CC-BY 4.0
 **weapon/ranged/bow/recurve** (arco do Arqueiro)
 Autores: Daniel Eddeland (daneeklu), gr3yh47, Johannes Sjölund (wulax), Pierre Vigier (pvigier)
 Licenças: CC-BY-SA 3.0
+
+**weapon/ranged/crossbow** (besta, variante do Arqueiro)
+Autores: bluecarrot16, drjamgo
+Licença: CC0 (não exige crédito, mas mantido aqui por transparência)
 
 **head/heads/orc** (cabeça do Ogro)
 Autores: bluecarrot16, Matthew Krohn (makrohn), Stephen Challener (Redshrike), Zi Ye
