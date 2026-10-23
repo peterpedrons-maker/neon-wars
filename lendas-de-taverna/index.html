@@ -916,18 +916,6 @@ function heroSprite(h){
     }
   });
 }
-function villagerSprite(type){
-  const skin=vpick(SKIN),hair=vpick(HAIR),shirt=vpick(['#8a5a3a','#5a7a9a','#9a6a8a','#6a8a5a','#b0894a','#7a4a4a']);
-  return pixelCanvas(20,24,P=>{
-    P(7,18,2,4,'#4a3a2a');P(11,18,2,4,'#4a3a2a');P(7,22,2,1,'#2a1d14');P(11,22,2,1,'#2a1d14');
-    P(6,11,8,7,shirt);P(4,11,2,6,shirt);P(14,11,2,6,shirt);P(4,17,2,1,skin);P(14,17,2,1,skin);
-    P(8,10,4,1,skin);P(7,4,6,6,skin);P(8,7,1,1,'#1b130e');P(11,7,1,1,'#1b130e');
-    if(type===0){P(7,3,6,2,hair);P(5,4,10,1,'#d9b25a');P(7,2,6,2,'#d9b25a');P(7,13,6,5,'#e8e2d0');}
-    else if(type===1){const s=vpick(['#b2385a','#3d6a8a','#6a8a3a']);P(6,3,8,2,s);P(5,4,1,5,s);P(14,4,1,5,s);P(5,15,10,8,s);P(6,13,8,2,'#e8e2d0');}
-    else if(type===2){P(7,3,6,2,hair);P(6,4,1,3,hair);P(13,4,1,3,hair);}
-    else{P(6,2,8,3,'#8e9aa5');P(7,12,6,4,'#8e9aa5');P(16,1,1,20,'#6b4a2b');P(15,0,3,2,'#d7dde3');}
-  });
-}
 function enemySprite(kind){
   if(kind==='ogro'){
     const s='#8f9e66';
@@ -1248,28 +1236,35 @@ village.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
 table.receiveShadow=true;
 
 /* ---------- Moradores ---------- */
-function standee(sprite,sz,parent){
+// mesmo sprite LPC dos heróis/inimigos (sem arma, "pov_m"/"pov_f"), pra
+// padronizar a vila com o resto do jogo — antes era um pixel-art à parte.
+function standeeLPC(cls,sz,parent){
   const grp=new THREE.Group();
   const sh=new THREE.Mesh(new THREE.CircleGeometry(0.3,16),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.3,depthWrite:false}));sh.rotation.x=-Math.PI/2;sh.position.y=0.012;grp.add(sh);
-  const mat=new THREE.MeshBasicMaterial({map:nearestTex(sprite),transparent:true,alphaTest:0.5,side:THREE.DoubleSide});
-  const plane=new THREE.Mesh(new THREE.PlaneGeometry(sz*20/24,sz),mat);
-  const pivot=new THREE.Group();pivot.rotation.y=AZ;plane.position.y=sz/2;pivot.add(plane);grp.add(pivot);
-  parent.add(grp);return {grp,pivot,plane,sz};
+  const lp=lpcHeroMesh(cls,sz);
+  const pivot=new THREE.Group();pivot.rotation.y=AZ;pivot.add(lp.mesh);grp.add(pivot);
+  parent.add(grp);return {grp,pivot,plane:lp.mesh,sz,lpc:lp.lpc};
 }
 const WP={W2:[-5.4,0.6],W1:[-3.2,0.6],P1:[-1.4,-0.6],P2:[1.4,-0.6],P3:[1.4,1.6],P4:[-1.4,1.6],E1:[3.4,0.6],E2:[5.4,0.6],N1:[0,-1.4],S1:[0,3.1],S2:[0,4.8]};
 const WE={W2:['W1'],W1:['W2','P1','P4'],P1:['W1','P2','P4','N1'],P2:['P1','P3','E1','N1'],P3:['P2','P4','E1','S1'],P4:['P1','P3','W1','S1'],E1:['P2','P3','E2'],E2:['E1'],N1:['P1','P2'],S1:['P3','P4','S2'],S2:['S1']};
-const villagers=VNAMES.map((nome,i)=>{
-  const type=nome.startsWith('Guarda')?3:nome==='Zezinho'?2:i%2;
-  const s=standee(villagerSprite(type),type===2?0.85:1.15,village);
-  const keys=Object.keys(WP);const at=keys[i%keys.length];s.grp.position.set(WP[at][0],0,WP[at][1]);
-  const v={...s,nome,at,id:100+i};walk(v,Math.random()*2);return v;
-});
+// LPC_RECIPES/lpcHeroMesh só existem mais abaixo no script (hoisting cobre
+// funções, mas não consts) — a criação de verdade fica pra initVillagers(),
+// chamada lá no fim depois que tudo já foi definido.
+let villagers=[];
+function initVillagers(){
+  villagers=VNAMES.map((nome,i)=>{
+    const cls=nome.startsWith('Guarda')?'guarda':(i%2===0?'pov_m':'pov_f');
+    const sz=nome==='Zezinho'?0.9:1.15;
+    const s=standeeLPC(cls,sz,village);
+    const keys=Object.keys(WP);const at=keys[i%keys.length];s.grp.position.set(WP[at][0],0,WP[at][1]);
+    const v={...s,nome,at,id:100+i};walk(v,Math.random()*2);return v;
+  });
+}
 function walk(v,delay){
   const next=vpick(WE[v.at]);const [x,z]=WP[next];const p=v.grp.position;
-  const d=Math.hypot(x-p.x,z-p.z),dur=d/0.7,hops=Math.max(2,Math.round(d/0.35));
-  const tl=gsap.timeline({delay,onComplete:()=>{v.at=next;walk(v,0.6+Math.random()*2.6);}});
-  tl.to(p,{x,z,duration:dur,ease:'none'},0);
-  tl.to(v.plane.position,{y:v.sz/2+0.06,duration:dur/hops/2,repeat:hops*2-1,yoyo:true,ease:'sine.inOut'},0);
+  const dur=Math.hypot(x-p.x,z-p.z)/0.7;
+  gsap.delayedCall(delay,()=>{if(v.lpc)lpcSetState(v,'walk');});
+  gsap.timeline({delay,onComplete:()=>{v.at=next;if(v.lpc)lpcSetState(v,'stand');walk(v,0.6+Math.random()*2.6);}}).to(p,{x,z,duration:dur,ease:'none'},0);
 }
 let bubble=null;
 function sayRumor(){
@@ -1330,7 +1325,7 @@ function renderDie(){
 }
 $('#bhud').addEventListener('click',e=>{
   const spd=e.target.closest('[data-spd]');
-  if(spd){speed=+spd.dataset.spd;gsap.globalTimeline.timeScale(speed);document.querySelectorAll('[data-spd]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.spd===speed));return;}
+  if(spd){speed=+spd.dataset.spd;applySpeed();document.querySelectorAll('[data-spd]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.spd===speed));return;}
   if(e.target.closest('[data-act="skip"]'))gsap.globalTimeline.timeScale(30);
   if(e.target.closest('[data-act="overview"]'))overviewCam();
 });
@@ -1415,7 +1410,7 @@ function makeHero(used,cls){
   h.attrs={};ATTR_NAMES.forEach(a=>h.attrs[a]=Math.max(1,ATTR_BASE[cls][a]+jit([0,0,0,1,-1])));
   recomputeAttrBonus(h);
   h.nome=`${h.first} ${h.sur}`;
-  h.sprite=heroSprite(h);h.portrait=h.sprite.toDataURL();
+  h.sprite=heroSprite(h);h.portrait=lpcPortrait(h.cls)||h.sprite.toDataURL();
   return h;
 }
 const enemyCache={};
@@ -1426,6 +1421,11 @@ function ensureEnemyCache(kind){
     const url=creaturePortrait(kind);
     if(url){enemyCache[kind]={sp:null,url};return enemyCache[kind];}
     return {sp:null,url:'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='};
+  }
+  if(LPC_RECIPES[kind]){
+    const url=lpcPortrait(kind);
+    if(url){enemyCache[kind]={sp:null,url};return enemyCache[kind];}
+    const sp=enemySprite(kind);return {sp,url:sp.toDataURL()}; // não cacheia: tenta o sprite de verdade de novo na próxima
   }
   const sp=enemySprite(kind);enemyCache[kind]={sp,url:sp.toDataURL()};return enemyCache[kind];
 }
@@ -1563,8 +1563,19 @@ const LPC_RECIPES={
     hurt:['body/bodies/muscular/hurt.png','head/heads/orc/male/hurt.png'],
     actionBody:['body/bodies/muscular/slash.png','head/heads/orc/male/slash.png'],
     actionBehind:'weapon/blunt/waraxe/attack_slash/behind/waraxe.png',actionFront:'weapon/blunt/waraxe/attack_slash/waraxe.png'},
+  // moradores da vila — mesmo sprite LPC dos heróis/inimigos, só sem arma,
+  // pra padronizar a vila com o resto do jogo (antes usavam um pixel-art
+  // à parte, feito por código). Não entram em combate: action/hurt aqui só
+  // existem porque lpcBuild monta os três sheets sempre.
+  pov_m:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/clothes/longsleeve/formal/male/walk.png','hair/page/adult/walk.png'],
+    slash:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/clothes/longsleeve/formal/male/slash.png','hair/page/adult/slash.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/clothes/longsleeve/formal/male/hurt.png','hair/page/adult/hurt.png']},
+  pov_f:{action:'spellcast',walk:['body/bodies/female/walk.png','head/heads/human/female/walk.png','torso/clothes/robe/female/walk/_brown.png'],
+    spellcast:['body/bodies/female/spellcast.png','head/heads/human/female/spellcast.png','torso/clothes/robe/female/spellcast/_brown.png'],
+    hurt:['body/bodies/female/hurt.png','head/heads/human/female/hurt.png','torso/clothes/robe/female/hurt/_brown.png']},
 };
 const LPC_ACTION_DIMS={slash:[384,256,6,4],shoot:[832,256,13,4],spellcast:[448,256,7,4]};
+const LPC_SHEETS={}; // versão síncrona do LPC_CACHE: só preenchida quando a Promise já resolveu, pra retrato poder ler sem await
 function lpcBuild(cls){
   if(LPC_CACHE[cls])return LPC_CACHE[cls];
   const rec=LPC_RECIPES[cls],action=rec.action;
@@ -1575,10 +1586,22 @@ function lpcBuild(cls){
     const out={walk:{tex:lpcTex(walkC),cols:9,rows:4},hurt:{tex:lpcTex(hurtC),cols:6,rows:1}};
     const dims=rec.oversize?[1152,768,6,4]:LPC_ACTION_DIMS[action];
     out[action]={tex:lpcTex(actionC),cols:dims[2],rows:dims[3]};
+    LPC_SHEETS[cls]=out;
     return out;
   });
   LPC_CACHE[cls]=p;
   return p;
+}
+// recorta o quadro parado (de frente) do walk sheet já montado — usado como
+// retrato de verdade nas telas de menu, no lugar do rascunho pixelado antigo.
+function lpcPortrait(cls){
+  const sheets=LPC_SHEETS[cls];if(!sheets)return null;
+  const img=sheets.walk.tex.image,cols=sheets.walk.cols,rows=sheets.walk.rows;
+  const cw=img.width/cols,ch=img.height/rows;
+  const c=document.createElement('canvas');c.width=cw;c.height=ch;
+  const g=c.getContext('2d');g.imageSmoothingEnabled=false;
+  g.drawImage(img,0,2*ch,cw,ch,0,0,cw,ch);
+  return c.toDataURL();
 }
 function lpcSetUV(geo,col,row,cols,rows){
   const u0=col/cols,u1=(col+1)/cols,v0=1-(row+1)/rows,v1=1-row/rows;
@@ -1594,7 +1617,7 @@ function tickLPC(u,s){
   if(L.since==null)L.since=s;
   const sheet=L.sheets[L.state]||L.sheets.walk;
   const row=sheet.rows>1?L.row:0;
-  const fps=L.state==='hurt'?10:L.state===L.action?12:8;
+  const fps=L.state==='hurt'?7:L.state===L.action?8:6;
   let f=Math.floor((s-L.since)*fps);
   let done=false;
   if(L.state==='stand')f=0;
@@ -1604,13 +1627,28 @@ function tickLPC(u,s){
   }
   if(L.mat.map!==sheet.tex){L.mat.map=sheet.tex;L.mat.needsUpdate=true;}
   lpcSetUV(L.geo,f,row,sheet.cols,sheet.rows);
+  // os quadros de golpe de arma "pesada" vêm num recorte 3x maior (o corpo
+  // fica centralizado nele pra sobrar espaço pra lâmina passar da silhueta)
+  // — sem compensar a escala do plano, o personagem encolhia na hora do
+  // golpe porque o corpo só ocupa 1/3 do quadro nesse estado.
+  if(L.mesh){
+    const ratio=(L.oversize&&L.state===L.action)?L.oversizeRatio:1;
+    if(L.curRatio!==ratio){
+      L.curRatio=ratio;
+      const scl=L.baseSz*ratio;
+      L.mesh.scale.set(scl,scl,1);
+      L.mesh.position.y=scl/2;
+    }
+  }
   if(done&&L.state!=='stand'&&L.state!=='walk'){lpcSetState(u,'stand');if(L.onDone){const cb=L.onDone;L.onDone=null;cb();}}
 }
 function lpcHeroMesh(cls,sz){
   const geo=new THREE.PlaneGeometry(1,1);
   const mat=new THREE.MeshBasicMaterial({transparent:true,alphaTest:0.5,side:THREE.DoubleSide});
   const mesh=new THREE.Mesh(geo,mat);mesh.position.y=sz/2;mesh.scale.set(sz,sz,1);
-  const lpc={state:'stand',since:null,row:2,sheets:null,geo,mat,action:LPC_RECIPES[cls].action};
+  const rec=LPC_RECIPES[cls];
+  const lpc={state:'stand',since:null,row:2,sheets:null,geo,mat,action:rec.action,
+    mesh,baseSz:sz,curRatio:1,oversize:!!rec.oversize,oversizeRatio:192/64};
   lpcBuild(cls).then(sheets=>{lpc.sheets=sheets;});
   return {mesh,mat,lpc};
 }
@@ -1649,10 +1687,10 @@ function spStripTick(state,s){
    separada, só um loop contínuo. Perfeito pros inimigos mais simples do
    jogo (primeira missão). */
 const CREATURE_DEFS={
-  slime:{file:'slime-32px_strip10.png',frames:10,fps:10},
-  bee:{file:'bee-32px_strip8.png',frames:8,fps:16},
-  spider:{file:'spider-32px_strip12.png',frames:12,fps:10},
-  beetle:{file:'beetle-32px_strip8.png',frames:8,fps:12},
+  slime:{file:'slime-32px_strip10.png',frames:10,fps:7},
+  bee:{file:'bee-32px_strip8.png',frames:8,fps:11},
+  spider:{file:'spider-32px_strip12.png',frames:12,fps:7},
+  beetle:{file:'beetle-32px_strip8.png',frames:8,fps:8},
 };
 const CREATURE_IMG={},CREATURE_STATE={};
 function creatureImg(kind){
@@ -1745,6 +1783,11 @@ function disposeUnit(u){
    entrar e puder somar bônus (benchXpBonus) em cima do básico. */
 const ROSTER_CAP=10,BENCH_XP_SHARE=0.2,GOLD_PER_SCORE=0.1,INJURY_MISSIONS=2,INJURY_RUSH_BASE=40,INJURY_RUSH_PER_LEVEL=15;
 let draw=[],selected=new Set(),rerolls=1,party=[],enemies=[],phase='village',selHero=null,active=null,stats=null,logLines=[],tombs=[],chest=null,speed=1,hint='';
+// o "1x" da barra de velocidade ficava rápido demais pra acompanhar — esse
+// fator encolhe o ritmo real de toda a timeline do gsap (movimento, golpes,
+// turnos) mantendo as proporções entre 1x/2x/4x.
+const SPEED_SCALE=0.62;
+function applySpeed(){gsap.globalTimeline.timeScale(speed*SPEED_SCALE);}
 let roster=[],stash=[],stashFilter='all',stashSel=null,stashView='items',gold=0;
 const units=()=>[...party.filter(h=>h.r!=null),...enemies];
 const heroesAlive=()=>party.filter(h=>h.alive&&h.r!=null);
@@ -1876,7 +1919,7 @@ function hydrateHero(s){
     attrBonus:s.attrBonus||{dmg:0,crit:0,hp:0,heal:0},healBonus:s.attrBonus?s.attrBonus.heal:0,
     r:null,c:null,equip:{}};
   EQ_SLOTS.forEach(sl=>{const id=s.equip&&s.equip[sl];h.equip[sl]=id?ITEMS.find(i=>i.id===id)||null:null;});
-  h.sprite=heroSprite(h);h.portrait=h.sprite.toDataURL();
+  h.sprite=heroSprite(h);h.portrait=lpcPortrait(h.cls)||h.sprite.toDataURL();
   return h;
 }
 function saveGame(){
@@ -2246,7 +2289,7 @@ PI_.addEventListener('click',e=>{
   const chip=t.closest('.chip');
   if(chip){selHero=party.find(h=>h.id===+chip.dataset.hid);hint=`${selHero.first} (${CLASSES[selHero.cls].nome}): ${COMO[selHero.cls].campo} Toque numa casa dourada.`;renderPlace();if(selHero.grp)pulse(selHero.grp.position,'#e9b949',0.8,0.5);return;}
   const spd=t.closest('[data-spd]');
-  if(spd){speed=+spd.dataset.spd;gsap.globalTimeline.timeScale(speed);document.querySelectorAll('[data-spd]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.spd===speed));return;}
+  if(spd){speed=+spd.dataset.spd;applySpeed();document.querySelectorAll('[data-spd]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.spd===speed));return;}
   const act=t.closest('[data-act]')?.dataset.act;
   if(act==='help')showHelp();
   if(act==='toVillage'){if(phase==='place'){party.forEach(h=>{disposeUnit(h);h.r=h.c=null;});party=[];zoneVisible(false);}goVillage();}
@@ -2603,7 +2646,7 @@ async function startBattle(){
   if(phase!=='place')return;
   zoneVisible(false);setMode('battle');logLines=[];
   stats={round:0,kills:[],crits:0,secret:false,hl:[],order:[]};
-  renderBattle();gsap.globalTimeline.timeScale(speed);
+  renderBattle();applySpeed();
   const all=[...heroesAlive(),...enemiesAlive()];
   all.forEach(u=>u.initRoll=ri(1,20)+u.ini+R());
   stats.order=all.sort((a,b)=>b.initRoll-a.initRoll);
@@ -2814,7 +2857,7 @@ function loop(t){
     if(u.lpc)(u.lpc.creature?tickCreature:tickLPC)(u,s);
     if(u.hpEl&&u.alive!==false){const f=(u.hp/u.maxhp*100)+'%';u.hpFill.style.width=f;u.hpGhost.style.width=f;u.hpEl.classList.toggle('low',u.side==='hero'&&u.hp/u.maxhp<=0.35);}
   }
-  villagers.forEach(v=>{v.pivot.scale.y=1+Math.sin(s*2.4+v.id)*0.02;});
+  villagers.forEach(v=>{v.pivot.scale.y=1+Math.sin(s*2.4+v.id)*0.02;if(v.lpc)tickLPC(v,s);});
   if(active&&active.grp){ring.position.set(active.grp.position.x,active.grp.position.y+0.09,active.grp.position.z);ring.material.opacity=0.65+Math.sin(s*6)*0.3;}
   if(tRing.visible)tRing.material.opacity=0.6+Math.sin(s*10)*0.35;
   if(callout&&callout.u.grp){const [x,y]=screenOf(callout.u,0.32);callout.el.style.left=Math.max(x,96)+'px';callout.el.style.top=Math.max(y,50)+'px';}
@@ -2824,6 +2867,13 @@ function loop(t){
 
 /* ================= Início ================= */
 (()=>{const SAVED=loadGame();if(SAVED){uid=SAVED.nextUid;roster=SAVED.roster;stash=SAVED.stash;gold=SAVED.gold||0;if(SAVED.mission)run.mission=SAVED.mission;}})();
+applySpeed();
+// pré-carrega os sheets LPC (heróis + inimigos humanoides) e as strips de
+// criatura assim que o jogo abre, pra já estarem prontos quando a pessoa
+// chegar na Taverna/Quadro — os retratos de menu usam esse mesmo sprite.
+Object.keys(LPC_RECIPES).forEach(lpcBuild);
+Object.keys(CREATURE_DEFS).forEach(creatureImg);
+initVillagers();
 applyLevel(MAPS[0],MAPS[0].seed);buildBoard();spawnEnemies(rollEnemies(LV.mp));newDraw();setMode('village');renderVillage();try{if(localStorage.getItem('lendas_help')!=='2')setTimeout(showHelp,700);else setTimeout(maybeShowInstall,1200);}catch(_){}resize();applyCam();cam.updateProjectionMatrix();requestAnimationFrame(loop);
 })();
 </script>
