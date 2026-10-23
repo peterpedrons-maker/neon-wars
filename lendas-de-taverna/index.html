@@ -1787,7 +1787,7 @@ let draw=[],selected=new Set(),rerolls=1,party=[],enemies=[],phase='village',sel
 // o "1x" da barra de velocidade ficava rápido demais pra acompanhar — esse
 // fator encolhe o ritmo real de toda a timeline do gsap (movimento, golpes,
 // turnos) mantendo as proporções entre 1x/2x/4x.
-const SPEED_SCALE=0.62;
+const SPEED_SCALE=0.45;
 function applySpeed(){gsap.globalTimeline.timeScale(speed*SPEED_SCALE);}
 let roster=[],stash=[],stashFilter='all',stashSel=null,stashView='items',gold=0;
 const units=()=>[...party.filter(h=>h.r!=null),...enemies];
@@ -2623,6 +2623,10 @@ async function checkSecret(u){
 }
 async function turn(u){
   active=u;renderOrder();followCam(u);
+  // a câmera leva um tempo pra chegar no personagem (followCam não é
+  // esperado) — sem essa pausa, a ação dele já começava com a câmera
+  // ainda andando, dando a sensação de tudo embolado/em cima do outro.
+  await wait(380);
   ring.visible=true;ring.scale.setScalar(u.big?1.25:1);
   pulse(u.grp.position,u.side==='hero'?'#e9b949':'#d4503f',0.9,0.45);
   let foes=foesOf(u);if(!foes.length)return;
@@ -2671,7 +2675,7 @@ async function startBattle(){
   await banner('Batalha!');
   for(let round=1;round<=24;round++){
     stats.round=round;const re=$('#round');if(re){re.textContent=round;gsap.fromTo(re,{scale:1.6,color:'#e9b949'},{scale:1,color:'#efe2c4',duration:0.4});}
-    for(const u of stats.order){if(!u.alive)continue;if(over())break;await turn(u);hideCallout();await wait(140);}
+    for(const u of stats.order){if(!u.alive)continue;if(over())break;await turn(u);hideCallout();await wait(420);}
     if(over())break;
   }
   active=null;ring.visible=false;hideCallout();
