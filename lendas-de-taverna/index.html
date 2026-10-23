@@ -1629,16 +1629,19 @@ function tickLPC(u,s){
   if(L.mat.map!==sheet.tex){L.mat.map=sheet.tex;L.mat.needsUpdate=true;}
   lpcSetUV(L.geo,f,row,sheet.cols,sheet.rows);
   // os quadros de golpe de arma "pesada" vêm num recorte 3x maior (o corpo
-  // fica centralizado nele pra sobrar espaço pra lâmina passar da silhueta)
-  // — sem compensar a escala do plano, o personagem encolhia na hora do
-  // golpe porque o corpo só ocupa 1/3 do quadro nesse estado.
+  // fica centralizado nele, com a mesma folga em cima e embaixo, pra sobrar
+  // espaço pra lâmina passar da silhueta) — sem compensar a escala do
+  // plano, o personagem encolhia na hora do golpe porque o corpo só ocupa
+  // 1/3 do quadro nesse estado. position.y NÃO muda com a escala: como a
+  // folga é simétrica (mesma folga em cima e embaixo do corpo), o centro
+  // vertical do corpo fica no mesmo lugar nos dois tamanhos de quadro — só
+  // a escala muda. Mudar position.y junto (como numa versão antiga desse
+  // código) fazia o personagem "subir" na tela durante o golpe.
   if(L.mesh){
     const ratio=(L.oversize&&L.state===L.action)?L.oversizeRatio:1;
     if(L.curRatio!==ratio){
       L.curRatio=ratio;
-      const scl=L.baseSz*ratio;
-      L.mesh.scale.set(scl,scl,1);
-      L.mesh.position.y=scl/2;
+      L.mesh.scale.set(L.baseSz*ratio,L.baseSz*ratio,1);
     }
   }
   if(done&&L.state!=='stand'&&L.state!=='walk'){lpcSetState(u,'stand');if(L.onDone){const cb=L.onDone;L.onDone=null;cb();}}
