@@ -1539,6 +1539,10 @@ const LPC_RECIPES={
   arqueiro:{action:'shoot',walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/armour/leather/male/walk.png','hair/page/adult/walk.png','weapon/ranged/bow/recurve/walk/background/medium.png','weapon/ranged/bow/recurve/walk/foreground.png','quiver/walk/quiver.png'],
     shoot:['body/bodies/male/shoot.png','head/heads/human/male/shoot.png','legs/pantaloons/male/shoot.png','torso/armour/leather/male/shoot.png','hair/page/adult/shoot.png','weapon/ranged/bow/recurve/universal/shoot/background.png','weapon/ranged/bow/recurve/universal/shoot/foreground.png','quiver/shoot/quiver.png'],
     hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/armour/leather/male/hurt.png','hair/page/adult/hurt.png','weapon/ranged/bow/recurve/universal/hurt/background.png','weapon/ranged/bow/recurve/universal/hurt/foreground.png']},
+  // variante B: besta — tiro mais lento e forte, combina com Patrulheiro
+  arqueiro_b:{action:'thrust',walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/armour/leather/male/walk.png','hair/page/adult/walk.png','weapon/ranged/crossbow/walk/background.png','weapon/ranged/crossbow/walk/foreground.png','quiver/walk/quiver.png'],
+    thrust:['body/bodies/male/thrust.png','head/heads/human/male/thrust.png','legs/pantaloons/male/thrust.png','torso/armour/leather/male/thrust.png','hair/page/adult/thrust.png','weapon/ranged/crossbow/thrust/background.png','weapon/ranged/crossbow/thrust/foreground.png','quiver/thrust/quiver.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/armour/leather/male/hurt.png','hair/page/adult/hurt.png','weapon/ranged/crossbow/hurt/background.png','weapon/ranged/crossbow/hurt/foreground.png']},
   mago:{action:'spellcast',walk:['body/bodies/female/walk.png','head/heads/human/female/walk.png','torso/clothes/robe/female/walk/_brown.png','hat/magic/wizard/base/adult/walk/navy.png','weapon/magic/gnarled/universal/walk/background.png','weapon/magic/gnarled/universal/walk/foreground.png'],
     spellcast:['body/bodies/female/spellcast.png','head/heads/human/female/spellcast.png','torso/clothes/robe/female/spellcast/_brown.png','hat/magic/wizard/base/adult/spellcast/navy.png'],
     hurt:['body/bodies/female/hurt.png','head/heads/human/female/hurt.png','torso/clothes/robe/female/hurt/_brown.png','weapon/magic/gnarled/universal/hurt/background.png','weapon/magic/gnarled/universal/hurt/foreground.png']},
@@ -1597,7 +1601,7 @@ const LPC_RECIPES={
     spellcast:['body/bodies/female/spellcast.png','head/heads/human/female/spellcast.png','torso/clothes/robe/female/spellcast/_brown.png'],
     hurt:['body/bodies/female/hurt.png','head/heads/human/female/hurt.png','torso/clothes/robe/female/hurt/_brown.png']},
 };
-const LPC_ACTION_DIMS={slash:[384,256,6,4],shoot:[832,256,13,4],spellcast:[448,256,7,4]};
+const LPC_ACTION_DIMS={slash:[384,256,6,4],shoot:[832,256,13,4],spellcast:[448,256,7,4],thrust:[512,256,8,4]};
 const LPC_SHEETS={}; // versão síncrona do LPC_CACHE: só preenchida quando a Promise já resolveu, pra retrato poder ler sem await
 function lpcBuild(cls){
   if(LPC_CACHE[cls])return LPC_CACHE[cls];
@@ -1920,17 +1924,22 @@ const CLASS_PRIMARY={guerreiro:['forca'],ladino:['destreza'],mago:['inteligencia
 /* ---------- Variação de arma por herói (puramente visual, por ora) --------
    Cada herói sorteia, na criação, qual "receita" LPC usa — a arma grande de
    duas mãos de sempre, ou uma variante de uma mão + escudo (às vezes uma
-   terceira opção, tipo o machadão do Guerreiro). Hoje é só visual: mesmos
-   status da classe, independente da variante sorteada. Mago e Arqueiro
-   ainda só têm 1 opção — as variantes deles (varinha, cajado de cristal,
-   besta) pedem uma pose "thrust" que ainda não foi baixada pro corpo/
-   cabeça/pernas, não é só a arma. */
+   terceira opção, tipo o machadão do Guerreiro), ou — pro Arqueiro — a
+   besta (pose "thrust" própria, mais lenta e forte, combina com o
+   Patrulheiro). Hoje é só visual: mesmos status da classe, independente
+   da variante sorteada. Mago continua só com a variante de sempre: o
+   robe (a roupa toda dela, não dá pra trocar por outra peça) só tem pose
+   de parado/andar/dano/conjurar — não tem a pose "thrust" que a varinha
+   e o cajado de cristal precisariam pro golpe, e nenhum dos dois tem uma
+   versão pra pose de conjurar. Pra resolver isso de verdade ela
+   precisaria de uma roupa diferente da robe, o que mudaria a cara dela
+   — ver conversa no DESIGN.md antes de tentar de novo. */
 const LOADOUTS={
   guerreiro:['guerreiro','guerreiro_b','guerreiro_c'],
   ladino:['ladino','ladino_b'],
   mago:['mago'],
   clerigo:['clerigo','clerigo_b'],
-  arqueiro:['arqueiro'],
+  arqueiro:['arqueiro','arqueiro_b'],
   bardo:['bardo','bardo_b'],
 };
 function recomputeAttrBonus(h){
