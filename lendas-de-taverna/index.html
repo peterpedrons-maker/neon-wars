@@ -274,6 +274,13 @@ details.box[open]>summary::after{content:"−"}
 .td b,.mrow b{font-family:var(--f-display);font-size:16px;display:block;font-weight:600}
 .td small,.mrow small{display:block;font-size:12px;color:var(--papel-2);line-height:1.3}
 .td em,.mrow em{font-style:normal;color:var(--ouro);font-size:22px}
+.td i.sp{background:var(--ouro);image-rendering:pixelated}
+.td.ok i.sp{background:var(--vida)}
+.td i.sp span{width:22px;height:22px;background-repeat:no-repeat;image-rendering:pixelated}
+.td i.sp-alert span{background-image:url('assets/spritepilot/ui/32px/alert-bubble-32px_strip9.png');background-size:288px 32px;animation:sp-alert-steps 0.6s steps(9) infinite}
+.td i.sp-check span{background-image:url('assets/spritepilot/ui/32px/checkmark-32px_strip10.png');background-size:320px 32px;animation:sp-check-steps 0.7s steps(10) 1}
+@keyframes sp-alert-steps{from{background-position-x:0}to{background-position-x:-288px}}
+@keyframes sp-check-steps{from{background-position-x:0}to{background-position-x:-320px}}
 .td:focus-visible,.mrow:focus-visible{outline:2px solid var(--mana);outline-offset:2px}
 .plab{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--nevoa);align-self:center;margin-right:2px}
 .world h3{margin:4px 0 6px;color:var(--ouro);font-size:15px}
@@ -634,6 +641,15 @@ const ENEMIES={
     resumo:'Fica parado vigiando. Só ataca quem chega perto ou quando um aliado apanha.'},
   ogro:{nome:'Ogro Chefe',ia:'rush',hp:32,atk:5,def:13,mov:2,alc:1,dmg:[1,10,3],ini:0,pts:400,big:true,
     resumo:'Lento e brutal. Vai atrás do herói mais exibido.'},
+  // bichos simples — primeiro contato do jogador, mais fracos que os goblins
+  slime:{nome:'Gosma Verde',ia:'rush',hp:6,atk:2,def:10,mov:2,alc:1,dmg:[1,4,0],ini:1,pts:60,
+    resumo:'Lento e fraco. Avança bem devagar até o herói mais perto.'},
+  bee:{nome:'Abelha Feroz',ia:'skirmish',hp:5,atk:3,def:11,mov:5,alc:1,dmg:[1,4,0],ini:6,pts:70,
+    resumo:'Rápida, pica e some. Pouquíssima vida.'},
+  spider:{nome:'Aranha Saltadora',ia:'flank',hp:7,atk:2,def:12,mov:4,alc:1,dmg:[1,4,1],ini:4,pts:80,
+    resumo:'Dá a volta pra pegar quem está desprotegido.'},
+  beetle:{nome:'Besouro Blindado',ia:'guard',hp:12,atk:2,def:14,mov:2,alc:1,dmg:[1,4,0],ini:0,pts:90,
+    resumo:'Casco duro, difícil de acertar, mas bate fraco.'},
 };
 const ENAMES=['Zug','Nhac','Brek','Fusk','Pito','Gruk','Mog','Rakh','Snik','Dorg','Vesk','Tuk','Urg','Bhag'];
 const FIRST=['Brian','Christopher','Bruno','Rafael','Diego','Marcos','Felipe','Henrique','Otávio','Caio','Davi','Enzo','Igor','Leandro','Nathan','Renato','Samuel','Thiago','Vitor','Yuri',
@@ -661,8 +677,8 @@ const VNAMES=['Dona Neca','Seu Tonho','Zezinho','Guarda Bento','Tia Lurdes','Man
 const WORLDS=[{id:'campina',nome:'Campina Verde'},{id:'deserto',nome:'Deserto das Cinzas'}];
 const MAPS=[
   {n:1,mundo:'campina',biome:'campina',nome:'Clareira de Brumavale',fixo:true,seed:1101,secret:true,total:[8,10],escala:1,
-    desc:'Campina aberta cortada por um rio. Só duas pontes. Os goblins acamparam do outro lado.',
-    pool:['goblin','gobarq','lobo','xama','guarda','ogro']},
+    desc:'Campina aberta cortada por um rio. Só duas pontes. Gosmas, aranhas e besouros infestaram a clareira.',
+    pool:['slime','bee','spider','beetle']},
   {n:2,mundo:'campina',biome:'floresta',nome:'Bosque dos Corvos',fixo:true,seed:2202,secret:true,total:[9,11],escala:1.15,
     desc:'Floresta fechada, poucas passagens. Boa pra emboscada, de ambos os lados.',
     pool:['goblin','gobarq','lobo','xama','guarda','ogro']},
@@ -760,7 +776,7 @@ function rollEnemies(mp){
   const types=mp.pool.filter(t=>t!=='ogro').sort(()=>R()-0.5);
   const nTypes=Math.min(types.length,ri(4,types.length));
   const chosen=types.slice(0,nTypes);
-  const ogro=mp.chefe||R()<0.6;
+  const ogro=mp.pool.includes('ogro')&&(mp.chefe||R()<0.6);
   const total=ri(mp.total[0],mp.total[1]);
   const cnt={};chosen.forEach(t=>cnt[t]=1);if(ogro)cnt.ogro=1;
   let left=total-Object.values(cnt).reduce((a,b)=>a+b,0);
@@ -1024,8 +1040,11 @@ const mats={
   bridge:M(ptex('#8a5a32',['#9a6a3a','#7a4e2a'],{draw:(g)=>{g.fillStyle='#5a3a22';for(let y=3;y<16;y+=4)g.fillRect(0,y,16,1);}})),
   crack:M(ptex('#7a7c76',['#686a64','#8e908a'],{draw:(g)=>{g.fillStyle='#2e2f2c';[[7,0],[7,1],[8,2],[8,3],[7,4],[6,5],[6,6],[7,7],[8,8],[9,9],[9,10],[8,11],[8,12],[7,13],[7,14],[8,15],[9,5],[10,4],[11,4]].forEach(([x,y])=>g.fillRect(x,y,1,1));}})),
 };
-const waterTex=ptex('#3a78ad',['#5a98cc','#2f6593','#8cc3ea'],{repeat:1});
-const waterMat=new THREE.MeshPhongMaterial({map:waterTex,transparent:true,opacity:0.9,shininess:90,specular:0x9fc9ea});
+// água de verdade (sprite animado) no lugar da textura procedural com
+// scroll — mesma técnica de fileira de quadros usada nas criaturas
+const waterStrip=spStripState(spStripImg('environment','water-32px_strip8.png'),8,8,true);
+const waterTex=waterStrip.tex;waterTex.wrapS=waterTex.wrapT=THREE.RepeatWrapping;
+const waterMat=new THREE.MeshPhongMaterial({map:waterTex,transparent:true,opacity:0.95,shininess:90,specular:0x9fc9ea});
 
 const woodTex=ptex('#3b2a1e',['#33241a','#45321f','#2e2017'],{size:64,n:500,draw:(g,S)=>{g.fillStyle='#22180f';for(let y=0;y<S;y+=8)g.fillRect(0,y,S,1);},repeat:10});
 const table=new THREE.Mesh(new THREE.PlaneGeometry(90,60),new THREE.MeshLambertMaterial({map:woodTex}));
@@ -1376,14 +1395,23 @@ function makeHero(used,cls){
   return h;
 }
 const enemyCache={};
-const EPRE={goblin:'Goblin',gobarq:'Arqueiro',lobo:'Lobo',xama:'Xamã',guarda:'Guarda',ogro:''};
+const EPRE={goblin:'Goblin',gobarq:'Arqueiro',lobo:'Lobo',xama:'Xamã',guarda:'Guarda',ogro:'',slime:'Gosma',bee:'Abelha',spider:'Aranha',beetle:'Besouro'};
+function ensureEnemyCache(kind){
+  if(enemyCache[kind])return enemyCache[kind];
+  if(CREATURE_DEFS[kind]){
+    const url=creaturePortrait(kind);
+    if(url){enemyCache[kind]={sp:null,url};return enemyCache[kind];}
+    return {sp:null,url:'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='};
+  }
+  const sp=enemySprite(kind);enemyCache[kind]={sp,url:sp.toDataURL()};return enemyCache[kind];
+}
 function makeEnemy(s){
   const b=ENEMIES[s.kind],sc=LV?LV.mp.escala:1;
-  if(!enemyCache[s.kind]){const sp=enemySprite(s.kind);enemyCache[s.kind]={sp,url:sp.toDataURL()};}
+  const ec=ensureEnemyCache(s.kind);
   const first=s.kind==='ogro'?s.first:`${EPRE[s.kind]} ${s.first}`;
   const hp=Math.round(b.hp*sc);
   return {id:uid++,side:'enemy',kind:s.kind,ia:b.ia,first,nome:b.nome,maxhp:hp,hp,atk:b.atk+(sc>1.1?1:0)+(sc>1.25?1:0),def:b.def+(sc>1.2?1:0),mov:b.mov,alc:b.alc,dmg:b.dmg,ini:b.ini,pts:b.pts,big:b.big,
-    r:s.r,c:s.c,alive:true,aggro:false,sprite:enemyCache[s.kind].sp,portrait:enemyCache[s.kind].url};
+    r:s.r,c:s.c,alive:true,aggro:false,sprite:ec.sp,portrait:ec.url};
 }
 /* Rig de herói: em vez de 1 plano só, recorta o mesmo canvas 40x48 do
    heroSprite em pedaços (pernas, tronco, cabeça, braço da arma) e monta
@@ -1562,6 +1590,75 @@ function lpcHeroMesh(cls,sz){
   lpcBuild(cls).then(sheets=>{lpc.sheets=sheets;});
   return {mesh,mat,lpc};
 }
+/* ================= SpritePilot: fileira de quadros genérica =================
+   1 PNG com N quadros numa fileira só (sem direção, sem pose separada) —
+   usado tanto pelas criaturas simples quanto por efeitos de ambiente
+   (água etc). `state` guarda a imagem fonte, a textura-canvas de saída
+   (1 quadro por vez) e o relógio da animação. */
+function spStripImg(category,file){
+  const im=new Image();im.src=`assets/spritepilot/${category}/32px/${file}`;
+  return im;
+}
+function spStripState(img,frames,fps,shared){
+  const t=new THREE.CanvasTexture(document.createElement('canvas'));
+  t.magFilter=t.minFilter=THREE.NearestFilter;t.generateMipmaps=false;
+  t.userData=t.userData||{};if(shared)t.userData.lpcShared=true;
+  return {img,frames,fps,tex:t,since:null,lastFrame:-1};
+}
+function spStripTick(state,s){
+  const im=state.img;if(!im.complete||!im.naturalWidth)return;
+  if(state.since==null)state.since=s;
+  const fw=im.naturalWidth/state.frames;
+  const f=Math.floor((s-state.since)*state.fps)%state.frames;
+  if(state.lastFrame===f)return;
+  state.lastFrame=f;
+  const c=state.tex.image;
+  if(c.width!==fw){c.width=fw;c.height=im.naturalHeight;}
+  const g=c.getContext('2d');g.imageSmoothingEnabled=false;
+  g.clearRect(0,0,fw,im.naturalHeight);
+  g.drawImage(im,f*fw,0,fw,im.naturalHeight,0,0,fw,im.naturalHeight);
+  state.tex.needsUpdate=true;
+}
+/* ================= Criaturas SpritePilot (bicho simples, 1 fileira, loop único) =================
+   Diferente do pacote LPC (corpo + várias camadas + 4 direções), aqui é
+   1 PNG só com todos os quadros numa fileira — sem pose de ataque/dano
+   separada, só um loop contínuo. Perfeito pros inimigos mais simples do
+   jogo (primeira missão). */
+const CREATURE_DEFS={
+  slime:{file:'slime-32px_strip10.png',frames:10,fps:10},
+  bee:{file:'bee-32px_strip8.png',frames:8,fps:16},
+  spider:{file:'spider-32px_strip12.png',frames:12,fps:10},
+  beetle:{file:'beetle-32px_strip8.png',frames:8,fps:12},
+};
+const CREATURE_IMG={},CREATURE_STATE={};
+function creatureImg(kind){
+  if(CREATURE_IMG[kind])return CREATURE_IMG[kind];
+  const im=spStripImg('creatures',CREATURE_DEFS[kind].file);
+  CREATURE_IMG[kind]=im;return im;
+}
+function creatureState(kind){
+  if(CREATURE_STATE[kind])return CREATURE_STATE[kind];
+  const def=CREATURE_DEFS[kind];
+  const st=spStripState(creatureImg(kind),def.frames,def.fps,true);
+  CREATURE_STATE[kind]=st;return st;
+}
+function creaturePortrait(kind){
+  const im=creatureImg(kind);
+  if(!im.complete||!im.naturalWidth)return null;
+  const c=document.createElement('canvas');c.width=32;c.height=32;
+  const g=c.getContext('2d');g.imageSmoothingEnabled=false;
+  g.drawImage(im,0,0,32,32,0,0,32,32);
+  return c.toDataURL();
+}
+function tickCreature(u,s){spStripTick(u.lpc.strip,s);}
+function lpcCreatureMesh(kind,sz){
+  const geo=new THREE.PlaneGeometry(1,1);
+  const strip=creatureState(kind);
+  const mat=new THREE.MeshBasicMaterial({map:strip.tex,transparent:true,alphaTest:0.5,side:THREE.DoubleSide});
+  const mesh=new THREE.Mesh(geo,mat);mesh.position.y=sz/2;mesh.scale.set(sz,sz,1);
+  const lpc={creature:true,strip,geo,mat};
+  return {mesh,mat,lpc};
+}
 function buildUnit(u){
   const grp=new THREE.Group();
   const base=new THREE.Mesh(new THREE.CylinderGeometry(0.34,0.38,0.08,22),new THREE.MeshLambertMaterial({color:u.side==='hero'?'#2b4466':'#6a221d'}));
@@ -1570,11 +1667,15 @@ function buildUnit(u){
   rim.rotation.x=-Math.PI/2;rim.position.y=0.081;if(u.big)rim.scale.set(1.25,1.25,1);grp.add(rim);
   const sh=new THREE.Mesh(new THREE.CircleGeometry(0.44,20),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.3,depthWrite:false}));
   sh.rotation.x=-Math.PI/2;sh.position.y=0.006;grp.add(sh);
-  const sz=u.big?1.8:1.3;
+  const lpcKey=u.side==='hero'?u.cls:u.kind;
+  const sz=CREATURE_DEFS[lpcKey]?(u.big?1.1:0.75):(u.big?1.8:1.3);
   const pivot=new THREE.Group();pivot.rotation.order='YXZ';pivot.rotation.y=AZ;pivot.position.y=0.08;
   let plane,mat,mats,legL,legR,armG,headG;
-  const lpcKey=u.side==='hero'?u.cls:u.kind;
-  if(LPC_RECIPES[lpcKey]){
+  if(CREATURE_DEFS[lpcKey]){
+    const lp=lpcCreatureMesh(lpcKey,sz);
+    plane=lp.mesh;mat=lp.mat;mats=[mat];pivot.add(plane);
+    u.lpc=lp.lpc;
+  }else if(LPC_RECIPES[lpcKey]){
     const lp=lpcHeroMesh(lpcKey,sz);
     plane=lp.mesh;mat=lp.mat;mats=[mat];pivot.add(plane);
     u.lpc=lp.lpc;
@@ -1772,8 +1873,7 @@ function loadGame(){
 const unlocked=n=>n<=loadProg()+1;
 const mapOf=n=>MAPS.find(m=>m.n===n);
 function ePortrait(kind){
-  if(!enemyCache[kind]){const sp=enemySprite(kind);enemyCache[kind]={sp,url:sp.toDataURL()};}
-  return enemyCache[kind].url;
+  return ensureEnemyCache(kind).url;
 }
 function setMode(m){app.className='m-'+m+(m==='tavern'||view==='missions'||view==='brief'||view==='sheet'?' big':'');phase=m;}
 function bestRun(){const r=loadRank();return r.length?Math.max(...r.map(x=>x.pts)):0;}
@@ -1793,7 +1893,7 @@ function renderVillage(){
   <div class="head"><div><div class="eyebrow">Vila de Brumavale</div><h2>O que fazer agora?</h2></div>
     <div class="btns"><span class="tag">💰 ${fmt(gold)} ouro</span>${best?`<span class="tag">Melhor run: ${fmt(best)}</span>`:''}<button class="btn ghost sm" data-act="help">Como jogar</button></div></div>
   <div class="todo">
-    <button class="td ${m?'ok':''}" data-bld="board"><i>${m?'✓':'1'}</i><span><b>Quadro de Missões</b><small>${m?`Mapa ${m.n}: ${m.nome}`:'Escolha onde lutar'}</small></span><em>›</em></button>
+    <button class="td ${m?'ok':''}" data-bld="board"><i class="sp ${m?'sp-check':'sp-alert'}"><span></span></i><span><b>Quadro de Missões</b><small>${m?`Mapa ${m.n}: ${m.nome}`:'Escolha onde lutar'}</small></span><em>›</em></button>
     <button class="td ${np>=5?'ok':''}" data-bld="tavern"><i>${np>=5?'✓':'2'}</i><span><b>Taverna</b><small>${np>=5?`${np} heróis no grupo`:'Monte o grupo (5 heróis)'}</small></span><em>›</em></button>
   </div>
   <p class="hint" id="hint">${hint||(injuredN?`${injuredN} ${injuredN>1?'heróis estão':'herói está'} se recuperando no Templo da Aurora.`:'Toque nos prédios da vila ou nos botões acima. Cada prédio abre o seu menu.')}</p>
@@ -2626,13 +2726,14 @@ function newRun(){
 function loop(t){
   requestAnimationFrame(loop);const s=t/1000;
   applyCam();
-  waterTex.offset.x=Math.sin(s*0.6)*0.04;waterTex.offset.y=s*0.03;
+  spStripTick(waterStrip,s);
+  waterTex.offset.x=Math.sin(s*0.6)*0.025;waterTex.offset.y=s*0.015;
   waterTiles.forEach(wt=>{wt.position.y=0.08+Math.sin(s*1.4+(wt.userData.r+wt.userData.c)*0.6)*0.015;});
   trees.forEach(tr=>{tr.userData.foliage.rotation.z=Math.sin(s*0.8+tr.userData.sway)*0.05;tr.userData.foliage.rotation.x=Math.sin(s*0.6+tr.userData.sway*1.3)*0.025;});
   for(const u of units()){
     if(!u.grp)continue;
     if(u.alive!==false)u.pivot.scale.y=1+Math.sin(s*2.4+u.id*1.7)*0.025;
-    if(u.lpc)tickLPC(u,s);
+    if(u.lpc)(u.lpc.creature?tickCreature:tickLPC)(u,s);
     if(u.hpEl&&u.alive!==false){const f=(u.hp/u.maxhp*100)+'%';u.hpFill.style.width=f;u.hpGhost.style.width=f;u.hpEl.classList.toggle('low',u.side==='hero'&&u.hp/u.maxhp<=0.35);}
   }
   villagers.forEach(v=>{v.pivot.scale.y=1+Math.sin(s*2.4+v.id)*0.02;});
