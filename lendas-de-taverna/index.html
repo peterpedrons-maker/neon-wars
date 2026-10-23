@@ -1411,7 +1411,8 @@ function makeHero(used,cls){
   h.attrs={};ATTR_NAMES.forEach(a=>h.attrs[a]=Math.max(1,ATTR_BASE[cls][a]+jit([0,0,0,1,-1])));
   recomputeAttrBonus(h);
   h.nome=`${h.first} ${h.sur}`;
-  h.sprite=heroSprite(h);h.portrait=lpcPortrait(h.cls)||h.sprite.toDataURL();
+  h.loadout=pick(LOADOUTS[cls]);
+  h.sprite=heroSprite(h);h.portrait=lpcPortrait(h.loadout)||h.sprite.toDataURL();
   return h;
 }
 const enemyCache={};
@@ -1531,6 +1532,10 @@ const LPC_RECIPES={
   ladino:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/armour/leather/male/walk.png','weapon/sword/dagger/walk/dagger.png','hat/cloth/hood/adult/walk.png'],
     slash:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/armour/leather/male/slash.png','weapon/sword/dagger/slash/dagger.png','hat/cloth/hood/adult/slash.png'],
     hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/armour/leather/male/hurt.png','weapon/sword/dagger/hurt/dagger.png','hat/cloth/hood/adult/hurt.png']},
+  // variante B: adaga + broquel — mais proteção pra armar armadilha com calma
+  ladino_b:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/armour/leather/male/walk.png','weapon/sword/dagger/walk/dagger.png','hat/cloth/hood/adult/walk.png','shield/round/walk/silver.png'],
+    slash:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/armour/leather/male/slash.png','weapon/sword/dagger/slash/dagger.png','hat/cloth/hood/adult/slash.png','shield/round/slash/silver.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/armour/leather/male/hurt.png','weapon/sword/dagger/hurt/dagger.png','hat/cloth/hood/adult/hurt.png']},
   arqueiro:{action:'shoot',walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/armour/leather/male/walk.png','hair/page/adult/walk.png','weapon/ranged/bow/recurve/walk/background/medium.png','weapon/ranged/bow/recurve/walk/foreground.png','quiver/walk/quiver.png'],
     shoot:['body/bodies/male/shoot.png','head/heads/human/male/shoot.png','legs/pantaloons/male/shoot.png','torso/armour/leather/male/shoot.png','hair/page/adult/shoot.png','weapon/ranged/bow/recurve/universal/shoot/background.png','weapon/ranged/bow/recurve/universal/shoot/foreground.png','quiver/shoot/quiver.png'],
     hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/armour/leather/male/hurt.png','hair/page/adult/hurt.png','weapon/ranged/bow/recurve/universal/hurt/background.png','weapon/ranged/bow/recurve/universal/hurt/foreground.png']},
@@ -1541,14 +1546,31 @@ const LPC_RECIPES={
     hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/armour/plate/male/hurt.png','hair/page/adult/hurt.png','weapon/sword/longsword/hurt/longsword.png'],
     actionBody:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/armour/plate/male/slash.png','hair/page/adult/slash.png','shield/round/slash/silver.png'],
     actionBehind:'weapon/sword/longsword/attack_slash/behind/longsword.png',actionFront:'weapon/sword/longsword/attack_slash/longsword.png'},
+  // variante B: adaga + escudo (1 mão) — mesmo papel, visual mais leve/defensivo
+  guerreiro_b:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/armour/plate/male/walk.png','hair/page/adult/walk.png','weapon/sword/dagger/walk/dagger.png','shield/round/walk/silver.png'],
+    slash:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/armour/plate/male/slash.png','hair/page/adult/slash.png','weapon/sword/dagger/slash/dagger.png','shield/round/slash/silver.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/armour/plate/male/hurt.png','hair/page/adult/hurt.png','weapon/sword/dagger/hurt/dagger.png']},
+  // variante C: machadão (2 mãos) — mesmos arquivos já usados pelo Ogro
+  guerreiro_c:{action:'slash',oversize:true,walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/armour/plate/male/walk.png','hair/page/adult/walk.png','weapon/blunt/waraxe/walk/waraxe.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/armour/plate/male/hurt.png','hair/page/adult/hurt.png','weapon/blunt/waraxe/hurt/waraxe.png'],
+    actionBody:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/armour/plate/male/slash.png','hair/page/adult/slash.png'],
+    actionBehind:'weapon/blunt/waraxe/attack_slash/behind/waraxe.png',actionFront:'weapon/blunt/waraxe/attack_slash/waraxe.png'},
   clerigo:{action:'slash',oversize:true,walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/chainmail/male/walk.png','weapon/blunt/mace/walk/mace.png'],
     hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/chainmail/male/hurt.png','weapon/blunt/mace/hurt/mace.png'],
     actionBody:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/chainmail/male/slash.png'],
     actionBehind:'weapon/blunt/mace/attack_slash/behind/mace.png',actionFront:'weapon/blunt/mace/attack_slash/mace.png'},
+  // variante B: adaga + escudo — cura protegida, em vez de maça ofensiva
+  clerigo_b:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/chainmail/male/walk.png','weapon/sword/dagger/walk/dagger.png','shield/round/walk/silver.png'],
+    slash:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/chainmail/male/slash.png','weapon/sword/dagger/slash/dagger.png','shield/round/slash/silver.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/chainmail/male/hurt.png','weapon/sword/dagger/hurt/dagger.png']},
   bardo:{action:'slash',oversize:true,walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/clothes/longsleeve/formal/male/walk.png','hat/cloth/leather_cap/feather/adult/walk.png','weapon/sword/rapier/walk/rapier.png'],
     hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/clothes/longsleeve/formal/male/hurt.png','hat/cloth/leather_cap/feather/adult/hurt.png','weapon/sword/rapier/hurt/rapier.png'],
     actionBody:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/clothes/longsleeve/formal/male/slash.png','hat/cloth/leather_cap/feather/adult/slash.png'],
     actionBehind:'weapon/sword/rapier/attack_slash/behind/rapier.png',actionFront:'weapon/sword/rapier/attack_slash/rapier.png'},
+  // variante B: adaga + escudo — fica perto do grupo apoiando, em vez do florete
+  bardo_b:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/clothes/longsleeve/formal/male/walk.png','hat/cloth/leather_cap/feather/adult/walk.png','weapon/sword/dagger/walk/dagger.png','shield/round/walk/silver.png'],
+    slash:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/clothes/longsleeve/formal/male/slash.png','hat/cloth/leather_cap/feather/adult/slash.png','weapon/sword/dagger/slash/dagger.png','shield/round/slash/silver.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/clothes/longsleeve/formal/male/hurt.png','hat/cloth/leather_cap/feather/adult/hurt.png','weapon/sword/dagger/hurt/dagger.png']},
   // inimigos — cabeça de orc/goblin trocada no mesmo corpo humano, igual
   // reskin de "cabeça" que o pacote já foi feito pra suportar
   goblin:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/goblin/adult/walk.png','legs/pantaloons/male/walk.png','weapon/sword/dagger/walk/dagger.png'],
@@ -1733,7 +1755,7 @@ function buildUnit(u){
   rim.rotation.x=-Math.PI/2;rim.position.y=0.081;if(u.big)rim.scale.set(1.25,1.25,1);grp.add(rim);
   const sh=new THREE.Mesh(new THREE.CircleGeometry(0.44,20),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.3,depthWrite:false}));
   sh.rotation.x=-Math.PI/2;sh.position.y=0.006;grp.add(sh);
-  const lpcKey=u.side==='hero'?u.cls:u.kind;
+  const lpcKey=u.side==='hero'?(u.loadout||u.cls):u.kind;
   const sz=CREATURE_DEFS[lpcKey]?(u.big?1.1:0.75):(u.big?1.8:1.3);
   const pivot=new THREE.Group();pivot.rotation.order='YXZ';pivot.rotation.y=AZ;pivot.position.y=0.08;
   let plane,mat,mats,legL,legR,armG,headG;
@@ -1895,6 +1917,22 @@ const ATTR_BASE={
 };
 const CLASS_PRIMARY={guerreiro:['forca'],ladino:['destreza'],mago:['inteligencia'],
   clerigo:['fe'],arqueiro:['destreza'],bardo:['inteligencia','destreza']};
+/* ---------- Variação de arma por herói (puramente visual, por ora) --------
+   Cada herói sorteia, na criação, qual "receita" LPC usa — a arma grande de
+   duas mãos de sempre, ou uma variante de uma mão + escudo (às vezes uma
+   terceira opção, tipo o machadão do Guerreiro). Hoje é só visual: mesmos
+   status da classe, independente da variante sorteada. Mago e Arqueiro
+   ainda só têm 1 opção — as variantes deles (varinha, cajado de cristal,
+   besta) pedem uma pose "thrust" que ainda não foi baixada pro corpo/
+   cabeça/pernas, não é só a arma. */
+const LOADOUTS={
+  guerreiro:['guerreiro','guerreiro_b','guerreiro_c'],
+  ladino:['ladino','ladino_b'],
+  mago:['mago'],
+  clerigo:['clerigo','clerigo_b'],
+  arqueiro:['arqueiro'],
+  bardo:['bardo','bardo_b'],
+};
 function recomputeAttrBonus(h){
   const a=h.attrs;
   const dmg=Math.floor((a.forca+a.inteligencia)/3);
@@ -1925,7 +1963,7 @@ function serializeHero(h){
     critBonus:h.critBonus||0,look:h.look,arma:h.arma,armadura:h.armadura,
     xpTotal:h.xpTotal||0,xpRun:h.xpRun||0,level:h.level||1,
     injured:!!h.injured,injuredMissionsLeft:h.injuredMissionsLeft||0,benchXpBonus:h.benchXpBonus||0,
-    attrs:h.attrs,attrBonus:h.attrBonus,equip};
+    attrs:h.attrs,attrBonus:h.attrBonus,loadout:h.loadout,equip};
 }
 function hydrateHero(s){
   const trait=TRAITS.find(x=>x.id===s.traitId)||TRAITS[0];
@@ -1936,9 +1974,10 @@ function hydrateHero(s){
     injured:!!s.injured,injuredMissionsLeft:s.injuredMissionsLeft||0,benchXpBonus:s.benchXpBonus||0,
     attrs:s.attrs?{...s.attrs}:{...ATTR_BASE[s.cls]},
     attrBonus:s.attrBonus||{dmg:0,crit:0,hp:0,heal:0},healBonus:s.attrBonus?s.attrBonus.heal:0,
+    loadout:(s.loadout&&LPC_RECIPES[s.loadout])?s.loadout:s.cls,
     r:null,c:null,equip:{}};
   EQ_SLOTS.forEach(sl=>{const id=s.equip&&s.equip[sl];h.equip[sl]=id?ITEMS.find(i=>i.id===id)||null:null;});
-  h.sprite=heroSprite(h);h.portrait=lpcPortrait(h.cls)||h.sprite.toDataURL();
+  h.sprite=heroSprite(h);h.portrait=lpcPortrait(h.loadout)||h.sprite.toDataURL();
   return h;
 }
 function saveGame(){
