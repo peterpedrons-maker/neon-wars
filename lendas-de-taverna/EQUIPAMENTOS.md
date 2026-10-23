@@ -164,9 +164,10 @@ conteúdo depois que o sistema base estiver implementado.
 
 1. Classes/subclasses no código (hoje só as 6 originais existem, sem
    Paladino/Monge, sem nenhuma subclasse).
-2. Os 5 atributos primários como campo do herói + fórmula que os converte em
-   atk/def/dano/PV/crítico.
-3. DEF mágica como stat separado + marcação de ataque físico/mágico.
+2. ~~Os 5 atributos primários como campo do herói + fórmula que os converte
+   em dano/PV/crítico~~ — feito, ver `DESIGN.md`.
+3. ~~DEF mágica como stat separado + marcação de ataque físico/mágico~~ —
+   feito, ver `DESIGN.md`. Ainda não rola em item (depende do item 4 abaixo).
 4. Motor de rolagem de item (molde + tier + raridade → instância com valores
    sorteados) substituindo o catálogo fixo atual.
 5. Serialização de save por instância de item (cada item agora é único, não

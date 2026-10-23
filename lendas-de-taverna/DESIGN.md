@@ -80,11 +80,14 @@ forte, você segue em frente).
   1-2 itens Lendários próprios — motivo concreto pra farmar uma dungeon
   específica, não a outra. Lista de dungeons ainda não escrita.
 
-### Atributos primários (decidido, não implementado em código)
+### Atributos primários (feito — `ATTR_NAMES`/`ATTR_BASE`/`recomputeAttrBonus`)
 5 atributos — **Força, Destreza, Inteligência, Vitalidade, Fé** — alimentam
 dano/PV/crítico por fórmula (nunca ATQ/DEF brutos diretamente, ver disciplina
-de combate abaixo). Mapeamento por classe base, com subclasse podendo
-divergir (segundo atributo ou troca total):
+de combate abaixo). Implementado com valor base por classe (`ATTR_BASE`), o
+atributo primário crescendo a cada level up (`CLASS_PRIMARY`/`applyLevelUps`)
+e salvo/carregado no save. Mapeamento por classe base abaixo — a coluna de
+subclasse ainda é só decisão de design, entra quando subclasses existirem no
+código (passo 8 do roadmap):
 
 | Classe | Atributo(s) base | Onde a subclasse diverge |
 |---|---|---|
@@ -124,12 +127,19 @@ Opções descartadas conscientemente nessa conversa:
   exatamente no cenário que motivou a pergunta (dungeon difícil de endgame),
   não melhor. Mantido o d20.
 
-### Stats secundários novos (decidido, não implementado)
+### Stats secundários novos
 - **Dano Crítico** — multiplicador de dano num acerto crítico (hoje crítico
   só dobra os dados, sempre ×2; isso dá um dial adicional de item).
-- **Resistência Mágica** — DEF separada da física, só entra contra ataques
-  marcados como mágicos (Mago, magias do Clérigo/Paladino). Hoje toda DEF é
-  unificada; isso exige marcar cada ataque como físico ou mágico.
+  **Decidido, não implementado.**
+- ~~**Resistência Mágica**~~ — **feito.** `defMag` existe como stat separado
+  do DEF físico (`baseDefMag(def)`, hoje um placeholder `def × 0.7` derivado
+  do DEF *base* da classe/ficha — armadura física não entra nessa conta, só
+  entrará quando o motor de item v2 permitir rolar Resistência Mágica em
+  equipamento, passo 11 do roadmap). Cada ataque é marcado físico ou mágico
+  via `CLASSES[cls].magico` / `ENEMIES[kind].magico` (hoje só Mago e o Xamã
+  Goblin); `attack()` usa `defMag` em vez de `def` contra um atacante mágico,
+  e a rolagem mostra "RES" em vez de "DEF". Paladino e a magia ofensiva do
+  Clérigo (quando existirem) só precisam da mesma flag `magico`.
 
 ### Habilidades: cooldown por turno, não mana (decidido, não implementado)
 Quando o sistema de gatilhos/habilidades existir, o recurso que limita uso
@@ -250,10 +260,12 @@ da ideia original sem precisar do modo manual completo.
    atributos, disciplina de combate)~~ — feito, este arquivo +
    `EQUIPAMENTOS.md`. **Nada disso está implementado em código ainda** — o
    jogo publicado roda a v1 (catálogo fixo de 80 itens).
-6. Implementar os 5 atributos primários como campo do herói + fórmula que
-   os converte em atk/def/dano/PV/crítico. Pré-requisito de quase tudo
-   abaixo.
-7. Implementar DEF mágica + marcação físico/mágico por ataque.
+6. ~~Implementar os 5 atributos primários como campo do herói + fórmula que
+   os converte em dano/PV/crítico~~ — feito (`ATTR_NAMES`/`ATTR_BASE`/
+   `recomputeAttrBonus`/`applyLevelUps`). Pré-requisito de quase tudo abaixo.
+7. ~~Implementar DEF mágica + marcação físico/mágico por ataque~~ — feito
+   (`defMag`/`baseDefMag`/`isMagicAttacker`, hoje só Mago e Xamã Goblin
+   marcados `magico:true`).
 8. Implementar as 8 classes base + 16 subclasses no código (sprites, IA,
    afinidade de equipamento) — hoje só as 6 classes originais existem, sem
    Paladino/Monge, sem nenhuma subclasse.

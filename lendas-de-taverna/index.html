@@ -463,7 +463,7 @@ const CLASSES={
     dica:'Coloque nas pontas, perto do morro.',
     armas:[['Adagas gêmeas',0,0],['Rapieira',1,-1],['Punhal envenenado',0,1]],
     armad:[['Colete de couro',0,0],['Capa sombria',-1,2],['Gibão leve',1,-2]]},
-  mago:{nome:'Mago',papel:'Dano à distância',twoHanded:true,hp:14,atk:5,def:11,mov:3,alc:4,dmg:[2,6,1],ini:2,per:1,
+  mago:{nome:'Mago',papel:'Dano à distância',twoHanded:true,hp:14,atk:5,def:11,mov:3,alc:4,dmg:[2,6,1],ini:2,per:1,magico:true,
     resumo:'Raio arcano de longe.',
     como:['Atira em quem estiver ao alcance de 4 casas, escolhendo o mais ferido.','Prefere ficar longe da briga. É frágil: proteja-o.'],
     dica:'Coloque atrás, com um guerreiro na frente.',
@@ -659,7 +659,7 @@ const ENEMIES={
     resumo:'Atira de longe e evita o corpo a corpo.'},
   lobo:{nome:'Lobo Cinzento',ia:'flank',hp:10,atk:4,def:12,mov:5,alc:1,dmg:[1,6,1],ini:5,pts:130,
     resumo:'Muito rápido. Dá a volta e caça os heróis frágeis (mago, arqueiro, clérigo, bardo).'},
-  xama:{nome:'Xamã Goblin',ia:'healer',hp:10,atk:3,def:11,mov:3,alc:3,dmg:[1,4,0],ini:2,pts:150,
+  xama:{nome:'Xamã Goblin',ia:'healer',hp:10,atk:3,def:11,mov:3,alc:3,dmg:[1,4,0],ini:2,pts:150,magico:true,
     resumo:'Cura os aliados feridos. Derrube primeiro.'},
   guarda:{nome:'Guarda Orc',ia:'guard',hp:20,atk:4,def:14,mov:3,alc:1,dmg:[1,8,2],ini:0,pts:220,
     resumo:'Fica parado vigiando. Só ataca quem chega perto ou quando um aliado apanha.'},
@@ -1403,6 +1403,7 @@ function makeHero(used,cls){
     maxhp:Math.max(8,b.hp+ri(-2,2)+arm[2]+(trait.id==='veterano'?8:0)),
     atk:b.atk+jit([0,0,0,1,-1])+arma[1]+(trait.id==='fanfarrao'?2:0),
     def:b.def+jit([0,0,0,1,-1])+arm[1]+(trait.id==='covarde'?3:0)-(trait.id==='bruto'?2:0),
+    defMag:baseDefMag(b.def),
     mov:b.mov,alc:b.alc,dmg:[b.dmg[0],b.dmg[1],b.dmg[2]+arma[2]],ini:b.ini+jit([0,0,1,-1]),per:b.per,
     look:{hair:pick(HAIR),skin:pick(SKIN),beard:R()<0.4},r:null,c:null,
     equip:{weapon:null,offhand:null,head:null,body:null,hands:null,feet:null,acc1:null,acc2:null}};
@@ -1434,7 +1435,7 @@ function makeEnemy(s){
   const ec=ensureEnemyCache(s.kind);
   const first=s.kind==='ogro'?s.first:`${EPRE[s.kind]} ${s.first}`;
   const hp=Math.round(b.hp*sc);
-  return {id:uid++,side:'enemy',kind:s.kind,ia:b.ia,first,nome:b.nome,maxhp:hp,hp,atk:b.atk+(sc>1.1?1:0)+(sc>1.25?1:0),def:b.def+(sc>1.2?1:0),mov:b.mov,alc:b.alc,dmg:b.dmg,ini:b.ini,pts:b.pts,big:b.big,
+  return {id:uid++,side:'enemy',kind:s.kind,ia:b.ia,first,nome:b.nome,maxhp:hp,hp,atk:b.atk+(sc>1.1?1:0)+(sc>1.25?1:0),def:b.def+(sc>1.2?1:0),defMag:baseDefMag(b.def)+(sc>1.2?1:0),mov:b.mov,alc:b.alc,dmg:b.dmg,ini:b.ini,pts:b.pts,big:b.big,
     r:s.r,c:s.c,alive:true,aggro:false,sprite:ec.sp,portrait:ec.url};
 }
 /* Rig de herói: em vez de 1 plano só, recorta o mesmo canvas 40x48 do
@@ -1865,6 +1866,21 @@ function levelForXp(total){
    são placeholder, a recalibrar com playtest — mesmo espírito do resto do
    sistema de progressão. Paladino/Monge e a divergência por subclasse entram
    quando classes/subclasses forem implementadas (ver roadmap). */
+/* ---------- DEF mágica + marcação físico/mágico (ver DESIGN.md passo 7) ----
+   Resistência Mágica é um stat separado do DEF físico: só entra na rolagem
+   quando o atacante usa um ataque mágico (hoje só Mago e o Xamã Goblin,
+   via CLASSES[cls].magico / ENEMIES[kind].magico — assim Paladino/Clérigo
+   com magia ofensiva no futuro só precisam da mesma flag, sem mexer aqui).
+   Armadura física não protege contra magia: por isso o defMag de cada
+   herói/inimigo vem do DEF *base* da classe/ficha, antes de armadura e
+   itens — ainda não rola em equipamento (isso é o motor de item v2, passo
+   11 do roadmap). Fórmula e proporção são placeholder, a recalibrar com
+   playtest, mesmo espírito do resto do sistema de atributos. */
+function baseDefMag(def){return Math.round(def*0.7);}
+function isMagicAttacker(u){
+  const d=u.side==='hero'?CLASSES[u.cls]:ENEMIES[u.kind];
+  return !!(d&&d.magico);
+}
 const ATTR_NAMES=['forca','destreza','inteligencia','vitalidade','fe'];
 const ATTR_BASE={
   guerreiro:{forca:10,destreza:4,inteligencia:2,vitalidade:6,fe:2},
@@ -1902,7 +1918,7 @@ function applyLevelUps(h){
 function serializeHero(h){
   const equip={};EQ_SLOTS.forEach(s=>equip[s]=h.equip[s]?h.equip[s].id:null);
   return {id:h.id,cls:h.cls,first:h.first,sur:h.sur,nome:h.nome,traitId:h.trait.id,
-    maxhp:h.maxhp,hp:h.hp,atk:h.atk,def:h.def,mov:h.mov,alc:h.alc,dmg:h.dmg,ini:h.ini,per:h.per,
+    maxhp:h.maxhp,hp:h.hp,atk:h.atk,def:h.def,defMag:h.defMag,mov:h.mov,alc:h.alc,dmg:h.dmg,ini:h.ini,per:h.per,
     critBonus:h.critBonus||0,look:h.look,arma:h.arma,armadura:h.armadura,
     xpTotal:h.xpTotal||0,xpRun:h.xpRun||0,level:h.level||1,
     injured:!!h.injured,injuredMissionsLeft:h.injuredMissionsLeft||0,benchXpBonus:h.benchXpBonus||0,
@@ -1911,7 +1927,7 @@ function serializeHero(h){
 function hydrateHero(s){
   const trait=TRAITS.find(x=>x.id===s.traitId)||TRAITS[0];
   const h={id:s.id,side:'hero',cls:s.cls,first:s.first,sur:s.sur,nome:s.nome,trait,
-    maxhp:s.maxhp,hp:s.hp,atk:s.atk,def:s.def,mov:s.mov,alc:s.alc,dmg:s.dmg.slice(),ini:s.ini,per:s.per,
+    maxhp:s.maxhp,hp:s.hp,atk:s.atk,def:s.def,defMag:s.defMag!=null?s.defMag:baseDefMag(CLASSES[s.cls].def),mov:s.mov,alc:s.alc,dmg:s.dmg.slice(),ini:s.ini,per:s.per,
     critBonus:s.critBonus||0,look:s.look,arma:s.arma,armadura:s.armadura,
     xpTotal:s.xpTotal||0,xpRun:s.xpRun||0,xp:0,level:s.level||1,
     injured:!!s.injured,injuredMissionsLeft:s.injuredMissionsLeft||0,benchXpBonus:s.benchXpBonus||0,
@@ -2145,7 +2161,7 @@ function renderSheet(id){
   <div class="scroll sheet">
     <div class="sh-top"><img src="${h.portrait}" alt=""><div><b class="nm">${h.nome}</b>
       <div class="tags"><span class="tag cls">${c.nome}</span><span class="tag">${c.papel}</span>${sc[h.sur]>1?'<span class="tag fam">Irmãos '+h.sur+'</span>':''}</div></div></div>
-    <div class="dstats"><span>Vida<b>${h.maxhp}</b></span><span>Ataque<b>+${h.atk}</b></span><span>Defesa<b>${h.def}</b></span><span>Mover<b>${h.mov}</b></span><span>Alcance<b>${h.alc}</b></span></div>
+    <div class="dstats"><span>Vida<b>${h.maxhp}</b></span><span>Ataque<b>+${h.atk}</b></span><span>Defesa<b>${h.def}</b></span><span>Res.Mágica<b>${h.defMag}</b></span><span>Mover<b>${h.mov}</b></span><span>Alcance<b>${h.alc}</b></span></div>
     <div class="rg-row"><div><span>Movimento (${h.mov})</span>${rangeGrid(h.mov,'#79a8ec')}</div><div><span>Alcance (${h.alc})</span>${rangeGrid(h.alc,'#d4503f')}</div></div>
     <div class="sec2"><h4>Função</h4><p>${c.resumo} ${c.papel}.</p></div>
     <div class="sec2"><h4>Como joga</h4>
@@ -2314,7 +2330,7 @@ function placeHero(h,r,c){
 }
 function tileInfo(r,c){
   const u=unitAt(r,c),ch=cell(r,c);
-  if(u&&u.side==='enemy')return `${u.first}: PV ${u.hp} · ATQ +${u.atk} · DEF ${u.def} · alcance ${u.alc}.`;
+  if(u&&u.side==='enemy')return `${u.first}: PV ${u.hp} · ATQ +${u.atk} · DEF ${u.def}${u.defMag!=null?` · RES ${u.defMag}`:''} · alcance ${u.alc}.`;
   if(ch==='S')return 'Parede rachada. Parece oca… um herói com boa Percepção pode achar algo aqui.';
   if(ch==='w')return 'Rio: ninguém atravessa. Só pela ponte.';
   if(ch==='b')return 'Ponte de madeira: o único caminho pelo meio do rio.';
@@ -2498,12 +2514,13 @@ async function attack(u,t){
   if(u.inspired)parts.push([2,'balada']);
   if(sibActive(u))parts.push([1,'irmãos']);
   if(u.secretBuff)parts.push([1,'relíquia']);
+  const magic=isMagicAttacker(u),defVal=magic?(t.defMag??t.def):t.def;
   const roll=ri(1,20),critMin=20-(u.critBonus||0)-(u.trait&&u.trait.id==='sortudo'?1:0),sum=roll+parts.reduce((a,p)=>a+p[0],0);
-  const crit=roll>=critMin,hit=crit||(roll!==1&&sum>=t.def);
-  showCallout(u,`${u.alc>1?'➶':'⚔'} Ataca ${t.first}`);followMid(u,t);
+  const crit=roll>=critMin,hit=crit||(roll!==1&&sum>=defVal);
+  showCallout(u,`${magic?'✨':u.alc>1?'➶':'⚔'} Ataca ${t.first}`);followMid(u,t);
   tRing.visible=true;tRing.position.set(t.grp.position.x,t.grp.position.y+0.09,t.grp.position.z);tRing.scale.setScalar(t.big?1.25:1);
   const clearLine=aimLine(u,t,u.side==='hero'?'#e9b949':'#d4503f');
-  await showRoll({who:`${u.first} ataca ${t.first}`,roll,parts,target:t.def,tlabel:'DEF',outcome:crit?'crit':hit?'hit':'miss',label:crit?'CRÍTICO!':hit?'Acertou':roll===1?'Falha crítica':'Errou'});
+  await showRoll({who:`${u.first} ataca ${t.first}`,roll,parts,target:defVal,tlabel:magic?'RES':'DEF',outcome:crit?'crit':hit?'hit':'miss',label:crit?'CRÍTICO!':hit?'Acertou':roll===1?'Falha crítica':'Errou'});
   if(u.inspired){u.inspired=false;}
   const p=u.grp.position,ox=p.x,oz=p.z,dx=t.c-u.c,dz=t.r-u.r,len=Math.hypot(dx,dz)||1;
   if(u.alc>1){SFX.shoot();drawBow(u,0.3);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox-dx/len*0.12,z:oz-dz/len*0.12,duration:0.08}).to(p,{x:ox,z:oz,duration:0.1});await projectile(u,t);}
@@ -2512,7 +2529,7 @@ async function attack(u,t){
   if(!hit){
     SFX.miss();floatText(t,'errou','miss');gsap.fromTo(t.plane.position,{x:0},{x:0.24,duration:0.1,yoyo:true,repeat:1,ease:'power1.out'});
     burst(t.grp.position,{n:5,colors:['#d8d2c4'],spread:0.5,up:0.2,y:0.5,life:0.3,size:0.6});
-    addLog(`${u.first} errou ${t.first} (${sum} vs ${t.def})`,'mut');tRing.visible=false;await wait(220);return;
+    addLog(`${u.first} errou ${t.first} (${sum} vs ${defVal})`,'mut');tRing.visible=false;await wait(220);return;
   }
   const [n,s,b]=u.dmg;const dmg=dice(crit?n*2:n,s)+b+(u.trait&&u.trait.id==='bruto'?3:0);
   if(crit&&u.side==='hero')stats.crits++;
