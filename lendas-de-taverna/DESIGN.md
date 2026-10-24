@@ -150,6 +150,26 @@ aqui quem "gerenciaria" seria a IA, adicionando complexidade sem o jogador
 sentir a gestão. Cooldown por turno é mais simples de implementar, de
 mostrar na tela (encaixa na lista de turno que já existe) e pra IA calcular.
 
+### Campanha: mapas e Modo Interminável
+- **5 mapas fixos hoje** (antes eram 3): Campina Verde (Clareira de Brumavale,
+  Bosque dos Corvos) e Deserto das Cinzas (Duna Rachada, Vale das Cinzas,
+  Covil do Ogro — chefe). Motivo da expansão: a campanha **acabava
+  literalmente no mapa 3**, sem loop nem conteúdo depois — jogador zerava e
+  não tinha mais o que fazer. Duna Rachada e Vale das Cinzas preenchem a
+  transição pro deserto antes do chefe, com o mesmo pool de inimigos já
+  existente (sem bicho novo).
+- **Modo Interminável**: ao vencer o último mapa fixo (hoje o Covil do Ogro),
+  a run oferece a opção de entrar no Covil Interminável em vez de encerrar —
+  rondas sintéticas sobre o último mapa (`mapOf()` sintetiza o mapa quando
+  `n > MAPS.length` e `run.endless` está ligado), cada ronda com mais
+  inimigos (`total` cresce) e inimigos mais fortes (`escala` cresce
+  +0.12/ronda). Pontua sem fim, pro ranking. Decisão de escopo: isso é a
+  resposta *de curto prazo* pra "o que eu faço depois de zerar" — as
+  **dungeons de endgame distintas** (tier 9-12, com loot exclusivo) continuam
+  como a resposta de longo prazo, ainda não escritas (ver "Decisões adiadas").
+  `run.endless` só liga quando o jogador escolhe entrar; nunca pelo fluxo
+  normal de `mapOf(n)` com `n` dentro de `MAPS`.
+
 ### Economia e recuperação
 - **Ouro**: ganho a cada fase vencida, 10% da pontuação da fase
   (`GOLD_PER_SCORE`).
@@ -171,9 +191,49 @@ foram achados assim (barra de unidades escondendo heróis, balão de fala
 sobrepondo a lista de turno) que nenhuma leitura de código teria pego. Isso
 devia virar rotina antes de qualquer PR daqui pra frente.
 
-## Classes e subclasses (decidido, ainda não implementado em código)
+## Classes e subclasses
 
-8 classes base, 2 subclasses cada — base compartilha tipo de arma, peso de
+### Modelo decidido (implementado nas 6 classes originais)
+- **Classe base nunca muda** (sprite/corpo é por classe — reclasse livre estilo
+  FFT foi descartada: o problema de asset é bem maior que trocar arma, e
+  dissolve a identidade de "esse é o Rui, o Guerreiro").
+- Herói **nasce sem subclasse**. No **nível 10** (`SUB_UNLOCK_LEVEL`) ele
+  escolhe 1 de 2 subclasses na **Forja do velho Brasa** (grátis na primeira
+  vez). Dá pra **trocar depois pagando ouro** (`subRespecCost`: 60 + 20 ×
+  nível). Dragon Nest faz parecido (escolha no nível 15, travada por
+  personagem, respec limitado).
+- **Progressão única**: continua um nível só por herói (sem trilha de XP
+  separada pra subclasse). A subclasse liga a mecânica própria; o resto
+  (PV/atributos/equip.) segue crescendo com o nível.
+- **Recrutamento escalado** (estilo FFT): nível do recruta = média de nível do
+  elenco ± 2 (`newDraw`/`rosterAvgLevel`, teto 60). Recruta que já nasce com
+  nível ≥ 10 vem com subclasse sorteada. Recrutar continua sem custo em ouro.
+  Atributos sorteados têm variação maior e a tela mostra a descrição do traço,
+  pra quem lê e compara escolher melhor que quem clica no automático.
+- **Bônus de atraso** (`CATCHUP_*`): herói ≥ 3 níveis abaixo da média do grupo
+  ativo ganha +10% de XP por nível de diferença, teto +100%. Rápido o bastante
+  pra não ser grind de recomeço, gradual o bastante pra jogador aprender a
+  classe jogando — não vira nível 60 de graça.
+- **Poder de herói novo vem de 2 eixos**: nível (catch-up) e equipamento (Cofre
+  da Guilda é universal). **Pendente**: tier de item travado por nível (já
+  especificado em `EQUIPAMENTOS.md`, vem com o motor de item v2, passo 11) —
+  sem isso um herói nível 1 consegue vestir qualquer item do cofre.
+- Campanha: longa, estilo FFT, sem lore; cidade = lobby; dungeons secretas e
+  de chefe único. Modo Interminável implementado mas **fora de foco** até o
+  usuário pedir.
+
+### Mecânica de cada subclasse
+Usam ganchos que já existem no motor (bônus no `parts[]` do ataque, `critBonus`,
+flags `inspired`/`shaken`) em vez de um sistema de efeitos de status genérico.
+Duas saíram simplificadas por falta de sistema: **Saraivador** (seria dano em
+área; hoje respinga 40% do dano num inimigo colado no alvo) e **Armadilheiro**
+(seria armadilha de terreno; hoje +3 de acerto no primeiro golpe da batalha).
+Voltam à versão completa no passo 10. **Paladino/Monge** continuam só design
+(classes novas, exigem sprite próprio — pesquisar asset antes).
+
+8 classes base, 2 subclasses cada (tabela de papel/nomes — decidido, as 6
+primeiras linhas já valem para o código; Paladino/Monge ainda são só
+design) — base compartilha tipo de arma, peso de
 armadura e esqueleto de comportamento de IA; subclasse diverge em
 comportamento de verdade (não só número), efeito visual próprio, e afinidade
 de equipamento.
@@ -266,10 +326,12 @@ da ideia original sem precisar do modo manual completo.
 7. ~~Implementar DEF mágica + marcação físico/mágico por ataque~~ — feito
    (`defMag`/`baseDefMag`/`isMagicAttacker`, hoje só Mago e Xamã Goblin
    marcados `magico:true`).
-8. Implementar as 8 classes base + 16 subclasses no código (sprites, IA,
-   afinidade de equipamento) — hoje só as 6 classes originais existem, sem
-   Paladino/Monge, sem nenhuma subclasse.
-9. Sistema de efeitos de status (pré-requisito de boa parte das subclasses).
+8. ~~Implementar as 12 subclasses das 6 classes originais~~ — feito, com
+   Saraivador e Armadilheiro simplificados (ver seção "Classes e
+   subclasses"). **Ainda falta**: Paladino/Monge como classes novas de
+   verdade (sprite próprio, pesquisa de asset primeiro) + suas 4 subclasses.
+9. Sistema de efeitos de status (destrava a versão completa de Saraivador/
+   Armadilheiro e abre caminho pras subclasses de Paladino/Monge).
 10. Ataque em área e armadilha de terreno (mecânicas de combate novas).
 11. Motor de rolagem de item (substituir o catálogo fixo pela v2) +
     serialização de save por instância de item.
