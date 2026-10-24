@@ -642,6 +642,92 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .m-place .actions .btn{flex:1 1 0;min-width:0;padding-left:8px;padding-right:8px;white-space:nowrap}
 .m-place .actions .btn.cta{flex:1.4 1 0}
 @media(max-width:480px){.m-place .actions .btn{font-size:11px;padding-left:2px;padding-right:2px;gap:3px}.m-place .actions .btn .ic{width:14px;height:14px}}
+
+/* ===== Ilhas flutuantes + HUD de batalha (celular em pé primeiro) ===== */
+#stage{background:radial-gradient(90% 55% at 50% 108%,#3a5a8c 0%,rgba(58,90,140,0) 70%),radial-gradient(60% 40% at 80% 12%,rgba(120,150,210,.22),transparent 70%),linear-gradient(#070c1c,#122040 52%,#233a66)}
+.pnl{border-style:solid;border-width:8px;border-image:url(assets/rpgui/border-image-golden.png) 4/10px repeat;background:#1a120d;background-clip:padding-box;image-rendering:pixelated;color:var(--cre);border-radius:0}
+#bhud{inset:0;top:0;left:0;right:0;bottom:0;display:block;padding:0;pointer-events:none}
+#bhud .turn b{margin-left:5px}
+#bhud .turn{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));left:8px;height:42px;display:flex;align-items:center;font-size:14px;padding:0 6px;white-space:nowrap}
+.objp{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));right:8px;max-width:calc(100% - 112px);min-height:42px;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:4px 8px;background:#1a120d;border:8px solid;border-image:url(assets/rpgui/border-image-golden.png) 4/10px repeat;background-clip:padding-box;image-rendering:pixelated;color:var(--cre);font-size:11px;line-height:1.2}
+.objp .ob{display:flex;align-items:center;gap:6px}
+.objp .ob>i{flex:0 0 11px;width:11px;height:11px;display:grid;place-items:center;background:#e9b949;transform:rotate(45deg) scale(.7);color:#120b08}
+.objp .ob>i .ic{transform:rotate(-45deg) scale(1.9);width:8px;height:8px;margin:0}
+.objp .ob.done>i{background:#6cc35e}
+.objp .ob.done span{opacity:.7;text-decoration:line-through}
+.objp .ob.opt>i{background:#8a7a62}
+.objp .ob span em{font-style:normal;color:#ffe9b8;font-variant-numeric:tabular-nums}
+.objp .ob small{color:#c9b28a;font-size:10px}
+#order{position:absolute;top:calc(58px + env(safe-area-inset-top,0px));left:8px;right:8px;display:flex;flex-direction:row;align-items:center;gap:3px;padding:3px 2px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;pointer-events:auto;background:linear-gradient(90deg,rgba(10,14,28,.72),rgba(10,14,28,.0));border-bottom:2px solid rgba(233,185,73,.5)}
+#order::-webkit-scrollbar{display:none}
+#order .oc{all:unset;cursor:pointer;flex:0 0 auto;box-sizing:border-box;width:34px;height:38px;border:3px solid #3a7bd5;background:#1c1510;box-shadow:inset 0 0 0 1px #0e0a07;overflow:hidden;transition:width .2s,height .2s}
+#order .oc.e{border-color:#c8463c}
+#order .oc.on{width:42px;height:46px;border-color:#e9b949;box-shadow:0 0 0 2px #120b08,0 0 10px rgba(233,185,73,.7)}
+#order .oc.dead{opacity:.28;filter:grayscale(1)}
+#order .oc img{width:100%;height:100%;image-rendering:pixelated;object-fit:cover;object-position:center;display:block}
+#bhud .speed{position:absolute;left:8px;top:calc(118px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:3px;padding:3px;pointer-events:auto;background:#1a120d;border:6px solid;border-image:url(assets/rpgui/border-image-golden.png) 4/8px repeat;background-clip:padding-box;image-rendering:pixelated}
+#bhud .spd{box-sizing:border-box;min-width:46px;padding:6px 4px;font-size:12px;text-align:center;border:0;box-shadow:none;background:transparent;color:#d8c9a8}
+#bhud .spd[aria-pressed="true"]{background:linear-gradient(#e9c25b,#c9962e);color:#2b1812;box-shadow:inset 0 0 0 1px #fff0c0}
+.hpf{position:absolute;transform:translate(-50%,-100%);display:none;align-items:center;gap:2px;pointer-events:none;filter:drop-shadow(0 1px 0 #000)}
+.m-battle .hpf{display:flex}
+.hpf .tm{display:grid;place-items:center;width:15px;height:15px;background:#1c1510;border:2px solid #3a7bd5;color:#8fb8f0}
+.hpf.e .tm{border-color:#c8463c;color:#f0907f}
+.hpf .tm .ic{width:9px;height:9px;margin:0}
+.hpf .bar{position:relative;width:34px;height:7px;background:#1c1510;border:2px solid #0e0a07;overflow:hidden}
+.hpf .bar b{position:absolute;left:0;top:0;bottom:0;background:#efe2c4;transition:width .5s .3s}
+.hpf .bar i{position:relative;display:block;height:100%;background:linear-gradient(#8fdc7e,#4f9f3f);transition:width .15s}
+.hpf.e .bar i{background:linear-gradient(#e86a5a,#a8362b)}
+.hpf.low .bar i{background:linear-gradient(#f3cd62,#c9962e)}
+.uc{position:absolute;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;padding:4px 8px 4px 4px;pointer-events:auto;background:#1a120d;border:8px solid;border-image:url(assets/rpgui/border-image-golden.png) 4/10px repeat;background-clip:padding-box;image-rendering:pixelated;color:var(--cre)}
+.uc.e{box-shadow:0 0 0 2px #a8362b}
+.uc-face{width:84px;height:84px;background:radial-gradient(#3a2c20,#1c1510);border:2px solid #0e0a07;display:grid;place-items:center;overflow:hidden}
+.uc-face img{width:84px;height:84px;image-rendering:pixelated;display:block}
+.uc-main{display:flex;flex-direction:column;gap:3px;min-width:0}
+.uc-name{font-family:var(--f-display);font-size:17px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.uc-cl{font-size:12px;color:#e8d3a8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.uc-cl .ic{width:14px;height:14px;vertical-align:-3px;margin:0 3px 0 0}
+.uc-hp{display:flex;flex-direction:column;gap:2px;font-size:12px;color:#e8d3a8}.uc-hp b{font-size:15px;color:var(--cre);font-variant-numeric:tabular-nums}
+.uc-bar{height:9px;background:#1c1510;border:2px solid #0e0a07}.uc-bar i{display:block;height:100%;background:linear-gradient(#7fb4f5,#3a7bd5)}.uc.e .uc-bar i{background:linear-gradient(#e86a5a,#a8362b)}.uc-bar i.low{background:linear-gradient(#f3cd62,#c9962e)}
+.uc-st{display:flex;flex-direction:column;gap:3px;font-size:13px;font-variant-numeric:tabular-nums}
+.uc-st span{display:flex;align-items:center;gap:5px}.uc-st .ic{width:16px;height:16px;margin:0}
+.uc-tabs{display:none}
+.uc-tabs{grid-column:3;grid-row:1;display:none}
+#ucpop{position:absolute;left:8px;right:8px;bottom:calc(114px + env(safe-area-inset-bottom,0px));pointer-events:none}
+#ucpop .pp{display:none;padding:4px 10px 6px;background:#1a120d;border:8px solid;border-image:url(assets/rpgui/border-image-golden.png) 4/10px repeat;background-clip:padding-box;image-rendering:pixelated;color:var(--cre);font-size:13px}
+#ucpop.pop-w .pp.w,#ucpop.pop-t .pp.t{display:block}
+.pp-h{display:flex;align-items:center;gap:8px;padding-bottom:3px;margin-bottom:3px;border-bottom:1px solid #5a4330;font-size:14px}
+.pp-h .ic.lg{width:24px;height:24px}.pp-h .tile{width:22px;height:22px;border:2px solid #0e0a07;box-shadow:inset 0 0 0 2px rgba(255,255,255,.18)}
+.pp-r{display:flex;justify-content:space-between;gap:12px;padding:1px 0;color:#d8c9a8}.pp-r b{color:var(--cre)}
+.pp-t{color:#d8c9a8;font-size:12px}
+#dice{top:calc(118px + env(safe-area-inset-top,0px));left:calc(50% + 34px);max-width:calc(100% - 96px)}
+#feed{padding-bottom:calc(122px + env(safe-area-inset-bottom,0px))}
+.uc-tabs{display:flex;gap:4px;grid-column:3;justify-self:end}
+.uc-tabs button{all:unset;cursor:pointer;box-sizing:border-box;width:32px;height:30px;display:grid;place-items:center;background:linear-gradient(#2e2219,#1c1510);border:2px solid #120b08;box-shadow:inset 0 0 0 1px #5a4330;color:#d8c9a8}
+.uc-tabs button[aria-pressed="true"]{background:linear-gradient(#e9c25b,#c9962e);color:#2b1812}
+.uc-tabs .ic{width:18px;height:18px;margin:0}
+.uc{grid-template-areas:"face main st" "face main tabs"}
+.uc-face{grid-area:face}.uc-main{grid-area:main}.uc-st{grid-area:st;align-self:end}.uc-tabs{grid-area:tabs;align-self:start}
+@media(max-width:350px){.uc-face,.uc-face img{width:56px;height:56px}.uc-name{font-size:15px}#ucpop,#feed{}#ucpop{bottom:calc(88px + env(safe-area-inset-bottom,0px))}#feed{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}}
+@media(min-width:700px){
+  #bhud .turn{width:auto}
+  #order{top:calc(8px + env(safe-area-inset-top,0px));left:108px;right:300px;height:52px}
+  #bhud .speed{top:calc(66px + env(safe-area-inset-top,0px))}
+  #dice{top:calc(66px + env(safe-area-inset-top,0px));left:50%}
+  .objp{max-width:280px}
+  .uc{right:auto;width:400px}
+  .uc-tabs{display:none}
+  #ucpop{left:416px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;justify-content:flex-end}
+  #ucpop:not([hidden]) .pp{display:block;min-width:200px}
+  #ucpop.pop-w .pp.w,#ucpop.pop-t .pp.t{display:block}
+  #feed{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
+}
+@media(min-width:700px) and (max-height:520px){
+  .uc-face,.uc-face img{width:56px;height:56px}.uc{width:340px}#ucpop{left:356px}#feed{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+}
+@media(max-width:480px){.vn{border-width:8px 13px;border-image-width:8px 13px;font-size:11px}.vn .ic{width:1.1em;height:1.1em}}
+.objp .ob span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:350px){.objp{font-size:10px;max-width:calc(100% - 100px)}.objp .ob small{display:none}#bhud .turn{padding:0 2px;font-size:13px}#vbar .vt{font-size:11px}#vbar .btn{white-space:nowrap;font-size:11px;padding-left:6px;padding-right:6px}}
+#bhud{z-index:3}#dice{z-index:4}#banner{z-index:5}
 </style>
 </head>
 <body>
@@ -652,9 +738,14 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
     <div class="tilt top"></div><div class="tilt bot"></div>
     <div id="hud"></div>
     <div id="vui"><div id="vbar"></div><div id="vnames"></div><div id="vfoot"></div></div>
-    <div id="order" hidden></div>
-    <div id="unitbar" hidden></div>
-    <div id="bhud" hidden><div class="turn">Turno <b id="round">1</b></div><div class="speed" id="speedbar"></div></div>
+    <div id="bhud" hidden>
+      <div class="turn">Turno <b id="round">1</b></div>
+      <div class="objp" id="objs"></div>
+      <div id="order" hidden></div>
+      <div class="speed" id="speedbar"></div>
+      <div class="uc" id="uc" hidden></div>
+      <div id="ucpop" hidden></div>
+    </div>
     <div id="dice" hidden><div id="dieslot"><span id="dnum">20</span></div><div class="dtext"><div id="dwho"></div><div id="dcalc"></div><div id="dres"></div></div></div>
     <div id="feed"></div>
     <div id="flash"></div>
@@ -1316,9 +1407,9 @@ const windowSprite=(warm=true)=>pixelCanvas(12,12,P=>{
 const nearestTex=c=>{const t=new THREE.CanvasTexture(c);t.magFilter=t.minFilter=THREE.NearestFilter;t.generateMipmaps=false;return t;};
 
 /* ================= Three.js: cena e câmera ================= */
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});renderer.setClearColor(0x000000,0);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
-const scene=new THREE.Scene(); scene.background=new THREE.Color('#14100d');
+const scene=new THREE.Scene();
 const cam=new THREE.OrthographicCamera(-6,6,6,-6,0.1,100);
 const CAM_OFF=new THREE.Vector3(5.2,9.5,9.8);
 const AZ=Math.atan2(CAM_OFF.x,CAM_OFF.z), SIN_E=CAM_OFF.y/CAM_OFF.length();
@@ -1342,7 +1433,15 @@ const VIEW={village:[VX,0.3,VZ+0.3,0.95],tavern:[VX,1.1,VZ-2.1,1.9],board:[0,0.3
 const aim=(v,d)=>aimCam(...VIEW[v],d);
 function hubFit(snap){
   const hw=(cam.right-cam.left)/2,hh=(cam.top-cam.bottom)/2;
-  const v=[VX,0.3,VZ-0.9,Math.max(Math.min(hw/6.9,hh/6.4),hh/11.5)];
+  // enquadra os prédios de verdade (projetados na tela), pra nenhum ficar cortado
+  const c=new THREE.Vector3(VX,0.3,VZ-0.9),bx=new THREE.Box3(),pt=new THREE.Vector3();
+  cam.position.set(c.x+CAM_OFF.x,c.y+CAM_OFF.y,c.z+CAM_OFF.z);cam.lookAt(c);cam.updateMatrixWorld();village.updateMatrixWorld(true);
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  villagePicks.forEach(o=>{bx.setFromObject(o);for(let i=0;i<8;i++){pt.set(i&1?bx.max.x:bx.min.x,i&2?bx.max.y:bx.min.y,i&4?bx.max.z:bx.min.z).applyMatrix4(cam.matrixWorldInverse);x0=Math.min(x0,pt.x);x1=Math.max(x1,pt.x);y0=Math.min(y0,pt.y);y1=Math.max(y1,pt.y);}});
+  const mx=(x1-x0)/2,my=(y1-y0)/2,z=Math.min(hw/(mx+0.9),hh/(my+1.4));
+  // centraliza no espaço livre entre a barra de cima (~56px) e o rodapé (~120px)
+  const cx=(x0+x1)/2,cy=(y0+y1)/2-(120-56)/2*(2*hh/z/Math.max(1,stage.clientHeight)),ca=Math.cos(AZ),sa=Math.sin(AZ);
+  const v=[VX+cx*ca-cy*sa/SIN_E,0.3,VZ-0.9-cx*sa-cy*ca/SIN_E,z];
   VIEW.village=v;
   if(snap){gsap.killTweensOf(camT);gsap.killTweensOf(cam);camT.set(v[0],v[1],v[2]);cam.zoom=v[3];cam.updateProjectionMatrix();}
   else aimCam(...v,0.6);
@@ -1392,8 +1491,17 @@ const waterTex=waterStrip.tex;waterTex.wrapS=waterTex.wrapT=THREE.RepeatWrapping
 const waterMat=new THREE.MeshPhongMaterial({map:waterTex,transparent:true,opacity:0.95,shininess:90,specular:0x9fc9ea});
 
 const woodTex=ptex('#3b2a1e',['#33241a','#45321f','#2e2017'],{size:64,n:500,draw:(g,S)=>{g.fillStyle='#22180f';for(let y=0;y<S;y+=8)g.fillRect(0,y,S,1);},repeat:10});
-const table=new THREE.Mesh(new THREE.PlaneGeometry(90,60),new THREE.MeshLambertMaterial({map:woodTex}));
-table.rotation.x=-Math.PI/2;table.position.set(-10,-0.32,0);scene.add(table);
+// ilhas flutuantes: sem mesa. O chão de cada ilha termina numa ponta de rocha
+// (pirâmide invertida) e o fundo é só o céu em CSS atrás do canvas.
+const rockUnder=ptex('#5b4a3b',['#4a3b2e','#6d5a48','#3a2e24'],{size:32,n:160});
+function floatingUnder(parent,w,d,y0,depth,zc=0){
+  const rock=new THREE.MeshLambertMaterial({map:rockUnder});
+  const g=new THREE.CylinderGeometry(0.5*Math.SQRT2,0.14*Math.SQRT2,1,4,1);
+  g.rotateY(Math.PI/4);
+  const m=new THREE.Mesh(g,rock);m.scale.set(w,depth,d);m.position.set(0,y0-depth/2,zc);parent.add(m);
+  const lip=new THREE.Mesh(new THREE.BoxGeometry(w,0.34,d),new THREE.MeshLambertMaterial({color:'#3f2f22'}));lip.position.set(0,y0+0.17,zc);parent.add(lip);
+  return m;
+}
 
 let trees=[];
 const LEAF_MATS={};
@@ -1453,8 +1561,7 @@ function clearBoard(){
 function buildBoard(){
   clearBoard();
   const bio=LV.mp.biome,bm=biomeMats(bio);
-  const slab=new THREE.Mesh(new THREE.BoxGeometry(COLS+0.6,0.3,ROWS+0.6),new THREE.MeshLambertMaterial({color:'#2a1f17'}));
-  slab.position.y=-0.16;boardGroup.add(slab);
+  floatingUnder(boardGroup,COLS+0.5,ROWS+0.5,-0.34,3.6);
   const rockCol=bio==='deserto'?'#a5755a':'#7d817c';
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
     const ch=cell(r,c),x=wx(c),z=wz(r);let mesh;
@@ -1510,10 +1617,11 @@ function building(id,o){
   b.userData={bld:id};villagePicks.push(b);BLD[id]={x,z};return b;
 }
 (function buildVillage(){
-  vbox(30.9,0.3,52.4,'#2a1f17',-0.75,-0.16,0);
-  vplane(30.5,52,ptex('#5d8f3f',['#6ea64b','#4e7c34','#7fb356'],{size:48,n:300,repeat:[9.7,16.4]}),-0.75,0.002,0);
+  const IW=15,ID=12.4,IZ=0.5;
+  floatingUnder(village,IW,ID,-0.34,4.2,IZ);
+  vplane(IW,ID,ptex('#5d8f3f',['#6ea64b','#4e7c34','#7fb356'],{size:48,n:300,repeat:[IW/3.1,ID/3.1]}),0,0.002,IZ);
   const road=(w,d,x,z,y)=>vplane(w,d,ptex('#8a6a45',['#7a5c3b','#9a7a52','#6b4e30'],{repeat:[w,d]}),x,y,z);
-  road(30.5,1.2,-0.75,0.6,0.006);road(1.2,52,0,0,0.008);road(3.6,3.6,0,0.6,0.01);
+  road(IW,1.2,0,0.6,0.006);road(1.2,ID,0,IZ,0.008);road(3.6,3.6,0,0.6,0.01);
   // Taverna
   const tav=building('tavern',{x:0,z:-2.9,w:3.4,d:2.4,h:2.3,wall:'#b98a55',roof:'#7a2f24',wins:[[-1.05,0.75],[1.05,0.75],[-1.05,1.7],[0,1.7],[1.05,1.7]],chimney:[1.1,0.6,-0.4],roofH:1.1});
   vbox(0.06,0.06,0.7,'#3b2616',1.55,1.55,1.4,tav);
@@ -1557,24 +1665,12 @@ function building(id,o){
   const bp=new THREE.Mesh(new THREE.PlaneGeometry(1.15,0.76),new THREE.MeshLambertMaterial({map:nearestTex(boardSprite()),side:THREE.DoubleSide}));bp.position.set(0,0.95,0.05);bd.add(bp);
   // Árvores, postes e placa da estrada
   [[-5.8,-4.5],[5.9,-4.6],[-5.9,4.6],[5.8,4.6],[-2.4,-4.6],[2.5,-4.7],[-5.8,-1.3],[5.8,-1.4],[-3.3,4.6],[-1.4,4.7]].forEach(([tx,tz],i)=>makeTree(village,tx,0,tz,0.9+(i%3)*0.15));
-  for(let gx=-15;gx<=13.5;gx+=3.3)for(let gz=-24;gz<=24;gz+=3.6){
-    if(Math.abs(gx)<6.9&&Math.abs(gz)<5.9)continue;
-    if(Math.abs(gx)<1.4||Math.abs(gz-0.6)<1.3)continue;
-    const j=Math.sin(gx*7.1+gz*3.3);if(j<-0.15)continue;
-    RING_TREES.push(makeTree(village,gx+j*0.6,0,gz+Math.cos(gx*2.3+gz*5.1)*0.6,0.9+(Math.abs((gx*10+gz*7)|0)%4)*0.1));
-  }
   [[-1.95,-0.95],[1.95,-0.95],[1.95,2.2]].forEach(([lx,lz])=>{vbox(0.08,1.2,0.08,'#2b2b2b',lx,0.6,lz);vbox(0.2,0.2,0.2,'#ffd27a',lx,1.25,lz,village,true);});
   vbox(0.08,1,0.08,'#5a3a22',5.9,0.5,1.5);
   const as=new THREE.Mesh(new THREE.PlaneGeometry(0.9,0.45),new THREE.MeshBasicMaterial({map:nearestTex(arrowSignSprite()),transparent:true,alphaTest:0.5,side:THREE.DoubleSide}));
   as.position.set(5.9,0.95,1.55);village.add(as);
-  // estrada que liga a vila ao tabuleiro, pela mesa
-  const pathT=ptex('#7a5c3b',['#6b4e30','#8a6a45'],{repeat:[11,1]});
-  const pm=new THREE.Mesh(new THREE.PlaneGeometry(11,1),new THREE.MeshLambertMaterial({map:pathT}));pm.rotation.x=-Math.PI/2;pm.position.set(VX+6.5+5.5,-0.3,0.6);pm.receiveShadow=true;scene.add(pm);
 })();
 village.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
-// árvores do anel de fora não projetam sombra (fora do alcance do sol e caras)
-RING_TREES.forEach(g=>g&&g.traverse(o=>{if(o.isMesh)o.castShadow=false;}));
-table.receiveShadow=true;
 
 /* ---------- Moradores ---------- */
 // mesmo sprite LPC dos heróis/inimigos (sem arma, "pov_m"/"pov_f"), pra
@@ -1665,6 +1761,10 @@ function renderDie(){
   renderer.setScissorTest(false);renderer.setViewport(0,0,_sz.x,_sz.y);renderer.autoClear=true;
 }
 $('#bhud').addEventListener('click',e=>{
+  const ou=e.target.closest('[data-uid]');
+  if(ou){const u=units().find(x=>x.id===+ou.dataset.uid);if(u&&u.grp){selectUnit(u);if(camMode==='follow'&&u.alive)aimCam(u.grp.position.x,0.3,u.grp.position.z,1.2,0.5),followUntil=performance.now()+3000;}return;}
+  const ut=e.target.closest('[data-uc]');
+  if(ut){ucPop=ucPop===ut.dataset.uc?null:ut.dataset.uc;renderUC(true);return;}
   const spd=e.target.closest('[data-spd]');
   if(spd){speed=+spd.dataset.spd;applySpeed();document.querySelectorAll('[data-spd]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.spd===speed));return;}
   if(e.target.closest('[data-act="skip"]'))gsap.globalTimeline.timeScale(30);
@@ -1977,6 +2077,25 @@ function lpcPortrait(cls){
   g.drawImage(img,0,2*ch,cw,ch,0,0,cw,ch);
   return c.toDataURL();
 }
+// só a cabeça (quadro parado, de frente), recortada do mesmo sheet — o
+// painel de batalha amplia isso em número inteiro (2x/3x) sem borrar.
+const FACE_CACHE={};
+function lpcFace(key){
+  const sheets=LPC_SHEETS[key];if(!sheets)return null;
+  const img=sheets.walk.tex.image,cols=sheets.walk.cols,rows=sheets.walk.rows;
+  const cw=img.width/cols,ch=img.height/rows,k=cw/64;
+  const c=document.createElement('canvas');c.width=c.height=28;
+  const g=c.getContext('2d');g.imageSmoothingEnabled=false;
+  g.drawImage(img,18*k,2*ch+9*k,28*k,28*k,0,0,28,28);
+  return c.toDataURL();
+}
+function faceOf(u){
+  const key=u.side==='hero'?(u.loadout||u.cls):u.kind;
+  if(FACE_CACHE[key])return FACE_CACHE[key];
+  const f=LPC_RECIPES[key]?lpcFace(key):null;
+  if(f){FACE_CACHE[key]=f;return f;}
+  return u.portrait;
+}
 function lpcSetUV(geo,col,row,cols,rows){
   const u0=col/cols,u1=(col+1)/cols,v0=1-(row+1)/rows,v1=1-row/rows;
   const uv=geo.attributes.uv;
@@ -2132,13 +2251,11 @@ function buildUnit(u){
   grp.add(pivot);
   scene.add(grp);
   Object.assign(u,{grp,pivot,plane,mat,mats,sz,legL,legR,armG,headG});
-  const hp=document.createElement('div');hp.className='ucard'+(u.side==='enemy'?' e':'');
-  hp.innerHTML=`<img src="${u.portrait}" alt=""><div class="uinfo"><span class="uname"></span><div class="bar"><b></b><i></i></div></div>`;
-  const bar=$('#unitbar');
-  if(u.side==='hero'){const firstEnemy=bar.querySelector('.ucard.e');firstEnemy?bar.insertBefore(hp,firstEnemy):bar.appendChild(hp);}
-  else bar.appendChild(hp);
-  u.hpEl=hp;u.hpFill=hp.querySelector('i');u.hpGhost=hp.querySelector('b');
-  hp.querySelector('.uname').textContent=u.first;
+  if(plane.userData)plane.userData.unit=u;
+  const hp=document.createElement('div');hp.className='hpf'+(u.side==='enemy'?' e':'');
+  hp.innerHTML=`<span class="tm">${ico('stat',u.side==='enemy'?'atq':'def')}</span><div class="bar"><b></b><i></i></div>`;
+  hud.appendChild(hp);
+  u.hpEl=hp;u.hpFill=hp.querySelector('.bar i');u.hpGhost=hp.querySelector('.bar b');
   grp.position.set(wx(u.c),topY(u.r,u.c),wz(u.r));
 }
 function disposeUnit(u){
@@ -2200,7 +2317,69 @@ function addLog(t,cls=''){
 }
 function renderOrder(){
   const el=$('#order');if(!stats)return;
-  el.innerHTML='<div class="ordlabel">TURNO ↓</div>'+stats.order.map(u=>`<div class="oc ${u.side==='enemy'?'e':''} ${u===active?'on':''} ${u.alive?'':'dead'}"><img src="${u.portrait}" alt=""></div>`).join('');
+  el.innerHTML=stats.order.map(u=>`<button class="oc ${u.side==='enemy'?'e':''} ${u===active?'on':''} ${u.alive?'':'dead'}" data-uid="${u.id}" aria-label="${u.first}"><img src="${faceOf(u)}" alt=""></button>`).join('');
+  const on=el.querySelector('.on');
+  if(on&&el.scrollTo)el.scrollTo({left:on.offsetLeft-el.clientWidth/2+on.offsetWidth/2,behavior:'smooth'});
+}
+
+/* ---------- Painel da unidade, objetivos e terreno ---------- */
+let hudSel=null,hudTile=null,ucPop=null,ucKey='',objKey='';
+const diceTxt=d=>`${d[0]}d${d[1]}${d[2]?(d[2]>0?'+':'')+d[2]:''}`;
+function terrainOf(r,c){
+  const ch=cell(r,c),h=hOf(r,c),des=LV.mp.biome==='deserto';
+  if(ch==='w')return {nome:'Água',alt:0,txt:'Intransponível',ic:'#4a8fc9'};
+  if(ch==='b')return {nome:'Ponte',alt:0,txt:'Passagem estreita',ic:'#8a5a32'};
+  if(ch==='r')return {nome:'Pedra',alt:0,txt:'Bloqueia o caminho',ic:'#7d817c'};
+  if(ch==='t')return {nome:des?'Cacto':'Árvore',alt:0,txt:'Bloqueia o caminho',ic:'#3f7a3a'};
+  if(ch==='S')return {nome:'Parede rachada',alt:1,txt:'Esconde uma passagem',ic:'#7a7c76'};
+  if(h>0)return {nome:'Morro',alt:h,txt:'+2 de acerto pra quem ataca de cima',ic:des?'#c9a46a':'#7aa858'};
+  return {nome:des?'Areia':'Campina',alt:0,txt:'Terreno livre',ic:des?'#d2b078':'#5d8f3f'};
+}
+function objsOf(mp){
+  const L=[{txt:'Derrotar todos os inimigos',prog:()=>`${enemies.filter(e=>!e.alive).length}/${enemies.length}`,done:()=>!!enemies.length&&!enemiesAlive().length}];
+  if(mp.chefe)L.push({txt:'Derrotar o Ogro',done:()=>enemies.some(e=>e.kind==='ogro')&&!enemies.some(e=>e.kind==='ogro'&&e.alive)});
+  if(mp.secret)L.push({txt:'Achar a passagem secreta',opt:true,done:()=>!!(stats&&stats.secret)});
+  return mp.objetivos||L;
+}
+function renderObjs(){
+  const el=$('#objs');if(!el||!LV)return;
+  const L=objsOf(LV.mp),key=L.map(o=>o.done()+(o.prog?o.prog():'')).join();
+  if(key===objKey)return;objKey=key;
+  el.innerHTML=L.map(o=>`<div class="ob ${o.opt?'opt':''} ${o.done()?'done':''}"><i>${o.done()?ico('vila','check'):''}</i><span>${o.txt}${o.opt?' <small>(extra)</small>':''}${o.prog?` <em>${o.prog()}</em>`:''}</span></div>`).join('');
+}
+function renderUC(force){
+  const el=$('#uc'),pop=$('#ucpop'),u=hudSel;
+  if(!u||!u.grp||phase!=='battle'){el.hidden=true;pop.hidden=true;return;}
+  const tl=hudTile||{r:u.r,c:u.c},key=[u.id,u.hp,u.atk,u.def,u.mov,u.alive,ucPop,tl.r,tl.c].join('|');
+  if(!force&&key===ucKey&&!el.hidden)return;ucKey=key;
+  const hero=u.side==='hero',cl=hero?CLASSES[u.cls].nome+(u.sub?' · '+SUB_INFO[u.sub].nome:''):u.nome;
+  const pct=Math.max(0,u.hp/u.maxhp*100),tr=terrainOf(tl.r,tl.c);
+  el.hidden=false;el.className='uc'+(hero?'':' e');
+  el.innerHTML=`<div class="uc-face"><img src="${faceOf(u)}" alt=""></div>
+    <div class="uc-main"><b class="uc-name">${u.first}</b><span class="uc-cl">${hero?ico('classe',u.cls):''}${cl}${hero?` · Nv.${u.level||1}`:''}</span>
+      <div class="uc-hp"><span>HP <b>${Math.max(0,u.hp)}</b> / ${u.maxhp}</span><div class="uc-bar"><i style="width:${pct}%" class="${hero&&pct<=35?'low':''}"></i></div></div></div>
+    <div class="uc-st"><span>${ico('stat','atq')}<b>${u.atk}</b></span><span>${ico('stat','def')}<b>${u.def}</b></span><span>${ico('stat','mov')}<b>${u.mov}</b></span></div>
+    <div class="uc-tabs"><button data-uc="w" aria-pressed="${ucPop==='w'}" aria-label="Arma">${ico('slot','weapon')}</button><button data-uc="t" aria-pressed="${ucPop==='t'}" aria-label="Terreno">${ico('vila','mapa')}</button></div>`;
+  pop.className=ucPop?'pop-'+ucPop:'';
+  pop.hidden=false;
+  pop.innerHTML=`<div class="pp w"><div class="pp-h">${ico('slot','weapon','lg')}<b>${hero?u.arma||'Arma':u.nome}</b></div>
+      <div class="pp-r"><span>Dano</span><b>${diceTxt(u.dmg)}</b></div><div class="pp-r"><span>Alcance</span><b>${u.alc===1?'1 (corpo a corpo)':u.alc}</b></div><div class="pp-r"><span>Ataque</span><b>+${u.atk}</b></div></div>
+    <div class="pp t"><div class="pp-h"><span class="tile" style="background:${tr.ic}"></span><b>${tr.nome}</b></div>
+      <div class="pp-r"><span>Altura</span><b>${tr.alt}</b></div><div class="pp-t">${tr.txt}</div></div>`;
+}
+function selectUnit(u){hudSel=u;hudTile=null;renderUC(true);}
+
+/* ---------- Casas de movimento / alcance ---------- */
+const rangeGroup=new THREE.Group();scene.add(rangeGroup);
+const rangeGeo=new THREE.PlaneGeometry(0.9,0.9);
+const rangeMat={blue:new THREE.MeshBasicMaterial({color:'#2f6ff0',transparent:true,opacity:0.55,depthWrite:false}),red:new THREE.MeshBasicMaterial({color:'#e0483a',transparent:true,opacity:0.5,depthWrite:false})};
+function rangeTile(r,c,kind){
+  const m=new THREE.Mesh(rangeGeo,rangeMat[kind]);m.rotation.x=-Math.PI/2;m.position.set(wx(c),topY(r,c)+0.03,wz(r));rangeGroup.add(m);
+}
+function clearRange(){while(rangeGroup.children.length)rangeGroup.remove(rangeGroup.children[0]);}
+function showRange(u,reach){
+  clearRange();const kind=u.side==='hero'?'blue':'red';
+  reach.forEach(t=>{if(!t.pass&&!(t.r===u.r&&t.c===u.c))rangeTile(t.r,t.c,kind);});
 }
 
 /* ================= Painel ================= */
@@ -2508,13 +2687,20 @@ function renderVillage(){
 }
 const _vp=new THREE.Vector3();
 function placeVillageNames(){
-  const w=stage.clientWidth,h=stage.clientHeight;
+  const w=stage.clientWidth,h=stage.clientHeight,L=[];
   HUB_LABELS.forEach(([id,,y])=>{
     const el=document.querySelector(`#vnames [data-bld="${id}"]`),b=BLD[id];if(!el||!b)return;
     village.localToWorld(_vp.set(b.x,y,b.z));_vp.project(cam);
-    const hw=(el.offsetWidth||80)/2+6;
-    el.style.left=Math.max(hw,Math.min(w-hw,(_vp.x+1)/2*w))+'px';el.style.top=Math.max(64,Math.min(h-130,(1-_vp.y)/2*h))+'px';
+    const hw=(el.offsetWidth||80)/2+6,hh=(el.offsetHeight||28)+2;
+    L.push({el,hw,hh,x:Math.max(hw,Math.min(w-hw,(_vp.x+1)/2*w)),y:Math.max(64,Math.min(h-130,(1-_vp.y)/2*h))});
   });
+  // nomes não podem se sobrepor: empurra o de baixo pra baixo (o de cima fica no prédio)
+  L.sort((a,b)=>a.y-b.y);
+  for(let pass=0;pass<4;pass++)for(let i=0;i<L.length;i++)for(let j=i+1;j<L.length;j++){
+    const a=L[i],b=L[j];
+    if(Math.abs(a.x-b.x)<a.hw+b.hw-6&&Math.abs(a.y-b.y)<a.hh)b.y=a.y+a.hh;
+  }
+  L.forEach(o=>{o.el.style.left=o.x+'px';o.el.style.top=Math.min(h-130,o.y)+'px';});
 }
 $('#vui').addEventListener('click',e=>{
   const bl=e.target.closest('[data-bld]');if(bl){SFX.click();openBld(bl.dataset.bld);return;}
@@ -2800,7 +2986,7 @@ function renderTemple(){
 }
 function renderBattle(){
   $('#speedbar').innerHTML=[1,2,4].map(s=>`<button class="spd" data-spd="${s}" aria-pressed="${speed===s}">${s}x</button>`).join('')+'<button class="spd" data-act="overview" data-hud="1" aria-pressed="false">Mapa</button><button class="spd" data-act="skip">Pular</button>';
-  $('#round').textContent='1';$('#bhud').hidden=false;$('#feed').innerHTML='';
+  $('#round').textContent='1';$('#bhud').hidden=false;$('#feed').innerHTML='';objKey='';renderObjs();
   addLog('A batalha começou. O jogo joga sozinho.','mut');
 }
 function setHint(t){hint=t;const el=$('#hint');if(el)el.textContent=t;}
@@ -2926,6 +3112,13 @@ canvas.addEventListener('pointerup',e=>{
   if(phase==='village'){
     const hits=ray.intersectObjects(villagePicks,true);
     for(const h of hits){let o=h.object;while(o&&!(o.userData&&o.userData.bld))o=o.parent;if(o){SFX.click();openBld(o.userData.bld);return;}}
+    return;
+  }
+  if(phase==='battle'){
+    const us=units().filter(u=>u.grp&&u.alive!==false&&u.plane),uh=ray.intersectObjects(us.map(u=>u.plane),true);
+    for(const h of uh){let o=h.object;while(o&&!(o.userData&&o.userData.unit))o=o.parent;if(o){selectUnit(o.userData.unit);return;}}
+    const th=ray.intersectObjects(pickables,false);
+    if(th.length){const {r,c}=th[0].object.userData,u=unitAt(r,c);if(u)selectUnit(u);else if(hudSel){hudTile={r,c};renderUC(true);}}
     return;
   }
   if(phase!=='place')return;
@@ -3204,7 +3397,7 @@ async function checkSecret(u){
   await wait(900);
 }
 async function turn(u){
-  active=u;renderOrder();followCam(u);
+  active=u;hudSel=u;hudTile=null;renderOrder();renderUC(true);followCam(u);
   // a câmera leva um tempo pra chegar no personagem (followCam não é
   // esperado) — sem essa pausa, a ação dele já começava com a câmera
   // ainda andando, dando a sensação de tudo embolado/em cima do outro.
@@ -3213,7 +3406,7 @@ async function turn(u){
   pulse(u.grp.position,u.side==='hero'?'#e9b949':'#d4503f',0.9,0.45);
   let foes=foesOf(u);if(!foes.length)return;
   const allies=(u.side==='hero'?heroesAlive():enemiesAlive()).filter(a=>a!==u);
-  let reach=bfsReach(u);
+  let reach=bfsReach(u);showRange(u,reach);
   if(u.cls==='bardo'&&u.sub==='dissonante'){
     const cand=foes.filter(f=>dist(f,u)<=4&&!f.shaken);
     if(cand.length){const f=pick(cand);f.shaken=true;showCallout(u,`♪ Desafina ${f.first}`);
@@ -3239,6 +3432,7 @@ async function turn(u){
     }
   }
   const target=chooseTarget(u,foes,reach);if(!target)return;
+  rangeTile(target.r,target.c,'red');
   const tile=bestTileWithin(reach,target,u.alc,u);
   if(tile){await moveAlong(u,pathTo(reach,tile));await checkSecret(u);await attack(u,target);}
   else{
@@ -3258,11 +3452,11 @@ async function startBattle(){
   const all=[...heroesAlive(),...enemiesAlive()];
   all.forEach(u=>u.initRoll=ri(1,20)+u.ini+R());
   stats.order=all.sort((a,b)=>b.initRoll-a.initRoll);
-  $('#order').hidden=false;$('#unitbar').hidden=false;renderOrder();
+  $('#order').hidden=false;hudSel=null;hudTile=null;ucPop=null;ucKey='';renderOrder();
   await banner('Batalha!');
   for(let round=1;round<=24;round++){
     stats.round=round;const re=$('#round');if(re){re.textContent=round;gsap.fromTo(re,{scale:1.6,color:'#e9b949'},{scale:1,color:'#efe2c4',duration:0.4});}
-    for(const u of stats.order){if(!u.alive)continue;if(over())break;await turn(u);hideCallout();await wait(420);}
+    for(const u of stats.order){if(!u.alive)continue;if(over())break;await turn(u);hideCallout();clearRange();await wait(420);}
     if(over())break;
   }
   active=null;ring.visible=false;hideCallout();
@@ -3449,7 +3643,7 @@ function finalResult(win,cash){
   res.scrollTop=0;gsap.from(res.querySelector('.res'),{y:30,opacity:0,duration:0.4});
 }
 function newRun(){
-  $('#result').hidden=true;$('#order').hidden=true;$('#unitbar').hidden=true;$('#unitbar').innerHTML='';$('#bhud').hidden=true;$('#feed').innerHTML='';diceEl.hidden=true;
+  $('#result').hidden=true;$('#order').hidden=true;$('#uc').hidden=true;$('#ucpop').hidden=true;clearRange();$('#bhud').hidden=true;$('#feed').innerHTML='';diceEl.hidden=true;
   party.forEach(disposeUnit);party=[];
   tombs.forEach(t=>{scene.remove(t);t.geometry.dispose();});tombs=[];
   if(chest){scene.remove(chest);chest=null;}
@@ -3470,8 +3664,10 @@ function loop(t){
     if(!u.grp)continue;
     if(u.alive!==false)u.pivot.scale.y=1+Math.sin(s*2.4+u.id*1.7)*0.025;
     if(u.lpc)(u.lpc.creature?tickCreature:tickLPC)(u,s);
-    if(u.hpEl&&u.alive!==false){const f=(u.hp/u.maxhp*100)+'%';u.hpFill.style.width=f;u.hpGhost.style.width=f;u.hpEl.classList.toggle('low',u.side==='hero'&&u.hp/u.maxhp<=0.35);}
+    if(u.hpEl&&u.alive!==false){const f=(u.hp/u.maxhp*100)+'%';u.hpFill.style.width=f;u.hpGhost.style.width=f;u.hpEl.classList.toggle('low',u.side==='hero'&&u.hp/u.maxhp<=0.35);
+      if(phase==='battle'){const [hx,hy]=screenOf(u,-0.05);u.hpEl.style.left=hx+'px';u.hpEl.style.top=hy+'px';}}
   }
+  if(phase==='battle'){renderObjs();renderUC();}
   villagers.forEach(v=>{v.pivot.scale.y=1+Math.sin(s*2.4+v.id)*0.02;if(v.lpc)tickLPC(v,s);});
   if(app.classList.contains('hub'))placeVillageNames();
   if(active&&active.grp){ring.position.set(active.grp.position.x,active.grp.position.y+0.09,active.grp.position.z);ring.material.opacity=0.65+Math.sin(s*6)*0.3;}
