@@ -3450,7 +3450,7 @@ async function turn(u){
     xp(u,6);addLog(`${u.first} tocou uma balada pra ${a.first} (+2 no próximo ataque)`,'good');await wait(450);}}
   if(u.trait&&u.trait.id==='covarde'&&u.hp<=u.maxhp*0.4){
     let best=null,bs=-1;for(const t of reach.values()){if(t.pass)continue;const s=Math.min(...foes.map(f=>dist(t,f)))*2+hOf(t.r,t.c);if(s>bs){bs=s;best=t;}}
-    if(best&&(best.r!==u.r||best.c!==u.c)){showCallout(u,'! Foge da briga');floatText(u,'medo!','miss');addLog(`${u.first} (Covarde) fugiu pra longe da briga`,'mut');u.fled=true;await moveAlong(u,pathTo(reach,best));await checkSecret(u);return;}
+    if(best&&(best.r!==u.r||best.c!==u.c)){showCallout(u,'Deslocar');addLog(`${u.first} se deslocou`,'mut');u.fled=true;await moveAlong(u,pathTo(reach,best));await checkSecret(u);return;}
   }
   if(u.cls==='clerigo'){
     const wounded=[u,...allies].filter(a=>a.hp<=a.maxhp*0.55).sort((a,b)=>a.hp/a.maxhp-b.hp/b.maxhp);
@@ -3461,7 +3461,7 @@ async function turn(u){
     if(!canHit){
       const field=fieldFrom(SECRET_ADJ);let best=null,bv=1e9;
       for(const t of reach.values()){if(t.pass)continue;const v=field.get(k(t.r,t.c));if(v==null)continue;const s=v*10+t.d;if(s<bv){bv=s;best=t;}}
-      if(best){showCallout(u,'? Investiga a parede');addLog(`${u.first} foi investigar a parede rachada…`,'mut');await moveAlong(u,pathTo(reach,best));await checkSecret(u);return;}
+      if(best){showCallout(u,'Deslocar');addLog(`${u.first} se deslocou`,'mut');await moveAlong(u,pathTo(reach,best));await checkSecret(u);return;}
     }
   }
   const target=chooseTarget(u,foes,reach);if(!target)return;
@@ -3469,7 +3469,7 @@ async function turn(u){
   const tile=bestTileWithin(reach,target,u.alc,u);
   if(tile){await moveAlong(u,pathTo(reach,tile));await checkSecret(u);await attack(u,target);}
   else{
-    showCallout(u,`→ Avança até ${target.first}`);
+    showCallout(u,'Deslocar');addLog(`${u.first} se deslocou`,'mut');
     const field=fieldFrom([[target.r,target.c]]);let best=null,bv=1e9;
     for(const t of reach.values()){if(t.pass)continue;const v=field.get(k(t.r,t.c));const s=(v==null?99:v)*10-hOf(t.r,t.c)+t.d*0.1;if(s<bv){bv=s;best=t;}}
     if(best)await moveAlong(u,pathTo(reach,best));
