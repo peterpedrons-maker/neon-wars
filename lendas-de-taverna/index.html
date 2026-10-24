@@ -3198,14 +3198,14 @@ async function moveAlong(u,path){
   }
   lpcSetState(u,'stand');
 }
-async function showRoll({who,roll,parts=[],target,tlabel,outcome,label,numText,calcHtml}){
+async function showRoll({who,roll,parts=[],target,tlabel,outcome,label,numText,calcHtml,hideBonus}){
   diceEl.hidden=false;diceEl.dataset.out='';dWho.textContent=who;dCalc.textContent='rolando o d20…';dRes.textContent='';
   tumbleDie();SFX.dice();
   const o={v:0,n:-1};
   await gsap.to(o,{v:1,duration:0.6,ease:'none',onUpdate:()=>{const n=Math.floor(o.v*14);if(n!==o.n){o.n=n;dNum.textContent=1+Math.floor(Math.random()*20);}}});
   dNum.textContent=numText||roll;
   const sum=roll+parts.reduce((a,p)=>a+p[0],0);
-  dCalc.innerHTML=calcHtml||`${roll}${parts.map(p=>` <span>+${p[0]} ${p[1]}</span>`).join('')} = <b>${sum}</b> vs ${tlabel} ${target}`;
+  dCalc.innerHTML=calcHtml||(hideBonus?`${roll} <span>+ ?</span> vs ${tlabel} ${target}`:`${roll}${parts.map(p=>` <span>+${p[0]} ${p[1]}</span>`).join('')} = <b>${sum}</b> vs ${tlabel} ${target}`);
   dRes.textContent=label;diceEl.dataset.out=outcome;
   landDie(roll===1&&!numText?'fumble':outcome);SFX.land();
   await wait(380);
@@ -3289,7 +3289,7 @@ async function attack(u,t){
   showCallout(u,`${magic?'✨':u.alc>1?'➶':'⚔'} Ataca ${t.first}`);followMid(u,t);
   tRing.visible=true;tRing.position.set(t.grp.position.x,t.grp.position.y+0.09,t.grp.position.z);tRing.scale.setScalar(t.big?1.25:1);
   const clearLine=aimLine(u,t,u.side==='hero'?'#e9b949':'#d4503f');
-  await showRoll({who:`${u.first} ataca ${t.first}`,roll,parts,target:defVal,tlabel:magic?'RES':'DEF',outcome:crit?'crit':hit?'hit':'miss',label:crit?'CRÍTICO!':hit?'Acertou':roll===1?'Falha crítica':'Errou'});
+  await showRoll({who:`${u.first} ataca ${t.first}`,roll,parts,target:defVal,tlabel:magic?'RES':'DEF',outcome:crit?'crit':hit?'hit':'miss',label:crit?'CRÍTICO!':hit?'Acertou':roll===1?'Falha crítica':'Errou',hideBonus:u.side==='enemy'});
   if(u.inspired){u.inspired=false;}
   if(t.shaken){t.shaken=false;}
   if(u.cls==='ladino'&&u.sub==='armadilheiro'){u.ambushDone=true;}
@@ -3691,7 +3691,7 @@ function loop(t){
     if(u.alive!==false)u.pivot.scale.y=1+Math.sin(s*2.4+u.id*1.7)*0.025;
     if(u.lpc)(u.lpc.creature?tickCreature:tickLPC)(u,s);
     if(u.hpEl&&u.alive!==false){const f=(u.hp/u.maxhp*100)+'%';u.hpFill.style.width=f;u.hpGhost.style.width=f;u.hpEl.classList.toggle('low',u.side==='hero'&&u.hp/u.maxhp<=0.35);
-      if(phase==='battle'){const [hx,hy]=screenOf(u,-0.05);u.hpEl.style.left=hx+'px';u.hpEl.style.top=hy+'px';}}
+      if(phase==='battle'){const [hx,hy]=screenOf(u,-0.16-0.24*u.sz);u.hpEl.style.left=hx+'px';u.hpEl.style.top=hy+'px';}}
   }
   if(phase==='battle'){renderObjs();renderUC();}
   villagers.forEach(v=>{v.pivot.scale.y=1+Math.sin(s*2.4+v.id)*0.02;if(v.lpc)tickLPC(v,s);});
