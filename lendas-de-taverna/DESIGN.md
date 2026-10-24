@@ -191,9 +191,42 @@ foram achados assim (barra de unidades escondendo heróis, balão de fala
 sobrepondo a lista de turno) que nenhuma leitura de código teria pego. Isso
 devia virar rotina antes de qualquer PR daqui pra frente.
 
-## Classes e subclasses (decidido, ainda não implementado em código)
+## Classes e subclasses
 
-8 classes base, 2 subclasses cada — base compartilha tipo de arma, peso de
+As 2 subclasses das **6 classes já existentes** (Guerreiro, Ladino, Mago,
+Clérigo, Arqueiro, Bardo) **estão implementadas em código** — ver
+`SUBCLASSES`/`SUB_INFO` logo depois de `LOADOUTS`. Cada herói sorteia a
+subclasse na criação (`h.sub=pick(SUBCLASSES[cls])`), igual ao sistema de
+loadout — persiste no save, aparece na ficha ("Classe · Subclasse") e no
+hint da tela de formação. **Paladino e Monge continuam só decisão de
+design, não implementados** — são classes novas de verdade, exigem sprite
+próprio (corpo/pose), que não foi pesquisado ainda; mesmo cuidado que o
+caso do cajado do Mago, não prometer sem checar o asset primeiro.
+
+Decisão de escopo: a versão implementada usa os ganchos que **já existem**
+no motor de combate (bônus no `parts[]` do ataque — mesmo padrão de
+`balada`/`irmãos`/`relíquia` —, `critBonus`, e flags consumidas no próximo
+ataque tipo `inspired`/`shaken`) em vez de um sistema de efeitos de status
+genérico (Sangramento/Queimando com duração), que continua não existindo —
+ver "Stats secundários novos" acima. Duas das doze saíram simplificadas por
+não terem o sistema de verdade que a versão completa do design pede:
+- **Saraivador** (Arqueiro) seria dano em área de verdade — o motor de
+  combate mira um alvo só por vez hoje. Virou um respingo fixo (40% do dano
+  principal) num segundo inimigo colado no alvo, sem rolagem própria.
+- **Armadilheiro** (Ladino) seria uma armadilha colocável no chão — não
+  existe objeto de terreno interativo hoje. Virou um bônus de emboscada
+  (+3 de acerto) só no primeiro golpe da batalha daquele herói.
+
+Dano em área de verdade e armadilha de terreno continuam no roadmap (passo
+10) — quando existirem, essas duas sobem pra versão completa sem precisar
+reescrever o resto. As outras 10 (Cavaleiro, Bárbaro, Assassino, Piromante,
+Geomante, Curandeiro, Templário, Patrulheiro, Consonante, Dissonante) têm
+mecânica real e completa, lida no código de `SUBCLASSES`/`SUB_INFO` e nos
+comentários de `attack()`/`heal()`/`turn()`.
+
+8 classes base, 2 subclasses cada (tabela de papel/nomes — decidido, as 6
+primeiras linhas já valem para o código; Paladino/Monge ainda são só
+design) — base compartilha tipo de arma, peso de
 armadura e esqueleto de comportamento de IA; subclasse diverge em
 comportamento de verdade (não só número), efeito visual próprio, e afinidade
 de equipamento.
@@ -286,10 +319,12 @@ da ideia original sem precisar do modo manual completo.
 7. ~~Implementar DEF mágica + marcação físico/mágico por ataque~~ — feito
    (`defMag`/`baseDefMag`/`isMagicAttacker`, hoje só Mago e Xamã Goblin
    marcados `magico:true`).
-8. Implementar as 8 classes base + 16 subclasses no código (sprites, IA,
-   afinidade de equipamento) — hoje só as 6 classes originais existem, sem
-   Paladino/Monge, sem nenhuma subclasse.
-9. Sistema de efeitos de status (pré-requisito de boa parte das subclasses).
+8. ~~Implementar as 12 subclasses das 6 classes originais~~ — feito, com
+   Saraivador e Armadilheiro simplificados (ver seção "Classes e
+   subclasses"). **Ainda falta**: Paladino/Monge como classes novas de
+   verdade (sprite próprio, pesquisa de asset primeiro) + suas 4 subclasses.
+9. Sistema de efeitos de status (destrava a versão completa de Saraivador/
+   Armadilheiro e abre caminho pras subclasses de Paladino/Monge).
 10. Ataque em área e armadilha de terreno (mecânicas de combate novas).
 11. Motor de rolagem de item (substituir o catálogo fixo pela v2) +
     serialização de save por instância de item.

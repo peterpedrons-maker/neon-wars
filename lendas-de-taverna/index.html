@@ -1418,6 +1418,9 @@ function makeHero(used,cls){
   recomputeAttrBonus(h);
   h.nome=`${h.first} ${h.sur}`;
   h.loadout=pick(LOADOUTS[cls]);
+  h.sub=pick(SUBCLASSES[cls]);
+  if(h.sub==='piromante')h.critBonus=(h.critBonus||0)+1;
+  if(h.sub==='geomante')h.def+=2;
   h.sprite=heroSprite(h);h.portrait=lpcPortrait(h.loadout)||h.sprite.toDataURL();
   return h;
 }
@@ -1948,6 +1951,40 @@ const LOADOUTS={
   arqueiro:['arqueiro','arqueiro_b'],
   bardo:['bardo','bardo_b'],
 };
+/* ---------- Subclasses (ver DESIGN.md "Classes e subclasses") --------------
+   Cada herói sorteia uma das 2 subclasses da sua classe na criação — divide
+   comportamento de verdade, não só número, mas usando mecânicas que já
+   existem no motor (bônus no `parts[]` do ataque, `critBonus`, flags
+   consumidas no próximo ataque tipo `inspired`) em vez de um sistema de
+   efeitos de status genérico, que ainda não existe. Duas ficaram
+   simplificadas de propósito, por não terem o sistema que a versão completa
+   pede: Saraivador seria dano em área de verdade (motor de combate só mira
+   um alvo por vez hoje — vira um respingo fixo num segundo inimigo perto) e
+   Armadilheiro seria uma armadilha colocável no chão (não existe objeto de
+   terreno interativo — vira bônus de emboscada só no primeiro golpe da
+   batalha). Ver roadmap: dano em área e armadilha de terreno são passo 10. */
+const SUBCLASSES={
+  guerreiro:['cavaleiro','barbaro'],
+  ladino:['assassino','armadilheiro'],
+  mago:['piromante','geomante'],
+  clerigo:['curandeiro','templario'],
+  arqueiro:['patrulheiro','saraivador'],
+  bardo:['consonante','dissonante'],
+};
+const SUB_INFO={
+  cavaleiro:{nome:'Cavaleiro',desc:'Defensivo: fica mais resistente perto de um aliado maltratado.'},
+  barbaro:{nome:'Bárbaro',desc:'Ofensivo: bate mais forte quanto mais ferido está.'},
+  assassino:{nome:'Assassino',desc:'Mira os isolados: bônus contra quem está longe de aliados.'},
+  armadilheiro:{nome:'Armadilheiro',desc:'Chega preparado: bônus de emboscada no primeiro golpe da batalha.'},
+  piromante:{nome:'Piromante',desc:'Mais crítico, explosão maior.'},
+  geomante:{nome:'Geomante',desc:'Mais resistente: usa a magia pra se proteger, não só atacar.'},
+  curandeiro:{nome:'Curandeiro',desc:'Cura pura: cura bem mais que o normal.'},
+  templario:{nome:'Templário',desc:'Híbrido: bate com fé — recupera um pouco de vida a cada acerto.'},
+  patrulheiro:{nome:'Patrulheiro',desc:'Precisão: empilha dano ao focar o mesmo alvo seguidas vezes.'},
+  saraivador:{nome:'Saraivador',desc:'Flecha perdida: quem estiver colado no alvo também leva de raspão.'},
+  consonante:{nome:'Consonante',desc:'Harmonia: a balada inspira mais acerto.'},
+  dissonante:{nome:'Dissonante',desc:'Discórdia: desafina a defesa de um inimigo por perto.'},
+};
 function recomputeAttrBonus(h){
   const a=h.attrs;
   const dmg=Math.floor((a.forca+a.inteligencia)/3);
@@ -1978,7 +2015,7 @@ function serializeHero(h){
     critBonus:h.critBonus||0,look:h.look,arma:h.arma,armadura:h.armadura,
     xpTotal:h.xpTotal||0,xpRun:h.xpRun||0,level:h.level||1,
     injured:!!h.injured,injuredMissionsLeft:h.injuredMissionsLeft||0,benchXpBonus:h.benchXpBonus||0,
-    attrs:h.attrs,attrBonus:h.attrBonus,loadout:h.loadout,equip};
+    attrs:h.attrs,attrBonus:h.attrBonus,loadout:h.loadout,sub:h.sub,equip};
 }
 function hydrateHero(s){
   const trait=TRAITS.find(x=>x.id===s.traitId)||TRAITS[0];
@@ -1990,6 +2027,7 @@ function hydrateHero(s){
     attrs:s.attrs?{...s.attrs}:{...ATTR_BASE[s.cls]},
     attrBonus:s.attrBonus||{dmg:0,crit:0,hp:0,heal:0},healBonus:s.attrBonus?s.attrBonus.heal:0,
     loadout:(s.loadout&&LPC_RECIPES[s.loadout])?s.loadout:s.cls,
+    sub:(s.sub&&SUBCLASSES[s.cls]&&SUBCLASSES[s.cls].includes(s.sub))?s.sub:SUBCLASSES[s.cls][0],
     r:null,c:null,equip:{}};
   EQ_SLOTS.forEach(sl=>{const id=s.equip&&s.equip[sl];h.equip[sl]=id?ITEMS.find(i=>i.id===id)||null:null;});
   h.sprite=heroSprite(h);h.portrait=lpcPortrait(h.loadout)||h.sprite.toDataURL();
@@ -2189,7 +2227,7 @@ function renderTavern(){
       <img src="${h.portrait}" alt="">
       <div class="pcbody">
         <span class="nm">${h.first}</span>
-        <span class="cl">${CLASSES[h.cls].nome} · ${CLASSES[h.cls].papel}</span>
+        <span class="cl">${CLASSES[h.cls].nome} · ${SUB_INFO[h.sub].nome}</span>
         ${h.injured?`<span class="pcstats">🤕 Recuperando (${h.injuredMissionsLeft})</span>`:`<span class="pcstats">Nv.${h.level||1} · ❤${h.maxhp} ⚔${h.atk} 🛡${h.def} 🏃${h.mov} 🎯${h.alc}</span>`}
         <span class="tr">${h.trait.nome}</span>
         <span class="pcgear">${gearBadge(h)||'sem equipamento'}</span>
@@ -2212,7 +2250,7 @@ function renderRecruit(){
       <img src="${h.portrait}" alt="">
       <div class="pcbody">
         <span class="nm">${h.first}</span>
-        <span class="cl">${CLASSES[h.cls].nome} · ${CLASSES[h.cls].papel}</span>
+        <span class="cl">${CLASSES[h.cls].nome} · ${SUB_INFO[h.sub].nome}</span>
         <span class="pcstats">❤${h.maxhp} ⚔${h.atk} 🛡${h.def} 🏃${h.mov} 🎯${h.alc}</span>
         <span class="tr">${h.trait.nome}</span>
         <span class="pcgear">${h.arma} · ${h.armadura}</span>
@@ -2375,7 +2413,7 @@ PI_.addEventListener('click',e=>{
   const steq=t.closest('[data-stashequip]');if(steq){const h=roster.find(x=>x.id===+steq.dataset.stashequip),item=stashSel!=null?stash[stashSel]:null;if(h&&item&&canEquip(h,item)){equipItem(h,slotKeyFor(h,item),item,stash);stashSel=null;saveGame();}renderStash();return;}
   const stequn=t.closest('[data-steqnslot]');if(stequn){const h=roster.find(x=>x.id===+stequn.dataset.steqnhero);if(h){unequipItem(h,stequn.dataset.steqnslot,stash);saveGame();}renderStash();return;}
   const chip=t.closest('.chip');
-  if(chip){selHero=party.find(h=>h.id===+chip.dataset.hid);hint=`${selHero.first} (${CLASSES[selHero.cls].nome}): ${COMO[selHero.cls].campo} Toque numa casa dourada.`;renderPlace();if(selHero.grp)pulse(selHero.grp.position,'#e9b949',0.8,0.5);return;}
+  if(chip){selHero=party.find(h=>h.id===+chip.dataset.hid);hint=`${selHero.first} (${CLASSES[selHero.cls].nome} · ${SUB_INFO[selHero.sub].nome}): ${SUB_INFO[selHero.sub].desc} Toque numa casa dourada.`;renderPlace();if(selHero.grp)pulse(selHero.grp.position,'#e9b949',0.8,0.5);return;}
   const spd=t.closest('[data-spd]');
   if(spd){speed=+spd.dataset.spd;applySpeed();document.querySelectorAll('[data-spd]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.spd===speed));return;}
   const act=t.closest('[data-act]')?.dataset.act;
@@ -2541,7 +2579,7 @@ async function showRoll({who,roll,parts=[],target,tlabel,outcome,label,numText,c
   await wait(380);
 }
 const sibActive=u=>u.sib&&party.some(o=>o!==u&&o.alive&&o.r!=null&&o.sur===u.sur);
-const VERB={guerreiro:'golpeou',ladino:'apunhalou',mago:'lançou um raio em',clerigo:'esmagou',arqueiro:'flechou',bardo:'acertou',goblin:'atacou',gobarq:'flechou',ogro:'esmagou',lobo:'mordeu',xama:'atingiu',guarda:'golpeou'};
+const VERB={guerreiro:'golpeou',ladino:'apunhalou',mago:'lançou um raio em',clerigo:'esmagou',arqueiro:'flechou',bardo:'acertou',goblin:'atacou',gobarq:'flechou',ogro:'esmagou',lobo:'mordeu',xama:'atingiu',guarda:'golpeou',slime:'atingiu',bee:'picou',spider:'mordeu',beetle:'golpeou'};
 async function projectile(u,t){
   const mg=u.cls==='mago';const a=u.grp.position,b=t.grp.position;
   let halo=null;
@@ -2597,13 +2635,23 @@ function swingLegs(u,dur){
     .to(u.legL.rotation,{x:0,duration:0.12,ease:'power2.out'},dur)
     .to(u.legR.rotation,{x:0,duration:0.12,ease:'power2.out'},dur);
 }
+function isIsolated(t){
+  const allies=(t.side==='hero'?heroesAlive():enemiesAlive()).filter(a=>a!==t);
+  return !allies.some(a=>dist(a,t)<=1);
+}
 async function attack(u,t){
   const parts=[[u.atk,'ATQ']];const hu=hOf(u.r,u.c),ht=hOf(t.r,t.c);
   if(hu>ht)parts.push([u.cls==='arqueiro'?4:2,'alto']);
-  if(u.inspired)parts.push([2,'balada']);
+  if(u.inspired)parts.push([u.inspired,'balada']);
   if(sibActive(u))parts.push([1,'irmãos']);
   if(u.secretBuff)parts.push([1,'relíquia']);
-  const magic=isMagicAttacker(u),defVal=magic?(t.defMag??t.def):t.def;
+  if(u.cls==='ladino'&&u.sub==='assassino'&&isIsolated(t))parts.push([3,'isolado']);
+  if(u.cls==='arqueiro'&&u.sub==='patrulheiro'&&u.lastTargetId===t.id)parts.push([2,'foco']);
+  if(u.cls==='ladino'&&u.sub==='armadilheiro'&&!u.ambushDone)parts.push([3,'emboscada']);
+  u.lastTargetId=t.id;
+  const magic=isMagicAttacker(u);let defVal=magic?(t.defMag??t.def):t.def;
+  if(t.side==='hero'&&t.cls==='guerreiro'&&t.sub==='cavaleiro'&&heroesAlive().some(a=>a!==t&&dist(a,t)<=1&&a.hp<=a.maxhp*0.5))defVal+=2;
+  if(t.shaken)defVal-=2;
   const roll=ri(1,20),critMin=20-(u.critBonus||0)-(u.trait&&u.trait.id==='sortudo'?1:0),sum=roll+parts.reduce((a,p)=>a+p[0],0);
   const crit=roll>=critMin,hit=crit||(roll!==1&&sum>=defVal);
   showCallout(u,`${magic?'✨':u.alc>1?'➶':'⚔'} Ataca ${t.first}`);followMid(u,t);
@@ -2611,6 +2659,8 @@ async function attack(u,t){
   const clearLine=aimLine(u,t,u.side==='hero'?'#e9b949':'#d4503f');
   await showRoll({who:`${u.first} ataca ${t.first}`,roll,parts,target:defVal,tlabel:magic?'RES':'DEF',outcome:crit?'crit':hit?'hit':'miss',label:crit?'CRÍTICO!':hit?'Acertou':roll===1?'Falha crítica':'Errou'});
   if(u.inspired){u.inspired=false;}
+  if(t.shaken){t.shaken=false;}
+  if(u.cls==='ladino'&&u.sub==='armadilheiro'){u.ambushDone=true;}
   const p=u.grp.position,ox=p.x,oz=p.z,dx=t.c-u.c,dz=t.r-u.r,len=Math.hypot(dx,dz)||1;
   if(u.alc>1){SFX.shoot();drawBow(u,0.3);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox-dx/len*0.12,z:oz-dz/len*0.12,duration:0.08}).to(p,{x:ox,z:oz,duration:0.1});await projectile(u,t);}
   else{SFX.swing();swingArm(u,0.12,0.18);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox+dx/len*0.32,z:oz+dz/len*0.32,duration:0.12,ease:'power2.in'}).to(p,{x:ox,z:oz,duration:0.18,ease:'power2.out'});}
@@ -2620,7 +2670,7 @@ async function attack(u,t){
     burst(t.grp.position,{n:5,colors:['#d8d2c4'],spread:0.5,up:0.2,y:0.5,life:0.3,size:0.6});
     addLog(`${u.first} errou ${t.first} (${sum} vs ${defVal})`,'mut');tRing.visible=false;await wait(220);return;
   }
-  const [n,s,b]=u.dmg;const dmg=dice(crit?n*2:n,s)+b+(u.trait&&u.trait.id==='bruto'?3:0);
+  const [n,s,b]=u.dmg;const dmg=dice(crit?n*2:n,s)+b+(u.trait&&u.trait.id==='bruto'?3:0)+(u.cls==='guerreiro'&&u.sub==='barbaro'&&u.hp<=u.maxhp*0.5?3:0);
   if(crit&&u.side==='hero')stats.crits++;
   xp(u,8+(crit?12:0));
   if(u.side==='hero'&&u.cls==='arqueiro'&&hu>ht)u.highHits++;
@@ -2634,7 +2684,21 @@ async function attack(u,t){
   if(crit){flash('#fffaf0',0.4);shakeCam(0.28,0.4);pulse(t.grp.position,'#ffd34a',1.4,0.5);}
   else if(u.cls!=='mago')shakeCam(0.07,0.18);
   addLog(`${crit?'CRÍTICO! ':''}${u.first} ${VERB[u.cls||u.kind]} ${t.first}: ${dmg} de dano`,u.side==='hero'?(crit?'gold':'good'):'bad');
-  damage(t,dmg,u,crit);tRing.visible=false;await wait(280);
+  damage(t,dmg,u,crit);
+  if(u.cls==='clerigo'&&u.sub==='templario'&&u.alive&&u.hp>0&&u.hp<u.maxhp){
+    const selfHeal=Math.max(1,Math.round(dmg*0.3));u.hp=Math.min(u.maxhp,u.hp+selfHeal);
+    floatText(u,`+${selfHeal}`,'heal');pulse(u.grp.position,'#6cc35e',0.8,0.4);
+  }
+  if(u.cls==='arqueiro'&&u.sub==='saraivador'){
+    const splashFoes=foesOf(u).filter(f=>f!==t&&f.alive&&dist(f,t)<=1);
+    if(splashFoes.length){
+      const sp=pick(splashFoes),spDmg=Math.max(1,Math.round(dmg*0.4));
+      floatText(sp,`-${spDmg}`,'');burst(sp.grp.position,{n:6,colors:sparks,spread:0.5,up:0.4,y:0.4,life:0.35});
+      addLog(`${u.first} também acertou ${sp.first} de raspão: ${spDmg} de dano`,u.side==='hero'?'good':'bad');
+      damage(sp,spDmg,u,false);
+    }
+  }
+  tRing.visible=false;await wait(280);
 }
 function tintUnit(u,from,to,duration,delay=0){
   const mats=u.mats||[u.mat],c=mats[0].color;
@@ -2680,8 +2744,9 @@ function addTomb(t){
 async function heal(u,w){
   showCallout(u,`✚ Cura ${w===u?'a si mesmo':w.first}`);
   pulse(u.grp.position,'#6cc35e',0.9,0.5);await wait(250);
-  const amt=dice(2,4)+2+(u.healBonus||0),before=w.hp;w.hp=Math.min(w.maxhp,w.hp+amt);
-  await showRoll({who:`${u.first} reza por ${w===u?'si mesmo':w.first}`,roll:amt,numText:'+'+amt,calcHtml:`Cura: <span>2d4 +2${u.healBonus?' +'+u.healBonus+' Fé':''}</span>`,outcome:'hit',label:`+${w.hp-before} PV`});
+  const subHeal=u.sub==='curandeiro'?3:0;
+  const amt=dice(2,4)+2+(u.healBonus||0)+subHeal,before=w.hp;w.hp=Math.min(w.maxhp,w.hp+amt);
+  await showRoll({who:`${u.first} reza por ${w===u?'si mesmo':w.first}`,roll:amt,numText:'+'+amt,calcHtml:`Cura: <span>2d4 +2${u.healBonus?' +'+u.healBonus+' Fé':''}${subHeal?' +'+subHeal+' Curandeiro':''}</span>`,outcome:'hit',label:`+${w.hp-before} PV`});
   SFX.heal();pulse(w.grp.position,'#6cc35e',1.2,0.7);burst(w.grp.position,{n:14,colors:['#8ee07e','#d9ffd0','#6cc35e'],spread:0.35,up:1.3,y:0.2,life:0.9,size:0.9});
   floatText(w,`+${w.hp-before}`,'heal');tintUnit(w,{r:0.5,g:1,b:0.5},{r:1,g:1,b:1},0.7);
   xp(u,Math.max(5,(w.hp-before)*2));
@@ -2724,7 +2789,12 @@ async function turn(u){
   let foes=foesOf(u);if(!foes.length)return;
   const allies=(u.side==='hero'?heroesAlive():enemiesAlive()).filter(a=>a!==u);
   let reach=bfsReach(u);
-  if(u.cls==='bardo'){const cand=allies.filter(a=>dist(a,u)<=4&&!a.inspired);if(cand.length){const a=pick(cand);a.inspired=true;showCallout(u,`♪ Inspira ${a.first}`);
+  if(u.cls==='bardo'&&u.sub==='dissonante'){
+    const cand=foes.filter(f=>dist(f,u)<=4&&!f.shaken);
+    if(cand.length){const f=pick(cand);f.shaken=true;showCallout(u,`♪ Desafina ${f.first}`);
+      burst(u.grp.position,{n:6,colors:['#d98fe0','#f3cfff'],spread:0.4,up:1,y:0.9,life:0.7});pulse(f.grp.position,'#d98fe0',1,0.6);floatText(f,'♪ −2 defesa','miss');
+      xp(u,6);addLog(`${u.first} desafinou a defesa de ${f.first} (−2 na próxima defesa)`,'good');await wait(450);}
+  }else if(u.cls==='bardo'){const cand=allies.filter(a=>dist(a,u)<=4&&!a.inspired);if(cand.length){const a=pick(cand);a.inspired=2;showCallout(u,`♪ Inspira ${a.first}`);
     burst(u.grp.position,{n:6,colors:['#79a8ec','#cfe0ff'],spread:0.4,up:1,y:0.9,life:0.7});pulse(a.grp.position,'#79a8ec',1,0.6);floatText(a,'♪ +2 acerto','buff');
     xp(u,6);addLog(`${u.first} tocou uma balada pra ${a.first} (+2 no próximo ataque)`,'good');await wait(450);}}
   if(u.trait&&u.trait.id==='covarde'&&u.hp<=u.maxhp*0.4){
@@ -2802,7 +2872,7 @@ const xp=(u,n)=>{if(u&&u.side==='hero'&&u.alive!==false)u.xp=(u.xp||0)+n;};
 function resetHero(h,first){
   if(h.exausto){h.atk++;h.def++;h.exausto=false;}
   if(!first&&h.alive===false){h.hp=Math.ceil(h.maxhp*0.5);h.atk--;h.def--;h.exausto=true;}else h.hp=h.maxhp;
-  Object.assign(h,{alive:true,r:null,c:null,triedSecret:false,inspired:false,highHits:0,fled:false,secretBuff:false,xp:0,bonus:false,diedRound:null});
+  Object.assign(h,{alive:true,r:null,c:null,triedSecret:false,inspired:false,highHits:0,fled:false,secretBuff:false,xp:0,bonus:false,diedRound:null,shaken:false,ambushDone:false,lastTargetId:null});
   if(first)h.xpRun=0;
 }
 function departRun(){
