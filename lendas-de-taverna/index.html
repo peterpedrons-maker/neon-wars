@@ -750,6 +750,20 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 #logp .ll{padding:2px 0;border-bottom:1px solid rgba(90,67,48,.6);color:#e8d3a8}
 #logp .ll.gold{color:#ffd34a}#logp .ll.good{color:#9be58b}#logp .ll.bad{color:#f0907f}#logp .ll.heal{color:#8fdc7e}#logp .ll.mut{color:#a8997c}
 @media(min-width:700px){#logp{top:calc(66px + env(safe-area-inset-top,0px))}}
+/* ===== Registro em tela cheia + rosto na etiqueta ===== */
+.callout .cface{width:24px;height:24px;margin-right:6px;vertical-align:middle;image-rendering:pixelated;border:2px solid #120b08;background:#2e2219}
+.callout.e .cface{border-color:#5a1410}
+#logp{inset:0;left:0;top:0;width:auto;max-height:none;z-index:6;display:flex;flex-direction:column;padding:calc(10px + env(safe-area-inset-top,0px)) 10px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(8,12,24,.95);border:0;border-image:none;overflow:hidden}
+#logp[hidden]{display:none}
+#logp .lh{display:flex;justify-content:space-between;align-items:center;padding:4px 2px 8px;border-bottom:2px solid #e9b949;font-family:var(--f-display);font-size:16px;color:var(--cre)}
+#logp .lh .spd{min-width:36px;text-align:center;padding:6px 8px;border:3px solid #120b08;box-shadow:inset 0 0 0 2px #5a4330;background:linear-gradient(#2e2219,#1c1510)}
+#logp .lb{flex:1;min-height:0;overflow-y:auto;padding-top:4px}
+#logp .lt{position:sticky;top:0;margin:8px 0 2px;padding:3px 8px;background:#1a120d;border-left:4px solid #e9b949;color:#ffe9b8;font-family:var(--f-display);font-size:12px}
+#logp .ll{display:flex;align-items:center;gap:8px;padding:4px 2px;border-bottom:1px solid rgba(90,67,48,.5);font-size:13px;line-height:1.25}
+#logp .ll img,#logp .ll i{flex:0 0 28px;width:28px;height:28px;image-rendering:pixelated;border:2px solid #3a7bd5;background:#1c1510;box-sizing:border-box}
+#logp .ll i{border-color:transparent;background:none}
+#logp .ll.enemy img{border-color:#c8463c}
+@media(min-width:700px){#logp{top:0}}
 </style>
 </head>
 <body>
@@ -1439,6 +1453,44 @@ const AZ=Math.atan2(CAM_OFF.x,CAM_OFF.z), SIN_E=CAM_OFF.y/CAM_OFF.length();
 const VX=-22, VZ=0;
 const camT=new THREE.Vector3(VX,0.3,VZ+0.3); cam.zoom=0.95;
 const shakeO={v:0};
+/* ---------- Animações do pack SpritePilot (CC0) ----------
+   fxPlay: efeito de uma vez só (golpe, cura...). ambient: loop decorativo preso
+   a um grupo (grama, tochas, cachoeira...) — some junto com o grupo. Os
+   ambientes do mesmo tipo dividem a textura (1 upload por quadro, não 1 por
+   sprite); `variant` só defasa o relógio pra não balançarem todos juntos. */
+const SPIMG={},fxLive=[],ambLive=[],AMB_ST={};
+const spImg=(cat,file)=>SPIMG[cat+file]||(SPIMG[cat+file]=spStripImg(cat,file));
+function spBill(cat,file,frames,fps,{w=1,h=w,flat=false,opacity=1,ry,st=null}={}){
+  const state=st||spStripState(spImg(cat,file),frames,fps,true);
+  const mat=new THREE.MeshBasicMaterial({map:state.tex,transparent:true,alphaTest:0.1,side:THREE.DoubleSide,opacity,depthWrite:false});
+  const geo=new THREE.PlaneGeometry(w,h),m=new THREE.Mesh(geo,mat);m.renderOrder=4;
+  if(flat)m.rotation.x=-Math.PI/2;
+  const holder=new THREE.Group();holder.add(m);if(!flat)holder.rotation.y=ry===undefined?AZ:ry;
+  return {holder,state,frames,fps,geo,mat};
+}
+function fxPlay(cat,file,frames,fps,pos,o={}){
+  const e=spBill(cat,file,frames,fps,o);
+  e.holder.position.set(pos.x,pos.y+(o.flat?0:(o.h||o.w||1)/2),pos.z);scene.add(e.holder);fxLive.push(e);return e;
+}
+function ambient(parent,cat,file,frames,fps,x,y,z,o={}){
+  const key=file+(o.variant||0);
+  let st=AMB_ST[key];if(!st){st=AMB_ST[key]=spStripState(spImg(cat,file),frames,fps,true);st.since=-(o.variant||0)*0.45;}
+  const e=spBill(cat,file,frames,fps,{...o,st});
+  e.holder.position.set(x,y+(o.flat?0:(o.h||o.w||1)/2),z);parent.add(e.holder);ambLive.push({e,st});return e;
+}
+function fxTick(s){
+  const seen=new Set();
+  for(let i=ambLive.length-1;i>=0;i--){const a=ambLive[i];if(!a.e.holder.parent){a.e.geo.dispose();a.e.mat.dispose();ambLive.splice(i,1);continue;}seen.add(a.st);}
+  seen.forEach(st=>spStripTick(st,s));
+  for(let i=fxLive.length-1;i>=0;i--){
+    const e=fxLive[i];spStripTick(e.state,s);
+    if(e.state.since!=null&&(s-e.state.since)>=e.frames/e.fps){scene.remove(e.holder);e.geo.dispose();e.mat.dispose();e.state.tex.dispose();fxLive.splice(i,1);}
+  }
+}
+// cachoeira caindo da borda de uma ilha flutuante (2 quadrados empilhados)
+function waterfallAt(parent,x,z,ry,y0=-0.34){
+  for(let k=0;k<2;k++)ambient(parent,'environment','waterfall-32px_strip16.png',16,16,x,y0-(k+1)*1.9,z,{w:1.9,h:1.9,ry,variant:k});
+}
 function applyCam(){
   const sx=(Math.random()-0.5)*shakeO.v, sy=(Math.random()-0.5)*shakeO.v;
   // The sun follows the current view target so its shadow frustum only
@@ -1607,6 +1659,20 @@ function buildBoard(){
     }
   }
   boardGroup.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+  decorateBoard(bio);
+}
+// vida no cenário: só campina/floresta (o deserto fica seco)
+function decorateBoard(bio){
+  if(bio==='deserto')return;
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    if(cell(r,c)!=='.'||isZone(r,c)||((r*7+c*13)%9!==0))continue;
+    ambient(boardGroup,'environment','tall-grass-32px_strip12.png',12,10,wx(c)+0.22,topY(r,c)-0.02,wz(r)+0.2,{w:0.8,variant:(r+c)%3});
+  }
+  const ex=(COLS+0.5)/2+0.03,ez=(ROWS+0.5)/2+0.03;
+  [3,8,12].forEach(c=>waterfallAt(boardGroup,wx(c),ez,0));
+  [4,10].forEach(r=>waterfallAt(boardGroup,ex,wz(r),Math.PI/2));
+  [[2,5],[9,3],[6,11]].forEach(([c,r],i)=>ambient(boardGroup,'weather','fireflies-32px_strip16.png',16,12,wx(c),0.9,wz(r),{w:2.4,variant:i,opacity:0.9}));
+  if(bio==='floresta')[[4,4],[11,8]].forEach(([c,r],i)=>ambient(boardGroup,'weather','falling-leaves-32px_strip16.png',16,10,wx(c),1.4,wz(r),{w:3,variant:i}));
 }
 const mkRing=col=>{const m=new THREE.Mesh(new THREE.RingGeometry(0.4,0.5,28),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.9,depthWrite:false,side:THREE.DoubleSide}));m.rotation.x=-Math.PI/2;m.visible=false;scene.add(m);return m;};
 const ring=mkRing('#e9b949'), tRing=mkRing('#d4503f');
@@ -1695,6 +1761,14 @@ function building(id,o){
   as.position.set(5.9,0.95,1.55);village.add(as);
 })();
 village.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+(function decorateVillage(){
+  const A=(cat,file,fr,fps,x,y,z,o)=>ambient(village,cat,file,fr,fps,x,y,z,o);
+  A('environment','wall-torch-32px_strip8.png',8,10,-1.35,0.9,-1.62,{w:0.9});A('environment','wall-torch-32px_strip8.png',8,10,1.35,0.9,-1.62,{w:0.9,variant:1});
+  A('environment','banner-32px_strip8.png',8,10,-2.15,0.15,-0.2,{w:1.2});A('environment','banner-32px_strip8.png',8,10,2.15,0.15,-0.2,{w:1.2,variant:1});
+  for(let i=0;i<9;i++)A('environment','tall-grass-32px_strip12.png',12,10,-6.2+i*1.55,0,5.3+(i%2)*0.5,{w:0.9,variant:i%3});
+  [[-5,-4],[-1,5],[4,-4.5],[6,3],[0,-5]].forEach(([x,z],i)=>A('weather','fireflies-32px_strip16.png',16,12,x,0.8,z,{w:2.6,variant:i,opacity:0.9}));
+  waterfallAt(village,-2.5,6.73,0);waterfallAt(village,3,6.73,0);waterfallAt(village,7.53,1,Math.PI/2);waterfallAt(village,7.53,-3,Math.PI/2);
+})();
 
 /* ---------- Moradores ---------- */
 // mesmo sprite LPC dos heróis/inimigos (sem arma, "pov_m"/"pov_f"), pra
@@ -1829,12 +1903,10 @@ function beam(p,col){
 const slashTex=(()=>{const c=document.createElement('canvas');c.width=c.height=32;const g=c.getContext('2d');
   for(let a=-1.15;a<=1.15;a+=0.025)for(let r=10;r<=14;r++){const fade=1-Math.abs(a)/1.25;if(r<12&&Math.random()>fade)continue;g.fillStyle=r>=13?'#ffffff':'#ffe9a8';g.fillRect(Math.round(16+Math.cos(a)*r),Math.round(16+Math.sin(a)*r),1,1);}
   return nearestTex(c);})();
-function slash(t,crit,col){
-  const m=new THREE.Mesh(new THREE.PlaneGeometry(1.1,1.1),new THREE.MeshBasicMaterial({map:slashTex,transparent:true,depthTest:false,side:THREE.DoubleSide,color:crit?'#ffd34a':col}));
-  m.renderOrder=5;const p=t.grp.position,holder=new THREE.Group();holder.position.set(p.x,p.y+0.6*(t.big?1.35:1),p.z);holder.rotation.y=AZ;holder.add(m);scene.add(holder);
-  gsap.fromTo(m.rotation,{z:1.3},{z:-0.7,duration:0.22,ease:'power2.out'});
-  gsap.fromTo(m.scale,{x:0.5,y:0.5},{x:crit?1.7:1.25,y:crit?1.7:1.25,duration:0.22});
-  gsap.to(m.material,{opacity:0,duration:0.28,delay:0.1,onComplete:()=>{scene.remove(holder);m.geometry.dispose();m.material.dispose();}});
+function slash(t,crit){
+  const p=t.grp.position,k=t.big?1.35:1;
+  fxPlay('combat','sword-slash-32px_strip7.png',7,16,{x:p.x,y:p.y+0.2,z:p.z},{w:1.5*k});
+  if(crit)fxPlay('combat','critical-hit-32px_strip8.png',8,14,{x:p.x,y:p.y+0.3,z:p.z},{w:1.9*k});
 }
 function flash(col,a=0.35){flashEl.style.background=col;gsap.fromTo(flashEl,{opacity:a},{opacity:0,duration:0.4});}
 function shakeCam(v=0.25,d=0.35){gsap.fromTo(shakeO,{v},{v:0,duration:d,ease:'power2.out'});}
@@ -1854,7 +1926,10 @@ function aimLine(u,t,col){
   return ()=>{scene.remove(l);g.dispose();m.dispose();};
 }
 let callout=null;
-function showCallout(u,text){hideCallout();const el=document.createElement('div');el.className='callout'+(u.side==='enemy'?' e':'');el.textContent=text;hud.appendChild(el);callout={u,el};gsap.fromTo(el,{scale:0.6,opacity:0},{scale:1,opacity:1,duration:0.18,ease:'back.out(2)'});}
+function showCallout(u,text){hideCallout();const el=document.createElement('div');el.className='callout'+(u.side==='enemy'?' e':'');
+  const f=document.createElement('img');f.className='cface';f.src=faceOf(u);f.alt='';el.appendChild(f);
+  const sp=document.createElement('span');sp.textContent=text;el.appendChild(sp);
+  hud.appendChild(el);callout={u,el};gsap.fromTo(el,{scale:0.6,opacity:0},{scale:1,opacity:1,duration:0.18,ease:'back.out(2)'});}
 function hideCallout(){if(callout){callout.el.remove();callout=null;}}
 
 /* ================= Unidades ================= */
@@ -2335,11 +2410,17 @@ function banner(text){const b=$('#banner');b.textContent=text;b.hidden=false;ret
 function renderLogPanel(){
   const el=$('#logp');if(!el||el.hidden)return;
   const esc=x=>x.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-  el.innerHTML=logLines.slice(-60).map(l=>`<div class="ll ${l.cls}">${esc(l.t)}</div>`).join('')||'<div class="ll mut">Nada ainda.</div>';
-  el.scrollTop=el.scrollHeight;
+  let last=-1,h='<div class="lh"><b>Registro da luta</b><button class="spd" data-act="log" aria-label="Fechar">✕</button></div><div class="lb">';
+  logLines.forEach(l=>{
+    if(l.round!==last){last=l.round;h+=`<div class="lt">${l.round?'Turno '+l.round:'Início'}</div>`;}
+    h+=`<div class="ll ${l.cls} ${l.side||''}">${l.face?`<img src="${l.face}" alt="">`:'<i></i>'}<span>${esc(l.t)}</span></div>`;
+  });
+  el.innerHTML=h+(logLines.length?'':'<div class="ll mut"><i></i><span>Nada ainda.</span></div>')+'</div>';
+  const lb=el.querySelector('.lb');if(lb)lb.scrollTop=lb.scrollHeight;
 }
 function addLog(t,cls=''){
-  logLines.push({t,cls});renderLogPanel();
+  const au=(typeof active!=='undefined'&&active&&phase==='battle')?active:null;
+  logLines.push({t,cls,round:stats?stats.round:0,face:au?faceOf(au):null,side:au?au.side:''});renderLogPanel();
   const f=$('#feed');if(!f||phase!=='battle')return;
   const d=document.createElement('div');d.className='fl '+cls;d.textContent=t;f.appendChild(d);
   while(f.children.length>3)f.firstChild.remove();
@@ -3320,7 +3401,7 @@ async function attack(u,t){
   clearLine();
   if(!hit){
     SFX.miss();floatText(t,'MISS','miss');gsap.fromTo(t.plane.position,{x:0},{x:0.24,duration:0.1,yoyo:true,repeat:1,ease:'power1.out'});
-    burst(t.grp.position,{n:5,colors:['#d8d2c4'],spread:0.5,up:0.2,y:0.5,life:0.3,size:0.6});
+    fxPlay('combat','parry-flash-32px_strip7.png',7,14,{x:t.grp.position.x,y:t.grp.position.y+0.1,z:t.grp.position.z},{w:1.3});
     addLog(`${u.first} errou ${t.first}${u.side==='hero'?` (${sum} vs ${defVal})`:''}`,'mut');tRing.visible=false;await wait(220);return;
   }
   const [n,s,b]=u.dmg;const dmg=dice(crit?n*2:n,s)+b+(u.trait&&u.trait.id==='bruto'?3:0)+(u.cls==='guerreiro'&&u.sub==='barbaro'&&u.hp<=u.maxhp*0.5?3:0);
@@ -3328,12 +3409,13 @@ async function attack(u,t){
   xp(u,8+(crit?12:0));
   if(u.side==='hero'&&u.cls==='arqueiro'&&hu>ht)u.highHits++;
   const sparks=u.side==='hero'?['#ffd34a','#ffffff','#ff9a3a']:['#ff5a4a','#ffffff','#a01e1e'];
-  if(u.alc===1)slash(t,crit,u.side==='hero'?'#ffffff':'#ff8a7a');
+  if(u.alc===1)slash(t,crit);
   if(u.cls==='mago'){
-    burst(t.grp.position,{n:crit?30:22,colors:['#9fdcff','#ffffff','#5b8fd9','#e6f7ff'],spread:crit?1.1:0.85,up:0.75,y:0.7,life:0.55});
+    fxPlay('magic','lightning-strike-32px_strip8.png',8,16,{x:t.grp.position.x,y:t.grp.position.y,z:t.grp.position.z},{w:crit?2:1.5,h:crit?3:2.3});
+    if(crit)fxPlay('combat','critical-hit-32px_strip8.png',8,14,{x:t.grp.position.x,y:t.grp.position.y+0.4,z:t.grp.position.z},{w:1.9});
     if(!crit){flash('#bfe3ff',0.22);shakeCam(0.12,0.22);}
   }
-  burst(t.grp.position,{n:crit?22:10,colors:sparks,spread:crit?1:0.6,up:crit?0.9:0.5,y:0.6*(t.big?1.3:1),life:crit?0.65:0.45,fall:true});
+  burst(t.grp.position,{n:crit?12:5,colors:sparks,spread:crit?1:0.6,up:crit?0.9:0.5,y:0.6*(t.big?1.3:1),life:crit?0.65:0.45,fall:true});
   if(crit){flash('#fffaf0',0.4);shakeCam(0.28,0.4);pulse(t.grp.position,'#ffd34a',1.4,0.5);}
   else if(u.cls!=='mago')shakeCam(0.07,0.18);
   addLog(`${crit?'CRÍTICO! ':''}${u.first} ${VERB[u.cls||u.kind]} ${t.first}: ${dmg} de dano`,u.side==='hero'?(crit?'gold':'good'):'bad');
@@ -3399,7 +3481,7 @@ async function heal(u,w){
   const subHeal=u.sub==='curandeiro'?3:0;
   const amt=dice(2,4)+2+(u.healBonus||0)+subHeal,before=w.hp;w.hp=Math.min(w.maxhp,w.hp+amt);
   await showRoll({u,skill:'✚ Cura',roll:amt,numText:'+'+amt,outcome:'hit'});
-  SFX.heal();pulse(w.grp.position,'#6cc35e',1.2,0.7);burst(w.grp.position,{n:14,colors:['#8ee07e','#d9ffd0','#6cc35e'],spread:0.35,up:1.3,y:0.2,life:0.9,size:0.9});
+  SFX.heal();pulse(w.grp.position,'#6cc35e',1.2,0.7);fxPlay('magic','healing-aura-32px_strip8.png',8,10,{x:w.grp.position.x,y:w.grp.position.y,z:w.grp.position.z},{w:1.7});
   floatText(w,`+${w.hp-before}`,'heal');tintUnit(w,{r:0.5,g:1,b:0.5},{r:1,g:1,b:1},0.7);
   xp(u,Math.max(5,(w.hp-before)*2));
   addLog(`${u.first} curou ${w===u?'a si mesmo':w.first} (+${w.hp-before})`,'heal');
@@ -3701,7 +3783,7 @@ function newRun(){
 function loop(t){
   requestAnimationFrame(loop);const s=t/1000;
   applyCam();
-  spStripTick(waterStrip,s);
+  spStripTick(waterStrip,s);fxTick(s);
   waterTex.offset.x=Math.sin(s*0.6)*0.025;waterTex.offset.y=s*0.015;
   waterTiles.forEach(wt=>{wt.position.y=0.08+Math.sin(s*1.4+(wt.userData.r+wt.userData.c)*0.6)*0.015;});
   trees.forEach(tr=>{tr.userData.foliage.rotation.z=Math.sin(s*0.8+tr.userData.sway)*0.05;tr.userData.foliage.rotation.x=Math.sin(s*0.6+tr.userData.sway*1.3)*0.025;});
