@@ -193,36 +193,43 @@ devia virar rotina antes de qualquer PR daqui pra frente.
 
 ## Classes e subclasses
 
-As 2 subclasses das **6 classes já existentes** (Guerreiro, Ladino, Mago,
-Clérigo, Arqueiro, Bardo) **estão implementadas em código** — ver
-`SUBCLASSES`/`SUB_INFO` logo depois de `LOADOUTS`. Cada herói sorteia a
-subclasse na criação (`h.sub=pick(SUBCLASSES[cls])`), igual ao sistema de
-loadout — persiste no save, aparece na ficha ("Classe · Subclasse") e no
-hint da tela de formação. **Paladino e Monge continuam só decisão de
-design, não implementados** — são classes novas de verdade, exigem sprite
-próprio (corpo/pose), que não foi pesquisado ainda; mesmo cuidado que o
-caso do cajado do Mago, não prometer sem checar o asset primeiro.
+### Modelo decidido (implementado nas 6 classes originais)
+- **Classe base nunca muda** (sprite/corpo é por classe — reclasse livre estilo
+  FFT foi descartada: o problema de asset é bem maior que trocar arma, e
+  dissolve a identidade de "esse é o Rui, o Guerreiro").
+- Herói **nasce sem subclasse**. No **nível 10** (`SUB_UNLOCK_LEVEL`) ele
+  escolhe 1 de 2 subclasses na **Forja do velho Brasa** (grátis na primeira
+  vez). Dá pra **trocar depois pagando ouro** (`subRespecCost`: 60 + 20 ×
+  nível). Dragon Nest faz parecido (escolha no nível 15, travada por
+  personagem, respec limitado).
+- **Progressão única**: continua um nível só por herói (sem trilha de XP
+  separada pra subclasse). A subclasse liga a mecânica própria; o resto
+  (PV/atributos/equip.) segue crescendo com o nível.
+- **Recrutamento escalado** (estilo FFT): nível do recruta = média de nível do
+  elenco ± 2 (`newDraw`/`rosterAvgLevel`, teto 60). Recruta que já nasce com
+  nível ≥ 10 vem com subclasse sorteada. Recrutar continua sem custo em ouro.
+  Atributos sorteados têm variação maior e a tela mostra a descrição do traço,
+  pra quem lê e compara escolher melhor que quem clica no automático.
+- **Bônus de atraso** (`CATCHUP_*`): herói ≥ 3 níveis abaixo da média do grupo
+  ativo ganha +10% de XP por nível de diferença, teto +100%. Rápido o bastante
+  pra não ser grind de recomeço, gradual o bastante pra jogador aprender a
+  classe jogando — não vira nível 60 de graça.
+- **Poder de herói novo vem de 2 eixos**: nível (catch-up) e equipamento (Cofre
+  da Guilda é universal). **Pendente**: tier de item travado por nível (já
+  especificado em `EQUIPAMENTOS.md`, vem com o motor de item v2, passo 11) —
+  sem isso um herói nível 1 consegue vestir qualquer item do cofre.
+- Campanha: longa, estilo FFT, sem lore; cidade = lobby; dungeons secretas e
+  de chefe único. Modo Interminável implementado mas **fora de foco** até o
+  usuário pedir.
 
-Decisão de escopo: a versão implementada usa os ganchos que **já existem**
-no motor de combate (bônus no `parts[]` do ataque — mesmo padrão de
-`balada`/`irmãos`/`relíquia` —, `critBonus`, e flags consumidas no próximo
-ataque tipo `inspired`/`shaken`) em vez de um sistema de efeitos de status
-genérico (Sangramento/Queimando com duração), que continua não existindo —
-ver "Stats secundários novos" acima. Duas das doze saíram simplificadas por
-não terem o sistema de verdade que a versão completa do design pede:
-- **Saraivador** (Arqueiro) seria dano em área de verdade — o motor de
-  combate mira um alvo só por vez hoje. Virou um respingo fixo (40% do dano
-  principal) num segundo inimigo colado no alvo, sem rolagem própria.
-- **Armadilheiro** (Ladino) seria uma armadilha colocável no chão — não
-  existe objeto de terreno interativo hoje. Virou um bônus de emboscada
-  (+3 de acerto) só no primeiro golpe da batalha daquele herói.
-
-Dano em área de verdade e armadilha de terreno continuam no roadmap (passo
-10) — quando existirem, essas duas sobem pra versão completa sem precisar
-reescrever o resto. As outras 10 (Cavaleiro, Bárbaro, Assassino, Piromante,
-Geomante, Curandeiro, Templário, Patrulheiro, Consonante, Dissonante) têm
-mecânica real e completa, lida no código de `SUBCLASSES`/`SUB_INFO` e nos
-comentários de `attack()`/`heal()`/`turn()`.
+### Mecânica de cada subclasse
+Usam ganchos que já existem no motor (bônus no `parts[]` do ataque, `critBonus`,
+flags `inspired`/`shaken`) em vez de um sistema de efeitos de status genérico.
+Duas saíram simplificadas por falta de sistema: **Saraivador** (seria dano em
+área; hoje respinga 40% do dano num inimigo colado no alvo) e **Armadilheiro**
+(seria armadilha de terreno; hoje +3 de acerto no primeiro golpe da batalha).
+Voltam à versão completa no passo 10. **Paladino/Monge** continuam só design
+(classes novas, exigem sprite próprio — pesquisar asset antes).
 
 8 classes base, 2 subclasses cada (tabela de papel/nomes — decidido, as 6
 primeiras linhas já valem para o código; Paladino/Monge ainda são só
