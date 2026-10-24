@@ -296,6 +296,10 @@ details.box[open]>summary::after{content:"−"}
 .eqlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;font-size:12px;color:var(--papel-2)}
 .eqlist div{background:var(--madeira);border-radius:4px;padding:4px 8px}
 @media (min-width:760px){.sheet2{grid-template-columns:1fr 1fr}.sheet2 .wide{grid-column:1/-1}}
+.ic{display:inline-block;width:1.25em;height:1.25em;vertical-align:-.28em;margin:0 .12em;flex:0 0 auto;background:currentColor;-webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat;image-rendering:pixelated}
+.pc .pcstats .ic{width:15px;height:15px;vertical-align:-4px;margin:0 1px 0 3px}.pc .cl .ic{width:15px;height:15px;vertical-align:-4px;margin:0 3px 0 0}
+.stgrid em{font-style:normal;display:flex;align-items:center;gap:5px}.stgrid .ic{width:16px;height:16px;margin:0}
+.ic.lg{width:32px;height:32px;margin:0}.ic.xl{width:48px;height:48px;margin:0}
 .pc .info{position:absolute;top:3px;right:3px;font-size:10px;font-weight:600;background:var(--tinta);color:var(--papel);padding:2px 6px;border-radius:3px;cursor:pointer}
 #bhud{position:absolute;top:8px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;gap:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));pointer-events:none}
 .turn{font-family:var(--f-display);font-size:15px;background:var(--veu);border:2px solid var(--borda);border-radius:6px;padding:6px 10px;white-space:nowrap}
@@ -395,6 +399,7 @@ h4.sec{margin:6px 0 0;font-family:var(--f-display);font-size:15px;color:var(--ou
       <li><div><b>Batalha</b>O jogo joga sozinho. Acompanhe os dados, use 2x, 4x ou Pular, e o botão Mapa pra ver tudo.</div></li>
       <li><div><b>Fases</b>Vença pra ir ao próximo mapa. Quem caiu volta Exausto. Cada herói ganha XP só pelo que faz em pé.</div></li>
     </ol>
+    <p class="ihelp" style="font-size:11px">Ícones: <a href="https://game-icons.net" target="_blank" rel="noopener" style="color:inherit">game-icons.net</a> — Lorc, Delapouite, Skoll, Lucas, Sbed, DarkZaitzev, Willdabeast e outros (CC BY 3.0). Sprites: LPC / OpenGameArt.</p>
     <button class="btn" data-close>Entendi</button>
   </div></div>
   <div id="install" hidden><div class="hbox" role="dialog" aria-label="Instalar o jogo">
@@ -552,6 +557,13 @@ const SLOT_INFO={
   acc1:{label:'Acessório 1',icon:'💍'},
   acc2:{label:'Acessório 2',icon:'📿'},
 };
+/* Ícones: game-icons.net (CC BY 3.0), silhuetas pixeladas em assets/ui-icons
+   geradas por tools/build_icons.cjs. Cor vem do `color` do contexto. */
+const IC={"classe": {"guerreiro": "broadsword", "ladino": "daggers", "mago": "wizard-staff", "clerigo": "holy-symbol", "arqueiro": "bow-arrow", "bardo": "lyre"}, "subclasse": {"cavaleiro": "black-knight-helm", "barbaro": "barbarian", "assassino": "rogue", "armadilheiro": "hooded-assassin", "piromante": "magic-swirl", "geomante": "crystal-cluster", "curandeiro": "healing", "templario": "sun-priest", "patrulheiro": "archer", "saraivador": "arrow-cluster", "consonante": "harp", "dissonante": "drama-masks"}, "stat": {"vida": "heart-plus", "atq": "crossed-swords", "def": "shield", "res": "magic-shield", "mov": "boot-prints", "alc": "target-arrows", "crit": "bullseye", "ini": "lightning-helix", "dano": "claw-slashes"}, "slot": {"weapon": "broadsword", "offhand": "round-shield", "head": "helmet", "body": "chest-armor", "hands": "gauntlet", "feet": "boots", "acc1": "diamond-ring", "acc2": "gem-pendant"}, "vila": {"tavern": "tavern-sign", "temple": "greek-temple", "forge": "anvil", "stash": "locked-chest", "board": "scroll-unfurled", "market": "shop", "well": "well", "ouro": "coins", "pocao": "health-potion", "mapa": "treasure-map", "grupo": "team-idea", "ferido": "bandage-roll", "bolsa": "backpack", "trava": "padlock", "check": "check-mark", "xp": "sparkles", "alerta": "sparkles"}, "item": {"lamina_simples": "broadsword", "adaga_enferrujada": "plain-dagger", "cajado_rustico": "wizard-staff", "lamina_afiada": "pointy-sword", "machado_ferro": "battle-axe", "arco_reforcado": "bow-arrow", "cajado_arcano": "crystal-wand", "adaga_encantada": "broad-dagger", "martelo_runico": "warhammer", "lamina_dragao": "rune-sword", "cetro_celestial": "winged-scepter", "garra_sombria": "claws", "excalibur_partida": "ancient-sword", "cajado_infinito": "skull-staff", "broquel_madeira": "round-shield", "adaga_reserva": "cloak-dagger", "escudo_pequeno": "kite", "livro_rezas": "open-book", "escudo_espelhado": "eye-shield", "adaga_sombra": "flying-dagger", "egide_draconica": "dragon-shield", "tomo_arcano": "spell-book", "escudo_aurora": "sunrise", "adaga_eclipse": "sacrificial-dagger", "elmo_recruta": "helmet", "capuz_viajante": "hood", "elmo_ferro": "crested-helmet", "capuz_batedor": "hooded-figure", "coroa_arcana": "jewel-crown", "elmo_cornos": "horned-helm", "elmo_campeao": "centurion-helmet", "capuz_sussurros": "warlock-hood", "mascara_vazio": "ceremonial-mask", "coroa_eterna": "imperial-crown", "gibao_simples": "leather-vest", "colete_couro": "armor-vest", "cota_malha_leve": "mail-shirt", "manto_viajante": "cloak", "capa_elfica": "cape", "tunica_arcana": "robe", "couraca_dragao": "scale-mail", "manto_sombrio": "vampire-cape", "armadura_titanica": "chest-armor", "vestes_arquimago": "layered-armor", "luvas_couro": "gloves", "manoplas_simples": "fist", "luvas_reforcadas": "winter-gloves", "manoplas_ferro": "gauntlet", "luvas_precisao": "bracers", "manoplas_runicas": "mailed-fist", "luvas_assassino": "bracer", "manoplas_titan": "thor-fist", "luvas_vento_cortante": "whirlwind", "manoplas_juizo": "scales", "bota_surrada": "leather-boot", "sandalias_couro": "sandal", "bota_elfica": "tabi-boot", "botas_corredor": "running-shoe", "botas_elfas_reais": "fur-boot", "grevas_ferro": "metal-boot", "botas_vento": "wind-slap", "grevas_campeao": "greaves", "botas_vento_norte": "snowflake-1", "grevas_eternas": "infinity", "anel_couro": "ring", "pingente_simples": "necklace", "bracelete_latao": "bracers", "anel_vigor": "diamond-ring", "anel_foco": "eye-of-horus", "amuleto_viajante": "tribal-pendant", "amuleto_sorte": "clover", "pedra_poder": "gems", "colar_videntes": "crystal-ball", "coracao_titan": "heart-necklace", "anel_destino": "engagement-ring", "anel_fera": "claw-string", "talisma_guardiao": "gem-pendant", "reliquia_caos": "tornado-discs", "anel_eternidade": "big-diamond-ring", "coracao_fenix": "fire-gem"}};
+const icoUrl=n=>`--ic:url(assets/ui-icons/${n}.png)`;
+const ico=(g,k,cls='',style='')=>{const n=(IC[g]||{})[k];return n?`<i class="ic ${cls}" style="${icoUrl(n)};${style}"></i>`:'';};
+const slotIco=(slot,cls='')=>ico('slot',slot==='accessory'?'acc1':slot,cls);
+const itemIco=(it,cls='')=>(IC.item[it.id]?ico('item',it.id,cls,`color:${RARITY[it.rar].cor}`):slotIco(it.slot,cls));
 const ITEMS=[
   // ===== Arma (weapon) =====
   {id:'lamina_simples',nome:'Lâmina Simples',slot:'weapon',rar:1,icon:'⚔️',desc:'+1 ATQ',mods:{atk:1}},
@@ -681,7 +693,7 @@ function dropLoot(t){
   const item=rollItem(rar);if(!item)return;
   run.inventory.push(item);
   item.rar>=4?SFX.secret():SFX.loot();
-  floatText(t,item.icon,'gold');
+  floatText(t,itemIco(item,'lg'),'gold',true);
   addLog(`🎁 ${RARITY[item.rar].nome}: ${item.nome}`,'gold');
   if(item.rar>=4)stats.hl.push({w:item.rar===5?9:5,t:`O grupo encontrou ${item.nome}, um item ${RARITY[item.rar].nome.toLowerCase()}.`});
 }
@@ -1898,9 +1910,9 @@ function spawnEnemies(list){enemies.forEach(disposeUnit);enemies=placeEnemies(li
 const v3=new THREE.Vector3();
 function worldToScreen(p){v3.copy(p).project(cam);return [(v3.x+1)/2*stage.clientWidth,(1-v3.y)/2*stage.clientHeight];}
 function screenOf(u,extra=0){return worldToScreen(new THREE.Vector3(u.grp.position.x,u.grp.position.y+0.08+u.sz+0.16+extra,u.grp.position.z));}
-function floatText(u,text,cls){
+function floatText(u,text,cls,html){
   if(!u.grp)return;const [x,y]=screenOf(u,0.1);
-  const d=document.createElement('div');d.className='float '+(cls||'');d.textContent=text;d.style.left=x+'px';d.style.top=y+'px';hud.appendChild(d);
+  const d=document.createElement('div');d.className='float '+(cls||'');if(html)d.innerHTML=text;else d.textContent=text;d.style.left=x+'px';d.style.top=y+'px';hud.appendChild(d);
   gsap.fromTo(d,{y:0,opacity:1,scale:cls==='crit'?1.6:1},{y:-40,opacity:0,scale:1,duration:1.2,ease:'power1.out',onComplete:()=>d.remove()});
 }
 function banner(text){const b=$('#banner');b.textContent=text;b.hidden=false;return gsap.fromTo(b,{scale:0.4,opacity:0},{scale:1,opacity:1,duration:0.35,ease:'back.out(2)'}).then(()=>wait(600)).then(()=>gsap.to(b,{opacity:0,duration:0.3})).then(()=>{b.hidden=true;});}
@@ -2212,11 +2224,11 @@ function renderVillage(){
   const m=run.mission?mapOf(run.mission):null,np=selected.size,ready=m&&np>=5,best=bestRun();
   const injuredN=roster.filter(h=>h.injured).length,forgeReady=roster.filter(h=>!h.sub&&(h.level||1)>=SUB_UNLOCK_LEVEL).length;
   PI_.innerHTML='';
-  $('#vbar').innerHTML=`<div class="vt">Vila de Brumavale</div><div class="vr"><span class="tag">💰 ${fmt(gold)}</span>${best?`<span class="tag">Melhor run: ${fmt(best)}</span>`:''}<button class="btn ghost sm" data-act="help">Como jogar</button></div>`;
+  $('#vbar').innerHTML=`<div class="vt">Vila de Brumavale</div><div class="vr"><span class="tag">${ico('vila','ouro')} ${fmt(gold)}</span>${best?`<span class="tag">Melhor run: ${fmt(best)}</span>`:''}<button class="btn ghost sm" data-act="help">Como jogar</button></div>`;
   const badge={temple:injuredN,forge:forgeReady,stash:stash.length};
-  $('#vnames').innerHTML=HUB_LABELS.map(([id,nome])=>`<button class="vn ${id==='market'||id==='well'?'soon':''}" data-bld="${id}">${nome}${badge[id]?`<b>${badge[id]}</b>`:''}</button>`).join('');
+  $('#vnames').innerHTML=HUB_LABELS.map(([id,nome])=>`<button class="vn ${id==='market'||id==='well'?'soon':''}" data-bld="${id}">${ico('vila',id)}${nome}${badge[id]?`<b>${badge[id]}</b>`:''}</button>`).join('');
   $('#vfoot').innerHTML=`${hint||injuredN?`<p class="hint" id="hint">${hint||`${injuredN} ${injuredN>1?'heróis estão':'herói está'} se recuperando no Templo.`}</p>`:''}
-    <div class="vs"><span class="tag">🗺 ${m?`Mapa ${m.n}: ${m.nome}`:'Escolha o mapa no Quadro de Missões'}</span><span class="tag">👥 ${np}/5 no grupo (Taverna)</span></div>
+    <div class="vs"><span class="tag">${ico('vila','mapa')} ${m?`Mapa ${m.n}: ${m.nome}`:'Escolha o mapa no Quadro de Missões'}</span><span class="tag">${ico('vila','grupo')} ${np}/5 no grupo (Taverna)</span></div>
     <button class="btn cta" data-act="depart" ${ready?'':'disabled'}>${ready?'Partir pra missão':'Escolha o mapa e o grupo'}</button>`;
   placeVillageNames();
 }
@@ -2314,8 +2326,8 @@ function renderTavern(){
       <img src="${h.portrait}" alt="">
       <div class="pcbody">
         <span class="nm">${h.first}</span>
-        <span class="cl">${CLASSES[h.cls].nome}${h.sub?' · '+SUB_INFO[h.sub].nome:' · '+CLASSES[h.cls].papel}</span>
-        ${h.injured?`<span class="pcstats">🤕 Recuperando (${h.injuredMissionsLeft})</span>`:`<span class="pcstats">Nv.${h.level||1} · ❤${h.maxhp} ⚔${h.atk} 🛡${h.def} 🏃${h.mov} 🎯${h.alc}</span>`}
+        <span class="cl">${ico('classe',h.cls)}${CLASSES[h.cls].nome}${h.sub?' · '+SUB_INFO[h.sub].nome:' · '+CLASSES[h.cls].papel}</span>
+        ${h.injured?`<span class="pcstats">${ico('vila','ferido')} Recuperando (${h.injuredMissionsLeft})</span>`:`<span class="pcstats">Nv.${h.level||1} · ${ico('stat','vida')}${h.maxhp} ${ico('stat','atq')}${h.atk} ${ico('stat','def')}${h.def} ${ico('stat','mov')}${h.mov} ${ico('stat','alc')}${h.alc}</span>`}
         <span class="tr"><b>${h.trait.nome}</b> — ${h.trait.desc}</span>
         <span class="pcgear">${gearBadge(h)||'sem equipamento'}</span>
       </div>
@@ -2337,8 +2349,8 @@ function renderRecruit(){
       <img src="${h.portrait}" alt="">
       <div class="pcbody">
         <span class="nm">${h.first}</span>
-        <span class="cl">${CLASSES[h.cls].nome}${h.sub?' · '+SUB_INFO[h.sub].nome:' · '+CLASSES[h.cls].papel}</span>
-        <span class="pcstats">Nv.${h.level||1} · ❤${h.maxhp} ⚔${h.atk} 🛡${h.def} 🏃${h.mov} 🎯${h.alc}</span>
+        <span class="cl">${ico('classe',h.cls)}${CLASSES[h.cls].nome}${h.sub?' · '+SUB_INFO[h.sub].nome:' · '+CLASSES[h.cls].papel}</span>
+        <span class="pcstats">Nv.${h.level||1} · ${ico('stat','vida')}${h.maxhp} ${ico('stat','atq')}${h.atk} ${ico('stat','def')}${h.def} ${ico('stat','mov')}${h.mov} ${ico('stat','alc')}${h.alc}</span>
         <span class="tr"><b>${h.trait.nome}</b> — ${h.trait.desc}</span>
         <span class="pcgear">${h.arma} · ${h.armadura}</span>
       </div>
@@ -2365,10 +2377,10 @@ function renderSheet(id,src){
   <div class="head"><div><div class="eyebrow">Ficha do herói · ${list.indexOf(h)+1}/${list.length}</div></div><div class="btns"><button class="btn ghost sm" data-nav="-1" aria-label="Herói anterior">‹</button><button class="btn ghost sm" data-nav="1" aria-label="Próximo herói">›</button><button class="btn ghost sm" ${isR&&sheetFrom==='forge'?'data-bld="forge"':`data-act="${isR?'toTavern':'recruit'}"`}>Lista</button></div></div>
   <div class="scroll"><div class="sheet2">
     <div class="sh2-top wide"><img src="${h.portrait}" alt=""><div style="min-width:0;flex:1"><b class="nm">${h.nome}</b>
-      <div class="tags"><span class="tag cls">${c.nome}</span>${h.sub?`<span class="tag cls">${SUB_INFO[h.sub].nome}</span>`:''}<span class="tag">${c.papel}</span><span class="tag">Nv.${lv}</span>${sc[h.sur]>1?'<span class="tag fam">Irmãos '+h.sur+'</span>':''}</div>
+      <div class="tags"><span class="tag cls">${ico('classe',h.cls)}${c.nome}</span>${h.sub?`<span class="tag cls">${ico('subclasse',h.sub)}${SUB_INFO[h.sub].nome}</span>`:''}<span class="tag">${c.papel}</span><span class="tag">Nv.${lv}</span>${sc[h.sur]>1?'<span class="tag fam">Irmãos '+h.sur+'</span>':''}</div>
       <div class="note">${h.trait.nome}: ${h.trait.desc}</div>
       ${isR?`<div class="xpbar"><i style="width:${pct}%"></i></div><div class="note">XP ${fmt(h.xpTotal||0)}${lv>=LEVEL_CAP?' · nível máximo':` · próximo nível em ${fmt(xn-(h.xpTotal||0))}`}</div>`:''}</div></div>
-    <div class="stgrid wide"><span>Vida<b>${isR?`${h.hp}/${h.maxhp}`:h.maxhp}</b></span><span>Ataque<b>+${h.atk}</b></span><span>Defesa<b>${h.def}</b></span><span>Res. Mágica<b>${h.defMag}</b></span><span>Mover<b>${h.mov}</b></span><span>Alcance<b>${h.alc}</b></span><span>Crítico<b>${h.critBonus?`${20-h.critBonus}–20`:'20'}</b></span><span>Iniciativa<b>${h.ini>=0?'+':''}${h.ini}</b></span><span>Dano<b>${h.dmg[0]}d${h.dmg[1]}${h.dmg[2]?'+'+h.dmg[2]:''}</b></span></div>
+    <div class="stgrid wide"><span><em>${ico('stat','vida')}Vida</em><b>${isR?`${h.hp}/${h.maxhp}`:h.maxhp}</b></span><span><em>${ico('stat','atq')}Ataque</em><b>+${h.atk}</b></span><span><em>${ico('stat','def')}Defesa</em><b>${h.def}</b></span><span><em>${ico('stat','res')}Res. Mágica</em><b>${h.defMag}</b></span><span><em>${ico('stat','mov')}Mover</em><b>${h.mov}</b></span><span><em>${ico('stat','alc')}Alcance</em><b>${h.alc}</b></span><span><em>${ico('stat','crit')}Crítico</em><b>${h.critBonus?`${20-h.critBonus}–20`:'20'}</b></span><span><em>${ico('stat','ini')}Iniciativa</em><b>${h.ini>=0?'+':''}${h.ini}</b></span><span><em>${ico('stat','dano')}Dano</em><b>${h.dmg[0]}d${h.dmg[1]}${h.dmg[2]?'+'+h.dmg[2]:''}</b></span></div>
     <div class="sec2"><h4>Atributos</h4><div class="eqlist">${ATTR_NAMES.map(a=>`<div><b>${AN[a]}:</b> ${at[a]??'—'}</div>`).join('')}</div></div>
     <div class="sec2"><h4>Equipamento</h4><div class="eqlist">${eq}</div></div>
     ${h.sub?`<div class="sec2 wide"><h4>${SUB_INFO[h.sub].nome}</h4><p>${SUB_INFO[h.sub].desc}</p></div>`:`<div class="sec2 wide"><h4>Subclasse</h4><p>Escolhe no nível ${SUB_UNLOCK_LEVEL}, na Forja: ${SUBCLASSES[h.cls].map(x=>SUB_INFO[x].nome).join(' ou ')}.</p></div>`}
@@ -2391,13 +2403,13 @@ function renderPlace(){
   <div class="roster">${party.map(h=>`<button class="chip ${h.r!=null?'ok':''}" data-hid="${h.id}" aria-pressed="${selHero===h}"><img src="${h.portrait}" alt=""><span>${h.first}${gearBadge(h)}</span><small>${h.exausto?'Exausto':h.r!=null?'✓ no mapa':selHero===h?'toque o mapa':CLASSES[h.cls].nome}</small></button>`).join('')}</div>
   <p class="hint" id="hint">${hint||'Toque num herói e depois numa casa dourada do mapa.'}</p>
   <div class="legend"><span><i class="lg free"></i>Casa livre</span><span><i class="lg hill"></i>Morro: +2 de acerto</span>${SECRET?'<span><i class="lg wall"></i>Parede suspeita</span>':''}<button class="btn ghost sm ov" data-act="overview">Ver mapa todo</button></div>
-  <div class="actions">${run.phaseNo===1?'<button class="btn ghost" data-act="toVillage">Voltar</button>':''}<button class="btn ghost" data-act="equip">🎒 Equipar${run.inventory.length?` (${run.inventory.length})`:''}</button><button class="btn ghost" data-act="auto">Automático</button><button class="btn" data-act="start" ${all?'':'disabled'}>${all?'Começar batalha':`Falta posicionar ${left}`}</button></div>`;
+  <div class="actions">${run.phaseNo===1?'<button class="btn ghost" data-act="toVillage">Voltar</button>':''}<button class="btn ghost" data-act="equip">${ico('vila','bolsa')} Equipar${run.inventory.length?` (${run.inventory.length})`:''}</button><button class="btn ghost" data-act="auto">Automático</button><button class="btn" data-act="start" ${all?'':'disabled'}>${all?'Começar batalha':`Falta posicionar ${left}`}</button></div>`;
 }
 const rarTag=it=>`<b style="color:${RARITY[it.rar].cor}">${RARITY[it.rar].nome}</b>`;
 const EQ_SLOTS=['weapon','offhand','head','body','hands','feet','acc1','acc2'];
 function gearBadge(h){
   const n=EQ_SLOTS.reduce((a,s)=>a+(h.equip[s]?1:0),0);if(!n)return'';
-  return` ${h.equip.weapon?h.equip.weapon.icon:SLOT_INFO.weapon.icon}${n>1?` +${n-1}`:''}`;
+  return` ${h.equip.weapon?itemIco(h.equip.weapon):slotIco('weapon')}${n>1?` +${n-1}`:''}`;
 }
 const ATTR_LABEL={forca:'Força',destreza:'Destreza',inteligencia:'Inteligência',vitalidade:'Vitalidade',fe:'Fé'};
 function attrLine(h){
@@ -2415,9 +2427,9 @@ function heroEquipBox(h,ns){
     </div>
     <div class="eqslots">
       ${EQ_SLOTS.map(s=>{
-        if(s==='offhand'&&CLASSES[h.cls].twoHanded)return`<span class="eqslot off">${SLOT_INFO.offhand.icon} Mão secundária: ocupada pela arma</span>`;
+        if(s==='offhand'&&CLASSES[h.cls].twoHanded)return`<span class="eqslot off">${slotIco('offhand')} Mão secundária: ocupada pela arma</span>`;
         const it=h.equip[s];
-        return`<button class="eqslot" data-${ns}unhero="${h.id}" data-${ns}unslot="${s}">${it?`${it.icon} ${it.nome} · ${rarTag(it)} (guardar)`:`${SLOT_INFO[s].icon} ${SLOT_INFO[s].label}: vazio`}</button>`;
+        return`<button class="eqslot" data-${ns}unhero="${h.id}" data-${ns}unslot="${s}">${it?`${itemIco(it)} ${it.nome} · ${rarTag(it)} (guardar)`:`${slotIco(s)} ${SLOT_INFO[s].label}: vazio`}</button>`;
       }).join('')}
     </div>
   </div>`;
@@ -2431,7 +2443,7 @@ function renderEquip(){
     ${party.map(h=>heroEquipBox(h,'eq')).join('')}
     <div class="box">
       <h3>Mochila (${run.inventory.length})</h3>
-      ${run.inventory.length?run.inventory.map((it,i)=>`<div class="invrow"><span>${it.icon} ${it.nome} · ${rarTag(it)} · <i>${SLOT_INFO[it.slot]?SLOT_INFO[it.slot].label:'Acessório'}</i></span><small>${it.desc}</small>
+      ${run.inventory.length?run.inventory.map((it,i)=>`<div class="invrow"><span>${itemIco(it)} ${it.nome} · ${rarTag(it)} · <i>${SLOT_INFO[it.slot]?SLOT_INFO[it.slot].label:'Acessório'}</i></span><small>${it.desc}</small>
         <div class="invpick">${party.filter(h=>canEquip(h,it)).map(h=>`<button class="btn ghost sm" data-eqpick="${i}" data-eqhero="${h.id}">${h.first}</button>`).join('')}</div>
       </div>`).join(''):'<p class="note">Nenhum item ainda. Derrote inimigos pra conseguir equipamentos.</p>'}
     </div>
@@ -2447,14 +2459,14 @@ function renderStash(){
   <div class="head"><div><div class="eyebrow">Vila de Brumavale</div><h2>Cofre da Guilda</h2></div><button class="btn ghost sm" data-act="toVillage">Praça</button></div>
   <p class="hint">Itens guardados aqui valem pra sempre: equipe em qualquer herói do seu elenco a qualquer momento, mesmo fora de missão.</p>
   <div class="stashtabs">
-    <button class="stashtab ${stashView==='items'?'on':''}" data-stashview="items">🎒 Itens (${stash.length})</button>
-    <button class="stashtab ${stashView==='heroes'?'on':''}" data-stashview="heroes">🧑‍🤝‍🧑 Heróis</button>
+    <button class="stashtab ${stashView==='items'?'on':''}" data-stashview="items">${ico('vila','bolsa')} Itens (${stash.length})</button>
+    <button class="stashtab ${stashView==='heroes'?'on':''}" data-stashview="heroes">${ico('vila','grupo')} Heróis</button>
   </div>
   ${stashView==='items'?`
     <div class="stashtabs">${tabs.map(k=>`<button class="stashtab ${stashFilter===k?'on':''}" data-stashtab="${k}">${tabLabel(k)}</button>`).join('')}</div>
-    ${items.length?`<div class="stashgrid">${items.map(({it,i})=>`<button class="stashtile ${stashSel===i?'sel':''}" style="border-color:${RARITY[it.rar].cor}" data-stashtile="${i}" aria-label="${it.nome}">${it.icon}</button>`).join('')}</div>`:'<p class="note">Nenhum item aqui ainda. Derrote inimigos em missão pra encontrar equipamentos.</p>'}
+    ${items.length?`<div class="stashgrid">${items.map(({it,i})=>`<button class="stashtile ${stashSel===i?'sel':''}" style="border-color:${RARITY[it.rar].cor}" data-stashtile="${i}" aria-label="${it.nome}">${itemIco(it,'lg')}</button>`).join('')}</div>`:'<p class="note">Nenhum item aqui ainda. Derrote inimigos em missão pra encontrar equipamentos.</p>'}
     ${sel?`<div class="stashdetail">
-      <div><b style="color:${RARITY[sel.rar].cor}">${sel.icon} ${sel.nome}</b> · ${rarTag(sel)} · <i>${SLOT_INFO[sel.slot]?SLOT_INFO[sel.slot].label:'Acessório'}</i></div>
+      <div><b style="color:${RARITY[sel.rar].cor}">${itemIco(sel)} ${sel.nome}</b> · ${rarTag(sel)} · <i>${SLOT_INFO[sel.slot]?SLOT_INFO[sel.slot].label:'Acessório'}</i></div>
       <small>${sel.desc}</small>
       <div class="invpick">${roster.filter(h=>canEquip(h,sel)).map(h=>`<button class="btn ghost sm" data-stashequip="${h.id}">Equipar em ${h.first}</button>`).join('')||'<span class="note">Nenhum herói no elenco pode usar este item.</span>'}</div>
     </div>`:''}
@@ -2467,12 +2479,12 @@ function renderForge(){
     const lv=h.level||1,head=`<div style="display:flex;align-items:center;gap:8px"><img src="${h.portrait}" alt="" style="width:28px;height:34px;image-rendering:pixelated"><div style="flex:1;min-width:0"><b class="nm">${h.first}</b><span class="cl"> · ${CLASSES[h.cls].nome} · Nv.${lv}${h.sub?' · '+SUB_INFO[h.sub].nome:''}</span></div><button class="btn ghost sm" data-sheet="${h.id}" data-from="forge">Ficha</button></div>`;
     if(lv<SUB_UNLOCK_LEVEL)return `<div class="box">${head}<div class="note">Escolhe a subclasse no nível ${SUB_UNLOCK_LEVEL} (faltam ${SUB_UNLOCK_LEVEL-lv}).</div></div>`;
     const cost=h.sub?subRespecCost(h):0;
-    const opts=SUBCLASSES[h.cls].filter(x=>x!==h.sub).map(x=>`<button class="btn ${gold>=cost?'':'ghost'} sm" data-forge="${h.id}:${x}" ${gold>=cost?'':'disabled'}>${h.sub?'Trocar pra':'Escolher'} ${SUB_INFO[x].nome}${cost?` · ${fmt(cost)} ouro`:' · grátis'}</button><div class="note">${SUB_INFO[x].desc}</div>`).join('');
+    const opts=SUBCLASSES[h.cls].filter(x=>x!==h.sub).map(x=>`<button class="btn ${gold>=cost?'':'ghost'} sm" data-forge="${h.id}:${x}" ${gold>=cost?'':'disabled'}>${h.sub?'Trocar pra':'Escolher'} ${ico('subclasse',x)}${SUB_INFO[x].nome}${cost?` · ${fmt(cost)} ouro`:' · grátis'}</button><div class="note">${SUB_INFO[x].desc}</div>`).join('');
     return `<div class="box">${head}${h.sub?`<div class="note">${SUB_INFO[h.sub].desc}</div>`:''}${opts}</div>`;
   };
   PI_.innerHTML=`
   <div class="head"><div><div class="eyebrow">Vila de Brumavale</div><h2>Forja do velho Brasa</h2></div><button class="btn ghost sm" data-act="toVillage">Praça</button></div>
-  <p class="hint">💰 ${fmt(gold)} ouro. No nível ${SUB_UNLOCK_LEVEL} o herói escolhe uma subclasse (grátis na primeira vez). Dá pra trocar depois pagando ouro — a classe base nunca muda.</p>
+  <p class="hint">${ico('vila','ouro')} ${fmt(gold)} ouro. No nível ${SUB_UNLOCK_LEVEL} o herói escolhe uma subclasse (grátis na primeira vez). Dá pra trocar depois pagando ouro — a classe base nunca muda.</p>
   <div class="scroll">${roster.length?roster.map(row).join(''):'<p class="note">Seu elenco está vazio.</p>'}</div>`;
 }
 function renderTemple(){
@@ -2480,14 +2492,14 @@ function renderTemple(){
   const injured=roster.filter(h=>h.injured);
   PI_.innerHTML=`
   <div class="head"><div><div class="eyebrow">Vila de Brumavale</div><h2>Templo da Aurora</h2></div><button class="btn ghost sm" data-act="toVillage">Praça</button></div>
-  <p class="hint">💰 ${fmt(gold)} ouro. Herói ferido se recupera sozinho com o tempo (uma missão concluída = um passo), ou pague pra acelerar.</p>
+  <p class="hint">${ico('vila','ouro')} ${fmt(gold)} ouro. Herói ferido se recupera sozinho com o tempo (uma missão concluída = um passo), ou pague pra acelerar.</p>
   <div class="scroll">
     ${injured.length?injured.map(h=>{const cost=injuryRushCost(h);return`
     <div class="box">
       <div style="display:flex;align-items:center;gap:8px">
         <img src="${h.portrait}" alt="" style="width:28px;height:34px;image-rendering:pixelated">
         <div style="flex:1;min-width:0"><b class="nm">${h.first}</b><span class="cl"> · ${CLASSES[h.cls].nome} · Nv.${h.level||1}</span>
-          <div class="note">🤕 Recuperando — faltam ${h.injuredMissionsLeft} ${h.injuredMissionsLeft===1?'missão':'missões'} pra voltar sozinho.</div>
+          <div class="note">${ico('vila','ferido')} Recuperando — faltam ${h.injuredMissionsLeft} ${h.injuredMissionsLeft===1?'missão':'missões'} pra voltar sozinho.</div>
         </div>
       </div>
       <button class="btn ${gold>=cost?'':'ghost'} sm" data-healhero="${h.id}" ${gold>=cost?'':'disabled'}>Curar agora por ${fmt(cost)} ouro</button>
@@ -3072,7 +3084,7 @@ function phaseBoard(){
   res.innerHTML=`<div class="res">
     <div><div class="eyebrow">Fase ${run.phaseNo} concluída · Mapa ${r.n}</div><h1 class="res-title">Vitória!</h1>
     <p class="sub">${r.nome}: o grupo limpou o mapa em ${r.round} turnos.</p></div>
-    <div class="bigscore"><span>Pontos da fase</span><b id="tot">0</b><small>Run até agora: ${fmt(Math.round(runSub()*mult))} pontos (grupo de ${run.party.length} ×${mult.toFixed(1).replace('.',',')})${r.goldGain?` · 💰 +${fmt(r.goldGain)}`:''}</small></div>
+    <div class="bigscore"><span>Pontos da fase</span><b id="tot">0</b><small>Run até agora: ${fmt(Math.round(runSub()*mult))} pontos (grupo de ${run.party.length} ×${mult.toFixed(1).replace('.',',')})${r.goldGain?` · ${ico('vila','ouro')} +${fmt(r.goldGain)}`:''}</small></div>
     <div class="box moment"><div class="eyebrow">Momento da batalha</div><p>${r.moment}</p></div>
     <div class="box"><h3>Quadro de XP</h3>
       <div class="xpb">${r.xpRows.slice().sort((a,b)=>b.xp-a.xp).map(x=>`<div class="xr ${x.alive?'':'dead'}"><img src="${x.h.portrait}" alt=""><div><b>${x.h.first}${x.xp===top&&top>0?' ★':''}</b><small>${CLASSES[x.h.cls].nome} · ${x.alive?'vivo: +50 de bônus':'caiu: sem bônus'}${x.catchup?` · ⏫ ×${x.catchup.toFixed(1).replace('.',',')} (alcançando o grupo)`:''}</small></div><b class="xv">+${x.xp}</b></div>`).join('')}</div>
@@ -3125,11 +3137,11 @@ function finalResult(win,cash){
   res.innerHTML=`<div class="res">
     <div><div class="eyebrow">Fim da run</div><h1 class="res-title ${complete||cash||win?'':'lose'}">${title}</h1><p class="sub">${subt}</p></div>
     <div class="bigscore"><span>Pontuação da run</span><b id="tot">0</b><small id="rkpos"></small></div>
-    ${goldTotal?`<div class="box"><div class="eyebrow">Ouro ganho</div><p>💰 +${fmt(goldTotal)} (total no cofre: ${fmt(gold)})</p></div>`:''}
+    ${goldTotal?`<div class="box"><div class="eyebrow">Ouro ganho</div><p>${ico('vila','ouro')} +${fmt(goldTotal)} (total no cofre: ${fmt(gold)})</p></div>`:''}
     <div class="box moment"><div class="eyebrow">Momento da run</div><p>${last.moment}</p></div>
     <details class="box score"><summary>Como os pontos foram feitos</summary><table>${run.results.map(r=>`<tr><td>Mapa ${r.n}: ${r.nome}</td><td>+${fmt(r.sub)}</td></tr>`).join('')}
       <tr><td>Grupo de ${run.party.length}</td><td>×${mult.toFixed(1).replace('.',',')}</td></tr></table></details>
-    <details class="box"><summary>O grupo · XP da run</summary><div class="people">${run.party.map(h=>`<div class="person ${h.injured?'dead':''}"><img src="${h.portrait}" alt=""><div>${h.injured?'🤕 ':''}<b>${h.nome}</b> <em>· ${CLASSES[h.cls].nome} · +${h.xpRun} XP${h.injured?' · se recuperando':''}</em></div></div>`).join('')}</div></details>
+    <details class="box"><summary>O grupo · XP da run</summary><div class="people">${run.party.map(h=>`<div class="person ${h.injured?'dead':''}"><img src="${h.portrait}" alt=""><div>${h.injured?ico('vila','ferido'):''}<b>${h.nome}</b> <em>· ${CLASSES[h.cls].nome} · +${h.xpRun} XP${h.injured?' · se recuperando':''}</em></div></div>`).join('')}</div></details>
     ${fallen.length?`<div class="box"><div class="eyebrow">Feridos</div><p>${fallen.map(h=>h.first).join(', ')} ${fallen.length>1?'precisam':'precisa'} descansar no Templo da Aurora antes de voltar a lutar — o tempo passa sozinho, ou pague ouro pra acelerar.</p></div>`:''}
     <div class="box rank"><h3>Ranking</h3>
       <label class="namefield" for="nome">Seu nome<input id="nome" maxlength="16" value="${entry.nome.replace(/"/g,'')}"></label>
