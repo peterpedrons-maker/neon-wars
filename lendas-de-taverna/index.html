@@ -706,7 +706,13 @@ const MAPS=[
   {n:2,mundo:'campina',biome:'floresta',nome:'Bosque dos Corvos',fixo:true,seed:2202,secret:true,total:[9,11],escala:1.15,
     desc:'Floresta fechada, poucas passagens. Boa pra emboscada, de ambos os lados.',
     pool:['goblin','gobarq','lobo','xama','guarda','ogro']},
-  {n:3,mundo:'deserto',biome:'deserto',nome:'Covil do Ogro',fixo:false,chefe:true,secret:false,total:[9,11],escala:1.3,
+  {n:3,mundo:'deserto',biome:'deserto',nome:'Duna Rachada',fixo:false,secret:false,total:[9,12],escala:1.2,
+    desc:'Primeira trilha no Deserto das Cinzas. Dunas abertas, quase sem abrigo — bom pra quem atira de longe, ruim pra quem se expõe.',
+    pool:['goblin','gobarq','lobo','guarda']},
+  {n:4,mundo:'deserto',biome:'deserto',nome:'Vale das Cinzas',fixo:false,secret:true,total:[10,13],escala:1.25,
+    desc:'Vale estreito coberto de cinza vulcânica. O xamã goblin cura os aliados feridos — derrube primeiro.',
+    pool:['goblin','gobarq','lobo','xama','guarda']},
+  {n:5,mundo:'deserto',biome:'deserto',nome:'Covil do Ogro',fixo:false,chefe:true,secret:false,total:[9,11],escala:1.3,
     desc:'Mapa de chefe: o terreno muda a cada run. O Ogro sempre está lá.',
     pool:['goblin','gobarq','lobo','guarda','ogro']},
 ];
@@ -1870,7 +1876,7 @@ const COMO={
   bardo:{campo:'Mantém distância média (alcance 3).',inimigos:'Ataca o mais ferido ao alcance, com golpe fraco.',aliados:'Todo turno inspira um aliado a até 4 casas: +2 no próximo acerto.'},
 };
 const IA_TXT={rush:'Avança',skirmish:'Atira de longe',flank:'Caça os frágeis',healer:'Cura aliados',guard:'Vigia o posto'};
-let run={mission:null,map:0,phaseNo:0,results:[],party:[],enemyList:null,total:0,inventory:[]};
+let run={mission:null,map:0,phaseNo:0,results:[],party:[],enemyList:null,total:0,inventory:[],endless:false};
 let view='hub',tvFocus=null;
 function loadProg(){try{return +localStorage.getItem('lendas_prog_v1')||0;}catch(e){return 0;}}
 function saveProg(n){try{if(n>loadProg())localStorage.setItem('lendas_prog_v1',String(n));}catch(e){}}
@@ -2005,7 +2011,22 @@ function loadGame(){
   }catch(e){return null;}
 }
 const unlocked=n=>n<=loadProg()+1;
-const mapOf=n=>MAPS.find(m=>m.n===n);
+function mapOf(n){
+  const m=MAPS.find(m=>m.n===n);
+  if(m)return m;
+  // Modo Interminável: depois do último mapa fixo, run.endless libera rondas
+  // sintéticas em cima do último mapa (mesmo bioma/pool), cada vez mais
+  // cheias e mais fortes — só ativa quando o jogador escolhe entrar (ver
+  // phaseBoard), nunca pelo fluxo normal de mapOf(n) com n dentro de MAPS.
+  if(n>MAPS.length&&run.endless){
+    const base=MAPS[MAPS.length-1],loop=n-MAPS.length;
+    return {...base,n,nome:`${base.nome} · Ronda ${loop+1}`,fixo:false,
+      desc:'Modo Interminável: o covil do Ogro, cada vez mais cheio e mais forte a cada ronda vencida.',
+      total:[base.total[0]+loop,base.total[1]+loop+1],
+      escala:+(base.escala+loop*0.12).toFixed(2),endless:true};
+  }
+  return undefined;
+}
 function ePortrait(kind){
   return ensureEnemyCache(kind).url;
 }
@@ -2116,7 +2137,7 @@ function renderMissions(){
     <div class="world"><h3>${w.nome}</h3>
     ${MAPS.filter(m=>m.mundo===w.id).map(m=>{const lock=!unlocked(m.n),done=m.n<=cleared;
       return `<button class="mrow ${lock?'lock':''} ${run.mission===m.n?'sel':''}" data-map="${m.n}" ${lock?'disabled':''}>
-        <i>${lock?'🔒':m.n}</i><span><b>${m.nome}</b><small>${BIOMES[m.biome].nome} · ${m.fixo?'mapa fixo':'chefe: terreno muda a cada run'}${done?' · concluído':''}</small></span><em>${lock?'':'›'}</em></button>`;}).join('')}
+        <i>${lock?'🔒':m.n}</i><span><b>${m.nome}</b><small>${BIOMES[m.biome].nome} · ${m.fixo?'mapa fixo':m.chefe?'chefe: terreno muda a cada run':'terreno muda a cada run'}${done?' · concluído':''}</small></span><em>${lock?'':'›'}</em></button>`;}).join('')}
     </div>`).join('')}
   <p class="note">Mapas se liberam ao vencer o anterior. Uma run começa no mapa escolhido e segue pelos próximos enquanto houver heróis de pé.</p></div>`;
 }
@@ -2786,7 +2807,7 @@ function resetHero(h,first){
 }
 function departRun(){
   newSeed();
-  run={...run,map:run.mission,phaseNo:1,results:[],party:roster.filter(h=>selected.has(h.id))};
+  run={...run,map:run.mission,phaseNo:1,results:[],party:roster.filter(h=>selected.has(h.id)),endless:false};
   party.forEach(disposeUnit);party=run.party;
   startPhase();
 }
@@ -2845,7 +2866,8 @@ function finish(){
   run.results.push({n:LV.mp.n,nome:LV.mp.nome,rows,sub,win,round:stats.round,moment:moment.t,goldGain,xpRows:party.map(h=>({h,xp:h.xp,alive:h.alive,bonus:h.bonus}))});
   phase='result';
   const next=win&&mapOf(run.map+1)&&unlocked(run.map+1);
-  if(next)phaseBoard();else finalResult(win);
+  const offerEndless=win&&!next&&!run.endless&&run.map>=MAPS.length;
+  if(next||offerEndless)phaseBoard();else finalResult(win);
 }
 const runSub=()=>run.results.reduce((a,r)=>a+r.sub,0);
 function phaseBoard(){
@@ -2861,11 +2883,11 @@ function phaseBoard(){
       <div class="xpb">${r.xpRows.slice().sort((a,b)=>b.xp-a.xp).map(x=>`<div class="xr ${x.alive?'':'dead'}"><img src="${x.h.portrait}" alt=""><div><b>${x.h.first}${x.xp===top&&top>0?' ★':''}</b><small>${CLASSES[x.h.cls].nome} · ${x.alive?'vivo: +50 de bônus':'caiu: sem bônus'}</small></div><b class="xv">+${x.xp}</b></div>`).join('')}</div>
       <p class="note">XP vem só do que o herói faz em pé: acertos, golpes de misericórdia, curas, bênçãos. Quem caiu volta na próxima fase com 50% de vida e Exausto (−1 ATQ, −1 DEF). O XP vira XP de classe, guardado neste aparelho.</p></div>
     <details class="box score"><summary>Como os pontos foram feitos</summary><table>${r.rows.map(x=>`<tr><td>${x[0]}</td><td class="${x[1]?'':'zero'}">${x[1]?'+'+fmt(x[1]):'0'}</td></tr>`).join('')}</table></details>
-    <div class="box"><div class="eyebrow">Próxima fase</div><h3>Mapa ${nx.n}: ${nx.nome}</h3><p class="sub">${nx.desc}</p></div>
+    <div class="box"><div class="eyebrow">Próxima fase</div>${nx?`<h3>Mapa ${nx.n}: ${nx.nome}</h3><p class="sub">${nx.desc}</p>`:`<h3>Covil Interminável</h3><p class="sub">O grupo venceu todos os mapas disponíveis. Dá pra entrar no Covil Interminável: o mesmo covil do Ogro, mais cheio e mais forte a cada ronda vencida, pontuando sem fim — ou encerrar a run aqui.</p>`}</div>
   </div>
-  <div class="rbar two"><button class="btn ghost" id="cash">Encerrar run</button><button class="btn" id="nextp">Próxima fase</button></div>`;
+  <div class="rbar two"><button class="btn ghost" id="cash">Encerrar run</button><button class="btn" id="nextp">${nx?'Próxima fase':'Entrar no Interminável'}</button></div>`;
   const tc={v:0},tot=Math.round(r.sub*mult);gsap.to(tc,{v:tot,duration:1,delay:0.3,ease:'power2.out',onUpdate:()=>{const el=$('#tot');if(el)el.textContent=fmt(Math.round(tc.v));}});
-  $('#nextp').addEventListener('click',nextPhase);
+  $('#nextp').addEventListener('click',()=>{if(!nx)run.endless=true;nextPhase();});
   $('#cash').addEventListener('click',()=>finalResult(true,true));
   res.scrollTop=0;gsap.from(res.querySelector('.res'),{y:30,opacity:0,duration:0.4});
 }
@@ -2890,7 +2912,8 @@ function finalResult(win,cash){
   stash.push(...run.inventory);run.inventory=[];
   saveGame();
   const last=run.results[run.results.length-1],mult=MULT[run.party.length],sub=runSub(),total=Math.round(sub*mult);
-  const complete=win&&!cash&&!mapOf(run.map+1);
+  const complete=win&&run.map>=MAPS.length;
+  const endlessRounds=Math.max(0,run.map-MAPS.length);
   const rank=loadRank();const entry={nome:getName(),pts:total,id:Date.now()};rank.push(entry);rank.sort((a,b)=>b.pts-a.pts);saveRank(rank);
   phase='result';
   const res=$('#result');res.hidden=false;
@@ -2901,7 +2924,7 @@ function finalResult(win,cash){
     $('#rkpos').textContent=`Você ficou em ${pos}º de ${list.length}.`;
   };
   const title=complete?'Campanha concluída!':cash?'Run encerrada':win?'Vitória!':'Derrota';
-  const subt=complete?`O grupo venceu todos os mapas disponíveis (${run.results.length}).`:cash?`O grupo voltou pra casa depois de ${run.results.length} ${run.results.length>1?'fases':'fase'}.`:win?'':last.round>=24&&heroesAlive().length?'O tempo acabou e o grupo recuou.':`O grupo caiu no mapa ${last.n}, turno ${last.round}.`;
+  const subt=complete?`O grupo venceu todos os mapas disponíveis (${run.results.length})${endlessRounds?` e sobreviveu a ${endlessRounds} ronda${endlessRounds>1?'s':''} do Covil Interminável.`:'.'}`:cash?`O grupo voltou pra casa depois de ${run.results.length} ${run.results.length>1?'fases':'fase'}.`:win?'':last.round>=24&&heroesAlive().length?'O tempo acabou e o grupo recuou.':`O grupo caiu no mapa ${last.n}, turno ${last.round}.`;
   const goldTotal=run.results.reduce((a,r)=>a+(r.goldGain||0),0);
   const fallen=run.party.filter(h=>h.injured);
   res.innerHTML=`<div class="res">
@@ -2931,7 +2954,7 @@ function newRun(){
   tombs.forEach(t=>{scene.remove(t);t.geometry.dispose();});tombs=[];
   if(chest){scene.remove(chest);chest=null;}
   newSeed();rerolls=1;stats=null;active=null;camMode='follow';
-  const keep=run.mission;run={mission:keep,map:0,phaseNo:0,results:[],party:[],enemyList:null,total:0,inventory:[]};
+  const keep=run.mission;run={mission:keep,map:0,phaseNo:0,results:[],party:[],enemyList:null,total:0,inventory:[],endless:false};
   applyLevel(mapOf(keep||1),mapOf(keep||1).seed);buildBoard();spawnEnemies(rollEnemies(LV.mp));newDraw();goVillage();
 }
 

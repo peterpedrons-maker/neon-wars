@@ -150,6 +150,26 @@ aqui quem "gerenciaria" seria a IA, adicionando complexidade sem o jogador
 sentir a gestão. Cooldown por turno é mais simples de implementar, de
 mostrar na tela (encaixa na lista de turno que já existe) e pra IA calcular.
 
+### Campanha: mapas e Modo Interminável
+- **5 mapas fixos hoje** (antes eram 3): Campina Verde (Clareira de Brumavale,
+  Bosque dos Corvos) e Deserto das Cinzas (Duna Rachada, Vale das Cinzas,
+  Covil do Ogro — chefe). Motivo da expansão: a campanha **acabava
+  literalmente no mapa 3**, sem loop nem conteúdo depois — jogador zerava e
+  não tinha mais o que fazer. Duna Rachada e Vale das Cinzas preenchem a
+  transição pro deserto antes do chefe, com o mesmo pool de inimigos já
+  existente (sem bicho novo).
+- **Modo Interminável**: ao vencer o último mapa fixo (hoje o Covil do Ogro),
+  a run oferece a opção de entrar no Covil Interminável em vez de encerrar —
+  rondas sintéticas sobre o último mapa (`mapOf()` sintetiza o mapa quando
+  `n > MAPS.length` e `run.endless` está ligado), cada ronda com mais
+  inimigos (`total` cresce) e inimigos mais fortes (`escala` cresce
+  +0.12/ronda). Pontua sem fim, pro ranking. Decisão de escopo: isso é a
+  resposta *de curto prazo* pra "o que eu faço depois de zerar" — as
+  **dungeons de endgame distintas** (tier 9-12, com loot exclusivo) continuam
+  como a resposta de longo prazo, ainda não escritas (ver "Decisões adiadas").
+  `run.endless` só liga quando o jogador escolhe entrar; nunca pelo fluxo
+  normal de `mapOf(n)` com `n` dentro de `MAPS`.
+
 ### Economia e recuperação
 - **Ouro**: ganho a cada fase vencida, 10% da pontuação da fase
   (`GOLD_PER_SCORE`).
