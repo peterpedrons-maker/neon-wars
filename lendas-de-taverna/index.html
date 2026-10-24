@@ -369,6 +369,147 @@ h4.sec{margin:6px 0 0;font-family:var(--f-display);font-size:15px;color:var(--ou
 .legend .ov{margin-left:auto;padding:5px 9px}
 .spd[aria-pressed="true"][data-act=overview]{background:var(--ouro);border-color:var(--ouro-2);color:var(--tinta)}
 @media (prefers-reduced-motion: reduce){ .pc,.ucard i,.ucard b,#order .oc{transition:none} }
+/* ===== Tema RPGUI: molduras/botões/barras do RPGUI (zlib, assets/rpgui) com CSS próprio ===== */
+:root{--rp:assets/rpgui;--lar:#d27d2c;--cas:#844d2e;--esc:#2b1812;--cre:#fff5dc}
+.rpf,.ov .inner,.hbox,.pc,.td,.mrow,.slot.full,.subopt,.stashdetail,.hcard{
+  border-style:solid;border-width:8px;border-image-source:url(assets/rpgui/border-image-golden.png);border-image-slice:4;border-image-width:10px;border-image-repeat:repeat;
+  background:url(assets/rpgui/background-image-golden.png) repeat;background-clip:padding-box;background-origin:padding-box;image-rendering:pixelated;border-radius:0;box-shadow:none}
+.ov .inner,.hbox{border-width:15px;border-image-width:18px}
+.rpf.g2,.pc[aria-pressed="true"],.mrow.sel,.subopt.on,.bigscore{background-image:url(assets/rpgui/background-image-golden2.png)}
+.pc[aria-pressed="true"],.mrow.sel,.subopt.on{outline:2px solid #ffe9b8;outline-offset:-3px}
+
+/* janela (menu de prédio em tela cheia) */
+.ov .inner{max-width:820px;width:calc(100% - 20px);margin:max(10px,env(safe-area-inset-top,0px)) auto max(10px,env(safe-area-inset-bottom,0px));padding:10px 12px;gap:10px;color:var(--cre)}
+.ov .head{border-style:solid;border-width:11px 19px;border-image:url(assets/rpgui/button.png) 7 11 fill/11px 19px/0 stretch;background:none;outline:0;padding:0 2px;align-items:center;flex-wrap:nowrap;color:var(--cre);text-shadow:0 2px 0 #3b1f0a;image-rendering:pixelated}
+.ov .head .eyebrow{color:#ffe9b8}
+.ov .head h2{font-size:20px;color:var(--cre)}
+.wt{display:flex;align-items:center;gap:10px;min-width:0}
+.wt .ic{filter:drop-shadow(0 2px 0 #3b1f0a)}
+.ov .hint{background:rgba(30,16,8,.55);border-left:4px solid var(--lar);border-radius:0}
+.ov .sub,.ov .note,.ov .dt{color:#f0dfb9}
+.ov .steps li.on{color:#ffe9b8}
+#panel{border-top:0}
+#panel::before{content:"";position:absolute;left:0;right:0;top:-6px;height:12px;border-image:url(assets/rpgui/hr-golden.png) 0 fill/0/0 repeat;pointer-events:none}
+
+/* botões */
+.btn{background:none;box-shadow:none;border-radius:0;border-style:solid;border-width:12px 20px;border-image:url(assets/rpgui/button.png) 7 11 fill/12px 20px/0 stretch;image-rendering:pixelated;color:var(--cre);text-shadow:0 2px 0 #3b1f0a;padding:3px 4px;min-height:52px;font-size:15px;letter-spacing:.02em}
+.btn:hover{border-image-source:url(assets/rpgui/button-hover.png)}
+.btn:active{transform:none;border-image-source:url(assets/rpgui/button-down.png)}
+.btn.sm{border-width:10px 16px;border-image-width:10px 16px;min-height:42px;font-size:13px;padding:2px}
+.btn.cta{border-image-source:url(assets/rpgui/button-golden.png);font-size:17px}
+.btn.cta:hover{border-image-source:url(assets/rpgui/button-golden-hover.png)}
+.btn.cta:active{border-image-source:url(assets/rpgui/button-golden-down.png)}
+.btn.ghost{border-width:7px;border-image:url(assets/rpgui/border-image-grey.png) 3 fill/7px/0 stretch;padding:6px 10px;min-height:0;color:var(--papel);text-shadow:none}
+.btn.ghost.sm{padding:4px 8px}
+.btn.ghost:hover{filter:brightness(1.2)}
+.btn[disabled]{opacity:.85;filter:grayscale(.9) brightness(.7);pointer-events:none}
+.btn .ic{filter:drop-shadow(0 2px 0 #3b1f0a)}
+
+/* chips, tags, caixas */
+.tag{border-radius:0;background:#2a1d12;border:2px solid #b8832f;color:#ffe9b8}
+.tag.cls{background:var(--lar);border-color:var(--esc);color:var(--esc)}
+.tag.fam,.fam,.pc .sib{background:#e7d049;border:2px solid var(--esc);color:var(--esc);border-radius:0}
+.box,.ec,.stgrid span,.eqlist div,.rank li{border-radius:0}
+.box{background:rgba(30,16,8,.6);border:2px solid var(--esc);box-shadow:inset 0 0 0 2px #a8683a55;color:var(--cre)}
+.moment{background:var(--papel);color:var(--tinta);border:2px solid var(--esc)}
+.bigscore{border-width:8px;border-image-width:14px;color:var(--cre);text-shadow:0 2px 0 #3b1f0a}
+.bigscore span{color:#ffe9b8}.bigscore b{color:var(--cre)}.bigscore small{color:#ffe9b8}
+.stashtab{border-radius:0;border:2px solid var(--esc);background:rgba(30,16,8,.6);color:#ffe9b8}
+.stashtab.on{background:var(--lar);color:var(--esc);border-color:var(--esc)}
+.stashtile{border-radius:0;background:#1c1510;border:3px solid;box-shadow:inset 0 0 0 2px #0e0a07}
+.stashtile.sel{box-shadow:inset 0 0 0 2px #0e0a07,0 0 0 3px #ffe9b8}
+.stashdetail{color:var(--cre)}
+.eqslot{border-radius:0;background:rgba(30,16,8,.6);border:2px solid var(--esc)}
+.invrow{border-bottom:2px dashed #a8683a66}
+
+/* cartas de herói */
+.pc{--t1:var(--cre);--t2:#e8d3a8;color:var(--t1);padding:10px 8px 8px;border-width:8px;border-image-width:10px}
+.pc[aria-pressed="true"]{--t1:var(--esc);--t2:#4a2a14}
+.pc.injured{filter:grayscale(.7)}
+.pc img{width:44px;height:53px;background:#1c1510;border:2px solid var(--esc);padding:2px}
+.pc .cl,.pc .pcstats,.pc .pcgear{color:var(--t2)}
+.pc .pcstats{font-size:10px}
+.pc .cl{font-size:11px}
+.pc .nm{font-size:14px;color:var(--t1)}
+.pc .tr{background:rgba(30,16,8,.7);border:1px solid #b8832f;border-radius:0;color:#ffe9b8;font-size:10px}
+.pc .info{background:var(--lar);color:var(--esc);border:2px solid var(--esc);border-radius:0;font-size:10px;padding:1px 6px}
+.tick{border-radius:0;background:#e7d049;border:2px solid var(--esc)}
+.slot{border-radius:0;border:6px solid transparent;border-image:url(assets/rpgui/border-image-grey.png) 3 fill/6px/0 stretch;background:none;width:48px;height:56px;color:#d8c9a8}
+.slot.req{color:#ffe9b8}
+.slot.full{border-width:8px;border-image-width:10px;width:48px;height:56px}
+.slot img{width:30px;height:36px}
+.chip{border-radius:0;border:6px solid transparent;border-image:url(assets/rpgui/border-image-grey.png) 3 fill/6px/0 stretch;background:none}
+.chip[aria-pressed="true"]{border-image-source:url(assets/rpgui/border-image-golden.png);border-image-slice:4;color:var(--cre);outline:2px solid #ffe9b8;outline-offset:-2px}
+
+/* listas (missões etc.) */
+.td,.mrow{padding:4px 6px;color:var(--cre)}
+.td i,.mrow i{border-radius:0;background:var(--lar);color:var(--esc);border:2px solid var(--esc);width:32px;height:32px}
+.mrow i{background:var(--lar);color:var(--esc)}
+.mrow.lock{filter:grayscale(.8) brightness(.8);opacity:.9}
+.mrow.lock i{background:#1c1510;color:#c9b28a}
+.mrow.sel,.mrow.sel b{color:var(--esc)}.mrow.sel small{color:#4a2a14}
+.mrow:hover:not(.lock),.td:hover{filter:brightness(1.12)}
+.world h3{color:#ffe9b8;text-shadow:0 2px 0 #3b1f0a;border-bottom:3px solid transparent;border-image:url(assets/rpgui/hr-golden.png) 0 0 5 0 repeat/0 0 3px 0;padding-bottom:4px}
+h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #3b1f0a}
+.sec2 p{color:#f0dfb9}.sec2 p b{color:var(--cre)}
+.ec{background:rgba(30,16,8,.6);border:2px solid var(--esc)}
+.ec small{color:#f0dfb9}
+
+/* ficha */
+.sheet2 .rpf{padding:8px 10px;display:flex;flex-direction:column;gap:8px}
+.sh2-top img{border-radius:0;border:3px solid var(--esc);background:#1c1510}
+.stgrid span{background:rgba(30,16,8,.6);border:2px solid var(--esc);color:#e8d3a8}
+.stgrid span b{color:var(--cre)}
+.eqlist div{background:rgba(30,16,8,.6);border:2px solid var(--esc);color:#f0dfb9;display:flex;align-items:center;gap:6px}
+.eqlist .ic{width:22px;height:22px;margin:0}
+.pbar{position:relative;height:28px;border-style:solid;border-width:0 20px;border-image:url(assets/rpgui/bar-frame.png) 0 10 fill/0 20px/0 stretch;image-rendering:pixelated}
+.pbar .f{position:absolute;left:0;top:6px;height:16px;background:url(assets/rpgui/progress.png) repeat-x;background-size:auto 16px;image-rendering:pixelated}
+.pbar .f.red{background-image:url(assets/rpgui/progress-red.png)}.pbar .f.green{background-image:url(assets/rpgui/progress-green.png)}.pbar .f.blue{background-image:url(assets/rpgui/progress-blue.png)}
+.pbar-l{display:flex;justify-content:space-between;font-size:11px;color:#e8d3a8;margin:2px 2px -2px}
+.mini{height:10px;background:#1c1510;border:2px solid var(--esc);flex:1}.mini i{display:block;height:100%;background:var(--lar)}
+.arow{display:grid;grid-template-columns:96px 28px 1fr;gap:6px;align-items:center;font-size:13px;color:#f0dfb9}.arow b{color:var(--cre);font-family:var(--f-display);text-align:right}
+
+/* forja / templo */
+.hcard{padding:6px 8px;display:flex;flex-direction:column;gap:8px;color:var(--cre)}
+.hhead{display:flex;align-items:center;gap:10px}
+.hhead img{width:40px;height:48px;image-rendering:pixelated;background:#1c1510;border:2px solid var(--esc);padding:2px}
+.hhead .grow{flex:1;min-width:0}
+.subs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.subopt{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:10px;align-items:center;padding:6px 8px;color:var(--cre);border-style:solid;border-width:8px;border-image-source:url(assets/rpgui/border-image-golden.png);border-image-slice:4;border-image-width:10px;background:url(assets/rpgui/background-image-golden.png);image-rendering:pixelated}
+.subopt .ic.xl{color:#ffe9b8;flex:0 0 auto}
+.subopt b{font-family:var(--f-display);font-size:15px;display:block}
+.subopt small{display:block;font-size:11px;line-height:1.3;color:#f0dfb9}
+.subopt .pr{display:inline-block;margin-top:3px;background:#2a1d12;border:2px solid #b8832f;color:#ffe9b8;font-size:11px;padding:0 5px}
+.subopt.on{color:var(--esc)}.subopt.on small{color:#4a2a14}.subopt.on .ic.xl{color:var(--esc)}
+.subopt[disabled]{filter:grayscale(.9) brightness(.7);pointer-events:none}
+.subopt.on[disabled]{filter:none}
+.subopt:hover:not([disabled]){filter:brightness(1.12)}
+.empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:24px 8px;text-align:center;color:#f0dfb9}
+.empty .ic.xl{width:64px;height:64px;color:#ffe9b8;opacity:.9}
+@media (max-width:560px){.subs{grid-template-columns:1fr}}
+
+/* vila: placas dos prédios */
+.vn{background:none;border-radius:0;border-style:solid;border-width:10px 16px;border-image:url(assets/rpgui/button.png) 7 11 fill/10px 16px/0 stretch;image-rendering:pixelated;color:var(--cre);text-shadow:0 2px 0 #3b1f0a;padding:0 2px;box-shadow:none}
+.vn:hover{border-image-source:url(assets/rpgui/button-hover.png)}
+.vn.soon{filter:grayscale(.7) brightness(.85)}
+.vn .ic{filter:drop-shadow(0 2px 0 #3b1f0a)}
+.vn b{background:#e7d049;color:var(--esc);border:2px solid var(--esc);border-radius:0}
+#vbar .vt{border-radius:0;border-style:solid;border-width:8px;border-image:url(assets/rpgui/border-image-golden.png) 4/10px repeat;background:url(assets/rpgui/background-image-golden.png);background-clip:padding-box;padding:0 8px;image-rendering:pixelated}
+
+/* diálogos */
+.hbox{color:var(--cre);padding:14px;gap:12px}
+.hbox .eyebrow{color:#ffe9b8}.hbox li{color:#f0dfb9}.hbox li b{color:var(--cre)}
+.hbox li::before{border-radius:0;background:var(--esc);color:#ffe9b8;border:2px solid #b8832f}
+.ihelp{color:#f0dfb9}
+#result .res .box{margin:0}
+.scroll,.pool,#result,#help,#install{scrollbar-width:thin;scrollbar-color:var(--lar) var(--esc)}
+@media (max-width:560px){
+  .pool{grid-template-columns:1fr}
+  .ov .head h2{font-size:17px}.ov .head .eyebrow{font-size:10px}
+  .ov .inner{padding:8px 8px}
+  .stgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .arow{grid-template-columns:84px 24px 1fr}
+}
 </style>
 </head>
 <body>
@@ -399,7 +540,7 @@ h4.sec{margin:6px 0 0;font-family:var(--f-display);font-size:15px;color:var(--ou
       <li><div><b>Batalha</b>O jogo joga sozinho. Acompanhe os dados, use 2x, 4x ou Pular, e o botão Mapa pra ver tudo.</div></li>
       <li><div><b>Fases</b>Vença pra ir ao próximo mapa. Quem caiu volta Exausto. Cada herói ganha XP só pelo que faz em pé.</div></li>
     </ol>
-    <p class="ihelp" style="font-size:11px">Ícones: <a href="https://game-icons.net" target="_blank" rel="noopener" style="color:inherit">game-icons.net</a> — Lorc, Delapouite, Skoll, Lucas, Sbed, DarkZaitzev, Willdabeast e outros (CC BY 3.0). Sprites: LPC / OpenGameArt.</p>
+    <p class="ihelp" style="font-size:11px">Ícones: <a href="https://game-icons.net" target="_blank" rel="noopener" style="color:inherit">game-icons.net</a> — Lorc, Delapouite, Skoll, Lucas, Sbed, DarkZaitzev, Willdabeast e outros (CC BY 3.0). Sprites: LPC / OpenGameArt. Molduras e botões: RPGUI (zlib).</p>
     <button class="btn" data-close>Entendi</button>
   </div></div>
   <div id="install" hidden><div class="hbox" role="dialog" aria-label="Instalar o jogo">
@@ -562,6 +703,7 @@ const SLOT_INFO={
 const IC={"classe": {"guerreiro": "broadsword", "ladino": "daggers", "mago": "wizard-staff", "clerigo": "holy-symbol", "arqueiro": "bow-arrow", "bardo": "lyre"}, "subclasse": {"cavaleiro": "black-knight-helm", "barbaro": "barbarian", "assassino": "rogue", "armadilheiro": "hooded-assassin", "piromante": "magic-swirl", "geomante": "crystal-cluster", "curandeiro": "healing", "templario": "sun-priest", "patrulheiro": "archer", "saraivador": "arrow-cluster", "consonante": "harp", "dissonante": "drama-masks"}, "stat": {"vida": "heart-plus", "atq": "crossed-swords", "def": "shield", "res": "magic-shield", "mov": "boot-prints", "alc": "target-arrows", "crit": "bullseye", "ini": "lightning-helix", "dano": "claw-slashes"}, "slot": {"weapon": "broadsword", "offhand": "round-shield", "head": "helmet", "body": "chest-armor", "hands": "gauntlet", "feet": "boots", "acc1": "diamond-ring", "acc2": "gem-pendant"}, "vila": {"tavern": "tavern-sign", "temple": "greek-temple", "forge": "anvil", "stash": "locked-chest", "board": "scroll-unfurled", "market": "shop", "well": "well", "ouro": "coins", "pocao": "health-potion", "mapa": "treasure-map", "grupo": "team-idea", "ferido": "bandage-roll", "bolsa": "backpack", "trava": "padlock", "check": "check-mark", "xp": "sparkles", "alerta": "sparkles"}, "item": {"lamina_simples": "broadsword", "adaga_enferrujada": "plain-dagger", "cajado_rustico": "wizard-staff", "lamina_afiada": "pointy-sword", "machado_ferro": "battle-axe", "arco_reforcado": "bow-arrow", "cajado_arcano": "crystal-wand", "adaga_encantada": "broad-dagger", "martelo_runico": "warhammer", "lamina_dragao": "rune-sword", "cetro_celestial": "winged-scepter", "garra_sombria": "claws", "excalibur_partida": "ancient-sword", "cajado_infinito": "skull-staff", "broquel_madeira": "round-shield", "adaga_reserva": "cloak-dagger", "escudo_pequeno": "kite", "livro_rezas": "open-book", "escudo_espelhado": "eye-shield", "adaga_sombra": "flying-dagger", "egide_draconica": "dragon-shield", "tomo_arcano": "spell-book", "escudo_aurora": "sunrise", "adaga_eclipse": "sacrificial-dagger", "elmo_recruta": "helmet", "capuz_viajante": "hood", "elmo_ferro": "crested-helmet", "capuz_batedor": "hooded-figure", "coroa_arcana": "jewel-crown", "elmo_cornos": "horned-helm", "elmo_campeao": "centurion-helmet", "capuz_sussurros": "warlock-hood", "mascara_vazio": "ceremonial-mask", "coroa_eterna": "imperial-crown", "gibao_simples": "leather-vest", "colete_couro": "armor-vest", "cota_malha_leve": "mail-shirt", "manto_viajante": "cloak", "capa_elfica": "cape", "tunica_arcana": "robe", "couraca_dragao": "scale-mail", "manto_sombrio": "vampire-cape", "armadura_titanica": "chest-armor", "vestes_arquimago": "layered-armor", "luvas_couro": "gloves", "manoplas_simples": "fist", "luvas_reforcadas": "winter-gloves", "manoplas_ferro": "gauntlet", "luvas_precisao": "bracers", "manoplas_runicas": "mailed-fist", "luvas_assassino": "bracer", "manoplas_titan": "thor-fist", "luvas_vento_cortante": "whirlwind", "manoplas_juizo": "scales", "bota_surrada": "leather-boot", "sandalias_couro": "sandal", "bota_elfica": "tabi-boot", "botas_corredor": "running-shoe", "botas_elfas_reais": "fur-boot", "grevas_ferro": "metal-boot", "botas_vento": "wind-slap", "grevas_campeao": "greaves", "botas_vento_norte": "snowflake-1", "grevas_eternas": "infinity", "anel_couro": "ring", "pingente_simples": "necklace", "bracelete_latao": "bracers", "anel_vigor": "diamond-ring", "anel_foco": "eye-of-horus", "amuleto_viajante": "tribal-pendant", "amuleto_sorte": "clover", "pedra_poder": "gems", "colar_videntes": "crystal-ball", "coracao_titan": "heart-necklace", "anel_destino": "engagement-ring", "anel_fera": "claw-string", "talisma_guardiao": "gem-pendant", "reliquia_caos": "tornado-discs", "anel_eternidade": "big-diamond-ring", "coracao_fenix": "fire-gem"}};
 const icoUrl=n=>`--ic:url(assets/ui-icons/${n}.png)`;
 const ico=(g,k,cls='',style='')=>{const n=(IC[g]||{})[k];return n?`<i class="ic ${cls}" style="${icoUrl(n)};${style}"></i>`:'';};
+const wt=(key,eb,title)=>`<div class="wt">${ico('vila',key,'lg')}<div><div class="eyebrow">${eb}</div><h2>${title}</h2></div></div>`;
 const slotIco=(slot,cls='')=>ico('slot',slot==='accessory'?'acc1':slot,cls);
 const itemIco=(it,cls='')=>(IC.item[it.id]?ico('item',it.id,cls,`color:${RARITY[it.rar].cor}`):slotIco(it.slot,cls));
 const ITEMS=[
@@ -2259,7 +2401,7 @@ function openBld(id){
 function renderInfo(id){
   const p=PLACES[id];
   PI_.innerHTML=`
-  <div class="head"><div><div class="eyebrow">Vila de Brumavale</div><h2>${p.nome}</h2></div><span class="tag">em breve</span></div>
+  <div class="head">${wt(id,'Vila de Brumavale',p.nome)}<span class="tag">em breve</span></div>
   <p class="sub">${p.txt}</p>
   <button class="btn cta" data-act="toVillage">Voltar à praça</button>`;
 }
@@ -2269,12 +2411,12 @@ function renderMissions(){
   view='missions';setMode('village');
   const cleared=loadProg();
   PI_.innerHTML=`
-  <div class="head"><div><div class="eyebrow">Quadro de Missões</div><h2>Escolha o mapa</h2></div><button class="btn ghost sm" data-act="toVillage">Praça</button></div>
+  <div class="head">${wt('board','Quadro de Missões','Escolha o mapa')}<button class="btn ghost sm" data-act="toVillage">Praça</button></div>
   <div class="scroll">${WORLDS.map(w=>`
     <div class="world"><h3>${w.nome}</h3>
     ${MAPS.filter(m=>m.mundo===w.id).map(m=>{const lock=!unlocked(m.n),done=m.n<=cleared;
       return `<button class="mrow ${lock?'lock':''} ${run.mission===m.n?'sel':''}" data-map="${m.n}" ${lock?'disabled':''}>
-        <i>${lock?'🔒':m.n}</i><span><b>${m.nome}</b><small>${BIOMES[m.biome].nome} · ${m.fixo?'mapa fixo':m.chefe?'chefe: terreno muda a cada run':'terreno muda a cada run'}${done?' · concluído':''}</small></span><em>${lock?'':'›'}</em></button>`;}).join('')}
+        <i>${lock?ico('vila','trava'):m.n}</i><span><b>${m.nome}</b><small>${BIOMES[m.biome].nome} · ${m.fixo?'mapa fixo':m.chefe?'chefe: terreno muda a cada run':'terreno muda a cada run'}${done?' · concluído':''}</small></span><em>${lock?'':'›'}</em></button>`;}).join('')}
     </div>`).join('')}
   <p class="note">Mapas se liberam ao vencer o anterior. Uma run começa no mapa escolhido e segue pelos próximos enquanto houver heróis de pé.</p></div>`;
 }
@@ -2282,7 +2424,7 @@ function renderBrief(n){
   view='brief';setMode('village');
   const m=mapOf(n),w=WORLDS.find(x=>x.id===m.mundo);
   PI_.innerHTML=`
-  <div class="head"><div><div class="eyebrow">${w.nome} · Mapa ${m.n}</div><h2>${m.nome}</h2></div><button class="btn ghost sm" data-act="toMissions">Voltar</button></div>
+  <div class="head">${wt('board',`${w.nome} · Mapa ${m.n}`,m.nome)}<button class="btn ghost sm" data-act="toMissions">Voltar</button></div>
   <div class="scroll">
     <p class="sub">${m.desc}</p>
     <div class="tags"><span class="tag">${BIOMES[m.biome].nome}</span><span class="tag">Mapa 16×16</span><span class="tag">${m.fixo?'Terreno sempre igual':'Terreno muda a cada run'}</span>${m.secret?'<span class="tag">Parede suspeita</span>':''}</div>
@@ -2316,7 +2458,7 @@ function renderTavern(){
   const sc=rosterSibCount(),n=selected.size,full=roster.length>=ROSTER_CAP;
   PI_.innerHTML=`
   ${stepper(2)}
-  <div class="head"><div><div class="eyebrow">Taverna do Javali Torto</div><h2>Monte seu grupo</h2></div>
+  <div class="head">${wt('tavern','Taverna do Javali Torto','Monte seu grupo')}
     <div class="btns"><button class="btn ghost sm" data-act="toVillage">Praça</button></div></div>
   ${partyBar()}
   <p class="hint">Toque num herói do seu elenco pra escalar ou tirar do grupo ativo (até 5). Quem fica de banco continua no elenco e ganha ${Math.round(BENCH_XP_SHARE*100)}% do XP da missão.</p>
@@ -2340,7 +2482,7 @@ function renderRecruit(){
   view='recruit';setMode('tavern');
   const sc=surCount(),full=roster.length>=ROSTER_CAP;
   PI_.innerHTML=`
-  <div class="head"><div><div class="eyebrow">Taverna do Javali Torto</div><h2>Recrutar heróis</h2></div>
+  <div class="head">${wt('tavern','Taverna do Javali Torto','Recrutar heróis')}
     <div class="btns"><button class="btn ghost sm" data-act="reroll" ${rerolls?'':'disabled'}>Sortear (${rerolls})</button><button class="btn ghost sm" data-act="toTavern">Voltar ao elenco</button></div></div>
   <p class="hint">${full?`Seu elenco está cheio (${ROSTER_CAP}). Não dá pra contratar mais até abrir vaga.`:'Toque num herói pra ver a ficha completa e contratar — ele fica com você pra sempre, não só nesta run.'}</p>
   <div class="pool">${draw.map(h=>`
@@ -2369,23 +2511,27 @@ function renderSheet(id,src){
   const c=CLASSES[h.cls],cm=COMO[h.cls],sc=tvSrc==='roster'?rosterSibCount():surCount(),isR=tvSrc==='roster';
   const lv=h.level||1,xb=xpForLevel(lv),xn=xpForLevel(lv+1),pct=lv>=LEVEL_CAP?100:Math.max(0,Math.min(100,Math.round(((h.xpTotal||0)-xb)/(xn-xb)*100)));
   const at=h.attrs||{},AN={forca:'Força',destreza:'Destreza',inteligencia:'Inteligência',vitalidade:'Vitalidade',fe:'Fé'};
-  const eq=isR?EQ_SLOTS.map(sl=>`<div><b>${(SLOT_INFO[sl]||SLOT_INFO[sl.replace(/\d/,'')]||{label:'Acessório'}).label}:</b> ${h.equip&&h.equip[sl]?h.equip[sl].nome:'—'}</div>`).join(''):`<div><b>Arma:</b> ${h.arma}</div><div><b>Armadura:</b> ${h.armadura}</div>`;
+  const amax=Math.max(30,...ATTR_NAMES.map(a=>at[a]||0));
+  const eq=isR?EQ_SLOTS.map(sl=>{const it=h.equip&&h.equip[sl];return `<div>${it?itemIco(it):slotIco(sl)}<span><b>${(SLOT_INFO[sl]||{label:'Acessório'}).label}:</b> ${it?it.nome:'—'}</span></div>`;}).join(''):`<div>${slotIco('weapon')}<span><b>Arma:</b> ${h.arma}</span></div><div>${slotIco('body')}<span><b>Armadura:</b> ${h.armadura}</span></div>`;
   const hired=selected.has(id),full=selected.size>=5&&!hired,rosterFull=roster.length>=ROSTER_CAP;
   const cta=isR?(h.injured?`<button class="btn cta" disabled>Ferido — descansando no Templo</button>`:`<button class="btn cta" data-hire="${id}" ${full?'disabled':''}>${hired?'Tirar do grupo':full?'Grupo cheio (5)':'Colocar no grupo'}</button>`)
     :`<button class="btn cta" data-hire="${id}" ${rosterFull?'disabled':''}>${rosterFull?`Elenco cheio (${ROSTER_CAP})`:'Contratar'}</button>`;
+  const hpPct=isR?Math.round(h.hp/h.maxhp*100):100;
   PI_.innerHTML=`
-  <div class="head"><div><div class="eyebrow">Ficha do herói · ${list.indexOf(h)+1}/${list.length}</div></div><div class="btns"><button class="btn ghost sm" data-nav="-1" aria-label="Herói anterior">‹</button><button class="btn ghost sm" data-nav="1" aria-label="Próximo herói">›</button><button class="btn ghost sm" ${isR&&sheetFrom==='forge'?'data-bld="forge"':`data-act="${isR?'toTavern':'recruit'}"`}>Lista</button></div></div>
+  <div class="head"><div class="wt">${ico('classe',h.cls,'lg')}<div><div class="eyebrow">Ficha do herói · ${list.indexOf(h)+1}/${list.length}</div><h2>${h.nome}</h2></div></div><div class="btns"><button class="btn ghost sm" data-nav="-1" aria-label="Herói anterior">‹</button><button class="btn ghost sm" data-nav="1" aria-label="Próximo herói">›</button><button class="btn ghost sm" ${isR&&sheetFrom==='forge'?'data-bld="forge"':`data-act="${isR?'toTavern':'recruit'}"`}>Lista</button></div></div>
   <div class="scroll"><div class="sheet2">
-    <div class="sh2-top wide"><img src="${h.portrait}" alt=""><div style="min-width:0;flex:1"><b class="nm">${h.nome}</b>
+    <div class="rpf wide"><div class="sh2-top"><img src="${h.portrait}" alt=""><div style="min-width:0;flex:1">
       <div class="tags"><span class="tag cls">${ico('classe',h.cls)}${c.nome}</span>${h.sub?`<span class="tag cls">${ico('subclasse',h.sub)}${SUB_INFO[h.sub].nome}</span>`:''}<span class="tag">${c.papel}</span><span class="tag">Nv.${lv}</span>${sc[h.sur]>1?'<span class="tag fam">Irmãos '+h.sur+'</span>':''}</div>
-      <div class="note">${h.trait.nome}: ${h.trait.desc}</div>
-      ${isR?`<div class="xpbar"><i style="width:${pct}%"></i></div><div class="note">XP ${fmt(h.xpTotal||0)}${lv>=LEVEL_CAP?' · nível máximo':` · próximo nível em ${fmt(xn-(h.xpTotal||0))}`}</div>`:''}</div></div>
-    <div class="stgrid wide"><span><em>${ico('stat','vida')}Vida</em><b>${isR?`${h.hp}/${h.maxhp}`:h.maxhp}</b></span><span><em>${ico('stat','atq')}Ataque</em><b>+${h.atk}</b></span><span><em>${ico('stat','def')}Defesa</em><b>${h.def}</b></span><span><em>${ico('stat','res')}Res. Mágica</em><b>${h.defMag}</b></span><span><em>${ico('stat','mov')}Mover</em><b>${h.mov}</b></span><span><em>${ico('stat','alc')}Alcance</em><b>${h.alc}</b></span><span><em>${ico('stat','crit')}Crítico</em><b>${h.critBonus?`${20-h.critBonus}–20`:'20'}</b></span><span><em>${ico('stat','ini')}Iniciativa</em><b>${h.ini>=0?'+':''}${h.ini}</b></span><span><em>${ico('stat','dano')}Dano</em><b>${h.dmg[0]}d${h.dmg[1]}${h.dmg[2]?'+'+h.dmg[2]:''}</b></span></div>
-    <div class="sec2"><h4>Atributos</h4><div class="eqlist">${ATTR_NAMES.map(a=>`<div><b>${AN[a]}:</b> ${at[a]??'—'}</div>`).join('')}</div></div>
-    <div class="sec2"><h4>Equipamento</h4><div class="eqlist">${eq}</div></div>
-    ${h.sub?`<div class="sec2 wide"><h4>${SUB_INFO[h.sub].nome}</h4><p>${SUB_INFO[h.sub].desc}</p></div>`:`<div class="sec2 wide"><h4>Subclasse</h4><p>Escolhe no nível ${SUB_UNLOCK_LEVEL}, na Forja: ${SUBCLASSES[h.cls].map(x=>SUB_INFO[x].nome).join(' ou ')}.</p></div>`}
-    <div class="rg-row wide"><div><span>Movimento (${h.mov})</span>${rangeGrid(h.mov,'#79a8ec')}</div><div><span>Alcance (${h.alc})</span>${rangeGrid(h.alc,'#d4503f')}</div></div>
-    <div class="sec2 wide"><h4>Como joga</h4><p><b>No campo.</b> ${cm.campo}</p><p><b>Contra inimigos.</b> ${cm.inimigos}</p><p><b>Com aliados.</b> ${cm.aliados}</p><p class="note">${c.resumo} Dica de posição: ${c.dica}</p></div>
+      <div class="note" style="margin:6px 0;color:#f0dfb9"><b style="color:#ffe9b8">${h.trait.nome}:</b> ${h.trait.desc}</div>
+      <div class="pbar-l"><span>Vida</span><span>${isR?`${h.hp}/${h.maxhp}`:h.maxhp}</span></div><div class="pbar"><i class="f red" style="width:${hpPct}%"></i></div>
+      ${isR?`<div class="pbar-l"><span>XP ${fmt(h.xpTotal||0)}</span><span>${lv>=LEVEL_CAP?'nível máximo':`faltam ${fmt(xn-(h.xpTotal||0))}`}</span></div><div class="pbar"><i class="f blue" style="width:${pct}%"></i></div>`:''}
+    </div></div></div>
+    <div class="rpf"><h4 class="sec" style="margin:0">Combate</h4><div class="stgrid"><span><em>${ico('stat','atq')}Ataque</em><b>+${h.atk}</b></span><span><em>${ico('stat','def')}Defesa</em><b>${h.def}</b></span><span><em>${ico('stat','res')}Res. Mágica</em><b>${h.defMag}</b></span><span><em>${ico('stat','mov')}Mover</em><b>${h.mov}</b></span><span><em>${ico('stat','alc')}Alcance</em><b>${h.alc}</b></span><span><em>${ico('stat','crit')}Crítico</em><b>${h.critBonus?`${20-h.critBonus}–20`:'20'}</b></span><span><em>${ico('stat','ini')}Iniciativa</em><b>${h.ini>=0?'+':''}${h.ini}</b></span><span><em>${ico('stat','dano')}Dano</em><b>${h.dmg[0]}d${h.dmg[1]}${h.dmg[2]?'+'+h.dmg[2]:''}</b></span><span><em>${ico('stat','vida')}Vida</em><b>${h.maxhp}</b></span></div></div>
+    <div class="rpf"><h4 class="sec" style="margin:0">Atributos</h4>${ATTR_NAMES.map(a=>`<div class="arow"><span>${AN[a]}</span><b>${at[a]??'—'}</b><div class="mini"><i style="width:${Math.min(100,Math.round((at[a]||0)/amax*100))}%"></i></div></div>`).join('')}</div>
+    <div class="rpf"><h4 class="sec" style="margin:0">Equipamento</h4><div class="eqlist">${eq}</div></div>
+    <div class="rpf">${h.sub?`<div class="hhead">${ico('subclasse',h.sub,'xl')}<div class="grow"><h4 class="sec" style="margin:0">${SUB_INFO[h.sub].nome}</h4><p class="note" style="color:#f0dfb9">${SUB_INFO[h.sub].desc}</p></div></div>`:`<h4 class="sec" style="margin:0">Subclasse</h4><p class="note" style="color:#f0dfb9">Escolhe no nível ${SUB_UNLOCK_LEVEL}, na Forja: ${SUBCLASSES[h.cls].map(x=>SUB_INFO[x].nome).join(' ou ')}.</p>`}</div>
+    <div class="rpf wide"><div class="rg-row"><div><span>Movimento (${h.mov})</span>${rangeGrid(h.mov,'#79a8ec')}</div><div><span>Alcance (${h.alc})</span>${rangeGrid(h.alc,'#d4503f')}</div></div>
+      <div class="sec2"><h4>Como joga</h4><p><b>No campo.</b> ${cm.campo}</p><p><b>Contra inimigos.</b> ${cm.inimigos}</p><p><b>Com aliados.</b> ${cm.aliados}</p><p class="note">${c.resumo} Dica de posição: ${c.dica}</p></div></div>
   </div></div>
   ${isR?partyBar():''}
   ${cta}`;
@@ -2456,7 +2602,7 @@ function renderStash(){
   const items=stash.map((it,i)=>({it,i})).filter(({it})=>stashFilter==='all'||it.slot===stashFilter);
   const sel=stashSel!=null?stash[stashSel]:null;
   PI_.innerHTML=`
-  <div class="head"><div><div class="eyebrow">Vila de Brumavale</div><h2>Cofre da Guilda</h2></div><button class="btn ghost sm" data-act="toVillage">Praça</button></div>
+  <div class="head">${wt('stash','Vila de Brumavale','Cofre da Guilda')}<button class="btn ghost sm" data-act="toVillage">Praça</button></div>
   <p class="hint">Itens guardados aqui valem pra sempre: equipe em qualquer herói do seu elenco a qualquer momento, mesmo fora de missão.</p>
   <div class="stashtabs">
     <button class="stashtab ${stashView==='items'?'on':''}" data-stashview="items">${ico('vila','bolsa')} Itens (${stash.length})</button>
@@ -2476,34 +2622,33 @@ function injuryRushCost(h){return INJURY_RUSH_BASE+(h.level||1)*INJURY_RUSH_PER_
 function renderForge(){
   view='forge';setMode('village');
   const row=h=>{
-    const lv=h.level||1,head=`<div style="display:flex;align-items:center;gap:8px"><img src="${h.portrait}" alt="" style="width:28px;height:34px;image-rendering:pixelated"><div style="flex:1;min-width:0"><b class="nm">${h.first}</b><span class="cl"> · ${CLASSES[h.cls].nome} · Nv.${lv}${h.sub?' · '+SUB_INFO[h.sub].nome:''}</span></div><button class="btn ghost sm" data-sheet="${h.id}" data-from="forge">Ficha</button></div>`;
-    if(lv<SUB_UNLOCK_LEVEL)return `<div class="box">${head}<div class="note">Escolhe a subclasse no nível ${SUB_UNLOCK_LEVEL} (faltam ${SUB_UNLOCK_LEVEL-lv}).</div></div>`;
-    const cost=h.sub?subRespecCost(h):0;
-    const opts=SUBCLASSES[h.cls].filter(x=>x!==h.sub).map(x=>`<button class="btn ${gold>=cost?'':'ghost'} sm" data-forge="${h.id}:${x}" ${gold>=cost?'':'disabled'}>${h.sub?'Trocar pra':'Escolher'} ${ico('subclasse',x)}${SUB_INFO[x].nome}${cost?` · ${fmt(cost)} ouro`:' · grátis'}</button><div class="note">${SUB_INFO[x].desc}</div>`).join('');
-    return `<div class="box">${head}${h.sub?`<div class="note">${SUB_INFO[h.sub].desc}</div>`:''}${opts}</div>`;
+    const lv=h.level||1;
+    const head=`<div class="hhead"><img src="${h.portrait}" alt=""><div class="grow"><b class="nm">${h.first}</b><div class="cl" style="color:#e8d3a8">${ico('classe',h.cls)}${CLASSES[h.cls].nome} · Nv.${lv}${h.sub?' · '+SUB_INFO[h.sub].nome:''}</div></div><button class="btn ghost sm" data-sheet="${h.id}" data-from="forge">Ficha</button></div>`;
+    if(lv<SUB_UNLOCK_LEVEL){const pct=Math.round((lv-1)/(SUB_UNLOCK_LEVEL-1)*100);
+      return `<div class="hcard">${head}<div class="pbar-l"><span>Subclasse no nível ${SUB_UNLOCK_LEVEL}</span><span>Nv.${lv}/${SUB_UNLOCK_LEVEL}</span></div><div class="mini"><i style="width:${pct}%"></i></div></div>`;}
+    const cost=h.sub?subRespecCost(h):0,can=gold>=cost;
+    const opt=x=>{const cur=h.sub===x;
+      return `<button class="subopt ${cur?'on':''}" ${cur||!can?'disabled':`data-forge="${h.id}:${x}"`}>${ico('subclasse',x,'xl')}<div><b>${SUB_INFO[x].nome}</b><small>${SUB_INFO[x].desc}</small><span class="pr">${cur?'Escolhida':cost?`${ico('vila','ouro')} ${fmt(cost)}`:'Grátis'}</span></div></button>`;};
+    return `<div class="hcard">${head}<div class="subs">${SUBCLASSES[h.cls].map(opt).join('')}</div></div>`;
   };
   PI_.innerHTML=`
-  <div class="head"><div><div class="eyebrow">Vila de Brumavale</div><h2>Forja do velho Brasa</h2></div><button class="btn ghost sm" data-act="toVillage">Praça</button></div>
+  <div class="head">${wt('forge','Vila de Brumavale','Forja do velho Brasa')}<button class="btn ghost sm" data-act="toVillage">Praça</button></div>
   <p class="hint">${ico('vila','ouro')} ${fmt(gold)} ouro. No nível ${SUB_UNLOCK_LEVEL} o herói escolhe uma subclasse (grátis na primeira vez). Dá pra trocar depois pagando ouro — a classe base nunca muda.</p>
-  <div class="scroll">${roster.length?roster.map(row).join(''):'<p class="note">Seu elenco está vazio.</p>'}</div>`;
+  <div class="scroll">${roster.length?roster.map(row).join(''):`<div class="empty">${ico('vila','forge','xl')}<p>Seu elenco está vazio. Recrute heróis na Taverna.</p></div>`}</div>`;
 }
 function renderTemple(){
   view='temple';setMode('village');
   const injured=roster.filter(h=>h.injured);
   PI_.innerHTML=`
-  <div class="head"><div><div class="eyebrow">Vila de Brumavale</div><h2>Templo da Aurora</h2></div><button class="btn ghost sm" data-act="toVillage">Praça</button></div>
+  <div class="head">${wt('temple','Vila de Brumavale','Templo da Aurora')}<button class="btn ghost sm" data-act="toVillage">Praça</button></div>
   <p class="hint">${ico('vila','ouro')} ${fmt(gold)} ouro. Herói ferido se recupera sozinho com o tempo (uma missão concluída = um passo), ou pague pra acelerar.</p>
   <div class="scroll">
-    ${injured.length?injured.map(h=>{const cost=injuryRushCost(h);return`
-    <div class="box">
-      <div style="display:flex;align-items:center;gap:8px">
-        <img src="${h.portrait}" alt="" style="width:28px;height:34px;image-rendering:pixelated">
-        <div style="flex:1;min-width:0"><b class="nm">${h.first}</b><span class="cl"> · ${CLASSES[h.cls].nome} · Nv.${h.level||1}</span>
-          <div class="note">${ico('vila','ferido')} Recuperando — faltam ${h.injuredMissionsLeft} ${h.injuredMissionsLeft===1?'missão':'missões'} pra voltar sozinho.</div>
-        </div>
-      </div>
-      <button class="btn ${gold>=cost?'':'ghost'} sm" data-healhero="${h.id}" ${gold>=cost?'':'disabled'}>Curar agora por ${fmt(cost)} ouro</button>
-    </div>`;}).join(''):'<p class="note">Ninguém precisa de cuidados agora. Seu elenco todo está pronto pra lutar.</p>'}
+    ${injured.length?injured.map(h=>{const cost=injuryRushCost(h),can=gold>=cost;return`
+    <div class="hcard">
+      <div class="hhead"><img src="${h.portrait}" alt=""><div class="grow"><b class="nm">${h.first}</b><div class="cl" style="color:#e8d3a8">${ico('classe',h.cls)}${CLASSES[h.cls].nome} · Nv.${h.level||1}</div>
+        <div class="note" style="color:#f0dfb9">${ico('vila','ferido')} Faltam ${h.injuredMissionsLeft} ${h.injuredMissionsLeft===1?'missão':'missões'} pra voltar sozinho.</div></div></div>
+      <button class="btn ${can?'':'ghost'} sm" data-healhero="${h.id}" ${can?'':'disabled'}>Curar agora · ${ico('vila','ouro')} ${fmt(cost)}</button>
+    </div>`;}).join(''):`<div class="empty">${ico('subclasse','curandeiro','xl')}<p>Ninguém precisa de cuidados agora.<br>Seu elenco todo está pronto pra lutar.</p></div>`}
   </div>`;
 }
 function renderBattle(){
