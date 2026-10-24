@@ -603,6 +603,45 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .mini3 b{overflow:visible;text-overflow:clip}
 @media (max-width:380px){.mini3 em{display:none}.mini3 span{grid-template-columns:auto 1fr;justify-items:start}.mini3 .ic{grid-row:auto;width:18px;height:18px}.tab .ic{display:none}.tab{font-size:11px;padding:8px 2px}}
 @media (max-width:380px){.tdet{grid-template-columns:70px minmax(0,1fr);gap:8px}.tdet .emb{height:76px}.tdet .emb img{width:58px;height:70px}.mini3 span{padding:3px 3px;column-gap:2px}.mini3 .ic{width:14px;height:14px}.mini3 b{font-size:14px}.tinfo .nm{font-size:17px}}
+/* ===== Formação e batalha: mesmo visual da Taverna ===== */
+.m-place .head{border-style:solid;border-width:11px 19px;border-image:url(assets/rpgui/button.png) 7 11 fill/11px 19px/0 stretch;background:none;padding:0 2px;align-items:center;flex-wrap:nowrap;color:var(--cre);text-shadow:0 2px 0 #120b08;image-rendering:pixelated}
+.m-place .head .eyebrow{color:#ffe9b8}.m-place .head h2{color:var(--cre);font-size:19px}
+.m-place .head .tags{flex-wrap:wrap;justify-content:flex-end;gap:4px}
+.m-place .hint{background:rgba(20,12,8,.7);border-left:4px solid var(--lar);border-radius:0}
+.m-place .legend{color:#d8c9a8}
+.chip{width:72px;border:3px solid #120b08;border-image:none;border-radius:0;background:linear-gradient(#2e2219,#1c1510);box-shadow:inset 0 0 0 2px #5a4330;color:var(--cre);gap:2px;padding:5px 3px}
+.chip img{width:34px;height:41px;background:none;filter:drop-shadow(0 2px 0 #000a)}
+.chip span{color:var(--cre)}.chip small{color:#c9b28a}.chip.ok small{color:#8fdc7e}
+.chip[aria-pressed="true"]{border-image:none;border-color:#120b08;box-shadow:inset 0 0 0 2px #e9b949,0 0 10px rgba(233,185,73,.55);color:var(--cre);outline:0}
+.turn{border-style:solid;border-width:8px;border-image:url(assets/rpgui/border-image-golden.png) 4/10px repeat;background:url(assets/rpgui/background-image-golden.png);background-clip:padding-box;color:var(--cre);padding:0 8px;border-radius:0;text-shadow:0 2px 0 #120b08;image-rendering:pixelated}
+.turn b{color:#ffe9b8}
+.spd{border-radius:0;background:linear-gradient(#2e2219,#1c1510);border:3px solid #120b08;box-shadow:inset 0 0 0 2px #5a4330;color:#d8c9a8;padding:6px 10px}
+.spd[aria-pressed="true"]{background:linear-gradient(#e9c25b,#c9962e);color:#2b1812;box-shadow:inset 0 0 0 2px #fff0c0;border-color:#120b08}
+#order .oc{border-radius:0;border:3px solid #5a4330;background:#1c1510;box-shadow:inset 0 0 0 1px #0e0a07}
+#order .oc.e{border-color:#a8473b}
+#order .oc.on{border-color:#e9b949;box-shadow:0 0 0 2px #120b08,0 0 10px rgba(233,185,73,.6)}
+#order .ordlabel{color:#e8d3a8}
+.ucard{border-radius:0;background:linear-gradient(#2e2219,#1c1510);border:3px solid #120b08;box-shadow:inset 0 0 0 2px #5a4330;padding:4px 10px 4px 4px}
+.ucard.e{box-shadow:inset 0 0 0 2px #a8473b}
+.ucard img{border-radius:0;width:30px;height:36px;filter:drop-shadow(0 2px 0 #000a)}
+.ucard .uname{color:var(--cre)}
+.ucard .bar{width:68px;height:9px;border:2px solid #0e0a07;border-radius:0;background:#1c1510}
+.ucard .bar i{background:linear-gradient(#8fdc7e,#4f9f3f)}
+.ucard.e .bar i{background:linear-gradient(#e86a5a,#a8362b)}
+.ucard.low .bar i{background:linear-gradient(#f3cd62,#c9962e)}
+.callout{border-radius:0;border:2px solid #120b08;box-shadow:0 2px 0 #000a;background:#ecdcb4}
+.callout::after{border-top-color:#ecdcb4}
+.callout.e{background:#a8473b;color:var(--cre)}.callout.e::after{border-top-color:#a8473b}
+.bubble{border-radius:0;border:2px solid #120b08;background:#ecdcb4}.bubble::after{border-top-color:#ecdcb4}
+.dtext{border-radius:0;border-style:solid;border-width:8px;border-image:url(assets/rpgui/border-image-golden.png) 4/10px repeat;background:url(assets/rpgui/background-image-golden.png);background-clip:padding-box;color:var(--cre);image-rendering:pixelated;padding:2px 8px}
+#dwho,#dres{color:var(--cre)}#dcalc{color:#e8d3a8}#dcalc span{color:#f0dfb9}#dcalc b{color:var(--cre)}
+#dice[data-out="crit"] #dres{color:#ffd34a}#dice[data-out="hit"] #dres{color:#9be58b}#dice[data-out="miss"] #dres{color:#c9b28a}
+.fl{border-radius:0;background:rgba(20,12,8,.84);border-left:4px solid #5a4330}
+
+.m-place .actions{flex-wrap:wrap}
+.m-place .actions .btn{flex:1 1 0;min-width:0;padding-left:8px;padding-right:8px;white-space:nowrap}
+.m-place .actions .btn.cta{flex:1.4 1 0}
+@media(max-width:480px){.m-place .actions .btn{font-size:11px;padding-left:2px;padding-right:2px;gap:3px}.m-place .actions .btn .ic{width:14px;height:14px}}
 </style>
 </head>
 <body>
@@ -2652,12 +2691,12 @@ function renderPlace(){
   const fams=siblingFams(),all=party.every(h=>h.r!=null),left=party.filter(h=>h.r==null).length,mp=LV.mp;
   PI_.innerHTML=`
   ${stepper(3)}
-  <div class="head"><div><div class="eyebrow">Fase ${run.phaseNo} · Mapa ${mp.n}</div><h2>${mp.nome}</h2></div>
+  <div class="head">${wt('board',`Fase ${run.phaseNo} · Mapa ${mp.n}`,mp.nome)}
     <div class="tags"><span class="tag">Grupo de ${party.length} · ×${MULT[party.length].toFixed(1).replace('.',',')}</span>${fams.map(f=>`<span class="tag fam">Irmãos ${f} +1</span>`).join('')}</div></div>
   <div class="roster">${party.map(h=>`<button class="chip ${h.r!=null?'ok':''}" data-hid="${h.id}" aria-pressed="${selHero===h}"><img src="${h.portrait}" alt=""><span>${h.first}${gearBadge(h)}</span><small>${h.exausto?'Exausto':h.r!=null?'✓ no mapa':selHero===h?'toque o mapa':CLASSES[h.cls].nome}</small></button>`).join('')}</div>
   <p class="hint" id="hint">${hint||'Toque num herói e depois numa casa dourada do mapa.'}</p>
   <div class="legend"><span><i class="lg free"></i>Casa livre</span><span><i class="lg hill"></i>Morro: +2 de acerto</span>${SECRET?'<span><i class="lg wall"></i>Parede suspeita</span>':''}<button class="btn ghost sm ov" data-act="overview">Ver mapa todo</button></div>
-  <div class="actions">${run.phaseNo===1?'<button class="btn ghost" data-act="toVillage">Voltar</button>':''}<button class="btn ghost" data-act="equip">${ico('vila','bolsa')} Equipar${run.inventory.length?` (${run.inventory.length})`:''}</button><button class="btn ghost" data-act="auto">Automático</button><button class="btn" data-act="start" ${all?'':'disabled'}>${all?'Começar batalha':`Falta posicionar ${left}`}</button></div>`;
+  <div class="actions">${run.phaseNo===1?'<button class="btn ghost" data-act="toVillage">Voltar</button>':''}<button class="btn ghost" data-act="equip">${ico('vila','bolsa')} Equipar${run.inventory.length?` (${run.inventory.length})`:''}</button><button class="btn ghost" data-act="auto">Automático</button><button class="btn cta" data-act="start" ${all?'':'disabled'}>${all?'Começar batalha':`Falta posicionar ${left}`}</button></div>`;
 }
 const rarTag=it=>`<b style="color:${RARITY[it.rar].cor}">${RARITY[it.rar].nome}</b>`;
 const EQ_SLOTS=['weapon','offhand','head','body','hands','feet','acc1','acc2'];
