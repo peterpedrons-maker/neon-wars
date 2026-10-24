@@ -583,6 +583,26 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 @media (max-width:560px){.tdet .emb{height:84px}.tdet .emb img{width:68px;height:80px}.tdet{grid-template-columns:84px minmax(0,1fr)}.pc{min-height:84px;padding:8px 8px 6px 70px}.pc img{width:56px;height:66px}.pc .nm{font-size:15px}.slots.big .slot{height:clamp(58px,9vh,84px)}}
 @media (max-width:560px){.flav{display:none}.tag.nv{display:none}.ov .head .eyebrow{display:none}.steps li i{width:26px;height:26px;font-size:14px}.steps li:not(:first-child)::after{top:12px}.stamp b{font-size:18px}.stamp{padding:2px 8px}.ov .head h2{font-size:16px}.tact .btn.ghost{display:none}.ov .inner{gap:8px}}
 .pc{padding-bottom:13px}
+/* robustez: cartas em grid (altura sempre acompanha o conteúdo) e sem texto vazando */
+.pool{grid-auto-rows:max-content}
+.pc{display:grid;grid-template-columns:64px minmax(0,1fr);column-gap:10px;align-items:end;padding:10px 12px 12px 8px;min-height:0}
+.pc img{position:static;grid-column:1;align-self:end;width:64px;height:76px}
+.pc .pcbody{grid-column:2;align-self:center;min-width:0}
+.pc .nm,.pc .cl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;display:block}
+.pc .tr{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc .tick{position:absolute}
+.mini3 span{min-width:0;padding:3px 6px}.mini3 em,.mini3 b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tab{overflow:hidden;text-overflow:ellipsis}
+@media (max-width:560px){.pc{grid-template-columns:56px minmax(0,1fr);padding:8px 10px 10px 6px}.pc img{width:56px;height:66px}.pc .pcstats.row span{padding-right:6px;margin-right:6px}}
+@media (max-width:400px){
+  .stamp{padding:2px 6px}.stamp small{font-size:9px;white-space:nowrap}
+  .ov .head{flex-wrap:wrap;row-gap:2px}.ov .head>div:first-child{flex:1 1 150px;min-width:0}
+  .ov .head .btns{gap:4px;margin-left:auto}
+  .tfoot .btn.cta{font-size:14px}
+}
+.mini3 b{overflow:visible;text-overflow:clip}
+@media (max-width:380px){.mini3 em{display:none}.mini3 span{grid-template-columns:auto 1fr;justify-items:start}.mini3 .ic{grid-row:auto;width:18px;height:18px}.tab .ic{display:none}.tab{font-size:11px;padding:8px 2px}}
+@media (max-width:380px){.tdet{grid-template-columns:70px minmax(0,1fr);gap:8px}.tdet .emb{height:76px}.tdet .emb img{width:58px;height:70px}.mini3 span{padding:3px 3px;column-gap:2px}.mini3 .ic{width:14px;height:14px}.mini3 b{font-size:14px}.tinfo .nm{font-size:17px}}
 </style>
 </head>
 <body>
@@ -2453,7 +2473,8 @@ function placeVillageNames(){
   HUB_LABELS.forEach(([id,,y])=>{
     const el=document.querySelector(`#vnames [data-bld="${id}"]`),b=BLD[id];if(!el||!b)return;
     village.localToWorld(_vp.set(b.x,y,b.z));_vp.project(cam);
-    el.style.left=((_vp.x+1)/2*w)+'px';el.style.top=((1-_vp.y)/2*h)+'px';
+    const hw=(el.offsetWidth||80)/2+6;
+    el.style.left=Math.max(hw,Math.min(w-hw,(_vp.x+1)/2*w))+'px';el.style.top=Math.max(64,Math.min(h-130,(1-_vp.y)/2*h))+'px';
   });
 }
 $('#vui').addEventListener('click',e=>{
@@ -2550,7 +2571,7 @@ function renderTavern(){
   const det=f?`<div class="tdet"><div class="emb"><img src="${f.portrait}" alt=""></div>
     <div class="tinfo"><b class="nm">${f.first}</b>
       <div class="tags"><span class="tag cls">${ico('classe',f.cls)}${CLASSES[f.cls].nome}</span><span class="tag">${f.sub?SUB_INFO[f.sub].nome:CLASSES[f.cls].papel}</span><span class="tag nv">Nv.${f.level||1}</span></div>
-      <div class="mini3"><span>${ico('stat','vida')}<em>Vida</em><b>${f.maxhp}</b></span><span>${ico('stat','atq')}<em>Ataque</em><b>${f.atk}</b></span><span>${ico('stat','def')}<em>Defesa</em><b>${f.def}</b></span></div>
+      <div class="mini3"><span>${ico('stat','vida')}<em>Vida</em><b>${f.maxhp}</b></span><span>${ico('stat','atq')}<em>Atq</em><b>${f.atk}</b></span><span>${ico('stat','def')}<em>Def</em><b>${f.def}</b></span></div>
       <p class="flav"><b>${f.trait.nome}:</b> ${f.trait.desc}</p></div>
     <div class="tact"><button class="btn cta sm" data-toggle="${f.id}" ${f.injured||(!selected.has(f.id)&&n>=5)?'disabled':''}>${selected.has(f.id)?'Tirar do grupo':n>=5?'Grupo cheio':'Adicionar ao grupo'}</button><button class="btn ghost sm" data-sheet="${f.id}">Ficha completa</button></div></div>`:`<div class="empty">${ico('vila','tavern','xl')}<p>Seu elenco está vazio. Recrute heróis na aba Recrutar.</p></div>`;
   PI_.innerHTML=`
