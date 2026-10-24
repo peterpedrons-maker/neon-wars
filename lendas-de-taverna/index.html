@@ -1121,14 +1121,6 @@ const ENEMIES={
     resumo:'Dá a volta pra pegar quem está desprotegido.'},
   beetle:{nome:'Besouro Blindado',ia:'guard',hp:12,atk:2,def:14,mov:2,alc:1,dmg:[1,4,0],ini:0,pts:90,
     resumo:'Casco duro, difícil de acertar, mas bate fraco.'},
-  fish:{nome:'Peixe Saltador',ia:'rush',hp:7,atk:3,def:10,mov:3,alc:1,dmg:[1,6,0],ini:3,pts:65,
-    resumo:'Salta na direção do herói mais perto. Mordida forte pro tamanho.'},
-  bat:{nome:'Morcego da Gruta',ia:'flank',hp:5,atk:3,def:12,mov:6,alc:1,dmg:[1,4,0],ini:7,pts:75,
-    resumo:'Voa rápido e dá a volta pra pegar os frágeis. Quase não aguenta um golpe.'},
-  bird:{nome:'Corvo Agourento',ia:'skirmish',hp:6,atk:3,def:11,mov:5,alc:1,dmg:[1,4,1],ini:5,pts:85,
-    resumo:'Bica e se afasta. Difícil de encurralar.'},
-  ghost:{nome:'Fantasma Pálido',ia:'flank',hp:8,atk:3,def:13,mov:3,alc:1,dmg:[1,4,1],ini:3,pts:120,magico:true,
-    resumo:'Atravessa o frio da noite atrás dos frágeis. Seu toque é mágico: conta a Res. Mágica, não a Defesa.'},
 };
 const ENAMES=['Zug','Nhac','Brek','Fusk','Pito','Gruk','Mog','Rakh','Snik','Dorg','Vesk','Tuk','Urg','Bhag'];
 const FIRST=['Brian','Christopher','Bruno','Rafael','Diego','Marcos','Felipe','Henrique','Otávio','Caio','Davi','Enzo','Igor','Leandro','Nathan','Renato','Samuel','Thiago','Vitor','Yuri',
@@ -1156,20 +1148,20 @@ const VNAMES=['Dona Neca','Seu Tonho','Zezinho','Guarda Bento','Tia Lurdes','Man
 const WORLDS=[{id:'campina',nome:'Campina Verde'},{id:'deserto',nome:'Deserto das Cinzas'}];
 const MAPS=[
   {n:1,mundo:'campina',biome:'campina',nome:'Clareira de Brumavale',fixo:true,seed:1101,secret:true,total:[8,10],escala:1,
-    desc:'Campina aberta cortada por um rio. Só duas pontes. Gosmas, aranhas, besouros, peixes saltadores e morcegos infestaram a clareira.',
-    pool:['slime','bee','spider','beetle','fish','bat']},
+    desc:'Campina aberta cortada por um rio. Só duas pontes. Gosmas, aranhas e besouros infestaram a clareira.',
+    pool:['slime','bee','spider','beetle']},
   {n:2,mundo:'campina',biome:'floresta',nome:'Bosque dos Corvos',fixo:true,seed:2202,secret:true,total:[9,11],escala:1.15,
     desc:'Floresta fechada, poucas passagens. Boa pra emboscada, de ambos os lados.',
-    pool:['goblin','gobarq','lobo','xama','guarda','ogro','bird','bat','ghost']},
+    pool:['goblin','gobarq','lobo','xama','guarda','ogro']},
   {n:3,mundo:'deserto',biome:'deserto',nome:'Duna Rachada',fixo:false,secret:false,total:[9,12],escala:1.2,
     desc:'Primeira trilha no Deserto das Cinzas. Dunas abertas, quase sem abrigo — bom pra quem atira de longe, ruim pra quem se expõe.',
-    pool:['goblin','gobarq','lobo','guarda','bird']},
+    pool:['goblin','gobarq','lobo','guarda']},
   {n:4,mundo:'deserto',biome:'deserto',nome:'Vale das Cinzas',fixo:false,secret:true,total:[10,13],escala:1.25,
     desc:'Vale estreito coberto de cinza vulcânica. O xamã goblin cura os aliados feridos — derrube primeiro.',
-    pool:['goblin','gobarq','lobo','xama','guarda','ghost','bat']},
+    pool:['goblin','gobarq','lobo','xama','guarda']},
   {n:5,mundo:'deserto',biome:'deserto',nome:'Covil do Ogro',fixo:false,chefe:true,secret:false,total:[9,11],escala:1.3,
     desc:'Mapa de chefe: o terreno muda a cada run. O Ogro sempre está lá.',
-    pool:['goblin','gobarq','lobo','guarda','ogro','ghost']},
+    pool:['goblin','gobarq','lobo','guarda','ogro']},
 ];
 const BIOMES={
   campina:{nome:'Campina',bg:'#14100d'},floresta:{nome:'Floresta',bg:'#14100d'},deserto:{nome:'Deserto',bg:'#14100d'}
@@ -1971,7 +1963,7 @@ function makeHero(used,cls,level){
   return h;
 }
 const enemyCache={};
-const EPRE={goblin:'Goblin',gobarq:'Arqueiro',lobo:'Lobo',xama:'Xamã',guarda:'Guarda',ogro:'',slime:'Gosma',bee:'Abelha',spider:'Aranha',beetle:'Besouro',fish:'Peixe',bat:'Morcego',bird:'Corvo',ghost:'Fantasma'};
+const EPRE={goblin:'Goblin',gobarq:'Arqueiro',lobo:'Lobo',xama:'Xamã',guarda:'Guarda',ogro:'',slime:'Gosma',bee:'Abelha',spider:'Aranha',beetle:'Besouro'};
 function ensureEnemyCache(kind){
   if(enemyCache[kind])return enemyCache[kind];
   if(CREATURE_DEFS[kind]){
@@ -2294,10 +2286,6 @@ const CREATURE_DEFS={
   slime:{file:'slime-32px_strip10.png',frames:10,fps:7},
   bee:{file:'bee-32px_strip8.png',frames:8,fps:11},
   spider:{file:'spider-32px_strip12.png',frames:12,fps:7},
-  fish:{file:'fish-32px_strip8.png',frames:8,fps:9},
-  bat:{file:'bat-32px_strip8.png',frames:8,fps:12},
-  bird:{file:'bird-32px_strip8.png',frames:8,fps:10},
-  ghost:{file:'ghost-32px_strip12.png',frames:12,fps:7},
   beetle:{file:'beetle-32px_strip8.png',frames:8,fps:8},
 };
 const CREATURE_IMG={},CREATURE_STATE={};
@@ -3311,7 +3299,7 @@ async function moveAlong(u,path){
   lpcSetState(u,'stand');
 }
 const SKILL={guerreiro:'Golpe',ladino:'Estocada',mago:'Raio Arcano',clerigo:'Golpe Sagrado',arqueiro:'Flechada',bardo:'Nota Cortante',
-  goblin:'Facada',gobarq:'Flechada',lobo:'Mordida',xama:'Raio Sombrio',guarda:'Golpe',ogro:'Pancada',slime:'Engolfar',bee:'Ferrão',spider:'Mordida Venenosa',fish:'Mordida',bat:'Mordida Cega',bird:'Bicada',ghost:'Toque Gélido',beetle:'Investida'};
+  goblin:'Facada',gobarq:'Flechada',lobo:'Mordida',xama:'Raio Sombrio',guarda:'Golpe',ogro:'Pancada',slime:'Engolfar',bee:'Ferrão',spider:'Mordida Venenosa',beetle:'Investida'};
 const skillOf=u=>SKILL[u.side==='hero'?u.cls:u.kind]||'Ataque';
 // nome da habilidade e o d20 aparecem juntos sobre a cabeça de quem age; só o
 // resultado (dano, MISS, cura) aparece depois, sobre o alvo.
@@ -3325,7 +3313,7 @@ async function showRoll({u,skill,roll,outcome,numText}){
   await wait(260);
 }
 const sibActive=u=>u.sib&&party.some(o=>o!==u&&o.alive&&o.r!=null&&o.sur===u.sur);
-const VERB={guerreiro:'golpeou',ladino:'apunhalou',mago:'lançou um raio em',clerigo:'esmagou',arqueiro:'flechou',bardo:'acertou',goblin:'atacou',fish:'mordeu',bat:'mordeu',bird:'bicou',ghost:'tocou',gobarq:'flechou',ogro:'esmagou',lobo:'mordeu',xama:'atingiu',guarda:'golpeou',slime:'atingiu',bee:'picou',spider:'mordeu',beetle:'golpeou'};
+const VERB={guerreiro:'golpeou',ladino:'apunhalou',mago:'lançou um raio em',clerigo:'esmagou',arqueiro:'flechou',bardo:'acertou',goblin:'atacou',gobarq:'flechou',ogro:'esmagou',lobo:'mordeu',xama:'atingiu',guarda:'golpeou',slime:'atingiu',bee:'picou',spider:'mordeu',beetle:'golpeou'};
 async function projectile(u,t){
   const mg=u.cls==='mago';const a=u.grp.position,b=t.grp.position;
   let halo=null;
