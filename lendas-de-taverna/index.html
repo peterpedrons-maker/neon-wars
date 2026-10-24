@@ -728,6 +728,17 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .objp .ob span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:350px){.objp{font-size:10px;max-width:calc(100% - 100px)}.objp .ob small{display:none}#bhud .turn{padding:0 2px;font-size:13px}#vbar .vt{font-size:11px}#vbar .btn{white-space:nowrap;font-size:11px;padding-left:6px;padding-right:6px}}
 #bhud{z-index:3}#dice{z-index:4}#banner{z-index:5}
+/* ===== Ajustes: formação, barras de vida, falas ===== */
+.ptags{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 2px}
+.ptags .tag{background:#1a120d;border:2px solid #e9b949;color:var(--cre);padding:2px 8px;border-radius:0;font-size:12px}
+.ptags .tag.fam{background:#e9d34a;border-color:#120b08;color:#2b1812}
+.m-place .head .wt .eyebrow{white-space:nowrap}
+.hpf{gap:0}
+.hpf .bar{width:30px;height:6px;border:1px solid #0e0a07;box-shadow:0 0 0 1px rgba(0,0,0,.55)}
+.hpf::before{content:"";width:4px;height:6px;background:#3a7bd5;border:1px solid #0e0a07;border-right:0}
+.hpf.e::before{background:#c8463c}
+#hud .bubble{left:0;right:0;top:auto;bottom:calc(150px + env(safe-area-inset-bottom,0px));margin:0 auto;transform:none;width:max-content;max-width:min(88%,330px);font-size:13px;padding:8px 12px;text-align:left}
+#hud .bubble::after{display:none}
 </style>
 </head>
 <body>
@@ -1578,7 +1589,8 @@ function buildBoard(){
     if(ch==='t'){if(bio==='deserto')makeCactus(boardGroup,x,ty,z);else makeTree(boardGroup,x,ty,z,bio==='floresta'?1.1:1);}
     if(ch==='S'){wallMesh=new THREE.Mesh(new THREE.BoxGeometry(0.97,1.2,0.97),mats.crack);wallMesh.position.set(x,0.6,z);boardGroup.add(wallMesh);}
     if(isZone(r,c)){
-      const zm=new THREE.Mesh(new THREE.PlaneGeometry(0.86,0.86),new THREE.MeshBasicMaterial({color:'#e9b949',transparent:true,opacity:0.22,depthWrite:false}));
+      const zm=new THREE.Mesh(new THREE.PlaneGeometry(0.86,0.86),new THREE.MeshBasicMaterial({color:'#e9a020',transparent:true,opacity:0.42,depthWrite:false}));
+      zm.add(new THREE.LineSegments(new THREE.EdgesGeometry(zm.geometry),new THREE.LineBasicMaterial({color:'#4a2e00'})));
       zm.rotation.x=-Math.PI/2;zm.position.set(x,ty+0.012,z);zm.visible=false;boardGroup.add(zm);zoneMarks.set(k(r,c),zm);
     }
   }
@@ -1705,12 +1717,12 @@ function walk(v,delay){
 }
 let bubble=null;
 function sayRumor(){
-  if(phase!=='village'||bubble)return;
+  if(phase!=='village'||bubble||!app.classList.contains('hub'))return;
   const vis=villagers.filter(v=>{const [x,y]=worldToScreen(v.grp.getWorldPosition(new THREE.Vector3()));return x>40&&x<stage.clientWidth-40&&y>80&&y<stage.clientHeight;});
   if(!vis.length)return;
   const v=vpick(vis);const el=document.createElement('div');el.className='bubble';el.innerHTML=`<em>${v.nome}</em>${vpick(RUMORS)}`;hud.appendChild(el);
   bubble={v,el};gsap.fromTo(el,{opacity:0,y:6},{opacity:1,y:0,duration:0.25});
-  setTimeout(()=>{gsap.to(el,{opacity:0,duration:0.3,onComplete:()=>{el.remove();bubble=null;}});},4200);
+  setTimeout(()=>{gsap.to(el,{opacity:0,duration:0.3,onComplete:()=>{el.remove();if(bubble&&bubble.el===el)bubble=null;}});},4200);
 }
 setInterval(sayRumor,5500);setTimeout(sayRumor,1200);
 function puffSmoke(){
@@ -2253,7 +2265,7 @@ function buildUnit(u){
   Object.assign(u,{grp,pivot,plane,mat,mats,sz,legL,legR,armG,headG});
   if(plane.userData)plane.userData.unit=u;
   const hp=document.createElement('div');hp.className='hpf'+(u.side==='enemy'?' e':'');
-  hp.innerHTML=`<span class="tm">${ico('stat',u.side==='enemy'?'atq':'def')}</span><div class="bar"><b></b><i></i></div>`;
+  hp.innerHTML=`<div class="bar"><b></b><i></i></div>`;
   hud.appendChild(hp);
   u.hpEl=hp;u.hpFill=hp.querySelector('.bar i');u.hpGhost=hp.querySelector('.bar b');
   grp.position.set(wx(u.c),topY(u.r,u.c),wz(u.r));
@@ -2351,19 +2363,20 @@ function renderUC(force){
   const el=$('#uc'),pop=$('#ucpop'),u=hudSel;
   if(!u||!u.grp||phase!=='battle'){el.hidden=true;pop.hidden=true;return;}
   const tl=hudTile||{r:u.r,c:u.c},key=[u.id,u.hp,u.atk,u.def,u.mov,u.alive,ucPop,tl.r,tl.c].join('|');
+  if(u.side!=='hero'&&ucPop==='w')ucPop=null;
   if(!force&&key===ucKey&&!el.hidden)return;ucKey=key;
   const hero=u.side==='hero',cl=hero?CLASSES[u.cls].nome+(u.sub?' · '+SUB_INFO[u.sub].nome:''):u.nome;
   const pct=Math.max(0,u.hp/u.maxhp*100),tr=terrainOf(tl.r,tl.c);
   el.hidden=false;el.className='uc'+(hero?'':' e');
   el.innerHTML=`<div class="uc-face"><img src="${faceOf(u)}" alt=""></div>
     <div class="uc-main"><b class="uc-name">${u.first}</b><span class="uc-cl">${hero?ico('classe',u.cls):''}${cl}${hero?` · Nv.${u.level||1}`:''}</span>
-      <div class="uc-hp"><span>HP <b>${Math.max(0,u.hp)}</b> / ${u.maxhp}</span><div class="uc-bar"><i style="width:${pct}%" class="${hero&&pct<=35?'low':''}"></i></div></div></div>
-    <div class="uc-st"><span>${ico('stat','atq')}<b>${u.atk}</b></span><span>${ico('stat','def')}<b>${u.def}</b></span><span>${ico('stat','mov')}<b>${u.mov}</b></span></div>
-    <div class="uc-tabs"><button data-uc="w" aria-pressed="${ucPop==='w'}" aria-label="Arma">${ico('slot','weapon')}</button><button data-uc="t" aria-pressed="${ucPop==='t'}" aria-label="Terreno">${ico('vila','mapa')}</button></div>`;
+      <div class="uc-hp"><span>HP <b>${hero?Math.max(0,u.hp):'?'}</b>${hero?` / ${u.maxhp}`:''}</span><div class="uc-bar"><i style="width:${pct}%" class="${hero&&pct<=35?'low':''}"></i></div></div></div>
+    <div class="uc-st"><span>${ico('stat','atq')}<b>${hero?u.atk:'?'}</b></span><span>${ico('stat','def')}<b>${hero?u.def:'?'}</b></span><span>${ico('stat','mov')}<b>${hero?u.mov:'?'}</b></span></div>
+    <div class="uc-tabs">${hero?`<button data-uc="w" aria-pressed="${ucPop==='w'}" aria-label="Arma">${ico('slot','weapon')}</button>`:''}<button data-uc="t" aria-pressed="${ucPop==='t'}" aria-label="Terreno">${ico('vila','mapa')}</button></div>`;
   pop.className=ucPop?'pop-'+ucPop:'';
   pop.hidden=false;
-  pop.innerHTML=`<div class="pp w"><div class="pp-h">${ico('slot','weapon','lg')}<b>${hero?u.arma||'Arma':u.nome}</b></div>
-      <div class="pp-r"><span>Dano</span><b>${diceTxt(u.dmg)}</b></div><div class="pp-r"><span>Alcance</span><b>${u.alc===1?'1 (corpo a corpo)':u.alc}</b></div><div class="pp-r"><span>Ataque</span><b>+${u.atk}</b></div></div>
+  pop.innerHTML=`${hero?`<div class="pp w"><div class="pp-h">${ico('slot','weapon','lg')}<b>${hero?u.arma||'Arma':u.nome}</b></div>
+      <div class="pp-r"><span>Dano</span><b>${diceTxt(u.dmg)}</b></div><div class="pp-r"><span>Alcance</span><b>${u.alc===1?'1 (corpo a corpo)':u.alc}</b></div><div class="pp-r"><span>Ataque</span><b>+${u.atk}</b></div></div>`:''}
     <div class="pp t"><div class="pp-h"><span class="tile" style="background:${tr.ic}"></span><b>${tr.nome}</b></div>
       <div class="pp-r"><span>Altura</span><b>${tr.alt}</b></div><div class="pp-t">${tr.txt}</div></div>`;
 }
@@ -2607,6 +2620,7 @@ function ePortrait(kind){
 function setMode(m){
   const hub=m==='village'&&view==='hub',ov=(m==='village'||m==='tavern')&&!hub;
   app.className='m-'+m+(hub?' hub':'')+(ov?' ov':'');phase=m;
+  if(!hub&&bubble){bubble.el.remove();bubble=null;}
   if(hub)hubFit(false);
 }
 function bestRun(){const r=loadRank();return r.length?Math.max(...r.map(x=>x.pts)):0;}
@@ -2877,8 +2891,8 @@ function renderPlace(){
   const fams=siblingFams(),all=party.every(h=>h.r!=null),left=party.filter(h=>h.r==null).length,mp=LV.mp;
   PI_.innerHTML=`
   ${stepper(3)}
-  <div class="head">${wt('board',`Fase ${run.phaseNo} · Mapa ${mp.n}`,mp.nome)}
-    <div class="tags"><span class="tag">Grupo de ${party.length} · ×${MULT[party.length].toFixed(1).replace('.',',')}</span>${fams.map(f=>`<span class="tag fam">Irmãos ${f} +1</span>`).join('')}</div></div>
+  <div class="head">${wt('board',`Fase ${run.phaseNo} · Mapa ${mp.n}`,mp.nome)}</div>
+  <div class="ptags"><span class="tag">Grupo de ${party.length} · ×${MULT[party.length].toFixed(1).replace('.',',')}</span>${fams.length?`<span class="tag fam">Irmãos ${fams.join(' e ')} · +1</span>`:''}</div>
   <div class="roster">${party.map(h=>`<button class="chip ${h.r!=null?'ok':''}" data-hid="${h.id}" aria-pressed="${selHero===h}"><img src="${h.portrait}" alt=""><span>${h.first}${gearBadge(h)}</span><small>${h.exausto?'Exausto':h.r!=null?'✓ no mapa':selHero===h?'toque o mapa':CLASSES[h.cls].nome}</small></button>`).join('')}</div>
   <p class="hint" id="hint">${hint||'Toque num herói e depois numa casa dourada do mapa.'}</p>
   <div class="legend"><span><i class="lg free"></i>Casa livre</span><span><i class="lg hill"></i>Morro: +2 de acerto</span>${SECRET?'<span><i class="lg wall"></i>Parede suspeita</span>':''}<button class="btn ghost sm ov" data-act="overview">Ver mapa todo</button></div>
@@ -3397,7 +3411,7 @@ async function checkSecret(u){
   await wait(900);
 }
 async function turn(u){
-  active=u;hudSel=u;hudTile=null;renderOrder();renderUC(true);followCam(u);
+  active=u;hudSel=u.side==='hero'?u:null;hudTile=null;renderOrder();renderUC(true);followCam(u);
   // a câmera leva um tempo pra chegar no personagem (followCam não é
   // esperado) — sem essa pausa, a ação dele já começava com a câmera
   // ainda andando, dando a sensação de tudo embolado/em cima do outro.
@@ -3470,6 +3484,17 @@ async function startBattle(){
 /* ================= Campanha: fases, XP e resultado ================= */
 let camMode='follow',followUntil=0;
 const boardView=()=>[0,0.3,wz(ROWS-2.4),1.45];
+// enquadra as casas de posicionamento (projetadas), qualquer que seja o formato da tela
+function zoneView(){
+  const hw=(cam.right-cam.left)/2,hh=(cam.top-cam.bottom)/2,zs=[...zoneMarks.values()];
+  if(!zs.length)return boardView();
+  let cx=0,cz=0;zs.forEach(m=>{cx+=m.position.x;cz+=m.position.z;});cx/=zs.length;cz/=zs.length;
+  const c=new THREE.Vector3(cx,0.3,cz),p=new THREE.Vector3();
+  cam.position.set(c.x+CAM_OFF.x,c.y+CAM_OFF.y,c.z+CAM_OFF.z);cam.lookAt(c);cam.updateMatrixWorld();
+  let mx=0,my=0;zs.forEach(m=>{p.copy(m.position).applyMatrix4(cam.matrixWorldInverse);mx=Math.max(mx,Math.abs(p.x));my=Math.max(my,Math.abs(p.y));});
+  return [cx,0.3,cz,Math.max(0.8,Math.min(1.8,hw/(mx+1.4),hh/(my+1.5)))];
+}
+const phaseView=()=>phase==='place'?zoneView():boardView();
 function followCam(u,zoom=1.35){
   if(camMode!=='follow'||performance.now()<followUntil||!u||!u.grp)return;
   aimCam(u.grp.position.x,0.3,u.grp.position.z,zoom,0.55);
@@ -3484,7 +3509,7 @@ function overviewCam(){
   const btn=document.querySelector('[data-act="overview"][data-hud]');if(btn)btn.setAttribute('aria-pressed',camMode==='over');
   if(camMode==='over')aimCam(0,0.3,0.2,0.62,0.7);
   else if(phase==='battle'&&active)followCam(active);
-  else aimCam(...boardView(),0.7);
+  else aimCam(...phaseView(),0.7);
 }
 const xp=(u,n)=>{if(u&&u.side==='hero'&&u.alive!==false)u.xp=(u.xp||0)+n;};
 
@@ -3514,9 +3539,10 @@ function startPhase(){
   const fams=siblingFams();party.forEach(h=>h.sib=fams.includes(h.sur));
   selHero=party[0];
   const tired=party.filter(h=>h.exausto).map(h=>h.first);
-  hint=first?'O grupo atravessou a mesa até o mapa. Posicione cada herói numa casa dourada.':`Fase ${run.phaseNo}. ${tired.length?`${tired.join(', ')} voltou Exausto (50% de vida, −1 ATQ, −1 DEF). `:''}Posicione o grupo.`;
+  hint=first?'O grupo chegou ao mapa. Posicione cada herói numa casa dourada.':`Fase ${run.phaseNo}. ${tired.length?`${tired.join(', ')} voltou Exausto (50% de vida, −1 ATQ, −1 DEF). `:''}Posicione o grupo.`;
   zoneVisible(true);camMode='follow';setMode('place');renderPlace();
-  aimCam(...boardView(),first?1.5:1.0);
+  // o painel da formação ainda vai mexer na altura do palco: mede depois do layout
+  setTimeout(()=>{if(phase==='place')aimCam(...zoneView(),first?1.2:0.9);},80);
 }
 function nextPhase(){
   $('#result').hidden=true;run.map+=1;run.phaseNo+=1;startPhase();
@@ -3673,7 +3699,6 @@ function loop(t){
   if(active&&active.grp){ring.position.set(active.grp.position.x,active.grp.position.y+0.09,active.grp.position.z);ring.material.opacity=0.65+Math.sin(s*6)*0.3;}
   if(tRing.visible)tRing.material.opacity=0.6+Math.sin(s*10)*0.35;
   if(callout&&callout.u.grp){const [x,y]=screenOf(callout.u,0.32);callout.el.style.left=Math.max(x,96)+'px';callout.el.style.top=Math.max(y,50)+'px';}
-  if(bubble){const p=bubble.v.grp.getWorldPosition(new THREE.Vector3());p.y+=bubble.v.sz+0.25;const [x,y]=worldToScreen(p);bubble.el.style.left=x+'px';bubble.el.style.top=y+'px';}
   renderer.render(scene,cam);renderDie();
 }
 
