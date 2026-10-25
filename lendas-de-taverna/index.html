@@ -772,6 +772,7 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 #stage[data-bio="gelo"]{background:radial-gradient(90% 55% at 50% 108%,#8fc4e0 0%,rgba(143,196,224,0) 70%),radial-gradient(60% 40% at 80% 12%,rgba(220,240,255,.25),transparent 70%),linear-gradient(#0a1424,#1c3350 52%,#46698a)}
 #stage[data-bio="cripta"]{background:radial-gradient(90% 55% at 50% 108%,#6b1f3a 0%,rgba(107,31,58,0) 70%),radial-gradient(60% 40% at 80% 12%,rgba(150,70,170,.2),transparent 70%),linear-gradient(#08040e,#1a0e26 52%,#3a1a44)}
 #stage[data-luz="breu"]{background:#000 !important}
+.mrow.dung{border-color:#7a5a9a}.mrow.dung i{background:#9a7ac0}
 </style>
 </head>
 <body>
@@ -1097,9 +1098,9 @@ function unequipItem(h,slot,pool){
   applyMods(h,item.mods,-1);h.equip[slot]=null;pool.push(item);
 }
 function dropLoot(t){
-  const chance=BOSSES[t.kind]?1:0.16;
+  const chance=isBossK(t.kind)?1:0.16;
   if(R()>=chance)return;
-  const rar=rollRarity(BOSSES[t.kind]?3:1);
+  const rar=rollRarity(isBossK(t.kind)?3:1);
   const item=rollItem(rar);if(!item)return;
   run.inventory.push(item);
   item.rar>=4?SFX.secret():SFX.loot();
@@ -1294,6 +1295,15 @@ const MAPS=[
   {n:25,ato:5,luz:'penumbra',nivel:60,mundo:'cripta',biome:'cripta',layout:'arena',nome:'Trono do Vampiro Senhor',fixo:false,chefe:true,boss:'vampsenhor',secret:false,total:[12,14],escala:3.9,
     desc:'O trono no fundo da cripta. O Vampiro Senhor sempre está lá, cercado de sua corte.',
     pool:['vampsenhor','guardiao','vampiro','espectror','esqmago','esqguerreiro']},
+  // Dungeons secretas (abrem ao achar a passagem do mapa de origem)
+  {n:101,secreta:true,from:2,ato:1,nivel:6,mundo:'campina',biome:'caverna',luz:'penumbra',nome:'Toca dos Corvos',fixo:true,seed:9101,chefe:true,boss:'javali',total:[9,11],escala:1.7,premio:300,
+    grid:["vvEEEEEEvv", "vEEEEEEEEv", "..t.11.t..", ".t.1221.t.", "..r.11..r.", "v........v", ".t..rr..t.", "..t....t..", "v........v", "vvZZZZZZvv", "vZZZZZZZZv", "vvvZZZZvvv"],
+    desc:'Uma toca escondida atrás da parede do bosque. Pequena, escura e cheia de bichos — e o Homem-Javali guarda o fundo.',
+    pool:['javali','bird','bat','spider','rato','lobo']},
+  {n:102,secreta:true,from:12,ato:3,nivel:33,mundo:'caverna',biome:'caverna',luz:'breu',nome:'Câmara das Armadilhas',fixo:true,seed:9102,chefe:true,boss:'berserker',total:[11,13],escala:2.7,premio:900,
+    grid:["vvvEEEEEEvvv", "vvEEEEEEEEvv", "vEEEEEEEEEEv", "...T.rTr...T", ".T....T.....", "r..T....T..r", "...T.rr.....", ".T......T.T.", "..T.r..r....", "v..T.....T.v", "vvZZZZZZZZvv", "vvvZZZZZZvvv"],
+    desc:'Breu total e o chão cheio de armadilhas escondidas. Os inimigos conhecem cada casa; os heróis não. O Orc Berserker espera no fundo.',
+    pool:['berserker','esqfogo','esqguerreiro','esqmago','vampiro','espectro']},
 ];
 const BIOMES={
   campina:{nome:'Campina',bg:'#14100d'},floresta:{nome:'Floresta',bg:'#14100d'},deserto:{nome:'Deserto',bg:'#14100d'},ruinas:{nome:'Ruínas',bg:'#14100d'},caverna:{nome:'Caverna',bg:'#14100d'},gelo:{nome:'Picos Gelados',bg:'#14100d'},cripta:{nome:'Cripta',bg:'#14100d'}
@@ -1302,6 +1312,7 @@ const BIOMES={
 /* ---------- Mapa atual (reconstruído a cada fase) ---------- */
 /* Caracteres: . chão, 1/2 morro, w água, b ponte, r pedra, t árvore/cacto, S parede rachada */
 const DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
+let TRAPS=new Set(), REVEALED=new Set();
 let LV=null, MAP=[], ROWS=16, COLS=16, OFFX=7.5, OFFZ=7.5, SECRET=null, SECRET_ADJ=[], ZONE=new Set(), EZONE=[];
 const k=(r,c)=>r*COLS+c;
 const cell=(r,c)=>MAP[r][c];
@@ -1320,17 +1331,18 @@ const wx=c=>c-OFFX, wz=r=>r-OFFZ;
 function gridLevel(mp,seed){
   const flip=!mp.noflip&&mulberry32(seed^0x9e37)()<0.5;
   const rows=mp.grid.map(r=>flip?r.split('').reverse().join(''):r);
-  const H=rows.length,W=rows[0].length,zone=new Set(),ezone=[];let sec=null;
+  const H=rows.length,W=rows[0].length,zone=new Set(),ezone=[],traps=new Set();let sec=null;
   const map=rows.map((row,r)=>row.split('').map((ch,c)=>{
     if(ch==='Z'){zone.add(r*W+c);return '.';}
     if(ch==='E'){ezone.push({r,c});return '.';}
     if(ch==='S')sec={r,c};
+    if(ch==='T'){traps.add(r*W+c);return '.';}
     return ch;}).join(''));
   const ht=ch=>ch>='1'&&ch<='4'?+ch:0,ok=ch=>!'wrtSv'.includes(ch);
   const seen=new Set(zone),q=[...zone].map(i=>[Math.floor(i/W),i%W]);
   while(q.length){const [r,c]=q.shift();for(const [a,b] of DIRS){const nr=r+a,nc=c+b;if(nr<0||nc<0||nr>=H||nc>=W||seen.has(nr*W+nc))continue;
     if(!ok(map[nr][nc])||Math.abs(ht(map[nr][nc])-ht(map[r][c]))>1)continue;seen.add(nr*W+nc);q.push([nr,nc]);}}
-  return {map,secret:sec,reach:seen,zone,ezone};
+  return {map,secret:sec,reach:seen,zone,ezone,traps};
 }
 function genLevel(mp,seed){
   if(mp.grid)return gridLevel(mp,seed);
@@ -1425,6 +1437,7 @@ function applyLevel(mp,seed){
   const lv=genLevel(mp,seed);
   LV={mp,seed,reach:lv.reach};
   MAP=lv.map;ROWS=MAP.length;COLS=MAP[0].length;OFFX=(COLS-1)/2;OFFZ=(ROWS-1)/2;SECRET=lv.secret;
+  TRAPS=lv.traps||new Set();REVEALED=new Set();
   if(lv.zone){ZONE=lv.zone;EZONE=lv.ezone;}
   else{ZONE=new Set();EZONE=[];for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(!passable(r,c))continue;if(r>=ROWS-4)ZONE.add(r*COLS+c);if(r<=5)EZONE.push({r,c});}}
   const ext=Math.max(ROWS,COLS)/2+4;
@@ -1432,8 +1445,9 @@ function applyLevel(mp,seed){
   SECRET_ADJ=SECRET?DIRS.map(([a,b])=>[SECRET.r+a,SECRET.c+b]).filter(([r,c])=>inB(r,c)&&passable(r,c)):[];
 }
 const BOSSES={ogro:1,minotauro:1,troll:1,reiesq:1,vampsenhor:1};
+const isBossK=kind=>!!BOSSES[kind]||!!(LV&&LV.mp.boss===kind);
 function rollEnemies(mp){
-  const types=mp.pool.filter(t=>!BOSSES[t]).sort(()=>R()-0.5);
+  const types=mp.pool.filter(t=>!BOSSES[t]&&t!==mp.boss).sort(()=>R()-0.5);
   const nTypes=Math.min(types.length,ri(4,types.length));
   const chosen=types.slice(0,nTypes);
   const bossK=mp.chefe&&mp.boss?mp.boss:(mp.pool.includes('ogro')&&R()<0.6?'ogro':null);
@@ -1444,7 +1458,7 @@ function rollEnemies(mp){
   let guard=0;
   while(left>0&&guard++<200){const t=pick(chosen);if(caps[t]&&cnt[t]>=caps[t])continue;cnt[t]++;left--;}
   const list=[];let ni=0;const names=ENAMES.slice().sort(()=>R()-0.5);
-  Object.entries(cnt).forEach(([kind,n])=>{for(let i=0;i<n;i++)list.push({kind,first:BOSSES[kind]?ENEMIES[kind].nome:names[ni++%names.length]});});
+  Object.entries(cnt).forEach(([kind,n])=>{for(let i=0;i<n;i++)list.push({kind,first:isBossK(kind)?ENEMIES[kind].nome:names[ni++%names.length]});});
   return list;
 }
 function placeEnemies(list){
@@ -1452,13 +1466,13 @@ function placeEnemies(list){
   const ez0=Math.min(...EZONE.map(t=>t.r));
   EZONE.forEach(({r,c})=>{if(LV.reach.has(r*COLS+c)&&passable(r,c)&&!SECRET_ADJ.some(a=>a[0]===r&&a[1]===c))cand.push({r,c,rel:r-ez0});});
   const used=new Set();
-  const order=list.slice().sort((a,b)=>(!!BOSSES[b.kind])-(!!BOSSES[a.kind]));
+  const order=list.slice().sort((a,b)=>(!!isBossK(b.kind))-(!!isBossK(a.kind)));
   return order.map(s=>{
     const ia=ENEMIES[s.kind].ia;let best=null,bs=-1e9;
     for(const t of cand){
       if(used.has(t.r*COLS+t.c))continue;
       let sc=R()*4;
-      if(BOSSES[s.kind])sc+=(5-t.rel)*3-Math.abs(t.c-OFFX)*1.2+hOf(t.r,t.c)*2;
+      if(isBossK(s.kind))sc+=(5-t.rel)*3-Math.abs(t.c-OFFX)*1.2+hOf(t.r,t.c)*2;
       else if(ia==='healer'||ia==='skirmish')sc+=(4-t.rel)*1.2;
       else if(ia==='guard')sc+=-Math.abs(t.rel-1)*1.2;
       else sc+=t.rel*0.6;
@@ -2251,8 +2265,8 @@ function ensureEnemyCache(kind){
 function makeEnemy(s){
   const b=ENEMIES[s.kind],sc=LV?LV.mp.escala:1;
   const ec=ensureEnemyCache(s.kind);
-  const first=BOSSES[s.kind]?s.first:`${EPRE[s.kind]} ${s.first}`;
-  const hp=Math.round(b.hp*sc);
+  const first=isBossK(s.kind)?s.first:`${EPRE[s.kind]} ${s.first}`;
+  const hp=Math.round(b.hp*sc*(isBossK(s.kind)&&!BOSSES[s.kind]?1.8:1));
   return {id:uid++,side:'enemy',kind:s.kind,ia:b.ia,first,nome:b.nome,maxhp:hp,hp,atk:b.atk+(sc>1.1?1:0)+(sc>1.25?1:0),def:b.def+(sc>1.2?1:0),defMag:baseDefMag(b.def)+(sc>1.2?1:0),mov:b.mov,alc:b.alc,dmg:b.dmg,ini:b.ini,pts:b.pts,big:b.big,
     r:s.r,c:s.c,alive:true,aggro:false,sprite:ec.sp,portrait:ec.url};
 }
@@ -2809,7 +2823,7 @@ function renderUC(force){
   const tl=hudTile||{r:u.r,c:u.c},key=[u.id,u.hp,u.atk,u.def,u.mov,u.alive,ucPop,tl.r,tl.c].join('|');
   if(u.side!=='hero'&&ucPop==='w')ucPop=null;
   if(!force&&key===ucKey&&!el.hidden)return;ucKey=key;
-  const hero=u.side==='hero',cl=hero?CLASSES[u.cls].nome+(u.sub?' · '+SUB_INFO[u.sub].nome:''):u.nome;
+  const hero=u.side==='hero',cl=(hero?CLASSES[u.cls].nome+(u.sub?' · '+SUB_INFO[u.sub].nome:''):u.nome)+(u.poison?' · ☠':'');
   const pct=Math.max(0,u.hp/u.maxhp*100),tr=terrainOf(tl.r,tl.c);
   el.hidden=false;el.className='uc'+(hero?'':' e');
   el.innerHTML=`<div class="uc-face"><img src="${faceOf(u)}" alt=""></div>
@@ -3042,6 +3056,15 @@ function loadGame(){
   }catch(e){return null;}
 }
 const unlocked=n=>n<=loadProg()+1;
+/* dungeons secretas: abrem quando alguém acha a passagem do mapa de origem */
+function loadSecrets(){try{return JSON.parse(localStorage.getItem('lendas_secret_v1')||'{}');}catch(e){return {};}}
+function saveSecrets(o){try{localStorage.setItem('lendas_secret_v1',JSON.stringify(o));}catch(e){}}
+const secretFound=n=>(loadSecrets().found||[]).includes(n);
+function unlockSecretsFrom(mapN){
+  const sc=loadSecrets();sc.found=sc.found||[];let n=0;
+  MAPS.filter(m=>m.secreta&&m.from===mapN&&!sc.found.includes(m.n)).forEach(m=>{sc.found.push(m.n);n++;});
+  if(n)saveSecrets(sc);return n;
+}
 function mapOf(n){
   const m=MAPS.find(m=>m.n===n);
   if(m)return m;
@@ -3141,7 +3164,7 @@ function renderVillage(){
   const badge={temple:injuredN,forge:forgeReady,stash:stash.length};
   $('#vnames').innerHTML=HUB_LABELS.map(([id,nome])=>`<button class="vn ${id==='market'||id==='well'?'soon':''}" data-bld="${id}">${ico('vila',id)}${nome}${badge[id]?`<b>${badge[id]}</b>`:''}</button>`).join('');
   $('#vfoot').innerHTML=`${hint||injuredN?`<p class="hint" id="hint">${hint||`${injuredN} ${injuredN>1?'heróis estão':'herói está'} se recuperando no Templo.`}</p>`:''}
-    <div class="vs"><span class="tag">${ico('vila','mapa')} ${m?`Mapa ${m.n}: ${m.nome}`:'Escolha o mapa no Quadro de Missões'}</span><span class="tag">${ico('vila','grupo')} ${np}/5 no grupo (Taverna)</span></div>
+    <div class="vs"><span class="tag">${ico('vila','mapa')} ${m?`${m.secreta?'Dungeon':'Mapa '+m.n}: ${m.nome}`:'Escolha o mapa no Quadro de Missões'}</span><span class="tag">${ico('vila','grupo')} ${np}/5 no grupo (Taverna)</span></div>
     <button class="btn cta" data-act="depart" ${ready?'':'disabled'}>${ready?'Partir pra missão':'Escolha o mapa e o grupo'}</button>`;
   placeVillageNames();
 }
@@ -3192,12 +3215,13 @@ function renderMissions(){
   PI_.innerHTML=`
   <div class="head">${wt('board','Quadro de Missões','Escolha o mapa')}<button class="btn ghost sm" data-act="toVillage">Praça</button></div>
   <div class="scroll">${ATOS.map(a=>{
-    const ms=MAPS.filter(m=>m.ato===a.id),done=ms.filter(m=>m.n<=cleared).length;
+    const ms=MAPS.filter(m=>m.ato===a.id&&!m.secreta),done=ms.filter(m=>m.n<=cleared).length;
     const head=`<h3>${a.nome}<small>Nv. ${a.niv[0]}–${a.niv[1]} · ${ms.length?`${done}/${ms.length} mapas`:'em breve'}</small></h3><p class="ato-sub">${a.bioma} · Chefe: ${a.chefe}</p>`;
     if(!ms.length)return `<div class="world ato futuro">${head}<div class="mrow lock"><i>${ico('vila','trava')}</i><span><b>Em breve</b><small>Os mapas deste ato ainda estão sendo preparados.</small></span><em></em></div></div>`;
+    const secs=MAPS.filter(m=>m.secreta&&m.ato===a.id&&secretFound(m.n));
     return `<div class="world ato">${head}${ms.map(m=>{const lock=!unlocked(m.n),isDone=m.n<=cleared;
       return `<button class="mrow ${lock?'lock':''} ${run.mission===m.n?'sel':''}" data-map="${m.n}" ${lock?'disabled':''}>
-        <i>${lock?ico('vila','trava'):m.n}</i><span><b>${m.nome}</b><small>Nv. ${m.nivel} · ${BIOMES[m.biome].nome} · ${m.chefe?'chefe':m.grid||m.fixo?'mapa fixo':'terreno muda'}${isDone?' · concluído':''}</small></span><em>${lock?'':'›'}</em></button>`;}).join('')}
+        <i>${lock?ico('vila','trava'):m.n}</i><span><b>${m.nome}</b><small>Nv. ${m.nivel} · ${BIOMES[m.biome].nome} · ${m.chefe?'chefe':m.grid||m.fixo?'mapa fixo':'terreno muda'}${isDone?' · concluído':''}</small></span><em>${lock?'':'›'}</em></button>`;}).join('')}${secs.map(m=>`<button class="mrow dung ${run.mission===m.n?'sel':''}" data-map="${m.n}"><i>${ico('vila','trava')}</i><span><b>${m.nome}</b><small>Dungeon secreta · Nv. ${m.nivel}${loadSecrets().cleared&&loadSecrets().cleared.includes(m.n)?' · concluída':''}</small></span><em>›</em></button>`).join('')}
     </div>`;}).join('')}
   <p class="note">Mapas se liberam ao vencer o anterior. Uma run começa no mapa escolhido e segue pelos próximos do mesmo ato enquanto houver heróis de pé. Vencer o chefe fecha o ato.</p></div>`;
 }
@@ -3205,7 +3229,7 @@ function renderBrief(n){
   view='brief';setMode('village');
   const m=mapOf(n),w=ATOS.find(x=>x.id===m.ato)||ATOS[0],sel=roster.filter(h=>selected.has(h.id)),avgLv=Math.round((sel.length?sel:roster).reduce((a,h)=>a+(h.level||1),0)/Math.max(1,(sel.length?sel:roster).length));
   PI_.innerHTML=`
-  <div class="head">${wt('board',`${w.nome.split(' · ')[0]} · Mapa ${m.n}`,m.nome)}<button class="btn ghost sm" data-act="toMissions">Voltar</button></div>
+  <div class="head">${wt('board',`${w.nome.split(' · ')[0]} · ${m.secreta?'Dungeon secreta':'Mapa '+m.n}`,m.nome)}<button class="btn ghost sm" data-act="toMissions">Voltar</button></div>
   <div class="scroll">
     <p class="sub">${m.desc}</p>
     <div class="tags"><span class="tag">${BIOMES[m.biome].nome}</span><span class="tag">Nv. recomendado ${m.nivel}</span><span class="tag">Mapa ${m.grid?`${m.grid[0].length}×${m.grid.length}`:'16×16'}</span>${m.chefe?'<span class="tag">Chefe do ato</span>':''}${m.luz==='breu'?'<span class="tag">Breu total</span>':''}<span class="tag">${m.grid?'Mapa desenhado (pode vir espelhado)':m.fixo?'Terreno sempre igual':'Terreno muda a cada run'}</span>${m.secret?'<span class="tag">Parede suspeita</span>':''}</div>
@@ -3601,6 +3625,7 @@ function bfsReach(u){
     for(const [dr,dc] of DIRS){
       const nr=r+dr,nc=c+dc;if(!passable(nr,nc))continue;const kk=k(nr,nc);if(res.has(kk))continue;
       if(Math.abs(hOf(nr,nc)-hOf(r,c))>1)continue;
+      if(TRAPS.has(kk)&&(u.side==='enemy'||REVEALED.has(kk)))continue; // inimigos conhecem a masmorra; heróis só depois de ver
       const occ=unitAt(nr,nc);
       if(occ&&occ!==u){if(occ.side!==u.side)continue;res.set(kk,{r:nr,c:nc,d:cur.d+1,prev:k(r,c),pass:true});q.push([nr,nc]);continue;}
       res.set(kk,{r:nr,c:nc,d:cur.d+1,prev:k(r,c)});q.push([nr,nc]);
@@ -3645,9 +3670,24 @@ async function moveAlong(u,path){
     swingLegs(u,0.2);
     await gsap.timeline().to(u.grp.position,{x:tx,z:tz,duration:0.2,ease:'none'},0).to(u.grp.position,{y:peak,duration:0.1,ease:'power1.out'},0).to(u.grp.position,{y:ty,duration:0.1,ease:'power1.in'},0.1);
     burst(u.grp.position,{n:3,colors:['#c9b28a','#a08a62'],spread:0.3,up:0.1,y:0.03,life:0.3,size:0.7});
+    if(u.side==='hero'&&TRAPS.has(k(p.r,p.c))&&!REVEALED.has(k(p.r,p.c))){await springTrap(u,p);if(!u.alive)break;}
   }
-  lpcSetState(u,'stand');
+  if(u.alive)lpcSetState(u,'stand');
 }
+// armadilha escondida: só os heróis caem; depois de disparada fica marcada no chão
+async function springTrap(u,p){
+  const kk=k(p.r,p.c),veneno=(p.r*7+p.c*3)%2===1;REVEALED.add(kk);
+  const pos={x:wx(p.c),y:topY(p.r,p.c),z:wz(p.r)};
+  fxPlay('environment','spike-trap-32px_strip8.png',8,14,pos,{w:1.2});
+  const mk=new THREE.Mesh(new THREE.PlaneGeometry(0.8,0.8),new THREE.MeshBasicMaterial({map:trapTex,transparent:true,depthWrite:false}));
+  mk.rotation.x=-Math.PI/2;mk.position.set(pos.x,pos.y+0.02,pos.z);boardGroup.add(mk);
+  shakeCam(0.15,0.25);SFX.hit();showCallout(u,veneno?'☠ Armadilha de veneno!':'⚠ Armadilha!');
+  const src={first:'uma armadilha',side:'trap'},sc=LV.mp.escala||1;
+  if(veneno){u.poison={n:3,dmg:Math.max(2,Math.round(sc*1.6))};floatText(u,'☠ veneno','miss');tintUnit(u,{r:0.5,g:1,b:0.4},{r:1,g:1,b:1},0.9);addLog(`${u.first} pisou numa armadilha de veneno`,'bad');}
+  else{const dmg=Math.max(3,Math.round(sc*3.2));addLog(`${u.first} pisou numa armadilha de espinhos: ${dmg} de dano`,'bad');damage(u,dmg,src,false);}
+  await wait(500);
+}
+const trapTex=(()=>{const c=document.createElement('canvas');c.width=c.height=16;const g=c.getContext('2d');g.strokeStyle='#e0483a';g.lineWidth=2;g.beginPath();g.moveTo(3,3);g.lineTo(13,13);g.moveTo(13,3);g.lineTo(3,13);g.stroke();g.strokeStyle='#4a0f0a';g.strokeRect(1,1,14,14);return nearestTex(c);})();
 const SKILL={guerreiro:'Golpe',ladino:'Estocada',mago:'Raio Arcano',clerigo:'Golpe Sagrado',arqueiro:'Flechada',bardo:'Nota Cortante',
   goblin:'Facada',gobarq:'Flechada',lobo:'Mordida',xama:'Raio Sombrio',guarda:'Golpe',ogro:'Pancada',slime:'Engolfar',bee:'Ferrão',spider:'Mordida Venenosa',rato:'Mordida',esqueleto:'Golpe Ósseo',zumbi:'Agarrão',javali:'Investida',lagarto:'Corte Rápido',vampiro:'Mordida Sombria',guardiao:'Golpe Sombrio',espectror:'Toque Real',vampsenhor:'Estocada Sangrenta',esqgelo:'Golpe Gélido',yeti:'Pancada Nevada',lobogelo:'Mordida Gélida',reiesq:'Machado Real',esqfogo:'Toque Flamejante',lobisomem:'Garra Selvagem',esqguerreiro:'Golpe Blindado',esqmago:'Raio Ósseo',espectro:'Toque Espectral',berserker:'Fúria',minotauro:'Machadada',troll:'Pancada Bruta',fish:'Mordida',bat:'Mordida Cega',bird:'Bicada',ghost:'Toque Gélido',beetle:'Investida'};
 const skillOf=u=>SKILL[u.side==='hero'?u.cls:u.kind]||'Ataque';
@@ -3724,6 +3764,7 @@ function isIsolated(t){
   return !allies.some(a=>dist(a,t)<=1);
 }
 async function attack(u,t){
+  if(!u.alive)return;
   const parts=[[u.atk,'ATQ']];const hu=hOf(u.r,u.c),ht=hOf(t.r,t.c);
   if(hu>ht)parts.push([u.cls==='arqueiro'?4:2,'alto']);
   if(u.inspired)parts.push([u.inspired,'balada']);
@@ -3817,7 +3858,7 @@ function kill(t,src,crit){
     xp(src,Math.round(t.pts/4));stats.kills.push(t);addLog(`${t.first} foi derrotado (+${t.pts})`,'gold');
     setTimeout(()=>{},0);floatText(t,`+${t.pts}`,'gold');
     dropLoot(t);
-    if(BOSSES[t.kind]){stats.hl.push({w:8,t:`${src.first} derrubou ${t.first}${crit?' com um crítico':''}.`});shakeCam(0.4,0.6);flash('#e9b949',0.3);}
+    if(isBossK(t.kind)){stats.hl.push({w:8,t:`${src.first} derrubou ${t.first}${crit?' com um crítico':''}.`});shakeCam(0.4,0.6);flash('#e9b949',0.3);}
     else if(crit)stats.hl.push({w:6,t:`${src.first} tirou um crítico e derrubou ${t.first} de uma vez.`});
   }else{addLog(`${t.first} caiu em combate`,'bad');flash('#d4503f',0.25);stats.hl.push({w:3,t:`${t.first} caiu no turno ${stats.round}, lutando contra ${src.first}.`});}
 }
@@ -3827,6 +3868,7 @@ function addTomb(t){
   gsap.from(m.scale,{y:0.01,duration:0.3});
 }
 async function heal(u,w){
+  if(!u.alive)return;
   pulse(u.grp.position,'#6cc35e',0.9,0.5);await wait(250);
   const subHeal=u.sub==='curandeiro'?3:0;
   const amt=dice(2,4)+2+(u.healBonus||0)+subHeal,before=w.hp;w.hp=Math.min(w.maxhp,w.hp+amt);
@@ -3849,6 +3891,7 @@ async function checkSecret(u){
   await showRoll({u,skill:'? Investigar',roll,outcome:ok?'crit':'miss'});
   if(!ok){floatText(u,'nada…','miss');addLog(`${u.first} examinou a parede, mas não achou nada (${sum} vs 15)`,'mut');return;}
   stats.secret=true;stats.secretBy=u;xp(u,30);
+  const novas=unlockSecretsFrom(LV.mp.n);
   SFX.secret();shakeCam(0.2,0.5);burst({x:wp.x,y:0,z:wp.z},{n:22,colors:['#8d918b','#6a6e69','#a0a49e'],spread:0.9,up:0.6,y:0.6,life:0.7,fall:true,size:1.4});
   await gsap.timeline().to(wallMesh.scale,{y:0.2,duration:0.5,ease:'power2.in'},0).to(wallMesh.position,{y:0.12,duration:0.5,ease:'power2.in'},0);
   chest=new THREE.Mesh(new THREE.PlaneGeometry(0.75,0.64),new THREE.MeshBasicMaterial({map:nearestTex(chestSprite()),transparent:true,alphaTest:0.5,side:THREE.DoubleSide}));
@@ -3858,11 +3901,18 @@ async function checkSecret(u){
   burst({x:wp.x,y:0.2,z:wp.z},{n:30,colors:['#ffd34a','#fffaf0','#e9b949'],spread:1.1,up:1.6,y:0.4,life:1});
   heroesAlive().forEach((h,i)=>{gsap.delayedCall(0.3+i*0.12,()=>{h.hp=Math.min(h.maxhp,h.hp+6);h.secretBuff=true;floatText(h,'+6 ✦','gold');pulse(h.grp.position,'#e9b949',1,0.6);});});
   addLog(`${u.first} achou uma passagem secreta com um baú! Grupo cura 6 e ganha +1 ATQ`,'gold');
+  if(novas)addLog('🗝 Uma dungeon secreta foi aberta no Quadro de Missões!','gold');
   stats.hl.push({w:10,t:`${u.first} examinou a parede rachada, tirou ${roll} no dado e achou a passagem secreta com o baú lendário.`});
   await wait(900);
 }
 async function turn(u){
   active=u;hudSel=u.side==='hero'?u:null;hudTile=null;renderOrder();renderUC(true);followCam(u);
+  if(u.poison){
+    const pz=u.poison;pz.n--;floatText(u,`☠ -${pz.dmg}`,'miss');addLog(`${u.first} sofre ${pz.dmg} de veneno`,'bad');
+    tintUnit(u,{r:0.5,g:1,b:0.4},{r:1,g:1,b:1},0.5);damage(u,pz.dmg,{first:'o veneno',side:'trap'},false);
+    if(pz.n<=0)u.poison=null;
+    if(!u.alive)return;await wait(350);
+  }
   // a câmera leva um tempo pra chegar no personagem (followCam não é
   // esperado) — sem essa pausa, a ação dele já começava com a câmera
   // ainda andando, dando a sensação de tudo embolado/em cima do outro.
@@ -3967,7 +4017,7 @@ const xp=(u,n)=>{if(u&&u.side==='hero'&&u.alive!==false)u.xp=(u.xp||0)+n;};
 function resetHero(h,first){
   if(h.exausto){h.atk++;h.def++;h.exausto=false;}
   if(!first&&h.alive===false){h.hp=Math.ceil(h.maxhp*0.5);h.atk--;h.def--;h.exausto=true;}else h.hp=h.maxhp;
-  Object.assign(h,{alive:true,r:null,c:null,triedSecret:false,inspired:false,highHits:0,fled:false,secretBuff:false,xp:0,bonus:false,diedRound:null,shaken:false,ambushDone:false,lastTargetId:null});
+  Object.assign(h,{poison:null,alive:true,r:null,c:null,triedSecret:false,inspired:false,highHits:0,fled:false,secretBuff:false,xp:0,bonus:false,diedRound:null,shaken:false,ambushDone:false,lastTargetId:null});
   if(first)h.xpRun=0;
 }
 function departRun(){
@@ -4029,14 +4079,16 @@ function finish(){
   const avgXp=party.length?Math.round(party.reduce((a,h)=>a+h.xp,0)/party.length):0;
   roster.filter(h=>!party.includes(h)).forEach(h=>{h.xpTotal=(h.xpTotal||0)+Math.round(avgXp*(BENCH_XP_SHARE+(h.benchXpBonus||0)));applyLevelUps(h);});
   saveClassXP(cxp);
-  if(win)saveProg(run.map);
+  if(win&&!LV.mp.secreta)saveProg(run.map);
+  let premio=0;
+  if(win&&LV.mp.secreta){const sc=loadSecrets();sc.cleared=sc.cleared||[];if(!sc.cleared.includes(LV.mp.n)){sc.cleared.push(LV.mp.n);saveSecrets(sc);premio=LV.mp.premio||0;const it=rollItem(4);if(it){run.inventory.push(it);stats.hl.push({w:9,t:`O grupo limpou ${LV.mp.nome} pela primeira vez e levou ${it.nome}.`});}}}
   // Ouro: ganho pela fase. Fica aqui (não em finalResult) porque recompensa
   // deve chegar assim que a fase é vencida, mesmo que o jogador siga pra próxima.
-  const goldGain=win?Math.round(sub*GOLD_PER_SCORE):0;gold+=goldGain;
+  const goldGain=win?Math.round(sub*GOLD_PER_SCORE)+premio:0;gold+=goldGain;
   saveGame();
-  run.results.push({n:LV.mp.n,nome:LV.mp.nome,rows,sub,win,round:stats.round,moment:moment.t,goldGain,xpRows:party.map(h=>({h,xp:h.xp,alive:h.alive,bonus:h.bonus,catchup:h.catchup}))});
+  run.results.push({n:LV.mp.n,secreta:!!LV.mp.secreta,nome:LV.mp.nome,rows,sub,win,round:stats.round,moment:moment.t,goldGain,xpRows:party.map(h=>({h,xp:h.xp,alive:h.alive,bonus:h.bonus,catchup:h.catchup}))});
   phase='result';
-  const nxm=win&&!LV.mp.chefe?mapOf(run.map+1):null;
+  const nxm=win&&!LV.mp.chefe&&!LV.mp.secreta?mapOf(run.map+1):null;
   const next=nxm&&nxm.ato===LV.mp.ato&&unlocked(run.map+1);
   const offerEndless=false; // o modo interminável fica de lado até a campanha estar completa
   if(next||offerEndless)phaseBoard();else finalResult(win);
@@ -4084,7 +4136,7 @@ function finalResult(win,cash){
   stash.push(...run.inventory);run.inventory=[];
   saveGame();
   const last=run.results[run.results.length-1],mult=MULT[run.party.length],sub=runSub(),total=Math.round(sub*mult);
-  const lastMp=mapOf(last.n),complete=win&&!!lastMp.chefe,endlessRounds=0;
+  const lastMp=mapOf(last.n),complete=win&&!!lastMp.chefe&&!lastMp.secreta,dungeonWin=win&&!!lastMp.secreta,endlessRounds=0;
   const atoDone=complete?ATOS.find(a=>a.id===lastMp.ato):null,atoNext=complete?ATOS.find(a=>a.id===lastMp.ato+1):null;
   const rank=loadRank();const entry={nome:getName(),pts:total,id:Date.now()};rank.push(entry);rank.sort((a,b)=>b.pts-a.pts);saveRank(rank);
   phase='result';
@@ -4095,8 +4147,8 @@ function finalResult(win,cash){
     $('#rk').innerHTML=list.slice(0,8).map((r,i)=>`<li class="${r.me?'me':''}"><b>${i+1}º</b><span class="who">${r.nome} ${r.amigo?'<small>amigo</small>':r.me?'<small>esta run</small>':'<small>run anterior</small>'}</span><b>${fmt(r.pts)}</b></li>`).join('')+(pos>8?`<li class="me"><b>${pos}º</b><span class="who">${entry.nome} <small>esta run</small></span><b>${fmt(total)}</b></li>`:'');
     $('#rkpos').textContent=`Você ficou em ${pos}º de ${list.length}.`;
   };
-  const title=complete?(atoNext?`${atoDone.nome.split(' · ')[0]} concluído!`:'Campanha concluída!'):cash?'Run encerrada':win?'Vitória!':'Derrota';
-  const subt=complete?`O grupo derrotou o chefe do ato e venceu ${run.results.length} mapa${run.results.length>1?'s':''} nesta run.${atoNext?` Próximo: ${atoNext.nome} (Nv. ${atoNext.niv[0]}–${atoNext.niv[1]}).`:' O grupo venceu todos os atos da campanha.'}`:cash?`O grupo voltou pra casa depois de ${run.results.length} ${run.results.length>1?'fases':'fase'}.`:win?'':last.round>=24&&heroesAlive().length?'O tempo acabou e o grupo recuou.':`O grupo caiu no mapa ${last.n}, turno ${last.round}.`;
+  const title=dungeonWin?'Dungeon concluída!':complete?(atoNext?`${atoDone.nome.split(' · ')[0]} concluído!`:'Campanha concluída!'):cash?'Run encerrada':win?'Vitória!':'Derrota';
+  const subt=dungeonWin?`O grupo limpou ${lastMp.nome}. Quem achou a passagem foi recompensado.`:complete?`O grupo derrotou o chefe do ato e venceu ${run.results.length} mapa${run.results.length>1?'s':''} nesta run.${atoNext?` Próximo: ${atoNext.nome} (Nv. ${atoNext.niv[0]}–${atoNext.niv[1]}).`:' O grupo venceu todos os atos da campanha.'}`:cash?`O grupo voltou pra casa depois de ${run.results.length} ${run.results.length>1?'fases':'fase'}.`:win?'':last.round>=24&&heroesAlive().length?'O tempo acabou e o grupo recuou.':`O grupo caiu no mapa ${last.n}, turno ${last.round}.`;
   const goldTotal=run.results.reduce((a,r)=>a+(r.goldGain||0),0);
   const fallen=run.party.filter(h=>h.injured);
   res.innerHTML=`<div class="res">
@@ -4104,7 +4156,7 @@ function finalResult(win,cash){
     <div class="bigscore"><span>Pontuação da run</span><b id="tot">0</b><small id="rkpos"></small></div>
     ${goldTotal?`<div class="box"><div class="eyebrow">Ouro ganho</div><p>${ico('vila','ouro')} +${fmt(goldTotal)} (total no cofre: ${fmt(gold)})</p></div>`:''}
     <div class="box moment"><div class="eyebrow">Momento da run</div><p>${last.moment}</p></div>
-    <details class="box score"><summary>Como os pontos foram feitos</summary><table>${run.results.map(r=>`<tr><td>Mapa ${r.n}: ${r.nome}</td><td>+${fmt(r.sub)}</td></tr>`).join('')}
+    <details class="box score"><summary>Como os pontos foram feitos</summary><table>${run.results.map(r=>`<tr><td>${r.secreta?'Dungeon':'Mapa '+r.n}: ${r.nome}</td><td>+${fmt(r.sub)}</td></tr>`).join('')}
       <tr><td>Grupo de ${run.party.length}</td><td>×${mult.toFixed(1).replace('.',',')}</td></tr></table></details>
     <details class="box"><summary>O grupo · XP da run</summary><div class="people">${run.party.map(h=>`<div class="person ${h.injured?'dead':''}"><img src="${h.portrait}" alt=""><div>${h.injured?ico('vila','ferido'):''}<b>${h.nome}</b> <em>· ${CLASSES[h.cls].nome} · +${h.xpRun} XP${h.injured?' · se recuperando':''}</em></div></div>`).join('')}</div></details>
     ${fallen.length?`<div class="box"><div class="eyebrow">Feridos</div><p>${fallen.map(h=>h.first).join(', ')} ${fallen.length>1?'precisam':'precisa'} descansar no Templo da Aurora antes de voltar a lutar — o tempo passa sozinho, ou pague ouro pra acelerar.</p></div>`:''}
