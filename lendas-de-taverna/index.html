@@ -1129,6 +1129,23 @@ const ENEMIES={
     resumo:'Bica e se afasta. Difícil de encurralar.'},
   ghost:{nome:'Fantasma Pálido',ia:'flank',hp:8,atk:3,def:13,mov:3,alc:1,dmg:[1,4,1],ini:3,pts:120,magico:true,
     resumo:'Atravessa o frio da noite atrás dos frágeis. Seu toque é mágico: conta a Res. Mágica, não a Defesa.'},
+  // monstros do pacote LPC (corpo humanoide + cabeça/corpo de monstro)
+  rato:{nome:'Homem-Rato',ia:'flank',hp:6,atk:3,def:12,mov:5,alc:1,dmg:[1,4,1],ini:6,pts:70,
+    resumo:'Pequeno e rápido. Dá a volta e morde quem está sozinho.'},
+  esqueleto:{nome:'Esqueleto',ia:'rush',hp:11,atk:3,def:13,mov:3,alc:1,dmg:[1,6,1],ini:2,pts:110,
+    resumo:'Marcha reto até o herói mais perto. Ossos duros de acertar.'},
+  zumbi:{nome:'Zumbi',ia:'rush',hp:16,atk:3,def:10,mov:2,alc:1,dmg:[1,6,1],ini:0,pts:100,
+    resumo:'Lento, mas aguenta muita pancada.'},
+  javali:{nome:'Homem-Javali',ia:'rush',hp:14,atk:4,def:13,mov:3,alc:1,dmg:[1,8,1],ini:2,pts:140,
+    resumo:'Investida bruta de cota de malha. Vai direto no mais próximo.'},
+  lagarto:{nome:'Homem-Lagarto',ia:'flank',hp:9,atk:3,def:12,mov:4,alc:1,dmg:[1,6,1],ini:4,pts:110,
+    resumo:'Ágil, contorna a linha de frente atrás dos frágeis.'},
+  vampiro:{nome:'Vampiro',ia:'flank',hp:12,atk:4,def:13,mov:4,alc:1,dmg:[1,6,2],ini:4,pts:200,
+    resumo:'Elegante e letal. Caça os heróis frágeis.'},
+  minotauro:{nome:'Minotauro',ia:'rush',hp:26,atk:5,def:13,mov:3,alc:1,dmg:[1,10,2],ini:1,pts:300,big:true,
+    resumo:'Brutamontes de machado. Perigoso até pro tanque.'},
+  troll:{nome:'Troll',ia:'rush',hp:28,atk:4,def:12,mov:2,alc:1,dmg:[1,10,1],ini:0,pts:280,big:true,
+    resumo:'Lento e enorme. Cada golpe dele pesa.'},
 };
 const ENAMES=['Zug','Nhac','Brek','Fusk','Pito','Gruk','Mog','Rakh','Snik','Dorg','Vesk','Tuk','Urg','Bhag'];
 const FIRST=['Brian','Christopher','Bruno','Rafael','Diego','Marcos','Felipe','Henrique','Otávio','Caio','Davi','Enzo','Igor','Leandro','Nathan','Renato','Samuel','Thiago','Vitor','Yuri',
@@ -1157,19 +1174,19 @@ const WORLDS=[{id:'campina',nome:'Campina Verde'},{id:'deserto',nome:'Deserto da
 const MAPS=[
   {n:1,mundo:'campina',biome:'campina',nome:'Clareira de Brumavale',fixo:true,seed:1101,secret:true,total:[8,10],escala:1,
     desc:'Campina aberta cortada por um rio. Só duas pontes. Gosmas, aranhas, besouros, peixes saltadores e morcegos infestaram a clareira.',
-    pool:['slime','bee','spider','beetle','fish','bat']},
+    pool:['slime','bee','spider','beetle','fish','bat','rato']},
   {n:2,mundo:'campina',biome:'floresta',nome:'Bosque dos Corvos',fixo:true,seed:2202,secret:true,total:[9,11],escala:1.15,
     desc:'Floresta fechada, poucas passagens. Boa pra emboscada, de ambos os lados.',
-    pool:['goblin','gobarq','lobo','xama','guarda','ogro','bird','bat','ghost']},
+    pool:['goblin','gobarq','lobo','xama','guarda','ogro','bird','bat','ghost','javali','rato']},
   {n:3,mundo:'deserto',biome:'deserto',nome:'Duna Rachada',fixo:false,secret:false,total:[9,12],escala:1.2,
     desc:'Primeira trilha no Deserto das Cinzas. Dunas abertas, quase sem abrigo — bom pra quem atira de longe, ruim pra quem se expõe.',
-    pool:['goblin','gobarq','lobo','guarda','bird']},
+    pool:['goblin','gobarq','lobo','guarda','bird','esqueleto','lagarto']},
   {n:4,mundo:'deserto',biome:'deserto',nome:'Vale das Cinzas',fixo:false,secret:true,total:[10,13],escala:1.25,
     desc:'Vale estreito coberto de cinza vulcânica. O xamã goblin cura os aliados feridos — derrube primeiro.',
-    pool:['goblin','gobarq','lobo','xama','guarda','ghost','bat']},
+    pool:['goblin','gobarq','lobo','xama','guarda','ghost','bat','zumbi','esqueleto','vampiro']},
   {n:5,mundo:'deserto',biome:'deserto',nome:'Covil do Ogro',fixo:false,chefe:true,secret:false,total:[9,11],escala:1.3,
     desc:'Mapa de chefe: o terreno muda a cada run. O Ogro sempre está lá.',
-    pool:['goblin','gobarq','lobo','guarda','ogro','ghost']},
+    pool:['goblin','gobarq','lobo','guarda','ogro','ghost','troll','minotauro','vampiro']},
 ];
 const BIOMES={
   campina:{nome:'Campina',bg:'#14100d'},floresta:{nome:'Floresta',bg:'#14100d'},deserto:{nome:'Deserto',bg:'#14100d'}
@@ -1265,7 +1282,7 @@ function rollEnemies(mp){
   const total=ri(mp.total[0],mp.total[1]);
   const cnt={};chosen.forEach(t=>cnt[t]=1);if(ogro)cnt.ogro=1;
   let left=total-Object.values(cnt).reduce((a,b)=>a+b,0);
-  const caps={xama:2,guarda:2};
+  const caps={xama:2,guarda:2,minotauro:1,troll:1,vampiro:2};
   let guard=0;
   while(left>0&&guard++<200){const t=pick(chosen);if(caps[t]&&cnt[t]>=caps[t])continue;cnt[t]++;left--;}
   const list=[];let ni=0;const names=ENAMES.slice().sort(()=>R()-0.5);
@@ -1971,7 +1988,7 @@ function makeHero(used,cls,level){
   return h;
 }
 const enemyCache={};
-const EPRE={goblin:'Goblin',gobarq:'Arqueiro',lobo:'Lobo',xama:'Xamã',guarda:'Guarda',ogro:'',slime:'Gosma',bee:'Abelha',spider:'Aranha',beetle:'Besouro',fish:'Peixe',bat:'Morcego',bird:'Corvo',ghost:'Fantasma'};
+const EPRE={goblin:'Goblin',gobarq:'Arqueiro',lobo:'Lobo',xama:'Xamã',guarda:'Guarda',ogro:'',slime:'Gosma',bee:'Abelha',spider:'Aranha',beetle:'Besouro',fish:'Peixe',bat:'Morcego',bird:'Corvo',ghost:'Fantasma',rato:'Rato',esqueleto:'Esqueleto',zumbi:'Zumbi',javali:'Javali',lagarto:'Lagarto',vampiro:'Vampiro',minotauro:'',troll:''};
 function ensureEnemyCache(kind){
   if(enemyCache[kind])return enemyCache[kind];
   if(CREATURE_DEFS[kind]){
@@ -2156,6 +2173,30 @@ const LPC_RECIPES={
     spellcast:['body/bodies/female/spellcast.png','head/heads/human/female/spellcast.png','torso/clothes/robe/female/spellcast/_brown.png'],
     hurt:['body/bodies/female/hurt.png','head/heads/human/female/hurt.png','torso/clothes/robe/female/hurt/_brown.png']},
 };
+/* Monstros humanoides: mesmo truque do Goblin/Orc (cabeça trocada), agora com as
+   outras cabeças do pacote LPC e com os corpos de esqueleto/zumbi. `mobRec`
+   monta as 3 folhas (andar/golpe/dano) a partir de poucas peças. */
+const MOB_BODY={male:a=>`body/bodies/male/${a}.png`,muscular:a=>`body/bodies/muscular/${a}.png`,skeleton:a=>`body/bodies/skeleton/${a}.png`,zombie:a=>`body/bodies/zombie/${a}/zombie.png`};
+function mobRec(body,head,{legs=false,torso=null,dagger=false}={}){
+  const L=a=>[MOB_BODY[body](a),`head/heads/${head}/${a}.png`,...(legs?[`legs/pantaloons/male/${a}.png`]:[]),...(torso?[torso(a)]:[]),...(dagger?[`weapon/sword/dagger/${a}/dagger.png`]:[])];
+  return {action:'slash',walk:L('walk'),slash:L('slash'),hurt:L('hurt')};
+}
+// grandão: machado de duas mãos, golpe em folha maior (igual ao Ogro)
+function mobBig(body,head){
+  const B=a=>[MOB_BODY[body](a),`head/heads/${head}/${a}.png`];
+  return {action:'slash',oversize:true,walk:[...B('walk'),'weapon/blunt/waraxe/walk/waraxe.png'],hurt:[...B('hurt'),'weapon/blunt/waraxe/hurt/waraxe.png'],
+    actionBody:B('slash'),actionBehind:'weapon/blunt/waraxe/attack_slash/behind/waraxe.png',actionFront:'weapon/blunt/waraxe/attack_slash/waraxe.png'};
+}
+Object.assign(LPC_RECIPES,{
+  esqueleto:mobRec('skeleton','skeleton/adult',{dagger:true}),
+  zumbi:mobRec('zombie','zombie/adult'),
+  javali:mobRec('male','boarman/adult',{legs:true,torso:a=>`torso/chainmail/male/${a}.png`,dagger:true}),
+  lagarto:mobRec('male','lizard/male',{legs:true,dagger:true}),
+  rato:mobRec('male','rat/adult',{legs:true,dagger:true}),
+  vampiro:mobRec('male','vampire/adult',{legs:true,torso:a=>`torso/clothes/longsleeve/formal/male/${a}.png`,dagger:true}),
+  minotauro:mobBig('muscular','minotaur/male'),
+  troll:mobBig('muscular','troll/adult'),
+});
 const LPC_ACTION_DIMS={slash:[384,256,6,4],shoot:[832,256,13,4],spellcast:[448,256,7,4],thrust:[512,256,8,4]};
 const LPC_SHEETS={}; // versão síncrona do LPC_CACHE: só preenchida quando a Promise já resolveu, pra retrato poder ler sem await
 function lpcBuild(cls){
@@ -3311,7 +3352,7 @@ async function moveAlong(u,path){
   lpcSetState(u,'stand');
 }
 const SKILL={guerreiro:'Golpe',ladino:'Estocada',mago:'Raio Arcano',clerigo:'Golpe Sagrado',arqueiro:'Flechada',bardo:'Nota Cortante',
-  goblin:'Facada',gobarq:'Flechada',lobo:'Mordida',xama:'Raio Sombrio',guarda:'Golpe',ogro:'Pancada',slime:'Engolfar',bee:'Ferrão',spider:'Mordida Venenosa',fish:'Mordida',bat:'Mordida Cega',bird:'Bicada',ghost:'Toque Gélido',beetle:'Investida'};
+  goblin:'Facada',gobarq:'Flechada',lobo:'Mordida',xama:'Raio Sombrio',guarda:'Golpe',ogro:'Pancada',slime:'Engolfar',bee:'Ferrão',spider:'Mordida Venenosa',rato:'Mordida',esqueleto:'Golpe Ósseo',zumbi:'Agarrão',javali:'Investida',lagarto:'Corte Rápido',vampiro:'Mordida Sombria',minotauro:'Machadada',troll:'Pancada Bruta',fish:'Mordida',bat:'Mordida Cega',bird:'Bicada',ghost:'Toque Gélido',beetle:'Investida'};
 const skillOf=u=>SKILL[u.side==='hero'?u.cls:u.kind]||'Ataque';
 // nome da habilidade e o d20 aparecem juntos sobre a cabeça de quem age; só o
 // resultado (dano, MISS, cura) aparece depois, sobre o alvo.
@@ -3325,7 +3366,7 @@ async function showRoll({u,skill,roll,outcome,numText}){
   await wait(260);
 }
 const sibActive=u=>u.sib&&party.some(o=>o!==u&&o.alive&&o.r!=null&&o.sur===u.sur);
-const VERB={guerreiro:'golpeou',ladino:'apunhalou',mago:'lançou um raio em',clerigo:'esmagou',arqueiro:'flechou',bardo:'acertou',goblin:'atacou',fish:'mordeu',bat:'mordeu',bird:'bicou',ghost:'tocou',gobarq:'flechou',ogro:'esmagou',lobo:'mordeu',xama:'atingiu',guarda:'golpeou',slime:'atingiu',bee:'picou',spider:'mordeu',beetle:'golpeou'};
+const VERB={guerreiro:'golpeou',ladino:'apunhalou',mago:'lançou um raio em',clerigo:'esmagou',arqueiro:'flechou',bardo:'acertou',goblin:'atacou',rato:'mordeu',esqueleto:'golpeou',zumbi:'agarrou',javali:'investiu contra',lagarto:'cortou',vampiro:'mordeu',minotauro:'rachou',troll:'esmagou',fish:'mordeu',bat:'mordeu',bird:'bicou',ghost:'tocou',gobarq:'flechou',ogro:'esmagou',lobo:'mordeu',xama:'atingiu',guarda:'golpeou',slime:'atingiu',bee:'picou',spider:'mordeu',beetle:'golpeou'};
 async function projectile(u,t){
   const mg=u.cls==='mago';const a=u.grp.position,b=t.grp.position;
   let halo=null;
