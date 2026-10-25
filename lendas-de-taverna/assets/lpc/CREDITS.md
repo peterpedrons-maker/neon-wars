@@ -124,6 +124,34 @@ Licenças: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
 Autores: bluecarrot16, Stephen Challener (Redshrike), William.Thomsponj
 Licenças: OGA-BY 3.0, CC-BY 4.0, GPL 2.0, GPL 3.0
 
+**head/heads/skeleton, zombie** (cabeças do Esqueleto e do Zumbi; corpos em body/bodies/skeleton e zombie)
+Autores: bluecarrot16, Napsio, JaidynReiman, Johannes Sjölund (wulax), Stephen Challener (Redshrike), Benjamin K. Smith (BenCreating), Sander Frenken (castelonia)
+Licenças: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+
+**head/heads/minotaur** (cabeça do Minotauro)
+Autores: Evert, Nila122, Daniel Eddeland (daneeklu)
+Licenças: CC-BY-SA 3.0, GPL 3.0
+
+**head/heads/boarman** (cabeça do Homem-Javali)
+Autores: Benjamin K. Smith (BenCreating), Daniel Eddeland (daneeklu)
+Licenças: CC-BY 3.0, GPL 2.0
+
+**head/heads/lizard** (cabeça do Homem-Lagarto)
+Autores: bluecarrot16, Benjamin K. Smith (BenCreating), Nila122
+Licenças: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+
+**head/heads/troll** (cabeça do Troll)
+Autores: bluecarrot16, AntumDeluge, Tuomo Untinen (reemax)
+Licença: CC-BY 3.0
+
+**head/heads/vampire** (cabeça do Vampiro)
+Autores: Stephen Challener (Redshrike), bluecarrot16
+Licenças: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
+
+**head/heads/rat** (cabeça do Homem-Rato)
+Autores: bluecarrot16, Stephen Challener (Redshrike), Napsio (Vitruvian Studio), JaidynReiman
+Licenças: OGA-BY 3.0, CC-BY 3.0, CC-BY-SA 3.0
+
 ## Fonte
 
 Universal LPC Spritesheet Character Generator (GitHub):
