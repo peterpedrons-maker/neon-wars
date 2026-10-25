@@ -210,6 +210,15 @@ mostrar na tela (encaixa na lista de turno que já existe) e pra IA calcular.
 - Planejado (antes): dungeon **breu** (terreno invisível, armadilhas só pros heróis,
   inimigos desviam) e dungeons secretas (poucas no início, mais no fim).
 
+- **Mapas maiores (decisão do usuário):** os mapas estavam apertados; a ideia
+  é abrir espaço pro modo manual futuro. Atos II–V agora são gerados com
+  `w`/`h` por mapa (18–24 de lado, até ~480 casas); o Ato I foi redesenhado
+  maior (18×18, 13×22, 22×14, L 18×18, arena 19×18). Zonas de início crescem
+  com a altura (5 linhas pros heróis, 7 pros inimigos em mapas altos). A
+  quantidade de inimigos varia por mapa (`total`), de 8 a 20.
+  Risco aberto: 1 malha por casa — se o desempenho no celular cair, trocar
+  por InstancedMesh também no chão.
+
 ### Campanha: mapas e Modo Interminável
 - **5 mapas fixos hoje** (antes eram 3): Campina Verde (Clareira de Brumavale,
   Bosque dos Corvos) e Deserto das Cinzas (Duna Rachada, Vale das Cinzas,
