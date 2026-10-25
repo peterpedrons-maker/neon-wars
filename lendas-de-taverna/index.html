@@ -1093,9 +1093,9 @@ function unequipItem(h,slot,pool){
   applyMods(h,item.mods,-1);h.equip[slot]=null;pool.push(item);
 }
 function dropLoot(t){
-  const chance=t.kind==='ogro'?1:0.16;
+  const chance=BOSSES[t.kind]?1:0.16;
   if(R()>=chance)return;
-  const rar=rollRarity(t.kind==='ogro'?3:1);
+  const rar=rollRarity(BOSSES[t.kind]?3:1);
   const item=rollItem(rar);if(!item)return;
   run.inventory.push(item);
   item.rar>=4?SFX.secret():SFX.loot();
@@ -1207,12 +1207,28 @@ const MAPS=[
   {n:4,ato:1,nivel:8,mundo:'deserto',biome:'deserto',nome:'Vale das Cinzas',fixo:false,secret:true,total:[10,13],escala:1.25,
     desc:'Vale estreito coberto de cinza vulcânica. O xamã goblin cura os aliados feridos — derrube primeiro.',
     pool:['goblin','gobarq','lobo','xama','guarda','ghost','bat','zumbi','esqueleto','vampiro','esqguerreiro','esqmago','espectro']},
-  {n:5,ato:1,nivel:12,mundo:'deserto',biome:'deserto',nome:'Covil do Ogro',fixo:false,chefe:true,secret:false,total:[9,11],escala:1.3,
+  {n:5,ato:1,nivel:12,mundo:'deserto',biome:'deserto',nome:'Covil do Ogro',fixo:false,chefe:true,boss:'ogro',secret:false,total:[9,11],escala:1.3,
     desc:'Mapa de chefe: o terreno muda a cada run. O Ogro sempre está lá.',
     pool:['goblin','gobarq','lobo','guarda','ogro','ghost','troll','minotauro','vampiro','berserker','espectro','esqmago']},
+  // Ato II — Ruínas Esquecidas (bioma novo; layouts por tema)
+  {n:6,ato:2,nivel:14,mundo:'ruinas',biome:'ruinas',layout:'patio',nome:'Pátio Desmoronado',fixo:false,secret:false,total:[10,13],escala:1.5,
+    desc:'Um pátio aberto com colunas quebradas e blocos caídos. Pouca cobertura, muito espaço pra ser cercado.',
+    pool:['esqueleto','zumbi','javali','lagarto','lobisomem','esqguerreiro']},
+  {n:7,ato:2,nivel:16,mundo:'ruinas',biome:'ruinas',layout:'corredores',nome:'Corredores de Pedra',fixo:false,secret:true,total:[11,14],escala:1.65,
+    desc:'Muros baixos formam corredores estreitos. Quem segura a passagem decide a luta.',
+    pool:['esqueleto','esqguerreiro','zumbi','espectro','rato','lobisomem']},
+  {n:8,ato:2,nivel:19,mundo:'ruinas',biome:'ruinas',layout:'fosso',nome:'Fosso Inundado',fixo:false,secret:false,total:[11,14],escala:1.8,
+    desc:'Um fosso alagado corta as ruínas, com poucas passagens. Magos esqueleto atiram do outro lado.',
+    pool:['esqueleto','esqmago','lagarto','javali','espectro','ghost','berserker']},
+  {n:9,ato:2,nivel:22,mundo:'ruinas',biome:'ruinas',layout:'corredores',nome:'Biblioteca em Ruínas',fixo:false,secret:true,total:[12,15],escala:1.95,
+    desc:'Estantes de pedra e salões estreitos. Feiticeiros e vampiros guardam o que sobrou dos livros.',
+    pool:['esqmago','esqguerreiro','espectro','vampiro','zumbi','berserker']},
+  {n:10,ato:2,nivel:25,mundo:'ruinas',biome:'ruinas',layout:'arena',nome:'Santuário do Minotauro',fixo:false,chefe:true,boss:'minotauro',secret:false,total:[10,12],escala:2.1,
+    desc:'Arena de pedra no coração das ruínas. O Minotauro sempre está lá, cercado de guardas.',
+    pool:['minotauro','esqguerreiro','berserker','javali','vampiro','espectro']},
 ];
 const BIOMES={
-  campina:{nome:'Campina',bg:'#14100d'},floresta:{nome:'Floresta',bg:'#14100d'},deserto:{nome:'Deserto',bg:'#14100d'}
+  campina:{nome:'Campina',bg:'#14100d'},floresta:{nome:'Floresta',bg:'#14100d'},deserto:{nome:'Deserto',bg:'#14100d'},ruinas:{nome:'Ruínas',bg:'#14100d'}
 };
 
 /* ---------- Mapa atual (reconstruído a cada fase) ---------- */
@@ -1237,7 +1253,7 @@ function genLevel(mp,seed){
     const ib=(r,c)=>r>=0&&c>=0&&r<N&&c<N;
     const bio=mp.biome;
     // morros e dunas
-    const nh=bio==='deserto'?ri2(7,10):ri2(4,6);
+    const nh=bio==='deserto'?ri2(7,10):bio==='ruinas'?ri2(5,8):ri2(4,6);
     for(let i=0;i<nh;i++){
       const r0=ri2(2,N-4),c0=ri2(1,N-2),big=rnd()<0.5;
       for(let r=r0-2;r<=r0+2;r++)for(let c=c0-2;c<=c0+2;c++){
@@ -1246,7 +1262,7 @@ function genLevel(mp,seed){
       }
     }
     // rio com duas ou três pontes
-    if(bio!=='deserto'){
+    if(bio==='ruinas'?mp.layout==='fosso':bio!=='deserto'){
       let rr=ri2(6,9);const riv=[];
       for(let c=0;c<N;c++){
         const nr=Math.max(5,Math.min(10,rr+[-1,0,0,1][ri2(0,3)]));
@@ -1257,11 +1273,21 @@ function genLevel(mp,seed){
       bc.forEach(c=>{for(let r=0;r<N;r++)if(g[r][c]==='w')g[r][c]='b';});
     }
     // obstáculos
-    const dt=bio==='floresta'?0.2:bio==='deserto'?0.05:0.07, dr=bio==='deserto'?0.06:0.03;
+    const dt=bio==='floresta'?0.2:bio==='deserto'?0.05:bio==='ruinas'?0.07:0.07, dr=bio==='deserto'?0.06:bio==='ruinas'?0.07:0.03;
     for(let r=0;r<N;r++)for(let c=0;c<N;c++){
       if(g[r][c]!=='.')continue;
       const mul=r>=N-4?0.35:r<=1?0.6:1;const x=rnd();
       if(x<dt*mul)g[r][c]='t';else if(x<(dt+dr)*mul)g[r][c]='r';
+    }
+    // ruínas: muros baixos (corredores) ou anel de colunas (arena)
+    if(bio==='ruinas'){
+      if(mp.layout==='corredores'){
+        for(let k=0;k<4;k++){const r0=ri2(3,10),c0=ri2(0,7),len=ri2(5,8),gap=c0+ri2(1,len-2);
+          for(let c=c0;c<c0+len&&c<N;c++)if(c!==gap&&g[r0][c]==='.')g[r0][c]='r';}
+      }else if(mp.layout==='arena'){
+        for(let a=0;a<12;a++){const r=Math.round(5+3.2*Math.sin(a/12*Math.PI*2)),c=Math.round(7.5+4.2*Math.cos(a/12*Math.PI*2));
+          if(ib(r,c)&&g[r][c]==='.'&&a%3!==0)g[r][c]='t';}
+      }
     }
     // parede secreta numa lateral
     let sec=null;
@@ -1297,32 +1323,33 @@ function applyLevel(mp,seed){
   MAP=lv.map;ROWS=MAP.length;COLS=MAP[0].length;OFF=(COLS-1)/2;SECRET=lv.secret;
   SECRET_ADJ=SECRET?DIRS.map(([a,b])=>[SECRET.r+a,SECRET.c+b]).filter(([r,c])=>inB(r,c)&&passable(r,c)):[];
 }
+const BOSSES={ogro:1,minotauro:1};
 function rollEnemies(mp){
-  const types=mp.pool.filter(t=>t!=='ogro').sort(()=>R()-0.5);
+  const types=mp.pool.filter(t=>!BOSSES[t]).sort(()=>R()-0.5);
   const nTypes=Math.min(types.length,ri(4,types.length));
   const chosen=types.slice(0,nTypes);
-  const ogro=mp.pool.includes('ogro')&&(mp.chefe||R()<0.6);
+  const bossK=mp.chefe&&mp.boss?mp.boss:(mp.pool.includes('ogro')&&R()<0.6?'ogro':null);
   const total=ri(mp.total[0],mp.total[1]);
-  const cnt={};chosen.forEach(t=>cnt[t]=1);if(ogro)cnt.ogro=1;
+  const cnt={};chosen.forEach(t=>cnt[t]=1);if(bossK)cnt[bossK]=1;
   let left=total-Object.values(cnt).reduce((a,b)=>a+b,0);
   const caps={xama:2,guarda:2,minotauro:1,troll:1,vampiro:2,esqmago:2,espectro:2,berserker:2};
   let guard=0;
   while(left>0&&guard++<200){const t=pick(chosen);if(caps[t]&&cnt[t]>=caps[t])continue;cnt[t]++;left--;}
   const list=[];let ni=0;const names=ENAMES.slice().sort(()=>R()-0.5);
-  Object.entries(cnt).forEach(([kind,n])=>{for(let i=0;i<n;i++)list.push({kind,first:kind==='ogro'?'Ogro Chefe':names[ni++%names.length]});});
+  Object.entries(cnt).forEach(([kind,n])=>{for(let i=0;i<n;i++)list.push({kind,first:BOSSES[kind]?ENEMIES[kind].nome:names[ni++%names.length]});});
   return list;
 }
 function placeEnemies(list){
   const cand=[];
   for(let r=0;r<=5;r++)for(let c=0;c<COLS;c++)if(LV.reach.has(r*COLS+c)&&passable(r,c)&&!SECRET_ADJ.some(a=>a[0]===r&&a[1]===c))cand.push({r,c});
   const used=new Set();
-  const order=list.slice().sort((a,b)=>(b.kind==='ogro')-(a.kind==='ogro'));
+  const order=list.slice().sort((a,b)=>(!!BOSSES[b.kind])-(!!BOSSES[a.kind]));
   return order.map(s=>{
     const ia=ENEMIES[s.kind].ia;let best=null,bs=-1e9;
     for(const t of cand){
       if(used.has(t.r*COLS+t.c))continue;
       let sc=R()*4;
-      if(s.kind==='ogro')sc+=(5-t.r)*3-Math.abs(t.c-OFF)*1.2;
+      if(BOSSES[s.kind])sc+=(5-t.r)*3-Math.abs(t.c-OFF)*1.2;
       else if(ia==='healer'||ia==='skirmish')sc+=(4-t.r)*1.2;
       else if(ia==='guard')sc+=-Math.abs(t.r-1)*1.2;
       else sc+=t.r*0.6;
@@ -1657,6 +1684,7 @@ function biomeMats(b){
     campina:[['#5d8f3f',['#6ea64b','#4e7c34','#7fb356']],['#74a64b',['#86b95a','#5f8f3d','#9ccc6a']],['#6b4a2f',['#5a3d26','#7d5838'],'#4e7c34']],
     floresta:[['#3f6e34',['#4e7e3d','#33592b','#5b8c46']],['#55853f',['#679a4c','#456f33','#76ab5a']],['#54392a',['#45301f','#654532'],'#33592b']],
     deserto:[['#d9b777',['#e5c88e','#c9a561','#efd8a6']],['#e2c488',['#eed5a0','#cfae6e','#f4e2b8']],['#a67c45',['#8f6a38','#b98d52'],'#d9b777']],
+    ruinas:[['#6f7680',['#7f8690','#5e656f','#8d949e']],['#868d98',['#969ea9','#737a85','#a4acb7']],['#464b55',['#383d46','#565c67'],'#5e656f']],
   }[b];
   // 3 variantes de cada (sementes de especk diferentes) pra ladrilhos vizinhos
   // não ficarem todos idênticos — antes só existia 1 textura por bioma,
@@ -1666,6 +1694,13 @@ function biomeMats(b){
   return BM[b];
 }
 const SG={};const sbox=(w,h,d)=>{const key=w+'_'+h+'_'+d;if(!SG[key]){SG[key]=new THREE.BoxGeometry(w,h,d);SG[key].userData.shared=true;}return SG[key];};
+function makeColumn(parent,x,y,z){
+  const g=new THREE.Group();g.position.set(x,y,z);parent.add(g);
+  const m=new THREE.MeshLambertMaterial({color:'#b3ae9c'}),h=0.55+((x*7+z*13)%5)*0.12;
+  const base=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.14,0.5),m);base.position.y=0.07;g.add(base);
+  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(0.17,0.2,h,8),m);shaft.position.y=0.14+h/2;g.add(shaft);
+  const top=new THREE.Mesh(new THREE.DodecahedronGeometry(0.2,0),m);top.position.set(0.04,0.14+h+0.05,0);top.scale.y=0.6;g.add(top);
+}
 function makeCactus(parent,x,y,z){
   const g=new THREE.Group();g.position.set(x,y,z);parent.add(g);
   const m=new THREE.MeshLambertMaterial({color:'#4f8a3c'});
@@ -1698,7 +1733,7 @@ function buildBoard(){
     mesh.userData={r,c};boardGroup.add(mesh);pickables.push(mesh);
     const ty=topY(r,c);
     if(ch==='r'){const b=new THREE.Mesh(new THREE.DodecahedronGeometry(0.4,0),new THREE.MeshLambertMaterial({color:rockCol}));b.position.set(x,ty+0.28,z);b.scale.y=0.8;b.rotation.y=r+c;boardGroup.add(b);}
-    if(ch==='t'){if(bio==='deserto')makeCactus(boardGroup,x,ty,z);else makeTree(boardGroup,x,ty,z,bio==='floresta'?1.1:1);}
+    if(ch==='t'){if(bio==='ruinas')makeColumn(boardGroup,x,ty,z);else if(bio==='deserto')makeCactus(boardGroup,x,ty,z);else makeTree(boardGroup,x,ty,z,bio==='floresta'?1.1:1);}
     if(ch==='S'){wallMesh=new THREE.Mesh(new THREE.BoxGeometry(0.97,1.2,0.97),mats.crack);wallMesh.position.set(x,0.6,z);boardGroup.add(wallMesh);}
     if(isZone(r,c)){
       const zm=new THREE.Mesh(new THREE.PlaneGeometry(0.86,0.86),new THREE.MeshBasicMaterial({color:'#e9a020',transparent:true,opacity:0.42,depthWrite:false}));
@@ -1712,6 +1747,14 @@ function buildBoard(){
 // vida no cenário: só campina/floresta (o deserto fica seco)
 function decorateBoard(bio){
   if(bio==='deserto')return;
+  if(bio==='ruinas'){
+    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+      if(cell(r,c)==='r'&&(r*5+c*3)%4===0)ambient(boardGroup,'environment','wall-torch-32px_strip8.png',8,10,wx(c),topY(r,c)+0.35,wz(r)+0.3,{w:0.8,variant:(r+c)%3});
+      else if(cell(r,c)==='.'&&!isZone(r,c)&&(r*7+c*13)%17===0)ambient(boardGroup,'environment','tall-grass-32px_strip12.png',12,10,wx(c)+0.2,topY(r,c)-0.02,wz(r)+0.2,{w:0.8,variant:(r+c)%3});
+    }
+    [[3,4],[10,9],[6,12]].forEach(([c,r],i)=>ambient(boardGroup,'weather','fireflies-32px_strip16.png',16,12,wx(c),0.9,wz(r),{w:2.4,variant:i,opacity:0.9}));
+    return;
+  }
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
     if(cell(r,c)!=='.'||isZone(r,c)||((r*7+c*13)%9!==0))continue;
     ambient(boardGroup,'environment','tall-grass-32px_strip12.png',12,10,wx(c)+0.22,topY(r,c)-0.02,wz(r)+0.2,{w:0.8,variant:(r+c)%3});
@@ -2029,7 +2072,7 @@ function ensureEnemyCache(kind){
 function makeEnemy(s){
   const b=ENEMIES[s.kind],sc=LV?LV.mp.escala:1;
   const ec=ensureEnemyCache(s.kind);
-  const first=s.kind==='ogro'?s.first:`${EPRE[s.kind]} ${s.first}`;
+  const first=BOSSES[s.kind]?s.first:`${EPRE[s.kind]} ${s.first}`;
   const hp=Math.round(b.hp*sc);
   return {id:uid++,side:'enemy',kind:s.kind,ia:b.ia,first,nome:b.nome,maxhp:hp,hp,atk:b.atk+(sc>1.1?1:0)+(sc>1.25?1:0),def:b.def+(sc>1.2?1:0),defMag:baseDefMag(b.def)+(sc>1.2?1:0),mov:b.mov,alc:b.alc,dmg:b.dmg,ini:b.ini,pts:b.pts,big:b.big,
     r:s.r,c:s.c,alive:true,aggro:false,sprite:ec.sp,portrait:ec.url};
@@ -2544,18 +2587,18 @@ function renderOrder(){
 let hudSel=null,hudTile=null,ucPop=null,ucKey='',objKey='';
 const diceTxt=d=>`${d[0]}d${d[1]}${d[2]?(d[2]>0?'+':'')+d[2]:''}`;
 function terrainOf(r,c){
-  const ch=cell(r,c),h=hOf(r,c),des=LV.mp.biome==='deserto';
+  const ch=cell(r,c),h=hOf(r,c),des=LV.mp.biome==='deserto',rui=LV.mp.biome==='ruinas';
   if(ch==='w')return {nome:'Água',alt:0,txt:'Intransponível',ic:'#4a8fc9'};
   if(ch==='b')return {nome:'Ponte',alt:0,txt:'Passagem estreita',ic:'#8a5a32'};
   if(ch==='r')return {nome:'Pedra',alt:0,txt:'Bloqueia o caminho',ic:'#7d817c'};
-  if(ch==='t')return {nome:des?'Cacto':'Árvore',alt:0,txt:'Bloqueia o caminho',ic:'#3f7a3a'};
+  if(ch==='t')return {nome:rui?'Coluna':des?'Cacto':'Árvore',alt:0,txt:'Bloqueia o caminho',ic:'#3f7a3a'};
   if(ch==='S')return {nome:'Parede rachada',alt:1,txt:'Esconde uma passagem',ic:'#7a7c76'};
-  if(h>0)return {nome:'Morro',alt:h,txt:'+2 de acerto pra quem ataca de cima',ic:des?'#c9a46a':'#7aa858'};
-  return {nome:des?'Areia':'Campina',alt:0,txt:'Terreno livre',ic:des?'#d2b078':'#5d8f3f'};
+  if(h>0)return {nome:rui?'Plataforma':'Morro',alt:h,txt:'+2 de acerto pra quem ataca de cima',ic:rui?'#868d98':des?'#c9a46a':'#7aa858'};
+  return {nome:rui?'Piso de pedra':des?'Areia':'Campina',alt:0,txt:'Terreno livre',ic:rui?'#6f7680':des?'#d2b078':'#5d8f3f'};
 }
 function objsOf(mp){
   const L=[{txt:'Derrotar todos os inimigos',prog:()=>`${enemies.filter(e=>!e.alive).length}/${enemies.length}`,done:()=>!!enemies.length&&!enemiesAlive().length}];
-  if(mp.chefe)L.push({txt:'Derrotar o Ogro',done:()=>enemies.some(e=>e.kind==='ogro')&&!enemies.some(e=>e.kind==='ogro'&&e.alive)});
+  if(mp.chefe&&mp.boss)L.push({txt:`Derrotar o ${ENEMIES[mp.boss].nome.replace(' Chefe','')}`,done:()=>enemies.some(e=>e.kind===mp.boss)&&!enemies.some(e=>e.kind===mp.boss&&e.alive)});
   if(mp.secret)L.push({txt:'Achar a passagem secreta',opt:true,done:()=>!!(stats&&stats.secret)});
   return mp.objetivos||L;
 }
@@ -3576,7 +3619,7 @@ function kill(t,src,crit){
     xp(src,Math.round(t.pts/4));stats.kills.push(t);addLog(`${t.first} foi derrotado (+${t.pts})`,'gold');
     setTimeout(()=>{},0);floatText(t,`+${t.pts}`,'gold');
     dropLoot(t);
-    if(t.kind==='ogro'){stats.hl.push({w:8,t:`${src.first} derrubou o Ogro Chefe${crit?' com um crítico':''}.`});shakeCam(0.4,0.6);flash('#e9b949',0.3);}
+    if(BOSSES[t.kind]){stats.hl.push({w:8,t:`${src.first} derrubou ${t.first}${crit?' com um crítico':''}.`});shakeCam(0.4,0.6);flash('#e9b949',0.3);}
     else if(crit)stats.hl.push({w:6,t:`${src.first} tirou um crítico e derrubou ${t.first} de uma vez.`});
   }else{addLog(`${t.first} caiu em combate`,'bad');flash('#d4503f',0.25);stats.hl.push({w:3,t:`${t.first} caiu no turno ${stats.round}, lutando contra ${src.first}.`});}
 }
