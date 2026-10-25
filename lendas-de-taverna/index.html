@@ -1214,19 +1214,19 @@ const ATOS=[
   {id:5,nome:'Ato V · Cripta Real',niv:[52,60],bioma:'Cripta e castelo',chefe:'Vampiro Senhor'},
 ];
 const MAPS=[
-  {n:1,ato:1,nivel:1,mundo:'campina',biome:'campina',nome:'Clareira de Brumavale',fixo:true,seed:1101,secret:true,total:[8,10],escala:1,
+  {n:1,ato:1,nivel:1,mundo:'campina',biome:'campina',grid:["EEEEEEEEEEEE", "EEEEEEEEEEEE", "..t....1..t.", "...r..111...", "S.....11....", "............", "wwwwbwwwwwbw", "wwwwbwwwwwbw", "............", ".t....r...t.", "............", "ZZZZZZZZZZZZ", "ZZZZZZZZZZZZ", "ZZZZZZZZZZZZ"],noflip:false,nome:'Clareira de Brumavale',fixo:true,seed:1101,secret:true,total:[8,10],escala:1,
     desc:'Campina aberta cortada por um rio. Só duas pontes. Gosmas, aranhas, besouros, peixes saltadores e morcegos infestaram a clareira.',
     pool:['slime','bee','spider','beetle','fish','bat','rato']},
-  {n:2,ato:1,nivel:3,mundo:'campina',biome:'floresta',nome:'Bosque dos Corvos',fixo:true,seed:2202,secret:true,total:[9,11],escala:1.15,
+  {n:2,ato:1,nivel:3,mundo:'campina',biome:'floresta',grid:["EEEEEEEEE", "EEEEEEEEE", "tt.....tt", "t..t.t..t", "..11111..", ".t12221t.", "..11111..", "t...r...t", "tt.....tt", "t..t.t..t", "S...r....", ".t.....t.", "t.......t", "tt.....tt", ".t..t..t.", "ZZZZZZZZZ", "ZZZZZZZZZ", "ZZZZZZZZZ"],nome:'Bosque dos Corvos',fixo:true,seed:2202,secret:true,total:[9,11],escala:1.15,
     desc:'Floresta fechada, poucas passagens. Boa pra emboscada, de ambos os lados.',
     pool:['goblin','gobarq','lobo','xama','guarda','ogro','bird','bat','ghost','javali','rato','lobisomem']},
-  {n:3,ato:1,nivel:5,mundo:'deserto',biome:'deserto',nome:'Duna Rachada',fixo:false,secret:false,total:[9,12],escala:1.2,
+  {n:3,ato:1,nivel:5,mundo:'deserto',biome:'deserto',grid:["EEEEEEEEEEEEEEEE", "EEEEEEEEEEEEEEEE", "....1111....r...", "...112211.......", "..11233211..11..", "...112211....1..", "................", ".r.....11.....r.", "......1221......", ".....11111......", "ZZZZZZZZZZZZZZZZ", "ZZZZZZZZZZZZZZZZ"],nome:'Duna Rachada',fixo:false,secret:false,total:[9,12],escala:1.2,
     desc:'Primeira trilha no Deserto das Cinzas. Dunas abertas, quase sem abrigo — bom pra quem atira de longe, ruim pra quem se expõe.',
     pool:['goblin','gobarq','lobo','guarda','bird','esqueleto','lagarto','lobisomem']},
-  {n:4,ato:1,nivel:8,mundo:'deserto',biome:'deserto',nome:'Vale das Cinzas',fixo:false,secret:true,total:[10,13],escala:1.25,
+  {n:4,ato:1,nivel:8,mundo:'deserto',biome:'deserto',grid:["vvvvvvEEEEEEEE", "vvvvvvEEEEEEEE", "vvvvvv..t...1.", "vvvvvv.11.....", "vvvvvv.1221.t.", "vvvvvv..11....", "..............", ".t..r.....t...", "S...1111......", "...11221......", "..............", ".r.......r....", "ZZZZZZZZZZZZZZ", "ZZZZZZZZZZZZZZ"],nome:'Vale das Cinzas',fixo:false,secret:true,total:[10,13],escala:1.25,
     desc:'Vale estreito coberto de cinza vulcânica. O xamã goblin cura os aliados feridos — derrube primeiro.',
     pool:['goblin','gobarq','lobo','xama','guarda','ghost','bat','zumbi','esqueleto','vampiro','esqguerreiro','esqmago','espectro']},
-  {n:5,ato:1,nivel:12,mundo:'deserto',biome:'deserto',nome:'Covil do Ogro',fixo:false,chefe:true,boss:'ogro',secret:false,total:[9,11],escala:1.3,
+  {n:5,ato:1,nivel:12,mundo:'deserto',biome:'deserto',grid:["vvvvEEEEEEEvvvv", "vvEEEEEEEEEEEvv", "vEEEEEEEEEEEEEv", "v..t.11111.t..v", "..r..1222221...", ".....12333321..", ".....12344321..", ".....12333321..", "..t..1222221..t", "v....11111....v", "v.r....r....r.v", "vv...........vv", "vvZZZZZZZZZZZvv", "vvvZZZZZZZZZvvv"],nome:'Covil do Ogro',fixo:false,chefe:true,boss:'ogro',secret:false,total:[9,11],escala:1.3,
     desc:'Mapa de chefe: o terreno muda a cada run. O Ogro sempre está lá.',
     pool:['goblin','gobarq','lobo','guarda','ogro','ghost','troll','minotauro','vampiro','berserker','espectro','esqmago']},
   // Ato II — Ruínas Esquecidas (bioma novo; layouts por tema)
@@ -1246,19 +1246,19 @@ const MAPS=[
     desc:'Arena de pedra no coração das ruínas. O Minotauro sempre está lá, cercado de guardas.',
     pool:['minotauro','esqguerreiro','berserker','javali','vampiro','espectro']},
   // Ato III — Cavernas de Magma (bioma novo: lava no lugar da água)
-  {n:11,ato:3,nivel:27,mundo:'caverna',biome:'caverna',layout:'fenda',nome:'Fenda de Magma',fixo:false,secret:false,total:[11,14],escala:2.2,
+  {n:11,ato:3,luz:'penumbra',nivel:27,mundo:'caverna',biome:'caverna',layout:'fenda',nome:'Fenda de Magma',fixo:false,secret:false,total:[11,14],escala:2.2,
     desc:'Um rio de lava corta a caverna, com poucas pontes de pedra. Ninguém atravessa a lava fora das pontes.',
     pool:['berserker','esqguerreiro','esqfogo','javali','lobisomem','spider','bat']},
-  {n:12,ato:3,nivel:30,mundo:'caverna',biome:'caverna',layout:'tuneis',nome:'Túneis de Basalto',fixo:false,secret:true,total:[12,15],escala:2.35,
+  {n:12,ato:3,luz:'escuro',nivel:30,mundo:'caverna',biome:'caverna',layout:'tuneis',nome:'Túneis de Basalto',fixo:false,secret:true,total:[12,15],escala:2.35,
     desc:'Túneis estreitos de rocha escura. Emboscadas dos dois lados e pouca visão.',
     pool:['esqfogo','esqmago','vampiro','berserker','zumbi','beetle','lagarto']},
-  {n:13,ato:3,nivel:33,mundo:'caverna',biome:'caverna',layout:'lagos',nome:'Lagos de Lava',fixo:false,secret:false,total:[12,15],escala:2.5,
+  {n:13,ato:3,luz:'penumbra',nivel:33,mundo:'caverna',biome:'caverna',layout:'lagos',nome:'Lagos de Lava',fixo:false,secret:false,total:[12,15],escala:2.5,
     desc:'Poças de lava espalhadas pelo salão. O terreno aperta quem fica parado.',
     pool:['esqfogo','esqguerreiro','espectro','berserker','lagarto','esqmago','bat']},
-  {n:14,ato:3,nivel:37,mundo:'caverna',biome:'caverna',layout:'ilhas',nome:'Ilhas de Obsidiana',fixo:false,secret:true,total:[13,16],escala:2.65,
+  {n:14,ato:3,luz:'penumbra',nivel:37,mundo:'caverna',biome:'caverna',layout:'ilhas',nome:'Ilhas de Obsidiana',fixo:false,secret:true,total:[13,16],escala:2.65,
     desc:'Ilhas de vidro vulcânico separadas por lava, ligadas por poucas pontes.',
     pool:['esqfogo','vampiro','berserker','esqmago','espectro','javali','lobisomem']},
-  {n:15,ato:3,nivel:40,mundo:'caverna',biome:'caverna',layout:'arena',nome:'Trono do Troll',fixo:false,chefe:true,boss:'troll',secret:false,total:[11,13],escala:2.8,
+  {n:15,ato:3,luz:'penumbra',nivel:40,mundo:'caverna',biome:'caverna',layout:'arena',nome:'Trono do Troll',fixo:false,chefe:true,boss:'troll',secret:false,total:[11,13],escala:2.8,
     desc:'Um salão de lava e estalagmites. O Troll sempre está lá, e não está sozinho.',
     pool:['troll','berserker','esqfogo','esqguerreiro','vampiro','espectro']},
   // Ato IV — Picos Gelados (neve, água gelada, pinheiros)
@@ -1278,19 +1278,19 @@ const MAPS=[
     desc:'Um salão de gelo e pinheiros mortos. O Rei Esqueleto sempre está lá, cercado de sua guarda.',
     pool:['reiesq','esqgelo','esqguerreiro','esqmago','yeti','espectro']},
   // Ato V — Cripta Real (pedra roxa, poças de sangue, sarcófagos)
-  {n:21,ato:5,nivel:53,mundo:'cripta',biome:'cripta',layout:'patio',nome:'Portões da Cripta',fixo:false,secret:false,total:[13,16],escala:3.4,
+  {n:21,ato:5,luz:'penumbra',nivel:53,mundo:'cripta',biome:'cripta',layout:'patio',nome:'Portões da Cripta',fixo:false,secret:false,total:[13,16],escala:3.4,
     desc:'O pátio diante da cripta, cheio de lápides e sarcófagos tombados. A guarda dos mortos não deixa ninguém entrar.',
     pool:['guardiao','esqguerreiro','esqmago','zumbi','espectro','vampiro','berserker']},
-  {n:22,ato:5,nivel:55,mundo:'cripta',biome:'cripta',layout:'fenda',nome:'Fosso de Sangue',fixo:false,secret:true,total:[13,16],escala:3.5,
+  {n:22,ato:5,luz:'penumbra',nivel:55,mundo:'cripta',biome:'cripta',layout:'fenda',nome:'Fosso de Sangue',fixo:false,secret:true,total:[13,16],escala:3.5,
     desc:'Um fosso de sangue corta o salão, com poucas pontes. Magos e espectros atiram do outro lado.',
     pool:['guardiao','esqmago','espectror','vampiro','esqguerreiro','berserker']},
-  {n:23,ato:5,nivel:57,mundo:'cripta',biome:'cripta',layout:'tuneis',nome:'Catacumbas',fixo:false,secret:false,total:[14,17],escala:3.6,
+  {n:23,ato:5,luz:'escuro',nivel:57,mundo:'cripta',biome:'cripta',layout:'tuneis',nome:'Catacumbas',fixo:false,secret:false,total:[14,17],escala:3.6,
     desc:'Corredores baixos de ossos e pedra. Cada esquina esconde uma emboscada.',
     pool:['guardiao','esqfogo','esqgelo','vampiro','espectror','zumbi','esqmago']},
-  {n:24,ato:5,nivel:59,mundo:'cripta',biome:'cripta',layout:'lagos',nome:'Salão dos Sarcófagos',fixo:false,secret:true,total:[14,17],escala:3.7,
+  {n:24,ato:5,luz:'penumbra',nivel:59,mundo:'cripta',biome:'cripta',layout:'lagos',nome:'Salão dos Sarcófagos',fixo:false,secret:true,total:[14,17],escala:3.7,
     desc:'Poças de sangue e sarcófagos abertos. O que dormia aqui já acordou.',
     pool:['guardiao','vampiro','espectror','esqmago','esqguerreiro','yeti','berserker']},
-  {n:25,ato:5,nivel:60,mundo:'cripta',biome:'cripta',layout:'arena',nome:'Trono do Vampiro Senhor',fixo:false,chefe:true,boss:'vampsenhor',secret:false,total:[12,14],escala:3.9,
+  {n:25,ato:5,luz:'penumbra',nivel:60,mundo:'cripta',biome:'cripta',layout:'arena',nome:'Trono do Vampiro Senhor',fixo:false,chefe:true,boss:'vampsenhor',secret:false,total:[12,14],escala:3.9,
     desc:'O trono no fundo da cripta. O Vampiro Senhor sempre está lá, cercado de sua corte.',
     pool:['vampsenhor','guardiao','vampiro','espectror','esqmago','esqguerreiro']},
 ];
@@ -1301,18 +1301,38 @@ const BIOMES={
 /* ---------- Mapa atual (reconstruído a cada fase) ---------- */
 /* Caracteres: . chão, 1/2 morro, w água, b ponte, r pedra, t árvore/cacto, S parede rachada */
 const DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
-let LV=null, MAP=[], ROWS=16, COLS=16, OFF=7.5, SECRET=null, SECRET_ADJ=[];
+let LV=null, MAP=[], ROWS=16, COLS=16, OFFX=7.5, OFFZ=7.5, SECRET=null, SECRET_ADJ=[], ZONE=new Set(), EZONE=[];
 const k=(r,c)=>r*COLS+c;
 const cell=(r,c)=>MAP[r][c];
-const hOf=(r,c)=>{const ch=cell(r,c);return ch==='1'?1:ch==='2'?2:0;};
+const hOf=(r,c)=>{const ch=cell(r,c);return ch>='1'&&ch<='4'?+ch:0;};
 const topY=(r,c)=>cell(r,c)==='w'?0.16:0.3+hOf(r,c)*0.4;
 const inB=(r,c)=>r>=0&&c>=0&&r<ROWS&&c<COLS;
-const passable=(r,c)=>inB(r,c)&&!'wrtS'.includes(cell(r,c));
-const isZone=(r,c)=>r>=ROWS-4&&passable(r,c);
+const passable=(r,c)=>inB(r,c)&&!'wrtSv'.includes(cell(r,c));
+const isZone=(r,c)=>ZONE.has(r*COLS+c);
 const dist=(a,b)=>Math.abs(a.r-b.r)+Math.abs(a.c-b.c);
-const wx=c=>c-OFF, wz=r=>r-OFF;
+const wx=c=>c-OFFX, wz=r=>r-OFFZ;
 
+/* Mapa desenhado à mão: cada linha da grade é uma fileira (topo = lado dos inimigos).
+   . chão · 1-4 altura · w água/lava · b ponte · r pedra · t árvore/coluna · S parede
+   secreta · v vazio (sem chão: dá formato à plataforma) · Z início do grupo · E início
+   dos inimigos. O desenho pode ser espelhado a cada run, pra não ficar decorado. */
+function gridLevel(mp,seed){
+  const flip=!mp.noflip&&mulberry32(seed^0x9e37)()<0.5;
+  const rows=mp.grid.map(r=>flip?r.split('').reverse().join(''):r);
+  const H=rows.length,W=rows[0].length,zone=new Set(),ezone=[];let sec=null;
+  const map=rows.map((row,r)=>row.split('').map((ch,c)=>{
+    if(ch==='Z'){zone.add(r*W+c);return '.';}
+    if(ch==='E'){ezone.push({r,c});return '.';}
+    if(ch==='S')sec={r,c};
+    return ch;}).join(''));
+  const ht=ch=>ch>='1'&&ch<='4'?+ch:0,ok=ch=>!'wrtSv'.includes(ch);
+  const seen=new Set(zone),q=[...zone].map(i=>[Math.floor(i/W),i%W]);
+  while(q.length){const [r,c]=q.shift();for(const [a,b] of DIRS){const nr=r+a,nc=c+b;if(nr<0||nc<0||nr>=H||nc>=W||seen.has(nr*W+nc))continue;
+    if(!ok(map[nr][nc])||Math.abs(ht(map[nr][nc])-ht(map[r][c]))>1)continue;seen.add(nr*W+nc);q.push([nr,nc]);}}
+  return {map,secret:sec,reach:seen,zone,ezone};
+}
 function genLevel(mp,seed){
+  if(mp.grid)return gridLevel(mp,seed);
   const N=16;
   for(let att=0;att<60;att++){
     const rnd=mulberry32(seed+att*7919), ri2=(a,b)=>a+Math.floor(rnd()*(b-a+1));
@@ -1403,7 +1423,11 @@ function genLevel(mp,seed){
 function applyLevel(mp,seed){
   const lv=genLevel(mp,seed);
   LV={mp,seed,reach:lv.reach};
-  MAP=lv.map;ROWS=MAP.length;COLS=MAP[0].length;OFF=(COLS-1)/2;SECRET=lv.secret;
+  MAP=lv.map;ROWS=MAP.length;COLS=MAP[0].length;OFFX=(COLS-1)/2;OFFZ=(ROWS-1)/2;SECRET=lv.secret;
+  if(lv.zone){ZONE=lv.zone;EZONE=lv.ezone;}
+  else{ZONE=new Set();EZONE=[];for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(!passable(r,c))continue;if(r>=ROWS-4)ZONE.add(r*COLS+c);if(r<=5)EZONE.push({r,c});}}
+  const ext=Math.max(ROWS,COLS)/2+4;
+  sun.shadow.camera.left=-ext;sun.shadow.camera.right=ext;sun.shadow.camera.top=ext;sun.shadow.camera.bottom=-ext;sun.shadow.camera.updateProjectionMatrix();
   SECRET_ADJ=SECRET?DIRS.map(([a,b])=>[SECRET.r+a,SECRET.c+b]).filter(([r,c])=>inB(r,c)&&passable(r,c)):[];
 }
 const BOSSES={ogro:1,minotauro:1,troll:1,reiesq:1,vampsenhor:1};
@@ -1424,7 +1448,8 @@ function rollEnemies(mp){
 }
 function placeEnemies(list){
   const cand=[];
-  for(let r=0;r<=5;r++)for(let c=0;c<COLS;c++)if(LV.reach.has(r*COLS+c)&&passable(r,c)&&!SECRET_ADJ.some(a=>a[0]===r&&a[1]===c))cand.push({r,c});
+  const ez0=Math.min(...EZONE.map(t=>t.r));
+  EZONE.forEach(({r,c})=>{if(LV.reach.has(r*COLS+c)&&passable(r,c)&&!SECRET_ADJ.some(a=>a[0]===r&&a[1]===c))cand.push({r,c,rel:r-ez0});});
   const used=new Set();
   const order=list.slice().sort((a,b)=>(!!BOSSES[b.kind])-(!!BOSSES[a.kind]));
   return order.map(s=>{
@@ -1432,10 +1457,10 @@ function placeEnemies(list){
     for(const t of cand){
       if(used.has(t.r*COLS+t.c))continue;
       let sc=R()*4;
-      if(BOSSES[s.kind])sc+=(5-t.r)*3-Math.abs(t.c-OFF)*1.2;
-      else if(ia==='healer'||ia==='skirmish')sc+=(4-t.r)*1.2;
-      else if(ia==='guard')sc+=-Math.abs(t.r-1)*1.2;
-      else sc+=t.r*0.6;
+      if(BOSSES[s.kind])sc+=(5-t.rel)*3-Math.abs(t.c-OFFX)*1.2+hOf(t.r,t.c)*2;
+      else if(ia==='healer'||ia==='skirmish')sc+=(4-t.rel)*1.2;
+      else if(ia==='guard')sc+=-Math.abs(t.rel-1)*1.2;
+      else sc+=t.rel*0.6;
       if(sc>bs){bs=sc;best=t;}
     }
     used.add(best.r*COLS+best.c);
@@ -1679,7 +1704,7 @@ function hubFit(snap){
   if(snap){gsap.killTweensOf(camT);gsap.killTweensOf(cam);camT.set(v[0],v[1],v[2]);cam.zoom=v[3];cam.updateProjectionMatrix();}
   else aimCam(...v,0.6);
 }
-scene.add(new THREE.HemisphereLight(0xfff1d6,0x3a2b20,0.78));
+const hemi=new THREE.HemisphereLight(0xfff1d6,0x3a2b20,0.78);scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xffe2b0,0.95); sun.position.set(-4,10,6); scene.add(sun);
 scene.add(sun.target);
 sun.castShadow=true;
@@ -1690,6 +1715,13 @@ sun.shadow.bias=-0.0015;
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 
+// iluminação por mapa: só o terreno escurece (os personagens são sprites e
+// continuam visíveis). normal · penumbra (caverna/cripta) · escuro (quase sem luz)
+const LUZ={normal:[0.78,0.95,0xfff1d6,0x3a2b20],penumbra:[0.34,0.42,0x9fb4e8,0x14182a],escuro:[0.26,0.22,0x8a9ad0,0x0c1020]};
+function setLuz(n){
+  const L=LUZ[n]||LUZ.normal;hemi.intensity=L[0];sun.intensity=L[1];hemi.color.setHex(L[2]);hemi.groundColor.setHex(L[3]);
+  stage.dataset.luz=n&&n!=='normal'?n:'';
+}
 function resize(){
   const w=stage.clientWidth,h=stage.clientHeight; if(!w||!h)return;
   renderer.setSize(w,h,false);
@@ -1827,13 +1859,26 @@ function clearBoard(){
   trees=trees.filter(tr=>!tr.userData.board);
   waterTiles.length=0;
 }
+// o chão de cada casa termina numa ponta de rocha; quanto mais longe da borda,
+// mais funda — qualquer formato de plataforma flutua sem caixa em volta
+function floatingBoard(){
+  const cells=[],dm=new Map(),q=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(cell(r,c)!=='v')cells.push([r,c]);
+  cells.forEach(([r,c])=>{if(DIRS.some(([a,b])=>!inB(r+a,c+b)||cell(r+a,c+b)==='v')){dm.set(k(r,c),0);q.push([r,c]);}});
+  while(q.length){const [r,c]=q.shift(),d=dm.get(k(r,c));for(const [a,b] of DIRS){const nr=r+a,nc=c+b;if(!inB(nr,nc)||cell(nr,nc)==='v'||dm.has(k(nr,nc)))continue;dm.set(k(nr,nc),d+1);q.push([nr,nc]);}}
+  const geo=new THREE.CylinderGeometry(0.5*Math.SQRT2,0.2*Math.SQRT2,1,4,1);geo.rotateY(Math.PI/4);
+  const im=new THREE.InstancedMesh(geo,new THREE.MeshLambertMaterial({map:rockUnder}),cells.length),m=new THREE.Matrix4(),qt=new THREE.Quaternion();
+  cells.forEach(([r,c],i)=>{const d=0.8+0.55*Math.min(dm.get(k(r,c)),4);m.compose(new THREE.Vector3(wx(c),-d/2,wz(r)),qt,new THREE.Vector3(1.02,d,1.02));im.setMatrixAt(i,m);});
+  im.instanceMatrix.needsUpdate=true;boardGroup.add(im);
+}
 function buildBoard(){
   clearBoard();
   const bio=LV.mp.biome,bm=biomeMats(bio);
-  floatingUnder(boardGroup,COLS+0.5,ROWS+0.5,-0.34,3.6);
+  floatingBoard();
   const rockCol=bio==='deserto'?'#a5755a':bio==='caverna'?'#3e3436':bio==='gelo'?'#8aa0b0':bio==='cripta'?'#6a6270':'#7d817c';
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
     const ch=cell(r,c),x=wx(c),z=wz(r);let mesh;
+    if(ch==='v')continue;
     if(ch==='w'){mesh=new THREE.Mesh(sbox(1,0.16,1),bio==='caverna'?lavaMat:bio==='gelo'?iceMat:bio==='cripta'?bloodMat:waterMat);mesh.position.set(x,0.08,z);waterTiles.push(mesh);}
     else{
       const h=0.3+hOf(r,c)*0.4;
@@ -1889,10 +1934,13 @@ function decorateBoard(bio){
     if(cell(r,c)!=='.'||isZone(r,c)||((r*7+c*13)%9!==0))continue;
     ambient(boardGroup,'environment','tall-grass-32px_strip12.png',12,10,wx(c)+0.22,topY(r,c)-0.02,wz(r)+0.2,{w:0.8,variant:(r+c)%3});
   }
-  const ex=(COLS+0.5)/2+0.03,ez=(ROWS+0.5)/2+0.03;
-  [3,8,12].forEach(c=>waterfallAt(boardGroup,wx(c),ez,0));
-  [4,10].forEach(r=>waterfallAt(boardGroup,ex,wz(r),Math.PI/2));
-  [[2,5],[9,3],[6,11]].forEach(([c,r],i)=>ambient(boardGroup,'weather','fireflies-32px_strip16.png',16,12,wx(c),0.9,wz(r),{w:2.4,variant:i,opacity:0.9}));
+  const outV=(r,c)=>!inB(r,c)||cell(r,c)==='v';let nS=0,nE=0;
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    if(cell(r,c)==='v')continue;
+    if(outV(r+1,c)&&(c*5+r)%4===1&&nS++<4)waterfallAt(boardGroup,wx(c),wz(r)+0.52,0);
+    if(outV(r,c+1)&&(r*5+c)%4===1&&nE++<3)waterfallAt(boardGroup,wx(c)+0.52,wz(r),Math.PI/2);
+  }
+  [[0.2,0.3],[0.55,0.2],[0.4,0.7]].forEach(([fc,fr],i)=>ambient(boardGroup,'weather','fireflies-32px_strip16.png',16,12,wx(Math.round(fc*(COLS-1))),0.9,wz(Math.round(fr*(ROWS-1))),{w:2.4,variant:i,opacity:0.9}));
   if(bio==='floresta')[[4,4],[11,8]].forEach(([c,r],i)=>ambient(boardGroup,'weather','falling-leaves-32px_strip16.png',16,10,wx(c),1.4,wz(r),{w:3,variant:i}));
 }
 const mkRing=col=>{const m=new THREE.Mesh(new THREE.RingGeometry(0.4,0.5,28),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.9,depthWrite:false,side:THREE.DoubleSide}));m.rotation.x=-Math.PI/2;m.visible=false;scene.add(m);return m;};
@@ -3017,6 +3065,7 @@ function setMode(m){
   app.className='m-'+m+(hub?' hub':'')+(ov?' ov':'');phase=m;
   if(!hub&&bubble){bubble.el.remove();bubble=null;}
   stage.dataset.bio=(m==='place'||m==='battle')&&LV?LV.mp.biome:'';
+  setLuz((m==='place'||m==='battle')&&LV?LV.mp.luz:'normal');
   if(hub)hubFit(false);
 }
 function bestRun(){const r=loadRank();return r.length?Math.max(...r.map(x=>x.pts)):0;}
@@ -3147,7 +3196,7 @@ function renderMissions(){
     if(!ms.length)return `<div class="world ato futuro">${head}<div class="mrow lock"><i>${ico('vila','trava')}</i><span><b>Em breve</b><small>Os mapas deste ato ainda estão sendo preparados.</small></span><em></em></div></div>`;
     return `<div class="world ato">${head}${ms.map(m=>{const lock=!unlocked(m.n),isDone=m.n<=cleared;
       return `<button class="mrow ${lock?'lock':''} ${run.mission===m.n?'sel':''}" data-map="${m.n}" ${lock?'disabled':''}>
-        <i>${lock?ico('vila','trava'):m.n}</i><span><b>${m.nome}</b><small>Nv. ${m.nivel} · ${BIOMES[m.biome].nome} · ${m.chefe?'chefe':m.fixo?'mapa fixo':'terreno muda'}${isDone?' · concluído':''}</small></span><em>${lock?'':'›'}</em></button>`;}).join('')}
+        <i>${lock?ico('vila','trava'):m.n}</i><span><b>${m.nome}</b><small>Nv. ${m.nivel} · ${BIOMES[m.biome].nome} · ${m.chefe?'chefe':m.grid||m.fixo?'mapa fixo':'terreno muda'}${isDone?' · concluído':''}</small></span><em>${lock?'':'›'}</em></button>`;}).join('')}
     </div>`;}).join('')}
   <p class="note">Mapas se liberam ao vencer o anterior. Uma run começa no mapa escolhido e segue pelos próximos do mesmo ato enquanto houver heróis de pé. Vencer o chefe fecha o ato.</p></div>`;
 }
@@ -3158,7 +3207,7 @@ function renderBrief(n){
   <div class="head">${wt('board',`${w.nome.split(' · ')[0]} · Mapa ${m.n}`,m.nome)}<button class="btn ghost sm" data-act="toMissions">Voltar</button></div>
   <div class="scroll">
     <p class="sub">${m.desc}</p>
-    <div class="tags"><span class="tag">${BIOMES[m.biome].nome}</span><span class="tag">Nv. recomendado ${m.nivel}</span><span class="tag">Mapa 16×16</span>${m.chefe?'<span class="tag">Chefe do ato</span>':''}<span class="tag">${m.fixo?'Terreno sempre igual':'Terreno muda a cada run'}</span>${m.secret?'<span class="tag">Parede suspeita</span>':''}</div>
+    <div class="tags"><span class="tag">${BIOMES[m.biome].nome}</span><span class="tag">Nv. recomendado ${m.nivel}</span><span class="tag">Mapa ${m.grid?`${m.grid[0].length}×${m.grid.length}`:'16×16'}</span>${m.chefe?'<span class="tag">Chefe do ato</span>':''}<span class="tag">${m.grid?'Mapa desenhado (pode vir espelhado)':m.fixo?'Terreno sempre igual':'Terreno muda a cada run'}</span>${m.secret?'<span class="tag">Parede suspeita</span>':''}</div>
     ${roster.length&&avgLv<m.nivel-2?`<p class="warn">Seu grupo está em média no Nv. ${avgLv}, abaixo do recomendado (${m.nivel}). Vai ser difícil.</p>`:''}
     <h4 class="sec">Inimigos que podem aparecer</h4>
     <div class="egrid">${m.pool.map(t=>{const e=ENEMIES[t];return `<div class="ec"><img src="${ePortrait(t)}" alt=""><div><b>${e.nome}</b><small class="ia">${t==='ogro'?'Chefe · ':''}${IA_TXT[e.ia]}</small><small>${e.resumo}</small></div></div>`;}).join('')}</div>
@@ -3482,13 +3531,13 @@ function onTile(r,c,unit){
 }
 function autoPlace(){
   party.forEach(h=>placeHero(h,null));
-  const free=[];for(let r=ROWS-4;r<ROWS;r++)for(let c=0;c<COLS;c++)if(isZone(r,c))free.push({r,c});
+  const free=[...ZONE].map(i=>({r:Math.floor(i/COLS),c:i%COLS})),z0=Math.min(...free.map(t=>t.r)),z1=Math.max(...free.map(t=>t.r));
   [...party].sort((a,b)=>a.alc-b.alc).forEach(h=>{
     let best=null,bs=-1e9;
-    for(const t of free){if(unitAt(t.r,t.c))continue;let s=Math.random()-Math.abs(t.c-OFF)*0.4;const mid=Math.abs(t.c-OFF)<=3;
-      if(h.cls==='clerigo'||h.cls==='bardo')s+=(t.r===ROWS-3?6:0)+(mid?2:0);
-      else if(h.alc>1)s+=hOf(t.r,t.c)*8+(t.r===ROWS-1?3:t.r===ROWS-2?2:0);
-      else s+=(t.r===ROWS-4?8:0)+(mid?2:0)+(h.cls==='ladino'&&Math.abs(t.c-OFF)>=4?3:0);
+    for(const t of free){if(unitAt(t.r,t.c))continue;let s=Math.random()-Math.abs(t.c-OFFX)*0.4;const mid=Math.abs(t.c-OFFX)<=3;
+      if(h.cls==='clerigo'||h.cls==='bardo')s+=(t.r===z0+1?6:0)+(mid?2:0);
+      else if(h.alc>1)s+=hOf(t.r,t.c)*8+(t.r===z1?3:t.r===z1-1?2:0);
+      else s+=(t.r===z0?8:0)+(mid?2:0)+(h.cls==='ladino'&&Math.abs(t.c-OFFX)>=4?3:0);
       if(s>bs){bs=s;best=t;}}
     placeHero(h,best.r,best.c);
   });
@@ -3513,7 +3562,7 @@ canvas.addEventListener('pointermove',e=>{
       camT.x=c[0]+sx*ca2;camT.z=c[2]-sx*sa2;
     }
     else if(phase==='village'){camT.x=Math.max(VX-6,Math.min(VX+6,camT.x));camT.z=Math.max(VZ-5,Math.min(VZ+5,camT.z));}
-    else{camT.x=Math.max(-OFF,Math.min(OFF,camT.x));camT.z=Math.max(-OFF,Math.min(OFF,camT.z));}
+    else{camT.x=Math.max(-OFFX,Math.min(OFFX,camT.x));camT.z=Math.max(-OFFZ,Math.min(OFFZ,camT.z));}
   }
 });
 canvas.addEventListener('pointercancel',()=>{drag=null;});
@@ -3907,7 +3956,7 @@ function followMid(a,b){
 function overviewCam(){
   camMode=camMode==='over'?'follow':'over';
   const btn=document.querySelector('[data-act="overview"][data-hud]');if(btn)btn.setAttribute('aria-pressed',camMode==='over');
-  if(camMode==='over')aimCam(0,0.3,0.2,0.62,0.7);
+  if(camMode==='over')aimCam(0,0.3,0.2,Math.min(0.9,0.62*16/Math.max(ROWS,COLS,12)),0.7);
   else if(phase==='battle'&&active)followCam(active);
   else aimCam(...phaseView(),0.7);
 }
