@@ -161,7 +161,12 @@ mostrar na tela (encaixa na lista de turno que já existe) e pra IA calcular.
   está abaixo do nível. Mapas se liberam em sequência (progresso salvo).
 - Uma run segue pelos mapas do mesmo ato; vencer o chefe fecha o ato. O Modo
   Interminável fica desligado até a campanha estar completa.
-- Próximos passos: mapas e biomas do Ato II em diante, dungeons secretas por
+- **Ato II (feito):** bioma Ruínas (piso de pedra, colunas quebradas, muros
+  baixos, tochas). 5 mapas (6–10, Nv. 14–25) com layouts por tema (pátio,
+  corredores, fosso, arena); chefe: Minotauro (mapa 10). Chefes agora são
+  genéricos (`boss` no mapa + tabela `BOSSES`). Escala de dificuldade 1.5→2.1,
+  a calibrar jogando.
+- Próximos passos: mapas e biomas do Ato III em diante, dungeons secretas por
   ato, objetivos variados (sobreviver N turnos etc.).
 
 ### Campanha: mapas e Modo Interminável
