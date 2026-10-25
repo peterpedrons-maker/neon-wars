@@ -176,7 +176,14 @@ mostrar na tela (encaixa na lista de turno que já existe) e pra IA calcular.
   Congelado, Desfiladeiro Gelado, Vila Soterrada, Salão do Rei Esqueleto
   (chefe). Inimigos novos: Esqueleto Gélido, Yeti, Lobo do Inverno (todos
   recoloridos) e Rei Esqueleto (esqueleto grande com coroa). Escala 2.9→3.3.
-- Próximos passos: mapas e biomas do Ato V, dungeons secretas por
+- **Ato V (feito):** bioma Cripta (pedra roxa, sangue no lugar da água,
+  sarcófagos, tochas e estandartes). 5 mapas (21–25, Nv. 53–60): Portões da
+  Cripta, Fosso de Sangue, Catacumbas, Salão dos Sarcófagos, Trono do Vampiro
+  Senhor (chefe, vampiro grande de asas e florete). Inimigos novos: Guardião da
+  Cripta e Espectro Real (recoloridos). Escala 3.4→3.9. Com isso a campanha
+  tem 25 mapas em 5 atos; o final mostra "Campanha concluída!".
+- Próximos passos: dungeons secretas por ato, objetivos variados, mapa-múndi,
+  calibração de dificuldade, dungeons secretas por
   ato, objetivos variados (sobreviver N turnos etc.).
 
 ### Campanha: mapas e Modo Interminável
