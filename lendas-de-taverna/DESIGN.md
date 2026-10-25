@@ -219,6 +219,18 @@ mostrar na tela (encaixa na lista de turno que já existe) e pra IA calcular.
   Risco aberto: 1 malha por casa — se o desempenho no celular cair, trocar
   por InstancedMesh também no chão.
 
+### Criaturas 2D (lado) e espelhamento
+- Criaturas de perfil (lobo, abelha, besouro, peixe, corvo, fantasma) olham pra
+  direita no sprite e **espelham** (`faceToward`) conforme o lado da tela do
+  alvo/movimento. Sprites frontais (humanoides LPC, gosma, aranha, morcego) não
+  precisam.
+- Criaturas **multi-estado** (hoje só o lobo, `CREATURE_DEFS[...].multi`): tiras
+  separadas de parado (1 quadro, sem respiração), andar, ataque e dano em
+  `assets/creatures/<nome>/`. Ataque e dano tocam uma vez e voltam ao parado.
+  Fluxo pra novos sprites feitos por IA: pedir 1 imagem por pose (ou folha),
+  recortar o fundo verde, alinhar pelo centro de massa, reduzir (~88 px) e
+  usar paleta única.
+
 ### Campanha: mapas e Modo Interminável
 - **5 mapas fixos hoje** (antes eram 3): Campina Verde (Clareira de Brumavale,
   Bosque dos Corvos) e Deserto das Cinzas (Duna Rachada, Vale das Cinzas,
