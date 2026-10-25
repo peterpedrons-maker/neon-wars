@@ -197,7 +197,17 @@ mostrar na tela (encaixa na lista de turno que já existe) e pra IA calcular.
 - Ato I já usa mapas desenhados à mão (12×14, 9×18, 16×12, L 14×14 e arena
   circular 15×14 com plataforma elevada). Atos II–V ainda são gerados; serão
   redesenhados um por vez.
-- Planejado: dungeon **breu** (terreno invisível, armadilhas só pros heróis,
+- **Armadilhas e veneno (feito):** casas `T` da grade são armadilhas escondidas
+  (espinhos = dano; veneno = 3 turnos de dano). Só os heróis caem; inimigos
+  desviam; depois de disparada a casa fica marcada. Veneno existe como estado
+  (`u.poison`).
+- **Dungeons secretas (feito o sistema):** `secreta:true` + `from` = mapa de
+  origem. Achar a passagem abre a dungeon no Quadro (salvo em
+  `lendas_secret_v1`). Fase única, mini-chefe (`boss`), primeira vitória dá ouro
+  + item raro. Hoje: Toca dos Corvos (Ato I, de Bosque dos Corvos) e Câmara das
+  Armadilhas (Ato III, breu + armadilhas, dos Túneis de Basalto). Meta: poucas
+  no começo, mais no fim (I:1, II:1, III:2, IV:2, V:3).
+- Planejado (antes): dungeon **breu** (terreno invisível, armadilhas só pros heróis,
   inimigos desviam) e dungeons secretas (poucas no início, mais no fim).
 
 ### Campanha: mapas e Modo Interminável
