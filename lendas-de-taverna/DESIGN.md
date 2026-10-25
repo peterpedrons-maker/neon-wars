@@ -171,7 +171,12 @@ mostrar na tela (encaixa na lista de turno que já existe) e pra IA calcular.
   Fenda de Magma, Túneis de Basalto, Lagos de Lava, Ilhas de Obsidiana, Trono
   do Troll (chefe). Inimigo novo: Esqueleto em Chamas (recolorido). Escala
   2.2→2.8, a calibrar jogando.
-- Próximos passos: mapas e biomas do Ato IV em diante, dungeons secretas por
+- **Ato IV (feito):** bioma Picos Gelados (neve, água gelada, pinheiros, neve
+  caindo do pack). 5 mapas (16–20, Nv. 41–52): Passagem Nevada, Lago
+  Congelado, Desfiladeiro Gelado, Vila Soterrada, Salão do Rei Esqueleto
+  (chefe). Inimigos novos: Esqueleto Gélido, Yeti, Lobo do Inverno (todos
+  recoloridos) e Rei Esqueleto (esqueleto grande com coroa). Escala 2.9→3.3.
+- Próximos passos: mapas e biomas do Ato V, dungeons secretas por
   ato, objetivos variados (sobreviver N turnos etc.).
 
 ### Campanha: mapas e Modo Interminável

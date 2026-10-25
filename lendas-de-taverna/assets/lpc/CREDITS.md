@@ -160,6 +160,10 @@ Licenças: CC-BY-SA 3.0, GPL 3.0 (cabeça); OGA-BY 3.0+, CC-BY 3.0+, GPL 3.0 (or
 Autores: ElizaWy, JaidynReiman
 Licença: OGA-BY 3.0
 
+**hat/formal/crown** (coroa do Rei Esqueleto)
+Autores: DarkwallLKE, Charles Sanchez (CharlesGabriel)
+Licenças: CC-BY-SA 3.0, GPL 3.0
+
 ## Fonte
 
 Universal LPC Spritesheet Character Generator (GitHub):

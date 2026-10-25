@@ -769,6 +769,7 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .world.futuro{opacity:.7}
 .warn{margin:8px 0 0;padding:6px 10px;border-left:4px solid #c8463c;background:rgba(20,12,8,.7);color:#f0b0a0;font-size:13px}
 #stage[data-bio="caverna"]{background:radial-gradient(90% 55% at 50% 108%,#a8401a 0%,rgba(168,64,26,0) 70%),radial-gradient(60% 40% at 80% 12%,rgba(200,90,40,.18),transparent 70%),linear-gradient(#0c0608,#251014 52%,#4a1c14)}
+#stage[data-bio="gelo"]{background:radial-gradient(90% 55% at 50% 108%,#8fc4e0 0%,rgba(143,196,224,0) 70%),radial-gradient(60% 40% at 80% 12%,rgba(220,240,255,.25),transparent 70%),linear-gradient(#0a1424,#1c3350 52%,#46698a)}
 </style>
 </head>
 <body>
@@ -1159,6 +1160,14 @@ const ENEMIES={
     resumo:'Lança magia de longe e evita o corpo a corpo. Seu ataque é mágico.'},
   espectro:{nome:'Espectro',ia:'flank',hp:9,atk:3,def:14,mov:4,alc:1,dmg:[1,6,1],ini:4,pts:150,magico:true,
     resumo:'Alma translúcida atrás dos frágeis. Seu toque é mágico: conta a Res. Mágica.'},
+  esqgelo:{nome:'Esqueleto Gélido',ia:'rush',hp:14,atk:4,def:14,mov:3,alc:1,dmg:[1,8,2],ini:2,pts:210,
+    resumo:'Armadura congelada sobre os ossos. Marcha reto e bate forte.'},
+  yeti:{nome:'Yeti',ia:'rush',hp:30,atk:5,def:13,mov:3,alc:1,dmg:[1,10,2],ini:1,pts:320,big:true,
+    resumo:'Gigante das neves. Lento de pensar e pesado de bater.'},
+  lobogelo:{nome:'Lobo do Inverno',ia:'flank',hp:15,atk:5,def:13,mov:6,alc:1,dmg:[1,8,1],ini:6,pts:230,
+    resumo:'Rapidíssimo. Caça em bando os heróis mais frágeis.'},
+  reiesq:{nome:'Rei Esqueleto',ia:'rush',hp:40,atk:6,def:15,mov:3,alc:1,dmg:[1,12,3],ini:1,pts:500,big:true,
+    resumo:'O rei dos ossos, de coroa e machado. Não recua nunca.'},
   esqfogo:{nome:'Esqueleto em Chamas',ia:'flank',hp:12,atk:4,def:13,mov:4,alc:1,dmg:[1,6,2],ini:3,pts:190,
     resumo:'Ossos em brasa, rápido e perigoso. Contorna a linha de frente.'},
   berserker:{nome:'Orc Berserker',ia:'rush',hp:24,atk:5,def:14,mov:3,alc:1,dmg:[1,8,3],ini:2,pts:260,
@@ -1245,9 +1254,25 @@ const MAPS=[
   {n:15,ato:3,nivel:40,mundo:'caverna',biome:'caverna',layout:'arena',nome:'Trono do Troll',fixo:false,chefe:true,boss:'troll',secret:false,total:[11,13],escala:2.8,
     desc:'Um salão de lava e estalagmites. O Troll sempre está lá, e não está sozinho.',
     pool:['troll','berserker','esqfogo','esqguerreiro','vampiro','espectro']},
+  // Ato IV — Picos Gelados (neve, água gelada, pinheiros)
+  {n:16,ato:4,nivel:41,mundo:'gelo',biome:'gelo',layout:'patio',nome:'Passagem Nevada',fixo:false,secret:false,total:[12,15],escala:2.9,
+    desc:'Uma trilha aberta entre pinheiros cobertos de neve. Lobos do inverno caçam em bando.',
+    pool:['lobogelo','esqgelo','yeti','lobisomem','berserker','vampiro','bat']},
+  {n:17,ato:4,nivel:44,mundo:'gelo',biome:'gelo',layout:'fenda',nome:'Lago Congelado',fixo:false,secret:true,total:[12,15],escala:3.0,
+    desc:'Um lago de água gelada corta o vale, com poucas pontes de madeira. Arqueiros de gelo atiram do outro lado.',
+    pool:['esqgelo','esqmago','lobogelo','espectro','vampiro','berserker']},
+  {n:18,ato:4,nivel:47,mundo:'gelo',biome:'gelo',layout:'tuneis',nome:'Desfiladeiro Gelado',fixo:false,secret:false,total:[13,16],escala:3.1,
+    desc:'Paredões de gelo formam corredores estreitos. Cada curva esconde uma emboscada.',
+    pool:['yeti','esqgelo','lobogelo','esqguerreiro','esqmago','espectro']},
+  {n:19,ato:4,nivel:50,mundo:'gelo',biome:'gelo',layout:'lagos',nome:'Vila Soterrada',fixo:false,secret:true,total:[13,16],escala:3.2,
+    desc:'O que sobrou de uma vila sob a neve, com poças de gelo quebrado pelo caminho.',
+    pool:['esqgelo','zumbi','espectro','vampiro','yeti','esqmago','lobogelo']},
+  {n:20,ato:4,nivel:52,mundo:'gelo',biome:'gelo',layout:'arena',nome:'Salão do Rei Esqueleto',fixo:false,chefe:true,boss:'reiesq',secret:false,total:[11,13],escala:3.3,
+    desc:'Um salão de gelo e pinheiros mortos. O Rei Esqueleto sempre está lá, cercado de sua guarda.',
+    pool:['reiesq','esqgelo','esqguerreiro','esqmago','yeti','espectro']},
 ];
 const BIOMES={
-  campina:{nome:'Campina',bg:'#14100d'},floresta:{nome:'Floresta',bg:'#14100d'},deserto:{nome:'Deserto',bg:'#14100d'},ruinas:{nome:'Ruínas',bg:'#14100d'},caverna:{nome:'Caverna',bg:'#14100d'}
+  campina:{nome:'Campina',bg:'#14100d'},floresta:{nome:'Floresta',bg:'#14100d'},deserto:{nome:'Deserto',bg:'#14100d'},ruinas:{nome:'Ruínas',bg:'#14100d'},caverna:{nome:'Caverna',bg:'#14100d'},gelo:{nome:'Picos Gelados',bg:'#14100d'}
 };
 
 /* ---------- Mapa atual (reconstruído a cada fase) ---------- */
@@ -1272,7 +1297,7 @@ function genLevel(mp,seed){
     const ib=(r,c)=>r>=0&&c>=0&&r<N&&c<N;
     const bio=mp.biome;
     // morros e dunas
-    const nh=bio==='deserto'?ri2(7,10):bio==='ruinas'||bio==='caverna'?ri2(5,8):ri2(4,6);
+    const nh=bio==='deserto'?ri2(7,10):bio==='ruinas'||bio==='caverna'||bio==='gelo'?ri2(5,8):ri2(4,6);
     for(let i=0;i<nh;i++){
       const r0=ri2(2,N-4),c0=ri2(1,N-2),big=rnd()<0.5;
       for(let r=r0-2;r<=r0+2;r++)for(let c=c0-2;c<=c0+2;c++){
@@ -1281,7 +1306,7 @@ function genLevel(mp,seed){
       }
     }
     // rio com duas ou três pontes
-    if(bio==='ruinas'?mp.layout==='fosso':bio==='caverna'?(mp.layout==='fenda'||mp.layout==='ilhas'):bio!=='deserto'){
+    if(bio==='ruinas'?mp.layout==='fosso':bio==='caverna'||bio==='gelo'?(mp.layout==='fenda'||mp.layout==='ilhas'):bio!=='deserto'){
       let rr=ri2(6,9);const riv=[];
       for(let c=0;c<N;c++){
         const nr=Math.max(5,Math.min(10,rr+[-1,0,0,1][ri2(0,3)]));
@@ -1292,7 +1317,7 @@ function genLevel(mp,seed){
       bc.forEach(c=>{for(let r=0;r<N;r++)if(g[r][c]==='w')g[r][c]='b';});
     }
     // obstáculos
-    const dt=bio==='floresta'?0.2:bio==='deserto'?0.05:0.07, dr=bio==='deserto'?0.06:bio==='ruinas'||bio==='caverna'?0.07:0.03;
+    const dt=bio==='floresta'?0.2:bio==='gelo'?0.11:bio==='deserto'?0.05:0.07, dr=bio==='deserto'?0.06:bio==='ruinas'||bio==='caverna'||bio==='gelo'?0.07:0.03;
     for(let r=0;r<N;r++)for(let c=0;c<N;c++){
       if(g[r][c]!=='.')continue;
       const mul=r>=N-4?0.35:r<=1?0.6:1;const x=rnd();
@@ -1309,7 +1334,7 @@ function genLevel(mp,seed){
       }
     }
     // caverna: túneis (muros), poças de lava e arena de estalagmites
-    if(bio==='caverna'){
+    if(bio==='caverna'||bio==='gelo'){
       if(mp.layout==='tuneis'){
         for(let k=0;k<5;k++){const r0=ri2(3,10),c0=ri2(0,7),len=ri2(5,8),gap=c0+ri2(1,len-2);
           for(let c=c0;c<c0+len&&c<N;c++)if(c!==gap&&g[r0][c]==='.')g[r0][c]='r';}
@@ -1358,7 +1383,7 @@ function applyLevel(mp,seed){
   MAP=lv.map;ROWS=MAP.length;COLS=MAP[0].length;OFF=(COLS-1)/2;SECRET=lv.secret;
   SECRET_ADJ=SECRET?DIRS.map(([a,b])=>[SECRET.r+a,SECRET.c+b]).filter(([r,c])=>inB(r,c)&&passable(r,c)):[];
 }
-const BOSSES={ogro:1,minotauro:1,troll:1};
+const BOSSES={ogro:1,minotauro:1,troll:1,reiesq:1};
 function rollEnemies(mp){
   const types=mp.pool.filter(t=>!BOSSES[t]).sort(()=>R()-0.5);
   const nTypes=Math.min(types.length,ri(4,types.length));
@@ -1367,7 +1392,7 @@ function rollEnemies(mp){
   const total=ri(mp.total[0],mp.total[1]);
   const cnt={};chosen.forEach(t=>cnt[t]=1);if(bossK)cnt[bossK]=1;
   let left=total-Object.values(cnt).reduce((a,b)=>a+b,0);
-  const caps={xama:2,guarda:2,minotauro:1,troll:1,vampiro:2,esqmago:2,espectro:2,berserker:2};
+  const caps={xama:2,guarda:2,yeti:1,minotauro:1,troll:1,vampiro:2,esqmago:2,espectro:2,berserker:2};
   let guard=0;
   while(left>0&&guard++<200){const t=pick(chosen);if(caps[t]&&cnt[t]>=caps[t])continue;cnt[t]++;left--;}
   const list=[];let ni=0;const names=ENAMES.slice().sort(()=>R()-0.5);
@@ -1675,6 +1700,7 @@ const waterStrip=spStripState(spStripImg('environment','water-32px_strip8.png'),
 const waterTex=waterStrip.tex;waterTex.wrapS=waterTex.wrapT=THREE.RepeatWrapping;
 const lavaStrip=spStripState(spStripImg('environment','lava-32px_strip12.png'),12,8,true);
 const lavaMat=new THREE.MeshBasicMaterial({map:lavaStrip.tex});
+const iceMat=new THREE.MeshPhongMaterial({map:waterTex,color:'#9fd3f0',transparent:true,opacity:0.95,shininess:120,specular:0xffffff});
 const waterMat=new THREE.MeshPhongMaterial({map:waterTex,transparent:true,opacity:0.95,shininess:90,specular:0x9fc9ea});
 
 const woodTex=ptex('#3b2a1e',['#33241a','#45321f','#2e2017'],{size:64,n:500,draw:(g,S)=>{g.fillStyle='#22180f';for(let y=0;y<S;y+=8)g.fillRect(0,y,S,1);},repeat:10});
@@ -1721,6 +1747,7 @@ function biomeMats(b){
     campina:[['#5d8f3f',['#6ea64b','#4e7c34','#7fb356']],['#74a64b',['#86b95a','#5f8f3d','#9ccc6a']],['#6b4a2f',['#5a3d26','#7d5838'],'#4e7c34']],
     floresta:[['#3f6e34',['#4e7e3d','#33592b','#5b8c46']],['#55853f',['#679a4c','#456f33','#76ab5a']],['#54392a',['#45301f','#654532'],'#33592b']],
     deserto:[['#d9b777',['#e5c88e','#c9a561','#efd8a6']],['#e2c488',['#eed5a0','#cfae6e','#f4e2b8']],['#a67c45',['#8f6a38','#b98d52'],'#d9b777']],
+    gelo:[['#dfe9ef',['#eef5f9','#c9d9e3','#f7fbfd']],['#e9f1f6',['#f5fafc','#d3e1ea','#ffffff']],['#6a7b89',['#58697a','#7c8d9b'],'#c9d9e3']],
     caverna:[['#5b4c4a',['#6a5a57','#4a3d3b','#786865']],['#6e5d58',['#7e6c67','#5b4b47','#8c7a74']],['#32262a',['#271d21','#443439'],'#4a3d3b']],
     ruinas:[['#6f7680',['#7f8690','#5e656f','#8d949e']],['#868d98',['#969ea9','#737a85','#a4acb7']],['#464b55',['#383d46','#565c67'],'#5e656f']],
   }[b];
@@ -1732,6 +1759,12 @@ function biomeMats(b){
   return BM[b];
 }
 const SG={};const sbox=(w,h,d)=>{const key=w+'_'+h+'_'+d;if(!SG[key]){SG[key]=new THREE.BoxGeometry(w,h,d);SG[key].userData.shared=true;}return SG[key];};
+function makePine(parent,x,y,z){
+  const g=new THREE.Group();g.position.set(x,y,z);parent.add(g);
+  const bark=new THREE.Mesh(new THREE.BoxGeometry(0.16,0.35,0.16),BARK_MAT);bark.position.y=0.17;g.add(bark);
+  [['#2f5a44',0.46,0.3,0.42],['#3a6b52',0.36,0.28,0.68],['#e8f1f5',0.24,0.26,0.92]].forEach(([c,r,h,yy])=>{
+    const cone=new THREE.Mesh(new THREE.ConeGeometry(r,h,7),new THREE.MeshLambertMaterial({color:c}));cone.position.y=yy;g.add(cone);});
+}
 function makeStalagmite(parent,x,y,z){
   const g=new THREE.Group();g.position.set(x,y,z);parent.add(g);
   const m=new THREE.MeshLambertMaterial({color:'#2f2629'}),h=0.7+((x*7+z*11)%5)*0.15;
@@ -1764,10 +1797,10 @@ function buildBoard(){
   clearBoard();
   const bio=LV.mp.biome,bm=biomeMats(bio);
   floatingUnder(boardGroup,COLS+0.5,ROWS+0.5,-0.34,3.6);
-  const rockCol=bio==='deserto'?'#a5755a':bio==='caverna'?'#3e3436':'#7d817c';
+  const rockCol=bio==='deserto'?'#a5755a':bio==='caverna'?'#3e3436':bio==='gelo'?'#8aa0b0':'#7d817c';
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
     const ch=cell(r,c),x=wx(c),z=wz(r);let mesh;
-    if(ch==='w'){mesh=new THREE.Mesh(sbox(1,0.16,1),bio==='caverna'?lavaMat:waterMat);mesh.position.set(x,0.08,z);waterTiles.push(mesh);}
+    if(ch==='w'){mesh=new THREE.Mesh(sbox(1,0.16,1),bio==='caverna'?lavaMat:bio==='gelo'?iceMat:waterMat);mesh.position.set(x,0.08,z);waterTiles.push(mesh);}
     else{
       const h=0.3+hOf(r,c)*0.4;
       const top=ch==='b'?mats.bridge:hOf(r,c)>0?pick(bm.hill):pick(bm.grass);
@@ -1777,7 +1810,7 @@ function buildBoard(){
     mesh.userData={r,c};boardGroup.add(mesh);pickables.push(mesh);
     const ty=topY(r,c);
     if(ch==='r'){const b=new THREE.Mesh(new THREE.DodecahedronGeometry(0.4,0),new THREE.MeshLambertMaterial({color:rockCol}));b.position.set(x,ty+0.28,z);b.scale.y=0.8;b.rotation.y=r+c;boardGroup.add(b);}
-    if(ch==='t'){if(bio==='caverna')makeStalagmite(boardGroup,x,ty,z);else if(bio==='ruinas')makeColumn(boardGroup,x,ty,z);else if(bio==='deserto')makeCactus(boardGroup,x,ty,z);else makeTree(boardGroup,x,ty,z,bio==='floresta'?1.1:1);}
+    if(ch==='t'){if(bio==='gelo')makePine(boardGroup,x,ty,z);else if(bio==='caverna')makeStalagmite(boardGroup,x,ty,z);else if(bio==='ruinas')makeColumn(boardGroup,x,ty,z);else if(bio==='deserto')makeCactus(boardGroup,x,ty,z);else makeTree(boardGroup,x,ty,z,bio==='floresta'?1.1:1);}
     if(ch==='S'){wallMesh=new THREE.Mesh(new THREE.BoxGeometry(0.97,1.2,0.97),mats.crack);wallMesh.position.set(x,0.6,z);boardGroup.add(wallMesh);}
     if(isZone(r,c)){
       const zm=new THREE.Mesh(new THREE.PlaneGeometry(0.86,0.86),new THREE.MeshBasicMaterial({color:'#e9a020',transparent:true,opacity:0.42,depthWrite:false}));
@@ -1791,6 +1824,12 @@ function buildBoard(){
 // vida no cenário: só campina/floresta (o deserto fica seco)
 function decorateBoard(bio){
   if(bio==='deserto')return;
+  if(bio==='gelo'){
+    [[2,3],[7,2],[12,4],[4,9],[10,10],[6,14],[13,13]].forEach(([c,r],i)=>ambient(boardGroup,'weather','snow-32px_strip16.png',16,10,wx(c),0.6,wz(r),{w:2.6,h:2.6,variant:i%3,opacity:0.7}));
+    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)
+      if(cell(r,c)==='r'&&(r*5+c*3)%4===0)ambient(boardGroup,'environment','wall-torch-32px_strip8.png',8,10,wx(c),topY(r,c)+0.35,wz(r)+0.3,{w:0.8,variant:(r+c)%3});
+    return;
+  }
   if(bio==='caverna'){
     for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)
       if(cell(r,c)==='r'&&(r*5+c*3)%3===0)ambient(boardGroup,'environment','wall-torch-32px_strip8.png',8,10,wx(c),topY(r,c)+0.35,wz(r)+0.3,{w:0.8,variant:(r+c)%3});
@@ -2104,7 +2143,7 @@ function makeHero(used,cls,level){
   return h;
 }
 const enemyCache={};
-const EPRE={goblin:'Goblin',gobarq:'Arqueiro',lobo:'Lobo',xama:'Xamã',guarda:'Guarda',ogro:'',slime:'Gosma',bee:'Abelha',spider:'Aranha',beetle:'Besouro',fish:'Peixe',bat:'Morcego',bird:'Corvo',ghost:'Fantasma',rato:'Rato',esqueleto:'Esqueleto',zumbi:'Zumbi',javali:'Javali',lagarto:'Lagarto',vampiro:'Vampiro',minotauro:'',troll:'',esqfogo:'Esqueleto',lobisomem:'Lobo',esqguerreiro:'Esqueleto',esqmago:'Esqueleto',espectro:'Espectro',berserker:'Orc'};
+const EPRE={goblin:'Goblin',gobarq:'Arqueiro',lobo:'Lobo',xama:'Xamã',guarda:'Guarda',ogro:'',slime:'Gosma',bee:'Abelha',spider:'Aranha',beetle:'Besouro',fish:'Peixe',bat:'Morcego',bird:'Corvo',ghost:'Fantasma',rato:'Rato',esqueleto:'Esqueleto',zumbi:'Zumbi',javali:'Javali',lagarto:'Lagarto',vampiro:'Vampiro',minotauro:'',troll:'',reiesq:'',yeti:'',esqgelo:'Esqueleto',lobogelo:'Lobo',esqfogo:'Esqueleto',lobisomem:'Lobo',esqguerreiro:'Esqueleto',esqmago:'Esqueleto',espectro:'Espectro',berserker:'Orc'};
 function ensureEnemyCache(kind){
   if(enemyCache[kind])return enemyCache[kind];
   if(CREATURE_DEFS[kind]){
@@ -2300,8 +2339,8 @@ function mobRec(body,head,{legs=false,torso=null,dagger=false,shield=false,pre=[
   return {action:'slash',walk:L('walk'),slash:L('slash'),hurt:L('hurt')};
 }
 // grandão: machado de duas mãos, golpe em folha maior (igual ao Ogro)
-function mobBig(body,head){
-  const B=a=>[MOB_BODY[body](a),`head/heads/${head}/${a}.png`];
+function mobBig(body,head,hat=null){
+  const B=a=>[MOB_BODY[body](a),`head/heads/${head}/${a}.png`,...(hat?[hat(a)]:[])];
   return {action:'slash',oversize:true,walk:[...B('walk'),'weapon/blunt/waraxe/walk/waraxe.png'],hurt:[...B('hurt'),'weapon/blunt/waraxe/hurt/waraxe.png'],
     actionBody:B('slash'),actionBehind:'weapon/blunt/waraxe/attack_slash/behind/waraxe.png',actionFront:'weapon/blunt/waraxe/attack_slash/waraxe.png'};
 }
@@ -2326,6 +2365,10 @@ Object.assign(LPC_RECIPES,{
   minotauro:mobBig('muscular','minotaur/male'),
   troll:mobBig('muscular','troll/adult'),
 });
+LPC_RECIPES.lobogelo={...LPC_RECIPES.lobisomem,fx:'frost'};
+LPC_RECIPES.esqgelo={...mobRec('skeleton','skeleton/adult',{torso:a=>`torso/armour/plate/male/${a}.png`,dagger:true}),fx:'frost'};
+LPC_RECIPES.yeti={...mobBig('muscular','troll/adult'),fx:'frost'};
+LPC_RECIPES.reiesq=mobBig('skeleton','skeleton/adult',a=>`hat/formal/crown/adult/${a}/gold.png`);
 const LPC_ACTION_DIMS={slash:[384,256,6,4],shoot:[832,256,13,4],spellcast:[448,256,7,4],thrust:[512,256,8,4]};
 const LPC_SHEETS={}; // versão síncrona do LPC_CACHE: só preenchida quando a Promise já resolveu, pra retrato poder ler sem await
 /* efeitos de cor sobre a folha já montada: reaproveita as mesmas peças e gera
@@ -2344,6 +2387,7 @@ function hueShift(c,deg,sat=1){
 const LPC_FX={
   ghost:c=>lpcPixels(c,(p,i)=>{const lum=(0.3*p[i]+0.59*p[i+1]+0.11*p[i+2])/255;p[i]=110+lum*130;p[i+1]=165+lum*85;p[i+2]=225+lum*30;p[i+3]=p[i+3]*0.6;}),
   berserk:c=>hueShift(c,-112,1.9),
+  frost:c=>lpcPixels(c,(p,i)=>{const lum=(0.3*p[i]+0.59*p[i+1]+0.11*p[i+2])/255;p[i]=95+lum*150;p[i+1]=150+lum*100;p[i+2]=205+lum*50;}),
   fire:c=>lpcPixels(c,(p,i)=>{const lum=(0.3*p[i]+0.59*p[i+1]+0.11*p[i+2])/255;p[i]=Math.min(255,90+lum*190);p[i+1]=30+lum*125;p[i+2]=8+lum*40;}),
 };
 function lpcBuild(cls){
@@ -2639,14 +2683,14 @@ function renderOrder(){
 let hudSel=null,hudTile=null,ucPop=null,ucKey='',objKey='';
 const diceTxt=d=>`${d[0]}d${d[1]}${d[2]?(d[2]>0?'+':'')+d[2]:''}`;
 function terrainOf(r,c){
-  const ch=cell(r,c),h=hOf(r,c),des=LV.mp.biome==='deserto',rui=LV.mp.biome==='ruinas',cav=LV.mp.biome==='caverna';
-  if(ch==='w')return {nome:cav?'Lava':'Água',alt:0,txt:'Intransponível',ic:cav?'#e0561e':'#4a8fc9'};
+  const ch=cell(r,c),h=hOf(r,c),des=LV.mp.biome==='deserto',rui=LV.mp.biome==='ruinas',cav=LV.mp.biome==='caverna',gel=LV.mp.biome==='gelo';
+  if(ch==='w')return {nome:cav?'Lava':gel?'Água gelada':'Água',alt:0,txt:'Intransponível',ic:cav?'#e0561e':gel?'#8fcdea':'#4a8fc9'};
   if(ch==='b')return {nome:'Ponte',alt:0,txt:'Passagem estreita',ic:'#8a5a32'};
   if(ch==='r')return {nome:'Pedra',alt:0,txt:'Bloqueia o caminho',ic:'#7d817c'};
-  if(ch==='t')return {nome:cav?'Estalagmite':rui?'Coluna':des?'Cacto':'Árvore',alt:0,txt:'Bloqueia o caminho',ic:'#3f7a3a'};
+  if(ch==='t')return {nome:gel?'Pinheiro':cav?'Estalagmite':rui?'Coluna':des?'Cacto':'Árvore',alt:0,txt:'Bloqueia o caminho',ic:'#3f7a3a'};
   if(ch==='S')return {nome:'Parede rachada',alt:1,txt:'Esconde uma passagem',ic:'#7a7c76'};
-  if(h>0)return {nome:cav||rui?'Plataforma':'Morro',alt:h,txt:'+2 de acerto pra quem ataca de cima',ic:cav?'#6e5d58':rui?'#868d98':des?'#c9a46a':'#7aa858'};
-  return {nome:cav?'Rocha vulcânica':rui?'Piso de pedra':des?'Areia':'Campina',alt:0,txt:'Terreno livre',ic:cav?'#5b4c4a':rui?'#6f7680':des?'#d2b078':'#5d8f3f'};
+  if(h>0)return {nome:gel?'Penhasco de gelo':cav||rui?'Plataforma':'Morro',alt:h,txt:'+2 de acerto pra quem ataca de cima',ic:gel?'#e9f1f6':cav?'#6e5d58':rui?'#868d98':des?'#c9a46a':'#7aa858'};
+  return {nome:gel?'Neve':cav?'Rocha vulcânica':rui?'Piso de pedra':des?'Areia':'Campina',alt:0,txt:'Terreno livre',ic:gel?'#dfe9ef':cav?'#5b4c4a':rui?'#6f7680':des?'#d2b078':'#5d8f3f'};
 }
 function objsOf(mp){
   const L=[{txt:'Derrotar todos os inimigos',prog:()=>`${enemies.filter(e=>!e.alive).length}/${enemies.length}`,done:()=>!!enemies.length&&!enemiesAlive().length}];
@@ -3504,7 +3548,7 @@ async function moveAlong(u,path){
   lpcSetState(u,'stand');
 }
 const SKILL={guerreiro:'Golpe',ladino:'Estocada',mago:'Raio Arcano',clerigo:'Golpe Sagrado',arqueiro:'Flechada',bardo:'Nota Cortante',
-  goblin:'Facada',gobarq:'Flechada',lobo:'Mordida',xama:'Raio Sombrio',guarda:'Golpe',ogro:'Pancada',slime:'Engolfar',bee:'Ferrão',spider:'Mordida Venenosa',rato:'Mordida',esqueleto:'Golpe Ósseo',zumbi:'Agarrão',javali:'Investida',lagarto:'Corte Rápido',vampiro:'Mordida Sombria',esqfogo:'Toque Flamejante',lobisomem:'Garra Selvagem',esqguerreiro:'Golpe Blindado',esqmago:'Raio Ósseo',espectro:'Toque Espectral',berserker:'Fúria',minotauro:'Machadada',troll:'Pancada Bruta',fish:'Mordida',bat:'Mordida Cega',bird:'Bicada',ghost:'Toque Gélido',beetle:'Investida'};
+  goblin:'Facada',gobarq:'Flechada',lobo:'Mordida',xama:'Raio Sombrio',guarda:'Golpe',ogro:'Pancada',slime:'Engolfar',bee:'Ferrão',spider:'Mordida Venenosa',rato:'Mordida',esqueleto:'Golpe Ósseo',zumbi:'Agarrão',javali:'Investida',lagarto:'Corte Rápido',vampiro:'Mordida Sombria',esqgelo:'Golpe Gélido',yeti:'Pancada Nevada',lobogelo:'Mordida Gélida',reiesq:'Machado Real',esqfogo:'Toque Flamejante',lobisomem:'Garra Selvagem',esqguerreiro:'Golpe Blindado',esqmago:'Raio Ósseo',espectro:'Toque Espectral',berserker:'Fúria',minotauro:'Machadada',troll:'Pancada Bruta',fish:'Mordida',bat:'Mordida Cega',bird:'Bicada',ghost:'Toque Gélido',beetle:'Investida'};
 const skillOf=u=>SKILL[u.side==='hero'?u.cls:u.kind]||'Ataque';
 // nome da habilidade e o d20 aparecem juntos sobre a cabeça de quem age; só o
 // resultado (dano, MISS, cura) aparece depois, sobre o alvo.
@@ -3518,7 +3562,7 @@ async function showRoll({u,skill,roll,outcome,numText}){
   await wait(260);
 }
 const sibActive=u=>u.sib&&party.some(o=>o!==u&&o.alive&&o.r!=null&&o.sur===u.sur);
-const VERB={guerreiro:'golpeou',ladino:'apunhalou',mago:'lançou um raio em',clerigo:'esmagou',arqueiro:'flechou',bardo:'acertou',goblin:'atacou',rato:'mordeu',esqueleto:'golpeou',zumbi:'agarrou',javali:'investiu contra',lagarto:'cortou',vampiro:'mordeu',esqfogo:'queimou',lobisomem:'dilacerou',esqguerreiro:'golpeou',esqmago:'atingiu',espectro:'tocou',berserker:'esmagou',minotauro:'rachou',troll:'esmagou',fish:'mordeu',bat:'mordeu',bird:'bicou',ghost:'tocou',gobarq:'flechou',ogro:'esmagou',lobo:'mordeu',xama:'atingiu',guarda:'golpeou',slime:'atingiu',bee:'picou',spider:'mordeu',beetle:'golpeou'};
+const VERB={guerreiro:'golpeou',ladino:'apunhalou',mago:'lançou um raio em',clerigo:'esmagou',arqueiro:'flechou',bardo:'acertou',goblin:'atacou',rato:'mordeu',esqueleto:'golpeou',zumbi:'agarrou',javali:'investiu contra',lagarto:'cortou',vampiro:'mordeu',esqgelo:'congelou',yeti:'esmagou',lobogelo:'mordeu',reiesq:'rachou',esqfogo:'queimou',lobisomem:'dilacerou',esqguerreiro:'golpeou',esqmago:'atingiu',espectro:'tocou',berserker:'esmagou',minotauro:'rachou',troll:'esmagou',fish:'mordeu',bat:'mordeu',bird:'bicou',ghost:'tocou',gobarq:'flechou',ogro:'esmagou',lobo:'mordeu',xama:'atingiu',guarda:'golpeou',slime:'atingiu',bee:'picou',spider:'mordeu',beetle:'golpeou'};
 async function projectile(u,t){
   const mg=u.cls==='mago'||(u.side==='enemy'&&isMagicAttacker(u));const a=u.grp.position,b=t.grp.position;
   let halo=null;
