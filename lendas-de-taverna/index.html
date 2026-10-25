@@ -771,6 +771,7 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 #stage[data-bio="caverna"]{background:radial-gradient(90% 55% at 50% 108%,#a8401a 0%,rgba(168,64,26,0) 70%),radial-gradient(60% 40% at 80% 12%,rgba(200,90,40,.18),transparent 70%),linear-gradient(#0c0608,#251014 52%,#4a1c14)}
 #stage[data-bio="gelo"]{background:radial-gradient(90% 55% at 50% 108%,#8fc4e0 0%,rgba(143,196,224,0) 70%),radial-gradient(60% 40% at 80% 12%,rgba(220,240,255,.25),transparent 70%),linear-gradient(#0a1424,#1c3350 52%,#46698a)}
 #stage[data-bio="cripta"]{background:radial-gradient(90% 55% at 50% 108%,#6b1f3a 0%,rgba(107,31,58,0) 70%),radial-gradient(60% 40% at 80% 12%,rgba(150,70,170,.2),transparent 70%),linear-gradient(#08040e,#1a0e26 52%,#3a1a44)}
+#stage[data-luz="breu"]{background:#000 !important}
 </style>
 </head>
 <body>
@@ -1249,7 +1250,7 @@ const MAPS=[
   {n:11,ato:3,luz:'penumbra',nivel:27,mundo:'caverna',biome:'caverna',layout:'fenda',nome:'Fenda de Magma',fixo:false,secret:false,total:[11,14],escala:2.2,
     desc:'Um rio de lava corta a caverna, com poucas pontes de pedra. Ninguém atravessa a lava fora das pontes.',
     pool:['berserker','esqguerreiro','esqfogo','javali','lobisomem','spider','bat']},
-  {n:12,ato:3,luz:'escuro',nivel:30,mundo:'caverna',biome:'caverna',layout:'tuneis',nome:'Túneis de Basalto',fixo:false,secret:true,total:[12,15],escala:2.35,
+  {n:12,ato:3,luz:'breu',nivel:30,mundo:'caverna',biome:'caverna',layout:'tuneis',nome:'Túneis de Basalto',fixo:false,secret:true,total:[12,15],escala:2.35,
     desc:'Túneis estreitos de rocha escura. Emboscadas dos dois lados e pouca visão.',
     pool:['esqfogo','esqmago','vampiro','berserker','zumbi','beetle','lagarto']},
   {n:13,ato:3,luz:'penumbra',nivel:33,mundo:'caverna',biome:'caverna',layout:'lagos',nome:'Lagos de Lava',fixo:false,secret:false,total:[12,15],escala:2.5,
@@ -1284,7 +1285,7 @@ const MAPS=[
   {n:22,ato:5,luz:'penumbra',nivel:55,mundo:'cripta',biome:'cripta',layout:'fenda',nome:'Fosso de Sangue',fixo:false,secret:true,total:[13,16],escala:3.5,
     desc:'Um fosso de sangue corta o salão, com poucas pontes. Magos e espectros atiram do outro lado.',
     pool:['guardiao','esqmago','espectror','vampiro','esqguerreiro','berserker']},
-  {n:23,ato:5,luz:'escuro',nivel:57,mundo:'cripta',biome:'cripta',layout:'tuneis',nome:'Catacumbas',fixo:false,secret:false,total:[14,17],escala:3.6,
+  {n:23,ato:5,luz:'breu',nivel:57,mundo:'cripta',biome:'cripta',layout:'tuneis',nome:'Catacumbas',fixo:false,secret:false,total:[14,17],escala:3.6,
     desc:'Corredores baixos de ossos e pedra. Cada esquina esconde uma emboscada.',
     pool:['guardiao','esqfogo','esqgelo','vampiro','espectror','zumbi','esqmago']},
   {n:24,ato:5,luz:'penumbra',nivel:59,mundo:'cripta',biome:'cripta',layout:'lagos',nome:'Salão dos Sarcófagos',fixo:false,secret:true,total:[14,17],escala:3.7,
@@ -1717,7 +1718,7 @@ renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 
 // iluminação por mapa: só o terreno escurece (os personagens são sprites e
 // continuam visíveis). normal · penumbra (caverna/cripta) · escuro (quase sem luz)
-const LUZ={normal:[0.78,0.95,0xfff1d6,0x3a2b20],penumbra:[0.34,0.42,0x9fb4e8,0x14182a],escuro:[0.26,0.22,0x8a9ad0,0x0c1020]};
+const LUZ={normal:[0.78,0.95,0xfff1d6,0x3a2b20],penumbra:[0.34,0.42,0x9fb4e8,0x14182a],escuro:[0.26,0.22,0x8a9ad0,0x0c1020],breu:[0,0,0x000000,0x000000]};
 function setLuz(n){
   const L=LUZ[n]||LUZ.normal;hemi.intensity=L[0];sun.intensity=L[1];hemi.color.setHex(L[2]);hemi.groundColor.setHex(L[3]);
   stage.dataset.luz=n&&n!=='normal'?n:'';
@@ -3207,8 +3208,9 @@ function renderBrief(n){
   <div class="head">${wt('board',`${w.nome.split(' · ')[0]} · Mapa ${m.n}`,m.nome)}<button class="btn ghost sm" data-act="toMissions">Voltar</button></div>
   <div class="scroll">
     <p class="sub">${m.desc}</p>
-    <div class="tags"><span class="tag">${BIOMES[m.biome].nome}</span><span class="tag">Nv. recomendado ${m.nivel}</span><span class="tag">Mapa ${m.grid?`${m.grid[0].length}×${m.grid.length}`:'16×16'}</span>${m.chefe?'<span class="tag">Chefe do ato</span>':''}<span class="tag">${m.grid?'Mapa desenhado (pode vir espelhado)':m.fixo?'Terreno sempre igual':'Terreno muda a cada run'}</span>${m.secret?'<span class="tag">Parede suspeita</span>':''}</div>
+    <div class="tags"><span class="tag">${BIOMES[m.biome].nome}</span><span class="tag">Nv. recomendado ${m.nivel}</span><span class="tag">Mapa ${m.grid?`${m.grid[0].length}×${m.grid.length}`:'16×16'}</span>${m.chefe?'<span class="tag">Chefe do ato</span>':''}${m.luz==='breu'?'<span class="tag">Breu total</span>':''}<span class="tag">${m.grid?'Mapa desenhado (pode vir espelhado)':m.fixo?'Terreno sempre igual':'Terreno muda a cada run'}</span>${m.secret?'<span class="tag">Parede suspeita</span>':''}</div>
     ${roster.length&&avgLv<m.nivel-2?`<p class="warn">Seu grupo está em média no Nv. ${avgLv}, abaixo do recomendado (${m.nivel}). Vai ser difícil.</p>`:''}
+    ${m.luz==='breu'?'<p class="warn">Mapa às escuras: o terreno não aparece. Só os personagens, as tochas e as marcações do jogo ficam visíveis.</p>':''}
     <h4 class="sec">Inimigos que podem aparecer</h4>
     <div class="egrid">${m.pool.map(t=>{const e=ENEMIES[t];return `<div class="ec"><img src="${ePortrait(t)}" alt=""><div><b>${e.nome}</b><small class="ia">${t==='ogro'?'Chefe · ':''}${IA_TXT[e.ia]}</small><small>${e.resumo}</small></div></div>`;}).join('')}</div>
     <p class="note">Quais inimigos aparecem, e quantos, muda a cada run. Você só sabe o conjunto.</p>
