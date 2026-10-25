@@ -1146,6 +1146,16 @@ const ENEMIES={
     resumo:'Brutamontes de machado. Perigoso até pro tanque.'},
   troll:{nome:'Troll',ia:'rush',hp:28,atk:4,def:12,mov:2,alc:1,dmg:[1,10,1],ini:0,pts:280,big:true,
     resumo:'Lento e enorme. Cada golpe dele pesa.'},
+  lobisomem:{nome:'Homem-Lobo',ia:'flank',hp:13,atk:4,def:12,mov:5,alc:1,dmg:[1,8,0],ini:5,pts:160,
+    resumo:'Muito rápido. Ataca os mais frágeis do grupo.'},
+  esqguerreiro:{nome:'Esqueleto Guerreiro',ia:'rush',hp:15,atk:4,def:15,mov:3,alc:1,dmg:[1,8,1],ini:1,pts:170,
+    resumo:'Armadura e escudo sobre os ossos. Difícil de acertar.'},
+  esqmago:{nome:'Esqueleto Mago',ia:'skirmish',hp:8,atk:3,def:11,mov:3,alc:3,dmg:[1,6,1],ini:2,pts:160,magico:true,
+    resumo:'Lança magia de longe e evita o corpo a corpo. Seu ataque é mágico.'},
+  espectro:{nome:'Espectro',ia:'flank',hp:9,atk:3,def:14,mov:4,alc:1,dmg:[1,6,1],ini:4,pts:150,magico:true,
+    resumo:'Alma translúcida atrás dos frágeis. Seu toque é mágico: conta a Res. Mágica.'},
+  berserker:{nome:'Orc Berserker',ia:'rush',hp:24,atk:5,def:14,mov:3,alc:1,dmg:[1,8,3],ini:2,pts:260,
+    resumo:'Orc enfurecido de cota de malha. Bate forte e não recua.'},
 };
 const ENAMES=['Zug','Nhac','Brek','Fusk','Pito','Gruk','Mog','Rakh','Snik','Dorg','Vesk','Tuk','Urg','Bhag'];
 const FIRST=['Brian','Christopher','Bruno','Rafael','Diego','Marcos','Felipe','Henrique','Otávio','Caio','Davi','Enzo','Igor','Leandro','Nathan','Renato','Samuel','Thiago','Vitor','Yuri',
@@ -1177,16 +1187,16 @@ const MAPS=[
     pool:['slime','bee','spider','beetle','fish','bat','rato']},
   {n:2,mundo:'campina',biome:'floresta',nome:'Bosque dos Corvos',fixo:true,seed:2202,secret:true,total:[9,11],escala:1.15,
     desc:'Floresta fechada, poucas passagens. Boa pra emboscada, de ambos os lados.',
-    pool:['goblin','gobarq','lobo','xama','guarda','ogro','bird','bat','ghost','javali','rato']},
+    pool:['goblin','gobarq','lobo','xama','guarda','ogro','bird','bat','ghost','javali','rato','lobisomem']},
   {n:3,mundo:'deserto',biome:'deserto',nome:'Duna Rachada',fixo:false,secret:false,total:[9,12],escala:1.2,
     desc:'Primeira trilha no Deserto das Cinzas. Dunas abertas, quase sem abrigo — bom pra quem atira de longe, ruim pra quem se expõe.',
-    pool:['goblin','gobarq','lobo','guarda','bird','esqueleto','lagarto']},
+    pool:['goblin','gobarq','lobo','guarda','bird','esqueleto','lagarto','lobisomem']},
   {n:4,mundo:'deserto',biome:'deserto',nome:'Vale das Cinzas',fixo:false,secret:true,total:[10,13],escala:1.25,
     desc:'Vale estreito coberto de cinza vulcânica. O xamã goblin cura os aliados feridos — derrube primeiro.',
-    pool:['goblin','gobarq','lobo','xama','guarda','ghost','bat','zumbi','esqueleto','vampiro']},
+    pool:['goblin','gobarq','lobo','xama','guarda','ghost','bat','zumbi','esqueleto','vampiro','esqguerreiro','esqmago','espectro']},
   {n:5,mundo:'deserto',biome:'deserto',nome:'Covil do Ogro',fixo:false,chefe:true,secret:false,total:[9,11],escala:1.3,
     desc:'Mapa de chefe: o terreno muda a cada run. O Ogro sempre está lá.',
-    pool:['goblin','gobarq','lobo','guarda','ogro','ghost','troll','minotauro','vampiro']},
+    pool:['goblin','gobarq','lobo','guarda','ogro','ghost','troll','minotauro','vampiro','berserker','espectro','esqmago']},
 ];
 const BIOMES={
   campina:{nome:'Campina',bg:'#14100d'},floresta:{nome:'Floresta',bg:'#14100d'},deserto:{nome:'Deserto',bg:'#14100d'}
@@ -1282,7 +1292,7 @@ function rollEnemies(mp){
   const total=ri(mp.total[0],mp.total[1]);
   const cnt={};chosen.forEach(t=>cnt[t]=1);if(ogro)cnt.ogro=1;
   let left=total-Object.values(cnt).reduce((a,b)=>a+b,0);
-  const caps={xama:2,guarda:2,minotauro:1,troll:1,vampiro:2};
+  const caps={xama:2,guarda:2,minotauro:1,troll:1,vampiro:2,esqmago:2,espectro:2,berserker:2};
   let guard=0;
   while(left>0&&guard++<200){const t=pick(chosen);if(caps[t]&&cnt[t]>=caps[t])continue;cnt[t]++;left--;}
   const list=[];let ni=0;const names=ENAMES.slice().sort(()=>R()-0.5);
@@ -1988,7 +1998,7 @@ function makeHero(used,cls,level){
   return h;
 }
 const enemyCache={};
-const EPRE={goblin:'Goblin',gobarq:'Arqueiro',lobo:'Lobo',xama:'Xamã',guarda:'Guarda',ogro:'',slime:'Gosma',bee:'Abelha',spider:'Aranha',beetle:'Besouro',fish:'Peixe',bat:'Morcego',bird:'Corvo',ghost:'Fantasma',rato:'Rato',esqueleto:'Esqueleto',zumbi:'Zumbi',javali:'Javali',lagarto:'Lagarto',vampiro:'Vampiro',minotauro:'',troll:''};
+const EPRE={goblin:'Goblin',gobarq:'Arqueiro',lobo:'Lobo',xama:'Xamã',guarda:'Guarda',ogro:'',slime:'Gosma',bee:'Abelha',spider:'Aranha',beetle:'Besouro',fish:'Peixe',bat:'Morcego',bird:'Corvo',ghost:'Fantasma',rato:'Rato',esqueleto:'Esqueleto',zumbi:'Zumbi',javali:'Javali',lagarto:'Lagarto',vampiro:'Vampiro',minotauro:'',troll:'',lobisomem:'Lobo',esqguerreiro:'Esqueleto',esqmago:'Esqueleto',espectro:'Espectro',berserker:'Orc'};
 function ensureEnemyCache(kind){
   if(enemyCache[kind])return enemyCache[kind];
   if(CREATURE_DEFS[kind]){
@@ -2177,8 +2187,10 @@ const LPC_RECIPES={
    outras cabeças do pacote LPC e com os corpos de esqueleto/zumbi. `mobRec`
    monta as 3 folhas (andar/golpe/dano) a partir de poucas peças. */
 const MOB_BODY={male:a=>`body/bodies/male/${a}.png`,muscular:a=>`body/bodies/muscular/${a}.png`,skeleton:a=>`body/bodies/skeleton/${a}.png`,zombie:a=>`body/bodies/zombie/${a}/zombie.png`};
-function mobRec(body,head,{legs=false,torso=null,dagger=false}={}){
-  const L=a=>[MOB_BODY[body](a),`head/heads/${head}/${a}.png`,...(legs?[`legs/pantaloons/male/${a}.png`]:[]),...(torso?[torso(a)]:[]),...(dagger?[`weapon/sword/dagger/${a}/dagger.png`]:[])];
+function mobRec(body,head,{legs=false,torso=null,dagger=false,shield=false,pre=[],mid=[],post=[]}={}){
+  // pre: atrás do corpo (asa/rabo de trás) · mid: logo depois da cabeça (orelhas) · post: por cima (rabo/asa da frente)
+  const L=a=>[...pre.map(f=>f(a)),MOB_BODY[body](a),`head/heads/${head}/${a}.png`,...mid.map(f=>f(a)),...(legs?[`legs/pantaloons/male/${a}.png`]:[]),...(torso?[torso(a)]:[]),
+    ...(dagger?[`weapon/sword/dagger/${a}/dagger.png`]:[]),...(shield&&a!=='hurt'?[`shield/round/${a}/silver.png`]:[]),...post.map(f=>f(a))].filter(Boolean);
   return {action:'slash',walk:L('walk'),slash:L('slash'),hurt:L('hurt')};
 }
 // grandão: machado de duas mãos, golpe em folha maior (igual ao Ogro)
@@ -2189,16 +2201,43 @@ function mobBig(body,head){
 }
 Object.assign(LPC_RECIPES,{
   esqueleto:mobRec('skeleton','skeleton/adult',{dagger:true}),
-  zumbi:mobRec('zombie','zombie/adult'),
+  zumbi:mobRec('zombie','zombie/adult',{legs:true,torso:a=>`torso/clothes/longsleeve/formal/male/${a}.png`}),
   javali:mobRec('male','boarman/adult',{legs:true,torso:a=>`torso/chainmail/male/${a}.png`,dagger:true}),
   lagarto:mobRec('male','lizard/male',{legs:true,dagger:true}),
   rato:mobRec('male','rat/adult',{legs:true,dagger:true}),
-  vampiro:mobRec('male','vampire/adult',{legs:true,torso:a=>`torso/clothes/longsleeve/formal/male/${a}.png`,dagger:true}),
+  vampiro:mobRec('male','vampire/adult',{legs:true,torso:a=>`torso/clothes/longsleeve/formal/male/${a}.png`,dagger:true,
+    pre:[a=>`body/wings/bat/adult/bg/${a}/black.png`],post:[a=>`body/wings/bat/adult/fg/${a}/black.png`]}),
+  lobisomem:mobRec('male','wolf/male',{legs:true,
+    pre:[a=>`body/tail/wolf/adult/bg/${a}/fur_grey.png`,a=>a==='hurt'?null:`head/ears/wolf/adult/bg/${a}.png`],
+    mid:[a=>`head/ears/wolf/adult/fg/${a}.png`],post:[a=>`body/tail/wolf/adult/fg/${a}/fur_grey.png`]}),
+  esqguerreiro:mobRec('skeleton','skeleton/adult',{torso:a=>`torso/armour/plate/male/${a}.png`,dagger:true,shield:true}),
+  esqmago:{action:'spellcast',walk:['body/bodies/skeleton/walk.png','head/heads/skeleton/adult/walk.png','torso/clothes/robe/female/walk/_brown.png','hat/magic/wizard/base/adult/walk/navy.png','weapon/magic/gnarled/universal/walk/background.png','weapon/magic/gnarled/universal/walk/foreground.png'],
+    spellcast:['body/bodies/skeleton/spellcast.png','head/heads/skeleton/adult/spellcast.png','torso/clothes/robe/female/spellcast/_brown.png','hat/magic/wizard/base/adult/spellcast/navy.png'],
+    hurt:['body/bodies/skeleton/hurt.png','head/heads/skeleton/adult/hurt.png','torso/clothes/robe/female/hurt/_brown.png','weapon/magic/gnarled/universal/hurt/background.png','weapon/magic/gnarled/universal/hurt/foreground.png']},
+  espectro:{...mobRec('zombie','zombie/adult',{legs:true,torso:a=>`torso/clothes/longsleeve/formal/male/${a}.png`}),fx:'ghost'},
+  berserker:{...mobRec('male','orc/male',{legs:true,torso:a=>`torso/chainmail/male/${a}.png`,dagger:true}),fx:'berserk'},
   minotauro:mobBig('muscular','minotaur/male'),
   troll:mobBig('muscular','troll/adult'),
 });
 const LPC_ACTION_DIMS={slash:[384,256,6,4],shoot:[832,256,13,4],spellcast:[448,256,7,4],thrust:[512,256,8,4]};
 const LPC_SHEETS={}; // versão síncrona do LPC_CACHE: só preenchida quando a Promise já resolveu, pra retrato poder ler sem await
+/* efeitos de cor sobre a folha já montada: reaproveita as mesmas peças e gera
+   variantes (fantasma translúcido, orc vermelho) sem desenhar nada novo */
+function lpcPixels(c,fn){const g=c.getContext('2d'),d=g.getImageData(0,0,c.width,c.height),p=d.data;for(let i=0;i<p.length;i+=4)if(p[i+3])fn(p,i);g.putImageData(d,0,0);}
+function hueShift(c,deg,sat=1){
+  lpcPixels(c,(p,i)=>{
+    const r=p[i]/255,g=p[i+1]/255,b=p[i+2]/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,dl=mx-mn;
+    if(dl<0.12)return; // metal/osso (pouca cor) fica como está
+    let h=mx===r?((g-b)/dl)%6:mx===g?(b-r)/dl+2:(r-g)/dl+4;h=((h*60+deg)%360+360)%360;
+    const C=Math.min(1-Math.abs(2*l-1),dl*sat),X=C*(1-Math.abs((h/60)%2-1)),m=l-C/2,k=Math.floor(h/60),
+      [rr,gg,bb]=[[C,X,0],[X,C,0],[0,C,X],[0,X,C],[X,0,C],[C,0,X]][k%6];
+    p[i]=(rr+m)*255;p[i+1]=(gg+m)*255;p[i+2]=(bb+m)*255;
+  });
+}
+const LPC_FX={
+  ghost:c=>lpcPixels(c,(p,i)=>{const lum=(0.3*p[i]+0.59*p[i+1]+0.11*p[i+2])/255;p[i]=110+lum*130;p[i+1]=165+lum*85;p[i+2]=225+lum*30;p[i+3]=p[i+3]*0.6;}),
+  berserk:c=>hueShift(c,-112,1.9),
+};
 function lpcBuild(cls){
   if(LPC_CACHE[cls])return LPC_CACHE[cls];
   const rec=LPC_RECIPES[cls],action=rec.action;
@@ -2206,6 +2245,7 @@ function lpcBuild(cls){
   if(rec.oversize)jobs.push(lpcStackOversize(rec.actionBody,rec.actionBehind,rec.actionFront));
   else jobs.push(lpcStack(rec[action],LPC_ACTION_DIMS[action][0],LPC_ACTION_DIMS[action][1]));
   const p=Promise.all(jobs).then(([walkC,hurtC,actionC])=>{
+    const fx=LPC_FX[rec.fx];if(fx){fx(walkC);fx(hurtC);fx(actionC);}
     const out={walk:{tex:lpcTex(walkC),cols:9,rows:4},hurt:{tex:lpcTex(hurtC),cols:6,rows:1}};
     const dims=rec.oversize?[1152,768,6,4]:LPC_ACTION_DIMS[action];
     out[action]={tex:lpcTex(actionC),cols:dims[2],rows:dims[3]};
@@ -2289,9 +2329,9 @@ function tickLPC(u,s){
 }
 function lpcHeroMesh(cls,sz){
   const geo=new THREE.PlaneGeometry(1,1);
-  const mat=new THREE.MeshBasicMaterial({transparent:true,alphaTest:0.5,side:THREE.DoubleSide});
-  const mesh=new THREE.Mesh(geo,mat);mesh.position.y=sz/2;mesh.scale.set(sz,sz,1);
   const rec=LPC_RECIPES[cls];
+  const mat=new THREE.MeshBasicMaterial({transparent:true,alphaTest:rec.fx==='ghost'?0.05:0.5,side:THREE.DoubleSide});
+  const mesh=new THREE.Mesh(geo,mat);mesh.position.y=sz/2;mesh.scale.set(sz,sz,1);
   const lpc={state:'stand',since:null,row:2,sheets:null,geo,mat,action:rec.action,
     mesh,baseSz:sz,curRatio:1,oversize:!!rec.oversize,oversizeRatio:192/64};
   lpcBuild(cls).then(sheets=>{lpc.sheets=sheets;});
@@ -3352,7 +3392,7 @@ async function moveAlong(u,path){
   lpcSetState(u,'stand');
 }
 const SKILL={guerreiro:'Golpe',ladino:'Estocada',mago:'Raio Arcano',clerigo:'Golpe Sagrado',arqueiro:'Flechada',bardo:'Nota Cortante',
-  goblin:'Facada',gobarq:'Flechada',lobo:'Mordida',xama:'Raio Sombrio',guarda:'Golpe',ogro:'Pancada',slime:'Engolfar',bee:'Ferrão',spider:'Mordida Venenosa',rato:'Mordida',esqueleto:'Golpe Ósseo',zumbi:'Agarrão',javali:'Investida',lagarto:'Corte Rápido',vampiro:'Mordida Sombria',minotauro:'Machadada',troll:'Pancada Bruta',fish:'Mordida',bat:'Mordida Cega',bird:'Bicada',ghost:'Toque Gélido',beetle:'Investida'};
+  goblin:'Facada',gobarq:'Flechada',lobo:'Mordida',xama:'Raio Sombrio',guarda:'Golpe',ogro:'Pancada',slime:'Engolfar',bee:'Ferrão',spider:'Mordida Venenosa',rato:'Mordida',esqueleto:'Golpe Ósseo',zumbi:'Agarrão',javali:'Investida',lagarto:'Corte Rápido',vampiro:'Mordida Sombria',lobisomem:'Garra Selvagem',esqguerreiro:'Golpe Blindado',esqmago:'Raio Ósseo',espectro:'Toque Espectral',berserker:'Fúria',minotauro:'Machadada',troll:'Pancada Bruta',fish:'Mordida',bat:'Mordida Cega',bird:'Bicada',ghost:'Toque Gélido',beetle:'Investida'};
 const skillOf=u=>SKILL[u.side==='hero'?u.cls:u.kind]||'Ataque';
 // nome da habilidade e o d20 aparecem juntos sobre a cabeça de quem age; só o
 // resultado (dano, MISS, cura) aparece depois, sobre o alvo.
@@ -3366,9 +3406,9 @@ async function showRoll({u,skill,roll,outcome,numText}){
   await wait(260);
 }
 const sibActive=u=>u.sib&&party.some(o=>o!==u&&o.alive&&o.r!=null&&o.sur===u.sur);
-const VERB={guerreiro:'golpeou',ladino:'apunhalou',mago:'lançou um raio em',clerigo:'esmagou',arqueiro:'flechou',bardo:'acertou',goblin:'atacou',rato:'mordeu',esqueleto:'golpeou',zumbi:'agarrou',javali:'investiu contra',lagarto:'cortou',vampiro:'mordeu',minotauro:'rachou',troll:'esmagou',fish:'mordeu',bat:'mordeu',bird:'bicou',ghost:'tocou',gobarq:'flechou',ogro:'esmagou',lobo:'mordeu',xama:'atingiu',guarda:'golpeou',slime:'atingiu',bee:'picou',spider:'mordeu',beetle:'golpeou'};
+const VERB={guerreiro:'golpeou',ladino:'apunhalou',mago:'lançou um raio em',clerigo:'esmagou',arqueiro:'flechou',bardo:'acertou',goblin:'atacou',rato:'mordeu',esqueleto:'golpeou',zumbi:'agarrou',javali:'investiu contra',lagarto:'cortou',vampiro:'mordeu',lobisomem:'dilacerou',esqguerreiro:'golpeou',esqmago:'atingiu',espectro:'tocou',berserker:'esmagou',minotauro:'rachou',troll:'esmagou',fish:'mordeu',bat:'mordeu',bird:'bicou',ghost:'tocou',gobarq:'flechou',ogro:'esmagou',lobo:'mordeu',xama:'atingiu',guarda:'golpeou',slime:'atingiu',bee:'picou',spider:'mordeu',beetle:'golpeou'};
 async function projectile(u,t){
-  const mg=u.cls==='mago';const a=u.grp.position,b=t.grp.position;
+  const mg=u.cls==='mago'||(u.side==='enemy'&&isMagicAttacker(u));const a=u.grp.position,b=t.grp.position;
   let halo=null;
   if(mg){
     // carrega: um brilho crescendo na ponta do cajado antes de soltar a esfera
@@ -3463,7 +3503,7 @@ async function attack(u,t){
   if(u.side==='hero'&&u.cls==='arqueiro'&&hu>ht)u.highHits++;
   const sparks=u.side==='hero'?['#ffd34a','#ffffff','#ff9a3a']:['#ff5a4a','#ffffff','#a01e1e'];
   if(u.alc===1)slash(t,crit);
-  if(u.cls==='mago'){
+  if(u.cls==='mago'||(u.side==='enemy'&&magic)){
     fxPlay('magic','lightning-strike-32px_strip8.png',8,16,{x:t.grp.position.x,y:t.grp.position.y,z:t.grp.position.z},{w:crit?2:1.5,h:crit?3:2.3});
     if(crit)fxPlay('combat','critical-hit-32px_strip8.png',8,14,{x:t.grp.position.x,y:t.grp.position.y+0.4,z:t.grp.position.z},{w:1.9});
     if(!crit){flash('#bfe3ff',0.22);shakeCam(0.12,0.22);}

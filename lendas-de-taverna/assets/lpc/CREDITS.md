@@ -152,6 +152,14 @@ Licenças: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
 Autores: bluecarrot16, Stephen Challener (Redshrike), Napsio (Vitruvian Studio), JaidynReiman
 Licenças: OGA-BY 3.0, CC-BY 3.0, CC-BY-SA 3.0
 
+**head/heads/wolf, head/ears/wolf, body/tail/wolf** (cabeça, orelhas e rabo do Homem-Lobo)
+Autores: bluecarrot16, Sander Frenken (castelonia), Benjamin K. Smith (BenCreating), William.Thompsonj, Stephen Challener (Redshrike), JaidynReiman
+Licenças: CC-BY-SA 3.0, GPL 3.0 (cabeça); OGA-BY 3.0+, CC-BY 3.0+, GPL 3.0 (orelhas e rabo)
+
+**body/wings/bat** (asas do Vampiro)
+Autores: ElizaWy, JaidynReiman
+Licença: OGA-BY 3.0
+
 ## Fonte
 
 Universal LPC Spritesheet Character Generator (GitHub):
