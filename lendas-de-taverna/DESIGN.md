@@ -166,7 +166,12 @@ mostrar na tela (encaixa na lista de turno que já existe) e pra IA calcular.
   corredores, fosso, arena); chefe: Minotauro (mapa 10). Chefes agora são
   genéricos (`boss` no mapa + tabela `BOSSES`). Escala de dificuldade 1.5→2.1,
   a calibrar jogando.
-- Próximos passos: mapas e biomas do Ato III em diante, dungeons secretas por
+- **Ato III (feito):** bioma Caverna (rocha vulcânica, lava animada do pack no
+  lugar da água, estalagmites, céu de brasa). 5 mapas (11–15, Nv. 27–40):
+  Fenda de Magma, Túneis de Basalto, Lagos de Lava, Ilhas de Obsidiana, Trono
+  do Troll (chefe). Inimigo novo: Esqueleto em Chamas (recolorido). Escala
+  2.2→2.8, a calibrar jogando.
+- Próximos passos: mapas e biomas do Ato IV em diante, dungeons secretas por
   ato, objetivos variados (sobreviver N turnos etc.).
 
 ### Campanha: mapas e Modo Interminável
