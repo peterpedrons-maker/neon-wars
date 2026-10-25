@@ -2735,6 +2735,8 @@ function buildUnit(u){
   scene.add(grp);
   Object.assign(u,{grp,pivot,plane,mat,mats,sz,legL,legR,armG,headG});
   if(plane.userData)plane.userData.unit=u;
+  // criatura de quadro alto (lobo): a barra fica acima do sprite, sem cobrir o corpo
+  if(u.lpc&&u.lpc.multi){const hh=u.lpc.def.w*u.lpc.def.fh/u.lpc.def.fw;u.hbarExtra=hh+0.12-(sz+0.16);}
   const hp=document.createElement('div');hp.className='hpf'+(u.side==='enemy'?' e':'');
   hp.innerHTML=`<div class="bar"><b></b><i></i></div>`;
   hud.appendChild(hp);
@@ -4221,7 +4223,7 @@ function loop(t){
     if(u.alive!==false&&!(u.lpc&&u.lpc.multi))u.pivot.scale.y=1+Math.sin(s*2.4+u.id*1.7)*0.025;
     if(u.lpc)(u.lpc.creature?tickCreature:tickLPC)(u,s);
     if(u.hpEl&&u.alive!==false){const f=(u.hp/u.maxhp*100)+'%';u.hpFill.style.width=f;u.hpGhost.style.width=f;u.hpEl.classList.toggle('low',u.side==='hero'&&u.hp/u.maxhp<=0.35);
-      if(phase==='battle'){const [hx,hy]=screenOf(u,-0.16-0.24*u.sz);u.hpEl.style.left=hx+'px';u.hpEl.style.top=hy+'px';}}
+      if(phase==='battle'){const [hx,hy]=screenOf(u,u.hbarExtra!=null?u.hbarExtra:-0.16-0.24*u.sz);u.hpEl.style.left=hx+'px';u.hpEl.style.top=hy+'px';}}
   }
   if(phase==='battle'){renderObjs();renderUC();}
   villagers.forEach(v=>{v.pivot.scale.y=1+Math.sin(s*2.4+v.id)*0.02;if(v.lpc)tickLPC(v,s);});
