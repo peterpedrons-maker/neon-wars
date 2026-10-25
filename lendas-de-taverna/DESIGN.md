@@ -186,6 +186,20 @@ mostrar na tela (encaixa na lista de turno que já existe) e pra IA calcular.
   calibração de dificuldade, dungeons secretas por
   ato, objetivos variados (sobreviver N turnos etc.).
 
+### Motor de mapas (variedade estilo FFT)
+- Mapas podem ser **desenhados à mão** (`grid` em `MAPS`, grade ASCII): tamanho
+  e formato livres, casas vazias (`v`) dão formato à plataforma, alturas 1–4,
+  zona de início do grupo (`Z`) e dos inimigos (`E`) por mapa. O desenho pode
+  ser espelhado a cada run. O chão flutuante vira uma ponta de rocha por casa
+  (InstancedMesh), mais funda longe da borda.
+- **Iluminação por mapa** (`luz`): normal, penumbra, escuro. Só o terreno
+  escurece; os sprites continuam visíveis.
+- Ato I já usa mapas desenhados à mão (12×14, 9×18, 16×12, L 14×14 e arena
+  circular 15×14 com plataforma elevada). Atos II–V ainda são gerados; serão
+  redesenhados um por vez.
+- Planejado: dungeon **breu** (terreno invisível, armadilhas só pros heróis,
+  inimigos desviam) e dungeons secretas (poucas no início, mais no fim).
+
 ### Campanha: mapas e Modo Interminável
 - **5 mapas fixos hoje** (antes eram 3): Campina Verde (Clareira de Brumavale,
   Bosque dos Corvos) e Deserto das Cinzas (Duna Rachada, Vale das Cinzas,
