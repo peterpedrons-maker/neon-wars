@@ -2633,42 +2633,71 @@ function spStripTick(state,s){
    separada, só um loop contínuo. Perfeito pros inimigos mais simples do
    jogo (primeira missão). */
 const CREATURE_DEFS={
+  // flip: sprite de lado (olha pra direita) — espelha conforme o alvo/movimento
+  lobo:{multi:{idle:{frames:1,fps:1},walk:{frames:5,fps:10},attack:{frames:5,fps:9},hurt:{frames:3,fps:7}},fw:105,fh:68,w:1.6,flip:true},
   slime:{file:'slime-32px_strip10.png',frames:10,fps:7},
-  bee:{file:'bee-32px_strip8.png',frames:8,fps:11},
+  bee:{file:'bee-32px_strip8.png',frames:8,fps:11,flip:true},
   spider:{file:'spider-32px_strip12.png',frames:12,fps:7},
-  fish:{file:'fish-32px_strip8.png',frames:8,fps:9},
+  fish:{file:'fish-32px_strip8.png',frames:8,fps:9,flip:true},
   bat:{file:'bat-32px_strip8.png',frames:8,fps:12},
-  bird:{file:'bird-32px_strip8.png',frames:8,fps:10},
-  ghost:{file:'ghost-32px_strip12.png',frames:12,fps:7},
-  beetle:{file:'beetle-32px_strip8.png',frames:8,fps:8},
+  bird:{file:'bird-32px_strip8.png',frames:8,fps:10,flip:true},
+  ghost:{file:'ghost-32px_strip12.png',frames:12,fps:7,flip:true},
+  beetle:{file:'beetle-32px_strip8.png',frames:8,fps:8,flip:true},
 };
-const CREATURE_IMG={},CREATURE_STATE={};
+const CREATURE_IMG={},CREATURE_STATE={},CREATURE_SHEETS={};
+function creatureSheet(kind,name){
+  const key=kind+'/'+name;
+  if(!CREATURE_SHEETS[key]){const im=new Image();im.src=`assets/creatures/${kind}/${name}.png`;CREATURE_SHEETS[key]=im;}
+  return CREATURE_SHEETS[key];
+}
 function creatureImg(kind){
   if(CREATURE_IMG[kind])return CREATURE_IMG[kind];
-  const im=spStripImg('creatures',CREATURE_DEFS[kind].file);
+  const def=CREATURE_DEFS[kind];
+  if(def.multi){Object.keys(def.multi).forEach(n=>creatureSheet(kind,n));CREATURE_IMG[kind]=creatureSheet(kind,'idle');return CREATURE_IMG[kind];}
+  const im=spStripImg('creatures',def.file);
   CREATURE_IMG[kind]=im;return im;
 }
 function creatureState(kind){
-  if(CREATURE_STATE[kind])return CREATURE_STATE[kind];
   const def=CREATURE_DEFS[kind];
+  if(def.multi)return spStripState(creatureSheet(kind,'idle'),1,1,false); // um relógio por criatura: cada uma num estado
+  if(CREATURE_STATE[kind])return CREATURE_STATE[kind];
   const st=spStripState(creatureImg(kind),def.frames,def.fps,true);
   CREATURE_STATE[kind]=st;return st;
 }
 function creaturePortrait(kind){
-  const im=creatureImg(kind);
+  const im=creatureImg(kind),def=CREATURE_DEFS[kind];
   if(!im.complete||!im.naturalWidth)return null;
   const c=document.createElement('canvas');c.width=32;c.height=32;
   const g=c.getContext('2d');g.imageSmoothingEnabled=false;
-  g.drawImage(im,0,0,32,32,0,0,32,32);
+  if(def.multi)g.drawImage(im,def.fw*0.42,0,def.fw*0.58,def.fh*0.62,0,0,32,32); // cabeça do lobo
+  else g.drawImage(im,0,0,32,32,0,0,32,32);
   return c.toDataURL();
 }
-function tickCreature(u,s){spStripTick(u.lpc.strip,s);}
+function tickCreature(u,s){
+  const L=u.lpc;
+  if(!L.multi){spStripTick(L.strip,s);return;}
+  const nm={walk:'walk',hurt:'hurt',attack:'attack'}[L.state]||'idle';
+  if(L.cur!==nm){L.cur=nm;const d=L.multi[nm],st=L.strip;st.img=creatureSheet(L.kind,nm);st.frames=d.frames;st.fps=d.fps;st.since=null;st.lastFrame=-1;}
+  const st=L.strip;
+  // golpe e dano tocam uma vez só e voltam pro parado
+  if((nm==='attack'||nm==='hurt')&&st.since!=null&&(s-st.since)>=st.frames/st.fps){L.state='stand';L.cur=null;return;}
+  spStripTick(st,s);
+}
+// sprites de lado olham pra onde vão/atacam: espelha conforme o lado da tela
+function faceToward(u,x,z){
+  const L=u.lpc;if(!L||!L.creature||!L.def||!L.def.flip||!u.plane)return;
+  const dx=x-u.grp.position.x,dz=z-u.grp.position.z,sdx=dx*Math.cos(AZ)-dz*Math.sin(AZ);
+  if(Math.abs(sdx)<0.05)return;
+  L.flip=sdx<0;u.plane.scale.x=Math.abs(u.plane.scale.x)*(L.flip?-1:1);
+}
 function lpcCreatureMesh(kind,sz){
-  const geo=new THREE.PlaneGeometry(1,1);
+  const def=CREATURE_DEFS[kind],geo=new THREE.PlaneGeometry(1,1);
   const strip=creatureState(kind);
   const mat=new THREE.MeshBasicMaterial({map:strip.tex,transparent:true,alphaTest:0.5,side:THREE.DoubleSide});
-  const mesh=new THREE.Mesh(geo,mat);mesh.position.y=sz/2;mesh.scale.set(sz,sz,1);
-  const lpc={creature:true,strip,geo,mat};
+  const mesh=new THREE.Mesh(geo,mat);
+  let w=sz,h=sz;if(def.multi){w=def.w;h=def.w*def.fh/def.fw;}
+  mesh.position.y=h/2;mesh.scale.set(w,h,1);
+  const lpc={creature:true,strip,geo,mat,kind,def,multi:def.multi||null,action:def.multi?'attack':undefined,state:'stand'};
   return {mesh,mat,lpc};
 }
 function buildUnit(u){
@@ -3662,7 +3691,7 @@ async function moveAlong(u,path){
   lpcSetState(u,'walk');
   for(const p of path){
     const tx=wx(p.c),tz=wz(p.r),ty=topY(p.r,p.c),y0=u.grp.position.y,peak=Math.max(y0,ty)+0.28;
-    u.r=p.r;u.c=p.c;
+    u.r=p.r;u.c=p.c;faceToward(u,tx,tz);
     swingLegs(u,0.2);
     await gsap.timeline().to(u.grp.position,{x:tx,z:tz,duration:0.2,ease:'none'},0).to(u.grp.position,{y:peak,duration:0.1,ease:'power1.out'},0).to(u.grp.position,{y:ty,duration:0.1,ease:'power1.in'},0.1);
     burst(u.grp.position,{n:3,colors:['#c9b28a','#a08a62'],spread:0.3,up:0.1,y:0.03,life:0.3,size:0.7});
@@ -3761,6 +3790,7 @@ function isIsolated(t){
 }
 async function attack(u,t){
   if(!u.alive)return;
+  faceToward(u,t.grp.position.x,t.grp.position.z);
   const parts=[[u.atk,'ATQ']];const hu=hOf(u.r,u.c),ht=hOf(t.r,t.c);
   if(hu>ht)parts.push([u.cls==='arqueiro'?4:2,'alto']);
   if(u.inspired)parts.push([u.inspired,'balada']);
@@ -4188,7 +4218,7 @@ function loop(t){
   trees.forEach(tr=>{tr.userData.foliage.rotation.z=Math.sin(s*0.8+tr.userData.sway)*0.05;tr.userData.foliage.rotation.x=Math.sin(s*0.6+tr.userData.sway*1.3)*0.025;});
   for(const u of units()){
     if(!u.grp)continue;
-    if(u.alive!==false)u.pivot.scale.y=1+Math.sin(s*2.4+u.id*1.7)*0.025;
+    if(u.alive!==false&&!(u.lpc&&u.lpc.multi))u.pivot.scale.y=1+Math.sin(s*2.4+u.id*1.7)*0.025;
     if(u.lpc)(u.lpc.creature?tickCreature:tickLPC)(u,s);
     if(u.hpEl&&u.alive!==false){const f=(u.hp/u.maxhp*100)+'%';u.hpFill.style.width=f;u.hpGhost.style.width=f;u.hpEl.classList.toggle('low',u.side==='hero'&&u.hp/u.maxhp<=0.35);
       if(phase==='battle'){const [hx,hy]=screenOf(u,-0.16-0.24*u.sz);u.hpEl.style.left=hx+'px';u.hpEl.style.top=hy+'px';}}
