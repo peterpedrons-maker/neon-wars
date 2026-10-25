@@ -773,6 +773,10 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 #stage[data-bio="cripta"]{background:radial-gradient(90% 55% at 50% 108%,#6b1f3a 0%,rgba(107,31,58,0) 70%),radial-gradient(60% 40% at 80% 12%,rgba(150,70,170,.2),transparent 70%),linear-gradient(#08040e,#1a0e26 52%,#3a1a44)}
 #stage[data-luz="breu"]{background:#000 !important}
 .mrow.dung{border-color:#7a5a9a}.mrow.dung i{background:#9a7ac0}
+#stage[data-bio="campina"]{background:radial-gradient(90% 55% at 50% 108%,#3f7a4e 0%,rgba(63,122,78,0) 70%),radial-gradient(60% 40% at 80% 12%,rgba(160,210,150,.18),transparent 70%),linear-gradient(#08140f,#14301f 52%,#265038)}
+#stage[data-bio="floresta"]{background:radial-gradient(90% 55% at 50% 108%,#2c5a38 0%,rgba(44,90,56,0) 70%),linear-gradient(#050e09,#10261a 52%,#1f4430)}
+#stage[data-bio="deserto"]{background:radial-gradient(90% 55% at 50% 108%,#b0793a 0%,rgba(176,121,58,0) 70%),radial-gradient(60% 40% at 80% 12%,rgba(255,200,120,.2),transparent 70%),linear-gradient(#150e08,#3a2812 52%,#6b4a22)}
+#stage[data-bio="ruinas"]{background:radial-gradient(90% 55% at 50% 108%,#5c6678 0%,rgba(92,102,120,0) 70%),linear-gradient(#090b11,#1d2130 52%,#363d52)}
 </style>
 </head>
 <body>
@@ -1945,12 +1949,6 @@ function decorateBoard(bio){
     if(cell(r,c)!=='.'||isZone(r,c)||((r*7+c*13)%9!==0)||++nGrass>34)continue;
     ambient(boardGroup,'environment','tall-grass-32px_strip12.png',12,10,wx(c)+0.22,topY(r,c)-0.02,wz(r)+0.2,{w:0.8,variant:(r+c)%3});
   }
-  const outV=(r,c)=>!inB(r,c)||cell(r,c)==='v';let nS=0,nE=0;
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
-    if(cell(r,c)==='v')continue;
-    if(outV(r+1,c)&&(c*5+r)%4===1&&nS++<4)waterfallAt(boardGroup,wx(c),wz(r)+0.52,0);
-    if(outV(r,c+1)&&(r*5+c)%4===1&&nE++<3)waterfallAt(boardGroup,wx(c)+0.52,wz(r),Math.PI/2);
-  }
   [[0.2,0.3],[0.55,0.2],[0.4,0.7]].forEach(([fc,fr],i)=>ambient(boardGroup,'weather','fireflies-32px_strip16.png',16,12,wx(Math.round(fc*(COLS-1))),0.9,wz(Math.round(fr*(ROWS-1))),{w:2.4,variant:i,opacity:0.9}));
   if(bio==='floresta')[[4,4],[11,8]].forEach(([c,r],i)=>ambient(boardGroup,'weather','falling-leaves-32px_strip16.png',16,10,wx(c),1.4,wz(r),{w:3,variant:i}));
 }
@@ -2047,7 +2045,6 @@ village.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
   A('environment','banner-32px_strip8.png',8,10,-2.15,0.15,-0.2,{w:1.2});A('environment','banner-32px_strip8.png',8,10,2.15,0.15,-0.2,{w:1.2,variant:1});
   for(let i=0;i<9;i++)A('environment','tall-grass-32px_strip12.png',12,10,-6.2+i*1.55,0,5.3+(i%2)*0.5,{w:0.9,variant:i%3});
   [[-5,-4],[-1,5],[4,-4.5],[6,3],[0,-5]].forEach(([x,z],i)=>A('weather','fireflies-32px_strip16.png',16,12,x,0.8,z,{w:2.6,variant:i,opacity:0.9}));
-  waterfallAt(village,-2.5,6.73,0);waterfallAt(village,3,6.73,0);waterfallAt(village,7.53,1,Math.PI/2);waterfallAt(village,7.53,-3,Math.PI/2);
 })();
 
 /* ---------- Moradores ---------- */
