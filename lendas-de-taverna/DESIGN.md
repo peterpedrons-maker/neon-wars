@@ -150,6 +150,20 @@ aqui quem "gerenciaria" seria a IA, adicionando complexidade sem o jogador
 sentir a gestão. Cooldown por turno é mais simples de implementar, de
 mostrar na tela (encaixa na lista de turno que já existe) e pra IA calcular.
 
+### Campanha em atos (estrutura)
+- 5 atos, cada um com faixa de nível e um chefe no fim: I Vale de Brumavale
+  (Nv. 1–12, Ogro), II Ruínas Esquecidas (12–25, Minotauro), III Cavernas de
+  Magma (25–40, Troll), IV Picos Gelados (40–52, Rei Esqueleto), V Cripta Real
+  (52–60, Vampiro Senhor). Hoje só o Ato I tem mapas (os 5 que já existiam);
+  os outros aparecem travados no Quadro de Missões ("em breve") e ganham mapas
+  um por vez.
+- Cada mapa tem `ato` e `nivel` recomendado; o briefing avisa quando o grupo
+  está abaixo do nível. Mapas se liberam em sequência (progresso salvo).
+- Uma run segue pelos mapas do mesmo ato; vencer o chefe fecha o ato. O Modo
+  Interminável fica desligado até a campanha estar completa.
+- Próximos passos: mapas e biomas do Ato II em diante, dungeons secretas por
+  ato, objetivos variados (sobreviver N turnos etc.).
+
 ### Campanha: mapas e Modo Interminável
 - **5 mapas fixos hoje** (antes eram 3): Campina Verde (Clareira de Brumavale,
   Bosque dos Corvos) e Deserto das Cinzas (Duna Rachada, Vale das Cinzas,
