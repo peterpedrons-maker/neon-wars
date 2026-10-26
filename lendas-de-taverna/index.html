@@ -340,7 +340,7 @@ details.box[open]>summary::after{content:"−"}
 .mrow.sel{border-color:var(--ouro)}
 .mrow i{background:var(--madeira-2);color:var(--ouro);border:2px solid var(--ouro-2)}
 h4.sec{margin:6px 0 0;font-family:var(--f-display);font-size:15px;color:var(--ouro);font-weight:600}
-.egrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.egrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 .ec{display:flex;gap:8px;align-items:flex-start;background:var(--sombra);border-radius:6px;padding:8px}
 .ec img{width:30px;height:36px;image-rendering:pixelated;flex:0 0 auto}
 .ec b{font-family:var(--f-display);font-size:13px;display:block;font-weight:600}
@@ -777,6 +777,300 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 #stage[data-bio="floresta"]{background:radial-gradient(90% 55% at 50% 108%,#2c5a38 0%,rgba(44,90,56,0) 70%),linear-gradient(#050e09,#10261a 52%,#1f4430)}
 #stage[data-bio="deserto"]{background:radial-gradient(90% 55% at 50% 108%,#b0793a 0%,rgba(176,121,58,0) 70%),radial-gradient(60% 40% at 80% 12%,rgba(255,200,120,.2),transparent 70%),linear-gradient(#150e08,#3a2812 52%,#6b4a22)}
 #stage[data-bio="ruinas"]{background:radial-gradient(90% 55% at 50% 108%,#5c6678 0%,rgba(92,102,120,0) 70%),linear-gradient(#090b11,#1d2130 52%,#363d52)}
+
+/* ===== Quadro de Missões: kit de UI novo (assets/ui, assets/regioes) ===== */
+.ov .inner.qd{position:absolute;inset:0;z-index:2;max-width:560px;width:100%;margin:0 auto;padding:0;gap:0;border:0;border-image:none;background:#140d09 radial-gradient(#2a1a10,#120b08);overflow:hidden;color:#f3e6c6;image-rendering:auto}
+.qd .qtop{flex:none;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:url(assets/ui/faixa_normal.png) 0 0/100% 100% no-repeat}
+.qd .qtop h2{font-size:18px;color:#f3e6c6;text-shadow:0 2px 0 #000;margin:0}.qd .qtop small{display:block;font-size:11px;color:#cdb68a}
+.qd .qgo,.qd .qrow .go{background:url(assets/ui/btn_ouro.png) 0 0/100% 100% no-repeat;border:0;color:#2b1812;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;font-family:inherit;cursor:pointer;flex:none}
+.qd .qgo{width:82px;height:36px}
+.qd .qstrip{flex:none;display:flex;gap:6px;overflow-x:auto;padding:10px 8px 6px;scrollbar-width:none;scroll-snap-type:x proximity}
+.qd .qstrip::-webkit-scrollbar{display:none}
+.qd .qcard{all:unset;box-sizing:border-box;cursor:pointer;flex:0 0 118px;height:176px;position:relative;background:url(assets/ui/carta.png) 0 0/100% 100% no-repeat;scroll-snap-align:center}
+.qd .qcard.sel{background-image:url(assets/ui/carta_sel.png)}
+.qd .qcard .art{position:absolute;left:14%;top:11%;width:72%;height:50%;background-size:cover;background-position:center}
+.qd .qcard.lock .art{filter:grayscale(.85) brightness(.55)}
+.qd .qcard .n{position:absolute;left:10px;right:10px;top:117px;text-align:center;font-size:10.5px;font-weight:700;line-height:1.1;text-shadow:0 1px 0 #000;color:#f3e6c6}
+.qd .qcard .n em{display:block;font-style:normal;font-size:9px;color:#e9b949;letter-spacing:.5px}
+.qd .qcard.lock .n{color:#a8a8b2}
+.qd .qcard .s{position:absolute;left:0;right:0;bottom:11px;text-align:center;font-size:9.5px;color:#d8c397}
+.qd .bd{position:absolute;right:2px;top:4px;width:26px;height:26px}
+.qd .qinfo{flex:none;margin:4px 8px 0;padding:14px 18px;background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;display:flex;gap:12px;align-items:center}
+.qd .qinfo .art{width:78px;height:66px;background-size:cover;background-position:center;border:2px solid #0e0805;box-shadow:0 0 0 2px #8a6a3a;flex:none}
+.qd .qinfo h3{font-size:15px;margin:0;text-shadow:0 2px 0 #000;color:#f3e6c6}.qd .qinfo p{font-size:11px;color:#d3be93;margin:3px 0 0;line-height:1.35}
+.qd .qinfo>div{flex:1;min-width:0}
+.qd .qpb{height:22px;margin-top:7px;background:url(assets/ui/barra_moldura.png) 0 0/100% 100% no-repeat;padding:6px 11px 6px 12px}.qd .qpb i{display:block;height:100%;background:linear-gradient(#f6d77a,#c9962e);box-shadow:0 0 6px #e9b94988}
+.qd .qlist{flex:1;min-height:0;overflow-y:auto;padding:2px 10px 14px}
+.qd .qband{height:22px;margin:8px 0 6px;background:url(assets/ui/divisor.png) center/100% 100% no-repeat;text-align:center;position:relative}
+.qd .qband span{position:absolute;left:50%;top:1px;transform:translateX(-50%);background:#160e0a;padding:0 10px;font-size:10px;letter-spacing:1.5px;color:#e6cf9b;line-height:20px;text-transform:uppercase;white-space:nowrap}
+.qd .qrow{all:unset;box-sizing:border-box;position:relative;width:100%;min-height:64px;margin-bottom:4px;display:flex;align-items:center;gap:10px;padding:0 18px;background:url(assets/ui/faixa_normal.png) 0 0/100% 100% no-repeat;cursor:pointer}
+.qd .qrow.done{background-image:url(assets/ui/faixa_destaque.png)}
+.qd .qrow.off{background-image:url(assets/ui/faixa_inativa.png);cursor:default}
+.qd .qrow.dung{background-image:url(assets/ui/faixa_normal.png);filter:hue-rotate(250deg) saturate(.9)}
+.qd .qrow.pick{outline:2px solid #ffe9b8;outline-offset:-4px}
+.qd .qrow .tx{flex:1;min-width:0}.qd .qrow b{font-size:14px;display:block;text-shadow:0 1px 0 #000;font-family:var(--f-display);font-weight:600;color:#f3e6c6}
+.qd .qrow small{font-size:10.5px;color:#d3be93;display:block;margin-top:2px}
+.qd .qrow.off b{color:#8e8e98}.qd .qrow.off small{color:#6e6e78}
+.qd .qrow .bd{position:static;width:30px;height:30px;flex:none}
+.qd .qrow .go{width:84px;height:34px;pointer-events:none}
+.qd .qrow .tg{position:absolute;right:8px;top:-8px;height:26px}
+.qd .qmore,.qd .qnote{text-align:center;font-size:11px;color:#a9967a;margin:8px 4px 0;line-height:1.4}
+
+.qd .qbrief{padding-top:8px}
+.qd .qhero{height:150px;margin:0 2px 8px;background-size:cover;background-position:center;position:relative;border:3px solid #8a6a3a;box-shadow:0 0 0 2px #0e0805,inset 0 -40px 40px -20px #000a}
+.qd .qhero .tg{position:absolute;right:8px;top:-10px;height:32px}
+.qd .qdesc{padding:18px 28px;background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;font-size:13px;line-height:1.45;color:#eadbb8}
+.qd .qtags{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0 2px}
+.qd .qtag{background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;padding:7px 14px;font-size:11px;color:#e6d4a8;white-space:nowrap}
+.qd .qwarn{margin:8px 0 0;padding:10px 16px;background:url(assets/ui/faixa_normal.png) 0 0/100% 100% no-repeat;filter:hue-rotate(-35deg) saturate(1.7);font-size:12px;line-height:1.4;color:#ffd5c8}
+.qd .qegrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.qd .qec{min-width:0;display:flex;gap:8px;align-items:flex-start;padding:12px 12px;min-height:96px;background:url(assets/ui/linha_normal.png) 0 0/100% 100% no-repeat}
+.qd .qec img{width:40px;height:40px;image-rendering:pixelated;flex:none;margin-top:2px}
+.qd .qec b{display:block;font-size:12.5px;font-family:var(--f-display);font-weight:600;color:#f3e6c6;line-height:1.15}
+.qd .qec em{display:block;font-style:normal;font-size:10.5px;color:#e9b949;margin-top:2px}
+.qd .qec small{display:block;font-size:10px;color:#cdb68a;margin-top:2px;line-height:1.3}
+.qd .qfoot{flex:none;padding:8px 14px calc(10px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,#120b08 35%)}
+.qd .qcta{all:unset;box-sizing:border-box;width:100%;height:58px;display:flex;align-items:center;justify-content:center;background:url(assets/ui/btn_ouro.png) 0 0/100% 100% no-repeat;color:#2b1812;font-size:17px;font-weight:700;cursor:pointer;text-shadow:0 1px 0 #ffe9a8}
+
+/* ===== Kit novo aplicado à Taverna (.kt = sobrescreve as regras antigas) ===== */
+.ov .inner.qd.kt{gap:8px;padding:0 0 calc(10px + env(safe-area-inset-bottom,0px));overflow-y:auto}
+.ov .inner.kt>*{margin-inline:10px}
+.ov .inner.kt>.head{margin:0;border:0;border-image:none;background:url(assets/ui/faixa_normal.png) 0 0/100% 100% no-repeat;padding:6px 22px;min-height:68px;flex:none;flex-wrap:nowrap;align-items:center}
+.ov .inner.kt .head h2{font-size:17px;color:#f3e6c6}.ov .inner.kt .head .eyebrow{color:#e9b949}
+.ov .inner.kt .stamp{background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;border:0;box-shadow:none;color:#f3e6c6;padding:6px 18px;margin:0}
+.ov .inner.kt .stamp b{color:#ffd65a}.ov .inner.kt .stamp small{color:#cdb68a}
+.ov .inner.kt .steps{margin-top:8px}
+.ov .inner.kt .steps li.on i{background:linear-gradient(#f6d77a,#c9962e);border-color:#fff0c0}
+.ov .inner.kt .slots.big{gap:6px}
+.ov .inner.kt .slots.big .slot{border:0;border-image:none;background:url(assets/ui/linha_normal.png) 0 0/100% 100% no-repeat;box-shadow:none;padding:10px 4px 6px}
+.ov .inner.kt .slots.big .slot.full{background-image:url(assets/ui/linha_destaque.png)}
+.ov .inner.kt .slots.big .slot.foc{box-shadow:none;filter:drop-shadow(0 0 8px #e9b949cc)}
+.ov .inner.kt .slots.big .slot.req{border:0;background-image:url(assets/ui/linha_inativa.png);color:#c9b28a}
+.ov .inner.kt .sbadge{background:#1a120d;border:2px solid #8a6a3a}
+.ov .inner.kt .tabs{gap:4px}
+.ov .inner.kt .tab{background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;border:0;box-shadow:none;color:#e6d4a8;min-height:46px;text-shadow:0 1px 0 #000}
+.ov .inner.kt .tab.on{background-image:url(assets/ui/btn_ouro.png);color:#2b1812;text-shadow:0 1px 0 #ffe9a8;box-shadow:none}
+.ov .inner.kt .tab[disabled]{background-image:url(assets/ui/btn_ouro_off.png)}
+.ov .inner.kt .note,.ov .inner.kt .hint{background:none;border:0;color:#cdb68a;font-size:11.5px;padding:0 6px;min-height:0;text-align:center}
+.ov .inner.kt .pool{padding:2px 2px 6px;gap:6px}
+.ov .inner.kt .pc{background:url(assets/ui/linha_normal.png) 0 0/100% 100% no-repeat;border:0;border-image:none;box-shadow:none;--t1:#f3e6c6;--t2:#d3be93;color:#f3e6c6;padding:14px 18px 14px 14px;outline:0}
+.ov .inner.kt .pc[aria-pressed="true"]{background-image:url(assets/ui/linha_destaque.png);--t1:#fff5dc;--t2:#f0dfb9;outline:0}
+.ov .inner.kt .pc.foc{filter:drop-shadow(0 0 7px #e9b949cc);outline:0;box-shadow:none}
+.ov .inner.kt .pc .nm{color:var(--t1);text-shadow:0 1px 0 #000}
+.ov .inner.kt .pc .cl,.ov .inner.kt .pc .pcgear{color:var(--t2)}
+.ov .inner.kt .pc .pcstats{color:var(--t1)}
+.ov .inner.kt .pc .pcstats.row span{border-right-color:#8a6a3a}
+.ov .inner.kt .pc .tr{background:rgba(14,8,5,.75);border:1px solid #8a6a3a;color:#ffe9b8}
+.ov .inner.kt .pc .sib{background:linear-gradient(#f6d77a,#c9962e);color:#2b1812;border:1px solid #0e0805;top:2px;left:6px}
+.ov .inner.kt .tick{width:26px;height:26px;border-radius:50%;background:#1a120d;border:2px solid #8a6a3a;top:8px;right:10px}
+.ov .inner.kt .tick .ic{display:none}
+.ov .inner.kt .pc[aria-pressed="true"] .tick{background:url(assets/ui/b_check.png) center/contain no-repeat;border:0;width:30px;height:30px;top:6px;right:8px}
+.ov .inner.kt .tdet{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;box-shadow:none;padding:16px 22px}
+.ov .inner.kt .mini3{background:rgba(14,8,5,.7);border:2px solid #6a5030}
+.ov .inner.kt .empty{color:#d3be93}
+.ov .inner.kt .btn{border:0;border-image:none;background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;min-height:46px;padding:6px 20px;color:#f3e6c6;text-shadow:0 1px 0 #000;image-rendering:auto;filter:none}
+.ov .inner.kt .btn.cta{background-image:url(assets/ui/btn_ouro.png);color:#2b1812;text-shadow:0 1px 0 #ffe9a8;min-height:54px;font-size:16px}
+.ov .inner.kt .btn.ghost{background-image:url(assets/ui/btn_escuro.png);color:#f3e6c6}
+.ov .inner.kt .btn.cta[disabled]{background-image:url(assets/ui/btn_ouro_off.png);color:#6e6252;text-shadow:none;filter:none}
+.ov .inner.kt .btn.ghost[disabled]{filter:grayscale(.8) brightness(.7)}
+.ov .inner.kt .btn:hover{filter:brightness(1.1)}
+.ov .inner.kt .tfoot{padding:0 4px}
+
+.ov .inner.kt .rpf{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;border-image:none;box-shadow:none;padding:16px 22px;color:#eadbb8}
+.ov .inner.kt .sheet2{gap:6px}
+.ov .inner.kt .sh2-top{gap:12px}
+.ov .inner.kt h4.sec{color:#e9b949;letter-spacing:.06em;padding-left:8px}
+.ov .inner.kt .rpf{padding:26px 32px 22px}
+.ov .inner.kt .pbar{background:#0e0805;border:2px solid #4a3824}
+.ov .inner.kt .scroll{padding:0 0 8px}
+.ov .inner.kt>.btn.cta{margin-inline:14px;flex:none;width:auto}
+.ov .inner.kt .party{background:none;border:0}
+
+.ov .inner.kt .slots.big{width:auto;max-width:none;margin-inline:10px}
+.ov .inner.kt .btn.cta[disabled]{color:#d8cbb0;text-shadow:0 1px 0 #000}
+.ov .inner.kt .tdet .tact .btn{width:100%}
+
+/* ===== Vila com o kit de UI novo ===== */
+#vbar{padding-top:max(6px,env(safe-area-inset-top,0px));padding-inline:6px;align-items:flex-start}
+#vbar .vt{border:0;border-image:none;background:url(assets/ui/faixa_normal.png) 0 0/100% 100% no-repeat;padding:14px 28px;font-size:15px;color:#f3e6c6;text-shadow:0 2px 0 #000;image-rendering:auto;min-height:56px;display:flex;align-items:center}
+#vbar .vr{flex-direction:column;align-items:flex-end;gap:2px}
+#vbar .vr .tag{background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;border:0;border-radius:0;color:#ffd65a;padding:7px 16px;font-size:12px;display:inline-flex;gap:6px;align-items:center}
+#vbar .vr .btn{border:0;border-image:none;background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;color:#f3e6c6;min-height:34px;padding:6px 16px;font-size:12px;text-shadow:0 1px 0 #000;image-rendering:auto}
+.vn{border:0;border-image:none;border-radius:0;background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;image-rendering:auto;color:#f3e6c6;padding:9px 18px;font-size:12.5px;text-shadow:0 1px 0 #000;filter:drop-shadow(0 3px 3px #000a)}
+.vn:hover{border-image:none;filter:drop-shadow(0 3px 3px #000a) brightness(1.15)}
+.vn.soon{filter:grayscale(.8) brightness(.75) drop-shadow(0 3px 3px #000a)}
+.vn b{background:url(assets/ui/b_skull.png) center/contain no-repeat;color:#fff;border:0;width:22px;height:22px;display:inline-grid;place-items:center;font-size:10px;padding:0;margin-left:2px}
+#vfoot .vs .tag{background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;border:0;border-radius:0;color:#e6d4a8;padding:8px 16px;font-size:11.5px;display:inline-flex;gap:6px;align-items:center}
+#vfoot .hint{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;color:#eadbb8;padding:14px 26px;font-size:12.5px;text-align:center;border-radius:0;min-height:0}
+#vfoot .btn.cta{border:0;border-image:none;background:url(assets/ui/btn_ouro.png) 0 0/100% 100% no-repeat;min-height:60px;color:#2b1812;text-shadow:0 1px 0 #ffe9a8;font-size:17px;image-rendering:auto}
+#vfoot .btn.cta[disabled]{background-image:url(assets/ui/btn_ouro_off.png);color:#d8cbb0;text-shadow:0 1px 0 #000;filter:none;opacity:1}
+.hub .bubble,#hud .bubble{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;border-radius:0;box-shadow:none;color:#f3e6c6;padding:16px 26px;filter:drop-shadow(0 4px 4px #000a)}
+.hub .bubble em,#hud .bubble em{color:#e9b949;font-size:11px}
+.hub .bubble::after,#hud .bubble::after{display:none}
+
+.vn.soon{opacity:1;filter:brightness(.62) saturate(.5) drop-shadow(0 3px 3px #000a)}
+#vfoot .btn.cta[disabled],.ov .inner.kt .btn.cta[disabled]{background-image:url(assets/ui/btn_escuro.png);color:#a99a7a;text-shadow:0 1px 0 #000;filter:none;opacity:1}
+
+.ic.img{background:transparent center/contain no-repeat;-webkit-mask:none;mask:none;image-rendering:auto;color:inherit}
+.ic.img.lg,.ic.img.xl{filter:drop-shadow(0 2px 0 #120b08)}
+
+/* ===== Retratos maiores: o recorte tira a margem vazia do quadro do pack (44x62); aqui só o tamanho de exibição ===== */
+.pc img,.chip img,.person img,.xr img,.hhead img,.sh2-top img,.slot img,.emb img,.qec img{object-fit:contain}
+.chip img{width:38px;height:54px}
+.person img,.xr img{width:28px;height:40px}
+.hhead img{width:46px;height:64px}
+.ov .inner.kt .pc{grid-template-columns:78px minmax(0,1fr);column-gap:8px;padding:12px 18px 12px 10px;min-height:118px}
+.ov .inner.kt .pc img{width:76px;height:108px;grid-column:1;align-self:center}
+.ov .inner.kt .tdet{grid-template-columns:108px minmax(0,1fr);padding:12px 20px}
+.ov .inner.kt .tdet .emb{height:138px}
+.ov .inner.kt .tdet .emb img{width:97px;height:136px}
+.ov .inner.kt .tdet .tact{grid-column:1/-1;flex-direction:row}
+.ov .inner.kt .tdet .tact .btn{flex:1;width:auto}
+.ov .inner.kt .sh2-top img{width:132px;height:186px}
+.ov .inner.kt .slots.big .slot{height:clamp(78px,11vh,98px)}
+.ov .inner.kt .slots.big .slot img{height:92%;width:auto;max-width:92%}
+.qd .qec img{width:44px;height:62px}
+.qd .qec{min-height:112px}
+
+/* ===== Cofre, Forja e Templo com o kit novo ===== */
+.ov .inner.kt .stashtabs{gap:4px;margin:0 10px}
+.ov .inner.kt .stashtab{background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;border:0;border-radius:0;color:#e6d4a8;padding:9px 16px;font-size:12px;text-shadow:0 1px 0 #000}
+.ov .inner.kt .stashtab.on{background-image:url(assets/ui/btn_ouro.png);color:#2b1812;text-shadow:0 1px 0 #ffe9a8;font-weight:700}
+.ov .inner.kt .stashgrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-inline:12px}
+.ov .inner.kt .stashtile{background:url(assets/ui/linha_normal.png) 0 0/100% 100% no-repeat;border:0;border-radius:0;box-shadow:none;aspect-ratio:1;padding:10px}
+.ov .inner.kt .stashtile{padding-top:16px}
+.ov .inner.kt .stashtile .ic.lg{width:100%;height:100%;max-width:56px;max-height:56px}
+.ov .inner.kt .stashtile.sel{background-image:url(assets/ui/linha_destaque.png);box-shadow:none;filter:drop-shadow(0 0 7px #e9b949cc)}
+.ov .inner.kt .stashdetail{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;border-radius:0;padding:20px 28px;box-shadow:none;margin-inline:10px;color:#eadbb8}
+.ov .inner.kt .stashdetail .ic{width:28px;height:28px}
+.ov .inner.kt .hcard{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;border-image:none;box-shadow:none;padding:24px 30px;gap:10px}
+.ov .inner.kt .hhead{gap:12px}
+.ov .inner.kt .hhead img{width:56px;height:78px}
+.ov .inner.kt .hhead .nm{color:#f3e6c6;font-size:17px;text-shadow:0 1px 0 #000}
+.ov .inner.kt .subs{grid-template-columns:1fr;gap:6px}
+.ov .inner.kt .subopt{background:url(assets/ui/linha_normal.png) 0 0/100% 100% no-repeat;border:0;border-image:none;padding:14px 20px;outline:0;color:#f3e6c6}
+.ov .inner.kt .subopt.on{background-image:url(assets/ui/linha_destaque.png);color:#fff5dc}
+.ov .inner.kt .subopt.on small{color:#f0dfb9}
+.ov .inner.kt .subopt[disabled]{filter:none}
+.ov .inner.kt .subopt:not(.on)[disabled]{background-image:url(assets/ui/linha_inativa.png);filter:brightness(.85)}
+.ov .inner.kt .subopt .ic.xl{width:52px;height:52px;filter:drop-shadow(0 2px 0 #000a)}
+.ov .inner.kt .subopt .pr{background:rgba(14,8,5,.75);border:1px solid #8a6a3a;color:#ffe9b8;padding:2px 8px}
+.ov .inner.kt .eqlist div{background:rgba(14,8,5,.55);border:1px solid #6a5030}
+.ov .inner.kt .mini{background:#0e0805;border:2px solid #4a3824}
+.ov .inner.kt .hcard>.btn{align-self:stretch}
+.ov .inner.kt .hcard>.btn:not(.ghost){background-image:url(assets/ui/btn_ouro.png);color:#2b1812;text-shadow:0 1px 0 #ffe9a8;font-weight:700;min-height:52px}
+.ov .inner.kt .hcard>.btn.ghost{background-image:url(assets/ui/btn_escuro.png)}
+
+/* ===== Formação com o kit novo (painel de baixo, sobre o mapa) ===== */
+#panel .inner.kf{background:#140d09 radial-gradient(#2a1a10,#120b08);gap:7px;padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px));color:#f3e6c6;max-width:560px}
+.kf .steps{margin:0 0 -2px}
+.kf .steps li.on i{background:linear-gradient(#f6d77a,#c9962e);border-color:#fff0c0}
+.kf .head{background:url(assets/ui/faixa_normal.png) 0 0/100% 100% no-repeat;border:0;border-image:none;padding:10px 26px;min-height:60px;align-items:center;flex-wrap:nowrap}
+.kf .head h2{font-size:16px;color:#f3e6c6;text-shadow:0 1px 0 #000}.kf .head .eyebrow{color:#e9b949}
+.kf .ptags{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.kf .ptags .tag{background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;border:0;border-radius:0;color:#e6d4a8;padding:8px 18px;font-size:11.5px}
+.kf .ptags .tag.fam{background-image:url(assets/ui/btn_ouro.png);color:#2b1812;font-weight:700}
+.kf .roster{gap:4px;padding:2px 0 4px}
+.kf .chip{background:url(assets/ui/linha_normal.png) 0 0/100% 100% no-repeat;border:0;border-radius:0;box-shadow:none;min-width:88px;padding:12px 10px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;color:#f3e6c6}
+.kf .chip img{width:42px;height:60px;object-fit:contain;background:none;border:0;padding:0}
+.kf .chip span{font-size:12px;text-shadow:0 1px 0 #000}.kf .chip small{font-size:10px;color:#d3be93}
+.kf .chip[aria-pressed="true"]{background-image:url(assets/ui/linha_destaque.png);filter:drop-shadow(0 0 7px #e9b949cc);outline:0}
+.kf .chip.ok small{color:#8fd48a}
+.kf .hint{background:none;border:0;color:#d8c8a2;text-align:center;font-size:12.5px;padding:0 6px;min-height:0}
+.kf .legend{color:#cdb68a;font-size:11px;justify-content:center;gap:10px;flex-wrap:wrap}
+.kf .actions{gap:5px;flex-wrap:nowrap}
+.kf .actions .btn,.kf .legend .btn{border:0;border-image:none;background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;color:#f3e6c6;min-height:48px;padding:6px 8px;font-size:12.5px;text-shadow:0 1px 0 #000;image-rendering:auto;flex:1}
+.kf .actions .btn.cta{background-image:url(assets/ui/btn_ouro.png);color:#2b1812;text-shadow:0 1px 0 #ffe9a8;font-weight:700;flex:1.6;font-size:13.5px;min-height:54px}
+.kf .actions .btn.cta[disabled]{background-image:url(assets/ui/btn_escuro.png);color:#a99a7a;text-shadow:0 1px 0 #000;filter:none;opacity:1}
+.kf .legend .btn{flex:none;min-height:40px;padding:4px 18px}
+.kf .chip{flex:1 1 0;min-width:62px;padding:12px 4px 10px}
+.kf .chip img{width:38px;height:54px}
+.kf .chip span{font-size:11px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kf .chip small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9.5px}
+.kf .actions .btn{min-width:0;white-space:normal;line-height:1.1;font-size:12px}
+.kf .actions .btn.cta{font-size:12.5px;padding:6px 10px}
+
+.ov .inner.kt>*{flex-shrink:0}
+.ov .inner.kt .stashtile{position:relative}
+.stars{font-size:9px;letter-spacing:-1px;text-shadow:0 1px 0 #000;line-height:1}.stars .off{color:#4a3a28}
+.ov .inner.kt .stashtile .stars{position:absolute;left:8px;top:7px}
+.ov .inner.kt .stashtile .mb{position:absolute;right:6px;bottom:6px;display:inline-flex;align-items:center;gap:2px;background:rgba(14,8,5,.85);border:1px solid #8a6a3a;color:#ffe9b8;font-size:11px;font-weight:700;padding:1px 6px 1px 3px;line-height:1.2}
+.ov .inner.kt .stashtile .mb .ic{width:14px;height:14px;margin:0;filter:none}
+.ov .inner.kt .stashtile .mb.neg{color:#ff9a8a}
+.sdline{font-size:12px;color:#d3be93;display:flex;align-items:center;gap:6px}.sdline .stars{font-size:13px}
+.ov .inner.kt .invpick{flex-direction:column;gap:5px}
+.ov .inner.kt .btn.cmp{flex-direction:row;justify-content:space-between;gap:8px;text-align:left;padding:6px 18px;width:100%}
+.ov .inner.kt .btn.cmp em{font-style:normal;font-size:11px;font-weight:700;white-space:nowrap}
+.ov .inner.kt .btn.cmp.up em{color:#8fe08a}.ov .inner.kt .btn.cmp.down em{color:#ff9a8a}.ov .inner.kt .btn.cmp.eq em{color:#cdb68a}.ov .inner.kt .btn.cmp.new em{color:#ffd65a}
+
+/* ===== Batalha (HUD) com o kit novo ===== */
+#bhud .turn{background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;border:0;border-image:none;padding:0 16px;height:44px;color:#f3e6c6;text-shadow:0 1px 0 #000;image-rendering:auto;font-size:14px}
+.objp{background:url(assets/ui/faixa_normal.png) 0 0/100% 100% no-repeat;border:0;border-image:none;padding:9px 18px;image-rendering:auto;min-height:48px;color:#f3e6c6;font-size:11.5px}
+#order{background:linear-gradient(90deg,rgba(12,8,5,.78),rgba(12,8,5,.15));border-bottom:2px solid rgba(233,185,73,.55);top:calc(62px + env(safe-area-inset-top,0px))}
+#order .oc{border-width:2px;border-radius:3px;box-shadow:0 2px 3px #000a}
+#order .oc.on{filter:drop-shadow(0 0 6px #ffd65a)}
+#bhud .speed{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;border-image:none;padding:16px 14px;gap:2px;image-rendering:auto;top:calc(124px + env(safe-area-inset-top,0px))}
+#bhud .spd{color:#e6d4a8;border-radius:0;text-shadow:0 1px 0 #000;min-width:50px}
+#bhud .spd[aria-pressed="true"]{background:url(assets/ui/btn_ouro.png) 0 0/100% 100% no-repeat;color:#2b1812;box-shadow:none;text-shadow:0 1px 0 #ffe9a8;font-weight:700}
+.uc{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;border-image:none;padding:18px 24px;gap:10px;image-rendering:auto}
+.uc.e{box-shadow:none;filter:drop-shadow(0 0 6px #c8463c)}
+.uc-face{border:0;background:radial-gradient(#4a3828,#1c1510);box-shadow:0 0 0 2px #8a6a3a,0 0 0 4px #0e0805}
+.uc-face img{image-rendering:pixelated}
+.uc-name{color:#f3e6c6;text-shadow:0 1px 0 #000}
+.uc-bar{background:#0e0805;border:2px solid #4a3824}
+.uc-tabs button{background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;border:0;box-shadow:none;width:36px;height:34px}
+.uc-tabs button[aria-pressed="true"]{background-image:url(assets/ui/btn_ouro.png);color:#2b1812}
+#ucpop .pp{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;border-image:none;padding:16px 22px;image-rendering:auto}
+.pp-h{border-bottom-color:#6a5030}
+.callout{background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;border:0;box-shadow:none;color:#f3e6c6;padding:7px 16px;border-radius:0;filter:drop-shadow(0 3px 3px #000a);text-shadow:0 1px 0 #000}
+.callout::after{display:none}
+.callout.e{background-image:url(assets/ui/btn_escuro.png);color:#ffb0a0}
+.hpf .bar{border:2px solid #0e0805;background:#0e0805}
+
+/* ===== Resultado da fase com o kit novo ===== */
+#result{background:#120b08 radial-gradient(#2a1a10,#120b08);backdrop-filter:none;-webkit-backdrop-filter:none}
+#result .res{gap:10px;padding-block:20px 28px;color:#f3e6c6}
+#result .res-title{font-size:40px;color:#ffd65a;text-shadow:0 3px 0 #000,0 0 18px #e9b94966}
+#result .res-title.lose{color:#ff8a78;text-shadow:0 3px 0 #000,0 0 18px #c8463c66}
+#result .eyebrow{color:#e9b949}
+#result .sub{color:#d8c8a2}
+#result .box{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;border-radius:0;box-shadow:none;padding:24px 30px;color:#eadbb8}
+#result .box h3{color:#f3e6c6;text-shadow:0 1px 0 #000}
+#result .bigscore{background:url(assets/ui/faixa_destaque.png) 0 0/100% 100% no-repeat;border:0;border-image:none;border-radius:0;padding:22px 30px;image-rendering:auto;text-shadow:0 2px 0 #000}
+#result .bigscore span{color:#ffe9b8}
+#result details.box>summary{color:#f3e6c6}
+#result .xr img{width:30px;height:42px;object-fit:contain}
+#result .xr{grid-template-columns:34px minmax(0,1fr) auto}
+#result .xr .xv{color:#ffd65a}
+#result .rbar{background:linear-gradient(transparent,#120b08 40%)}
+#result .rbar .btn{border:0;border-image:none;background:url(assets/ui/btn_ouro.png) 0 0/100% 100% no-repeat;color:#2b1812;font-weight:700;text-shadow:0 1px 0 #ffe9a8;min-height:56px;image-rendering:auto}
+#result .rbar .btn.ghost{background-image:url(assets/ui/btn_escuro.png);color:#f3e6c6;text-shadow:0 1px 0 #000;font-weight:400}
+
+/* ===== Números flutuantes novos ===== */
+.float{display:flex;flex-direction:column;align-items:center;pointer-events:none;font-family:var(--f-display);font-weight:700;line-height:1;letter-spacing:.02em;
+  -webkit-text-stroke:0;text-shadow:-2px 0 #120805,2px 0 #120805,0 -2px #120805,0 2px #120805,-2px -2px #120805,2px 2px #120805,-2px 2px #120805,2px -2px #120805,0 4px 0 #0008;font-size:26px;color:#fff1d0}
+.float.onhero{color:#ff8a78}
+.float.onfoe{color:#fff1d0}
+.float.crit{color:#ffd65a;font-size:42px;text-shadow:-3px 0 #3a1400,3px 0 #3a1400,0 -3px #3a1400,0 3px #3a1400,-3px -3px #3a1400,3px 3px #3a1400,-3px 3px #3a1400,3px -3px #3a1400,0 0 14px #ff9a3a,0 5px 0 #0008}
+.float.crit.onhero{color:#ff6a58}
+.float .cbad{font-size:11px;letter-spacing:.14em;color:#fff;background:#c8463c;border:2px solid #120805;padding:2px 7px;margin-bottom:3px;text-shadow:0 1px 0 #000}
+.float .burst{position:absolute;left:50%;top:60%;width:90px;height:90px;margin:-45px 0 0 -45px;z-index:-1;pointer-events:none;
+  background:conic-gradient(from 0deg,#ffd34a00,#ffd34acc 6%,#ffd34a00 12%,#ffd34acc 18%,#ffd34a00 24%,#ffd34acc 30%,#ffd34a00 36%,#ffd34acc 42%,#ffd34a00 48%,#ffd34acc 54%,#ffd34a00 60%,#ffd34acc 66%,#ffd34a00 72%,#ffd34acc 78%,#ffd34a00 84%,#ffd34acc 90%,#ffd34a00 96%);
+  -webkit-mask:radial-gradient(circle,transparent 18%,#000 20%,#000 60%,transparent 70%);mask:radial-gradient(circle,transparent 18%,#000 20%,#000 60%,transparent 70%);border-radius:50%}
+.float.heal{color:#8fe08a;font-size:28px}
+.float.buff{color:#8fc4ff;font-size:17px}
+.float.miss{color:#d8d2c4;font-size:17px;font-style:italic}
+.float.gold{color:#ffd65a;font-size:24px}
+/* ===== Menu de velocidade retrátil ===== */
+#bhud .speed{transition:none}
+#bhud .speed .spdtab{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;height:22px;margin:-6px -2px 2px;background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat}
+#bhud .speed .spdtab i{width:0;height:0;border:5px solid transparent;border-bottom:7px solid #e9b949;border-top:0;display:block}
+#bhud .speed.min{padding:10px 8px;background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat}
+#bhud .speed.min .spd{display:none}
+#bhud .speed.min .spdtab{margin:0;background:none;height:24px;width:34px}
+#bhud .speed.min .spdtab i{border-bottom:0;border-top:7px solid #e9b949}
+.callout.mv{padding:6px 14px}
+.callout .steps .ic{width:26px;height:26px;margin:0;display:block;filter:drop-shadow(0 2px 0 #000)}
 </style>
 </head>
 <body>
@@ -975,10 +1269,24 @@ const SLOT_INFO={
    geradas por tools/build_icons.cjs. Cor vem do `color` do contexto. */
 const IC={"classe": {"guerreiro": "broadsword", "ladino": "daggers", "mago": "wizard-staff", "clerigo": "holy-symbol", "arqueiro": "bow-arrow", "bardo": "lyre"}, "subclasse": {"cavaleiro": "black-knight-helm", "barbaro": "barbarian", "assassino": "rogue", "armadilheiro": "hooded-assassin", "piromante": "magic-swirl", "geomante": "crystal-cluster", "curandeiro": "healing", "templario": "sun-priest", "patrulheiro": "archer", "saraivador": "arrow-cluster", "consonante": "harp", "dissonante": "drama-masks"}, "stat": {"vida": "heart-plus", "atq": "crossed-swords", "def": "shield", "res": "magic-shield", "mov": "boot-prints", "alc": "target-arrows", "crit": "bullseye", "ini": "lightning-helix", "dano": "claw-slashes"}, "slot": {"weapon": "broadsword", "offhand": "round-shield", "head": "helmet", "body": "chest-armor", "hands": "gauntlet", "feet": "boots", "acc1": "diamond-ring", "acc2": "gem-pendant"}, "vila": {"tavern": "tavern-sign", "temple": "greek-temple", "forge": "anvil", "stash": "locked-chest", "board": "scroll-unfurled", "market": "shop", "well": "well", "ouro": "coins", "pocao": "health-potion", "mapa": "treasure-map", "grupo": "team-idea", "ferido": "bandage-roll", "bolsa": "backpack", "trava": "padlock", "check": "check-mark", "xp": "sparkles", "alerta": "sparkles"}, "item": {"lamina_simples": "broadsword", "adaga_enferrujada": "plain-dagger", "cajado_rustico": "wizard-staff", "lamina_afiada": "pointy-sword", "machado_ferro": "battle-axe", "arco_reforcado": "bow-arrow", "cajado_arcano": "crystal-wand", "adaga_encantada": "broad-dagger", "martelo_runico": "warhammer", "lamina_dragao": "rune-sword", "cetro_celestial": "winged-scepter", "garra_sombria": "claws", "excalibur_partida": "ancient-sword", "cajado_infinito": "skull-staff", "broquel_madeira": "round-shield", "adaga_reserva": "cloak-dagger", "escudo_pequeno": "kite", "livro_rezas": "open-book", "escudo_espelhado": "eye-shield", "adaga_sombra": "flying-dagger", "egide_draconica": "dragon-shield", "tomo_arcano": "spell-book", "escudo_aurora": "sunrise", "adaga_eclipse": "sacrificial-dagger", "elmo_recruta": "helmet", "capuz_viajante": "hood", "elmo_ferro": "crested-helmet", "capuz_batedor": "hooded-figure", "coroa_arcana": "jewel-crown", "elmo_cornos": "horned-helm", "elmo_campeao": "centurion-helmet", "capuz_sussurros": "warlock-hood", "mascara_vazio": "ceremonial-mask", "coroa_eterna": "imperial-crown", "gibao_simples": "leather-vest", "colete_couro": "armor-vest", "cota_malha_leve": "mail-shirt", "manto_viajante": "cloak", "capa_elfica": "cape", "tunica_arcana": "robe", "couraca_dragao": "scale-mail", "manto_sombrio": "vampire-cape", "armadura_titanica": "chest-armor", "vestes_arquimago": "layered-armor", "luvas_couro": "gloves", "manoplas_simples": "fist", "luvas_reforcadas": "winter-gloves", "manoplas_ferro": "gauntlet", "luvas_precisao": "bracers", "manoplas_runicas": "mailed-fist", "luvas_assassino": "bracer", "manoplas_titan": "thor-fist", "luvas_vento_cortante": "whirlwind", "manoplas_juizo": "scales", "bota_surrada": "leather-boot", "sandalias_couro": "sandal", "bota_elfica": "tabi-boot", "botas_corredor": "running-shoe", "botas_elfas_reais": "fur-boot", "grevas_ferro": "metal-boot", "botas_vento": "wind-slap", "grevas_campeao": "greaves", "botas_vento_norte": "snowflake-1", "grevas_eternas": "infinity", "anel_couro": "ring", "pingente_simples": "necklace", "bracelete_latao": "bracers", "anel_vigor": "diamond-ring", "anel_foco": "eye-of-horus", "amuleto_viajante": "tribal-pendant", "amuleto_sorte": "clover", "pedra_poder": "gems", "colar_videntes": "crystal-ball", "coracao_titan": "heart-necklace", "anel_destino": "engagement-ring", "anel_fera": "claw-string", "talisma_guardiao": "gem-pendant", "reliquia_caos": "tornado-discs", "anel_eternidade": "big-diamond-ring", "coracao_fenix": "fire-gem"}};
 const icoUrl=n=>`--ic:url(assets/ui-icons/${n}.png)`;
-const ico=(g,k,cls='',style='')=>{const n=(IC[g]||{})[k];return n?`<i class="ic ${cls}" style="${icoUrl(n)};${style}"></i>`:'';};
+/* ícones coloridos do pack (assets/ico); se faltar algum, cai na silhueta antiga (assets/ui-icons) */
+const NIC={"classe":{"guerreiro":"c_guerreiro","ladino":"c_ladino","mago":"c_mago","clerigo":"c_clerigo","arqueiro":"c_arqueiro","bardo":"c_bardo"},"subclasse":{"cavaleiro":"s_cavaleiro","barbaro":"s_barbaro","assassino":"s_assassino","armadilheiro":"s_armadilheiro","piromante":"s_piromante","geomante":"s_geomante","curandeiro":"s_curandeiro","templario":"s_templario","patrulheiro":"s_patrulheiro","saraivador":"s_saraivador","consonante":"s_consonante","dissonante":"s_dissonante"},"stat":{"vida":"t_vida","atq":"t_atq","def":"t_def","res":"t_res","mov":"t_mov","alc":"t_alc","crit":"t_crit","ini":"t_ini","dano":"t_dano"},"slot":{"weapon":"l_weapon","offhand":"l_offhand","head":"l_head","body":"l_body","hands":"l_hands","feet":"l_feet","acc1":"l_acc1","acc2":"l_acc2"},"vila":{"tavern":"v_tavern","temple":"v_temple","forge":"v_forge","stash":"v_stash","board":"v_board","market":"v_market","well":"v_well","ouro":"v_ouro","pocao":"v_pocao","mapa":"v_mapa","grupo":"v_grupo","ferido":"v_ferido","bolsa":"v_bolsa","trava":"v_trava","check":"v_check","xp":"v_xp","alerta":"v_alerta"},"item":{"lamina_simples":"i_espada","adaga_enferrujada":"i_adaga","cajado_rustico":"i_cajado","lamina_afiada":"i_espada","machado_ferro":"i_machado","arco_reforcado":"i_arco","cajado_arcano":"i_cajado","adaga_encantada":"i_adaga","martelo_runico":"i_martelo","lamina_dragao":"i_espada","cetro_celestial":"i_cetro","garra_sombria":"i_garra","excalibur_partida":"i_espada","cajado_infinito":"i_cajado","broquel_madeira":"i_escudo","adaga_reserva":"i_adaga","escudo_pequeno":"i_escudo","livro_rezas":"i_livro","escudo_espelhado":"i_escudog","adaga_sombra":"i_adaga","egide_draconica":"i_escudog","tomo_arcano":"i_livro","escudo_aurora":"i_escudog","adaga_eclipse":"i_adaga","elmo_recruta":"i_elmo","capuz_viajante":"i_capuz","elmo_ferro":"i_elmo","capuz_batedor":"i_capuz","coroa_arcana":"i_coroa","elmo_cornos":"i_cornos","elmo_campeao":"i_elmo","capuz_sussurros":"i_capuz","mascara_vazio":"i_mascara","coroa_eterna":"i_coroa","gibao_simples":"i_colete","colete_couro":"i_colete","cota_malha_leve":"i_cota","manto_viajante":"i_manto","capa_elfica":"i_manto","tunica_arcana":"i_tunica","couraca_dragao":"i_couraca","manto_sombrio":"i_manto","armadura_titanica":"i_couraca","vestes_arquimago":"i_tunica","luvas_couro":"i_luvas","manoplas_simples":"i_manoplas","luvas_reforcadas":"i_luvas","manoplas_ferro":"i_manoplas","luvas_precisao":"i_luvas","manoplas_runicas":"i_manoplas","luvas_assassino":"i_luvas","manoplas_titan":"i_manoplas","luvas_vento_cortante":"i_luvas","manoplas_juizo":"i_manoplas","bota_surrada":"i_botas","sandalias_couro":"i_sandalias","bota_elfica":"i_botas","botas_corredor":"i_botas","botas_elfas_reais":"i_botas","grevas_ferro":"i_grevas","botas_vento":"i_botas","grevas_campeao":"i_grevas","botas_vento_norte":"i_botas","grevas_eternas":"i_grevas","anel_couro":"i_anel","pingente_simples":"i_pingente","bracelete_latao":"i_bracelete","anel_vigor":"i_anel","anel_foco":"i_anel","amuleto_viajante":"i_pingente","amuleto_sorte":"i_pingente","pedra_poder":"i_gema","colar_videntes":"i_pingente","coracao_titan":"i_coracao","anel_destino":"i_anel","anel_fera":"i_anel","talisma_guardiao":"i_talisma","reliquia_caos":"i_talisma","anel_eternidade":"i_anel","coracao_fenix":"i_coracao"}};
+const ico=(g,k,cls='',style='')=>{const nn=(NIC[g]||{})[k];if(nn)return `<i class="ic img ${cls}" style="background-image:url(assets/ico/${nn}.png);${style.replace(/color:[^;]*;?/g,'')}"></i>`;const n=(IC[g]||{})[k];return n?`<i class="ic ${cls}" style="${icoUrl(n)};${style}"></i>`:'';};
 const wt=(key,eb,title)=>`<div class="wt">${ico('vila',key,'lg')}<div><div class="eyebrow">${eb}</div><h2>${title}</h2></div></div>`;
 const slotIco=(slot,cls='')=>ico('slot',slot==='accessory'?'acc1':slot,cls);
-const itemIco=(it,cls='')=>(IC.item[it.id]?ico('item',it.id,cls,`color:${RARITY[it.rar].cor}`):slotIco(it.slot,cls));
+const itemIco=(it,cls='')=>(NIC.item[it.id]?ico('item',it.id,cls,`filter:drop-shadow(0 0 1px ${RARITY[it.rar].cor}) drop-shadow(0 0 2px ${RARITY[it.rar].cor})`):slotIco(it.slot,cls));
+/* ---- Sinais de força do item (o ícone só diz o tipo; o resto vem daqui) ---- */
+const MOD_META={atk:['stat','atq','ATQ',3],def:['stat','def','DEF',2],mov:['stat','mov','Mov',2],alc:['stat','alc','Alc',2],dmgBonus:['stat','dano','dano',1.5],maxhp:['stat','vida','PV',0.5],crit:['stat','crit','Crít',3],per:['vila','mapa','segredos',0.5]};
+const itemScore=it=>it?Object.entries(it.mods||{}).reduce((a,[k,v])=>a+(MOD_META[k]?MOD_META[k][3]:1)*v,0):0;
+function itemMain(it){const e=Object.entries(it.mods||{}).filter(([k])=>MOD_META[k]).sort((a,b)=>Math.abs(b[1]*MOD_META[b[0]][3])-Math.abs(a[1]*MOD_META[a[0]][3]))[0];return e?{k:e[0],v:e[1]}:null;}
+const stars=n=>'★'.repeat(n)+'<span class="off">'+'★'.repeat(Math.max(0,5-n))+'</span>';
+function itemBadges(it){const m=itemMain(it);
+  return `<span class="stars" style="color:${RARITY[it.rar].cor}">${stars(it.rar)}</span>${m?`<span class="mb ${m.v<0?'neg':''}">${ico(MOD_META[m.k][0],MOD_META[m.k][1])}${m.v>0?'+':''}${m.v}</span>`:''}`;}
+// diferença do item em relação ao que o herói já usa naquele espaço
+function itemDiff(h,it){const cur=h.equip[slotKeyFor(h,it)],ks=new Set([...Object.keys(it.mods||{}),...Object.keys(cur?cur.mods||{}:{})]);
+  const parts=[...ks].filter(k=>MOD_META[k]).map(k=>[k,(it.mods[k]||0)-((cur&&cur.mods[k])||0)]).filter(([,d])=>d).sort((a,b)=>Math.abs(b[1]*MOD_META[b[0]][3])-Math.abs(a[1]*MOD_META[a[0]][3])).slice(0,2);
+  const d=itemScore(it)-itemScore(cur);
+  return {d,cls:!cur?'new':d>0?'up':d<0?'down':'eq',cur,txt:parts.map(([k,v])=>`${v>0?'+':''}${v} ${MOD_META[k][2]}`).join(' · ')};}
 const ITEMS=[
   // ===== Arma (weapon) =====
   {id:'lamina_simples',nome:'Lâmina Simples',slot:'weapon',rar:1,icon:'⚔️',desc:'+1 ATQ',mods:{atk:1}},
@@ -2142,6 +2450,7 @@ $('#bhud').addEventListener('click',e=>{
   if(ut){ucPop=ucPop===ut.dataset.uc?null:ut.dataset.uc;renderUC(true);return;}
   const spd=e.target.closest('[data-spd]');
   if(spd){speed=+spd.dataset.spd;applySpeed();document.querySelectorAll('[data-spd]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.spd===speed));return;}
+  if(e.target.closest('[data-act="spdtoggle"]')){const sb=$('#speedbar'),m=sb.classList.toggle('min');try{localStorage.setItem('lendas_spd_min',m?'1':'0');}catch(_){}SFX.click();return;}
   if(e.target.closest('[data-act="log"]')){const l=$('#logp');l.hidden=!l.hidden;renderLogPanel();return;}
   if(e.target.closest('[data-act="skip"]'))gsap.globalTimeline.timeScale(30);
   if(e.target.closest('[data-act="overview"]'))overviewCam();
@@ -2182,8 +2491,8 @@ const slashTex=(()=>{const c=document.createElement('canvas');c.width=c.height=3
   return nearestTex(c);})();
 function slash(t,crit){
   const p=t.grp.position,k=t.big?1.35:1;
-  fxPlay('combat','sword-slash-32px_strip7.png',7,16,{x:p.x,y:p.y+0.2,z:p.z},{w:1.5*k});
-  if(crit)fxPlay('combat','critical-hit-32px_strip8.png',8,14,{x:p.x,y:p.y+0.3,z:p.z},{w:1.9*k});
+  fxPlay('combat','sword-slash-32px_strip7.png',7,20,{x:p.x,y:p.y+0.25,z:p.z},{w:2.0*k});
+  if(crit)fxPlay('combat','critical-hit-32px_strip8.png',8,16,{x:p.x,y:p.y+0.3,z:p.z},{w:2.4*k});
 }
 function flash(col,a=0.35){flashEl.style.background=col;gsap.fromTo(flashEl,{opacity:a},{opacity:0,duration:0.4});}
 function shakeCam(v=0.25,d=0.35){gsap.fromTo(shakeO,{v},{v:0,duration:d,ease:'power2.out'});}
@@ -2205,7 +2514,9 @@ function aimLine(u,t,col){
 let callout=null;
 function showCallout(u,text){hideCallout();const el=document.createElement('div');el.className='callout'+(u.side==='enemy'?' e':'');
   const f=document.createElement('img');f.className='cface';f.src=faceOf(u);f.alt='';el.appendChild(f);
-  const sp=document.createElement('span');sp.textContent=text;el.appendChild(sp);
+  const sp=document.createElement('span');
+  if(text==='Deslocar'){sp.className='steps';sp.innerHTML=`<i class="ic img" style="background-image:url(assets/ico/t_mov.png)"></i>`;el.classList.add('mv');}else sp.textContent=text;
+  el.appendChild(sp);
   hud.appendChild(el);callout={u,el};gsap.fromTo(el,{scale:0.6,opacity:0},{scale:1,opacity:1,duration:0.18,ease:'back.out(2)'});}
 function hideCallout(){if(callout){callout.el.remove();callout=null;}}
 
@@ -2236,7 +2547,7 @@ function makeHero(used,cls,level){
     // recruta que já nasce depois do nível-gatilho vem com subclasse sorteada
     if(h.level>=SUB_UNLOCK_LEVEL)setSub(h,pick(SUBCLASSES[cls]));
   }
-  h.sprite=heroSprite(h);h.portrait=lpcPortrait(h.loadout)||h.sprite.toDataURL();
+  h.sprite=heroSprite(h);h.portrait=lpcPortrait(h.loadout)||BLANK_IMG;
   return h;
 }
 const enemyCache={};
@@ -2251,7 +2562,7 @@ function ensureEnemyCache(kind){
   if(LPC_RECIPES[kind]){
     const url=lpcPortrait(kind);
     if(url){enemyCache[kind]={sp:null,url};return enemyCache[kind];}
-    const sp=enemySprite(kind);return {sp,url:sp.toDataURL()}; // não cacheia: tenta o sprite de verdade de novo na próxima
+    return {sp:null,url:BLANK_IMG}; // não cacheia: tenta o sprite de verdade de novo na próxima
   }
   const sp=enemySprite(kind);enemyCache[kind]={sp,url:sp.toDataURL()};return enemyCache[kind];
 }
@@ -2404,6 +2715,9 @@ const LPC_RECIPES={
   goblin:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/goblin/adult/walk.png','legs/pantaloons/male/walk.png','weapon/sword/dagger/walk/dagger.png'],
     slash:['body/bodies/male/slash.png','head/heads/goblin/adult/slash.png','legs/pantaloons/male/slash.png','weapon/sword/dagger/slash/dagger.png'],
     hurt:['body/bodies/male/hurt.png','head/heads/goblin/adult/hurt.png','legs/pantaloons/male/hurt.png','weapon/sword/dagger/hurt/dagger.png']},
+  xama:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/goblin/adult/walk.png','legs/pantaloons/male/walk.png','torso/clothes/longsleeve/formal/male/walk.png','weapon/magic/gnarled/universal/walk/background.png','weapon/magic/gnarled/universal/walk/foreground.png'],
+    slash:['body/bodies/male/slash.png','head/heads/goblin/adult/slash.png','legs/pantaloons/male/slash.png','torso/clothes/longsleeve/formal/male/slash.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/goblin/adult/hurt.png','legs/pantaloons/male/hurt.png','torso/clothes/longsleeve/formal/male/hurt.png','weapon/magic/gnarled/universal/hurt/background.png','weapon/magic/gnarled/universal/hurt/foreground.png']},
   gobarq:{action:'shoot',walk:['body/bodies/male/walk.png','head/heads/goblin/adult/walk.png','legs/pantaloons/male/walk.png','weapon/ranged/bow/recurve/walk/background/medium.png','weapon/ranged/bow/recurve/walk/foreground.png','quiver/walk/quiver.png'],
     shoot:['body/bodies/male/shoot.png','head/heads/goblin/adult/shoot.png','legs/pantaloons/male/shoot.png','weapon/ranged/bow/recurve/universal/shoot/background.png','weapon/ranged/bow/recurve/universal/shoot/foreground.png','quiver/shoot/quiver.png'],
     hurt:['body/bodies/male/hurt.png','head/heads/goblin/adult/hurt.png','legs/pantaloons/male/hurt.png','weapon/ranged/bow/recurve/universal/hurt/background.png','weapon/ranged/bow/recurve/universal/hurt/foreground.png']},
@@ -2515,14 +2829,26 @@ function lpcBuild(cls){
 }
 // recorta o quadro parado (de frente) do walk sheet já montado — usado como
 // retrato de verdade nas telas de menu, no lugar do rascunho pixelado antigo.
+const BLANK_IMG='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+const PORTRAIT_CACHE={};
 function lpcPortrait(cls){
+  if(PORTRAIT_CACHE[cls])return PORTRAIT_CACHE[cls];
   const sheets=LPC_SHEETS[cls];if(!sheets)return null;
   const img=sheets.walk.tex.image,cols=sheets.walk.cols,rows=sheets.walk.rows;
-  const cw=img.width/cols,ch=img.height/rows;
-  const c=document.createElement('canvas');c.width=cw;c.height=ch;
+  const cw=img.width/cols,ch=img.height/rows,k=cw/64;
+  // quadro de frente inteiro; acha onde o sprite realmente está (o quadro tem muita margem vazia)
+  const f=document.createElement('canvas');f.width=cw;f.height=ch;
+  const fg=f.getContext('2d');fg.imageSmoothingEnabled=false;fg.drawImage(img,0,2*ch,cw,ch,0,0,cw,ch);
+  const d=fg.getImageData(0,0,cw,ch).data;let x0=cw,x1=0,y0=ch,y1=0;
+  for(let y=0;y<ch;y++)for(let x=0;x<cw;x++)if(d[(y*cw+x)*4+3]>24){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}
+  if(x1<x0)return null;
+  // retrato de tamanho fixo (44x62 px do pack): pés na base e centrado, assim todos os heróis ficam na mesma escala
+  const W=Math.round(44*k),H=Math.round(62*k);
+  const c=document.createElement('canvas');c.width=W;c.height=H;
   const g=c.getContext('2d');g.imageSmoothingEnabled=false;
-  g.drawImage(img,0,2*ch,cw,ch,0,0,cw,ch);
-  return c.toDataURL();
+  const cx=(x0+x1+1)/2;
+  g.drawImage(f,Math.round(W/2-cx),Math.round(H-1-y1));
+  return PORTRAIT_CACHE[cls]=c.toDataURL();
 }
 // só a cabeça (quadro parado, de frente), recortada do mesmo sheet — o
 // painel de batalha amplia isso em número inteiro (2x/3x) sem borrar.
@@ -2783,10 +3109,28 @@ function spawnEnemies(list){enemies.forEach(disposeUnit);enemies=placeEnemies(li
 const v3=new THREE.Vector3();
 function worldToScreen(p){v3.copy(p).project(cam);return [(v3.x+1)/2*stage.clientWidth,(1-v3.y)/2*stage.clientHeight];}
 function screenOf(u,extra=0){return worldToScreen(new THREE.Vector3(u.grp.position.x,u.grp.position.y+0.08+u.sz+0.16+extra,u.grp.position.z));}
+const floatRecent=new Map();
 function floatText(u,text,cls,html){
   if(!u.grp)return;const [x,y]=screenOf(u,0.1);
-  const d=document.createElement('div');d.className='float '+(cls||'');if(html)d.innerHTML=text;else d.textContent=text;d.style.left=x+'px';d.style.top=y+'px';hud.appendChild(d);
-  gsap.fromTo(d,{y:0,opacity:1,scale:cls==='crit'?1.6:1},{y:-40,opacity:0,scale:1,duration:1.2,ease:'power1.out',onComplete:()=>d.remove()});
+  cls=cls||'';
+  const now=performance.now(),rec=(floatRecent.get(u)||[]).filter(t=>now-t<700);rec.push(now);floatRecent.set(u,rec);
+  const stack=rec.length-1;
+  const d=document.createElement('div');d.className='float '+cls+(u.side==='hero'?' onhero':' onfoe');
+  const num=!html&&/^[-+]?\d+!?$/.test(text)?Math.abs(parseInt(text.replace('!',''))):0;
+  if(html)d.innerHTML=text;else d.innerHTML=`<span class="ft">${text}</span>`;
+  if(cls==='crit')d.insertAdjacentHTML('afterbegin','<b class="cbad">CRÍTICO</b><i class="burst"></i>');
+  if(num&&cls!=='heal'&&cls!=='crit')d.style.fontSize=Math.min(44,22+num*0.9)+'px';
+  if(num&&cls==='crit')d.style.fontSize=Math.min(58,34+num*0.9)+'px';
+  const dx=(Math.random()-0.5)*46+(stack%2?18:-18)*(stack?1:0);
+  d.style.left=x+'px';d.style.top=(y-stack*22)+'px';hud.appendChild(d);
+  const big=cls==='crit';
+  const tl=gsap.timeline({onComplete:()=>d.remove()});
+  tl.fromTo(d,{opacity:0,scale:big?0.2:0.4,y:6,x:0},{opacity:1,scale:big?1.5:1.3,y:-14,x:dx*0.25,duration:0.14,ease:'power2.out'})
+    .to(d,{scale:big?1.15:1,duration:0.16,ease:'back.out(3)'})
+    .to(d,{y:-58-stack*4,x:dx,duration:0.7,ease:'power1.out'},0.18)
+    .to(d,{opacity:0,duration:0.32,ease:'power1.in'},0.78);
+  if(big){const bu=d.querySelector('.burst');if(bu)gsap.fromTo(bu,{scale:0.2,opacity:0.95,rotation:0},{scale:1.7,opacity:0,rotation:50,duration:0.5,ease:'power2.out'});
+    gsap.fromTo(d,{rotation:-6},{rotation:0,duration:0.4,ease:'elastic.out(1,0.4)'});}
 }
 function banner(text){const b=$('#banner');b.textContent=text;b.hidden=false;return gsap.fromTo(b,{scale:0.4,opacity:0},{scale:1,opacity:1,duration:0.35,ease:'back.out(2)'}).then(()=>wait(600)).then(()=>gsap.to(b,{opacity:0,duration:0.3})).then(()=>{b.hidden=true;});}
 function renderLogPanel(){
@@ -2898,7 +3242,7 @@ const COMO={
 };
 const IA_TXT={rush:'Avança',skirmish:'Atira de longe',flank:'Caça os frágeis',healer:'Cura aliados',guard:'Vigia o posto'};
 let run={mission:null,map:0,phaseNo:0,results:[],party:[],enemyList:null,total:0,inventory:[],endless:false};
-let view='hub',tvFocus=null,tvSrc='draw',sheetFrom='tavern',tvSel=null;
+let briefN=0,view='hub',tvFocus=null,tvSrc='draw',sheetFrom='tavern',tvSel=null;
 function loadProg(){try{return +localStorage.getItem('lendas_prog_v1')||0;}catch(e){return 0;}}
 function saveProg(n){try{if(n>loadProg())localStorage.setItem('lendas_prog_v1',String(n));}catch(e){}}
 function loadClassXP(){try{return JSON.parse(localStorage.getItem('lendas_classxp_v1')||'{}');}catch(e){return {};}}
@@ -3061,7 +3405,7 @@ function hydrateHero(s){
     sub:(s.sub&&SUBCLASSES[s.cls]&&SUBCLASSES[s.cls].includes(s.sub))?s.sub:null,
     r:null,c:null,equip:{}};
   EQ_SLOTS.forEach(sl=>{const id=s.equip&&s.equip[sl];h.equip[sl]=id?ITEMS.find(i=>i.id===id)||null:null;});
-  h.sprite=heroSprite(h);h.portrait=lpcPortrait(h.loadout)||h.sprite.toDataURL();
+  h.sprite=heroSprite(h);h.portrait=lpcPortrait(h.loadout)||BLANK_IMG;
   return h;
 }
 function saveGame(){
@@ -3110,7 +3454,7 @@ function ePortrait(kind){
 }
 function setMode(m){
   const hub=m==='village'&&view==='hub',ov=(m==='village'||m==='tavern')&&!hub;
-  app.className='m-'+m+(hub?' hub':'')+(ov?' ov':'');phase=m;
+  app.className='m-'+m+(hub?' hub':'')+(ov?' ov':'');phase=m;PI_.classList.remove('qd','kt','kf');
   if(!hub&&bubble){bubble.el.remove();bubble=null;}
   stage.dataset.bio=(m==='place'||m==='battle')&&LV?LV.mp.biome:'';
   setLuz((m==='place'||m==='battle')&&LV?LV.mp.luz:'normal');
@@ -3233,37 +3577,54 @@ function renderInfo(id){
 }
 
 /* ---------- Quadro de Missões ---------- */
+const ATO_ART=['vale','ruinas','magma','gelo','cripta'];
+let qdAto=0;
 function renderMissions(){
-  view='missions';setMode('village');
-  const cleared=loadProg();
+  view='missions';setMode('village');PI_.classList.add('qd');
+  const cleared=loadProg(),sc=loadSecrets();
+  const info=ATOS.map(a=>{const ms=MAPS.filter(m=>m.ato===a.id&&!m.secreta).sort((x,y)=>x.n-y.n);
+    return {a,ms,done:ms.filter(m=>m.n<=cleared).length,open:ms.length>0&&unlocked(ms[0].n)};});
+  if(!qdAto||!info.some(i=>i.a.id===qdAto&&i.open)){const cur=info.filter(i=>i.open&&i.done<i.ms.length)[0]||info.filter(i=>i.open).pop()||info[0];qdAto=cur.a.id;}
+  const sel=info.find(i=>i.a.id===qdAto),a=sel.a,ms=sel.ms,sh=a.nome.split(' · ');
+  const strip=info.map(i=>{const lock=!i.open,full=i.ms.length&&i.done===i.ms.length;
+    return `<button class="qcard ${i.a.id===qdAto?'sel':''} ${lock?'lock':''}" data-ato="${i.a.id}" ${lock&&!i.ms.length?'':''}>
+      <span class="art" style="background-image:url(assets/regioes/${ATO_ART[i.a.id-1]}.jpg)"></span>
+      <span class="n"><em>ATO ${['I','II','III','IV','V'][i.a.id-1]}</em>${i.a.nome.split(' · ')[1]}</span><span class="s">Nv ${i.a.niv[0]}–${i.a.niv[1]}</span>
+      ${lock?'<img class="bd" src="assets/ui/b_lock.png" alt="">':full?'<img class="bd" src="assets/ui/b_check.png" alt="">':''}</button>`;}).join('');
+  const pct=ms.length?Math.max(3,sel.done/ms.length*100):0;
+  const msg=!ms.length?'Os mapas deste ato ainda estão sendo preparados.':!sel.open?'Vença o chefe do ato anterior para liberar esta região.':`${a.bioma}. Chefe: ${a.chefe}.`;
+  // revelação gradual: concluídos, o disponível e só mais um escondido
+  const shown=ms.filter(m=>m.n<=cleared+2),hidden=ms.length-shown.length;
+  const rows=shown.map(m=>{const isDone=m.n<=cleared,lock=!unlocked(m.n);
+    if(lock)return `<div class="qrow off"><span class="tx"><b>? ? ?</b><small>Conclua o mapa anterior</small></span><img class="bd" src="assets/ui/b_lock.png" alt=""></div>`;
+    return `<button class="qrow ${isDone?'done':''} ${run.mission===m.n?'pick':''}" data-map="${m.n}">${m.chefe?'<img class="tg" src="assets/ui/tag_boss.png" alt="chefe">':''}
+      <span class="tx"><b>${m.nome}</b><small>Nv. ${m.nivel} · ${BIOMES[m.biome].nome} · ${m.chefe?'chefe do ato':m.grid||m.fixo?'mapa fixo':'terreno muda'}</small></span>${isDone?'<img class="bd" src="assets/ui/b_check.png" alt="">':'<span class="go">Jogar</span>'}</button>`;}).join('');
+  const secs=MAPS.filter(m=>m.secreta&&m.ato===a.id&&secretFound(m.n)).map(m=>`<button class="qrow dung ${run.mission===m.n?'pick':''}" data-map="${m.n}"><span class="tx"><b>${m.nome}</b><small>Dungeon secreta · Nv. ${m.nivel}${sc.cleared&&sc.cleared.includes(m.n)?' · concluída':''}</small></span>${sc.cleared&&sc.cleared.includes(m.n)?'<img class="bd" src="assets/ui/b_check.png" alt="">':'<span class="go">Jogar</span>'}</button>`).join('');
   PI_.innerHTML=`
-  <div class="head">${wt('board','Quadro de Missões','Escolha o mapa')}<button class="btn ghost sm" data-act="toVillage">Praça</button></div>
-  <div class="scroll">${ATOS.map(a=>{
-    const ms=MAPS.filter(m=>m.ato===a.id&&!m.secreta),done=ms.filter(m=>m.n<=cleared).length;
-    const head=`<h3>${a.nome}<small>Nv. ${a.niv[0]}–${a.niv[1]} · ${ms.length?`${done}/${ms.length} mapas`:'em breve'}</small></h3><p class="ato-sub">${a.bioma} · Chefe: ${a.chefe}</p>`;
-    if(!ms.length)return `<div class="world ato futuro">${head}<div class="mrow lock"><i>${ico('vila','trava')}</i><span><b>Em breve</b><small>Os mapas deste ato ainda estão sendo preparados.</small></span><em></em></div></div>`;
-    const secs=MAPS.filter(m=>m.secreta&&m.ato===a.id&&secretFound(m.n));
-    return `<div class="world ato">${head}${ms.map(m=>{const lock=!unlocked(m.n),isDone=m.n<=cleared;
-      return `<button class="mrow ${lock?'lock':''} ${run.mission===m.n?'sel':''}" data-map="${m.n}" ${lock?'disabled':''}>
-        <i>${lock?ico('vila','trava'):m.n}</i><span><b>${m.nome}</b><small>Nv. ${m.nivel} · ${BIOMES[m.biome].nome} · ${m.chefe?'chefe':m.grid||m.fixo?'mapa fixo':'terreno muda'}${isDone?' · concluído':''}</small></span><em>${lock?'':'›'}</em></button>`;}).join('')}${secs.map(m=>`<button class="mrow dung ${run.mission===m.n?'sel':''}" data-map="${m.n}"><i>${ico('vila','trava')}</i><span><b>${m.nome}</b><small>Dungeon secreta · Nv. ${m.nivel}${loadSecrets().cleared&&loadSecrets().cleared.includes(m.n)?' · concluída':''}</small></span><em>›</em></button>`).join('')}
-    </div>`;}).join('')}
-  <p class="note">Mapas se liberam ao vencer o anterior. Uma run começa no mapa escolhido e segue pelos próximos do mesmo ato enquanto houver heróis de pé. Vencer o chefe fecha o ato.</p></div>`;
+  <div class="qtop"><div><h2>Escolha o mapa</h2><small>Quadro de Missões</small></div><button class="qgo" data-act="toVillage">Praça</button></div>
+  <div class="qstrip">${strip}</div>
+  <div class="qinfo"><span class="art" style="background-image:url(assets/regioes/${ATO_ART[a.id-1]}.jpg)"></span><div><h3>${sh[0]} · ${sh[1]}</h3><p>${ms.length?`Nv. ${a.niv[0]}–${a.niv[1]} · ${sel.done} de ${ms.length} mapas concluídos`:`Nv. ${a.niv[0]}–${a.niv[1]} · em breve`}<br>${msg}</p>${ms.length?`<div class="qpb"><i style="width:${pct}%"></i></div>`:''}</div></div>
+  <div class="qlist">${sel.open?`<div class="qband"><span>Missões</span></div>${rows}${secs}${hidden>0?`<p class="qmore">+ ${hidden} ${hidden>1?'mapas ainda não descobertos':'mapa ainda não descoberto'}</p>`:''}`:''}
+    <p class="qnote">Uma run começa no mapa escolhido e segue pelos próximos do mesmo ato enquanto houver heróis de pé. Vencer o chefe fecha o ato.</p></div>`;
+  const st=PI_.querySelector('.qstrip'),sc2=st.querySelector('.qcard.sel');if(sc2)st.scrollLeft=sc2.offsetLeft-(st.clientWidth-sc2.offsetWidth)/2;
 }
 function renderBrief(n){
-  view='brief';setMode('village');
+  view='brief';briefN=n;setMode('village');PI_.classList.add('qd');
   const m=mapOf(n),w=ATOS.find(x=>x.id===m.ato)||ATOS[0],sel=roster.filter(h=>selected.has(h.id)),avgLv=Math.round((sel.length?sel:roster).reduce((a,h)=>a+(h.level||1),0)/Math.max(1,(sel.length?sel:roster).length));
+  const tags=[BIOMES[m.biome].nome,`Nv. recomendado ${m.nivel}`,`Mapa ${m.grid?`${m.grid[0].length}×${m.grid.length}`:`${m.w||16}×${m.h||16}`}`,m.chefe?'Chefe do ato':'',m.luz==='breu'?'Breu total':m.luz==='escuro'?'Escuro':m.luz==='penumbra'?'Penumbra':'',m.grid?'Mapa desenhado (pode vir espelhado)':m.fixo?'Terreno sempre igual':'Terreno muda a cada run',m.secret?'Parede suspeita':''].filter(Boolean);
   PI_.innerHTML=`
-  <div class="head">${wt('board',`${w.nome.split(' · ')[0]} · ${m.secreta?'Dungeon secreta':'Mapa '+m.n}`,m.nome)}<button class="btn ghost sm" data-act="toMissions">Voltar</button></div>
-  <div class="scroll">
-    <p class="sub">${m.desc}</p>
-    <div class="tags"><span class="tag">${BIOMES[m.biome].nome}</span><span class="tag">Nv. recomendado ${m.nivel}</span><span class="tag">Mapa ${m.grid?`${m.grid[0].length}×${m.grid.length}`:`${m.w||16}×${m.h||16}`}</span>${m.chefe?'<span class="tag">Chefe do ato</span>':''}${m.luz==='breu'?'<span class="tag">Breu total</span>':''}<span class="tag">${m.grid?'Mapa desenhado (pode vir espelhado)':m.fixo?'Terreno sempre igual':'Terreno muda a cada run'}</span>${m.secret?'<span class="tag">Parede suspeita</span>':''}</div>
-    ${roster.length&&avgLv<m.nivel-2?`<p class="warn">Seu grupo está em média no Nv. ${avgLv}, abaixo do recomendado (${m.nivel}). Vai ser difícil.</p>`:''}
-    ${m.luz==='breu'?'<p class="warn">Mapa às escuras: o terreno não aparece. Só os personagens, as tochas e as marcações do jogo ficam visíveis.</p>':''}
-    <h4 class="sec">Inimigos que podem aparecer</h4>
-    <div class="egrid">${m.pool.map(t=>{const e=ENEMIES[t];return `<div class="ec"><img src="${ePortrait(t)}" alt=""><div><b>${e.nome}</b><small class="ia">${t==='ogro'?'Chefe · ':''}${IA_TXT[e.ia]}</small><small>${e.resumo}</small></div></div>`;}).join('')}</div>
-    <p class="note">Quais inimigos aparecem, e quantos, muda a cada run. Você só sabe o conjunto.</p>
+  <div class="qtop"><div><h2>${m.nome}</h2><small>${w.nome.split(' · ')[0]} · ${m.secreta?'Dungeon secreta':'Mapa '+m.n}</small></div><button class="qgo" data-act="toMissions">Voltar</button></div>
+  <div class="qlist qbrief">
+    <div class="qhero" style="background-image:url(assets/regioes/${ATO_ART[w.id-1]}.jpg)">${m.chefe?'<img class="tg" src="assets/ui/tag_boss.png" alt="chefe">':''}</div>
+    <div class="qdesc">${m.desc}</div>
+    <div class="qtags">${tags.map(t=>`<span class="qtag">${t}</span>`).join('')}</div>
+    ${roster.length&&avgLv<m.nivel-2?`<p class="qwarn">Seu grupo está em média no Nv. ${avgLv}, abaixo do recomendado (${m.nivel}). Vai ser difícil.</p>`:''}
+    ${m.luz==='breu'?'<p class="qwarn">Mapa às escuras: o terreno não aparece. Só os personagens, as tochas e as marcações do jogo ficam visíveis.</p>':''}
+    <div class="qband"><span>Inimigos possíveis</span></div>
+    <div class="qegrid">${m.pool.map(t=>{const e=ENEMIES[t];return `<div class="qec"><img src="${ePortrait(t)}" alt=""><div><b>${e.nome}</b><em>${t==='ogro'?'Chefe · ':''}${IA_TXT[e.ia]}</em><small>${e.resumo}</small></div></div>`;}).join('')}</div>
+    <p class="qnote">Quais inimigos aparecem, e quantos, muda a cada run. Você só sabe o conjunto.</p>
   </div>
-  <button class="btn cta" data-pickmap="${m.n}">Escolher esta missão</button>`;
+  <div class="qfoot"><button class="qcta" data-pickmap="${m.n}">Escolher esta missão</button></div>`;
 }
 
 /* ---------- Taverna ---------- */
@@ -3288,7 +3649,7 @@ function tvTabs(act){
   return `<div class="tabs"><button class="tab ${act==='roster'?'on':''}" data-act="toTavern">${ico('vila','grupo')} Elenco (${roster.length})</button><button class="tab ${act==='sheet'?'on':''}" ${tvSel&&roster.length?`data-sheet="${tvSel}"`:'disabled'}>${ico('vila','board')} Ficha do herói</button><button class="tab ${act==='recruit'?'on':''}" data-act="recruit">${ico('vila','tavern')} Recrutar</button></div>`;
 }
 function renderTavern(){
-  view='tavern';tvFocus=null;setMode('tavern');
+  view='tavern';tvFocus=null;setMode('tavern');PI_.classList.add('qd','kt');
   const sc=rosterSibCount(),n=selected.size,full=roster.length>=ROSTER_CAP;
   if(!roster.some(h=>h.id===tvSel))tvSel=(roster.find(h=>selected.has(h.id))||roster[0]||{}).id||null;
   const f=roster.find(h=>h.id===tvSel),sel=roster.filter(h=>selected.has(h.id));
@@ -3322,7 +3683,7 @@ function renderTavern(){
   <div class="tfoot"><div class="tl"><button class="btn ghost sm" data-act="toVillage">Praça</button><span>${ico('vila','grupo')}<b>${n}/5</b> no grupo</span></div><button class="btn cta" data-act="toVillage" ${n>=5?'':'disabled'}>${n>=5?'Confirmar grupo →':`Escolha mais ${5-n}`}</button></div>`;
 }
 function renderRecruit(){
-  view='recruit';setMode('tavern');
+  view='recruit';setMode('tavern');PI_.classList.add('qd','kt');
   const sc=surCount(),full=roster.length>=ROSTER_CAP;
   PI_.innerHTML=`
   <div class="head">${wt('tavern','Taverna do Javali Torto','Recrutar heróis')}
@@ -3351,7 +3712,7 @@ function renderSheet(id,src){
   if(src)tvSrc=src;
   const list=tvSrc==='roster'?roster:draw,h=list.find(x=>x.id===id);
   if(!h)return tvSrc==='roster'?renderTavern():renderRecruit();
-  view='sheet';tvFocus=id;if(tvSrc==='roster')tvSel=id;setMode('tavern');
+  view='sheet';tvFocus=id;if(tvSrc==='roster')tvSel=id;setMode('tavern');PI_.classList.add('qd','kt');
   const c=CLASSES[h.cls],cm=COMO[h.cls],sc=tvSrc==='roster'?rosterSibCount():surCount(),isR=tvSrc==='roster';
   const lv=h.level||1,xb=xpForLevel(lv),xn=xpForLevel(lv+1),pct=lv>=LEVEL_CAP?100:Math.max(0,Math.min(100,Math.round(((h.xpTotal||0)-xb)/(xn-xb)*100)));
   const at=h.attrs||{},AN={forca:'Força',destreza:'Destreza',inteligencia:'Inteligência',vitalidade:'Vitalidade',fe:'Fé'};
@@ -3385,7 +3746,7 @@ function renderSheet(id,src){
 /* ---------- Formação ---------- */
 function siblingFams(){const sc={};party.forEach(h=>sc[h.sur]=(sc[h.sur]||0)+1);return Object.keys(sc).filter(x=>sc[x]>1);}
 function renderPlace(){
-  view='place';
+  view='place';PI_.classList.add('kf');
   const fams=siblingFams(),all=party.every(h=>h.r!=null),left=party.filter(h=>h.r==null).length,mp=LV.mp;
   PI_.innerHTML=`
   ${stepper(3)}
@@ -3441,7 +3802,7 @@ function renderEquip(){
   </div>`;
 }
 function renderStash(){
-  view='stash';setMode('village');
+  view='stash';setMode('village');PI_.classList.add('qd','kt');
   const tabs=['all','weapon','offhand','head','body','hands','feet','accessory'];
   const tabLabel=k=>k==='all'?'Todos':(SLOT_INFO[k]?SLOT_INFO[k].label:'Acessório');
   const items=stash.map((it,i)=>({it,i})).filter(({it})=>stashFilter==='all'||it.slot===stashFilter);
@@ -3455,17 +3816,17 @@ function renderStash(){
   </div>
   ${stashView==='items'?`
     <div class="stashtabs">${tabs.map(k=>`<button class="stashtab ${stashFilter===k?'on':''}" data-stashtab="${k}">${tabLabel(k)}</button>`).join('')}</div>
-    ${items.length?`<div class="stashgrid">${items.map(({it,i})=>`<button class="stashtile ${stashSel===i?'sel':''}" style="border-color:${RARITY[it.rar].cor}" data-stashtile="${i}" aria-label="${it.nome}">${itemIco(it,'lg')}</button>`).join('')}</div>`:'<p class="note">Nenhum item aqui ainda. Derrote inimigos em missão pra encontrar equipamentos.</p>'}
+    ${items.length?`<div class="stashgrid">${items.map(({it,i})=>`<button class="stashtile ${stashSel===i?'sel':''}" style="border-color:${RARITY[it.rar].cor}" data-stashtile="${i}" aria-label="${it.nome}">${itemIco(it,'lg')}${itemBadges(it)}</button>`).join('')}</div>`:'<p class="note">Nenhum item aqui ainda. Derrote inimigos em missão pra encontrar equipamentos.</p>'}
     ${sel?`<div class="stashdetail">
-      <div><b style="color:${RARITY[sel.rar].cor}">${itemIco(sel)} ${sel.nome}</b> · ${rarTag(sel)} · <i>${SLOT_INFO[sel.slot]?SLOT_INFO[sel.slot].label:'Acessório'}</i></div>
+      <div><b style="color:${RARITY[sel.rar].cor}">${itemIco(sel)} ${sel.nome}</b></div><div class="sdline"><span class="stars" style="color:${RARITY[sel.rar].cor}">${stars(sel.rar)}</span> ${rarTag(sel)} · <i>${SLOT_INFO[sel.slot]?SLOT_INFO[sel.slot].label:'Acessório'}</i></div>
       <small>${sel.desc}</small>
-      <div class="invpick">${roster.filter(h=>canEquip(h,sel)).map(h=>`<button class="btn ghost sm" data-stashequip="${h.id}">Equipar em ${h.first}</button>`).join('')||'<span class="note">Nenhum herói no elenco pode usar este item.</span>'}</div>
+      <div class="invpick">${roster.filter(h=>canEquip(h,sel)).map(h=>{const df=itemDiff(h,sel);return `<button class="btn ghost sm cmp ${df.cls}" data-stashequip="${h.id}"><span>Equipar em ${h.first}</span><em>${df.cls==='new'?'▲ espaço livre':df.cls==='up'?'▲ melhor':df.cls==='down'?'▼ pior':'= igual'}${df.txt?` · ${df.txt}`:''}</em></button>`;}).join('')||'<span class="note">Nenhum herói no elenco pode usar este item.</span>'}</div>
     </div>`:''}
   `:`<div class="scroll">${roster.length?roster.map(h=>heroEquipBox(h,'steq')).join(''):'<p class="note">Recrute heróis na taverna primeiro.</p>'}</div>`}`;
 }
 function injuryRushCost(h){return INJURY_RUSH_BASE+(h.level||1)*INJURY_RUSH_PER_LEVEL;}
 function renderForge(){
-  view='forge';setMode('village');
+  view='forge';setMode('village');PI_.classList.add('qd','kt');
   const row=h=>{
     const lv=h.level||1;
     const head=`<div class="hhead"><img src="${h.portrait}" alt=""><div class="grow"><b class="nm">${h.first}</b><div class="cl" style="color:#e8d3a8">${ico('classe',h.cls)}${CLASSES[h.cls].nome} · Nv.${lv}${h.sub?' · '+SUB_INFO[h.sub].nome:''}</div></div><button class="btn ghost sm" data-sheet="${h.id}" data-from="forge">Ficha</button></div>`;
@@ -3482,7 +3843,7 @@ function renderForge(){
   <div class="scroll">${roster.length?roster.map(row).join(''):`<div class="empty">${ico('vila','forge','xl')}<p>Seu elenco está vazio. Recrute heróis na Taverna.</p></div>`}</div>`;
 }
 function renderTemple(){
-  view='temple';setMode('village');
+  view='temple';setMode('village');PI_.classList.add('qd','kt');
   const injured=roster.filter(h=>h.injured);
   PI_.innerHTML=`
   <div class="head">${wt('temple','Vila de Brumavale','Templo da Aurora')}<button class="btn ghost sm" data-act="toVillage">Praça</button></div>
@@ -3497,7 +3858,9 @@ function renderTemple(){
   </div>`;
 }
 function renderBattle(){
-  $('#speedbar').innerHTML=[1,2,4].map(s=>`<button class="spd" data-spd="${s}" aria-pressed="${speed===s}">${s}x</button>`).join('')+'<button class="spd" data-act="overview" data-hud="1" aria-pressed="false">Mapa</button><button class="spd" data-act="skip">Pular</button><button class="spd" data-act="log">Registro</button>';
+  let spdMin=false;try{spdMin=localStorage.getItem('lendas_spd_min')==='1';}catch(e){}
+  $('#speedbar').classList.toggle('min',spdMin);
+  $('#speedbar').innerHTML='<button class="spdtab" data-act="spdtoggle" aria-label="Recolher ou abrir o menu"><i></i></button>'+[1,2,4].map(s=>`<button class="spd" data-spd="${s}" aria-pressed="${speed===s}">${s}x</button>`).join('')+'<button class="spd" data-act="overview" data-hud="1" aria-pressed="false">Mapa</button><button class="spd" data-act="skip">Pular</button><button class="spd" data-act="log">Registro</button>';
   $('#round').textContent='1';$('#bhud').hidden=false;$('#feed').innerHTML='';objKey='';renderObjs();$('#logp').hidden=true;
   addLog('A batalha começou. O jogo joga sozinho.','mut');
 }
@@ -3507,6 +3870,7 @@ function setHint(t){hint=t;const el=$('#hint');if(el)el.textContent=t;}
 PI_.addEventListener('click',e=>{
   const t=e.target;
   const bld=t.closest('[data-bld]');if(bld){openBld(bld.dataset.bld);return;}
+  const ra=t.closest('[data-ato]');if(ra){if(!ra.classList.contains('lock')){SFX.click();qdAto=+ra.dataset.ato;renderMissions();}return;}
   const mp=t.closest('[data-map]');if(mp){renderBrief(+mp.dataset.map);return;}
   const pm=t.closest('[data-pickmap]');if(pm){run.mission=+pm.dataset.pickmap;goVillage();return;}
   const hero=t.closest('[data-hero]');if(hero){const id=+hero.dataset.hero;if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderTavern();return;}
@@ -3813,7 +4177,7 @@ async function attack(u,t){
   if(u.cls==='ladino'&&u.sub==='armadilheiro'){u.ambushDone=true;}
   const p=u.grp.position,ox=p.x,oz=p.z,dx=t.c-u.c,dz=t.r-u.r,len=Math.hypot(dx,dz)||1;
   if(u.alc>1){SFX.shoot();drawBow(u,0.3);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox-dx/len*0.12,z:oz-dz/len*0.12,duration:0.08}).to(p,{x:ox,z:oz,duration:0.1});await projectile(u,t);}
-  else{SFX.swing();swingArm(u,0.12,0.18);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox+dx/len*0.32,z:oz+dz/len*0.32,duration:0.12,ease:'power2.in'}).to(p,{x:ox,z:oz,duration:0.18,ease:'power2.out'});}
+  else{SFX.swing();swingArm(u,0.12,0.18);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox-dx/len*0.14,z:oz-dz/len*0.14,duration:0.1,ease:'power1.out'}).to(p,{x:ox+dx/len*0.5,z:oz+dz/len*0.5,duration:0.09,ease:'power4.in'}).to(p,{x:ox,z:oz,duration:0.24,ease:'power2.out'});}
   clearLine();
   if(!hit){
     SFX.miss();floatText(t,'MISS','miss');gsap.fromTo(t.plane.position,{x:0},{x:0.24,duration:0.1,yoyo:true,repeat:1,ease:'power1.out'});
@@ -3827,9 +4191,11 @@ async function attack(u,t){
   const sparks=u.side==='hero'?['#ffd34a','#ffffff','#ff9a3a']:['#ff5a4a','#ffffff','#a01e1e'];
   if(u.alc===1)slash(t,crit);
   if(u.cls==='mago'||(u.side==='enemy'&&magic)){
-    fxPlay('magic','lightning-strike-32px_strip8.png',8,16,{x:t.grp.position.x,y:t.grp.position.y,z:t.grp.position.z},{w:crit?2:1.5,h:crit?3:2.3});
+    fxPlay('magic','lightning-strike-32px_strip8.png',8,18,{x:t.grp.position.x,y:t.grp.position.y,z:t.grp.position.z},{w:crit?2.6:2,h:crit?3.6:3});
+    fxPlay('magic','energy-orb-32px_strip8.png',8,20,{x:t.grp.position.x,y:t.grp.position.y+0.4,z:t.grp.position.z},{w:crit?2.4:1.7});
+    pulse(t.grp.position,'#9fdcff',crit?2.2:1.6,0.5,0.12);
     if(crit)fxPlay('combat','critical-hit-32px_strip8.png',8,14,{x:t.grp.position.x,y:t.grp.position.y+0.4,z:t.grp.position.z},{w:1.9});
-    if(!crit){flash('#bfe3ff',0.22);shakeCam(0.12,0.22);}
+    if(!crit){flash('#bfe3ff',0.3);shakeCam(0.2,0.3);}
   }
   burst(t.grp.position,{n:crit?12:5,colors:sparks,spread:crit?1:0.6,up:crit?0.9:0.5,y:0.6*(t.big?1.3:1),life:crit?0.65:0.45,fall:true});
   if(crit){flash('#fffaf0',0.4);shakeCam(0.28,0.4);pulse(t.grp.position,'#ffd34a',1.4,0.5);}
@@ -3863,19 +4229,44 @@ function fadeUnit(u,opacity,opts={}){
   const mats=u.mats||[u.mat];
   return gsap.to(mats[0],{opacity,...opts,onUpdate:()=>{for(let i=1;i<mats.length;i++)mats[i].opacity=mats[0].opacity;}});
 }
+// "hit-stop": congela a animação por um instante no momento do impacto (só em velocidade normal/rápida)
+let hitStopOn=false;
+function hitStop(ms){
+  if(hitStopOn)return;const ts=gsap.globalTimeline.timeScale();if(ts>6)return;
+  hitStopOn=true;gsap.globalTimeline.timeScale(0.001);
+  setTimeout(()=>{gsap.globalTimeline.timeScale(ts);hitStopOn=false;},ms);
+}
 function damage(t,dmg,src,crit){
   crit?SFX.crit():SFX.hit();
+  const lethal=t.hp-dmg<=0,heavy=crit||dmg>=t.maxhp*0.35;
   t.hp=Math.max(0,t.hp-dmg);floatText(t,crit?`-${dmg}!`:`-${dmg}`,crit?'crit':'');
-  tintUnit(t,{r:1,g:0.2,b:0.2},{r:1,g:1,b:1},0.45);
-  gsap.fromTo(t.plane.position,{x:-0.1},{x:0,duration:0.4,ease:'elastic.out(1,0.3)'});
-  gsap.fromTo(t.plane.rotation,{z:t.side==='hero'?0.22:-0.22},{z:0,duration:0.4,ease:'back.out(2)'});
-  gsap.fromTo(t.pivot.scale,{x:1.15},{x:1,duration:0.25});
+  const tp=t.grp.position;
+  // clarão branco -> vermelho -> normal
+  tintUnit(t,{r:2.6,g:2.6,b:2.6},{r:1,g:0.2,b:0.2},0.07);
+  tintUnit(t,{r:1,g:0.2,b:0.2},{r:1,g:1,b:1},0.42,0.07);
+  // recuo: empurrado pra longe de quem bateu
+  if(src&&src.grp&&src!==t){
+    const ax=tp.x-src.grp.position.x,az=tp.z-src.grp.position.z,al=Math.hypot(ax,az)||1,k=(heavy?0.5:0.28)*(t.big?0.6:1);
+    gsap.timeline().to(tp,{x:tp.x+ax/al*k,z:tp.z+az/al*k,duration:0.07,ease:'power3.out'}).to(tp,{x:tp.x,z:tp.z,duration:0.32,ease:'back.out(2.2)'});
+  }
+  gsap.fromTo(t.plane.position,{x:-0.14},{x:0,duration:0.45,ease:'elastic.out(1,0.3)'});
+  gsap.fromTo(t.plane.rotation,{z:t.side==='hero'?0.3:-0.3},{z:0,duration:0.45,ease:'back.out(2.4)'});
+  gsap.fromTo(t.pivot.scale,{x:1.3,y:0.82},{x:1,y:1,duration:0.3,ease:'elastic.out(1,0.5)'});
+  // faísca de impacto + anel no chão
+  fxPlay('combat','parry-flash-32px_strip7.png',7,22,{x:tp.x,y:tp.y+0.45,z:tp.z},{w:heavy?1.5:1.0});
+  pulse(tp,heavy?'#ffd34a':'#ffffff',heavy?1.5:0.9,0.35);
+  if(heavy)fxPlay('combat','shockwave-32px_strip8.png',8,22,{x:tp.x,y:tp.y,z:tp.z},{w:2.2,flat:false});
+  hitStop(lethal?150:heavy?110:55);
+  shakeCam(lethal?0.4:heavy?0.34:0.16,lethal?0.5:heavy?0.42:0.24);
+  if(t.side==='hero')flash('#ff2a1a',heavy?0.34:0.2);
   if(t.hp>0)lpcSetState(t,'hurt');
   if(t.hp<=0)kill(t,src,crit);
 }
 function kill(t,src,crit){
   SFX.kill();
   t.alive=false;t.diedRound=stats.round;if(t.hpEl)t.hpEl.hidden=true;
+  burst(t.grp.position,{n:14,colors:t.side==='hero'?['#ffd34a','#ffffff']:['#ff9a3a','#ffffff','#ffd34a'],spread:1.1,up:1.1,y:0.6,life:0.6,fall:true});
+  pulse(t.grp.position,'#ffffff',1.9,0.45,0.12);
   gsap.to(t.pivot.rotation,{x:-1.45,duration:0.5,ease:'bounce.out',onComplete:()=>burst(t.grp.position,{n:16,colors:['#9a948a','#c9c2b4','#6a655d'],spread:0.8,up:0.25,y:0.1,life:0.6})});
   tintUnitTo(t,{r:0.5,g:0.5,b:0.5},0.3,0.1);
   fadeUnit(t,0,{delay:1,duration:0.5,onComplete:()=>{if(t.grp)t.grp.visible=false;if(t.side==='hero')addTomb(t);}});
@@ -4237,7 +4628,13 @@ applySpeed();
 // pré-carrega os sheets LPC (heróis + inimigos humanoides) e as strips de
 // criatura assim que o jogo abre, pra já estarem prontos quando a pessoa
 // chegar na Taverna/Quadro — os retratos de menu usam esse mesmo sprite.
-Object.keys(LPC_RECIPES).forEach(lpcBuild);
+Promise.all(Object.keys(LPC_RECIPES).map(lpcBuild)).then(()=>{
+  // heróis sorteados/carregados antes dos sheets prontos ficaram com retrato vazio: preenche e redesenha a tela aberta
+  const fix=h=>{if(h&&LPC_SHEETS[h.loadout]){h.portrait=lpcPortrait(h.loadout)||h.portrait;}};
+  roster.forEach(fix);draw.forEach(fix);if(run&&run.party)run.party.forEach(fix);
+  Object.keys(enemyCache).forEach(k=>{if(enemyCache[k]&&enemyCache[k].url===BLANK_IMG)delete enemyCache[k];});
+  try{if(view==='tavern')renderTavern();else if(view==='recruit')renderRecruit();else if(view==='sheet')renderSheet(tvFocus);else if(view==='brief'&&briefN)renderBrief(briefN);}catch(e){}
+});
 Object.keys(CREATURE_DEFS).forEach(creatureImg);
 initVillagers();
 applyLevel(MAPS[0],MAPS[0].seed);buildBoard();spawnEnemies(rollEnemies(LV.mp));newDraw();setMode('village');renderVillage();try{if(localStorage.getItem('lendas_help')!=='2')setTimeout(showHelp,700);else setTimeout(maybeShowInstall,1200);}catch(_){}resize();applyCam();cam.updateProjectionMatrix();requestAnimationFrame(loop);
