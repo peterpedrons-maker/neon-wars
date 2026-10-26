@@ -436,3 +436,8 @@ da ideia original sem precisar do modo manual completo.
 - Artes geradas por IA recortadas de folhas com fundo magenta: `assets/regioes/` (9 banners, hoje usados 5 por ato), `assets/icones/` (16 ícones de tipo de mapa, ainda sem uso) e `assets/ui/` (27 peças: painéis, faixas de linha em 3 estados, botões, cartas de região, selos, barra, divisor, fitas).
 - Quadro de Missões (`renderMissions`): faixa de cartas por ato + cabeçalho com progresso + lista do ato selecionado. Revelação gradual: concluídos, o disponível e um "???"; o resto vira "+ N mapas ainda não descobertos". Dungeons secretas só aparecem depois de achadas. Classe `.qd` no `#pi` (removida em `setMode`). Estado da região em `qdAto`.
 - Próximas telas a migrar para o kit (sempre com antes/depois aprovado): briefing do mapa, Taverna, Vila, Cofre/Forja/Templo, formação, batalha.
+
+## Regra: só sprites do pack
+- Nenhum personagem (herói, inimigo, aldeão) aparece com arte desenhada por código. Heróis e inimigos humanoides usam `LPC_RECIPES`; criaturas usam `CREATURE_DEFS`. O Xamã Goblin agora também tem receita LPC.
+- Retrato antes de o sheet carregar = imagem em branco (`BLANK_IMG`), nunca o desenho gerado. Quando todos os sheets ficam prontos, os retratos são recalculados e a tela aberta (Taverna, Recrutar, Ficha, briefing) é redesenhada.
+- As funções `heroSprite`/`enemySprite` ficam só como último recurso interno e não são mais usadas para nenhum personagem existente. Ao criar inimigo ou classe nova, crie a receita LPC (ou criatura) junto.

@@ -2348,7 +2348,7 @@ function makeHero(used,cls,level){
     // recruta que já nasce depois do nível-gatilho vem com subclasse sorteada
     if(h.level>=SUB_UNLOCK_LEVEL)setSub(h,pick(SUBCLASSES[cls]));
   }
-  h.sprite=heroSprite(h);h.portrait=lpcPortrait(h.loadout)||h.sprite.toDataURL();
+  h.sprite=heroSprite(h);h.portrait=lpcPortrait(h.loadout)||BLANK_IMG;
   return h;
 }
 const enemyCache={};
@@ -2363,7 +2363,7 @@ function ensureEnemyCache(kind){
   if(LPC_RECIPES[kind]){
     const url=lpcPortrait(kind);
     if(url){enemyCache[kind]={sp:null,url};return enemyCache[kind];}
-    const sp=enemySprite(kind);return {sp,url:sp.toDataURL()}; // não cacheia: tenta o sprite de verdade de novo na próxima
+    return {sp:null,url:BLANK_IMG}; // não cacheia: tenta o sprite de verdade de novo na próxima
   }
   const sp=enemySprite(kind);enemyCache[kind]={sp,url:sp.toDataURL()};return enemyCache[kind];
 }
@@ -2516,6 +2516,9 @@ const LPC_RECIPES={
   goblin:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/goblin/adult/walk.png','legs/pantaloons/male/walk.png','weapon/sword/dagger/walk/dagger.png'],
     slash:['body/bodies/male/slash.png','head/heads/goblin/adult/slash.png','legs/pantaloons/male/slash.png','weapon/sword/dagger/slash/dagger.png'],
     hurt:['body/bodies/male/hurt.png','head/heads/goblin/adult/hurt.png','legs/pantaloons/male/hurt.png','weapon/sword/dagger/hurt/dagger.png']},
+  xama:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/goblin/adult/walk.png','legs/pantaloons/male/walk.png','torso/clothes/longsleeve/formal/male/walk.png','weapon/magic/gnarled/universal/walk/background.png','weapon/magic/gnarled/universal/walk/foreground.png'],
+    slash:['body/bodies/male/slash.png','head/heads/goblin/adult/slash.png','legs/pantaloons/male/slash.png','torso/clothes/longsleeve/formal/male/slash.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/goblin/adult/hurt.png','legs/pantaloons/male/hurt.png','torso/clothes/longsleeve/formal/male/hurt.png','weapon/magic/gnarled/universal/hurt/background.png','weapon/magic/gnarled/universal/hurt/foreground.png']},
   gobarq:{action:'shoot',walk:['body/bodies/male/walk.png','head/heads/goblin/adult/walk.png','legs/pantaloons/male/walk.png','weapon/ranged/bow/recurve/walk/background/medium.png','weapon/ranged/bow/recurve/walk/foreground.png','quiver/walk/quiver.png'],
     shoot:['body/bodies/male/shoot.png','head/heads/goblin/adult/shoot.png','legs/pantaloons/male/shoot.png','weapon/ranged/bow/recurve/universal/shoot/background.png','weapon/ranged/bow/recurve/universal/shoot/foreground.png','quiver/shoot/quiver.png'],
     hurt:['body/bodies/male/hurt.png','head/heads/goblin/adult/hurt.png','legs/pantaloons/male/hurt.png','weapon/ranged/bow/recurve/universal/hurt/background.png','weapon/ranged/bow/recurve/universal/hurt/foreground.png']},
@@ -2627,6 +2630,7 @@ function lpcBuild(cls){
 }
 // recorta o quadro parado (de frente) do walk sheet já montado — usado como
 // retrato de verdade nas telas de menu, no lugar do rascunho pixelado antigo.
+const BLANK_IMG='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
 function lpcPortrait(cls){
   const sheets=LPC_SHEETS[cls];if(!sheets)return null;
   const img=sheets.walk.tex.image,cols=sheets.walk.cols,rows=sheets.walk.rows;
@@ -3010,7 +3014,7 @@ const COMO={
 };
 const IA_TXT={rush:'Avança',skirmish:'Atira de longe',flank:'Caça os frágeis',healer:'Cura aliados',guard:'Vigia o posto'};
 let run={mission:null,map:0,phaseNo:0,results:[],party:[],enemyList:null,total:0,inventory:[],endless:false};
-let view='hub',tvFocus=null,tvSrc='draw',sheetFrom='tavern',tvSel=null;
+let briefN=0,view='hub',tvFocus=null,tvSrc='draw',sheetFrom='tavern',tvSel=null;
 function loadProg(){try{return +localStorage.getItem('lendas_prog_v1')||0;}catch(e){return 0;}}
 function saveProg(n){try{if(n>loadProg())localStorage.setItem('lendas_prog_v1',String(n));}catch(e){}}
 function loadClassXP(){try{return JSON.parse(localStorage.getItem('lendas_classxp_v1')||'{}');}catch(e){return {};}}
@@ -3173,7 +3177,7 @@ function hydrateHero(s){
     sub:(s.sub&&SUBCLASSES[s.cls]&&SUBCLASSES[s.cls].includes(s.sub))?s.sub:null,
     r:null,c:null,equip:{}};
   EQ_SLOTS.forEach(sl=>{const id=s.equip&&s.equip[sl];h.equip[sl]=id?ITEMS.find(i=>i.id===id)||null:null;});
-  h.sprite=heroSprite(h);h.portrait=lpcPortrait(h.loadout)||h.sprite.toDataURL();
+  h.sprite=heroSprite(h);h.portrait=lpcPortrait(h.loadout)||BLANK_IMG;
   return h;
 }
 function saveGame(){
@@ -3377,7 +3381,7 @@ function renderMissions(){
   const st=PI_.querySelector('.qstrip'),sc2=st.querySelector('.qcard.sel');if(sc2)st.scrollLeft=sc2.offsetLeft-(st.clientWidth-sc2.offsetWidth)/2;
 }
 function renderBrief(n){
-  view='brief';setMode('village');PI_.classList.add('qd');
+  view='brief';briefN=n;setMode('village');PI_.classList.add('qd');
   const m=mapOf(n),w=ATOS.find(x=>x.id===m.ato)||ATOS[0],sel=roster.filter(h=>selected.has(h.id)),avgLv=Math.round((sel.length?sel:roster).reduce((a,h)=>a+(h.level||1),0)/Math.max(1,(sel.length?sel:roster).length));
   const tags=[BIOMES[m.biome].nome,`Nv. recomendado ${m.nivel}`,`Mapa ${m.grid?`${m.grid[0].length}×${m.grid.length}`:`${m.w||16}×${m.h||16}`}`,m.chefe?'Chefe do ato':'',m.luz==='breu'?'Breu total':m.luz==='escuro'?'Escuro':m.luz==='penumbra'?'Penumbra':'',m.grid?'Mapa desenhado (pode vir espelhado)':m.fixo?'Terreno sempre igual':'Terreno muda a cada run',m.secret?'Parede suspeita':''].filter(Boolean);
   PI_.innerHTML=`
@@ -4367,7 +4371,13 @@ applySpeed();
 // pré-carrega os sheets LPC (heróis + inimigos humanoides) e as strips de
 // criatura assim que o jogo abre, pra já estarem prontos quando a pessoa
 // chegar na Taverna/Quadro — os retratos de menu usam esse mesmo sprite.
-Object.keys(LPC_RECIPES).forEach(lpcBuild);
+Promise.all(Object.keys(LPC_RECIPES).map(lpcBuild)).then(()=>{
+  // heróis sorteados/carregados antes dos sheets prontos ficaram com retrato vazio: preenche e redesenha a tela aberta
+  const fix=h=>{if(h&&LPC_SHEETS[h.loadout]){h.portrait=lpcPortrait(h.loadout)||h.portrait;}};
+  roster.forEach(fix);draw.forEach(fix);if(run&&run.party)run.party.forEach(fix);
+  Object.keys(enemyCache).forEach(k=>{if(enemyCache[k]&&enemyCache[k].url===BLANK_IMG)delete enemyCache[k];});
+  try{if(view==='tavern')renderTavern();else if(view==='recruit')renderRecruit();else if(view==='sheet')renderSheet(tvFocus);else if(view==='brief'&&briefN)renderBrief(briefN);}catch(e){}
+});
 Object.keys(CREATURE_DEFS).forEach(creatureImg);
 initVillagers();
 applyLevel(MAPS[0],MAPS[0].seed);buildBoard();spawnEnemies(rollEnemies(LV.mp));newDraw();setMode('village');renderVillage();try{if(localStorage.getItem('lendas_help')!=='2')setTimeout(showHelp,700);else setTimeout(maybeShowInstall,1200);}catch(_){}resize();applyCam();cam.updateProjectionMatrix();requestAnimationFrame(loop);
