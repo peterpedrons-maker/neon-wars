@@ -1002,6 +1002,49 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .ov .inner.kt .btn.cmp{flex-direction:row;justify-content:space-between;gap:8px;text-align:left;padding:6px 18px;width:100%}
 .ov .inner.kt .btn.cmp em{font-style:normal;font-size:11px;font-weight:700;white-space:nowrap}
 .ov .inner.kt .btn.cmp.up em{color:#8fe08a}.ov .inner.kt .btn.cmp.down em{color:#ff9a8a}.ov .inner.kt .btn.cmp.eq em{color:#cdb68a}.ov .inner.kt .btn.cmp.new em{color:#ffd65a}
+
+/* ===== Batalha (HUD) com o kit novo ===== */
+#bhud .turn{background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;border:0;border-image:none;padding:0 16px;height:44px;color:#f3e6c6;text-shadow:0 1px 0 #000;image-rendering:auto;font-size:14px}
+.objp{background:url(assets/ui/faixa_normal.png) 0 0/100% 100% no-repeat;border:0;border-image:none;padding:9px 18px;image-rendering:auto;min-height:48px;color:#f3e6c6;font-size:11.5px}
+#order{background:linear-gradient(90deg,rgba(12,8,5,.78),rgba(12,8,5,.15));border-bottom:2px solid rgba(233,185,73,.55);top:calc(62px + env(safe-area-inset-top,0px))}
+#order .oc{border-width:2px;border-radius:3px;box-shadow:0 2px 3px #000a}
+#order .oc.on{filter:drop-shadow(0 0 6px #ffd65a)}
+#bhud .speed{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;border-image:none;padding:16px 14px;gap:2px;image-rendering:auto;top:calc(124px + env(safe-area-inset-top,0px))}
+#bhud .spd{color:#e6d4a8;border-radius:0;text-shadow:0 1px 0 #000;min-width:50px}
+#bhud .spd[aria-pressed="true"]{background:url(assets/ui/btn_ouro.png) 0 0/100% 100% no-repeat;color:#2b1812;box-shadow:none;text-shadow:0 1px 0 #ffe9a8;font-weight:700}
+.uc{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;border-image:none;padding:18px 24px;gap:10px;image-rendering:auto}
+.uc.e{box-shadow:none;filter:drop-shadow(0 0 6px #c8463c)}
+.uc-face{border:0;background:radial-gradient(#4a3828,#1c1510);box-shadow:0 0 0 2px #8a6a3a,0 0 0 4px #0e0805}
+.uc-face img{image-rendering:pixelated}
+.uc-name{color:#f3e6c6;text-shadow:0 1px 0 #000}
+.uc-bar{background:#0e0805;border:2px solid #4a3824}
+.uc-tabs button{background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;border:0;box-shadow:none;width:36px;height:34px}
+.uc-tabs button[aria-pressed="true"]{background-image:url(assets/ui/btn_ouro.png);color:#2b1812}
+#ucpop .pp{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;border-image:none;padding:16px 22px;image-rendering:auto}
+.pp-h{border-bottom-color:#6a5030}
+.callout{background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;border:0;box-shadow:none;color:#f3e6c6;padding:7px 16px;border-radius:0;filter:drop-shadow(0 3px 3px #000a);text-shadow:0 1px 0 #000}
+.callout::after{display:none}
+.callout.e{background-image:url(assets/ui/btn_escuro.png);color:#ffb0a0}
+.hpf .bar{border:2px solid #0e0805;background:#0e0805}
+
+/* ===== Resultado da fase com o kit novo ===== */
+#result{background:#120b08 radial-gradient(#2a1a10,#120b08);backdrop-filter:none;-webkit-backdrop-filter:none}
+#result .res{gap:10px;padding-block:20px 28px;color:#f3e6c6}
+#result .res-title{font-size:40px;color:#ffd65a;text-shadow:0 3px 0 #000,0 0 18px #e9b94966}
+#result .res-title.lose{color:#ff8a78;text-shadow:0 3px 0 #000,0 0 18px #c8463c66}
+#result .eyebrow{color:#e9b949}
+#result .sub{color:#d8c8a2}
+#result .box{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;border-radius:0;box-shadow:none;padding:24px 30px;color:#eadbb8}
+#result .box h3{color:#f3e6c6;text-shadow:0 1px 0 #000}
+#result .bigscore{background:url(assets/ui/faixa_destaque.png) 0 0/100% 100% no-repeat;border:0;border-image:none;border-radius:0;padding:22px 30px;image-rendering:auto;text-shadow:0 2px 0 #000}
+#result .bigscore span{color:#ffe9b8}
+#result details.box>summary{color:#f3e6c6}
+#result .xr img{width:30px;height:42px;object-fit:contain}
+#result .xr{grid-template-columns:34px minmax(0,1fr) auto}
+#result .xr .xv{color:#ffd65a}
+#result .rbar{background:linear-gradient(transparent,#120b08 40%)}
+#result .rbar .btn{border:0;border-image:none;background:url(assets/ui/btn_ouro.png) 0 0/100% 100% no-repeat;color:#2b1812;font-weight:700;text-shadow:0 1px 0 #ffe9a8;min-height:56px;image-rendering:auto}
+#result .rbar .btn.ghost{background-image:url(assets/ui/btn_escuro.png);color:#f3e6c6;text-shadow:0 1px 0 #000;font-weight:400}
 </style>
 </head>
 <body>
