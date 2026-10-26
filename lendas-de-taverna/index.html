@@ -1131,6 +1131,7 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 #sndp h3{margin:0;font-size:18px;text-align:center;text-shadow:0 2px 0 #000}
 #sndp label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#e6d4a8}
 #sndp input[type=range]{width:100%;accent-color:#e9b949;height:28px}
+#sndp .sst{margin:0;font-size:11px;color:#cdb68a;text-align:center;line-height:1.4}
 #sndp .sbtn{all:unset;cursor:pointer;text-align:center;padding:12px 10px;background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;color:#f3e6c6;font-size:14px;text-shadow:0 1px 0 #000}
 #sndp .sbtn.ok{background-image:url(assets/ui/btn_ouro.png);color:#2b1812;font-weight:700;text-shadow:0 1px 0 #ffe9a8}
 </style>
@@ -1213,9 +1214,19 @@ function ensureAudio(){
   }catch(_){}
   return actx;
 }
-['pointerdown','touchstart','keydown'].forEach(ev=>window.addEventListener(ev,()=>{
-  ensureAudio();if(actx&&actx.state==='suspended')actx.resume();
-},{once:true,passive:true}));
+/* Desbloqueio do áudio no celular: no Android/iOS só "toque terminado" (touchend/click) conta como
+   gesto do usuário; touchstart/pointerdown NÃO. Por isso tentamos a cada gesto, sem `once`, e só
+   paramos quando o contexto de fato estiver rodando. */
+const UNLOCK_EVS=['touchend','pointerup','click','keydown'];
+function unlockAudio(){
+  if(!ensureAudio())return;
+  if(actx.state!=='running'){try{actx.resume().catch(()=>{});}catch(e){}}
+  try{const b=actx.createBuffer(1,1,22050),sr=actx.createBufferSource();sr.buffer=b;sr.connect(actx.destination);sr.start(0);}catch(e){}
+  if(actx.state==='running'){UNLOCK_EVS.forEach(ev=>window.removeEventListener(ev,unlockAudio,true));}
+  else if(!actx.__wired){actx.__wired=true;actx.onstatechange=()=>{if(actx.state==='running')UNLOCK_EVS.forEach(ev=>window.removeEventListener(ev,unlockAudio,true));};}
+  if(typeof preloadSfx==='function')preloadSfx();
+}
+UNLOCK_EVS.forEach(ev=>window.addEventListener(ev,unlockAudio,{capture:true,passive:true}));
 
 function sTone(freq,{type='sine',dur=0.12,gain=0.3,attack=0.005,release=0.08,sweep=0,delay=0}={}){
   if(!actx)return;const t0=actx.currentTime+delay;
@@ -1276,7 +1287,6 @@ function loadBuf(url){
 }
 const SFX_FILES=['ui_click','ui_open','ui_close','ui_confirm','ui_denied','turn_start','equip','coin','step_0','step_1','swing','hit_0','hit_1','slash','crit','miss','bow','arrow_hit','spell_cast','spell_hit','heal','buff','death','trap','victory','defeat'];
 function preloadSfx(){if(!audioBus())return;SFX_FILES.forEach(n=>loadBuf(`assets/audio/sfx/${n}.ogg`));}
-['pointerdown','touchstart','keydown'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(preloadSfx,50),{once:true,passive:true}));
 function playSfx(name,{vol=1,rate=1,gap=0}={}){
   if(!actx||!audioBus())return false;
   const buf=AUD.bufs[`assets/audio/sfx/${name}.ogg`];if(!buf)return false;
@@ -1313,7 +1323,8 @@ async function switchMusic(name){
   AUD.cur={src,g};AUD.curName=name;
 }
 setInterval(()=>{
-  if(!actx||actx.state!=='running'||!audioBus())return;
+  if(!actx||!audioBus())return;
+  if(actx.state!=='running'){try{actx.resume().catch(()=>{});}catch(e){}return;}
   const res=document.getElementById('result'),vis=!!(res&&!res.hidden);
   if(vis&&!AUD.resShown){AUD.resShown=true;const lose=!!res.querySelector('.res-title.lose');SFX[lose?'defeat':'victory']();}
   if(!vis)AUD.resShown=false;
@@ -1329,13 +1340,20 @@ function toggleSndPanel(){
   el.innerHTML=`<div class="sp"><h3>Som</h3>
     <label>Música <input type="range" min="0" max="100" value="${Math.round(AUD.vol.music*100)}" data-snd="music"></label>
     <label>Efeitos <input type="range" min="0" max="100" value="${Math.round(AUD.vol.sfx*100)}" data-snd="sfx"></label>
+    <p class="sst" id="sndst"></p>
+    <button class="sbtn" data-snd="unlock">Ativar áudio</button>
     <button class="sbtn" data-snd="mute">${AUD.vol.mute?'Ativar som':'Silenciar tudo'}</button>
     <button class="sbtn ok" data-snd="close">Fechar</button></div>`;
   document.getElementById('app').appendChild(el);
   el.addEventListener('input',e=>{const k=e.target.dataset.snd;if(k==='music'||k==='sfx'){AUD.vol[k]=e.target.value/100;applyVol();saveSnd();}});
   el.addEventListener('click',e=>{const b=e.target.closest('[data-snd]');if(!b)return;const k=b.dataset.snd;
+    if(k==='unlock'){unlockAudio();AUD.want=undefined;}
     if(k==='mute'){AUD.vol.mute=!AUD.vol.mute;applyVol();saveSnd();b.textContent=AUD.vol.mute?'Ativar som':'Silenciar tudo';}
     if(k==='close'||e.target===el)el.remove();});
+  const upd=()=>{const st=document.getElementById('sndst');if(!st){clearInterval(tm);return;}
+    const run=actx&&actx.state==='running',n=Object.keys(AUD.bufs).filter(k=>k.includes('/sfx/')).length;
+    st.textContent=run?`Áudio ativo · música: ${AUD.curName||'carregando…'} · efeitos ${n}/${SFX_FILES.length}`:'Áudio bloqueado pelo navegador — toque em "Ativar áudio"';};
+  const tm=setInterval(upd,500);upd();
   playSfx('ui_open',{vol:0.6});
 }
 document.addEventListener('click',e=>{if(e.target.closest('[data-act="snd"]')){e.stopPropagation();toggleSndPanel();}},true);
