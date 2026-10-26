@@ -1112,9 +1112,10 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .float .burst{opacity:.5}
 
 /* movimento: seta animada do pack (SpritePilot), azul pros heróis e vermelha pros inimigos */
-.callout .mvarrow{display:block;width:48px;height:48px;image-rendering:pixelated;background:url(assets/spritepilot/ui/32px/arrow-indicator-32px_strip7.png) 0 0/336px 48px no-repeat;animation:mvarrow-steps .7s steps(7) infinite;filter:hue-rotate(185deg) saturate(1.25) brightness(1.1)}
+.callout .mvarrow{display:block;width:28px;height:28px;image-rendering:pixelated;background:url(assets/spritepilot/ui/32px/arrow-indicator-32px_strip7.png) 0 0/196px 28px no-repeat;animation:mvarrow-steps .5s steps(7) infinite;animation-play-state:paused;filter:hue-rotate(185deg) saturate(1.25) brightness(1.1)}
+.callout.go .mvarrow{animation-play-state:running}
 .callout.e .mvarrow{filter:hue-rotate(-18deg) saturate(1.4) brightness(1.05)}
-@keyframes mvarrow-steps{from{background-position-x:0}to{background-position-x:-336px}}
+@keyframes mvarrow-steps{from{background-position-x:0}to{background-position-x:-196px}}
 </style>
 </head>
 <body>
@@ -4113,6 +4114,7 @@ async function moveAlong(u,path){
   if(!path.length)return;
   previewPath(path,u.side==='hero'?'#79a8ec':'#d4503f');SFX.move();await wait(180);
   lpcSetState(u,'walk');
+  if(callout&&callout.u===u)callout.el.classList.add('go');
   for(const p of path){
     const tx=wx(p.c),tz=wz(p.r),ty=topY(p.r,p.c),y0=u.grp.position.y,peak=Math.max(y0,ty)+0.28;
     u.r=p.r;u.c=p.c;faceToward(u,tx,tz);
@@ -4122,6 +4124,8 @@ async function moveAlong(u,path){
     if(u.side==='hero'&&TRAPS.has(k(p.r,p.c))&&!REVEALED.has(k(p.r,p.c))){await springTrap(u,p);if(!u.alive)break;}
   }
   if(u.alive)lpcSetState(u,'stand');
+  // a seta só anima enquanto o personagem anda; ao chegar ela some
+  if(callout&&callout.u===u&&callout.el.classList.contains('mv')){const c=callout;c.el.classList.remove('go');gsap.to(c.el,{opacity:0,y:-8,duration:0.25,delay:0.1,onComplete:()=>{if(callout===c)hideCallout();}});}
 }
 // armadilha escondida: só os heróis caem; depois de disparada fica marcada no chão
 async function springTrap(u,p){
