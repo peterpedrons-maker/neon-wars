@@ -2566,6 +2566,7 @@ function actionIcon(u,text){
   return 't_atq';
 }
 function showCallout(u,text){hideCallout();
+  if(text==='Deslocar')return;   // movimento: só o marcador no destino (ver moveAlong), nada sobre o personagem
   const el=document.createElement('div');el.className='callout'+(u.side==='enemy'?' e':'');
   let ic=actionIcon(u,text);if(ic==='l_weapon_staff')ic='i_cajado';
   el.innerHTML=text==='Deslocar'?`<i class="mvarrow"></i>`:`<i class="ic img" style="background-image:url(assets/ico/${ic}.png)"></i>`;
@@ -4116,8 +4117,26 @@ function chooseTarget(u,foes,reach){
   for(const f of foes){const d=fieldFrom([[f.r,f.c]]).get(k(u.r,u.c));const dd=d==null?99:d;if(dd<bd){bd=dd;best=f;}}
   return best;
 }
+// marcador animado do pack (alvo) na casa final do trajeto, azul nos heróis e vermelho nos inimigos
+const MK_IMG={};
+function tintedStrip(cat,file,filter){
+  const key=cat+file+filter;if(MK_IMG[key])return MK_IMG[key];
+  const out=new Image(),src=spImg(cat,file);MK_IMG[key]=out;
+  const go=()=>{const c=document.createElement('canvas');c.width=src.naturalWidth;c.height=src.naturalHeight;const g=c.getContext('2d');g.filter=filter;g.drawImage(src,0,0);out.src=c.toDataURL();};
+  if(src.complete&&src.naturalWidth)go();else src.addEventListener('load',go,{once:true});
+  return out;
+}
+function destMarker(u,cell){
+  const img=tintedStrip('ui','target-marker-32px_strip8.png',u.side==='hero'?'hue-rotate(200deg) saturate(1.3) brightness(1.15)':'saturate(1.2) brightness(1.1)');
+  const st=spStripState(img,8,11,true);
+  const e=spBill('ui','target-marker-32px_strip8.png',8,11,{w:1.15,flat:true,st});
+  e.holder.position.set(wx(cell.c),topY(cell.r,cell.c)+0.04,wz(cell.r));e.mat.opacity=0;scene.add(e.holder);ambLive.push({e,st});
+  gsap.to(e.mat,{opacity:1,duration:0.15});
+  return ()=>gsap.to(e.mat,{opacity:0,duration:0.25,onComplete:()=>{scene.remove(e.holder);}});
+}
 async function moveAlong(u,path){
   if(!path.length)return;
+  const removeMk=destMarker(u,path[path.length-1]);
   previewPath(path,u.side==='hero'?'#79a8ec':'#d4503f');SFX.move();await wait(180);
   lpcSetState(u,'walk');
   if(callout&&callout.u===u)callout.el.classList.add('go');
@@ -4129,6 +4148,7 @@ async function moveAlong(u,path){
     burst(u.grp.position,{n:3,colors:['#c9b28a','#a08a62'],spread:0.3,up:0.1,y:0.03,life:0.3,size:0.7});
     if(u.side==='hero'&&TRAPS.has(k(p.r,p.c))&&!REVEALED.has(k(p.r,p.c))){await springTrap(u,p);if(!u.alive)break;}
   }
+  removeMk();
   if(u.alive)lpcSetState(u,'stand');
   // a seta só anima enquanto o personagem anda; ao chegar ela some
   if(callout&&callout.u===u&&callout.el.classList.contains('mv')){const c=callout;c.el.classList.remove('go');gsap.to(c.el,{opacity:0,y:-8,duration:0.25,delay:0.1,onComplete:()=>{if(callout===c)hideCallout();}});}
