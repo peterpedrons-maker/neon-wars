@@ -1089,18 +1089,17 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .actbar .mdie[data-out="hit"]{background:#8fdc7e}.actbar .mdie[data-out="crit"]{background:#ffd34a}.actbar .mdie[data-out="miss"]{background:#b9b2a4;color:#4a4238}
 @media(min-width:700px){.actbar{top:calc(76px + env(safe-area-inset-top,0px))}}
 .float{position:absolute;text-shadow:none;-webkit-text-stroke:0;filter:drop-shadow(0 4px 0 #0009)}
-.float .ft{display:grid;font-size:inherit}
-.float .ft b{grid-area:1/1;font-weight:inherit;white-space:nowrap;text-align:center}
-.float .ft .sb{color:#120805;-webkit-text-stroke:.3em #120805;paint-order:stroke fill}
-.float .ft .sf{color:transparent;background:linear-gradient(#ffffff 15%,#ffe28a 55%,#ffb43a);-webkit-background-clip:text;background-clip:text}
-.float.onhero .ft .sf{background-image:linear-gradient(#ffd0c4 10%,#ff6a58 55%,#c8281c)}
-.float.heal .ft .sf{background-image:linear-gradient(#e8ffd8 10%,#8fe08a 55%,#38a84a)}
-.float.buff .ft .sf{background-image:linear-gradient(#eaf4ff 10%,#8fc4ff 55%,#3a78d8)}
-.float.miss .ft .sf{background-image:linear-gradient(#f4f0e6,#a8a294)}
-.float.gold .ft .sf{background-image:linear-gradient(#fff6c0,#ffd65a 55%,#d9962e)}
-.float.crit .ft .sf{background-image:linear-gradient(#fffbe0 8%,#ffd34a 45%,#ff7a1a)}
-.float.crit.onhero .ft .sf{background-image:linear-gradient(#ffe0d8 8%,#ff7a68 45%,#d41e12)}
-.float.crit .ft .sb{color:#3a1400;-webkit-text-stroke:.3em #3a1400}
+.float .ft{display:block;font-size:inherit}
+.float .ft .sb{display:none}
+.float .ft .sf{display:block;white-space:nowrap;color:#fff1d0;background:none;-webkit-background-clip:border-box;background-clip:border-box;
+  text-shadow:-2px -2px #120805,2px -2px #120805,-2px 2px #120805,2px 2px #120805,-3px 0 #120805,3px 0 #120805,0 -3px #120805,0 3px #120805,0 5px 0 #0009}
+.float.onhero .ft .sf{color:#ff8a78}
+.float.heal .ft .sf{color:#8fe08a}
+.float.buff .ft .sf{color:#8fc4ff}
+.float.miss .ft .sf{color:#d8d2c4}
+.float.gold .ft .sf{color:#ffd65a}
+.float.crit .ft .sf{color:#ffd65a;text-shadow:-3px -3px #3a1400,3px -3px #3a1400,-3px 3px #3a1400,3px 3px #3a1400,-4px 0 #3a1400,4px 0 #3a1400,0 -4px #3a1400,0 4px #3a1400,0 6px 0 #0009}
+.float.crit.onhero .ft .sf{color:#ff6a58}
 .float.crit{filter:drop-shadow(0 0 12px #ff9a3acc) drop-shadow(0 4px 0 #0009)}
 </style>
 </head>
