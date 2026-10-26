@@ -959,6 +959,35 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .ov .inner.kt .hcard>.btn{align-self:stretch}
 .ov .inner.kt .hcard>.btn:not(.ghost){background-image:url(assets/ui/btn_ouro.png);color:#2b1812;text-shadow:0 1px 0 #ffe9a8;font-weight:700;min-height:52px}
 .ov .inner.kt .hcard>.btn.ghost{background-image:url(assets/ui/btn_escuro.png)}
+
+/* ===== Formação com o kit novo (painel de baixo, sobre o mapa) ===== */
+#panel .inner.kf{background:#140d09 radial-gradient(#2a1a10,#120b08);gap:7px;padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px));color:#f3e6c6;max-width:560px}
+.kf .steps{margin:0 0 -2px}
+.kf .steps li.on i{background:linear-gradient(#f6d77a,#c9962e);border-color:#fff0c0}
+.kf .head{background:url(assets/ui/faixa_normal.png) 0 0/100% 100% no-repeat;border:0;border-image:none;padding:10px 26px;min-height:60px;align-items:center;flex-wrap:nowrap}
+.kf .head h2{font-size:16px;color:#f3e6c6;text-shadow:0 1px 0 #000}.kf .head .eyebrow{color:#e9b949}
+.kf .ptags{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.kf .ptags .tag{background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;border:0;border-radius:0;color:#e6d4a8;padding:8px 18px;font-size:11.5px}
+.kf .ptags .tag.fam{background-image:url(assets/ui/btn_ouro.png);color:#2b1812;font-weight:700}
+.kf .roster{gap:4px;padding:2px 0 4px}
+.kf .chip{background:url(assets/ui/linha_normal.png) 0 0/100% 100% no-repeat;border:0;border-radius:0;box-shadow:none;min-width:88px;padding:12px 10px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;color:#f3e6c6}
+.kf .chip img{width:42px;height:60px;object-fit:contain;background:none;border:0;padding:0}
+.kf .chip span{font-size:12px;text-shadow:0 1px 0 #000}.kf .chip small{font-size:10px;color:#d3be93}
+.kf .chip[aria-pressed="true"]{background-image:url(assets/ui/linha_destaque.png);filter:drop-shadow(0 0 7px #e9b949cc);outline:0}
+.kf .chip.ok small{color:#8fd48a}
+.kf .hint{background:none;border:0;color:#d8c8a2;text-align:center;font-size:12.5px;padding:0 6px;min-height:0}
+.kf .legend{color:#cdb68a;font-size:11px;justify-content:center;gap:10px;flex-wrap:wrap}
+.kf .actions{gap:5px;flex-wrap:nowrap}
+.kf .actions .btn,.kf .legend .btn{border:0;border-image:none;background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;color:#f3e6c6;min-height:48px;padding:6px 8px;font-size:12.5px;text-shadow:0 1px 0 #000;image-rendering:auto;flex:1}
+.kf .actions .btn.cta{background-image:url(assets/ui/btn_ouro.png);color:#2b1812;text-shadow:0 1px 0 #ffe9a8;font-weight:700;flex:1.6;font-size:13.5px;min-height:54px}
+.kf .actions .btn.cta[disabled]{background-image:url(assets/ui/btn_escuro.png);color:#a99a7a;text-shadow:0 1px 0 #000;filter:none;opacity:1}
+.kf .legend .btn{flex:none;min-height:40px;padding:4px 18px}
+.kf .chip{flex:1 1 0;min-width:62px;padding:12px 4px 10px}
+.kf .chip img{width:38px;height:54px}
+.kf .chip span{font-size:11px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kf .chip small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9.5px}
+.kf .actions .btn{min-width:0;white-space:normal;line-height:1.1;font-size:12px}
+.kf .actions .btn.cta{font-size:12.5px;padding:6px 10px}
 </style>
 </head>
 <body>
@@ -3309,7 +3338,7 @@ function ePortrait(kind){
 }
 function setMode(m){
   const hub=m==='village'&&view==='hub',ov=(m==='village'||m==='tavern')&&!hub;
-  app.className='m-'+m+(hub?' hub':'')+(ov?' ov':'');phase=m;PI_.classList.remove('qd','kt');
+  app.className='m-'+m+(hub?' hub':'')+(ov?' ov':'');phase=m;PI_.classList.remove('qd','kt','kf');
   if(!hub&&bubble){bubble.el.remove();bubble=null;}
   stage.dataset.bio=(m==='place'||m==='battle')&&LV?LV.mp.biome:'';
   setLuz((m==='place'||m==='battle')&&LV?LV.mp.luz:'normal');
@@ -3601,7 +3630,7 @@ function renderSheet(id,src){
 /* ---------- Formação ---------- */
 function siblingFams(){const sc={};party.forEach(h=>sc[h.sur]=(sc[h.sur]||0)+1);return Object.keys(sc).filter(x=>sc[x]>1);}
 function renderPlace(){
-  view='place';
+  view='place';PI_.classList.add('kf');
   const fams=siblingFams(),all=party.every(h=>h.r!=null),left=party.filter(h=>h.r==null).length,mp=LV.mp;
   PI_.innerHTML=`
   ${stepper(3)}
