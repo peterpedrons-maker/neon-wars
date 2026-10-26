@@ -1076,7 +1076,7 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .callout,.callout.e{background:none;border:0;box-shadow:none;padding:0;filter:drop-shadow(0 3px 0 #000a) drop-shadow(0 0 6px #000);text-shadow:none;color:#fff}
 .callout::after,.callout.e::after{display:none}
 .callout.mv,.callout.mv.e{padding:0}
-.callout .ic.img{width:44px;height:44px;margin:0;display:block}
+.callout .ic.img{width:34px;height:34px;margin:0;display:block}
 .callout.mv .ic.img{width:40px;height:40px}
 .callout .cface,.callout .steps{display:none}
 .actbar{position:absolute;left:50%;transform:translateX(-50%);top:calc(112px + env(safe-area-inset-top,0px));z-index:6;display:flex;align-items:center;gap:8px;padding:5px 16px 5px 6px;pointer-events:none;
@@ -1112,10 +1112,10 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .float .burst{opacity:.5}
 
 /* movimento: seta animada do pack (SpritePilot), azul pros heróis e vermelha pros inimigos */
-.callout .mvarrow{display:block;width:28px;height:28px;image-rendering:pixelated;background:url(assets/spritepilot/ui/32px/arrow-indicator-32px_strip7.png) 0 0/196px 28px no-repeat;animation:mvarrow-steps .5s steps(7) infinite;animation-play-state:paused;filter:hue-rotate(185deg) saturate(1.25) brightness(1.1)}
+.callout .mvarrow{display:block;width:20px;height:20px;image-rendering:pixelated;background:url(assets/spritepilot/ui/32px/arrow-indicator-32px_strip7.png) 0 0/140px 20px no-repeat;animation:mvarrow-steps .5s steps(7) infinite;animation-play-state:paused;filter:hue-rotate(185deg) saturate(1.25) brightness(1.1)}
 .callout.go .mvarrow{animation-play-state:running}
 .callout.e .mvarrow{filter:hue-rotate(-18deg) saturate(1.4) brightness(1.05)}
-@keyframes mvarrow-steps{from{background-position-x:0}to{background-position-x:-196px}}
+@keyframes mvarrow-steps{from{background-position-x:0}to{background-position-x:-140px}}
 </style>
 </head>
 <body>
@@ -4683,7 +4683,8 @@ function loop(t){
   if(app.classList.contains('hub'))placeVillageNames();
   if(active&&active.grp){ring.position.set(active.grp.position.x,active.grp.position.y+0.09,active.grp.position.z);ring.material.opacity=0.65+Math.sin(s*6)*0.3;}
   if(tRing.visible)tRing.material.opacity=0.6+Math.sin(s*10)*0.35;
-  if(callout&&callout.u.grp){const [x,y]=screenOf(callout.u,0.32);callout.el.style.left=Math.max(x,30)+'px';callout.el.style.top=Math.max(y,50)+'px';}
+  if(callout&&callout.u.grp){const cu=callout.u,[x,y]=screenOf(cu,cu.hbarExtra!=null?cu.hbarExtra-0.12:-0.16);   // topo real do sprite (criaturas altas incluídas)
+    const gap=callout.el.classList.contains('mv')?9:11;callout.el.style.left=Math.max(x,24)+'px';callout.el.style.top=Math.max(y-gap,50)+'px';}
   renderer.render(scene,cam);renderDie();
 }
 
