@@ -4129,7 +4129,7 @@ function tintedStrip(cat,file,filter){
 function destMarker(u,cell){
   const img=tintedStrip('ui','target-marker-32px_strip8.png',u.side==='hero'?'hue-rotate(200deg) saturate(1.3) brightness(1.15)':'saturate(1.2) brightness(1.1)');
   const st=spStripState(img,8,11,true);
-  const e=spBill('ui','target-marker-32px_strip8.png',8,11,{w:1.15,flat:true,st});
+  const e=spBill('ui','target-marker-32px_strip8.png',8,11,{w:1.3,flat:true,st});e.mat.depthTest=false;e.holder.renderOrder=6;e.holder.children[0].renderOrder=6;
   e.holder.position.set(wx(cell.c),topY(cell.r,cell.c)+0.04,wz(cell.r));e.mat.opacity=0;scene.add(e.holder);ambLive.push({e,st});
   gsap.to(e.mat,{opacity:1,duration:0.15});
   return ()=>gsap.to(e.mat,{opacity:0,duration:0.25,onComplete:()=>{scene.remove(e.holder);}});
