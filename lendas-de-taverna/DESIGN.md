@@ -431,3 +431,8 @@ da ideia original sem precisar do modo manual completo.
 - Terreno intransponível + habilidade de travessia (ex.: escalar montanha).
 - Modo de combate manual (avaliado, adiado — ver seção de gatilhos acima).
 - Export/import de save (hoje é só local).
+
+## Kit de UI novo e Quadro de Missões (faixa de regiões)
+- Artes geradas por IA recortadas de folhas com fundo magenta: `assets/regioes/` (9 banners, hoje usados 5 por ato), `assets/icones/` (16 ícones de tipo de mapa, ainda sem uso) e `assets/ui/` (27 peças: painéis, faixas de linha em 3 estados, botões, cartas de região, selos, barra, divisor, fitas).
+- Quadro de Missões (`renderMissions`): faixa de cartas por ato + cabeçalho com progresso + lista do ato selecionado. Revelação gradual: concluídos, o disponível e um "???"; o resto vira "+ N mapas ainda não descobertos". Dungeons secretas só aparecem depois de achadas. Classe `.qd` no `#pi` (removida em `setMode`). Estado da região em `qdAto`.
+- Próximas telas a migrar para o kit (sempre com antes/depois aprovado): briefing do mapa, Taverna, Vila, Cofre/Forja/Templo, formação, batalha.

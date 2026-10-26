@@ -777,6 +777,44 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 #stage[data-bio="floresta"]{background:radial-gradient(90% 55% at 50% 108%,#2c5a38 0%,rgba(44,90,56,0) 70%),linear-gradient(#050e09,#10261a 52%,#1f4430)}
 #stage[data-bio="deserto"]{background:radial-gradient(90% 55% at 50% 108%,#b0793a 0%,rgba(176,121,58,0) 70%),radial-gradient(60% 40% at 80% 12%,rgba(255,200,120,.2),transparent 70%),linear-gradient(#150e08,#3a2812 52%,#6b4a22)}
 #stage[data-bio="ruinas"]{background:radial-gradient(90% 55% at 50% 108%,#5c6678 0%,rgba(92,102,120,0) 70%),linear-gradient(#090b11,#1d2130 52%,#363d52)}
+
+/* ===== Quadro de Missões: kit de UI novo (assets/ui, assets/regioes) ===== */
+.ov .inner.qd{position:absolute;inset:0;z-index:2;max-width:560px;width:100%;margin:0 auto;padding:0;gap:0;border:0;border-image:none;background:#140d09 radial-gradient(#2a1a10,#120b08);overflow:hidden;color:#f3e6c6;image-rendering:auto}
+.qd .qtop{flex:none;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:url(assets/ui/faixa_normal.png) 0 0/100% 100% no-repeat}
+.qd .qtop h2{font-size:18px;color:#f3e6c6;text-shadow:0 2px 0 #000;margin:0}.qd .qtop small{display:block;font-size:11px;color:#cdb68a}
+.qd .qgo,.qd .qrow .go{background:url(assets/ui/btn_ouro.png) 0 0/100% 100% no-repeat;border:0;color:#2b1812;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;font-family:inherit;cursor:pointer;flex:none}
+.qd .qgo{width:82px;height:36px}
+.qd .qstrip{flex:none;display:flex;gap:6px;overflow-x:auto;padding:10px 8px 6px;scrollbar-width:none;scroll-snap-type:x proximity}
+.qd .qstrip::-webkit-scrollbar{display:none}
+.qd .qcard{all:unset;box-sizing:border-box;cursor:pointer;flex:0 0 118px;height:176px;position:relative;background:url(assets/ui/carta.png) 0 0/100% 100% no-repeat;scroll-snap-align:center}
+.qd .qcard.sel{background-image:url(assets/ui/carta_sel.png)}
+.qd .qcard .art{position:absolute;left:14%;top:11%;width:72%;height:50%;background-size:cover;background-position:center}
+.qd .qcard.lock .art{filter:grayscale(.85) brightness(.55)}
+.qd .qcard .n{position:absolute;left:10px;right:10px;top:117px;text-align:center;font-size:10.5px;font-weight:700;line-height:1.1;text-shadow:0 1px 0 #000;color:#f3e6c6}
+.qd .qcard .n em{display:block;font-style:normal;font-size:9px;color:#e9b949;letter-spacing:.5px}
+.qd .qcard.lock .n{color:#a8a8b2}
+.qd .qcard .s{position:absolute;left:0;right:0;bottom:11px;text-align:center;font-size:9.5px;color:#d8c397}
+.qd .bd{position:absolute;right:2px;top:4px;width:26px;height:26px}
+.qd .qinfo{flex:none;margin:4px 8px 0;padding:14px 18px;background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;display:flex;gap:12px;align-items:center}
+.qd .qinfo .art{width:78px;height:66px;background-size:cover;background-position:center;border:2px solid #0e0805;box-shadow:0 0 0 2px #8a6a3a;flex:none}
+.qd .qinfo h3{font-size:15px;margin:0;text-shadow:0 2px 0 #000;color:#f3e6c6}.qd .qinfo p{font-size:11px;color:#d3be93;margin:3px 0 0;line-height:1.35}
+.qd .qinfo>div{flex:1;min-width:0}
+.qd .qpb{height:22px;margin-top:7px;background:url(assets/ui/barra_moldura.png) 0 0/100% 100% no-repeat;padding:6px 11px 6px 12px}.qd .qpb i{display:block;height:100%;background:linear-gradient(#f6d77a,#c9962e);box-shadow:0 0 6px #e9b94988}
+.qd .qlist{flex:1;min-height:0;overflow-y:auto;padding:2px 10px 14px}
+.qd .qband{height:22px;margin:8px 0 6px;background:url(assets/ui/divisor.png) center/100% 100% no-repeat;text-align:center;position:relative}
+.qd .qband span{position:absolute;left:50%;top:1px;transform:translateX(-50%);background:#160e0a;padding:0 10px;font-size:10px;letter-spacing:1.5px;color:#e6cf9b;line-height:20px;text-transform:uppercase}
+.qd .qrow{all:unset;box-sizing:border-box;position:relative;width:100%;min-height:64px;margin-bottom:4px;display:flex;align-items:center;gap:10px;padding:0 18px;background:url(assets/ui/faixa_normal.png) 0 0/100% 100% no-repeat;cursor:pointer}
+.qd .qrow.done{background-image:url(assets/ui/faixa_destaque.png)}
+.qd .qrow.off{background-image:url(assets/ui/faixa_inativa.png);cursor:default}
+.qd .qrow.dung{background-image:url(assets/ui/faixa_normal.png);filter:hue-rotate(250deg) saturate(.9)}
+.qd .qrow.pick{outline:2px solid #ffe9b8;outline-offset:-4px}
+.qd .qrow .tx{flex:1;min-width:0}.qd .qrow b{font-size:14px;display:block;text-shadow:0 1px 0 #000;font-family:var(--f-display);font-weight:600;color:#f3e6c6}
+.qd .qrow small{font-size:10.5px;color:#d3be93;display:block;margin-top:2px}
+.qd .qrow.off b{color:#8e8e98}.qd .qrow.off small{color:#6e6e78}
+.qd .qrow .bd{position:static;width:30px;height:30px;flex:none}
+.qd .qrow .go{width:84px;height:34px;pointer-events:none}
+.qd .qrow .tg{position:absolute;right:8px;top:-8px;height:26px}
+.qd .qmore,.qd .qnote{text-align:center;font-size:11px;color:#a9967a;margin:8px 4px 0;line-height:1.4}
 </style>
 </head>
 <body>
@@ -3110,7 +3148,7 @@ function ePortrait(kind){
 }
 function setMode(m){
   const hub=m==='village'&&view==='hub',ov=(m==='village'||m==='tavern')&&!hub;
-  app.className='m-'+m+(hub?' hub':'')+(ov?' ov':'');phase=m;
+  app.className='m-'+m+(hub?' hub':'')+(ov?' ov':'');phase=m;PI_.classList.remove('qd');
   if(!hub&&bubble){bubble.el.remove();bubble=null;}
   stage.dataset.bio=(m==='place'||m==='battle')&&LV?LV.mp.biome:'';
   setLuz((m==='place'||m==='battle')&&LV?LV.mp.luz:'normal');
@@ -3233,21 +3271,36 @@ function renderInfo(id){
 }
 
 /* ---------- Quadro de Missões ---------- */
+const ATO_ART=['vale','ruinas','magma','gelo','cripta'];
+let qdAto=0;
 function renderMissions(){
-  view='missions';setMode('village');
-  const cleared=loadProg();
+  view='missions';setMode('village');PI_.classList.add('qd');
+  const cleared=loadProg(),sc=loadSecrets();
+  const info=ATOS.map(a=>{const ms=MAPS.filter(m=>m.ato===a.id&&!m.secreta).sort((x,y)=>x.n-y.n);
+    return {a,ms,done:ms.filter(m=>m.n<=cleared).length,open:ms.length>0&&unlocked(ms[0].n)};});
+  if(!qdAto||!info.some(i=>i.a.id===qdAto&&i.open)){const cur=info.filter(i=>i.open&&i.done<i.ms.length)[0]||info.filter(i=>i.open).pop()||info[0];qdAto=cur.a.id;}
+  const sel=info.find(i=>i.a.id===qdAto),a=sel.a,ms=sel.ms,sh=a.nome.split(' · ');
+  const strip=info.map(i=>{const lock=!i.open,full=i.ms.length&&i.done===i.ms.length;
+    return `<button class="qcard ${i.a.id===qdAto?'sel':''} ${lock?'lock':''}" data-ato="${i.a.id}" ${lock&&!i.ms.length?'':''}>
+      <span class="art" style="background-image:url(assets/regioes/${ATO_ART[i.a.id-1]}.jpg)"></span>
+      <span class="n"><em>ATO ${['I','II','III','IV','V'][i.a.id-1]}</em>${i.a.nome.split(' · ')[1]}</span><span class="s">Nv ${i.a.niv[0]}–${i.a.niv[1]}</span>
+      ${lock?'<img class="bd" src="assets/ui/b_lock.png" alt="">':full?'<img class="bd" src="assets/ui/b_check.png" alt="">':''}</button>`;}).join('');
+  const pct=ms.length?Math.max(3,sel.done/ms.length*100):0;
+  const msg=!ms.length?'Os mapas deste ato ainda estão sendo preparados.':!sel.open?'Vença o chefe do ato anterior para liberar esta região.':`${a.bioma}. Chefe: ${a.chefe}.`;
+  // revelação gradual: concluídos, o disponível e só mais um escondido
+  const shown=ms.filter(m=>m.n<=cleared+2),hidden=ms.length-shown.length;
+  const rows=shown.map(m=>{const isDone=m.n<=cleared,lock=!unlocked(m.n);
+    if(lock)return `<div class="qrow off"><span class="tx"><b>? ? ?</b><small>Conclua o mapa anterior</small></span><img class="bd" src="assets/ui/b_lock.png" alt=""></div>`;
+    return `<button class="qrow ${isDone?'done':''} ${run.mission===m.n?'pick':''}" data-map="${m.n}">${m.chefe?'<img class="tg" src="assets/ui/tag_boss.png" alt="chefe">':''}
+      <span class="tx"><b>${m.nome}</b><small>Nv. ${m.nivel} · ${BIOMES[m.biome].nome} · ${m.chefe?'chefe do ato':m.grid||m.fixo?'mapa fixo':'terreno muda'}</small></span>${isDone?'<img class="bd" src="assets/ui/b_check.png" alt="">':'<span class="go">Jogar</span>'}</button>`;}).join('');
+  const secs=MAPS.filter(m=>m.secreta&&m.ato===a.id&&secretFound(m.n)).map(m=>`<button class="qrow dung ${run.mission===m.n?'pick':''}" data-map="${m.n}"><span class="tx"><b>${m.nome}</b><small>Dungeon secreta · Nv. ${m.nivel}${sc.cleared&&sc.cleared.includes(m.n)?' · concluída':''}</small></span>${sc.cleared&&sc.cleared.includes(m.n)?'<img class="bd" src="assets/ui/b_check.png" alt="">':'<span class="go">Jogar</span>'}</button>`).join('');
   PI_.innerHTML=`
-  <div class="head">${wt('board','Quadro de Missões','Escolha o mapa')}<button class="btn ghost sm" data-act="toVillage">Praça</button></div>
-  <div class="scroll">${ATOS.map(a=>{
-    const ms=MAPS.filter(m=>m.ato===a.id&&!m.secreta),done=ms.filter(m=>m.n<=cleared).length;
-    const head=`<h3>${a.nome}<small>Nv. ${a.niv[0]}–${a.niv[1]} · ${ms.length?`${done}/${ms.length} mapas`:'em breve'}</small></h3><p class="ato-sub">${a.bioma} · Chefe: ${a.chefe}</p>`;
-    if(!ms.length)return `<div class="world ato futuro">${head}<div class="mrow lock"><i>${ico('vila','trava')}</i><span><b>Em breve</b><small>Os mapas deste ato ainda estão sendo preparados.</small></span><em></em></div></div>`;
-    const secs=MAPS.filter(m=>m.secreta&&m.ato===a.id&&secretFound(m.n));
-    return `<div class="world ato">${head}${ms.map(m=>{const lock=!unlocked(m.n),isDone=m.n<=cleared;
-      return `<button class="mrow ${lock?'lock':''} ${run.mission===m.n?'sel':''}" data-map="${m.n}" ${lock?'disabled':''}>
-        <i>${lock?ico('vila','trava'):m.n}</i><span><b>${m.nome}</b><small>Nv. ${m.nivel} · ${BIOMES[m.biome].nome} · ${m.chefe?'chefe':m.grid||m.fixo?'mapa fixo':'terreno muda'}${isDone?' · concluído':''}</small></span><em>${lock?'':'›'}</em></button>`;}).join('')}${secs.map(m=>`<button class="mrow dung ${run.mission===m.n?'sel':''}" data-map="${m.n}"><i>${ico('vila','trava')}</i><span><b>${m.nome}</b><small>Dungeon secreta · Nv. ${m.nivel}${loadSecrets().cleared&&loadSecrets().cleared.includes(m.n)?' · concluída':''}</small></span><em>›</em></button>`).join('')}
-    </div>`;}).join('')}
-  <p class="note">Mapas se liberam ao vencer o anterior. Uma run começa no mapa escolhido e segue pelos próximos do mesmo ato enquanto houver heróis de pé. Vencer o chefe fecha o ato.</p></div>`;
+  <div class="qtop"><div><h2>Escolha o mapa</h2><small>Quadro de Missões</small></div><button class="qgo" data-act="toVillage">Praça</button></div>
+  <div class="qstrip">${strip}</div>
+  <div class="qinfo"><span class="art" style="background-image:url(assets/regioes/${ATO_ART[a.id-1]}.jpg)"></span><div><h3>${sh[0]} · ${sh[1]}</h3><p>${ms.length?`Nv. ${a.niv[0]}–${a.niv[1]} · ${sel.done} de ${ms.length} mapas concluídos`:`Nv. ${a.niv[0]}–${a.niv[1]} · em breve`}<br>${msg}</p>${ms.length?`<div class="qpb"><i style="width:${pct}%"></i></div>`:''}</div></div>
+  <div class="qlist">${sel.open?`<div class="qband"><span>Missões</span></div>${rows}${secs}${hidden>0?`<p class="qmore">+ ${hidden} ${hidden>1?'mapas ainda não descobertos':'mapa ainda não descoberto'}</p>`:''}`:''}
+    <p class="qnote">Uma run começa no mapa escolhido e segue pelos próximos do mesmo ato enquanto houver heróis de pé. Vencer o chefe fecha o ato.</p></div>`;
+  const st=PI_.querySelector('.qstrip'),sc2=st.querySelector('.qcard.sel');if(sc2)st.scrollLeft=sc2.offsetLeft-(st.clientWidth-sc2.offsetWidth)/2;
 }
 function renderBrief(n){
   view='brief';setMode('village');
@@ -3507,6 +3560,7 @@ function setHint(t){hint=t;const el=$('#hint');if(el)el.textContent=t;}
 PI_.addEventListener('click',e=>{
   const t=e.target;
   const bld=t.closest('[data-bld]');if(bld){openBld(bld.dataset.bld);return;}
+  const ra=t.closest('[data-ato]');if(ra){if(!ra.classList.contains('lock')){SFX.click();qdAto=+ra.dataset.ato;renderMissions();}return;}
   const mp=t.closest('[data-map]');if(mp){renderBrief(+mp.dataset.map);return;}
   const pm=t.closest('[data-pickmap]');if(pm){run.mission=+pm.dataset.pickmap;goVillage();return;}
   const hero=t.closest('[data-hero]');if(hero){const id=+hero.dataset.hero;if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderTavern();return;}
