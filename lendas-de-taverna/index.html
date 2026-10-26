@@ -1101,6 +1101,15 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .float.crit .ft .sf{color:#ffd65a;text-shadow:-3px -3px #3a1400,3px -3px #3a1400,-3px 3px #3a1400,3px 3px #3a1400,-4px 0 #3a1400,4px 0 #3a1400,0 -4px #3a1400,0 4px #3a1400,0 6px 0 #0009}
 .float.crit.onhero .ft .sf{color:#ff6a58}
 .float.crit{filter:drop-shadow(0 0 12px #ff9a3acc) drop-shadow(0 4px 0 #0009)}
+
+/* movimento: sapato de corrida em silhueta clara (lê bem sobre qualquer chão) */
+.callout .ic.mvic{width:40px;height:40px;margin:0;display:block;background:#fff3b0;
+  filter:drop-shadow(2px 0 0 #120805) drop-shadow(-2px 0 0 #120805) drop-shadow(0 2px 0 #120805) drop-shadow(0 -2px 0 #120805)}
+/* crítico: mais claro e sem o brilho laranja que atrapalhava a leitura */
+.float.crit{filter:drop-shadow(0 4px 0 #000a);letter-spacing:.06em}
+.float.crit .ft .sf{color:#fff6c2;text-shadow:-4px -4px #2a0e00,4px -4px #2a0e00,-4px 4px #2a0e00,4px 4px #2a0e00,-5px 0 #2a0e00,5px 0 #2a0e00,0 -5px #2a0e00,0 5px #2a0e00,0 7px 0 #000a}
+.float.crit.onhero .ft .sf{color:#ffd6cc}
+.float .burst{opacity:.5}
 </style>
 </head>
 <body>
@@ -2553,7 +2562,7 @@ function actionIcon(u,text){
 function showCallout(u,text){hideCallout();
   const el=document.createElement('div');el.className='callout'+(u.side==='enemy'?' e':'');
   let ic=actionIcon(u,text);if(ic==='l_weapon_staff')ic='i_cajado';
-  el.innerHTML=`<i class="ic img" style="background-image:url(assets/ico/${ic}.png)"></i>`;
+  el.innerHTML=text==='Deslocar'?`<i class="ic mvic" style="--ic:url(assets/ui-icons/running-shoe.png)"></i>`:`<i class="ic img" style="background-image:url(assets/ico/${ic}.png)"></i>`;
   if(text==='Deslocar')el.classList.add('mv');
   hud.appendChild(el);
   // nome da ação: faixa fixa no alto (fora da área dos efeitos), como no FFT
