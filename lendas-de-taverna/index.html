@@ -1110,6 +1110,11 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .float.crit .ft .sf{color:#fff6c2;text-shadow:-4px -4px #2a0e00,4px -4px #2a0e00,-4px 4px #2a0e00,4px 4px #2a0e00,-5px 0 #2a0e00,5px 0 #2a0e00,0 -5px #2a0e00,0 5px #2a0e00,0 7px 0 #000a}
 .float.crit.onhero .ft .sf{color:#ffd6cc}
 .float .burst{opacity:.5}
+
+/* movimento: seta animada do pack (SpritePilot), azul pros heróis e vermelha pros inimigos */
+.callout .mvarrow{display:block;width:48px;height:48px;image-rendering:pixelated;background:url(assets/spritepilot/ui/32px/arrow-indicator-32px_strip7.png) 0 0/336px 48px no-repeat;animation:mvarrow-steps .7s steps(7) infinite;filter:hue-rotate(185deg) saturate(1.25) brightness(1.1)}
+.callout.e .mvarrow{filter:hue-rotate(-18deg) saturate(1.4) brightness(1.05)}
+@keyframes mvarrow-steps{from{background-position-x:0}to{background-position-x:-336px}}
 </style>
 </head>
 <body>
@@ -2562,7 +2567,7 @@ function actionIcon(u,text){
 function showCallout(u,text){hideCallout();
   const el=document.createElement('div');el.className='callout'+(u.side==='enemy'?' e':'');
   let ic=actionIcon(u,text);if(ic==='l_weapon_staff')ic='i_cajado';
-  el.innerHTML=text==='Deslocar'?`<i class="ic mvic" style="--ic:url(assets/ui-icons/running-shoe.png)"></i>`:`<i class="ic img" style="background-image:url(assets/ico/${ic}.png)"></i>`;
+  el.innerHTML=text==='Deslocar'?`<i class="mvarrow"></i>`:`<i class="ic img" style="background-image:url(assets/ico/${ic}.png)"></i>`;
   if(text==='Deslocar')el.classList.add('mv');
   hud.appendChild(el);
   // nome da ação: faixa fixa no alto (fora da área dos efeitos), como no FFT
