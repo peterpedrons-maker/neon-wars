@@ -441,3 +441,8 @@ da ideia original sem precisar do modo manual completo.
 - Nenhum personagem (herói, inimigo, aldeão) aparece com arte desenhada por código. Heróis e inimigos humanoides usam `LPC_RECIPES`; criaturas usam `CREATURE_DEFS`. O Xamã Goblin agora também tem receita LPC.
 - Retrato antes de o sheet carregar = imagem em branco (`BLANK_IMG`), nunca o desenho gerado. Quando todos os sheets ficam prontos, os retratos são recalculados e a tela aberta (Taverna, Recrutar, Ficha, briefing) é redesenhada.
 - As funções `heroSprite`/`enemySprite` ficam só como último recurso interno e não são mais usadas para nenhum personagem existente. Ao criar inimigo ou classe nova, crie a receita LPC (ou criatura) junto.
+
+## Ícones coloridos (assets/ico)
+- 86 ícones recortados das folhas de IA (fundo magenta): classes (`c_`), subclasses (`s_`), atributos (`t_`), slots (`l_`), vila/UI (`v_`) e 32 tipos de item (`i_`). Mapa em `NIC` (index.html); `ico()` usa o ícone novo e só cai nas silhuetas antigas (`assets/ui-icons`, game-icons.net) se faltar algum.
+- Itens: os 80 itens do jogo usam os tipos (`i_espada`, `i_elmo`, ...). A raridade vira brilho colorido ao redor do ícone (`itemIco`).
+- Para trocar um ícone, regenere só aquele e recorte com o mesmo nome em `assets/ico/`.
