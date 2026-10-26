@@ -913,6 +913,24 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 
 .ic.img{background:transparent center/contain no-repeat;-webkit-mask:none;mask:none;image-rendering:auto;color:inherit}
 .ic.img.lg,.ic.img.xl{filter:drop-shadow(0 2px 0 #120b08)}
+
+/* ===== Retratos maiores: o recorte tira a margem vazia do quadro do pack (44x62); aqui só o tamanho de exibição ===== */
+.pc img,.chip img,.person img,.xr img,.hhead img,.sh2-top img,.slot img,.emb img,.qec img{object-fit:contain}
+.chip img{width:38px;height:54px}
+.person img,.xr img{width:28px;height:40px}
+.hhead img{width:46px;height:64px}
+.ov .inner.kt .pc{grid-template-columns:78px minmax(0,1fr);column-gap:8px;padding:12px 18px 12px 10px;min-height:118px}
+.ov .inner.kt .pc img{width:76px;height:108px;grid-column:1;align-self:center}
+.ov .inner.kt .tdet{grid-template-columns:108px minmax(0,1fr);padding:12px 20px}
+.ov .inner.kt .tdet .emb{height:138px}
+.ov .inner.kt .tdet .emb img{width:97px;height:136px}
+.ov .inner.kt .tdet .tact{grid-column:1/-1;flex-direction:row}
+.ov .inner.kt .tdet .tact .btn{flex:1;width:auto}
+.ov .inner.kt .sh2-top img{width:132px;height:186px}
+.ov .inner.kt .slots.big .slot{height:clamp(78px,11vh,98px)}
+.ov .inner.kt .slots.big .slot img{height:92%;width:auto;max-width:92%}
+.qd .qec img{width:44px;height:62px}
+.qd .qec{min-height:112px}
 </style>
 </head>
 <body>
@@ -2657,14 +2675,25 @@ function lpcBuild(cls){
 // recorta o quadro parado (de frente) do walk sheet já montado — usado como
 // retrato de verdade nas telas de menu, no lugar do rascunho pixelado antigo.
 const BLANK_IMG='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+const PORTRAIT_CACHE={};
 function lpcPortrait(cls){
+  if(PORTRAIT_CACHE[cls])return PORTRAIT_CACHE[cls];
   const sheets=LPC_SHEETS[cls];if(!sheets)return null;
   const img=sheets.walk.tex.image,cols=sheets.walk.cols,rows=sheets.walk.rows;
-  const cw=img.width/cols,ch=img.height/rows;
-  const c=document.createElement('canvas');c.width=cw;c.height=ch;
+  const cw=img.width/cols,ch=img.height/rows,k=cw/64;
+  // quadro de frente inteiro; acha onde o sprite realmente está (o quadro tem muita margem vazia)
+  const f=document.createElement('canvas');f.width=cw;f.height=ch;
+  const fg=f.getContext('2d');fg.imageSmoothingEnabled=false;fg.drawImage(img,0,2*ch,cw,ch,0,0,cw,ch);
+  const d=fg.getImageData(0,0,cw,ch).data;let x0=cw,x1=0,y0=ch,y1=0;
+  for(let y=0;y<ch;y++)for(let x=0;x<cw;x++)if(d[(y*cw+x)*4+3]>24){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}
+  if(x1<x0)return null;
+  // retrato de tamanho fixo (44x62 px do pack): pés na base e centrado, assim todos os heróis ficam na mesma escala
+  const W=Math.round(44*k),H=Math.round(62*k);
+  const c=document.createElement('canvas');c.width=W;c.height=H;
   const g=c.getContext('2d');g.imageSmoothingEnabled=false;
-  g.drawImage(img,0,2*ch,cw,ch,0,0,cw,ch);
-  return c.toDataURL();
+  const cx=(x0+x1+1)/2;
+  g.drawImage(f,Math.round(W/2-cx),Math.round(H-1-y1));
+  return PORTRAIT_CACHE[cls]=c.toDataURL();
 }
 // só a cabeça (quadro parado, de frente), recortada do mesmo sheet — o
 // painel de batalha amplia isso em número inteiro (2x/3x) sem borrar.
