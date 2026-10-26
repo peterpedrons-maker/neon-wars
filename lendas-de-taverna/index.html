@@ -3171,6 +3171,12 @@ function spawnEnemies(list){enemies.forEach(disposeUnit);enemies=placeEnemies(li
 const v3=new THREE.Vector3();
 function worldToScreen(p){v3.copy(p).project(cam);return [(v3.x+1)/2*stage.clientWidth,(1-v3.y)/2*stage.clientHeight];}
 function screenOf(u,extra=0){return worldToScreen(new THREE.Vector3(u.grp.position.x,u.grp.position.y+0.08+u.sz+0.16+extra,u.grp.position.z));}
+const _stv=new THREE.Vector3();
+function spriteTopScreen(u){
+  const pl=u.plane;
+  if(pl&&pl.geometry&&pl.geometry.parameters&&pl.geometry.parameters.height){pl.updateWorldMatrix(true,false);_stv.set(0,pl.geometry.parameters.height/2,0);pl.localToWorld(_stv);return worldToScreen(_stv);}
+  return screenOf(u,u.hbarExtra!=null?u.hbarExtra-0.12:-0.16);
+}
 const floatRecent=new Map();
 function floatText(u,text,cls,html){
   if(!u.grp)return;const [x,y0]=screenOf(u,0.1);const y=y0-34;
@@ -4683,7 +4689,7 @@ function loop(t){
   if(app.classList.contains('hub'))placeVillageNames();
   if(active&&active.grp){ring.position.set(active.grp.position.x,active.grp.position.y+0.09,active.grp.position.z);ring.material.opacity=0.65+Math.sin(s*6)*0.3;}
   if(tRing.visible)tRing.material.opacity=0.6+Math.sin(s*10)*0.35;
-  if(callout&&callout.u.grp){const cu=callout.u,[x,y]=screenOf(cu,cu.hbarExtra!=null?cu.hbarExtra-0.12:-0.16);   // topo real do sprite (criaturas altas incluídas)
+  if(callout&&callout.u.grp){const cu=callout.u,[x,y]=spriteTopScreen(cu);   // topo real do sprite na tela (o plano é inclinado: a fórmula vertical errava)
     const gap=callout.el.classList.contains('mv')?9:11;callout.el.style.left=Math.max(x,24)+'px';callout.el.style.top=Math.max(y-gap,50)+'px';}
   renderer.render(scene,cam);renderDie();
 }
