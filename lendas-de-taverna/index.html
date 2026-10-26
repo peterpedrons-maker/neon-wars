@@ -938,6 +938,7 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .ov .inner.kt .stashtab.on{background-image:url(assets/ui/btn_ouro.png);color:#2b1812;text-shadow:0 1px 0 #ffe9a8;font-weight:700}
 .ov .inner.kt .stashgrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-inline:12px}
 .ov .inner.kt .stashtile{background:url(assets/ui/linha_normal.png) 0 0/100% 100% no-repeat;border:0;border-radius:0;box-shadow:none;aspect-ratio:1;padding:10px}
+.ov .inner.kt .stashtile{padding-top:16px}
 .ov .inner.kt .stashtile .ic.lg{width:100%;height:100%;max-width:56px;max-height:56px}
 .ov .inner.kt .stashtile.sel{background-image:url(assets/ui/linha_destaque.png);box-shadow:none;filter:drop-shadow(0 0 7px #e9b949cc)}
 .ov .inner.kt .stashdetail{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;border-radius:0;padding:20px 28px;box-shadow:none;margin-inline:10px;color:#eadbb8}
@@ -988,6 +989,19 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .kf .chip small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9.5px}
 .kf .actions .btn{min-width:0;white-space:normal;line-height:1.1;font-size:12px}
 .kf .actions .btn.cta{font-size:12.5px;padding:6px 10px}
+
+.ov .inner.kt>*{flex-shrink:0}
+.ov .inner.kt .stashtile{position:relative}
+.stars{font-size:9px;letter-spacing:-1px;text-shadow:0 1px 0 #000;line-height:1}.stars .off{color:#4a3a28}
+.ov .inner.kt .stashtile .stars{position:absolute;left:8px;top:7px}
+.ov .inner.kt .stashtile .mb{position:absolute;right:6px;bottom:6px;display:inline-flex;align-items:center;gap:2px;background:rgba(14,8,5,.85);border:1px solid #8a6a3a;color:#ffe9b8;font-size:11px;font-weight:700;padding:1px 6px 1px 3px;line-height:1.2}
+.ov .inner.kt .stashtile .mb .ic{width:14px;height:14px;margin:0;filter:none}
+.ov .inner.kt .stashtile .mb.neg{color:#ff9a8a}
+.sdline{font-size:12px;color:#d3be93;display:flex;align-items:center;gap:6px}.sdline .stars{font-size:13px}
+.ov .inner.kt .invpick{flex-direction:column;gap:5px}
+.ov .inner.kt .btn.cmp{flex-direction:row;justify-content:space-between;gap:8px;text-align:left;padding:6px 18px;width:100%}
+.ov .inner.kt .btn.cmp em{font-style:normal;font-size:11px;font-weight:700;white-space:nowrap}
+.ov .inner.kt .btn.cmp.up em{color:#8fe08a}.ov .inner.kt .btn.cmp.down em{color:#ff9a8a}.ov .inner.kt .btn.cmp.eq em{color:#cdb68a}.ov .inner.kt .btn.cmp.new em{color:#ffd65a}
 </style>
 </head>
 <body>
@@ -1192,6 +1206,18 @@ const ico=(g,k,cls='',style='')=>{const nn=(NIC[g]||{})[k];if(nn)return `<i clas
 const wt=(key,eb,title)=>`<div class="wt">${ico('vila',key,'lg')}<div><div class="eyebrow">${eb}</div><h2>${title}</h2></div></div>`;
 const slotIco=(slot,cls='')=>ico('slot',slot==='accessory'?'acc1':slot,cls);
 const itemIco=(it,cls='')=>(NIC.item[it.id]?ico('item',it.id,cls,`filter:drop-shadow(0 0 1px ${RARITY[it.rar].cor}) drop-shadow(0 0 2px ${RARITY[it.rar].cor})`):slotIco(it.slot,cls));
+/* ---- Sinais de força do item (o ícone só diz o tipo; o resto vem daqui) ---- */
+const MOD_META={atk:['stat','atq','ATQ',3],def:['stat','def','DEF',2],mov:['stat','mov','Mov',2],alc:['stat','alc','Alc',2],dmgBonus:['stat','dano','dano',1.5],maxhp:['stat','vida','PV',0.5],crit:['stat','crit','Crít',3],per:['vila','mapa','segredos',0.5]};
+const itemScore=it=>it?Object.entries(it.mods||{}).reduce((a,[k,v])=>a+(MOD_META[k]?MOD_META[k][3]:1)*v,0):0;
+function itemMain(it){const e=Object.entries(it.mods||{}).filter(([k])=>MOD_META[k]).sort((a,b)=>Math.abs(b[1]*MOD_META[b[0]][3])-Math.abs(a[1]*MOD_META[a[0]][3]))[0];return e?{k:e[0],v:e[1]}:null;}
+const stars=n=>'★'.repeat(n)+'<span class="off">'+'★'.repeat(Math.max(0,5-n))+'</span>';
+function itemBadges(it){const m=itemMain(it);
+  return `<span class="stars" style="color:${RARITY[it.rar].cor}">${stars(it.rar)}</span>${m?`<span class="mb ${m.v<0?'neg':''}">${ico(MOD_META[m.k][0],MOD_META[m.k][1])}${m.v>0?'+':''}${m.v}</span>`:''}`;}
+// diferença do item em relação ao que o herói já usa naquele espaço
+function itemDiff(h,it){const cur=h.equip[slotKeyFor(h,it)],ks=new Set([...Object.keys(it.mods||{}),...Object.keys(cur?cur.mods||{}:{})]);
+  const parts=[...ks].filter(k=>MOD_META[k]).map(k=>[k,(it.mods[k]||0)-((cur&&cur.mods[k])||0)]).filter(([,d])=>d).sort((a,b)=>Math.abs(b[1]*MOD_META[b[0]][3])-Math.abs(a[1]*MOD_META[a[0]][3])).slice(0,2);
+  const d=itemScore(it)-itemScore(cur);
+  return {d,cls:!cur?'new':d>0?'up':d<0?'down':'eq',cur,txt:parts.map(([k,v])=>`${v>0?'+':''}${v} ${MOD_META[k][2]}`).join(' · ')};}
 const ITEMS=[
   // ===== Arma (weapon) =====
   {id:'lamina_simples',nome:'Lâmina Simples',slot:'weapon',rar:1,icon:'⚔️',desc:'+1 ATQ',mods:{atk:1}},
@@ -3700,11 +3726,11 @@ function renderStash(){
   </div>
   ${stashView==='items'?`
     <div class="stashtabs">${tabs.map(k=>`<button class="stashtab ${stashFilter===k?'on':''}" data-stashtab="${k}">${tabLabel(k)}</button>`).join('')}</div>
-    ${items.length?`<div class="stashgrid">${items.map(({it,i})=>`<button class="stashtile ${stashSel===i?'sel':''}" style="border-color:${RARITY[it.rar].cor}" data-stashtile="${i}" aria-label="${it.nome}">${itemIco(it,'lg')}</button>`).join('')}</div>`:'<p class="note">Nenhum item aqui ainda. Derrote inimigos em missão pra encontrar equipamentos.</p>'}
+    ${items.length?`<div class="stashgrid">${items.map(({it,i})=>`<button class="stashtile ${stashSel===i?'sel':''}" style="border-color:${RARITY[it.rar].cor}" data-stashtile="${i}" aria-label="${it.nome}">${itemIco(it,'lg')}${itemBadges(it)}</button>`).join('')}</div>`:'<p class="note">Nenhum item aqui ainda. Derrote inimigos em missão pra encontrar equipamentos.</p>'}
     ${sel?`<div class="stashdetail">
-      <div><b style="color:${RARITY[sel.rar].cor}">${itemIco(sel)} ${sel.nome}</b> · ${rarTag(sel)} · <i>${SLOT_INFO[sel.slot]?SLOT_INFO[sel.slot].label:'Acessório'}</i></div>
+      <div><b style="color:${RARITY[sel.rar].cor}">${itemIco(sel)} ${sel.nome}</b></div><div class="sdline"><span class="stars" style="color:${RARITY[sel.rar].cor}">${stars(sel.rar)}</span> ${rarTag(sel)} · <i>${SLOT_INFO[sel.slot]?SLOT_INFO[sel.slot].label:'Acessório'}</i></div>
       <small>${sel.desc}</small>
-      <div class="invpick">${roster.filter(h=>canEquip(h,sel)).map(h=>`<button class="btn ghost sm" data-stashequip="${h.id}">Equipar em ${h.first}</button>`).join('')||'<span class="note">Nenhum herói no elenco pode usar este item.</span>'}</div>
+      <div class="invpick">${roster.filter(h=>canEquip(h,sel)).map(h=>{const df=itemDiff(h,sel);return `<button class="btn ghost sm cmp ${df.cls}" data-stashequip="${h.id}"><span>Equipar em ${h.first}</span><em>${df.cls==='new'?'▲ espaço livre':df.cls==='up'?'▲ melhor':df.cls==='down'?'▼ pior':'= igual'}${df.txt?` · ${df.txt}`:''}</em></button>`;}).join('')||'<span class="note">Nenhum herói no elenco pode usar este item.</span>'}</div>
     </div>`:''}
   `:`<div class="scroll">${roster.length?roster.map(h=>heroEquipBox(h,'steq')).join(''):'<p class="note">Recrute heróis na taverna primeiro.</p>'}</div>`}`;
 }
