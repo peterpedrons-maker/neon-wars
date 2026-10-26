@@ -831,6 +831,64 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .qd .qec small{display:block;font-size:10px;color:#cdb68a;margin-top:2px;line-height:1.3}
 .qd .qfoot{flex:none;padding:8px 14px calc(10px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,#120b08 35%)}
 .qd .qcta{all:unset;box-sizing:border-box;width:100%;height:58px;display:flex;align-items:center;justify-content:center;background:url(assets/ui/btn_ouro.png) 0 0/100% 100% no-repeat;color:#2b1812;font-size:17px;font-weight:700;cursor:pointer;text-shadow:0 1px 0 #ffe9a8}
+
+/* ===== Kit novo aplicado à Taverna (.kt = sobrescreve as regras antigas) ===== */
+.ov .inner.qd.kt{gap:8px;padding:0 0 calc(10px + env(safe-area-inset-bottom,0px));overflow-y:auto}
+.ov .inner.kt>*{margin-inline:10px}
+.ov .inner.kt>.head{margin:0;border:0;border-image:none;background:url(assets/ui/faixa_normal.png) 0 0/100% 100% no-repeat;padding:6px 22px;min-height:68px;flex:none;flex-wrap:nowrap;align-items:center}
+.ov .inner.kt .head h2{font-size:17px;color:#f3e6c6}.ov .inner.kt .head .eyebrow{color:#e9b949}
+.ov .inner.kt .stamp{background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;border:0;box-shadow:none;color:#f3e6c6;padding:6px 18px;margin:0}
+.ov .inner.kt .stamp b{color:#ffd65a}.ov .inner.kt .stamp small{color:#cdb68a}
+.ov .inner.kt .steps{margin-top:8px}
+.ov .inner.kt .steps li.on i{background:linear-gradient(#f6d77a,#c9962e);border-color:#fff0c0}
+.ov .inner.kt .slots.big{gap:6px}
+.ov .inner.kt .slots.big .slot{border:0;border-image:none;background:url(assets/ui/linha_normal.png) 0 0/100% 100% no-repeat;box-shadow:none;padding:10px 4px 6px}
+.ov .inner.kt .slots.big .slot.full{background-image:url(assets/ui/linha_destaque.png)}
+.ov .inner.kt .slots.big .slot.foc{box-shadow:none;filter:drop-shadow(0 0 8px #e9b949cc)}
+.ov .inner.kt .slots.big .slot.req{border:0;background-image:url(assets/ui/linha_inativa.png);color:#c9b28a}
+.ov .inner.kt .sbadge{background:#1a120d;border:2px solid #8a6a3a}
+.ov .inner.kt .tabs{gap:4px}
+.ov .inner.kt .tab{background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;border:0;box-shadow:none;color:#e6d4a8;min-height:46px;text-shadow:0 1px 0 #000}
+.ov .inner.kt .tab.on{background-image:url(assets/ui/btn_ouro.png);color:#2b1812;text-shadow:0 1px 0 #ffe9a8;box-shadow:none}
+.ov .inner.kt .tab[disabled]{background-image:url(assets/ui/btn_ouro_off.png)}
+.ov .inner.kt .note,.ov .inner.kt .hint{background:none;border:0;color:#cdb68a;font-size:11.5px;padding:0 6px;min-height:0;text-align:center}
+.ov .inner.kt .pool{padding:2px 2px 6px;gap:6px}
+.ov .inner.kt .pc{background:url(assets/ui/linha_normal.png) 0 0/100% 100% no-repeat;border:0;border-image:none;box-shadow:none;--t1:#f3e6c6;--t2:#d3be93;color:#f3e6c6;padding:14px 18px 14px 14px;outline:0}
+.ov .inner.kt .pc[aria-pressed="true"]{background-image:url(assets/ui/linha_destaque.png);--t1:#fff5dc;--t2:#f0dfb9;outline:0}
+.ov .inner.kt .pc.foc{filter:drop-shadow(0 0 7px #e9b949cc);outline:0;box-shadow:none}
+.ov .inner.kt .pc .nm{color:var(--t1);text-shadow:0 1px 0 #000}
+.ov .inner.kt .pc .cl,.ov .inner.kt .pc .pcgear{color:var(--t2)}
+.ov .inner.kt .pc .pcstats{color:var(--t1)}
+.ov .inner.kt .pc .pcstats.row span{border-right-color:#8a6a3a}
+.ov .inner.kt .pc .tr{background:rgba(14,8,5,.75);border:1px solid #8a6a3a;color:#ffe9b8}
+.ov .inner.kt .pc .sib{background:linear-gradient(#f6d77a,#c9962e);color:#2b1812;border:1px solid #0e0805;top:2px;left:6px}
+.ov .inner.kt .tick{width:26px;height:26px;border-radius:50%;background:#1a120d;border:2px solid #8a6a3a;top:8px;right:10px}
+.ov .inner.kt .tick .ic{display:none}
+.ov .inner.kt .pc[aria-pressed="true"] .tick{background:url(assets/ui/b_check.png) center/contain no-repeat;border:0;width:30px;height:30px;top:6px;right:8px}
+.ov .inner.kt .tdet{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;box-shadow:none;padding:16px 22px}
+.ov .inner.kt .mini3{background:rgba(14,8,5,.7);border:2px solid #6a5030}
+.ov .inner.kt .empty{color:#d3be93}
+.ov .inner.kt .btn{border:0;border-image:none;background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;min-height:46px;padding:6px 20px;color:#f3e6c6;text-shadow:0 1px 0 #000;image-rendering:auto;filter:none}
+.ov .inner.kt .btn.cta{background-image:url(assets/ui/btn_ouro.png);color:#2b1812;text-shadow:0 1px 0 #ffe9a8;min-height:54px;font-size:16px}
+.ov .inner.kt .btn.ghost{background-image:url(assets/ui/btn_escuro.png);color:#f3e6c6}
+.ov .inner.kt .btn.cta[disabled]{background-image:url(assets/ui/btn_ouro_off.png);color:#6e6252;text-shadow:none;filter:none}
+.ov .inner.kt .btn.ghost[disabled]{filter:grayscale(.8) brightness(.7)}
+.ov .inner.kt .btn:hover{filter:brightness(1.1)}
+.ov .inner.kt .tfoot{padding:0 4px}
+
+.ov .inner.kt .rpf{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;border-image:none;box-shadow:none;padding:16px 22px;color:#eadbb8}
+.ov .inner.kt .sheet2{gap:6px}
+.ov .inner.kt .sh2-top{gap:12px}
+.ov .inner.kt h4.sec{color:#e9b949;letter-spacing:.06em;padding-left:8px}
+.ov .inner.kt .rpf{padding:26px 32px 22px}
+.ov .inner.kt .pbar{background:#0e0805;border:2px solid #4a3824}
+.ov .inner.kt .scroll{padding:0 0 8px}
+.ov .inner.kt>.btn.cta{margin-inline:14px;flex:none;width:auto}
+.ov .inner.kt .party{background:none;border:0}
+
+.ov .inner.kt .slots.big{width:auto;max-width:none;margin-inline:10px}
+.ov .inner.kt .btn.cta[disabled]{color:#d8cbb0;text-shadow:0 1px 0 #000}
+.ov .inner.kt .tdet .tact .btn{width:100%}
 </style>
 </head>
 <body>
@@ -3164,7 +3222,7 @@ function ePortrait(kind){
 }
 function setMode(m){
   const hub=m==='village'&&view==='hub',ov=(m==='village'||m==='tavern')&&!hub;
-  app.className='m-'+m+(hub?' hub':'')+(ov?' ov':'');phase=m;PI_.classList.remove('qd');
+  app.className='m-'+m+(hub?' hub':'')+(ov?' ov':'');phase=m;PI_.classList.remove('qd','kt');
   if(!hub&&bubble){bubble.el.remove();bubble=null;}
   stage.dataset.bio=(m==='place'||m==='battle')&&LV?LV.mp.biome:'';
   setLuz((m==='place'||m==='battle')&&LV?LV.mp.luz:'normal');
@@ -3359,7 +3417,7 @@ function tvTabs(act){
   return `<div class="tabs"><button class="tab ${act==='roster'?'on':''}" data-act="toTavern">${ico('vila','grupo')} Elenco (${roster.length})</button><button class="tab ${act==='sheet'?'on':''}" ${tvSel&&roster.length?`data-sheet="${tvSel}"`:'disabled'}>${ico('vila','board')} Ficha do herói</button><button class="tab ${act==='recruit'?'on':''}" data-act="recruit">${ico('vila','tavern')} Recrutar</button></div>`;
 }
 function renderTavern(){
-  view='tavern';tvFocus=null;setMode('tavern');
+  view='tavern';tvFocus=null;setMode('tavern');PI_.classList.add('qd','kt');
   const sc=rosterSibCount(),n=selected.size,full=roster.length>=ROSTER_CAP;
   if(!roster.some(h=>h.id===tvSel))tvSel=(roster.find(h=>selected.has(h.id))||roster[0]||{}).id||null;
   const f=roster.find(h=>h.id===tvSel),sel=roster.filter(h=>selected.has(h.id));
@@ -3393,7 +3451,7 @@ function renderTavern(){
   <div class="tfoot"><div class="tl"><button class="btn ghost sm" data-act="toVillage">Praça</button><span>${ico('vila','grupo')}<b>${n}/5</b> no grupo</span></div><button class="btn cta" data-act="toVillage" ${n>=5?'':'disabled'}>${n>=5?'Confirmar grupo →':`Escolha mais ${5-n}`}</button></div>`;
 }
 function renderRecruit(){
-  view='recruit';setMode('tavern');
+  view='recruit';setMode('tavern');PI_.classList.add('qd','kt');
   const sc=surCount(),full=roster.length>=ROSTER_CAP;
   PI_.innerHTML=`
   <div class="head">${wt('tavern','Taverna do Javali Torto','Recrutar heróis')}
@@ -3422,7 +3480,7 @@ function renderSheet(id,src){
   if(src)tvSrc=src;
   const list=tvSrc==='roster'?roster:draw,h=list.find(x=>x.id===id);
   if(!h)return tvSrc==='roster'?renderTavern():renderRecruit();
-  view='sheet';tvFocus=id;if(tvSrc==='roster')tvSel=id;setMode('tavern');
+  view='sheet';tvFocus=id;if(tvSrc==='roster')tvSel=id;setMode('tavern');PI_.classList.add('qd','kt');
   const c=CLASSES[h.cls],cm=COMO[h.cls],sc=tvSrc==='roster'?rosterSibCount():surCount(),isR=tvSrc==='roster';
   const lv=h.level||1,xb=xpForLevel(lv),xn=xpForLevel(lv+1),pct=lv>=LEVEL_CAP?100:Math.max(0,Math.min(100,Math.round(((h.xpTotal||0)-xb)/(xn-xb)*100)));
   const at=h.attrs||{},AN={forca:'Força',destreza:'Destreza',inteligencia:'Inteligência',vitalidade:'Vitalidade',fe:'Fé'};
