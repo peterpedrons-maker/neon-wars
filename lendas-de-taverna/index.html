@@ -1124,6 +1124,15 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .turncard.e img{border-color:#8a1f18}
 .turncard b{display:block;font-size:17px}.turncard small{display:block;font-size:11px;color:#e6cf9b;margin-top:1px}
 @media(min-width:700px){.turncard{top:calc(76px + env(safe-area-inset-top,0px))}}
+
+/* painel de som */
+#sndp{position:absolute;inset:0;z-index:60;display:grid;place-items:center;background:rgba(8,5,3,.62)}
+#sndp .sp{width:min(320px,86%);padding:30px 30px 26px;background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;color:#f3e6c6;display:flex;flex-direction:column;gap:14px}
+#sndp h3{margin:0;font-size:18px;text-align:center;text-shadow:0 2px 0 #000}
+#sndp label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#e6d4a8}
+#sndp input[type=range]{width:100%;accent-color:#e9b949;height:28px}
+#sndp .sbtn{all:unset;cursor:pointer;text-align:center;padding:12px 10px;background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;color:#f3e6c6;font-size:14px;text-shadow:0 1px 0 #000}
+#sndp .sbtn.ok{background-image:url(assets/ui/btn_ouro.png);color:#2b1812;font-weight:700;text-shadow:0 1px 0 #ffe9a8}
 </style>
 </head>
 <body>
@@ -1226,7 +1235,7 @@ function sNoise({dur=0.12,gain=0.3,freq=1200,q=0.7,type='bandpass',delay=0}={}){
   const g=actx.createGain();g.gain.setValueAtTime(gain,t0);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
   src.connect(filt);filt.connect(g);g.connect(master);src.start(t0);src.stop(t0+dur+0.02);
 }
-const SFX={
+const SYN={
   click(){sTone(880,{type:'square',dur:0.03,gain:0.1,release:0.03});},
   move(){sNoise({dur:0.08,gain:0.09,freq:380,q:0.9,type:'lowpass'});},
   swing(){sNoise({dur:0.08,gain:0.16,freq:2200,q:1.2,type:'bandpass'});},
@@ -1242,6 +1251,95 @@ const SFX={
   secret(){[0,0.1,0.2,0.32].forEach((d,i)=>sTone(523.25*(1.5**(i*0.5)),{type:'triangle',dur:0.22,gain:0.17,delay:d,release:0.2}));},
   loot(){sTone(660,{type:'triangle',dur:0.1,gain:0.14,release:0.08});sTone(880,{type:'triangle',dur:0.12,gain:0.14,delay:0.07,release:0.1});},
 };
+
+/* ================= Áudio de arquivos: efeitos e músicas (assets/audio) =================
+   Músicas e efeitos foram compostos/renderizados com instrumentos amostrados
+   (GeneralUser GS, licença livre). Os efeitos sintetizados acima ficam só como
+   plano B enquanto o arquivo ainda não carregou. */
+const AUD={vol:{music:0.7,sfx:0.9,mute:false},bufs:{},pend:{},cur:null,curName:null,want:undefined,last:{},resShown:false};
+try{const sv=JSON.parse(localStorage.getItem('lendas_snd')||'null');if(sv)Object.assign(AUD.vol,sv);}catch(e){}
+function saveSnd(){try{localStorage.setItem('lendas_snd',JSON.stringify(AUD.vol));}catch(e){}}
+let sfxBus=null,musBus=null;
+function audioBus(){
+  if(!ensureAudio())return false;
+  if(!sfxBus){sfxBus=actx.createGain();sfxBus.connect(master);musBus=actx.createGain();musBus.connect(master);applyVol();}
+  return true;
+}
+function applyVol(){
+  if(!actx||!sfxBus)return;
+  master.gain.value=AUD.vol.mute?0:0.5;sfxBus.gain.value=AUD.vol.sfx;musBus.gain.value=AUD.vol.music*0.75;
+}
+function loadBuf(url){
+  if(AUD.bufs[url])return Promise.resolve(AUD.bufs[url]);
+  if(AUD.pend[url])return AUD.pend[url];
+  return AUD.pend[url]=fetch(url).then(r=>r.arrayBuffer()).then(b=>new Promise((ok,no)=>actx.decodeAudioData(b,ok,no))).then(buf=>{AUD.bufs[url]=buf;delete AUD.pend[url];return buf;}).catch(e=>{delete AUD.pend[url];return null;});
+}
+const SFX_FILES=['ui_click','ui_open','ui_close','ui_confirm','ui_denied','turn_start','equip','coin','step_0','step_1','swing','hit_0','hit_1','slash','crit','miss','bow','arrow_hit','spell_cast','spell_hit','heal','buff','death','trap','victory','defeat'];
+function preloadSfx(){if(!audioBus())return;SFX_FILES.forEach(n=>loadBuf(`assets/audio/sfx/${n}.ogg`));}
+['pointerdown','touchstart','keydown'].forEach(ev=>window.addEventListener(ev,()=>setTimeout(preloadSfx,50),{once:true,passive:true}));
+function playSfx(name,{vol=1,rate=1,gap=0}={}){
+  if(!actx||!audioBus())return false;
+  const buf=AUD.bufs[`assets/audio/sfx/${name}.ogg`];if(!buf)return false;
+  const now=performance.now();if(gap&&AUD.last[name]&&now-AUD.last[name]<gap)return true;AUD.last[name]=now;
+  const src=actx.createBufferSource();src.buffer=buf;src.playbackRate.value=rate*(0.97+Math.random()*0.06);
+  const g=actx.createGain();g.gain.value=vol;src.connect(g);g.connect(sfxBus);src.start();return true;
+}
+const SFXMAP={click:[['ui_click'],0.8,70],move:[['step_0','step_1'],0.7,60],swing:[['swing'],0.8],hit:[['hit_0','hit_1'],1],crit:[['crit'],1],miss:[['miss'],0.8],shoot:[['bow'],0.9],cast:[['spell_cast'],0.9],heal:[['heal'],0.9],kill:[['death'],1],loot:[['coin'],0.8]};
+const SFX={};
+Object.keys(SYN).forEach(k=>{SFX[k]=(...a)=>{const m=SFXMAP[k];if(m){const v=m[0][Math.floor(Math.random()*m[0].length)];if(playSfx(v,{vol:m[1],gap:m[2]||0}))return;}SYN[k](...a);};});
+const NEWSFX={slash:['slash',0.85],spellHit:['spell_hit',0.9],buff:['buff',0.8],equip:['equip',0.9],open:['ui_open',0.8],close:['ui_close',0.7],confirm:['ui_confirm',0.85],denied:['ui_denied',0.8],turn:['turn_start',0.7],trap:['trap',0.9],victory:['victory',0.9],defeat:['defeat',0.9]};
+Object.keys(NEWSFX).forEach(k=>{SFX[k]=()=>playSfx(NEWSFX[k][0],{vol:NEWSFX[k][1]});});
+// ---- música: troca com fade, loop sem emenda, só o trecho atual na memória ----
+function wantedTrack(){try{return wantedTrack0();}catch(e){return 'vila';}}
+function wantedTrack0(){
+  const res=document.getElementById('result');if(res&&!res.hidden)return null;
+  if(phase==='battle'){const mp=typeof LV!=='undefined'&&LV&&LV.mp;if(!mp)return 'campina';if(mp.chefe||mp.boss)return 'chefe';return ['campina','campina','ruinas','caverna','gelo','cripta'][mp.ato]||'campina';}
+  if(phase==='place')return 'formacao';
+  if(phase==='tavern')return 'taverna';
+  switch(view){case 'missions':case 'brief':return 'missoes';case 'stash':return 'cofre';case 'forge':return 'forja';case 'temple':return 'templo';default:return 'vila';}
+}
+async function switchMusic(name){
+  if(!audioBus())return;
+  const old=AUD.cur,oldName=AUD.curName,t=actx.currentTime;
+  if(old){old.g.gain.cancelScheduledValues(t);old.g.gain.setValueAtTime(old.g.gain.value,t);old.g.gain.linearRampToValueAtTime(0,t+1.6);setTimeout(()=>{try{old.src.stop();}catch(e){}if(oldName&&oldName!==AUD.curName)delete AUD.bufs[`assets/audio/music/${oldName}.ogg`];},1800);}
+  AUD.cur=null;AUD.curName=null;
+  if(!name)return;
+  const buf=await loadBuf(`assets/audio/music/${name}.ogg`);
+  if(!buf||AUD.want!==name)return;           // mudou de ideia enquanto carregava
+  const src=actx.createBufferSource();src.buffer=buf;src.loop=true;
+  const g=actx.createGain();g.gain.value=0;src.connect(g);g.connect(musBus);
+  src.start(0,Math.random()*Math.min(10,buf.duration*0.1));
+  g.gain.linearRampToValueAtTime(1,actx.currentTime+2.2);
+  AUD.cur={src,g};AUD.curName=name;
+}
+setInterval(()=>{
+  if(!actx||actx.state!=='running'||!audioBus())return;
+  const res=document.getElementById('result'),vis=!!(res&&!res.hidden);
+  if(vis&&!AUD.resShown){AUD.resShown=true;const lose=!!res.querySelector('.res-title.lose');SFX[lose?'defeat':'victory']();}
+  if(!vis)AUD.resShown=false;
+  const w=wantedTrack();
+  if(w!==AUD.want){AUD.want=w;switchMusic(w);}
+},400);
+document.addEventListener('visibilitychange',()=>{if(!actx)return;if(document.hidden)actx.suspend();else actx.resume();});
+// painel de som (música, efeitos, mudo)
+function toggleSndPanel(){
+  let el=document.getElementById('sndp');
+  if(el){el.remove();return;}
+  el=document.createElement('div');el.id='sndp';
+  el.innerHTML=`<div class="sp"><h3>Som</h3>
+    <label>Música <input type="range" min="0" max="100" value="${Math.round(AUD.vol.music*100)}" data-snd="music"></label>
+    <label>Efeitos <input type="range" min="0" max="100" value="${Math.round(AUD.vol.sfx*100)}" data-snd="sfx"></label>
+    <button class="sbtn" data-snd="mute">${AUD.vol.mute?'Ativar som':'Silenciar tudo'}</button>
+    <button class="sbtn ok" data-snd="close">Fechar</button></div>`;
+  document.getElementById('app').appendChild(el);
+  el.addEventListener('input',e=>{const k=e.target.dataset.snd;if(k==='music'||k==='sfx'){AUD.vol[k]=e.target.value/100;applyVol();saveSnd();}});
+  el.addEventListener('click',e=>{const b=e.target.closest('[data-snd]');if(!b)return;const k=b.dataset.snd;
+    if(k==='mute'){AUD.vol.mute=!AUD.vol.mute;applyVol();saveSnd();b.textContent=AUD.vol.mute?'Ativar som':'Silenciar tudo';}
+    if(k==='close'||e.target===el)el.remove();});
+  playSfx('ui_open',{vol:0.6});
+}
+document.addEventListener('click',e=>{if(e.target.closest('[data-act="snd"]')){e.stopPropagation();toggleSndPanel();}},true);
+
 // Som de clique genérico pra qualquer botão/elemento interativo da UI.
 document.addEventListener('click',e=>{
   if(e.target.closest('button,.pc,.chip,.slot,.place,.spd,.td,.oc'))SFX.click();
@@ -1453,6 +1551,7 @@ function slotKeyFor(h,item){
   return item.slot;
 }
 function equipItem(h,slot,item,pool){
+  SFX.equip();
   const prev=h.equip[slot];
   if(prev){applyMods(h,prev.mods,-1);pool.push(prev);}
   const idx=pool.indexOf(item);if(idx>-1)pool.splice(idx,1);
@@ -2543,6 +2642,7 @@ const slashTex=(()=>{const c=document.createElement('canvas');c.width=c.height=3
   for(let a=-1.15;a<=1.15;a+=0.025)for(let r=10;r<=14;r++){const fade=1-Math.abs(a)/1.25;if(r<12&&Math.random()>fade)continue;g.fillStyle=r>=13?'#ffffff':'#ffe9a8';g.fillRect(Math.round(16+Math.cos(a)*r),Math.round(16+Math.sin(a)*r),1,1);}
   return nearestTex(c);})();
 function slash(t,crit){
+  SFX.slash();
   const p=t.grp.position,k=t.big?1.35:1;
   fxPlay('combat','sword-slash-32px_strip7.png',7,20,{x:p.x,y:p.y+0.25,z:p.z},{w:2.0*k});
   if(crit)fxPlay('combat','critical-hit-32px_strip8.png',8,16,{x:p.x,y:p.y+0.3,z:p.z},{w:2.4*k});
@@ -3607,7 +3707,7 @@ function renderVillage(){
   const m=run.mission?mapOf(run.mission):null,np=selected.size,ready=m&&np>=5,best=bestRun();
   const injuredN=roster.filter(h=>h.injured).length,forgeReady=roster.filter(h=>!h.sub&&(h.level||1)>=SUB_UNLOCK_LEVEL).length;
   PI_.innerHTML='';
-  $('#vbar').innerHTML=`<div class="vt">Vila de Brumavale</div><div class="vr"><span class="tag">${ico('vila','ouro')} ${fmt(gold)}</span>${best?`<span class="tag">Melhor run: ${fmt(best)}</span>`:''}<button class="btn ghost sm" data-act="help">Como jogar</button></div>`;
+  $('#vbar').innerHTML=`<div class="vt">Vila de Brumavale</div><div class="vr"><span class="tag">${ico('vila','ouro')} ${fmt(gold)}</span>${best?`<span class="tag">Melhor run: ${fmt(best)}</span>`:''}<button class="btn ghost sm" data-act="snd">Som</button><button class="btn ghost sm" data-act="help">Como jogar</button></div>`;
   const badge={temple:injuredN,forge:forgeReady,stash:stash.length};
   $('#vnames').innerHTML=HUB_LABELS.map(([id,nome])=>`<button class="vn ${id==='market'||id==='well'?'soon':''}" data-bld="${id}">${ico('vila',id)}${nome}${badge[id]?`<b>${badge[id]}</b>`:''}</button>`).join('');
   $('#vfoot').innerHTML=`${hint||injuredN?`<p class="hint" id="hint">${hint||`${injuredN} ${injuredN>1?'heróis estão':'herói está'} se recuperando no Templo.`}</p>`:''}
@@ -3639,7 +3739,7 @@ $('#vui').addEventListener('click',e=>{
 });
 function goVillage(){hint='';renderVillage();aim('village');}
 function openBld(id){
-  hint='';
+  hint='';SFX.open();
   if(id==='board'){renderMissions();}
   else if(id==='tavern'){enterTavern();return;}
   else if(id==='stash'){renderStash();return;}
@@ -3939,7 +4039,7 @@ function renderTemple(){
 function renderBattle(){
   let spdMin=false;try{spdMin=localStorage.getItem('lendas_spd_min')==='1';}catch(e){}
   $('#speedbar').classList.toggle('min',spdMin);
-  $('#speedbar').innerHTML='<button class="spdtab" data-act="spdtoggle" aria-label="Recolher ou abrir o menu"><i></i></button>'+[1,2,4].map(s=>`<button class="spd" data-spd="${s}" aria-pressed="${speed===s}">${s}x</button>`).join('')+'<button class="spd" data-act="overview" data-hud="1" aria-pressed="false">Mapa</button><button class="spd" data-act="skip">Pular</button><button class="spd" data-act="log">Registro</button>';
+  $('#speedbar').innerHTML='<button class="spdtab" data-act="spdtoggle" aria-label="Recolher ou abrir o menu"><i></i></button>'+[1,2,4].map(s=>`<button class="spd" data-spd="${s}" aria-pressed="${speed===s}">${s}x</button>`).join('')+'<button class="spd" data-act="overview" data-hud="1" aria-pressed="false">Mapa</button><button class="spd" data-act="skip">Pular</button><button class="spd" data-act="log">Registro</button><button class="spd" data-act="snd">Som</button>';
   $('#round').textContent='1';$('#bhud').hidden=false;$('#feed').innerHTML='';objKey='';renderObjs();$('#logp').hidden=true;
   addLog('A batalha começou. O jogo joga sozinho.','mut');
 }
@@ -3951,7 +4051,7 @@ PI_.addEventListener('click',e=>{
   const bld=t.closest('[data-bld]');if(bld){openBld(bld.dataset.bld);return;}
   const ra=t.closest('[data-ato]');if(ra){if(!ra.classList.contains('lock')){SFX.click();qdAto=+ra.dataset.ato;renderMissions();}return;}
   const mp=t.closest('[data-map]');if(mp){renderBrief(+mp.dataset.map);return;}
-  const pm=t.closest('[data-pickmap]');if(pm){run.mission=+pm.dataset.pickmap;goVillage();return;}
+  const pm=t.closest('[data-pickmap]');if(pm){SFX.confirm();run.mission=+pm.dataset.pickmap;goVillage();return;}
   const hero=t.closest('[data-hero]');if(hero){const id=+hero.dataset.hero;if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderTavern();return;}
   const nav=t.closest('[data-nav]');if(nav){const L=tvSrc==='roster'?roster:draw,i=L.findIndex(h=>h.id===tvFocus);renderSheet(L[(i+ +nav.dataset.nav+L.length)%L.length].id);return;}
   const hire=t.closest('[data-hire]');if(hire){const id=+hire.dataset.hire;if(tvSrc==='draw'){recruitHero(id);renderRecruit();return;}if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderSheet(id);return;}
@@ -4147,13 +4247,13 @@ function destMarker(u,cell){
 async function moveAlong(u,path){
   if(!path.length)return;
   const removeMk=destMarker(u,path[path.length-1]);
-  previewPath(path,u.side==='hero'?'#79a8ec':'#d4503f');SFX.move();await waitS(0.7);   // o jogador vê o trajeto antes de andar
+  previewPath(path,u.side==='hero'?'#79a8ec':'#d4503f');await waitS(0.7);   // o jogador vê o trajeto antes de andar
   lpcSetState(u,'walk');
   if(callout&&callout.u===u)callout.el.classList.add('go');
   for(const p of path){
     const tx=wx(p.c),tz=wz(p.r),ty=topY(p.r,p.c),y0=u.grp.position.y,peak=Math.max(y0,ty)+0.28;
     u.r=p.r;u.c=p.c;faceToward(u,tx,tz);
-    swingLegs(u,0.24);followCam(u,1.3);
+    swingLegs(u,0.24);followCam(u,1.3);SFX.move();
     await gsap.timeline().to(u.grp.position,{x:tx,z:tz,duration:0.24,ease:'none'},0).to(u.grp.position,{y:peak,duration:0.12,ease:'power1.out'},0).to(u.grp.position,{y:ty,duration:0.12,ease:'power1.in'},0.12);
     burst(u.grp.position,{n:3,colors:['#c9b28a','#a08a62'],spread:0.3,up:0.1,y:0.03,life:0.3,size:0.7});
     if(u.side==='hero'&&TRAPS.has(k(p.r,p.c))&&!REVEALED.has(k(p.r,p.c))){await springTrap(u,p);if(!u.alive)break;}
@@ -4165,6 +4265,7 @@ async function moveAlong(u,path){
 }
 // armadilha escondida: só os heróis caem; depois de disparada fica marcada no chão
 async function springTrap(u,p){
+  SFX.trap();
   const kk=k(p.r,p.c),veneno=(p.r*7+p.c*3)%2===1;REVEALED.add(kk);
   const pos={x:wx(p.c),y:topY(p.r,p.c),z:wz(p.r)};
   fxPlay('environment','spike-trap-32px_strip8.png',8,14,pos,{w:1.2});
@@ -4294,6 +4395,7 @@ async function attack(u,t){
   const sparks=u.side==='hero'?['#ffd34a','#ffffff','#ff9a3a']:['#ff5a4a','#ffffff','#a01e1e'];
   if(u.alc===1)slash(t,crit);
   if(u.cls==='mago'||(u.side==='enemy'&&magic)){
+    SFX.spellHit();
     fxPlay('magic','lightning-strike-32px_strip8.png',8,18,{x:t.grp.position.x,y:t.grp.position.y,z:t.grp.position.z},{w:crit?2.6:2,h:crit?3.6:3});
     fxPlay('magic','energy-orb-32px_strip8.png',8,20,{x:t.grp.position.x,y:t.grp.position.y+0.4,z:t.grp.position.z},{w:crit?2.4:1.7});
     pulse(t.grp.position,'#9fdcff',crit?2.2:1.6,0.5,0.12);
@@ -4425,6 +4527,7 @@ async function checkSecret(u){
   await wait(900);
 }
 function showTurnCard(u){
+  SFX.turn();
   const el=document.createElement('div');el.className='turncard'+(u.side==='enemy'?' e':'');
   el.innerHTML=`<img src="${faceOf(u)}" alt=""><div><b>${u.first||u.nome||''}</b><small>${u.side==='hero'?(CLASSES[u.cls]?CLASSES[u.cls].nome:''):(ENEMIES[u.kind]?ENEMIES[u.kind].nome:'')}</small></div>`;
   hud.appendChild(el);
@@ -4453,10 +4556,10 @@ async function turn(u){
   await waitS(1.3);                     // mostra todo o alcance de movimento
   if(u.cls==='bardo'&&u.sub==='dissonante'){
     const cand=foes.filter(f=>dist(f,u)<=4&&!f.shaken);
-    if(cand.length){const f=pick(cand);f.shaken=true;showCallout(u,`♪ Desafina ${f.first}`);
+    if(cand.length){const f=pick(cand);f.shaken=true;SFX.buff();showCallout(u,`♪ Desafina ${f.first}`);
       burst(u.grp.position,{n:6,colors:['#d98fe0','#f3cfff'],spread:0.4,up:1,y:0.9,life:0.7});pulse(f.grp.position,'#d98fe0',1,0.6);floatText(f,'♪ −2 defesa','miss');
       xp(u,6);addLog(`${u.first} desafinou a defesa de ${f.first} (−2 na próxima defesa)`,'good');await wait(450);}
-  }else if(u.cls==='bardo'){const cand=allies.filter(a=>dist(a,u)<=4&&!a.inspired);if(cand.length){const a=pick(cand);a.inspired=2;showCallout(u,`♪ Inspira ${a.first}`);
+  }else if(u.cls==='bardo'){const cand=allies.filter(a=>dist(a,u)<=4&&!a.inspired);if(cand.length){const a=pick(cand);a.inspired=2;SFX.buff();showCallout(u,`♪ Inspira ${a.first}`);
     burst(u.grp.position,{n:6,colors:['#79a8ec','#cfe0ff'],spread:0.4,up:1,y:0.9,life:0.7});pulse(a.grp.position,'#79a8ec',1,0.6);floatText(a,'♪ +2 acerto','buff');
     xp(u,6);addLog(`${u.first} tocou uma balada pra ${a.first} (+2 no próximo ataque)`,'good');await wait(450);}}
   if(u.trait&&u.trait.id==='covarde'&&u.hp<=u.maxhp*0.4){
