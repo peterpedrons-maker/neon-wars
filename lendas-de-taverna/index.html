@@ -931,6 +931,34 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .ov .inner.kt .slots.big .slot img{height:92%;width:auto;max-width:92%}
 .qd .qec img{width:44px;height:62px}
 .qd .qec{min-height:112px}
+
+/* ===== Cofre, Forja e Templo com o kit novo ===== */
+.ov .inner.kt .stashtabs{gap:4px;margin:0 10px}
+.ov .inner.kt .stashtab{background:url(assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;border:0;border-radius:0;color:#e6d4a8;padding:9px 16px;font-size:12px;text-shadow:0 1px 0 #000}
+.ov .inner.kt .stashtab.on{background-image:url(assets/ui/btn_ouro.png);color:#2b1812;text-shadow:0 1px 0 #ffe9a8;font-weight:700}
+.ov .inner.kt .stashgrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-inline:12px}
+.ov .inner.kt .stashtile{background:url(assets/ui/linha_normal.png) 0 0/100% 100% no-repeat;border:0;border-radius:0;box-shadow:none;aspect-ratio:1;padding:10px}
+.ov .inner.kt .stashtile .ic.lg{width:100%;height:100%;max-width:56px;max-height:56px}
+.ov .inner.kt .stashtile.sel{background-image:url(assets/ui/linha_destaque.png);box-shadow:none;filter:drop-shadow(0 0 7px #e9b949cc)}
+.ov .inner.kt .stashdetail{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;border-radius:0;padding:20px 28px;box-shadow:none;margin-inline:10px;color:#eadbb8}
+.ov .inner.kt .stashdetail .ic{width:28px;height:28px}
+.ov .inner.kt .hcard{background:url(assets/ui/dialogo.png) 0 0/100% 100% no-repeat;border:0;border-image:none;box-shadow:none;padding:24px 30px;gap:10px}
+.ov .inner.kt .hhead{gap:12px}
+.ov .inner.kt .hhead img{width:56px;height:78px}
+.ov .inner.kt .hhead .nm{color:#f3e6c6;font-size:17px;text-shadow:0 1px 0 #000}
+.ov .inner.kt .subs{grid-template-columns:1fr;gap:6px}
+.ov .inner.kt .subopt{background:url(assets/ui/linha_normal.png) 0 0/100% 100% no-repeat;border:0;border-image:none;padding:14px 20px;outline:0;color:#f3e6c6}
+.ov .inner.kt .subopt.on{background-image:url(assets/ui/linha_destaque.png);color:#fff5dc}
+.ov .inner.kt .subopt.on small{color:#f0dfb9}
+.ov .inner.kt .subopt[disabled]{filter:none}
+.ov .inner.kt .subopt:not(.on)[disabled]{background-image:url(assets/ui/linha_inativa.png);filter:brightness(.85)}
+.ov .inner.kt .subopt .ic.xl{width:52px;height:52px;filter:drop-shadow(0 2px 0 #000a)}
+.ov .inner.kt .subopt .pr{background:rgba(14,8,5,.75);border:1px solid #8a6a3a;color:#ffe9b8;padding:2px 8px}
+.ov .inner.kt .eqlist div{background:rgba(14,8,5,.55);border:1px solid #6a5030}
+.ov .inner.kt .mini{background:#0e0805;border:2px solid #4a3824}
+.ov .inner.kt .hcard>.btn{align-self:stretch}
+.ov .inner.kt .hcard>.btn:not(.ghost){background-image:url(assets/ui/btn_ouro.png);color:#2b1812;text-shadow:0 1px 0 #ffe9a8;font-weight:700;min-height:52px}
+.ov .inner.kt .hcard>.btn.ghost{background-image:url(assets/ui/btn_escuro.png)}
 </style>
 </head>
 <body>
@@ -3629,7 +3657,7 @@ function renderEquip(){
   </div>`;
 }
 function renderStash(){
-  view='stash';setMode('village');
+  view='stash';setMode('village');PI_.classList.add('qd','kt');
   const tabs=['all','weapon','offhand','head','body','hands','feet','accessory'];
   const tabLabel=k=>k==='all'?'Todos':(SLOT_INFO[k]?SLOT_INFO[k].label:'Acessório');
   const items=stash.map((it,i)=>({it,i})).filter(({it})=>stashFilter==='all'||it.slot===stashFilter);
@@ -3653,7 +3681,7 @@ function renderStash(){
 }
 function injuryRushCost(h){return INJURY_RUSH_BASE+(h.level||1)*INJURY_RUSH_PER_LEVEL;}
 function renderForge(){
-  view='forge';setMode('village');
+  view='forge';setMode('village');PI_.classList.add('qd','kt');
   const row=h=>{
     const lv=h.level||1;
     const head=`<div class="hhead"><img src="${h.portrait}" alt=""><div class="grow"><b class="nm">${h.first}</b><div class="cl" style="color:#e8d3a8">${ico('classe',h.cls)}${CLASSES[h.cls].nome} · Nv.${lv}${h.sub?' · '+SUB_INFO[h.sub].nome:''}</div></div><button class="btn ghost sm" data-sheet="${h.id}" data-from="forge">Ficha</button></div>`;
@@ -3670,7 +3698,7 @@ function renderForge(){
   <div class="scroll">${roster.length?roster.map(row).join(''):`<div class="empty">${ico('vila','forge','xl')}<p>Seu elenco está vazio. Recrute heróis na Taverna.</p></div>`}</div>`;
 }
 function renderTemple(){
-  view='temple';setMode('village');
+  view='temple';setMode('village');PI_.classList.add('qd','kt');
   const injured=roster.filter(h=>h.injured);
   PI_.innerHTML=`
   <div class="head">${wt('temple','Vila de Brumavale','Templo da Aurora')}<button class="btn ghost sm" data-act="toVillage">Praça</button></div>
