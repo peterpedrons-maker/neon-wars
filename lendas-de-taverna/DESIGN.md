@@ -446,3 +446,12 @@ da ideia original sem precisar do modo manual completo.
 - 86 ícones recortados das folhas de IA (fundo magenta): classes (`c_`), subclasses (`s_`), atributos (`t_`), slots (`l_`), vila/UI (`v_`) e 32 tipos de item (`i_`). Mapa em `NIC` (index.html); `ico()` usa o ícone novo e só cai nas silhuetas antigas (`assets/ui-icons`, game-icons.net) se faltar algum.
 - Itens: os 80 itens do jogo usam os tipos (`i_espada`, `i_elmo`, ...). A raridade vira brilho colorido ao redor do ícone (`itemIco`).
 - Para trocar um ícone, regenere só aquele e recorte com o mesmo nome em `assets/ico/`.
+
+## Plano de campanha e mapas (decidido com o dono do jogo)
+- **Regra de inimigos:** 5 a 8 por mapa comum (até 9 nos difíceis); chefe = chefe + 3 a 5 acompanhantes. Sem "20 na tela" como padrão.
+- **Ideia guardada (usar lá na frente):** fases especiais de horda, com 15 a 20 inimigos fortes, só como exceção rara e avisada.
+- **Objetivos variados (como no FFT):** derrotar todos, derrotar o líder, sobreviver N turnos, proteger um aliado.
+- **Estrutura:** Run 1 = 5 biomas em ordem (Nv 1–~25); Run 2 = os mesmos 5 biomas de novo no difícil (paleta/variantes de inimigo diferentes, mapas novos, Nv ~25–50); depois o **endgame**: só dungeons muito difíceis, muitos chefes secretos e opcionais. Sem terceira passada por enquanto.
+- **Mapas:** menos de 100; foco em qualidade e variedade (temas à mão), reaproveitando biomas, sprites e efeitos.
+- **Balanceamento (XP, nível, vida/ataque):** só depois dos mapas prontos.
+- Referência de inspiração: Final Fantasy Tactics (5 aliados contra ~5–8 inimigos; objetivos variados).

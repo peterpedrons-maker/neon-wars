@@ -1184,6 +1184,8 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .kf>.head{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px;padding:0 18px 0 14px;height:66px}
 .kf>.head .wt{flex:1;min-width:0}
 .kf>.head h2{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.callout{display:none !important}
 </style>
 </head>
 <body>
@@ -3113,6 +3115,26 @@ function lpcSetUV(geo,col,row,cols,rows){
   const uv=geo.attributes.uv;
   uv.setXY(0,u0,v1);uv.setXY(1,u1,v1);uv.setXY(2,u0,v0);uv.setXY(3,u1,v0);uv.needsUpdate=true;
 }
+// preparação do golpe: toca a ação até a pose de "armar" e segura; lpcRelease solta o golpe dali
+const WINDUP={slash:2,shoot:8,spellcast:3,thrust:3};
+function lpcCharge(u){
+  const L=u.lpc;if(!L||!L.sheets||!L.sheets[L.action])return false;
+  L.holdFrame=Math.min(WINDUP[L.action]||2,L.sheets[L.action].cols-2);L.state=L.action;L.since=null;return true;
+}
+function lpcRelease(u){const L=u.lpc;if(!L||L.holdFrame==null)return;L.since=(L.lastS||0)-L.holdFrame/8;L.holdFrame=null;}
+const CHARGE_COL={melee:{r:1.55,g:1.25,b:0.9},ranged:{r:1.25,g:1.5,b:0.9},magic:{r:0.9,g:1.25,b:1.85},heal:{r:1.0,g:1.6,b:1.05}};
+const CHARGE_FX={melee:['#ffb347','#fff2c0'],ranged:['#b6e86a','#fff2c0'],magic:['#7fc4ff','#e6f7ff'],heal:['#8fe08a','#e8ffd8']};
+async function chargeUp(u,kind){
+  if(!u.grp)return;
+  if(kind!=='heal')lpcCharge(u);
+  tintUnit(u,{r:1,g:1,b:1},CHARGE_COL[kind],0.6);
+  const pos=u.grp.position;
+  pulse(pos,CHARGE_FX[kind][0],1.1,0.7);
+  burst(pos,{n:7,colors:CHARGE_FX[kind],spread:0.35,up:1.1,y:0.1,life:0.8,size:0.8});
+  if(kind==='magic')SFX.cast();
+  await waitS(0.85);
+}
+function chargeEnd(u){lpcRelease(u);tintUnitTo(u,{r:1,g:1,b:1},0.25);}
 function lpcSetState(u,state){
   if(!u.lpc||u.lpc.state===state)return;
   u.lpc.state=state;u.lpc.since=null;
@@ -3123,7 +3145,9 @@ function tickLPC(u,s){
   const sheet=L.sheets[L.state]||L.sheets.walk;
   const row=sheet.rows>1?L.row:0;
   const fps=L.state==='hurt'?7:L.state===L.action?8:6;
+  L.lastS=s;
   let f=Math.floor((s-L.since)*fps);
+  if(L.holdFrame!=null&&L.state===L.action&&f>L.holdFrame)f=L.holdFrame;   // preparando o golpe: segura a pose
   let done=false;
   if(L.state==='stand')f=0;
   else if(L.state==='walk')f=f%sheet.cols;
@@ -3562,7 +3586,7 @@ const LOADOUTS={
   ladino:['ladino','ladino_b'],
   mago:['mago'],
   clerigo:['clerigo','clerigo_b'],
-  arqueiro:['arqueiro','arqueiro_b'],
+  arqueiro:['arqueiro'],   // a besta (arqueiro_b) lia-se como espada e usava a pose de estocada: removida
   bardo:['bardo','bardo_b'],
 };
 /* ---------- Subclasses (ver DESIGN.md "Classes e subclasses") --------------
@@ -3648,7 +3672,7 @@ function hydrateHero(s){
     injured:!!s.injured,injuredMissionsLeft:s.injuredMissionsLeft||0,benchXpBonus:s.benchXpBonus||0,
     attrs:s.attrs?{...s.attrs}:{...ATTR_BASE[s.cls]},
     attrBonus:s.attrBonus||{dmg:0,crit:0,hp:0,heal:0},healBonus:s.attrBonus?s.attrBonus.heal:0,
-    loadout:(s.loadout&&LPC_RECIPES[s.loadout])?s.loadout:s.cls,
+    loadout:(s.loadout&&s.loadout!=='arqueiro_b'&&LPC_RECIPES[s.loadout])?s.loadout:s.cls,
     sub:(s.sub&&SUBCLASSES[s.cls]&&SUBCLASSES[s.cls].includes(s.sub))?s.sub:null,
     r:null,c:null,equip:{}};
   EQ_SLOTS.forEach(sl=>{const id=s.equip&&s.equip[sl];h.equip[sl]=id?ITEMS.find(i=>i.id===id)||null:null;});
@@ -4352,9 +4376,9 @@ const skillOf=u=>SKILL[u.side==='hero'?u.cls:u.kind]||'Ataque';
 // nome da habilidade e o d20 aparecem juntos sobre a cabeça de quem age; só o
 // resultado (dano, MISS, cura) aparece depois, sobre o alvo.
 async function showRoll({u,skill,roll,outcome,numText}){
-  showCallout(u,skill);
+  showCallout(u,skill);const co=callout;
   await waitS(1.1);                      // o nome da habilidade fica legível antes de qualquer golpe
-  const die=document.createElement('b');die.className='mdie';die.textContent='20';(callout.bar||callout.el).appendChild(die);
+  const die=document.createElement('b');die.className='mdie';die.textContent='20';(co.bar||co.el).appendChild(die);
   SFX.dice();
   const o={v:0,n:-1};
   await gsap.to(o,{v:1,duration:0.45,ease:'none',onUpdate:()=>{const n=Math.floor(o.v*10);if(n!==o.n){o.n=n;die.textContent=1+Math.floor(Math.random()*20);}}});
@@ -4444,12 +4468,13 @@ async function attack(u,t){
   const clearLine=aimLine(u,t,u.side==='hero'?'#e9b949':'#d4503f');
   await waitS(0.9);                      // câmera enquadra atacante e alvo; o alvo fica destacado
   await showRoll({u,skill:`${magic?'✨':u.alc>1?'➶':'⚔'} ${skillOf(u)}`,roll,outcome:crit?'crit':hit?'hit':'miss'});
+  await chargeUp(u,magic?'magic':u.alc>1?'ranged':'melee');   // canaliza o golpe (pose + brilho) antes de soltar
   if(u.inspired){u.inspired=false;}
   if(t.shaken){t.shaken=false;}
   if(u.cls==='ladino'&&u.sub==='armadilheiro'){u.ambushDone=true;}
   const p=u.grp.position,ox=p.x,oz=p.z,dx=t.c-u.c,dz=t.r-u.r,len=Math.hypot(dx,dz)||1;
-  if(u.alc>1){SFX.shoot();drawBow(u,0.3);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox-dx/len*0.12,z:oz-dz/len*0.12,duration:0.08}).to(p,{x:ox,z:oz,duration:0.1});await projectile(u,t);}
-  else{SFX.swing();swingArm(u,0.12,0.18);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox-dx/len*0.14,z:oz-dz/len*0.14,duration:0.1,ease:'power1.out'}).to(p,{x:ox+dx/len*0.5,z:oz+dz/len*0.5,duration:0.09,ease:'power4.in'}).to(p,{x:ox,z:oz,duration:0.24,ease:'power2.out'});}
+  if(u.alc>1){SFX.shoot();drawBow(u,0.3);chargeEnd(u);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox-dx/len*0.12,z:oz-dz/len*0.12,duration:0.08}).to(p,{x:ox,z:oz,duration:0.1});await projectile(u,t);}
+  else{SFX.swing();swingArm(u,0.12,0.18);chargeEnd(u);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox-dx/len*0.14,z:oz-dz/len*0.14,duration:0.1,ease:'power1.out'}).to(p,{x:ox+dx/len*0.5,z:oz+dz/len*0.5,duration:0.09,ease:'power4.in'}).to(p,{x:ox,z:oz,duration:0.24,ease:'power2.out'});}
   clearLine();
   if(!hit){
     SFX.miss();floatText(t,'MISS','miss');gsap.fromTo(t.plane.position,{x:0},{x:0.24,duration:0.1,yoyo:true,repeat:1,ease:'power1.out'});
@@ -4562,6 +4587,7 @@ async function heal(u,w){
   const subHeal=u.sub==='curandeiro'?3:0;
   const amt=dice(2,4)+2+(u.healBonus||0)+subHeal,before=w.hp;w.hp=Math.min(w.maxhp,w.hp+amt);
   await showRoll({u,skill:'✚ Cura',roll:amt,numText:'+'+amt,outcome:'hit'});
+  await chargeUp(u,'heal');chargeEnd(u);
   SFX.heal();pulse(w.grp.position,'#6cc35e',1.2,0.7);fxPlay('magic','healing-aura-32px_strip8.png',8,10,{x:w.grp.position.x,y:w.grp.position.y,z:w.grp.position.z},{w:1.7});
   floatText(w,`+${w.hp-before}`,'heal');tintUnit(w,{r:0.5,g:1,b:0.5},{r:1,g:1,b:1},0.7);
   xp(u,Math.max(5,(w.hp-before)*2));
