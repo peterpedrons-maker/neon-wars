@@ -1098,6 +1098,8 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .float.buff .ft .sf{color:#8fc4ff}
 .float.miss .ft .sf{color:#d8d2c4}
 .float.gold .ft .sf{color:#ffd65a}
+.float.xp .ft .sf{color:#9fe0ff;font-size:20px}
+.float.xp .xl{font-style:normal;font-size:13px;margin-left:4px;color:#d6f2ff}
 .float.crit .ft .sf{color:#ffd65a;text-shadow:-3px -3px #3a1400,3px -3px #3a1400,-3px 3px #3a1400,3px 3px #3a1400,-4px 0 #3a1400,4px 0 #3a1400,0 -4px #3a1400,0 4px #3a1400,0 6px 0 #0009}
 .float.crit.onhero .ft .sf{color:#ff6a58}
 .float.crit{filter:drop-shadow(0 0 12px #ff9a3acc) drop-shadow(0 4px 0 #0009)}
@@ -1767,19 +1769,19 @@ const MAPS=[
     desc:'Mapa de chefe. O Ogro sempre está lá, com a guarda dele.',
     pool:['goblin','gobarq','lobo','guarda','ogro']},
   // Ato II — Ruínas Esquecidas (bioma novo; layouts por tema)
-  {n:6,ato:2,nivel:14,mundo:'ruinas',biome:'ruinas',layout:'patio',nome:'Pátio Desmoronado',fixo:false,secret:false,w:20,h:20,total:[12,16],escala:1.5,
-    desc:'Um pátio aberto com colunas quebradas e blocos caídos. Pouca cobertura, muito espaço pra ser cercado.',
+  {n:6,ato:2,nivel:14,mundo:'ruinas',biome:'ruinas',grid:["......................", ".....EEEEEEEEEEEE.....", ".....EEEEEEEEEEEE.....", ".rrrrrr........rrrrrrt", "..t................t..", ".t.....11111111.......", ".......12222221.......", "r......12333321.......", "rr.....12222221....r..", "..r..t.11111111.t.rr..", "....t............trr..", "..rr..............r...", ".r................r...", "..t................r..", "..rt..............tr..", ".rr................r..", "..r..............t....", ".....t.r......r.r.....", ".......t....t.trr.tt..", "..t................t..", "......................", "......ZZZZZZZZZZ......", "......ZZZZZZZZZZ......", "......................"],nome:'Pátio Desmoronado',fixo:false,secret:false,total:[7,8],escala:1.5,
+    desc:'Pátio aberto com um estrado elevado no meio, colunas quebradas e blocos caídos. Pouca cobertura, muito espaço pra ser cercado.',
     pool:['esqueleto','zumbi','javali','lagarto','lobisomem','esqguerreiro']},
-  {n:7,ato:2,nivel:16,mundo:'ruinas',biome:'ruinas',layout:'corredores',nome:'Corredores de Pedra',fixo:false,secret:true,w:24,h:18,total:[11,14],escala:1.65,
-    desc:'Muros baixos formam corredores estreitos. Quem segura a passagem decide a luta.',
+  {n:7,ato:2,nivel:16,mundo:'ruinas',biome:'ruinas',grid:["........................", "....tEEEEEEEEEEEEEE.....", "...t.EEEEEEEEEEEEEE.t...", "..........r.1r.....t....", "..........r..r..........", "........................", "rrrr..rrrrr..rrrrr..rrrr", ".......r........r.......", "............rr.........S", ".......r........r.......", "r..rrrrr..rrrr..rrrrr..r", "...r......r......r.r....", "....rr..............r...", "...r......r......r......", "rrrrr..rrrrr..rrrrr..rrr", "........................", "...r...........t.....r..", "..r.....tt.....t......r.", "........................", "......ZZZZZZZZZZZZ......", "......ZZZZZZZZZZZZ......", "........................"],nome:'Corredores de Pedra',fixo:false,secret:true,total:[7,8],obj:{tipo:'sobreviver',rodadas:7},escala:1.65,
+    desc:'Muros baixos formam corredores estreitos. Segure a posição por 7 rodadas: quem controla as passagens decide a luta.',
     pool:['esqueleto','esqguerreiro','zumbi','espectro','rato','lobisomem']},
-  {n:8,ato:2,nivel:19,mundo:'ruinas',biome:'ruinas',layout:'fosso',nome:'Fosso Inundado',fixo:false,secret:false,w:20,h:22,total:[13,17],escala:1.8,
-    desc:'Um fosso alagado corta as ruínas, com poucas passagens. Magos esqueleto atiram do outro lado.',
+  {n:8,ato:2,nivel:19,mundo:'ruinas',biome:'ruinas',grid:["......................", ".....EEEEEEEEEEEE.....", ".....EEEEEEEEEEEr.....", "...r.EEEEEE1EEEEErr...", "...rr.....121.........", ".........12321........", "..........121.........", "...........1.....r....", "....r...........rr...t", "tt.r................t.", "......................", "wwwwwbwwwwwwwwwwbwwwww", "wwwwwbwwwwwwwwwwbwwwww", "wwwwwbwwwwwwwwwwbwwwww", "..........ww..........", "..r.....rt..tr.....r..", ".....t.......r..t.....", "..t.t............t.t..", "...................t..", "....t............t....", ".....t..........t.....", "......ZZZtZZtZZZ......", "......ZZZZZZZZZZ......", "......................"],nome:'Fosso Inundado',fixo:false,secret:false,total:[7,8],obj:{tipo:'lider',lider:'esqmago'},escala:1.8,
+    desc:'Um fosso alagado corta as ruínas, com duas pontes. Um Mago Esqueleto lidera o bando do outro lado: derrube o líder.',
     pool:['esqueleto','esqmago','lagarto','javali','espectro','ghost','berserker']},
-  {n:9,ato:2,nivel:22,mundo:'ruinas',biome:'ruinas',layout:'corredores',nome:'Biblioteca em Ruínas',fixo:false,secret:true,w:22,h:20,total:[12,16],escala:1.95,
+  {n:9,ato:2,nivel:22,mundo:'ruinas',biome:'ruinas',grid:["......................", "...r.EEEEEEEEEEEE.....", "..r..EEEEEEEEEEEE..r..", "..........1.......r...", ".........121..........", "rrrr......1.......rrrr", "....rr..........rr....", "....rr..........rr....", "........t....t........", "....rr..........rr....", "S...rr....11....rr....", ".......t..11..t.......", "....rr..........rr....", "....rr..........rr....", "........t....t........", "....rr..........rr....", "....rr..........rr....", "rrrr..............rrrr", "......................", "..r...............rr..", "..r...ZZZZZZZZZZ......", "......ZZZZZZZZZZ......", "......................", "......................"],nome:'Biblioteca em Ruínas',fixo:false,secret:true,total:[8,9],escala:1.95,
     desc:'Estantes de pedra e salões estreitos. Feiticeiros e vampiros guardam o que sobrou dos livros.',
     pool:['esqmago','esqguerreiro','espectro','vampiro','zumbi','berserker']},
-  {n:10,ato:2,nivel:25,mundo:'ruinas',biome:'ruinas',layout:'arena',nome:'Santuário do Minotauro',fixo:false,chefe:true,boss:'minotauro',secret:false,w:22,h:20,total:[10,13],escala:2.1,
+  {n:10,ato:2,nivel:25,mundo:'ruinas',biome:'ruinas',grid:["......................", "......EEEE1EEEEE......", "......EEE121EEEE......", "......EE12321EEE......", ".......1234321........", "........12321..t......", ".t.tt....121.....tt...", "tt........1.........tt", "..t...................", "...r..............rtr.", "..t................r..", "..t..r.........r...t..", "..t.rrrrr...rrrrrr.t..", ".............r.......t", "....t.rr......r...t.t.", "tt....t........t....t.", "........t..t.t........", "......................", "......................", "......ZZZZZZZZZZ......", "......ZZZZZZZZZZ......", "......................"],nome:'Santuário do Minotauro',fixo:false,chefe:true,boss:'minotauro',secret:false,total:[7,8],escala:2.1,
     desc:'Arena de pedra no coração das ruínas. O Minotauro sempre está lá, cercado de guardas.',
     pool:['minotauro','esqguerreiro','berserker','javali','vampiro','espectro']},
   // Ato III — Cavernas de Magma (bioma novo: lava no lugar da água)
@@ -4840,7 +4842,12 @@ function overviewCam(){
   else if(phase==='battle'&&active)followCam(active);
   else aimCam(...phaseView(),0.7);
 }
-const xp=(u,n)=>{if(u&&u.side==='hero'&&u.alive!==false)u.xp=(u.xp||0)+n;};
+const xp=(u,n)=>{
+  if(!u||u.side!=='hero'||u.alive===false)return;
+  u.xp=(u.xp||0)+n;
+  // como no FFT: o ganho de Exp. aparece junto de quem ganhou, logo depois do golpe
+  if(n>0&&u.grp)gsap.delayedCall(0.5,()=>{if(u.grp&&phase==='battle')floatText(u,`<span class="ft"><b class="sf">+${n}<em class="xl">Exp.</em></b></span>`,'xp',true);});
+};
 
 function resetHero(h,first){
   if(h.exausto){h.atk++;h.def++;h.exausto=false;}
