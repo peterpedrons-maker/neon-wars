@@ -455,3 +455,9 @@ da ideia original sem precisar do modo manual completo.
 - **Mapas:** menos de 100; foco em qualidade e variedade (temas à mão), reaproveitando biomas, sprites e efeitos.
 - **Balanceamento (XP, nível, vida/ataque):** só depois dos mapas prontos.
 - Referência de inspiração: Final Fantasy Tactics (5 aliados contra ~5–8 inimigos; objetivos variados).
+
+## Pendente (adiado pelo dono): mapas maiores e tileset
+- Mapas maiores (~18–22 × 20–26, câmera arrastável) e mais "vida" no cenário.
+- Tileset externo estilo LPC (candidatos: LPC Compatible Terrain, LPC Forest tiles,
+  LPC Modified base tiles, Terrain atlas — OpenGameArt; conferir licença; CC-BY-SA
+  exige crédito). Sandbox não acessa opengameart.org; o dono envia os PNGs ou libera a rede.
