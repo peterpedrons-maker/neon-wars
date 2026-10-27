@@ -461,3 +461,18 @@ da ideia original sem precisar do modo manual completo.
 - Tileset externo estilo LPC (candidatos: LPC Compatible Terrain, LPC Forest tiles,
   LPC Modified base tiles, Terrain atlas — OpenGameArt; conferir licença; CC-BY-SA
   exige crédito). Sandbox não acessa opengameart.org; o dono envia os PNGs ou libera a rede.
+
+## Segunda passagem (Run 2) — em andamento
+- **Estrutura no código:** Atos VI–X em `ATOS` (mesmos 5 biomas, arte reaproveitada
+  com `tom` = filtro CSS de cor). Mapas 26+ seguem a ordem linear do progresso: o
+  Ato VI abre ao vencer o chefe do Ato V (mapa 25). Secretas continuam em 101+.
+- **Níveis recomendados (só rótulo, a calibrar):** Run 1 = Nv 1–25 (mapa n = Nv n),
+  Run 2 = Nv 26–50 (Atos VI–X, 5 níveis por ato). `escala` dos inimigos da Run 2
+  começa em 4.0 e sobe ~0.2 por mapa (placeholder até o balanceamento).
+- **Ato VI · Brumavale Sombria (feito):** 6 mapas novos (26–31), campina/floresta/
+  deserto à noite (`luz:'penumbra'`), 24–26 de lado, 8–9 inimigos (chefe: 7–8).
+  Objetivos: todos, líder (Homem-Lobo / Guarda Orc), sobreviver 8 rodadas, chefe
+  Ogro. Pool de inimigos mais pesado (lobisomem, javali, berserker, vampiro...).
+- **Falta:** Atos VII–X (6 mapas cada), dungeons secretas da Run 2, endgame (~12
+  dungeons muito difíceis + chefes secretos/opcionais), balanceamento de XP/HP/ATK,
+  Modo Interminável usa agora o último mapa da campanha (não o fim do array).
