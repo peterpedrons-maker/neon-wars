@@ -42,3 +42,13 @@ pequenos ao lado da barra de vida e na lista de turno, com o turno restante.
 - **Limpeza:** Purificar remove todos os debuffs de um aliado; Canção de Vigor remove Medo.
 - **Tags** usadas pelas passivas: **[DoT]** veneno/queimadura/sangramento · **[Controle]** atordoado/preso/lento/gelado/medo/provocado ·
   **[Fraqueza]** abalado/enfraquecido/marcado/cego.
+
+## Animação, som e ícones (implementado)
+- **Ícones coloridos** (game-icons.net, CC BY 3.0) em `assets/status/`, gerados por `tools/build_status_icons.cjs`; aparecem ao lado da barra de vida e no painel do herói, com turnos restantes e pilhas.
+- **Conjuração:** ao usar uma habilidade de status, o símbolo surge sobre quem a usa, voa em arco até o alvo e, ao "pegar", dispara o efeito do status
+  (nuvem de veneno, bola de fogo, gelo, estrelas girando, bolha de escudo, aura de cura…). Sem teste de acerto o símbolo só "pega"; nos debuffs de alvo único
+  há **teste de resistência** (d20 + ATQ contra DEF, ou Res. Mágica se for magia): se o alvo resiste, o símbolo se parte e aparece "Resistiu!".
+- **Golpes que aplicam status** (Lâmina Envenenada, Chama Viva, mordida de aranha…): depois do acerto, o símbolo surge sobre o alvo.
+- **Sons:** 16 efeitos novos (`st_*`): conjurar, buff, debuff, resistir, escudo quebrar e um por status (veneno borbulha, queimadura crepita, gelo estala, etc.).
+  Dano contínuo e regeneração tocam o som baixinho a cada turno.
+- **Auras:** Escudo mostra uma bolha translúcida no personagem; Furtivo deixa o personagem semitransparente.
