@@ -1125,6 +1125,7 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .float.gold .ft .sf{color:#ffd65a}
 .float.xp .ft .sf{color:#9fe0ff;font-size:20px}
 .float.xp .xl{font-style:normal;font-size:13px;margin-left:4px;color:#d6f2ff}
+.float.xpk .ft .sf{color:#ffe08a;font-size:24px}.float.xpk .ft .sf i{font-style:italic;font-weight:700}.float.xpk .xl{color:#fff0b8}
 .float.crit .ft .sf{color:#ffd65a;text-shadow:-3px -3px #3a1400,3px -3px #3a1400,-3px 3px #3a1400,3px 3px #3a1400,-4px 0 #3a1400,4px 0 #3a1400,0 -4px #3a1400,0 4px #3a1400,0 6px 0 #0009}
 .float.crit.onhero .ft .sf{color:#ff6a58}
 .float.crit{filter:drop-shadow(0 0 12px #ff9a3acc) drop-shadow(0 4px 0 #0009)}
@@ -5210,19 +5211,19 @@ const TR_SMALL={
 Object.keys(TR_SMALL).forEach(cls=>TR_SMALL[cls].forEach(([k,v,nome,ic],i)=>{const id=`sm_${cls}_${i}`;PV[id]={id,cls,nome,lv:2,desc:nome+'.',stat:{[k]:v},small:true,ic};}));
 /* ícones: u:ui-icons (cor do ramo) · s:status · m:tira do SpritePilot (pasta:nome:quadros) */
 const TICON={
-  golpe_poderoso:'u:pointy-sword',grito_guerra:'u:horned-helm',provocar:'u:eye-shield',corte_profundo:'u:claw-slashes',giratorio:'u:whirlwind',escudo_aliado:'u:kite',
-  estocada_dupla:'u:daggers',golpe_costas:'u:cloak-dagger',marcar_alvo:'s:marcado',lamina_envenenada:'s:veneno',rede:'s:preso',
-  bola_fogo:'m:magic:fireball:8',escudo_arcano:'m:magic:shield-bubble:12',chama_viva:'u:magic-swirl',nevasca:'u:snowflake-1',tremor:'u:thor-fist',
-  cura_maior:'m:magic:healing-aura:8',bencao:'u:sparkles',castigo:'u:winged-scepter',golpe_sagrado:'u:holy-symbol',purificar:'u:healing',punicao:'u:scales',
-  tiro_certeiro:'u:bullseye',chuva_flechas:'u:arrow-cluster',flecha_incendiaria:'u:bow-arrow',marca_cacador:'u:target-arrows',
+  golpe_poderoso:'c:golpe_poderoso',grito_guerra:'c:grito_guerra',provocar:'u:eye-shield',corte_profundo:'c:corte_profundo',giratorio:'u:whirlwind',escudo_aliado:'c:escudo_aliado',
+  estocada_dupla:'u:daggers',golpe_costas:'c:golpe_costas',marcar_alvo:'s:marcado',lamina_envenenada:'c:lamina_envenenada',rede:'s:preso',
+  bola_fogo:'m:magic:fireball:8',escudo_arcano:'m:magic:shield-bubble:12',chama_viva:'s:queimadura',nevasca:'u:snowflake-1',tremor:'c:tremor',
+  cura_maior:'m:magic:healing-aura:8',bencao:'u:sparkles',castigo:'u:winged-scepter',golpe_sagrado:'c:golpe_sagrado',purificar:'u:healing',punicao:'u:scales',
+  tiro_certeiro:'u:bullseye',chuva_flechas:'u:arrow-cluster',flecha_incendiaria:'c:flecha_incendiaria',marca_cacador:'u:target-arrows',
   nota_aguda:'u:lyre',hino_coragem:'s:fortalecido',desafinar:'s:abalado',cancao_vigor:'s:regeneracao',pavor:'s:medo',cancao_ninar:'u:harp',
   pele_ferro:'u:chest-armor',firmeza:'u:shield',dar_volta:'u:wind-slap',veterano:'u:centurion-helmet',muralha:'u:round-shield',terreno_sagrado:'u:dragon-shield',punho_vingativo:'u:mailed-fist',contra_golpe:'u:crossed-swords',
   sede_sangue:'s:sangramento',selvageria:'u:barbarian',queda_pesada:'u:battle-axe',carniceiro:'u:claws',
   pes_leves:'u:running-shoe',evasao:'u:hooded-figure',maos_leves:'u:gloves',predador:'u:eye-of-horus',sombras:'u:rogue',execucao:'u:sacrificial-dagger',mestre_terreno:'u:fur-boot',preparado:'u:hooded-assassin',gatuno:'u:broad-dagger',
-  mente_aguda:'u:crystal-ball',sabio:'u:open-book',explosao:'u:tornado-discs',combustao:'s:queimadura',pirofagia:'u:health-potion',brasa_longa:'u:fire-gem',pele_pedra:'u:crystal-cluster',gelo_rachante:'s:gelado',alto_torreao:'u:greek-temple',choque_termico:'m:magic:lightning-strike:8',
-  fe_inabalavel:'u:magic-shield',devoto:'u:heart-necklace',aura_vital:'u:sunrise',luz_restauradora:'u:sun-priest',bencao_prolongada:'u:infinity',escudo_fe:'u:round-shield',luz_vingadora:'u:skull-staff',zelo:'u:warhammer',passo_abencoado:'u:sandal',
-  olhar_aguia:'u:eye-of-horus',agilidade:'u:tabi-boot',posicao_elevada:'u:archer',instinto:'u:claw-string',escalador:'u:boots',municao_pesada:'u:bracer',ricochete:'u:flying-dagger',flechas_venenosas:'s:veneno',olho_treinado:'u:ring',
-  inspiracao_maior:'u:clover',voz_alta:'u:tribal-pendant',harmonia:'u:harp',coro:'u:team-idea',eco_benigno:'u:infinity',eco:'u:wind-slap',maestro_caos:'u:drama-masks'
+  mente_aguda:'u:crystal-ball',sabio:'u:open-book',explosao:'u:sparkles',combustao:'s:queimadura',pirofagia:'u:health-potion',brasa_longa:'u:fire-gem',pele_pedra:'u:crystal-cluster',gelo_rachante:'s:gelado',alto_torreao:'u:greek-temple',choque_termico:'m:magic:lightning-strike:8',
+  fe_inabalavel:'u:magic-shield',devoto:'u:heart-necklace',aura_vital:'u:sunrise',luz_restauradora:'u:sun-priest',bencao_prolongada:'u:infinity',escudo_fe:'u:holy-symbol',luz_vingadora:'u:skull-staff',zelo:'u:warhammer',passo_abencoado:'u:sandal',
+  olhar_aguia:'u:eye-of-horus',agilidade:'u:tabi-boot',posicao_elevada:'u:archer',instinto:'u:claw-string',escalador:'u:boots',municao_pesada:'u:bracer',ricochete:'u:flying-dagger',flechas_venenosas:'s:veneno',olho_treinado:'u:eye-shield',
+  inspiracao_maior:'u:clover',voz_alta:'u:tribal-pendant',harmonia:'u:harp',coro:'u:team-idea',eco_benigno:'u:healing',eco:'u:tornado-discs',maestro_caos:'u:drama-masks'
 };
 const trIcon=id=>{const x=PV[id];return TICON[id]||(x&&x.small?'u:'+x.ic:'u:sparkles');};
 function trTags(x,isSk){
@@ -5501,13 +5502,14 @@ function trIcon_(spec){
   const [k,a,b,c]=spec.split(':');
   if(k==='u')return {cls:' mk',st:`--m:url(assets/ui-icons/${a}.png)`};
   if(k==='s')return {cls:'',st:`background-image:url(assets/status/${a}.png)`};
+  if(k==='c')return {cls:'',st:`background-image:url(assets/skill-icons/${a}.png)`};
   const f=+c;return {cls:'',st:`background-image:url(assets/spritepilot/${a}/32px/${b}-32px_strip${f}.png);background-size:${f*100}% 100%;background-position:${Math.round(f/2)*100/(f-1)}% 0`,f,anim:true};
 }
 const trIc=(spec,extra='')=>{const i=trIcon_(spec);return `<span class="ic${i.cls}" ${extra} style="${i.st}"></span>`;};
 function mountTree(h,host){
   const T=treeOf(h.cls),by=T.by,tr=treeClean(h),root=host.attachShadow({mode:'open'});
   const SI=SUB_INFO,[sa,sb]=SUBCLASSES[h.cls];
-  const BR={t:'Tronco',p:SI[sa].nome,g:SI[sb].nome};
+  const BR={t:CLASSES[h.cls].nome,p:SI[sa].nome,g:SI[sb].nome};
   root.innerHTML=`<style>${TR_CSS}</style><div class="app">
     <div class="top">
       <div class="r0"><button class="back" id="back"><span>‹</span>Ficha</button><div class="ttl">Árvore de habilidades</div><button class="menu" id="menu" aria-label="Mais opções">⋯</button></div>
@@ -5516,7 +5518,7 @@ function mountTree(h,host){
         <div class="who"><h1>${h.first}</h1><small>${CLASSES[h.cls].nome}${h.sub?' · '+SI[h.sub].nome:''} · nível ${h.level||1}</small></div>
         <div class="ptsbox" id="ptsbox"><img class="px" src="assets/ui-icons/sparkles.png" alt=""><b id="pts">0</b><span>pontos<br>livres</span></div>
       </div>
-      <div class="tabs"><button class="tab p" data-r="p"><b>${BR.p}</b><small id="cp"></small></button><button class="tab t on" data-r="t"><b>Tronco</b><small id="ct"></small></button><button class="tab g" data-r="g"><b>${BR.g}</b><small id="cg"></small></button></div>
+      <div class="tabs"><button class="tab p" data-r="p"><b>${BR.p}</b><small id="cp"></small></button><button class="tab t on" data-r="t"><b>${BR.t}</b><small id="ct"></small></button><button class="tab g" data-r="g"><b>${BR.g}</b><small id="cg"></small></button></div>
       <div class="pop" id="pop"><button id="auto">✦ Distribuir automático</button><button id="zero">↺ Zerar tudo (grátis)</button></div>
     </div>
     <div class="scroller" id="scr"><div class="world" id="world" style="height:${T.H}px"><svg class="links" id="links" width="360" height="${T.H}"></svg></div></div>
@@ -5531,7 +5533,7 @@ function mountTree(h,host){
   /* ---------- árvore ---------- */
   function build(){
     const w=$('#world');w.querySelectorAll('.node,.lab').forEach(e=>e.remove());
-    [['TRONCO',T.yR+52,'t',105]].forEach(([t,y,r,x])=>{if(!t)return;const l=document.createElement('div');l.className='lab '+r;l.textContent=t;l.style.top=y+'px';l.style.left=x+'px';w.appendChild(l);});
+    [[BR.t.toUpperCase(),T.yR+52,'t',105]].forEach(([t,y,r,x])=>{if(!t)return;const l=document.createElement('div');l.className='lab '+r;l.textContent=t;l.style.top=y+'px';l.style.left=x+'px';w.appendChild(l);});
     [['p',75],['g',null]].forEach(([r,x])=>{const l=document.createElement('div');l.className='lab '+r;l.textContent=BR[r].toUpperCase();l.style.top=(T.yR-T.uF+56)+'px';w.appendChild(l);});
     T.nodes.forEach(n=>{
       const e=document.createElement('div'),s=st(n);
@@ -5944,8 +5946,7 @@ function kill(t,src,crit){
   fadeUnit(t,0,{delay:1,duration:0.5,onComplete:()=>{if(t.grp)t.grp.visible=false;if(t.side==='hero')addTomb(t);}});
   if(t.side==='enemy'){
     if(src&&src.side==='hero')src.kills=(src.kills||0)+1;
-    xp(src,Math.round(t.pts/4));stats.kills.push(t);addLog(`${t.first} foi derrotado (+${t.pts})`,'gold');
-    setTimeout(()=>{},0);floatText(t,`+${t.pts}`,'gold');
+    xp(src,Math.round(t.pts/4),true);stats.kills.push(t);addLog(`${t.first} foi derrotado (+${t.pts})`,'gold');
     dropLoot(t);
     if(isBossK(t.kind)){stats.hl.push({w:8,t:`${src.first} derrubou ${t.first}${crit?' com um crítico':''}.`});shakeCam(0.4,0.6);flash('#e9b949',0.3);}
     else if(crit)stats.hl.push({w:6,t:`${src.first} tirou um crítico e derrubou ${t.first} de uma vez.`});
@@ -6148,12 +6149,16 @@ function overviewCam(){
   else if(phase==='battle'&&active)followCam(active);
   else aimCam(...phaseView(),0.7);
 }
-const xp=(u,n)=>{
+const xp=(u,n,kill)=>{
   if(!u||u.side!=='hero'||u.alive===false)return;
   const k=1+((u.attrBonus&&u.attrBonus.pct)||0)/100;n=Math.round(n*k);
   u.xp=(u.xp||0)+n;
-  // como no FFT: o ganho de Exp. aparece junto de quem ganhou, logo depois do golpe
-  if(n>0&&u.grp)gsap.delayedCall(0.5,()=>{if(u.grp&&phase==='battle')floatText(u,`<span class="ft"><b class="sf">+${n}<em class="xl">Exp.</em></b></span>`,'xp',true);});
+  // como no FFT: o ganho de Exp. aparece junto de quem ganhou, logo depois do golpe.
+  // Golpe + abate no mesmo instante viram UM número só (somado); com abate ele sai em itálico.
+  if(n>0&&u.grp){
+    if(!u._xpf){u._xpf={n:0,kill:false};gsap.delayedCall(0.6,()=>{const q=u._xpf;u._xpf=null;if(q&&u.grp&&phase==='battle')floatText(u,`<span class="ft"><b class="sf">${q.kill?`<i>+${q.n}</i>`:`+${q.n}`}<em class="xl">${q.kill?'Exp. · abate':'Exp.'}</em></b></span>`,q.kill?'xp xpk':'xp',true);});}
+    u._xpf.n+=n;if(kill)u._xpf.kill=true;
+  }
 };
 
 function resetHero(h,first){
