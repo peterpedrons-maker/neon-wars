@@ -673,6 +673,11 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .hpf .tm{display:grid;place-items:center;width:15px;height:15px;background:#1c1510;border:2px solid #3a7bd5;color:#8fb8f0}
 .hpf.e .tm{border-color:#c8463c;color:#f0907f}
 .hpf .tm .ic{width:9px;height:9px;margin:0}
+.hpf{flex-wrap:wrap;justify-content:center}
+.sts{display:flex;flex-wrap:wrap;gap:1px;justify-content:center;width:100%;margin-top:1px}.sts:empty{display:none}
+.stc{font:700 6.5px/1 var(--f-display,sans-serif);font-style:normal;padding:1px 2px;border:1px solid var(--c,#999);color:var(--c,#999);background:#120d09e6;letter-spacing:.2px;white-space:nowrap}
+.stc.buff{background:#0f1f14e6}.stc em{font-style:normal;margin-left:1px;color:#fff}
+.uc-sts{justify-content:flex-start;margin-top:3px}.uc-sts .stc{font-size:8px;padding:1px 3px}
 .hpf .bar{position:relative;width:34px;height:7px;background:#1c1510;border:2px solid #0e0a07;overflow:hidden}
 .hpf .bar b{position:absolute;left:0;top:0;bottom:0;background:#efe2c4;transition:width .5s .3s}
 .hpf .bar i{position:relative;display:block;height:100%;background:linear-gradient(#8fdc7e,#4f9f3f);transition:width .15s}
@@ -3517,9 +3522,9 @@ function buildUnit(u){
   // criatura de quadro alto (lobo): a barra fica acima do sprite, sem cobrir o corpo
   if(u.lpc&&u.lpc.multi){const hh=u.lpc.def.w*u.lpc.def.fh/u.lpc.def.fw;u.hbarExtra=hh+0.12-(sz+0.16);}
   const hp=document.createElement('div');hp.className='hpf'+(u.side==='enemy'?' e':'');
-  hp.innerHTML=`<div class="bar"><b></b><i></i></div>`;
+  hp.innerHTML=`<div class="bar"><b></b><i></i></div><div class="sts"></div>`;
   hud.appendChild(hp);
-  u.hpEl=hp;u.hpFill=hp.querySelector('.bar i');u.hpGhost=hp.querySelector('.bar b');
+  u.hpEl=hp;u.hpFill=hp.querySelector('.bar i');u.hpGhost=hp.querySelector('.bar b');u.stEl=hp.querySelector('.sts');u.stKey='';
   grp.position.set(wx(u.c),topY(u.r,u.c),wz(u.r));
 }
 function disposeUnit(u){
@@ -3656,15 +3661,15 @@ function renderObjs(){
 function renderUC(force){
   const el=$('#uc'),pop=$('#ucpop'),u=hudSel;
   if(!u||!u.grp||phase!=='battle'){el.hidden=true;pop.hidden=true;return;}
-  const tl=hudTile||{r:u.r,c:u.c},key=[u.id,u.hp,u.atk,u.def,u.mov,u.alive,ucPop,tl.r,tl.c].join('|');
+  const tl=hudTile||{r:u.r,c:u.c},key=[u.id,u.hp,u.atk,u.def,u.mov,u.alive,ucPop,tl.r,tl.c,(u.st||[]).map(x=>x.id+x.dur+x.n).join(),u.inspired?1:0].join('|');
   if(u.side!=='hero'&&ucPop==='w')ucPop=null;
   if(!force&&key===ucKey&&!el.hidden)return;ucKey=key;
-  const hero=u.side==='hero',cl=(hero?CLASSES[u.cls].nome+(u.sub?' · '+SUB_INFO[u.sub].nome:''):u.nome)+(u.poison?' · ☠':'');
+  const hero=u.side==='hero',cl=(hero?CLASSES[u.cls].nome+(u.sub?' · '+SUB_INFO[u.sub].nome:''):u.nome)+'';
   const pct=Math.max(0,u.hp/u.maxhp*100),tr=terrainOf(tl.r,tl.c);
   el.hidden=false;el.className='uc'+(hero?'':' e');
   el.innerHTML=`<div class="uc-face"><img src="${faceOf(u)}" alt=""></div>
     <div class="uc-main"><b class="uc-name">${u.first}</b><span class="uc-cl">${hero?ico('classe',u.cls):''}${cl}${hero?` · Nv.${u.level||1}`:''}</span>
-      <div class="uc-hp"><span>HP <b>${hero?Math.max(0,u.hp):'?'}</b>${hero?` / ${u.maxhp}`:''}</span><div class="uc-bar"><i style="width:${pct}%" class="${hero&&pct<=35?'low':''}"></i></div></div></div>
+      <div class="uc-hp"><span>HP <b>${hero?Math.max(0,u.hp):'?'}</b>${hero?` / ${u.maxhp}`:''}</span><div class="uc-bar"><i style="width:${pct}%" class="${hero&&pct<=35?'low':''}"></i></div></div><div class="sts uc-sts">${statusChips(u)}</div></div>
     <div class="uc-st"><span>${ico('stat','atq')}<b>${hero?u.atk:'?'}</b></span><span>${ico('stat','def')}<b>${hero?u.def:'?'}</b></span><span>${ico('stat','mov')}<b>${hero?u.mov:'?'}</b></span></div>
     <div class="uc-tabs">${hero?`<button data-uc="w" aria-pressed="${ucPop==='w'}" aria-label="Arma">${ico('slot','weapon')}</button>`:''}<button data-uc="t" aria-pressed="${ucPop==='t'}" aria-label="Terreno">${ico('vila','mapa')}</button></div>`;
   pop.className=ucPop?'pop-'+ucPop:'';
@@ -4543,7 +4548,7 @@ function bfsReach(u){
   const res=new Map();res.set(k(u.r,u.c),{r:u.r,c:u.c,d:0,prev:null});
   const q=[[u.r,u.c]];
   while(q.length){
-    const [r,c]=q.shift(),cur=res.get(k(r,c));if(cur.d>=u.mov)continue;
+    const [r,c]=q.shift(),cur=res.get(k(r,c));if(cur.d>=movOf(u))continue;
     for(const [dr,dc] of DIRS){
       const nr=r+dr,nc=c+dc;if(!passable(nr,nc))continue;const kk=k(nr,nc);if(res.has(kk))continue;
       if(Math.abs(hOf(nr,nc)-hOf(r,c))>1)continue;
@@ -4612,6 +4617,7 @@ async function moveAlong(u,path){
     await gsap.timeline().to(u.grp.position,{x:tx,z:tz,duration:0.24,ease:'none'},0).to(u.grp.position,{y:peak,duration:0.12,ease:'power1.out'},0).to(u.grp.position,{y:ty,duration:0.12,ease:'power1.in'},0.12);
     burst(u.grp.position,{n:3,colors:['#c9b28a','#a08a62'],spread:0.3,up:0.1,y:0.03,life:0.3,size:0.7});
     if(u.side==='hero'&&TRAPS.has(k(p.r,p.c))&&!REVEALED.has(k(p.r,p.c))){await springTrap(u,p);if(!u.alive)break;}
+    const bl=stOf(u,'sangramento');if(bl){const bd=3*bl.n;floatText(u,`SAN -${bd}`,'miss');damage(u,bd,{first:'o sangramento',side:'trap'},false);if(!u.alive)break;}
   }
   removeMk();
   if(u.alive)lpcSetState(u,'stand');
@@ -4628,7 +4634,7 @@ async function springTrap(u,p){
   mk.rotation.x=-Math.PI/2;mk.position.set(pos.x,pos.y+0.02,pos.z);boardGroup.add(mk);
   shakeCam(0.15,0.25);SFX.hit();showCallout(u,veneno?'☠ Armadilha de veneno!':'⚠ Armadilha!');
   const src={first:'uma armadilha',side:'trap'},sc=1+(LV.mp.nivel||1)*0.12;
-  if(veneno){u.poison={n:3,dmg:Math.max(2,Math.round(sc*1.6))};floatText(u,'☠ veneno','miss');tintUnit(u,{r:0.5,g:1,b:0.4},{r:1,g:1,b:1},0.9);addLog(`${u.first} pisou numa armadilha de veneno`,'bad');}
+  if(veneno){addStatus(u,'veneno',{src:null});tintUnit(u,{r:0.5,g:1,b:0.4},{r:1,g:1,b:1},0.9);addLog(`${u.first} pisou numa armadilha de veneno`,'bad');}
   else{const dmg=Math.max(3,Math.round(sc*3.2));addLog(`${u.first} pisou numa armadilha de espinhos: ${dmg} de dano`,'bad');damage(u,dmg,src,false);}
   await wait(500);
 }
@@ -4709,10 +4715,230 @@ function isIsolated(t){
   const allies=(t.side==='hero'?heroesAlive():enemiesAlive()).filter(a=>a!==t);
   return !allies.some(a=>dist(a,t)<=1);
 }
-async function attack(u,t){
+
+/* ================= Status (buffs e debuffs) — ver STATUS.md =================
+   Valem pra heróis e inimigos. `dur` conta turnos do próprio alvo (cai no fim do turno dele). */
+const STATUS={
+  veneno:{nome:'Veneno',tipo:'debuff',grupo:'dot',dur:3,max:3,cod:'VEN',cor:'#7fd35a',desc:'6% do PV máx. por turno'},
+  queimadura:{nome:'Queimadura',tipo:'debuff',grupo:'dot',dur:3,max:1,cod:'QUE',cor:'#ff8a3a',desc:'8% do PV máx. por turno'},
+  sangramento:{nome:'Sangramento',tipo:'debuff',grupo:'dot',dur:3,max:2,cod:'SAN',cor:'#d4503f',desc:'dano no turno e 3 por casa que anda'},
+  atordoado:{nome:'Atordoado',tipo:'debuff',grupo:'ctrl',dur:1,max:1,cod:'ATO',cor:'#ffd34a',desc:'perde o próximo turno'},
+  preso:{nome:'Preso',tipo:'debuff',grupo:'ctrl',dur:2,max:1,cod:'PRE',cor:'#b08a5a',desc:'não anda'},
+  lento:{nome:'Lento',tipo:'debuff',grupo:'ctrl',dur:2,max:1,cod:'LEN',cor:'#8fb8f0',desc:'−2 de Movimento'},
+  gelado:{nome:'Gelado',tipo:'debuff',grupo:'ctrl',dur:2,max:1,cod:'GEL',cor:'#9fe6ff',desc:'−2 de Movimento e −1 ATQ'},
+  medo:{nome:'Medo',tipo:'debuff',grupo:'ctrl',dur:2,max:1,cod:'MED',cor:'#c79bf0',desc:'foge e não ataca'},
+  provocado:{nome:'Provocado',tipo:'debuff',grupo:'ctrl',dur:2,max:1,cod:'PRV',cor:'#e07a5a',desc:'só ataca quem provocou'},
+  abalado:{nome:'Abalado',tipo:'debuff',grupo:'fraq',dur:2,max:1,cod:'ABA',cor:'#d98fe0',desc:'−2 DEF'},
+  enfraquecido:{nome:'Enfraquecido',tipo:'debuff',grupo:'fraq',dur:2,max:1,cod:'ENF',cor:'#b9a98a',desc:'−25% de dano'},
+  marcado:{nome:'Marcado',tipo:'debuff',grupo:'fraq',dur:2,max:1,cod:'MAR',cor:'#ff6a58',desc:'recebe +20% de dano'},
+  cego:{nome:'Cego',tipo:'debuff',grupo:'fraq',dur:2,max:1,cod:'CEG',cor:'#8a8a8a',desc:'−4 ATQ'},
+  fortalecido:{nome:'Fortalecido',tipo:'buff',dur:2,max:1,cod:'FOR',cor:'#ffb347',desc:'+20% de dano'},
+  protegido:{nome:'Protegido',tipo:'buff',dur:2,max:1,cod:'PRO',cor:'#79a8ec',desc:'+2 DEF'},
+  escudo:{nome:'Escudo',tipo:'buff',dur:3,max:1,cod:'ESC',cor:'#cfe0ff',desc:'absorve dano'},
+  regeneracao:{nome:'Regeneração',tipo:'buff',dur:3,max:1,cod:'REG',cor:'#6cc35e',desc:'4% do PV máx. por turno'},
+  veloz:{nome:'Veloz',tipo:'buff',dur:2,max:1,cod:'VEL',cor:'#7fe0d0',desc:'+2 de Movimento'},
+  foco:{nome:'Foco',tipo:'buff',dur:2,max:1,cod:'FOC',cor:'#f3e08a',desc:'+2 de margem de crítico'},
+  inabalavel:{nome:'Inabalável',tipo:'buff',dur:2,max:1,cod:'INA',cor:'#e9b949',desc:'imune a controle, −30% de dano'},
+  furtivo:{nome:'Furtivo',tipo:'buff',dur:99,max:1,cod:'FUR',cor:'#a8a8c8',desc:'o próximo golpe é crítico'},
+};
+const stOf=(u,id)=>(u.st||[]).find(x=>x.id===id);
+const hasSt=(u,id)=>!!stOf(u,id);
+const stGroup=(u,g)=>(u.st||[]).some(x=>STATUS[x.id].grupo===g);
+// inimigos que aplicam status ao acertar: [status, chance]
+const ENEMY_ONHIT={spider:['veneno',0.35],lobo:['sangramento',0.25],lobogelo:['gelado',0.3],esqgelo:['gelado',0.3],esqfogo:['queimadura',0.4],
+  vampiro:['sangramento',0.35],vampsenhor:['sangramento',0.5],yeti:['lento',0.35],zumbi:['enfraquecido',0.3],troll:['abalado',0.3],ogro:['abalado',0.3],
+  minotauro:['abalado',0.3],lobisomem:['sangramento',0.3],berserker:['sangramento',0.3],espectro:['cego',0.25],espectror:['medo',0.2],reiesq:['marcado',0.3],bee:['veneno',0.3]};
+function removeStatus(u,id){if(!u.st)return;const i=u.st.findIndex(x=>x.id===id);if(i>=0)u.st.splice(i,1);}
+function addStatus(t,id,o={}){
+  if(!t||!t.alive||!STATUS[id])return false;
+  let dur=o.dur||STATUS[id].dur;
+  if(STATUS[id].grupo==='ctrl'){
+    if(isBossK(t.kind)&&(id==='atordoado'||id==='medo')){id='abalado';dur=2;}      // chefe não fica atordoado nem com medo: fica abalado
+    else if(isBossK(t.kind))dur=Math.max(1,dur-1);
+    else if(t.lider)dur=Math.max(1,Math.ceil(dur/2));
+    if(hasSt(t,'inabalavel'))return false;
+  }
+  const d=STATUS[id];if(!t.st)t.st=[];
+  if(id==='queimadura')removeStatus(t,'gelado');
+  if(id==='gelado')removeStatus(t,'queimadura');
+  const ex=stOf(t,id);
+  if(ex){ex.dur=Math.max(ex.dur,dur);if(d.max>1&&ex.n<d.max)ex.n++;if(o.val!=null)ex.val=Math.max(ex.val||0,o.val);if(o.src)ex.src=o.src;}
+  else t.st.push({id,dur,n:1,src:o.src||null,val:o.val||0});
+  if(t.grp){floatText(t,d.nome,d.tipo==='buff'?'buff':'miss');tintUnit(t,{r:1.6,g:1.6,b:1.6},{r:1,g:1,b:1},0.35);}
+  addLog(`${t.first} ${d.tipo==='buff'?'ganhou':'ficou com'} ${d.nome}`,d.tipo==='buff'?'good':'bad');
+  return true;
+}
+function stMods(u){
+  const m={atk:0,def:0,mov:0,out:1,inn:1,crit:0};
+  for(const x of u.st||[])switch(x.id){
+    case 'abalado':m.def-=2;break;case 'protegido':m.def+=2;break;case 'cego':m.atk-=4;break;
+    case 'gelado':m.atk-=1;m.mov-=2;break;case 'lento':m.mov-=2;break;case 'veloz':m.mov+=2;break;
+    case 'enfraquecido':m.out*=0.75;break;case 'fortalecido':m.out*=1.2;break;
+    case 'marcado':m.inn*=1.2;break;case 'inabalavel':m.inn*=0.7;break;case 'foco':m.crit+=2;break;
+  }
+  return m;
+}
+const movOf=u=>hasSt(u,'preso')?0:Math.max(0,u.mov+stMods(u).mov);
+// início do turno: dano contínuo e regeneração
+async function statusTurnStart(u){
+  for(const x of (u.st||[]).slice()){
+    if(!u.alive)return;
+    const mx=u.maxhp;
+    if(x.id==='veneno'||x.id==='queimadura'||x.id==='sangramento'){
+      const base=x.id==='veneno'?Math.max(2,Math.round(mx*0.06))*x.n:x.id==='queimadura'?Math.max(2,Math.round(mx*0.08)):dice(x.n,4);
+      const nm=STATUS[x.id].nome.toLowerCase();
+      floatText(u,`${STATUS[x.id].cod} -${base}`,'miss');addLog(`${u.first} sofre ${base} de ${nm}`,'bad');
+      tintUnit(u,{r:1.4,g:0.8,b:0.6},{r:1,g:1,b:1},0.4);
+      damage(u,base,{first:`o ${nm}`,side:'trap'},false);await wait(350);
+    }else if(x.id==='regeneracao'){
+      const h=Math.max(1,Math.round(mx*0.04)),b=u.hp;u.hp=Math.min(mx,u.hp+h);
+      if(u.hp>b){floatText(u,`+${u.hp-b}`,'heal');pulse(u.grp.position,'#6cc35e',0.8,0.4);}
+    }
+  }
+}
+// fim do turno: duração cai; o que expirou some
+function statusTurnEnd(u){
+  if(!u.st||!u.st.length)return;
+  for(const x of u.st)if(x.id!=='furtivo')x.dur--;
+  u.st=u.st.filter(x=>x.dur>0);
+}
+const statusChips=u=>{
+  let h=(u.st||[]).map(x=>{const d=STATUS[x.id];return `<i class="stc ${d.tipo}" style="--c:${d.cor}" title="${d.nome}: ${d.desc}">${d.cod}${x.n>1?'×'+x.n:''}<em>${x.dur>90?'':x.dur}</em></i>`;}).join('');
+  if(u.inspired)h+=`<i class="stc buff" style="--c:#79a8ec" title="Inspirado: +${u.inspired} de acerto no próximo golpe">INS</i>`;
+  return h;
+};
+
+/* ================= Habilidades ativas (motor) — ver HABILIDADES.md =================
+   Enquanto a árvore de habilidades não existe, o herói aprende sozinho as habilidades da classe
+   (e da subclasse) ao atingir o nível `lv`. Recarga `cd` em turnos do próprio herói. */
+const SK={
+  golpe_poderoso:{nome:'Golpe Poderoso',cls:'guerreiro',lv:3,cd:3,kind:'atk',mult:1.5},
+  grito_guerra:{nome:'Grito de Guerra',cls:'guerreiro',lv:6,cd:5,kind:'buffAllies',rad:3,inspire:2},
+  provocar:{nome:'Provocar',cls:'guerreiro',sub:'cavaleiro',lv:10,cd:5,kind:'debuffArea',rad:3,st:[{id:'provocado'}]},
+  corte_profundo:{nome:'Corte Profundo',cls:'guerreiro',sub:'barbaro',lv:10,cd:3,kind:'atk',mult:1,st:[{id:'sangramento'}]},
+  giratorio:{nome:'Golpe Giratório',cls:'guerreiro',sub:'barbaro',lv:14,cd:4,kind:'aoe',area:{c:'self',r:1},mult:0.9,st:[{id:'abalado'}]},
+  escudo_aliado:{nome:'Escudo Aliado',cls:'guerreiro',sub:'cavaleiro',lv:14,cd:4,kind:'buffAlly',rad:1,st:[{id:'escudo',val:'lvl'}]},
+  estocada_dupla:{nome:'Estocada Dupla',cls:'ladino',lv:3,cd:3,kind:'multi',hits:2,atkB:-2},
+  golpe_costas:{nome:'Golpe nas Costas',cls:'ladino',lv:6,cd:3,kind:'atk',mult:1.5,atkB:4,need:'isolado'},
+  marcar_alvo:{nome:'Marcar Alvo',cls:'ladino',sub:'assassino',lv:10,cd:5,kind:'debuff',st:[{id:'marcado'}]},
+  lamina_envenenada:{nome:'Lâmina Envenenada',cls:'ladino',sub:'assassino',lv:14,cd:4,kind:'atk',mult:1,st:[{id:'veneno'}]},
+  rede:{nome:'Rede',cls:'ladino',sub:'armadilheiro',lv:10,cd:5,kind:'debuff',alc:4,st:[{id:'preso'}]},
+  bola_fogo:{nome:'Bola de Fogo',cls:'mago',lv:3,cd:3,kind:'aoe',area:{c:'target',r:1},mult:0.8},
+  escudo_arcano:{nome:'Escudo Arcano',cls:'mago',lv:6,cd:4,kind:'buffAlly',rad:4,st:[{id:'escudo',val:'lvl'}]},
+  chama_viva:{nome:'Chama Viva',cls:'mago',sub:'piromante',lv:10,cd:3,kind:'atk',mult:0.8,st:[{id:'queimadura'}]},
+  nevasca:{nome:'Nevasca',cls:'mago',sub:'geomante',lv:10,cd:6,kind:'aoe',area:{c:'target',r:1},mult:0.5,st:[{id:'gelado'}]},
+  tremor:{nome:'Tremor',cls:'mago',sub:'geomante',lv:14,cd:5,kind:'debuffArea',rad:1,st:[{id:'atordoado'}]},
+  cura_maior:{nome:'Cura Maior',cls:'clerigo',lv:3,cd:3,kind:'healSkill',mult:2},
+  bencao:{nome:'Bênção',cls:'clerigo',lv:6,cd:4,kind:'buffAlly',rad:3,inspire:2,st:[{id:'protegido'}]},
+  castigo:{nome:'Castigo',cls:'clerigo',lv:10,cd:3,kind:'atk',mult:1.3},
+  golpe_sagrado:{nome:'Golpe Sagrado',cls:'clerigo',sub:'templario',lv:10,cd:3,kind:'atk',mult:1.4,leech:0.3},
+  purificar:{nome:'Purificar',cls:'clerigo',sub:'curandeiro',lv:14,cd:3,kind:'cleanse',rad:3},
+  punicao:{nome:'Punição',cls:'clerigo',sub:'templario',lv:14,cd:4,kind:'debuff',st:[{id:'marcado'}]},
+  tiro_certeiro:{nome:'Tiro Certeiro',cls:'arqueiro',lv:3,cd:3,kind:'atk',mult:1.3,atkB:4},
+  chuva_flechas:{nome:'Chuva de Flechas',cls:'arqueiro',sub:'saraivador',lv:10,cd:4,kind:'aoe',area:{c:'target',r:1},mult:0.7},
+  flecha_incendiaria:{nome:'Flecha Incendiária',cls:'arqueiro',sub:'saraivador',lv:14,cd:4,kind:'atk',mult:0.9,st:[{id:'queimadura'}]},
+  marca_cacador:{nome:'Marca do Caçador',cls:'arqueiro',sub:'patrulheiro',lv:10,cd:4,kind:'debuff',st:[{id:'marcado'}],self:[{id:'foco'}]},
+  nota_aguda:{nome:'Nota Aguda',cls:'bardo',lv:3,cd:3,kind:'aoe',area:{c:'target',r:1},mult:0.6},
+  hino_coragem:{nome:'Hino de Coragem',cls:'bardo',lv:6,cd:5,kind:'buffAllies',rad:3,st:[{id:'fortalecido'}]},
+  desafinar:{nome:'Desafinar',cls:'bardo',sub:'dissonante',lv:10,cd:3,kind:'debuff',alc:4,st:[{id:'abalado'}]},
+  cancao_vigor:{nome:'Canção de Vigor',cls:'bardo',sub:'consonante',lv:10,cd:4,kind:'buffAllies',rad:2,st:[{id:'regeneracao'}]},
+  pavor:{nome:'Pavor',cls:'bardo',sub:'dissonante',lv:14,cd:6,kind:'debuff',alc:4,st:[{id:'medo'}]},
+  cancao_ninar:{nome:'Canção de Ninar',cls:'bardo',sub:'consonante',lv:14,cd:7,kind:'debuffArea',rad:1,st:[{id:'atordoado'}]},
+};
+Object.keys(SK).forEach(id=>SK[id].id=id);
+const skillsOf=h=>h.side!=='hero'?[]:Object.values(SK).filter(x=>x.cls===h.cls&&(h.level||1)>=x.lv&&(!x.sub||x.sub===h.sub));
+const skReady=(u,sk)=>!((u.cd&&u.cd[sk.id])>0);
+const cheb=(a,b)=>Math.max(Math.abs(a.r-b.r),Math.abs(a.c-b.c));
+const stVal=(sk,x,u)=>x.val==='lvl'?15+(u.level||1):x.val;
+// escolhe a melhor habilidade pronta pra usar agora (ou null)
+function skillPlan(u,foes,allies,reach){
+  const list=skillsOf(u).filter(x=>skReady(u,x)&&!['healSkill'].includes(x.kind));if(!list.length)return null;
+  let best=null,bs=0;
+  const consider=(sk,score,extra)=>{if(score>bs){bs=score;best={sk,...extra};}};
+  const inRange=(f,rng)=>bestTileWithin(reach,f,rng,u);
+  for(const sk of list){
+    const rng=sk.alc||u.alc;
+    if(sk.kind==='atk'||sk.kind==='multi'){
+      let c=foes.filter(f=>inRange(f,rng));
+      if(sk.need==='isolado')c=c.filter(f=>isIsolated(f));
+      if(sk.st&&sk.st.length)c=c.filter(f=>!hasSt(f,sk.st[0].id));
+      if(!c.length)continue;const t=c.sort((a,b)=>b.hp-a.hp||0)[0];
+      consider(sk,40+(sk.st?8:0)+(sk.mult||1)*5,{target:t,tile:inRange(t,rng)});
+    }else if(sk.kind==='aoe'){
+      let b=null,bn=0;
+      for(const f of foes){const tile=inRange(f,rng);if(!tile)continue;
+        const center=sk.area.c==='self'?tile:f;
+        const n=foes.filter(g=>cheb(g,center)<=sk.area.r&&(sk.area.c==='target'||dist(g,center)<=1)).length;
+        if(n>bn){bn=n;b={target:f,tile};}}
+      if(bn>=2)consider(sk,52+bn*5,b);
+    }else if(sk.kind==='debuff'){
+      const c=foes.filter(f=>inRange(f,rng)&&!hasSt(f,sk.st[0].id));
+      if(!c.length)continue;const t=c.sort((a,b)=>b.maxhp-a.maxhp)[0];
+      consider(sk,55,{target:t,tile:inRange(t,rng)});
+    }else if(sk.kind==='debuffArea'){
+      let b=null,bn=0;
+      for(const f of foes){const tile=inRange(f,Math.max(1,sk.rad));if(!tile)continue;
+        const n=foes.filter(g=>dist(g,tile)<=sk.rad&&!hasSt(g,sk.st[0].id)).length;if(n>bn){bn=n;b={target:f,tile};}}
+      if(bn>=(sk.rad>=3?2:1))consider(sk,50+bn*5,b);
+    }else if(sk.kind==='buffAllies'||sk.kind==='buffAlly'){
+      const engaged=foes.some(f=>dist(f,u)<=8);if(!engaged)continue;
+      const tag=sk.st&&sk.st[0]?sk.st[0].id:null;
+      const c=[u,...allies].filter(a=>dist(a,u)<=sk.rad&&(!tag||!hasSt(a,tag))&&(sk.inspire?!a.inspired:true));
+      if(sk.kind==='buffAllies'&&c.filter(a=>a!==u).length<1)continue;
+      if(!c.length)continue;
+      const t=c.sort((a,b)=>a.hp/a.maxhp-b.hp/b.maxhp)[0];
+      consider(sk,sk.kind==='buffAllies'?48+c.length*3:45,{targets:sk.kind==='buffAllies'?c:[t],target:t,self:true});
+    }else if(sk.kind==='cleanse'){
+      const c=[u,...allies].filter(a=>dist(a,u)<=sk.rad&&(a.st||[]).some(x=>STATUS[x.id].tipo==='debuff'));
+      if(c.length)consider(sk,60,{target:c[0],self:true});
+    }
+  }
+  return best;
+}
+const fxSkill=(u,col)=>{pulse(u.grp.position,col,1.1,0.5);burst(u.grp.position,{n:8,colors:[col,'#ffffff'],spread:0.5,up:1,y:0.8,life:0.6});};
+async function castSkill(u,plan){
+  const sk=plan.sk;u.cd=u.cd||{};u.cd[sk.id]=sk.cd;
+  addLog(`${u.first} usa ${sk.nome}`,u.side==='hero'?'good':'bad');
+  if(sk.kind==='atk'||sk.kind==='multi'||sk.kind==='aoe'){
+    if(plan.tile&&(plan.tile.r!==u.r||plan.tile.c!==u.c)){await moveAlong(u,pathTo(plan.reach,plan.tile));await checkSecret(u);}
+    if(!plan.target.alive)return;
+    const opts={label:sk.nome,mult:sk.mult||1,atkB:sk.atkB||0,st:sk.st,area:sk.area,leech:sk.leech};
+    await attack(u,plan.target,opts);
+    if(sk.kind==='multi'&&plan.target.alive&&u.alive)for(let i=1;i<(sk.hits||2);i++)await attack(u,plan.target,{...opts,label:sk.nome+' ✕'+(i+1),st:null});
+    return;
+  }
+  if(plan.tile&&(plan.tile.r!==u.r||plan.tile.c!==u.c)){await moveAlong(u,pathTo(plan.reach,plan.tile));await checkSecret(u);}
+  showCallout(u,`✦ ${sk.nome}`);await waitS(0.9);
+  await chargeUp(u,sk.kind==='debuff'||sk.kind==='debuffArea'?'magic':'heal');chargeEnd(u);
+  if(sk.kind==='debuff'){
+    if(!plan.target.alive)return;
+    fxSkill(plan.target,STATUS[sk.st[0].id].cor);
+    for(const x of sk.st)addStatus(plan.target,x.id,{dur:x.dur,src:u});
+    for(const x of sk.self||[])addStatus(u,x.id,{dur:x.dur,src:u});
+  }else if(sk.kind==='debuffArea'){
+    const foes=foesOf(u).filter(g=>dist(g,u)<=sk.rad);
+    fxSkill(u,STATUS[sk.st[0].id].cor);
+    for(const g of foes)for(const x of sk.st)addStatus(g,x.id,{dur:x.dur,src:u});
+  }else if(sk.kind==='buffAllies'||sk.kind==='buffAlly'){
+    SFX.buff();
+    for(const a of plan.targets||[plan.target]){
+      fxSkill(a,'#79a8ec');
+      if(sk.inspire){a.inspired=sk.inspire+((u.attrBonus&&u.attrBonus.insp)||0);floatText(a,`♪ +${a.inspired} acerto`,'buff');}
+      for(const x of sk.st||[])addStatus(a,x.id,{dur:x.dur,src:u,val:x.val?stVal(sk,x,u):null});
+    }
+  }else if(sk.kind==='cleanse'){
+    const a=plan.target;fxSkill(a,'#ffffff');
+    (a.st||[]).filter(x=>STATUS[x.id].tipo==='debuff').forEach(x=>removeStatus(a,x.id));
+    floatText(a,'Purificado','buff');addLog(`${u.first} purificou ${a.first}`,'heal');
+  }
+  xp(u,6);await wait(450);
+}
+
+async function attack(u,t,opts={}){
   if(!u.alive)return;
   faceToward(u,t.grp.position.x,t.grp.position.z);
   const parts=[[u.atk,'ATQ']];const hu=hOf(u.r,u.c),ht=hOf(t.r,t.c);
+  const sm=stMods(u),tm=stMods(t);if(sm.atk)parts.push([sm.atk,'status']);if(opts.atkB)parts.push([opts.atkB,'habilidade']);
   if(hu>ht)parts.push([u.cls==='arqueiro'?4:2,'alto']);
   if(u.inspired)parts.push([u.inspired,'balada']);
   if(sibActive(u))parts.push([1,'irmãos']);
@@ -4723,17 +4949,17 @@ async function attack(u,t){
   u.lastTargetId=t.id;
   const magic=isMagicAttacker(u);let defVal=magic?(t.defMag??t.def):t.def;
   if(t.side==='hero'&&t.cls==='guerreiro'&&t.sub==='cavaleiro'&&heroesAlive().some(a=>a!==t&&dist(a,t)<=1&&a.hp<=a.maxhp*0.5))defVal+=2;
-  if(t.shaken)defVal-=2;
-  const roll=ri(1,20),critMin=20-(u.critBonus||0)-(u.trait&&u.trait.id==='sortudo'?1:0),sum=roll+parts.reduce((a,p)=>a+p[0],0);
+  defVal+=tm.def;if(opts.ignoreDef)defVal-=opts.ignoreDef;
+  const roll=ri(1,20),critMin=20-(u.critBonus||0)-sm.crit-(u.trait&&u.trait.id==='sortudo'?1:0)-(hasSt(u,'furtivo')?19:0),sum=roll+parts.reduce((a,p)=>a+p[0],0);
   const crit=roll>=critMin,hit=crit||(roll!==1&&sum>=defVal);
   followMid(u,t);
   tRing.visible=true;tRing.position.set(t.grp.position.x,t.grp.position.y+0.09,t.grp.position.z);tRing.scale.setScalar(t.big?1.25:1);
   const clearLine=aimLine(u,t,u.side==='hero'?'#e9b949':'#d4503f');
   await waitS(0.9);                      // câmera enquadra atacante e alvo; o alvo fica destacado
-  await showRoll({u,skill:`${magic?'✨':u.alc>1?'➶':'⚔'} ${skillOf(u)}`,roll,outcome:crit?'crit':hit?'hit':'miss'});
+  await showRoll({u,skill:`${magic?'✨':u.alc>1?'➶':'⚔'} ${opts.label||skillOf(u)}`,roll,outcome:crit?'crit':hit?'hit':'miss'});
   await chargeUp(u,magic?'magic':u.alc>1?'ranged':'melee');   // canaliza o golpe (pose + brilho) antes de soltar
   if(u.inspired){u.inspired=false;}
-  if(t.shaken){t.shaken=false;}
+  if(hasSt(u,'furtivo'))removeStatus(u,'furtivo');
   if(u.cls==='ladino'&&u.sub==='armadilheiro'){u.ambushDone=true;}
   const p=u.grp.position,ox=p.x,oz=p.z,dx=t.c-u.c,dz=t.r-u.r,len=Math.hypot(dx,dz)||1;
   if(u.alc>1){SFX.shoot();drawBow(u,0.3);chargeEnd(u);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox-dx/len*0.12,z:oz-dz/len*0.12,duration:0.08}).to(p,{x:ox,z:oz,duration:0.1});await projectile(u,t);}
@@ -4744,7 +4970,8 @@ async function attack(u,t){
     fxPlay('combat','parry-flash-32px_strip7.png',7,14,{x:t.grp.position.x,y:t.grp.position.y+0.1,z:t.grp.position.z},{w:1.3});
     addLog(`${u.first} errou ${t.first}${u.side==='hero'?` (${sum} vs ${defVal})`:''}`,'mut');tRing.visible=false;await wait(220);return;
   }
-  const [n,s,b]=u.dmg;const dmg=dice(crit?n*2:n,s)+b+(u.trait&&u.trait.id==='bruto'?3:0)+(u.cls==='guerreiro'&&u.sub==='barbaro'&&u.hp<=u.maxhp*0.5?3:0);
+  const [n,s,b]=u.dmg;let dmg=dice(crit?n*2:n,s)+b+(u.trait&&u.trait.id==='bruto'?3:0)+(u.cls==='guerreiro'&&u.sub==='barbaro'&&u.hp<=u.maxhp*0.5?3:0);
+  dmg=Math.max(1,Math.round(dmg*sm.out*tm.inn*(opts.mult||1)));
   if(crit&&u.side==='hero')stats.crits++;
   xp(u,8+(crit?12:0));
   if(u.side==='hero'&&u.cls==='arqueiro'&&hu>ht)u.highHits++;
@@ -4763,6 +4990,18 @@ async function attack(u,t){
   else if(u.cls!=='mago')shakeCam(0.07,0.18);
   addLog(`${crit?'CRÍTICO! ':''}${u.first} ${VERB[u.cls||u.kind]} ${t.first}: ${dmg} de dano`,u.side==='hero'?(crit?'gold':'good'):'bad');
   damage(t,dmg,u,crit);
+  if(t.alive)for(const x of opts.st||[])if(!x.chance||R()<x.chance)addStatus(t,x.id,{dur:x.dur,src:u});
+  const oh=ENEMY_ONHIT[u.kind];if(oh&&u.side==='enemy'&&t.alive&&R()<oh[1])addStatus(t,oh[0],{src:u});
+  if(opts.leech&&u.alive&&u.hp<u.maxhp){const lh=Math.max(1,Math.round(dmg*opts.leech));u.hp=Math.min(u.maxhp,u.hp+lh);floatText(u,`+${lh}`,'heal');pulse(u.grp.position,'#6cc35e',0.8,0.4);}
+  if(opts.area){
+    const center=opts.area.c==='self'?u:t;
+    const others=foesOf(u).filter(g=>g!==t&&g.alive&&(opts.area.c==='target'?cheb(g,center)<=opts.area.r:dist(g,center)<=1));
+    for(const g of others){const d2=Math.max(1,Math.round(dmg*0.75*(stMods(g).inn)));
+      floatText(g,`-${d2}`,'');burst(g.grp.position,{n:6,colors:sparks,spread:0.5,up:0.4,y:0.4,life:0.35});
+      addLog(`${u.first} também atingiu ${g.first}: ${d2} de dano`,u.side==='hero'?'good':'bad');
+      damage(g,d2,u,false);
+      if(g.alive)for(const x of opts.st||[])addStatus(g,x.id,{dur:x.dur,src:u});}
+  }
   if(u.cls==='clerigo'&&u.sub==='templario'&&u.alive&&u.hp>0&&u.hp<u.maxhp){
     const selfHeal=Math.max(1,Math.round(dmg*0.3));u.hp=Math.min(u.maxhp,u.hp+selfHeal);
     floatText(u,`+${selfHeal}`,'heal');pulse(u.grp.position,'#6cc35e',0.8,0.4);
@@ -4798,6 +5037,12 @@ function hitStop(ms){
   setTimeout(()=>{gsap.globalTimeline.timeScale(ts);hitStopOn=false;},ms);
 }
 function damage(t,dmg,src,crit){
+  const sh=stOf(t,'escudo');
+  if(sh&&sh.val>0&&dmg>0){
+    const ab=Math.min(sh.val,dmg);sh.val-=ab;dmg-=ab;floatText(t,`🛡 -${ab}`,'buff');pulse(t.grp.position,'#cfe0ff',1,0.4);
+    if(sh.val<=0)removeStatus(t,'escudo');
+    if(dmg<=0){SFX.miss();return;}
+  }
   crit?SFX.crit():SFX.hit();
   const lethal=t.hp-dmg<=0,heavy=crit||dmg>=t.maxhp*0.35;
   t.hp=Math.max(0,t.hp-dmg);floatText(t,crit?`-${dmg}!`:`-${dmg}`,crit?'crit':'');
@@ -4844,12 +5089,12 @@ function addTomb(t){
   m.position.set(t.grp.position.x,t.grp.position.y+0.19,t.grp.position.z);m.rotation.y=AZ;bb(m);scene.add(m);tombs.push(m);
   gsap.from(m.scale,{y:0.01,duration:0.3});
 }
-async function heal(u,w){
+async function heal(u,w,o={}){
   if(!u.alive)return;
   pulse(u.grp.position,'#6cc35e',0.9,0.5);await wait(250);
   const subHeal=u.sub==='curandeiro'?3:0;
-  const amt=dice(2,4)+2+(u.healBonus||0)+subHeal,before=w.hp;w.hp=Math.min(w.maxhp,w.hp+amt);
-  await showRoll({u,skill:'✚ Cura',roll:amt,numText:'+'+amt,outcome:'hit'});
+  const amt=Math.round((dice(2,4)+2+(u.healBonus||0)+subHeal)*(o.mult||1)),before=w.hp;w.hp=Math.min(w.maxhp,w.hp+amt);
+  await showRoll({u,skill:'✚ '+(o.label||'Cura'),roll:amt,numText:'+'+amt,outcome:'hit'});
   await chargeUp(u,'heal');chargeEnd(u);
   SFX.heal();pulse(w.grp.position,'#6cc35e',1.2,0.7);fxPlay('magic','healing-aura-32px_strip8.png',8,10,{x:w.grp.position.x,y:w.grp.position.y,z:w.grp.position.z},{w:1.7});
   floatText(w,`+${w.hp-before}`,'heal');tintUnit(w,{r:0.5,g:1,b:0.5},{r:1,g:1,b:1},0.7);
@@ -4891,14 +5136,12 @@ function showTurnCard(u){
   gsap.fromTo(el,{opacity:0,y:-10,scale:0.9},{opacity:1,y:0,scale:1,duration:0.22,ease:'back.out(2)'});
   return waitS(1.3).then(()=>gsap.to(el,{opacity:0,y:-6,duration:0.2,onComplete:()=>el.remove()}));
 }
-async function turn(u){
+async function turn(u){try{await turnBody(u);}finally{statusTurnEnd(u);}}
+async function turnBody(u){
   active=u;hudSel=u.side==='hero'?u:null;hudTile=null;renderOrder();renderUC(true);followCam(u);
-  if(u.poison){
-    const pz=u.poison;pz.n--;floatText(u,`☠ -${pz.dmg}`,'miss');addLog(`${u.first} sofre ${pz.dmg} de veneno`,'bad');
-    tintUnit(u,{r:0.5,g:1,b:0.4},{r:1,g:1,b:1},0.5);damage(u,pz.dmg,{first:'o veneno',side:'trap'},false);
-    if(pz.n<=0)u.poison=null;
-    if(!u.alive)return;await wait(350);
-  }
+  if(u.cd)for(const id in u.cd)if(u.cd[id]>0)u.cd[id]--;
+  await statusTurnStart(u);if(!u.alive)return;
+  if(hasSt(u,'atordoado')){showCallout(u,'Atordoado');addLog(`${u.first} está atordoado e perde o turno`,'mut');await waitS(1.3);return;}
   // a câmera leva um tempo pra chegar no personagem (followCam não é
   // esperado) — sem essa pausa, a ação dele já começava com a câmera
   // ainda andando, dando a sensação de tudo embolado/em cima do outro.
@@ -4912,20 +5155,30 @@ async function turn(u){
   let reach=bfsReach(u);showRange(u,reach);
   await waitS(1.3);                     // mostra todo o alcance de movimento
   if(u.cls==='bardo'&&u.sub==='dissonante'){
-    const cand=foes.filter(f=>dist(f,u)<=4&&!f.shaken);
-    if(cand.length){const f=pick(cand);f.shaken=true;SFX.buff();showCallout(u,`♪ Desafina ${f.first}`);
+    const cand=foes.filter(f=>dist(f,u)<=4&&!hasSt(f,'abalado'));
+    if(cand.length){const f=pick(cand);addStatus(f,'abalado',{src:u});SFX.buff();showCallout(u,`♪ Desafina ${f.first}`);
       burst(u.grp.position,{n:6,colors:['#d98fe0','#f3cfff'],spread:0.4,up:1,y:0.9,life:0.7});pulse(f.grp.position,'#d98fe0',1,0.6);floatText(f,'♪ −2 defesa','miss');
       xp(u,6);addLog(`${u.first} desafinou a defesa de ${f.first} (−2 na próxima defesa)`,'good');await wait(450);}
   }else if(u.cls==='bardo'){const cand=allies.filter(a=>dist(a,u)<=4&&!a.inspired);if(cand.length){const a=pick(cand);const ins=2+((u.attrBonus&&u.attrBonus.insp)||0);a.inspired=ins;SFX.buff();showCallout(u,`♪ Inspira ${a.first}`);
     burst(u.grp.position,{n:6,colors:['#79a8ec','#cfe0ff'],spread:0.4,up:1,y:0.9,life:0.7});pulse(a.grp.position,'#79a8ec',1,0.6);floatText(a,`♪ +${ins} acerto`,'buff');
     xp(u,6);addLog(`${u.first} tocou uma balada pra ${a.first} (+${ins} no próximo ataque)`,'good');await wait(450);}}
+  if(hasSt(u,'medo')){
+    let best=null,bs=-1;for(const t of reach.values()){if(t.pass)continue;const s=Math.min(...foes.map(f=>dist(t,f)))*2+hOf(t.r,t.c);if(s>bs){bs=s;best=t;}}
+    showCallout(u,'Com medo!');addLog(`${u.first} foge de medo`,'mut');
+    if(best&&(best.r!==u.r||best.c!==u.c))await moveAlong(u,pathTo(reach,best));
+    return;
+  }
   if(u.trait&&u.trait.id==='covarde'&&u.hp<=u.maxhp*0.4){
     let best=null,bs=-1;for(const t of reach.values()){if(t.pass)continue;const s=Math.min(...foes.map(f=>dist(t,f)))*2+hOf(t.r,t.c);if(s>bs){bs=s;best=t;}}
     if(best&&(best.r!==u.r||best.c!==u.c)){showCallout(u,'Deslocar');addLog(`${u.first} se deslocou`,'mut');u.fled=true;await moveAlong(u,pathTo(reach,best));await checkSecret(u);return;}
   }
   if(u.cls==='clerigo'){
     const wounded=[u,...allies].filter(a=>a.hp<=a.maxhp*0.55).sort((a,b)=>a.hp/a.maxhp-b.hp/b.maxhp);
-    for(const w of wounded){const t=w===u?reach.get(k(u.r,u.c)):bestTileWithin(reach,w,3,u,'heal');if(t){await moveAlong(u,pathTo(reach,t));await heal(u,w);await checkSecret(u);return;}}
+    for(const w of wounded){const t=w===u?reach.get(k(u.r,u.c)):bestTileWithin(reach,w,3,u,'heal');if(t){
+      const cm=SK.cura_maior,big=skillsOf(u).includes(cm)&&skReady(u,cm)&&w.hp<=w.maxhp*0.45;
+      await moveAlong(u,pathTo(reach,t));
+      if(big){u.cd=u.cd||{};u.cd[cm.id]=cm.cd;await heal(u,w,{mult:2,label:cm.nome});}else await heal(u,w);
+      await checkSecret(u);return;}}
   }
   if(SECRET&&u.side==='hero'&&!stats.secret&&!u.triedSecret&&stats.round<=6&&(u.cls==='ladino'||['curioso','atento'].includes(u.trait.id))){
     const canHit=foes.some(f=>bestTileWithin(reach,f,u.alc,u));
@@ -4935,7 +5188,12 @@ async function turn(u){
       if(best){showCallout(u,'Deslocar');addLog(`${u.first} se deslocou`,'mut');await moveAlong(u,pathTo(reach,best));await checkSecret(u);return;}
     }
   }
-  const target=chooseTarget(u,foes,reach);if(!target)return;
+  if(u.side==='hero'){
+    const plan=skillPlan(u,foes,allies,reach);
+    if(plan){plan.reach=reach;if(plan.target)rangeTile(plan.target.r,plan.target.c,'red');await castSkill(u,plan);await checkSecret(u);return;}
+  }
+  const prov=stOf(u,'provocado');
+  const target=prov&&prov.src&&prov.src.alive?prov.src:chooseTarget(u,foes,reach);if(!target)return;
   rangeTile(target.r,target.c,'red');
   const tile=bestTileWithin(reach,target,u.alc,u);
   if(tile){await moveAlong(u,pathTo(reach,tile));await checkSecret(u);await attack(u,target);}
@@ -4962,7 +5220,7 @@ async function startBattle(){
   stats={round:0,roundsDone:0,kills:[],crits:0,secret:false,hl:[],order:[]};
   renderBattle();applySpeed();
   const all=[...heroesAlive(),...enemiesAlive()];
-  all.forEach(u=>u.initRoll=ri(1,20)+u.ini+R());
+  all.forEach(u=>{u.st=[];u.cd={};u.initRoll=ri(1,20)+u.ini+R();});
   stats.order=all.sort((a,b)=>b.initRoll-a.initRoll);
   $('#order').hidden=false;hudSel=null;hudTile=null;ucPop=null;ucKey='';renderOrder();
   await banner('Batalha!');
@@ -5021,7 +5279,7 @@ const xp=(u,n)=>{
 function resetHero(h,first){
   if(h.exausto){h.atk++;h.def++;h.exausto=false;}
   if(!first&&h.alive===false){h.hp=Math.ceil(h.maxhp*0.5);h.atk--;h.def--;h.exausto=true;}else h.hp=h.maxhp;
-  Object.assign(h,{poison:null,alive:true,r:null,c:null,triedSecret:false,inspired:false,highHits:0,fled:false,secretBuff:false,xp:0,bonus:false,diedRound:null,shaken:false,ambushDone:false,lastTargetId:null});
+  Object.assign(h,{st:[],cd:{},poison:null,alive:true,r:null,c:null,triedSecret:false,inspired:false,highHits:0,fled:false,secretBuff:false,xp:0,bonus:false,diedRound:null,shaken:false,ambushDone:false,lastTargetId:null});
   if(first)h.xpRun=0;
 }
 function departRun(){
@@ -5199,7 +5457,8 @@ function loop(t){
     if(!u.grp)continue;
     if(u.alive!==false&&!(u.lpc&&u.lpc.multi))u.pivot.scale.y=1+Math.sin(s*2.4+u.id*1.7)*0.025;
     if(u.lpc)(u.lpc.creature?tickCreature:tickLPC)(u,s);
-    if(u.hpEl&&u.alive!==false){const f=(u.hp/u.maxhp*100)+'%';u.hpFill.style.width=f;u.hpGhost.style.width=f;u.hpEl.classList.toggle('low',u.side==='hero'&&u.hp/u.maxhp<=0.35);
+    if(u.hpEl&&u.alive!==false){const stk=(u.st||[]).map(x=>x.id+x.dur+x.n).join()+(u.inspired?'i':'');if(stk!==u.stKey){u.stKey=stk;u.stEl.innerHTML=statusChips(u);}
+      const f=(u.hp/u.maxhp*100)+'%';u.hpFill.style.width=f;u.hpGhost.style.width=f;u.hpEl.classList.toggle('low',u.side==='hero'&&u.hp/u.maxhp<=0.35);
       if(phase==='battle'){const [hx,hy]=screenOf(u,u.hbarExtra!=null?u.hbarExtra:-0.16-0.24*u.sz);u.hpEl.style.left=hx+'px';u.hpEl.style.top=hy+'px';}}
   }
   if(phase==='battle'){renderObjs();renderUC();}
