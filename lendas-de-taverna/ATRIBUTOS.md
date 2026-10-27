@@ -23,30 +23,28 @@ Qual atributo vale pro golpe depende da arma da classe: Guerreiro e Clérigo (co
 Isso faz cada classe se destacar sozinha, e dá espaço pra variar *dentro* da classe
 (um Guerreiro de Constituição alta é tanque; de Força alta é atacante).
 
-## 2. Subir de nível
-- **Perfil fixo da classe:** 2 pontos por nível, divididos por pesos. Ex.: Guerreiro Força 50% ·
-  Constituição 30% · Destreza 20%. Mago Inteligência 50% · Constituição 25% · Sabedoria 25%.
-- **Pontos livres:** +1 ponto a cada 2 níveis para o jogador distribuir na ficha do herói.
-  Se não gastar, entra pelo perfil da classe (o jogo continua jogando sozinho).
-- Sem teto rígido; o bônus cresce sempre, e os inimigos usam as mesmas regras.
+## 2. Subir de nível (decidido)
+- **Tudo automático.** O jogo distribui os pontos sozinho; o jogador não distribui atributo.
+  Herói recrutado já com nível vem com os pontos distribuídos (perfil da classe + afinidade).
+- **Perfil fixo da classe:** pontos por nível divididos por pesos (ex.: Guerreiro Força 50% ·
+  Constituição 30% · Destreza 20%). 2 pontos por nível até o nível 30, depois menos (curva suave,
+  **sem teto rígido**, já que o jogador não distribui).
+- **Afinidade (novo):** cada herói sorteia, ao ser criado, uma afinidade que faz 2 atributos crescerem
+  mais (ex.: Vigoroso = Constituição+Força, Bruto = Força, Ágil = Destreza, Erudito = Inteligência,
+  Devoto = Sabedoria, Carismático = Carisma). Aparece na ficha ao lado do traço
+  ("Fanfarrão · Bruto") com setas de crescimento por atributo. Traços atuais mantêm seus efeitos.
+- **Tela de subir de nível:** resumo do que mudou ("Nível 6! +3 PV, +1 dano, +1 Força").
+- **ATQ e DEF crescem devagar** (≈ +4 de ATQ no nível 25); o crescimento forte vai para dano, PV e cura.
+- Sensação de evolução: números que sobem de verdade + **árvore de habilidades** (próximo item abaixo),
+  que substitui a ideia de "benefício a cada 5 níveis".
 
-Exemplo — Guerreiro (Força 14, Const. 13, Des. 10 no nível 1), pontos livres 50/50 em Força e Const.:
-| Nível | Força | Const. | Des. | Bônus total |
-|---|---|---|---|---|
-| 1 | 14 | 13 | 10 | ATQ +1 · dano +2 · PV +10 |
-| 10 | 25 | 20 | 13 | ATQ +5 · dano +7 · PV +35 |
-| 25 | 44 | 33 | 19 | ATQ +11 · dano +17 · PV +80 · DEF +2 |
-| 50 | 75 | 54 | 29 | ATQ +21 · dano +32 · PV +153 · DEF +4 |
-(Hoje, sem itens, o Guerreiro Nv50 teria só +~10 de dano e +50 PV, e nada de ATQ/DEF.)
-
-## 3. Itens com afixos sorteados
-- Item = **base** (tipo + espaço, ícone do pack) + **afixos** sorteados + **nível do item**.
-- Afixos podem ser **+N de um atributo** (ex.: +3 Força) ou **+N num valor direto**
-  (ATQ, DEF, PV, dano, crítico, Res. Mágica, Mov, Alc, segredos).
-- Quantidade pela raridade: Comum 1 · Raro 2 · Mágico 3 · Épico 4 · Lendário 5.
-- Nível do item = nível do mapa onde dropou; o valor dos afixos cresce com ele.
-- Chance de raridade depende do ato (início quase só comum/raro); chefe garante mínimo Mágico.
-- Itens antigos dos saves viram uma base com afixos fixos equivalentes (nada se perde).
+## 3. Itens fixos, com raridade e tiers (decidido: sem afixos sorteados)
+- Itens **fixos**, gerados por modelo (tipo + tier + raridade) com stats previsíveis, 2–4 bônus
+  cada (inclui atributos). Quantidade boa **por classe**: armas específicas por classe (2 por tier),
+  demais espaços compartilhados, 1–2 lendários nomeados por classe. Ver também `EQUIPAMENTOS.md`
+  (tiers 1–12, raridades, disciplina de poder).
+- Raridade continua (Comum → Lendário); botão **"Equipar o melhor"** com comparação clara.
+- **Nomes dos tiers: em aberto** (sem "Mithril/Adamante/Celestial"); ver opções em conversa.
 
 ## 4. Inimigos
 - Cada espécie ganha os **6 atributos**, um perfil de crescimento (como a classe) e valores
@@ -55,8 +53,9 @@ Exemplo — Guerreiro (Força 14, Const. 13, Des. 10 no nível 1), pontos livres
 - XP por inimigo passa a depender do nível dele.
 
 ## 5. Ordem de trabalho
-1. Motor: atributos, bônus, level up e inimigos (sem mexer em telas; teste dos números).
-2. Itens com afixos + migração dos saves.
-3. Telas (com mockup antes): ficha com os 6 atributos e pontos livres, itens com afixos, Forja/Cofre.
-4. Calibração com a simulação: curva de XP, nível por mapa, raridade por ato, limite de rodadas.
-5. Testes de batalha completos nos mapas novos.
+1. Motor: atributos, afinidade, level up automático e inimigos com nível (sem mexer em telas; teste dos números).
+2. **Árvore de habilidades** (spec + mockup antes; cooldown por turno; combinada com gatilhos) — antes de balancear.
+3. Itens fixos por tier/raridade + "Equipar o melhor" + migração dos saves.
+4. Telas (com mockup antes): ficha com 6 atributos e afinidade, resumo de nível, itens.
+5. Calibração com a simulação (XP quase linear, nível por mapa, raridade por ato, limite de rodadas).
+6. Testes de batalha completos nos mapas novos.
