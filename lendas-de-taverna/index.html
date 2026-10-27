@@ -1337,7 +1337,7 @@ function loadBuf(url){
   if(AUD.pend[url])return AUD.pend[url];
   return AUD.pend[url]=fetch(url).then(r=>r.arrayBuffer()).then(b=>new Promise((ok,no)=>actx.decodeAudioData(b,ok,no))).then(buf=>{AUD.bufs[url]=buf;delete AUD.pend[url];return buf;}).catch(e=>{delete AUD.pend[url];return null;});
 }
-const SFX_FILES=['ui_click','ui_open','ui_close','ui_confirm','ui_denied','turn_start','equip','coin','step_0','step_1','swing','hit_0','hit_1','slash','crit','miss','bow','arrow_hit','spell_cast','spell_hit','heal','buff','death','trap','victory','defeat'];
+const SFX_FILES=['ui_click','ui_open','ui_close','ui_confirm','ui_denied','turn_start','equip','coin','step_0','step_1','swing','hit_0','hit_1','slash','crit','miss','bow','arrow_hit','spell_cast','spell_hit','heal','buff','death','trap','victory','defeat','charge_melee','charge_ranged','charge_magic','charge_heal'];
 function preloadSfx(){if(!audioBus())return;SFX_FILES.forEach(n=>loadBuf(`assets/audio/sfx/${n}.ogg`));}
 function playSfx(name,{vol=1,rate=1,gap=0}={}){
   if(!actx||!audioBus())return false;
@@ -1751,21 +1751,21 @@ const ATOS=[
   {id:5,nome:'Ato V · Cripta Real',niv:[52,60],bioma:'Cripta e castelo',chefe:'Vampiro Senhor'},
 ];
 const MAPS=[
-  {n:1,ato:1,nivel:1,mundo:'campina',biome:'campina',grid:["...EEEEEEEEEEEE...", "...EEEEEEEEEEEE...", ".tr.1.............", "r..121..t....1t..t", "..12221.....121.t.", "S1222221...12221..", "..12221...1222221.", "...121.r...12221..", "...r1.......121..t", "wwwbwwwwwbwwwwbwww", "wwwbwwwwwbwwwwbwww", "t..r..t.111.t.....", "r.t....11111......", "........111.......", ".t.......1....t...", "...ZZZZZZZZZZZZ...", "...ZZZZZZZZZZZZ...", "...ZZZZZZZZZZZZ..."],noflip:false,nome:'Clareira de Brumavale',fixo:true,seed:1101,secret:true,total:[9,12],escala:1,
-    desc:'Campina aberta cortada por um rio. Só duas pontes. Gosmas, aranhas, besouros, peixes saltadores e morcegos infestaram a clareira.',
+  {n:1,ato:1,nivel:1,mundo:'campina',biome:'campina',grid:["..EEEEEEEE..", "..EEEEEEEE..", ".t..1....t..", "r..121..t..r", "S..121.....t", "wwbwwwwwbwww", "wwbwwwwwbwww", "t....11....t", "...r.111.t..", ".t.....r....", "..ZZZZZZZZ..", "..ZZZZZZZZ..", "............"],noflip:false,nome:'Clareira de Brumavale',fixo:true,seed:1101,secret:true,total:[5,6],escala:1,
+    desc:'Campina cortada por um rio. Só duas pontes. Gosmas, aranhas, besouros e peixes saltadores tomaram a clareira: derrote todos.',
     pool:['slime','bee','spider','beetle','fish','bat','rato']},
-  {n:2,ato:1,nivel:3,mundo:'campina',biome:'floresta',grid:[".EEEEEEEEEEE.", ".EEEEEEEEEEE.", ".tt.t....t...", ".t.......t.t.", ".trt.r....t..", "t.tr.....r.tt", "...t..1.....t", "tt..t121t....", "....12321.t..", "...1233321...", "tt123333321..", "...1233321t.t", "S...12321t...", ".....121..t.t", "t.....1......", "...t.......t.", "t.tt.........", ".........r...", "..t........t.", ".ZZZZZZZZZZZ.", ".ZZZZZZZZZZZ.", ".ZZZZZZZZZZZ."],nome:'Bosque dos Corvos',fixo:true,seed:2202,secret:true,total:[11,14],escala:1.15,
-    desc:'Floresta fechada, poucas passagens. Boa pra emboscada, de ambos os lados.',
-    pool:['goblin','gobarq','lobo','xama','guarda','ogro','bird','bat','ghost','javali','rato','lobisomem']},
-  {n:3,ato:1,nivel:5,mundo:'deserto',biome:'deserto',grid:["..EEE1EEEEEEEEEEEEEE..", "..EE121EEEEEEEEEEEEE..", "...12321..r..t..1..r..", "tt1233321r.r...121..r.", ".1233333211...12221.rt", "..1233321121.1222221..", "...1232112321.122211..", "t..11211233321.121121.", "..1211123333321.112221", ".12221.1233321....121.", "..121...12321.trr..1..", "...1.....121..........", "..ZZZZZZZZ1ZZZZZZZZZ..", "..ZZZZZZZZZZZZZZZZZZ.."],nome:'Duna Rachada',fixo:false,secret:false,total:[8,10],escala:1.2,
-    desc:'Primeira trilha no Deserto das Cinzas. Dunas abertas, quase sem abrigo — bom pra quem atira de longe, ruim pra quem se expõe.',
-    pool:['goblin','gobarq','lobo','guarda','bird','esqueleto','lagarto','lobisomem']},
-  {n:4,ato:1,nivel:8,mundo:'deserto',biome:'deserto',grid:["vvvvvvvv.EEEEEEEE.", "vvvvvvvv.EEEE1EEE.", "vvvvvvvv.EEr121EE.", "vvvvvvvv.rE12221r.", "vvvvvvvv..1222221.", "vvvvvvvv.t.12221..", "vvvvvvvv..r.121...", "..t..121.r...1....", "...r12321.......t.", "...1233321........", "..123333321.......", "S..1233321..t1....", "....12321...121...", ".....121.t.12221..", "......1...t.121.t.", "....ZZZZZZZZZ1....", "..ZZZZZZZZZZZZZZ..", "..ZZZZZZZZZZZZZZ.."],nome:'Vale das Cinzas',fixo:false,secret:true,total:[10,13],escala:1.25,
-    desc:'Vale estreito coberto de cinza vulcânica. O xamã goblin cura os aliados feridos — derrube primeiro.',
-    pool:['goblin','gobarq','lobo','xama','guarda','ghost','bat','zumbi','esqueleto','vampiro','esqguerreiro','esqmago','espectro']},
-  {n:5,ato:1,nivel:12,mundo:'deserto',biome:'deserto',grid:["vvvvvvEEEEEEEvvvvvv", "vvvvvEEEEEEEEEvvvvv", "vvvvEEErE1EEEEEvvvv", "vvvEEEtE121EEEEEvvv", "vv.....12321.....vv", "v.....1234321.....v", "..t..123444321.....", "....12344444321t...", ".....123444321..r..", "......1234321......", "rr.....12321t......", "........121...r....", "........r1.........", "v....t.......r....v", "vv...............vv", "vvv...ZZZZZZZ...vvv", "vvvv.ZZZZZZZZZ.vvvv", "vvvvvZZZZZZZZZvvvvv"],nome:'Covil do Ogro',fixo:false,chefe:true,boss:'ogro',secret:false,total:[9,11],escala:1.3,
-    desc:'Mapa de chefe: o terreno muda a cada run. O Ogro sempre está lá.',
-    pool:['goblin','gobarq','lobo','guarda','ogro','ghost','troll','minotauro','vampiro','berserker','espectro','esqmago']},
+  {n:2,ato:1,nivel:3,mundo:'campina',biome:'floresta',grid:["..EEEEEEEEE..", "..EEEEEEEEE..", ".tt.t...t.tt.", ".t...t.t...t.", ".tr.t1.1t.rt.", "t..t.121.t..t", "...t..1..t...", "tt...t.t...tt", "S.t.tt.tt.t..", ".t...t.t.t..t", "t.t.......t.t", "..ZZZZZZZZZ..", "..ZZZZZZZZZ..", "............."],nome:'Bosque dos Corvos',fixo:true,seed:2202,secret:true,total:[6,7],obj:{tipo:'lider',lider:'guarda'},escala:1.15,
+    desc:'Floresta fechada, poucas passagens. Um Guarda Orc lidera o bando: derrube o líder e o resto debanda.',
+    pool:['goblin','gobarq','lobo','guarda','bird','bat','rato','javali']},
+  {n:3,ato:1,nivel:5,mundo:'deserto',biome:'deserto',grid:["..EEEEEEEEEE..", "..EEEEEEEEEE..", "...1..t...1...", "..121.....121.", "...1.rr....1..", ".......t......", "t...11...t...t", "...1221.......", "....11...r....", "r.......t....r", "..11.....11...", ".ZZZZZZZZZZZZ.", ".ZZZZZZZZZZZZ.", "t............t"],nome:'Duna Rachada',fixo:false,secret:false,total:[7,8],obj:{tipo:'sobreviver',rodadas:6},escala:1.2,
+    desc:'Dunas abertas, quase sem abrigo. O bando é maior que o seu grupo: segure a posição por 6 rodadas.',
+    pool:['goblin','gobarq','lobo','guarda','bird','lagarto','esqueleto']},
+  {n:4,ato:1,nivel:8,mundo:'deserto',biome:'deserto',grid:["..EEEEEEE..", "..EEEEEEE..", "1...t...t.1", "21.......12", "21...r...12", "1.........1", "...1...1...", "t..12.21..t", "S...1...1..", "..t.....t..", "1....r....1", "21.......12", "1.........1", ".ZZZZZZZZZ.", ".ZZZZZZZZZ.", "..........."],nome:'Vale das Cinzas',fixo:false,secret:true,total:[7,8],escala:1.25,
+    desc:'Vale estreito coberto de cinza. O xamã goblin cura os aliados feridos: derrube primeiro.',
+    pool:['goblin','gobarq','lobo','xama','guarda','zumbi','esqueleto','ghost']},
+  {n:5,ato:1,nivel:12,mundo:'deserto',biome:'deserto',grid:["...EEEEEEE...", "...EEEEEEE...", "..r..111..r..", "....12221....", "..r..111..r..", ".............", "t...r...r...t", ".............", "..t.......t..", ".............", "..ZZZZZZZZZ..", "..ZZZZZZZZZ..", "............."],nome:'Covil do Ogro',fixo:false,chefe:true,boss:'ogro',secret:false,total:[6,7],escala:1.3,
+    desc:'Mapa de chefe. O Ogro sempre está lá, com a guarda dele.',
+    pool:['goblin','gobarq','lobo','guarda','ogro']},
   // Ato II — Ruínas Esquecidas (bioma novo; layouts por tema)
   {n:6,ato:2,nivel:14,mundo:'ruinas',biome:'ruinas',layout:'patio',nome:'Pátio Desmoronado',fixo:false,secret:false,w:20,h:20,total:[12,16],escala:1.5,
     desc:'Um pátio aberto com colunas quebradas e blocos caídos. Pouca cobertura, muito espaço pra ser cercado.',
@@ -1978,17 +1978,20 @@ const BOSSES={ogro:1,minotauro:1,troll:1,reiesq:1,vampsenhor:1};
 const isBossK=kind=>!!BOSSES[kind]||!!(LV&&LV.mp.boss===kind);
 function rollEnemies(mp){
   const types=mp.pool.filter(t=>!BOSSES[t]&&t!==mp.boss).sort(()=>R()-0.5);
-  const nTypes=Math.min(types.length,ri(4,types.length));
-  const chosen=types.slice(0,nTypes);
   const bossK=mp.chefe&&mp.boss?mp.boss:(mp.pool.includes('ogro')&&R()<0.6?'ogro':null);
   const total=ri(mp.total[0],mp.total[1]);
+  // tipos distintos nunca passam do total (senão o mapa fica maior que o combinado)
+  const nTypes=Math.max(2,Math.min(types.length,ri(Math.min(4,types.length),types.length),total-1-(bossK?1:0)-(mp.obj&&mp.obj.lider?1:0)));
+  const chosen=types.slice(0,nTypes);
   const cnt={};chosen.forEach(t=>cnt[t]=1);if(bossK)cnt[bossK]=1;
+  if(mp.obj&&mp.obj.lider&&!cnt[mp.obj.lider])cnt[mp.obj.lider]=1;
   let left=total-Object.values(cnt).reduce((a,b)=>a+b,0);
   const caps={xama:2,guarda:2,yeti:1,minotauro:1,troll:1,vampiro:2,esqmago:2,espectro:2,berserker:2};
   let guard=0;
   while(left>0&&guard++<200){const t=pick(chosen);if(caps[t]&&cnt[t]>=caps[t])continue;cnt[t]++;left--;}
   const list=[];let ni=0;const names=ENAMES.slice().sort(()=>R()-0.5);
   Object.entries(cnt).forEach(([kind,n])=>{for(let i=0;i<n;i++)list.push({kind,first:isBossK(kind)?ENEMIES[kind].nome:names[ni++%names.length]});});
+  if(mp.obj&&mp.obj.tipo==='lider'){const l=list.find(x=>x.kind===mp.obj.lider)||list.find(x=>!isBossK(x.kind));if(l)l.lider=true;}
   return list;
 }
 function placeEnemies(list){
@@ -1996,13 +1999,13 @@ function placeEnemies(list){
   const ez0=Math.min(...EZONE.map(t=>t.r));
   EZONE.forEach(({r,c})=>{if(LV.reach.has(r*COLS+c)&&passable(r,c)&&!SECRET_ADJ.some(a=>a[0]===r&&a[1]===c))cand.push({r,c,rel:r-ez0});});
   const used=new Set();
-  const order=list.slice().sort((a,b)=>(!!isBossK(b.kind))-(!!isBossK(a.kind)));
+  const order=list.slice().sort((a,b)=>(!!(isBossK(b.kind)||b.lider))-(!!(isBossK(a.kind)||a.lider)));
   return order.map(s=>{
     const ia=ENEMIES[s.kind].ia;let best=null,bs=-1e9;
     for(const t of cand){
       if(used.has(t.r*COLS+t.c))continue;
       let sc=R()*4;
-      if(isBossK(s.kind))sc+=(5-t.rel)*3-Math.abs(t.c-OFFX)*1.2+hOf(t.r,t.c)*2;
+      if(isBossK(s.kind)||s.lider)sc+=(5-t.rel)*3-Math.abs(t.c-OFFX)*1.2+hOf(t.r,t.c)*2;
       else if(ia==='healer'||ia==='skirmish')sc+=(4-t.rel)*1.2;
       else if(ia==='guard')sc+=-Math.abs(t.rel-1)*1.2;
       else sc+=t.rel*0.6;
@@ -2811,10 +2814,10 @@ function ensureEnemyCache(kind){
 function makeEnemy(s){
   const b=ENEMIES[s.kind],sc=LV?LV.mp.escala:1;
   const ec=ensureEnemyCache(s.kind);
-  const first=isBossK(s.kind)?s.first:`${EPRE[s.kind]} ${s.first}`;
-  const hp=Math.round(b.hp*sc*(isBossK(s.kind)&&!BOSSES[s.kind]?1.8:1));
+  const first=(s.lider?'Líder ':'')+(isBossK(s.kind)?s.first:`${EPRE[s.kind]} ${s.first}`);
+  const hp=Math.round(b.hp*sc*(isBossK(s.kind)&&!BOSSES[s.kind]?1.8:1)*(s.lider?1.5:1));
   return {id:uid++,side:'enemy',kind:s.kind,ia:b.ia,first,nome:b.nome,maxhp:hp,hp,atk:b.atk+(sc>1.1?1:0)+(sc>1.25?1:0),def:b.def+(sc>1.2?1:0),defMag:baseDefMag(b.def)+(sc>1.2?1:0),mov:b.mov,alc:b.alc,dmg:b.dmg,ini:b.ini,pts:b.pts,big:b.big,
-    r:s.r,c:s.c,alive:true,aggro:false,sprite:ec.sp,portrait:ec.url};
+    r:s.r,c:s.c,alive:true,aggro:false,lider:!!s.lider,sprite:ec.sp,portrait:ec.url};
 }
 /* Rig de herói: em vez de 1 plano só, recorta o mesmo canvas 40x48 do
    heroSprite em pedaços (pernas, tronco, cabeça, braço da arma) e monta
@@ -3131,7 +3134,7 @@ async function chargeUp(u,kind){
   const pos=u.grp.position;
   pulse(pos,CHARGE_FX[kind][0],1.1,0.7);
   burst(pos,{n:7,colors:CHARGE_FX[kind],spread:0.35,up:1.1,y:0.1,life:0.8,size:0.8});
-  if(kind==='magic')SFX.cast();
+  playSfx('charge_'+kind,{vol:0.8});
   await waitS(0.85);
 }
 function chargeEnd(u){lpcRelease(u);tintUnitTo(u,{r:1,g:1,b:1},0.25);}
@@ -3445,7 +3448,11 @@ function terrainOf(r,c){
   return {nome:cri?'Piso de cripta':gel?'Neve':cav?'Rocha vulcânica':rui?'Piso de pedra':des?'Areia':'Campina',alt:0,txt:'Terreno livre',ic:cri?'#4d4658':gel?'#dfe9ef':cav?'#5b4c4a':rui?'#6f7680':des?'#d2b078':'#5d8f3f'};
 }
 function objsOf(mp){
-  const L=[{txt:'Derrotar todos os inimigos',prog:()=>`${enemies.filter(e=>!e.alive).length}/${enemies.length}`,done:()=>!!enemies.length&&!enemiesAlive().length}];
+  const todos={txt:'Derrotar todos os inimigos',prog:()=>`${enemies.filter(e=>!e.alive).length}/${enemies.length}`,done:()=>!!enemies.length&&!enemiesAlive().length};
+  const o=mp.obj;let L;
+  if(o&&o.tipo==='lider')L=[{txt:'Derrotar o líder inimigo',done:()=>enemies.some(e=>e.lider)&&!enemies.some(e=>e.lider&&e.alive)},{...todos,opt:true}];
+  else if(o&&o.tipo==='sobreviver')L=[{txt:`Sobreviver por ${o.rodadas} rodadas`,prog:()=>`${Math.min(stats?stats.round:0,o.rodadas)}/${o.rodadas}`,done:()=>won()},{...todos,opt:true}];
+  else L=[todos];
   if(mp.chefe&&mp.boss)L.push({txt:`Derrotar o ${ENEMIES[mp.boss].nome.replace(' Chefe','')}`,done:()=>enemies.some(e=>e.kind===mp.boss)&&!enemies.some(e=>e.kind===mp.boss&&e.alive)});
   if(mp.secret)L.push({txt:'Achar a passagem secreta',opt:true,done:()=>!!(stats&&stats.secret)});
   return mp.objetivos||L;
@@ -4684,11 +4691,19 @@ async function turn(u){
     await checkSecret(u);
   }
 }
-const over=()=>!heroesAlive().length||!enemiesAlive().length;
+// vitória conforme o objetivo do mapa: todos (padrão), líder (derrubar o capitão) ou sobreviver N rodadas
+function won(){
+  if(!heroesAlive().length)return false;
+  const o=LV&&LV.mp&&LV.mp.obj;
+  if(o&&o.tipo==='lider')return enemies.some(e=>e.lider)&&!enemies.some(e=>e.lider&&e.alive);
+  if(o&&o.tipo==='sobreviver')return (stats&&stats.roundsDone||0)>=o.rodadas||!enemiesAlive().length;
+  return !enemiesAlive().length;
+}
+const over=()=>!heroesAlive().length||won();
 async function startBattle(){
   if(phase!=='place')return;
   zoneVisible(false);setMode('battle');logLines=[];
-  stats={round:0,kills:[],crits:0,secret:false,hl:[],order:[]};
+  stats={round:0,roundsDone:0,kills:[],crits:0,secret:false,hl:[],order:[]};
   renderBattle();applySpeed();
   const all=[...heroesAlive(),...enemiesAlive()];
   all.forEach(u=>u.initRoll=ri(1,20)+u.ini+R());
@@ -4698,10 +4713,11 @@ async function startBattle(){
   for(let round=1;round<=24;round++){
     stats.round=round;const re=$('#round');if(re){re.textContent=round;gsap.fromTo(re,{scale:1.6,color:'#e9b949'},{scale:1,color:'#efe2c4',duration:0.4});}
     for(const u of stats.order){if(!u.alive)continue;if(over())break;await turn(u);hideCallout();clearRange();await waitS(0.7);}
+    stats.roundsDone=round;
     if(over())break;
   }
   active=null;ring.visible=false;hideCallout();
-  if(!enemiesAlive().length&&heroesAlive().length){
+  if(won()){
     heroesAlive().forEach((h,i)=>gsap.delayedCall(i*0.15,()=>{gsap.to(h.grp.position,{y:h.grp.position.y+0.4,duration:0.18,yoyo:true,repeat:3,ease:'power1.out'});burst(h.grp.position,{n:12,colors:['#ffd34a','#fffaf0','#79a8ec','#6cc35e'],spread:0.6,up:1.4,y:1,life:0.9});}));
     await banner('Vitória!');
   }else await wait(600);
@@ -4778,7 +4794,7 @@ function nextPhase(){
 /* ---------- Fim de fase ---------- */
 function finish(){
   gsap.globalTimeline.timeScale(1);
-  const win=!enemiesAlive().length&&heroesAlive().length>0;
+  const win=won();
   const alive=heroesAlive();
   const archer=party.filter(h=>h.highHits>=2).sort((a,b)=>b.highHits-a.highHits)[0];
   if(archer)stats.hl.push({w:5,t:`Do alto do morro, ${archer.first} acertou ${archer.highHits} flechas com bônus de altura.`});
