@@ -473,6 +473,11 @@ da ideia original sem precisar do modo manual completo.
   deserto à noite (`luz:'penumbra'`), 24–26 de lado, 8–9 inimigos (chefe: 7–8).
   Objetivos: todos, líder (Homem-Lobo / Guarda Orc), sobreviver 8 rodadas, chefe
   Ogro. Pool de inimigos mais pesado (lobisomem, javali, berserker, vampiro...).
-- **Falta:** Atos VII–X (6 mapas cada), dungeons secretas da Run 2, endgame (~12
-  dungeons muito difíceis + chefes secretos/opcionais), balanceamento de XP/HP/ATK,
+- **Atos VII–X (feitos):** 6 mapas cada (32–37 Ruínas Profundas, 38–43 Magma
+  Ancestral, 44–49 Picos Eternos, 50–55 Cripta Esquecida), 22–28 de lado, 7–9
+  inimigos, objetivos variados (todos, líder, sobreviver 8 rodadas, chefe) e
+  chefes repetidos mais fortes (Minotauro, Troll, Rei Esqueleto, Vampiro Senhor).
+  `escala` placeholder de 5.2 a 9.8. Total da campanha: 55 mapas + 2 secretas.
+- **Falta:** dungeons secretas da Run 2, endgame (~12 dungeons muito difíceis +
+  chefes secretos/opcionais), balanceamento de XP/HP/ATK e do `escala`,
   Modo Interminável usa agora o último mapa da campanha (não o fim do array).
