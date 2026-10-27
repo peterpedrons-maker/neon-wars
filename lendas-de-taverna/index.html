@@ -4376,9 +4376,9 @@ const skillOf=u=>SKILL[u.side==='hero'?u.cls:u.kind]||'Ataque';
 // nome da habilidade e o d20 aparecem juntos sobre a cabeça de quem age; só o
 // resultado (dano, MISS, cura) aparece depois, sobre o alvo.
 async function showRoll({u,skill,roll,outcome,numText}){
-  showCallout(u,skill);
+  showCallout(u,skill);const co=callout;
   await waitS(1.1);                      // o nome da habilidade fica legível antes de qualquer golpe
-  const die=document.createElement('b');die.className='mdie';die.textContent='20';(callout.bar||callout.el).appendChild(die);
+  const die=document.createElement('b');die.className='mdie';die.textContent='20';(co.bar||co.el).appendChild(die);
   SFX.dice();
   const o={v:0,n:-1};
   await gsap.to(o,{v:1,duration:0.45,ease:'none',onUpdate:()=>{const n=Math.floor(o.v*10);if(n!==o.n){o.n=n;die.textContent=1+Math.floor(Math.random()*20);}}});
