@@ -1,4 +1,4 @@
-# Status (buffs e debuffs) — rascunho
+# Status (buffs e debuffs) — implementado na branch (v1)
 
 Valem para heróis **e** inimigos. Duração em turnos **do alvo** (contam no início do turno dele). Mostrados como ícones
 pequenos ao lado da barra de vida e na lista de turno, com o turno restante.
@@ -35,7 +35,7 @@ pequenos ao lado da barra de vida e na lista de turno, com o turno restante.
 
 ## Regras
 - **Mesmo status** renova a duração (não soma), exceto os que empilham.
-- **Anti-controle:** depois de sair de Atordoado/Preso/Medo, o alvo fica **imune a controle por 1 turno**.
+- **Sem imunidade após controle** (decisão do dono): o mesmo alvo pode ser controlado em sequência; o limite fica nas recargas das habilidades, na regra de chefes e em Inabalável.
 - **Chefes:** imunes a Atordoado e Medo (viram Abalado); Preso e Lento duram 1 turno. **Líderes:** controle dura metade.
 - **Fogo × Gelo:** Queimadura remove Gelado e Gelado remove Queimadura. Fogo em alvo Gelado, ou Gelo em alvo Queimando
   (Choque Térmico), causa +50% de dano e remove o status.
