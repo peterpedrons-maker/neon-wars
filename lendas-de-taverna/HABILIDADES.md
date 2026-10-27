@@ -1,145 +1,88 @@
-# Árvore de habilidades — rascunho
+# Árvores de habilidades — versão 2 (grafo ARPG, com status e movimento)
 
-Combina com o que já está decidido: recarga **por turno** (sem mana) e IA que escolhe quando usar
-(depois os gatilhos). O jogador escolhe **o que desbloquear**; atributos continuam automáticos.
+Formato (decidido): uma árvore por classe, em grafo. **Pequeno** (custo 1: +atributo/valor), **médio** (custo 2: passiva,
+melhora ativa vizinha) e **grande** (custo 3: ativa ou passiva-chave). 1 ponto por nível a partir do nível 2; ~70 nós por
+classe, ninguém pega todos. Respec grátis; botão "Automático". Ativas gastam a ação do turno, têm recarga em turnos e usam o
+mesmo teste de acerto do ataque normal. Status em `STATUS.md`.
 
-## Formato: árvore em grafo, estilo ARPG (decisão do dono)
-Uma árvore por classe, em forma de mapa de nós ligados (como Path of Exile / Diablo 4), em vez de lista.
-- **Nó pequeno (círculo, custo 1):** +atributo ou +valor (ex.: +2 Força, +1 DEF, +3% PV). A maioria dos nós.
-- **Nó médio (hexágono, custo 2):** passiva marcante (ex.: Pele de Ferro, Muralha). Pode **melhorar uma ativa vizinha**
-  (menos recarga, mais dano, efeito extra).
-- **Nó grande (losango, custo 3):** **habilidade ativa** nova (ex.: Golpe Poderoso) ou passiva-chave que muda o jeito de jogar.
-- **Posição na árvore:** começa no centro-baixo; **tronco** no meio, **um braço por subclasse** nas laterais e
-  **pontes** entre os braços (nós híbridos) para builds mistas. O caminho entre nós grandes passa por pequenos/médios,
-  então as escolhas custam pontos de verdade.
-- **Pontos:** 1 por nível a partir do nível 2 (49 pontos no Nv 50, 59 no Nv 60). Cada árvore terá ~70 nós; ninguém pega todos.
-- **Respec grátis** na Taverna; botão **"Automático"** segue o caminho recomendado da subclasse (o jogo joga sozinho).
-- **Tela:** árvore que se arrasta e dá zoom (pinça), nó selecionado abre o detalhe embaixo, abas Árvore · Ativas · Resumo.
-  Mockup do Guerreiro (parte inicial) enviado na conversa.
-- **Ativas:** usam a ação do turno no lugar do ataque básico, recarga em turnos; a IA decide o momento (depois, gatilhos).
-- Os nós médios e grandes são os que estão listados abaixo (14 por classe, escritos à mão); os pequenos e as pontes
-  são gerados por modelo conforme a região da árvore (Tronco, Defesa, Ofensa…).
+## O que muda o jeito de jogar (eixos)
+- **Movimento:** Dar a Volta/Passo Lateral (andar depois de atacar), Investida, Recuar, Passo Sombrio, Passo Arcano, Escalador (sobe 1 altura a mais).
+- **Altura:** hoje morro dá +2 de acerto. As árvores ampliam: dano por altura, alcance e acerto no alto, "queda" (atacar de cima pra baixo).
+- **Status:** cada classe aplica status e tem passivas que **pagam mais** contra alvos com um grupo de status ([DoT], [Controle], [Fraqueza]).
+- **Terreno:** armadilhas, muralhas, zonas de fogo/gelo.
 
-## Nós médios e grandes por classe (ativa = grande; passiva = médio)
-(a tabela abaixo continua valendo; a regra de pontos e o formato são os de cima)
+## Guerreiro — frente de batalha
+**Tronco:** Pele de Ferro (P) +10% PV · Golpe Poderoso (A) dano ×1,5, recarga 3 · Dar a Volta (P) pode andar 2 casas depois de atacar · Firmeza (P) −2 de dano recebido.
+**Cavaleiro (defesa/controle):**
+Provocar (A) Provocado em inimigos a 3 casas por 2 turnos, 5 · Escudo Aliado (A) dá Escudo a um aliado adjacente, 4 ·
+Muralha (P) +1 DEF por aliado adjacente (máx. +3) · Terreno Sagrado (P) em morro: +2 DEF e −20% de dano recebido ·
+Punho Vingativo (P) +1 dano a cada golpe recebido na batalha (máx. +6) · Bastião (A) Inabalável por 2 turnos, 6.
+**Bárbaro (ofensa/altura):**
+Golpe Giratório (A) todos os adjacentes + Abalado, 4 · Corte Profundo (A) aplica Sangramento, 3 ·
+Investida (A) avança 4 casas e ataca; descendo de morro, +15% de dano por nível de altura, 4 · Sede de Sangue (P) +1 dano por morte (máx. +5) ·
+Selvageria (P) +10% de dano com menos de 50% de PV · Queda Pesada (P) atacando de cima: +25% de dano por nível de altura (máx. +50%) ·
+Carniceiro (P) +30% de dano contra alvos Sangrando ou Abalado · Fúria Final (A) ataca duas vezes; depois fica Abalado 1 turno, 7.
+**Pontes:** Veterano (P) +PV e dano · Passo Lateral (P) pode andar 1 casa antes de atacar.
 
-## Guerreiro
-| Nó | Tipo | Efeito | Recarga |
-|---|---|---|---|
-| **Tronco** Pele de Ferro | passiva | +10% PV máx. | — |
-| Golpe Poderoso | ativa | dano ×1,5 em um alvo | 3 |
-| Grito de Guerra | ativa | aliados a 3 casas: +2 acerto no próximo ataque | 5 |
-| Firmeza | passiva | −2 de dano recebido por golpe | — |
-| **Cavaleiro** Provocar | ativa | inimigos a 3 casas preferem atacá-lo por 2 turnos | 5 |
-| Escudo Aliado | ativa | absorve 50% do próximo dano de um aliado adjacente | 4 |
-| Muralha | passiva | +1 DEF por aliado adjacente (máx. +3) | — |
-| Contra-golpe | passiva | 25% de revidar golpe corpo a corpo recebido | — |
-| Bastião | ativa | 2 turnos sem sofrer crítico e −30% de dano | 6 |
-| **Bárbaro** Golpe Giratório | ativa | atinge todos os inimigos adjacentes | 4 |
-| Sede de Sangue | passiva | +1 dano por inimigo morto na batalha (máx. +5) | — |
-| Selvageria | passiva | +10% de dano com menos de 50% de PV | — |
-| Investida | ativa | avança até 4 casas e ataca com +2 de acerto | 4 |
-| Fúria Final | ativa | ataca duas vezes no turno | 7 |
+## Ladino — mobilidade e oportunidade
+**Tronco:** Pés Leves (P) +1 Mov · Estocada Dupla (A) dois ataques com −2 acerto, 3 · Evasão (P) 15% de desviar · Mãos Leves (P) +3 em segredos.
+**Assassino (marcar e executar):**
+Golpe nas Costas (A) +4 acerto e ×1,5 em alvo isolado ou flanqueado, 3 · Marcar Alvo (A) Marcado, 5 ·
+Predador (P) +30% de dano contra [Controle] ou Marcado · Sombras (P) Furtivo no começo de cada batalha ·
+Lâmina Envenenada (A) Veneno, 4 · Execução (P) ×2 abaixo de 25% de PV · Passo Sombrio (A) teleporta até 5 casas para o lado ou atrás de um inimigo, 5.
+**Armadilheiro (terreno e controle):**
+Armadilha de Espinhos (A) dano + Preso, 5 · Rede (A) Preso 2 turnos, 5 · Fumaça (A) aliados a 2 casas Protegidos e inimigos Cegos 1 turno, 6 ·
+Preparado (P) emboscada +6 · Mestre do Terreno (P) +1 Mov e sobe 1 altura a mais · Gatuno (P) +30% de dano contra Preso ou Lento · Campo Minado (A) 3 armadilhas em cruz, 8.
+**Ponte:** Esquiva Ágil (P) ao ser atacado de perto, 20% de andar 1 casa livre.
 
-## Ladino
-| Nó | Tipo | Efeito | Recarga |
-|---|---|---|---|
-| **Tronco** Pés Leves | passiva | +1 Movimento | — |
-| Estocada Dupla | ativa | dois ataques com −2 de acerto | 3 |
-| Mãos Leves | passiva | +3 em achar segredos | — |
-| Evasão | passiva | 15% de desviar totalmente de um golpe | — |
-| **Assassino** Golpe nas Costas | ativa | +4 acerto e dano ×1,5 em alvo isolado | 3 |
-| Marcar Alvo | ativa | alvo sofre +20% de dano de todos por 2 turnos | 5 |
-| Sombras | passiva | o primeiro golpe da batalha é crítico automático | — |
-| Lâmina Envenenada | ativa | veneno por 3 turnos | 4 |
-| Execução | passiva | dano ×2 contra alvos abaixo de 25% de PV | — |
-| **Armadilheiro** Armadilha de Espinhos | ativa | coloca armadilha numa casa adjacente (dano + para o inimigo) | 5 |
-| Fumaça | ativa | aliados a 2 casas: +3 DEF por 1 turno | 6 |
-| Rede | ativa | prende um alvo por 1 turno (não anda) | 5 |
-| Preparado | passiva | emboscada do 1º golpe passa de +3 para +6 | — |
-| Campo Minado | ativa | 3 armadilhas em cruz | 8 |
+## Mago — área e elementos
+**Tronco:** Mente Aguçada (P) +10% de dano mágico · Bola de Fogo (A) área 3×3, 3 · Escudo Arcano (A) Escudo em aliado ou nele, 4 · Passo Arcano (A) troca de lugar com um aliado a 4 casas, 4.
+**Piromante (fogo/DoT):**
+Chama Viva (A) Queimadura, 3 · Explosão (P) área +1 casa · Combustão (P) +40% de dano e +crítico contra Queimando ·
+Muralha de Chamas (A) zona de fogo de 3 casas por 3 turnos, Queimadura em quem entra, 7 · Pirofagia (P) cura 10% do dano de fogo ·
+Chuva de Meteoros (A) 3 explosões perto do alvo, 8 · Brasa Longa (P) Queimadura dura +1 turno e empilha 1 vez.
+**Geomante (gelo/controle):**
+Pele de Pedra (P) +3 DEF · Dardo de Rocha (A) ignora 4 de DEF, 3 · Nevasca (A) área, Gelado, 6 · Tremor (A) Atordoa adjacentes 1 turno, 5 ·
+Gelo Rachante (P) +40% de dano contra Lento, Gelado ou Preso · Alto Torreão (P) em morro: +2 Alcance e +2 acerto ·
+Muralha de Terra (A) obstáculo temporário em 3 casas, 6 · Terremoto (A) área grande + Lento, 8.
+**Ponte:** Choque Térmico (P) fogo em Gelado / gelo em Queimando: +50% de dano · Sábio (P) +Inteligência e Sabedoria.
 
-## Mago
-| Nó | Tipo | Efeito | Recarga |
-|---|---|---|---|
-| **Tronco** Mente Aguçada | passiva | +10% de dano mágico | — |
-| Bola de Fogo | ativa | dano em área 3×3 | 3 |
-| Escudo Arcano | ativa | absorve dano num aliado (ou nele) por 2 turnos | 4 |
-| Passo Arcano | ativa | troca de lugar com um aliado a até 4 casas | 4 |
-| **Piromante** Chama Viva | ativa | queimadura por 3 turnos | 3 |
-| Explosão | passiva | área da Bola de Fogo +1 casa | — |
-| Combustão | passiva | +crítico contra alvos queimando | — |
-| Chuva de Meteoros | ativa | 3 explosões em casas aleatórias perto do alvo | 8 |
-| Pirofagia | passiva | cura 10% do dano de fogo causado | — |
-| **Geomante** Pele de Pedra | passiva | +3 DEF | — |
-| Dardo de Rocha | ativa | dano forte que ignora 4 de DEF | 3 |
-| Muralha de Terra | ativa | cria obstáculo temporário em 3 casas | 6 |
-| Tremor | ativa | atordoa inimigos adjacentes por 1 turno | 5 |
-| Terremoto | ativa | dano em área grande | 8 |
+## Clérigo — suporte sagrado
+**Tronco:** Cura Maior (A) cura o dobro, 3 · Bênção (A) Protegido + Inspirado num aliado, 4 · Castigo (A) dano sagrado com Sabedoria, 3 · Fé Inabalável (P) +2 Res. Mágica.
+**Curandeiro:**
+Cura em Área (A) a 2 casas, 5 · Aura Vital (P) aliados adjacentes com Regeneração · Purificar (A) remove debuffs, 3 · Ressurgir (A) revive com 30% de PV, 1× por batalha ·
+Luz Restauradora (P) o excedente da cura vira Escudo (25%) · Bênção Prolongada (P) buffs do clérigo duram +1 turno · Milagre (A) cura total + Regeneração, 8.
+**Templário:**
+Golpe Sagrado (A) ×1,4 e recupera 30% do dano, 3 · Punição (A) Marcado, 4 · Escudo da Fé (P) +2 DEF · Luz Vingadora (P) +50% de dano contra mortos-vivos ·
+Advertência (A) Medo em adjacentes por 2 turnos, 6 · Zelo (P) +30% de dano contra [Fraqueza] · Julgamento (A) área sagrada; +50% de dano contra Marcado, 7.
+**Ponte:** Passo Abençoado (P) +1 Mov e cura 3 PV ao chegar perto de aliado ferido · Devoto (P) +Sabedoria.
 
-## Clérigo
-| Nó | Tipo | Efeito | Recarga |
-|---|---|---|---|
-| **Tronco** Cura Maior | ativa | cura o dobro num aliado | 3 |
-| Bênção | ativa | +2 acerto e +2 DEF num aliado por 2 turnos | 4 |
-| Castigo | ativa | dano sagrado com Sabedoria (mira o inimigo mais forte) | 3 |
-| Fé Inabalável | passiva | +2 Res. Mágica | — |
-| **Curandeiro** Cura em Área | ativa | cura todos a 2 casas | 5 |
-| Aura Vital | passiva | aliados adjacentes recuperam 2 PV por turno | — |
-| Purificar | ativa | remove veneno e efeitos ruins de um aliado | 3 |
-| Ressurgir | ativa | revive um aliado caído com 30% de PV (1× por batalha) | — |
-| Milagre | ativa | cura total num aliado | 8 |
-| **Templário** Golpe Sagrado | ativa | dano ×1,4 e recupera 30% do dano em PV | 3 |
-| Escudo da Fé | passiva | +2 DEF | — |
-| Punição | ativa | marca um alvo: aliados causam +2 de dano nele por 2 turnos | 4 |
-| Luz Vingadora | passiva | +50% de dano contra mortos-vivos | — |
-| Julgamento | ativa | dano sagrado em área | 7 |
+## Arqueiro — posição, altura e precisão
+**Tronco:** Olhar de Águia (P) +1 Alc · Tiro Certeiro (A) +4 acerto e ×1,3, 3 · Flecha Perfurante (A) dois alvos em linha, 4 · Agilidade (P) +1 Mov · Recuar (A) anda 3 casas para longe sem sofrer ataque, 4.
+**Patrulheiro (foco e altura):**
+Marca do Caçador (A) Marcado + Foco, 4 · Foco (P) +2 acerto por golpe seguido no mesmo alvo · Posição Elevada (P) em morro: +6 acerto e +25% de dano ·
+Tiro Mortal (A) ×2, 7 · Armadilha de Caça (A) Preso, 5 · Instinto (P) +30% de dano contra Marcado ou Preso · Escalador (P) sobe 1 altura a mais.
+**Saraivador (área e DoT):**
+Chuva de Flechas (A) área 3×3, 4 · Rajada (A) três flechas com −2 acerto, 4 · Flecha Incendiária (A) Queimadura, 4 · Ricochete (P) segundo alvo leva 50% ·
+Flechas Venenosas (P) 20% de chance de Veneno em todo golpe · Munição Pesada (P) +3 de dano · Saraivada Total (A) área grande, 8.
+**Ponte:** Olho Treinado (P) +1 de crítico · Disparo em Movimento (P) pode atirar depois de andar sem penalidade.
 
-## Arqueiro
-| Nó | Tipo | Efeito | Recarga |
-|---|---|---|---|
-| **Tronco** Olhar de Águia | passiva | +1 Alcance | — |
-| Tiro Certeiro | ativa | +4 acerto e dano ×1,3 | 3 |
-| Flecha Perfurante | ativa | atinge dois alvos em linha | 4 |
-| Agilidade | passiva | +1 Movimento | — |
-| **Patrulheiro** Marca do Caçador | ativa | alvo marcado: +3 acerto e +2 de dano do arqueiro por 2 turnos | 4 |
-| Foco | passiva | empilha +2 de acerto a cada golpe seguido no mesmo alvo | — |
-| Posição Elevada | passiva | bônus de morro sobe de +4 para +6 | — |
-| Tiro Mortal | ativa | dano ×2 | 7 |
-| Armadilha de Caça | ativa | armadilha adjacente que prende o inimigo | 5 |
-| **Saraivador** Chuva de Flechas | ativa | dano em área 3×3 | 4 |
-| Ricochete | passiva | um segundo alvo adjacente leva 50% do dano | — |
-| Rajada | ativa | três flechas com −2 de acerto | 4 |
-| Munição Pesada | passiva | +3 de dano | — |
-| Saraivada Total | ativa | dano em área grande | 8 |
+## Bardo — apoio e debuff
+**Tronco:** Inspiração Maior (P) balada +1 acerto · Canção de Vigor (A) Regeneração em área, remove Medo, 4 · Ritmo de Marcha (A) Veloz nos aliados, 5 · Nota Aguda (A) dano sônico em dois alvos, 3.
+**Consonante (buffs):**
+Hino de Coragem (A) Fortalecido nos aliados a 3 casas, 5 · Harmonia (P) a balada inspira dois aliados · Coro (P) +1 dano por aliado a 2 casas ·
+Marcha Triunfal (A) aliados ganham +2 Mov e +2 dano no primeiro golpe, 6 · Eco Benigno (P) buffs do bardo duram +1 turno ·
+Canção de Ninar (A) Atordoa adjacentes 1 turno, 7 · Concerto Final (A) todos os aliados Fortalecidos + Protegidos + Inspirados, 8.
+**Dissonante (debuffs):**
+Desafinar (A) Abalado (−3 DEF), 3 · Grito Estridente (A) área + Abalado, 5 · Cacofonia (A) Cego em área, 6 · Pavor (A) Medo, 6 ·
+Eco (P) debuffs do bardo duram +1 turno · Maestro do Caos (P) +25% de dano contra alvos com 2 ou mais debuffs · Sinfonia do Caos (A) dano em área + debuffs, 8.
+**Ponte:** Voz Alta (P) buffs e debuffs alcançam +1 casa · Carisma (P) +Carisma.
 
-## Bardo
-| Nó | Tipo | Efeito | Recarga |
-|---|---|---|---|
-| **Tronco** Inspiração Maior | passiva | a balada dá +1 de acerto a mais | — |
-| Canção de Vigor | ativa | cura leve em todos a 2 casas | 4 |
-| Ritmo de Marcha | ativa | aliados a 3 casas: +1 Movimento por 2 turnos | 5 |
-| Nota Aguda | ativa | dano sônico em dois alvos | 3 |
-| **Consonante** Hino de Coragem | ativa | aliados a 3 casas: +2 dano por 2 turnos | 5 |
-| Harmonia | passiva | a balada inspira dois aliados | — |
-| Coro | passiva | +1 dano por aliado a 2 casas | — |
-| Canção de Ninar | ativa | inimigos adjacentes perdem a próxima ação | 7 |
-| Concerto Final | ativa | todos os aliados: +2 acerto, +2 DEF, +2 dano por 2 turnos | 8 |
-| **Dissonante** Desafinar | ativa | −3 DEF no alvo por 2 turnos | 3 |
-| Grito Estridente | ativa | dano em área e deixa "abalados" | 5 |
-| Eco | passiva | efeitos ruins que o bardo aplica duram +1 turno | — |
-| Cacofonia | ativa | inimigos na área erram mais: −3 de acerto por 2 turnos | 6 |
-| Sinfonia do Caos | ativa | dano em área e debuffs juntos | 8 |
+## Mecânicas novas (por custo)
+1. **Sistema de status** (duração, empilhar, ícones, regras de imunidade) — base de tudo; vem primeiro.
+2. Barato: passivas de número, dano ×N, ataque duplo, andar depois de atacar, bônus por altura/estado do alvo.
+3. Médio: dano em área, avanço + ataque, provocar, escudo, cura em área, Medo, atordoar/prender.
+4. Caro: armadilha no chão, obstáculo/zonas de fogo, reviver, teleportar/trocar de lugar, subir altura extra.
 
-## Mecânicas novas que isso exige (por custo)
-1. **Baratas:** passivas de número (PV, Mov, Alc, DEF, dano), dano ×N, ataque duplo, marca/debuff com duração
-   (hoje só existem "abalado" e "inspirado" de 1 golpe).
-2. **Médias:** dano em área (adjacentes, 3×3, em linha), avanço + ataque, provocar (alvo preferido), escudo de absorção,
-   queimadura/veneno por turno (veneno já existe), cura em área, atordoar/prender.
-3. **Caras:** armadilha colocável no chão, obstáculo temporário, reviver, trocar de lugar.
-Ordem sugerida: implementar o tronco e um ramo de cada classe primeiro (médias), deixar as caras pro final.
-
-## Cuidados
-- Habilidades não devem anular o d20: ataque especial usa o mesmo teste de acerto, só muda dano/alcance/efeito.
-- Recargas contam turnos do próprio herói; a lista de turno já mostra isso bem.
-- Tela da árvore: mockup antes de implementar (como combinado), na ficha do herói.
+## Ordem de implementação sugerida
+Status → motor de habilidades (ativa, recarga, IA usa) → tronco e um ramo por classe → pontes e ramos restantes → tela da árvore.
