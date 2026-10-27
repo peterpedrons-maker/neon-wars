@@ -681,6 +681,8 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .stc.buff img{filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 2px #79a8ecaa)}
 .stc em{position:absolute;right:-3px;bottom:-4px;font:700 11px/1 var(--f-display,sans-serif);font-style:normal;color:#fff;text-shadow:0 0 2px #000,0 1px 0 #000,1px 0 #000,-1px 0 #000,0 -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000}
 .stc b{position:absolute;left:-2px;top:-4px;font:700 11px/1 var(--f-display,sans-serif);color:#ffe08a;text-shadow:0 0 2px #000,0 1px 0 #000,1px 0 #000,-1px 0 #000}
+.skr{margin:6px 0;padding:6px 8px;background:#1a120d;border-left:3px solid #6a4a22}
+.skr b{color:#ffe9b8;font-size:13px}.skr small{margin-left:6px;color:#e9b949;font-size:10px;letter-spacing:.3px}.skr p{margin:2px 0 0;font-size:12px;color:#d8c9a8;line-height:1.3}
 .stc.pop{animation:stpop .55s cubic-bezier(.2,1.6,.4,1)}
 @keyframes stpop{0%{transform:scale(0.2);opacity:0}60%{transform:scale(1.8)}100%{transform:scale(1);opacity:1}}
 .hpf .sts{max-width:92px;margin-top:3px;gap:2px}
@@ -3924,8 +3926,8 @@ function applyLevelUps(h){
 function serializeHero(h){
   const equip={};EQ_SLOTS.forEach(s=>equip[s]=h.equip[s]?h.equip[s].id:null);
   return {id:h.id,cls:h.cls,first:h.first,sur:h.sur,nome:h.nome,traitId:h.trait.id,
-    maxhp:h.maxhp,hp:h.hp,atk:h.atk,def:h.def,defMag:h.defMag,mov:h.mov,alc:h.alc,dmg:h.dmg,ini:h.ini,per:h.per,
-    critBonus:h.critBonus||0,look:h.look,arma:h.arma,armadura:h.armadura,
+    maxhp:h.maxhp-((h.pbApplied&&h.pbApplied.hp)||0),hp:Math.min(h.hp,h.maxhp-((h.pbApplied&&h.pbApplied.hp)||0)),atk:h.atk,def:h.def-((h.pbApplied&&h.pbApplied.def)||0),defMag:h.defMag-((h.pbApplied&&h.pbApplied.defMag)||0),mov:h.mov,alc:h.alc,dmg:[h.dmg[0],h.dmg[1],h.dmg[2]-((h.pbApplied&&h.pbApplied.dmg)||0)],ini:h.ini,per:h.per-((h.pbApplied&&h.pbApplied.per)||0),
+    critBonus:(h.critBonus||0)-((h.pbApplied&&h.pbApplied.crit)||0),look:h.look,arma:h.arma,armadura:h.armadura,
     xpTotal:h.xpTotal||0,xpRun:h.xpRun||0,level:h.level||1,
     injured:!!h.injured,injuredMissionsLeft:h.injuredMissionsLeft||0,benchXpBonus:h.benchXpBonus||0,
     ver:2,attrBase:h.attrBase,attrPts:h.attrPts,afin:h.afin,attrBonus:h.attrBonus,loadout:h.loadout,sub:h.sub,equip};
@@ -4255,6 +4257,31 @@ function rangeGrid(r,col){
   for(let y=-Q;y<=Q;y++)for(let x=-Q;x<=Q;x++){const d=Math.abs(x)+Math.abs(y);h+=`<i${!x&&!y?' style="background:#e9b949"':d<=r?` style="background:${col}"`:''}></i>`;}
   return `<div class="rg">${h}</div>`;
 }
+const skDesc=x=>{
+  const st=(x.st||[]).map(y=>STATUS[y.id].nome).join(', ');
+  switch(x.kind){
+    case 'atk':return `Ataque ×${x.mult}${x.atkB?`, ${x.atkB>0?'+':''}${x.atkB} de acerto`:''}${st?` e aplica ${st}`:''}${x.leech?', recupera parte do dano':''}${x.need?' (só em alvo isolado)':''}.`;
+    case 'multi':return `${x.hits} ataques seguidos${x.atkB?` (${x.atkB} de acerto)`:''}.`;
+    case 'aoe':return `Dano em área${x.area.c==='self'?' em volta de quem usa':' em volta do alvo'}${st?` e aplica ${st}`:''}.`;
+    case 'debuff':return `Aplica ${st} no alvo (ele pode resistir).`;
+    case 'debuffArea':return `Aplica ${st} nos inimigos a ${x.rad} casa${x.rad>1?'s':''}.`;
+    case 'buffAllies':return `${x.inspire?`Aliados a ${x.rad} casas ganham +${x.inspire} de acerto`:`Aliados a ${x.rad} casas ganham ${st}`}.`;
+    case 'buffAlly':return `${x.inspire?`+${x.inspire} de acerto e `:''}${st} num aliado a ${x.rad} casa${x.rad>1?'s':''}.`;
+    case 'healSkill':return `Cura ×${x.mult} num aliado ferido.`;
+    case 'cleanse':return 'Remove os debuffs de um aliado.';
+  }
+  return '';
+};
+function skillsBlock(h){
+  const sk=skillsOf(h),pv=passivesOf(h);
+  const nxt=[...Object.values(SK),...Object.values(PV)].filter(x=>x.cls===h.cls&&(!x.sub||x.sub===h.sub)&&(h.level||1)<x.lv).sort((a,b)=>a.lv-b.lv)[0];
+  const row=(x,tp,ex)=>`<div class="skr"><b>${x.nome}</b><small>${tp}${ex||''}</small><p>${x.kind?skDesc(x):x.desc}</p></div>`;
+  return `<div class="rpf wide"><h4 class="sec" style="margin:0">Habilidades</h4>
+    ${sk.length?sk.map(x=>row(x,'ativa',` · recarga ${x.cd}`)).join(''):''}
+    ${pv.length?pv.map(x=>row(x,'passiva','')).join(''):''}
+    ${!sk.length&&!pv.length?'<p class="note" style="color:#f0dfb9">Nenhuma ainda: as primeiras habilidades chegam no nível 3.</p>':''}
+    ${nxt?`<p class="note" style="color:#c9b88f;margin-top:6px">Próxima: <b>${nxt.nome}</b> no nível ${nxt.lv}.</p>`:''}</div>`;
+}
 function renderSheet(id,src){
   if(src)tvSrc=src;
   const list=tvSrc==='roster'?roster:draw,h=list.find(x=>x.id===id);
@@ -4282,6 +4309,7 @@ function renderSheet(id,src){
     <div class="rpf"><h4 class="sec" style="margin:0">Combate</h4><div class="stgrid"><span><em>${ico('stat','atq')}Ataque</em><b>+${h.atk}</b></span><span><em>${ico('stat','def')}Defesa</em><b>${h.def}</b></span><span><em>${ico('stat','res')}Res. Mágica</em><b>${h.defMag}</b></span><span><em>${ico('stat','mov')}Mover</em><b>${h.mov}</b></span><span><em>${ico('stat','alc')}Alcance</em><b>${h.alc}</b></span><span><em>${ico('stat','crit')}Crítico</em><b>${h.critBonus?`${20-h.critBonus}–20`:'20'}</b></span><span><em>${ico('stat','ini')}Iniciativa</em><b>${h.ini>=0?'+':''}${h.ini}</b></span><span><em>${ico('stat','dano')}Dano</em><b>${h.dmg[0]}d${h.dmg[1]}${h.dmg[2]?'+'+h.dmg[2]:''}</b></span><span><em>${ico('stat','vida')}Vida</em><b>${h.maxhp}</b></span></div></div>
     <div class="rpf"><h4 class="sec" style="margin:0">Atributos</h4>${ATTR_NAMES.map(a=>`<div class="arow"><span>${AN[a]}${afG.includes(a)?' <small style="color:#9fe0a0">▲</small>':''}</span><b>${at[a]??'—'}</b><div class="mini"><i style="width:${Math.min(100,Math.round((at[a]||0)/amax*100))}%"></i></div></div>`).join('')}</div>
     <div class="rpf"><h4 class="sec" style="margin:0">Equipamento</h4><div class="eqlist">${eq}</div></div>
+    ${skillsBlock(h)}
     <div class="rpf">${h.sub?`<div class="hhead">${ico('subclasse',h.sub,'xl')}<div class="grow"><h4 class="sec" style="margin:0">${SUB_INFO[h.sub].nome}</h4><p class="note" style="color:#f0dfb9">${SUB_INFO[h.sub].desc}</p></div></div>`:`<h4 class="sec" style="margin:0">Subclasse</h4><p class="note" style="color:#f0dfb9">Escolhe no nível ${SUB_UNLOCK_LEVEL}, na Forja: ${SUBCLASSES[h.cls].map(x=>SUB_INFO[x].nome).join(' ou ')}.</p>`}</div>
     <div class="rpf wide"><div class="rg-row"><div><span>Movimento (${h.mov})</span>${rangeGrid(h.mov,'#79a8ec')}</div><div><span>Alcance (${h.alc})</span>${rangeGrid(h.alc,'#d4503f')}</div></div>
       <div class="sec2"><h4>Como joga</h4><p><b>No campo.</b> ${cm.campo}</p><p><b>Contra inimigos.</b> ${cm.inimigos}</p><p><b>Com aliados.</b> ${cm.aliados}</p><p class="note">${c.resumo} Dica de posição: ${c.dica}</p></div></div>
@@ -4551,14 +4579,14 @@ canvas.addEventListener('pointerup',e=>{
 });
 
 /* ================= Movimento e IA ================= */
-function bfsReach(u){
-  const res=new Map();res.set(k(u.r,u.c),{r:u.r,c:u.c,d:0,prev:null});
+function bfsReach(u,limit){
+  const lim=limit==null?movOf(u):limit;const res=new Map();res.set(k(u.r,u.c),{r:u.r,c:u.c,d:0,prev:null});
   const q=[[u.r,u.c]];
   while(q.length){
-    const [r,c]=q.shift(),cur=res.get(k(r,c));if(cur.d>=movOf(u))continue;
+    const [r,c]=q.shift(),cur=res.get(k(r,c));if(cur.d>=lim)continue;
     for(const [dr,dc] of DIRS){
       const nr=r+dr,nc=c+dc;if(!passable(nr,nc))continue;const kk=k(nr,nc);if(res.has(kk))continue;
-      if(Math.abs(hOf(nr,nc)-hOf(r,c))>1)continue;
+      if(Math.abs(hOf(nr,nc)-hOf(r,c))>climbOf(u))continue;
       if(TRAPS.has(kk)&&(u.side==='enemy'||REVEALED.has(kk)))continue; // inimigos conhecem a masmorra; heróis só depois de ver
       const occ=unitAt(nr,nc);
       if(occ&&occ!==u){if(occ.side!==u.side)continue;res.set(kk,{r:nr,c:nc,d:cur.d+1,prev:k(r,c),pass:true});q.push([nr,nc]);continue;}
@@ -4587,8 +4615,8 @@ function bestTileWithin(reach,target,range,u,mode){
   return best;
 }
 function chooseTarget(u,foes,reach){
-  if(u.side==='enemy'){const fan=foes.find(f=>f.trait&&f.trait.id==='fanfarrao');if(fan&&(bestTileWithin(reach,fan,u.alc,u)||dist(u,fan)<=7))return fan;}
-  const att=foes.filter(f=>bestTileWithin(reach,f,u.alc,u));
+  if(u.side==='enemy'){const fan=foes.find(f=>f.trait&&f.trait.id==='fanfarrao');if(fan&&(bestTileWithin(reach,fan,rngOf(u),u)||dist(u,fan)<=7))return fan;}
+  const att=foes.filter(f=>bestTileWithin(reach,f,rngOf(u),u));
   if(att.length)return att.sort((a,b)=>(a.hp-b.hp)||(a.def-b.def))[0];
   let best=null,bd=1e9;
   for(const f of foes){const d=fieldFrom([[f.r,f.c]]).get(k(u.r,u.c));const dd=d==null?99:d;if(dd<bd){bd=dd;best=f;}}
@@ -4759,6 +4787,7 @@ function removeStatus(u,id){if(!u.st)return;const i=u.st.findIndex(x=>x.id===id)
 function addStatus(t,id,o={}){
   if(!t||!t.alive||!STATUS[id])return false;
   let dur=o.dur||STATUS[id].dur;
+  const so=o.src&&o.src.pb;if(so){if(STATUS[id].tipo==='buff')dur+=so.buffDur||0;else dur+=(so.debuffDur||0)+(id==='queimadura'&&so.longBurn?1:0);}
   if(STATUS[id].grupo==='ctrl'){
     if(isBossK(t.kind)&&(id==='atordoado'||id==='medo')){id='abalado';dur=2;}      // chefe não fica atordoado nem com medo: fica abalado
     else if(isBossK(t.kind))dur=Math.max(1,dur-1);
@@ -4786,7 +4815,7 @@ function stMods(u){
   }
   return m;
 }
-const movOf=u=>hasSt(u,'preso')?0:Math.max(0,u.mov+stMods(u).mov);
+const movOf=u=>hasSt(u,'preso')?0:Math.max(0,u.mov+stMods(u).mov+((u.pb&&u.pb.mov)||0));
 // início do turno: dano contínuo e regeneração
 async function statusTurnStart(u){
   for(const x of (u.st||[]).slice()){
@@ -4832,10 +4861,10 @@ const SK={
   marcar_alvo:{nome:'Marcar Alvo',cls:'ladino',sub:'assassino',lv:10,cd:5,kind:'debuff',st:[{id:'marcado'}]},
   lamina_envenenada:{nome:'Lâmina Envenenada',cls:'ladino',sub:'assassino',lv:14,cd:4,kind:'atk',mult:1,st:[{id:'veneno'}]},
   rede:{nome:'Rede',cls:'ladino',sub:'armadilheiro',lv:10,cd:5,kind:'debuff',alc:4,st:[{id:'preso'}]},
-  bola_fogo:{nome:'Bola de Fogo',cls:'mago',lv:3,cd:3,kind:'aoe',area:{c:'target',r:1},mult:0.8},
+  bola_fogo:{nome:'Bola de Fogo',cls:'mago',lv:3,cd:3,kind:'aoe',area:{c:'target',r:1},mult:0.8,elem:'fogo'},
   escudo_arcano:{nome:'Escudo Arcano',cls:'mago',lv:6,cd:4,kind:'buffAlly',rad:4,st:[{id:'escudo',val:'lvl'}]},
-  chama_viva:{nome:'Chama Viva',cls:'mago',sub:'piromante',lv:10,cd:3,kind:'atk',mult:0.8,st:[{id:'queimadura'}]},
-  nevasca:{nome:'Nevasca',cls:'mago',sub:'geomante',lv:10,cd:6,kind:'aoe',area:{c:'target',r:1},mult:0.5,st:[{id:'gelado'}]},
+  chama_viva:{nome:'Chama Viva',cls:'mago',sub:'piromante',lv:10,cd:3,kind:'atk',mult:0.8,st:[{id:'queimadura'}],elem:'fogo'},
+  nevasca:{nome:'Nevasca',cls:'mago',sub:'geomante',lv:10,cd:6,kind:'aoe',area:{c:'target',r:1},mult:0.5,st:[{id:'gelado'}],elem:'gelo'},
   tremor:{nome:'Tremor',cls:'mago',sub:'geomante',lv:14,cd:5,kind:'debuffArea',rad:1,st:[{id:'atordoado'}]},
   cura_maior:{nome:'Cura Maior',cls:'clerigo',lv:3,cd:3,kind:'healSkill',mult:2},
   bencao:{nome:'Bênção',cls:'clerigo',lv:6,cd:4,kind:'buffAlly',rad:3,inspire:2,st:[{id:'protegido'}]},
@@ -4845,7 +4874,7 @@ const SK={
   punicao:{nome:'Punição',cls:'clerigo',sub:'templario',lv:14,cd:4,kind:'debuff',st:[{id:'marcado'}]},
   tiro_certeiro:{nome:'Tiro Certeiro',cls:'arqueiro',lv:3,cd:3,kind:'atk',mult:1.3,atkB:4},
   chuva_flechas:{nome:'Chuva de Flechas',cls:'arqueiro',sub:'saraivador',lv:10,cd:4,kind:'aoe',area:{c:'target',r:1},mult:0.7},
-  flecha_incendiaria:{nome:'Flecha Incendiária',cls:'arqueiro',sub:'saraivador',lv:14,cd:4,kind:'atk',mult:0.9,st:[{id:'queimadura'}]},
+  flecha_incendiaria:{nome:'Flecha Incendiária',cls:'arqueiro',sub:'saraivador',lv:14,cd:4,kind:'atk',mult:0.9,st:[{id:'queimadura'}],elem:'fogo'},
   marca_cacador:{nome:'Marca do Caçador',cls:'arqueiro',sub:'patrulheiro',lv:10,cd:4,kind:'debuff',st:[{id:'marcado'}],self:[{id:'foco'}]},
   nota_aguda:{nome:'Nota Aguda',cls:'bardo',lv:3,cd:3,kind:'aoe',area:{c:'target',r:1},mult:0.6},
   hino_coragem:{nome:'Hino de Coragem',cls:'bardo',lv:6,cd:5,kind:'buffAllies',rad:3,st:[{id:'fortalecido'}]},
@@ -5038,7 +5067,7 @@ function skillPlan(u,foes,allies,reach){
   const consider=(sk,score,extra)=>{if(score>bs){bs=score;best={sk,...extra};}};
   const inRange=(f,rng)=>bestTileWithin(reach,f,rng,u);
   for(const sk of list){
-    const rng=sk.alc||u.alc;
+    const rng=sk.alc?sk.alc+((u.pb&&u.pb.alc)||0):rngOf(u);
     if(sk.kind==='atk'||sk.kind==='multi'){
       let c=foes.filter(f=>inRange(f,rng));
       if(sk.need==='isolado')c=c.filter(f=>isIsolated(f));
@@ -5058,24 +5087,151 @@ function skillPlan(u,foes,allies,reach){
       consider(sk,55,{target:t,tile:inRange(t,rng)});
     }else if(sk.kind==='debuffArea'){
       let b=null,bn=0;
-      for(const f of foes){const tile=inRange(f,Math.max(1,sk.rad));if(!tile)continue;
-        const n=foes.filter(g=>dist(g,tile)<=sk.rad&&!hasSt(g,sk.st[0].id)).length;if(n>bn){bn=n;b={target:f,tile};}}
-      if(bn>=(sk.rad>=3?2:1))consider(sk,50+bn*5,b);
+      for(const f of foes){const tile=inRange(f,Math.max(1,(sk.rad+((u.pb&&u.pb.rad)||0))));if(!tile)continue;
+        const n=foes.filter(g=>dist(g,tile)<=(sk.rad+((u.pb&&u.pb.rad)||0))&&!hasSt(g,sk.st[0].id)).length;if(n>bn){bn=n;b={target:f,tile};}}
+      if(bn>=((sk.rad+((u.pb&&u.pb.rad)||0))>=3?2:1))consider(sk,50+bn*5,b);
     }else if(sk.kind==='buffAllies'||sk.kind==='buffAlly'){
       const engaged=foes.some(f=>dist(f,u)<=8);if(!engaged)continue;
       const tag=sk.st&&sk.st[0]?sk.st[0].id:null;
-      const c=[u,...allies].filter(a=>dist(a,u)<=sk.rad&&(!tag||!hasSt(a,tag))&&(sk.inspire?!a.inspired:true));
+      const c=[u,...allies].filter(a=>dist(a,u)<=(sk.rad+((u.pb&&u.pb.rad)||0))&&(!tag||!hasSt(a,tag))&&(sk.inspire?!a.inspired:true));
       if(sk.kind==='buffAllies'&&c.filter(a=>a!==u).length<1)continue;
       if(!c.length)continue;
       const t=c.sort((a,b)=>a.hp/a.maxhp-b.hp/b.maxhp)[0];
       consider(sk,sk.kind==='buffAllies'?48+c.length*3:45,{targets:sk.kind==='buffAllies'?c:[t],target:t,self:true});
     }else if(sk.kind==='cleanse'){
-      const c=[u,...allies].filter(a=>dist(a,u)<=sk.rad&&(a.st||[]).some(x=>STATUS[x.id].tipo==='debuff'));
+      const c=[u,...allies].filter(a=>dist(a,u)<=(sk.rad+((u.pb&&u.pb.rad)||0))&&(a.st||[]).some(x=>STATUS[x.id].tipo==='debuff'));
       if(c.length)consider(sk,60,{target:c[0],self:true});
     }
   }
   return best;
 }
+
+/* ================= Passivas (motor) — ver HABILIDADES.md =================
+   Como as ativas, o herói aprende sozinho ao atingir `lv` (até a árvore existir). No começo da batalha as
+   passivas de número entram nos atributos do herói (e saem no fim); as condicionais (altura, status do alvo…)
+   são lidas na hora do golpe. */
+const UNDEAD=['esqueleto','zumbi','esqguerreiro','esqmago','esqgelo','esqfogo','espectro','espectror','reiesq','ghost','vampiro','vampsenhor'];
+const PV={
+  // Guerreiro
+  pele_ferro:{nome:'Pele de Ferro',cls:'guerreiro',lv:4,desc:'+10% de PV máximo.',stat:{hpPct:10}},
+  firmeza:{nome:'Firmeza',cls:'guerreiro',lv:8,desc:'−2 de dano recebido por golpe.',stat:{flatRed:2}},
+  dar_volta:{nome:'Dar a Volta',cls:'guerreiro',lv:12,desc:'Depois de atacar, anda até 2 casas.',stat:{moveAfter:2}},
+  veterano:{nome:'Veterano',cls:'guerreiro',lv:16,desc:'+6% de PV e +1 de dano.',stat:{hpPct:6,dmg:1}},
+  muralha:{nome:'Muralha',cls:'guerreiro',sub:'cavaleiro',lv:12,desc:'+1 DEF por aliado adjacente (máx. +3).',wall:3},
+  terreno_sagrado:{nome:'Terreno Sagrado',cls:'guerreiro',sub:'cavaleiro',lv:16,desc:'Em morro: +2 DEF e −20% de dano recebido.',holy:{def:2,red:0.2}},
+  punho_vingativo:{nome:'Punho Vingativo',cls:'guerreiro',sub:'cavaleiro',lv:20,desc:'+1 dano a cada golpe recebido na batalha (máx. +6).',perHit:{flat:1,cap:6}},
+  contra_golpe:{nome:'Contra-golpe',cls:'guerreiro',sub:'cavaleiro',lv:24,desc:'25% de revidar um golpe corpo a corpo recebido.',counter:0.25},
+  sede_sangue:{nome:'Sede de Sangue',cls:'guerreiro',sub:'barbaro',lv:12,desc:'+1 dano por inimigo derrotado (máx. +5).',perKill:{flat:1,cap:5}},
+  selvageria:{nome:'Selvageria',cls:'guerreiro',sub:'barbaro',lv:16,desc:'+10% de dano com menos de 50% de PV.',selfLow:{hp:0.5,x:1.1}},
+  queda_pesada:{nome:'Queda Pesada',cls:'guerreiro',sub:'barbaro',lv:20,desc:'Atacando de cima: +25% de dano por nível de altura (máx. +50%).',hi:{perLvl:0.25,cap:0.5}},
+  carniceiro:{nome:'Carniceiro',cls:'guerreiro',sub:'barbaro',lv:24,desc:'+30% de dano contra alvos com Sangramento ou Abalado.',mult:[{ids:['sangramento','abalado'],x:1.3}]},
+  // Ladino
+  pes_leves:{nome:'Pés Leves',cls:'ladino',lv:4,desc:'+1 Movimento.',stat:{mov:1}},
+  evasao:{nome:'Evasão',cls:'ladino',lv:8,desc:'15% de desviar totalmente de um golpe.',dodge:0.15},
+  maos_leves:{nome:'Mãos Leves',cls:'ladino',lv:12,desc:'+3 em achar segredos.',stat:{per:3}},
+  predador:{nome:'Predador',cls:'ladino',sub:'assassino',lv:12,desc:'+30% de dano contra alvos com controle ou Marcados.',mult:[{groups:['ctrl'],ids:['marcado'],x:1.3}]},
+  sombras:{nome:'Sombras',cls:'ladino',sub:'assassino',lv:16,desc:'Começa cada batalha Furtivo (primeiro golpe crítico).',sombras:true},
+  execucao:{nome:'Execução',cls:'ladino',sub:'assassino',lv:20,desc:'Dano ×2 contra alvos abaixo de 25% de PV.',exec:{hp:0.25,x:2}},
+  mestre_terreno:{nome:'Mestre do Terreno',cls:'ladino',sub:'armadilheiro',lv:12,desc:'+1 Movimento e sobe 1 altura a mais.',stat:{mov:1,climb:1}},
+  preparado:{nome:'Preparado',cls:'ladino',sub:'armadilheiro',lv:16,desc:'A emboscada do primeiro golpe passa de +3 para +6.',stat:{emb:3}},
+  gatuno:{nome:'Gatuno',cls:'ladino',sub:'armadilheiro',lv:20,desc:'+30% de dano contra alvos Presos ou Lentos.',mult:[{ids:['preso','lento'],x:1.3}]},
+  // Mago
+  mente_aguda:{nome:'Mente Aguçada',cls:'mago',lv:4,desc:'+10% de dano mágico.',magicX:1.1},
+  sabio:{nome:'Sábio',cls:'mago',lv:8,desc:'+2 de dano e +2 de Res. Mágica.',stat:{dmg:2,defMag:2}},
+  explosao:{nome:'Explosão',cls:'mago',sub:'piromante',lv:12,desc:'A área das magias de fogo cresce +1 casa.',areaPlus:1},
+  combustao:{nome:'Combustão',cls:'mago',sub:'piromante',lv:16,desc:'+40% de dano e mais crítico contra alvos queimando.',mult:[{ids:['queimadura'],x:1.4}],combCrit:true},
+  pirofagia:{nome:'Pirofagia',cls:'mago',sub:'piromante',lv:20,desc:'Recupera 10% do dano de fogo causado.',fireLeech:0.1},
+  brasa_longa:{nome:'Brasa Longa',cls:'mago',sub:'piromante',lv:24,desc:'Queimadura dura +1 turno.',longBurn:true},
+  pele_pedra:{nome:'Pele de Pedra',cls:'mago',sub:'geomante',lv:12,desc:'+3 DEF.',stat:{def:3}},
+  gelo_rachante:{nome:'Gelo Rachante',cls:'mago',sub:'geomante',lv:16,desc:'+40% de dano contra Lentos, Gelados ou Presos.',mult:[{ids:['lento','gelado','preso'],x:1.4}]},
+  alto_torreao:{nome:'Alto Torreão',cls:'mago',sub:'geomante',lv:20,desc:'Em morro: +2 Alcance e +2 de acerto.',onHigh:{atk:2,alc:2}},
+  choque_termico:{nome:'Choque Térmico',cls:'mago',lv:24,desc:'Fogo em alvo Gelado (ou gelo em alvo Queimando): +50% de dano e remove o status.',shock:true},
+  // Clérigo
+  fe_inabalavel:{nome:'Fé Inabalável',cls:'clerigo',lv:4,desc:'+2 de Res. Mágica.',stat:{defMag:2}},
+  devoto:{nome:'Devoto',cls:'clerigo',lv:8,desc:'+2 de cura e +1 de Res. Mágica.',stat:{heal:2,defMag:1}},
+  aura_vital:{nome:'Aura Vital',cls:'clerigo',sub:'curandeiro',lv:12,desc:'No início do turno, aliados adjacentes ganham Regeneração.',auraRegen:true},
+  luz_restauradora:{nome:'Luz Restauradora',cls:'clerigo',sub:'curandeiro',lv:16,desc:'O excedente da cura vira Escudo (25%).',overShield:0.25},
+  bencao_prolongada:{nome:'Bênção Prolongada',cls:'clerigo',sub:'curandeiro',lv:20,desc:'Buffs do clérigo duram +1 turno.',stat:{buffDur:1}},
+  escudo_fe:{nome:'Escudo da Fé',cls:'clerigo',sub:'templario',lv:12,desc:'+2 DEF.',stat:{def:2}},
+  luz_vingadora:{nome:'Luz Vingadora',cls:'clerigo',sub:'templario',lv:16,desc:'+50% de dano contra mortos-vivos.',undead:1.5},
+  zelo:{nome:'Zelo',cls:'clerigo',sub:'templario',lv:20,desc:'+30% de dano contra alvos com fraqueza (Abalado, Marcado…).',mult:[{groups:['fraq'],x:1.3}]},
+  passo_abencoado:{nome:'Passo Abençoado',cls:'clerigo',sub:'templario',lv:24,desc:'+1 Movimento.',stat:{mov:1}},
+  // Arqueiro
+  olhar_aguia:{nome:'Olhar de Águia',cls:'arqueiro',lv:4,desc:'+1 Alcance.',stat:{alc:1}},
+  agilidade:{nome:'Agilidade',cls:'arqueiro',lv:8,desc:'+1 Movimento.',stat:{mov:1}},
+  posicao_elevada:{nome:'Posição Elevada',cls:'arqueiro',sub:'patrulheiro',lv:12,desc:'Em morro: +6 de acerto e +25% de dano.',onHigh:{atk:6,x:1.25}},
+  instinto:{nome:'Instinto',cls:'arqueiro',sub:'patrulheiro',lv:16,desc:'+30% de dano contra alvos Marcados ou Presos.',mult:[{ids:['marcado','preso'],x:1.3}]},
+  escalador:{nome:'Escalador',cls:'arqueiro',sub:'patrulheiro',lv:20,desc:'Sobe 1 altura a mais.',stat:{climb:1}},
+  municao_pesada:{nome:'Munição Pesada',cls:'arqueiro',sub:'saraivador',lv:12,desc:'+3 de dano.',stat:{dmg:3}},
+  ricochete:{nome:'Ricochete',cls:'arqueiro',sub:'saraivador',lv:16,desc:'Um segundo alvo adjacente leva 50% do dano.',ricochete:0.5},
+  flechas_venenosas:{nome:'Flechas Venenosas',cls:'arqueiro',sub:'saraivador',lv:20,desc:'20% de chance de Veneno em todo golpe.',poisonOnHit:0.2},
+  olho_treinado:{nome:'Olho Treinado',cls:'arqueiro',lv:24,desc:'+1 de margem de crítico.',stat:{crit:1}},
+  // Bardo
+  inspiracao_maior:{nome:'Inspiração Maior',cls:'bardo',lv:4,desc:'A balada dá +1 de acerto a mais.',stat:{insp:1}},
+  voz_alta:{nome:'Voz Alta',cls:'bardo',lv:8,desc:'Buffs e debuffs alcançam +1 casa.',stat:{rad:1}},
+  harmonia:{nome:'Harmonia',cls:'bardo',sub:'consonante',lv:12,desc:'A balada inspira dois aliados.',harmony:true},
+  coro:{nome:'Coro',cls:'bardo',sub:'consonante',lv:16,desc:'+1 de dano por aliado a 2 casas.',coro:{rad:2,flat:1}},
+  eco_benigno:{nome:'Eco Benigno',cls:'bardo',sub:'consonante',lv:20,desc:'Buffs do bardo duram +1 turno.',stat:{buffDur:1}},
+  eco:{nome:'Eco',cls:'bardo',sub:'dissonante',lv:12,desc:'Debuffs do bardo duram +1 turno.',stat:{debuffDur:1}},
+  maestro_caos:{nome:'Maestro do Caos',cls:'bardo',sub:'dissonante',lv:16,desc:'+25% de dano contra alvos com 2 ou mais debuffs.',mult:[{min:2,x:1.25}]},
+};
+Object.keys(PV).forEach(id=>PV[id].id=id);
+const passivesOf=h=>h.side!=='hero'?[]:Object.values(PV).filter(x=>x.cls===h.cls&&(h.level||1)>=x.lv&&(!x.sub||x.sub===h.sub));
+const NUMK=['atk','def','dmg','mov','alc','crit','defMag','per','hpPct','climb','flatRed','insp','heal','moveAfter','buffDur','debuffDur','rad','emb'];
+function pbCompute(u){
+  const pb={list:passivesOf(u),mult:[],magicX:1,undead:0};NUMK.forEach(k=>pb[k]=0);
+  for(const p of pb.list){
+    for(const k in (p.stat||{}))pb[k]=(pb[k]||0)+p.stat[k];
+    for(const k of ['wall','holy','perHit','counter','perKill','selfLow','hi','dodge','exec','areaPlus','combCrit','fireLeech','longBurn','onHigh','shock','auraRegen','overShield','undead','sombras','ricochete','poisonOnHit','harmony','coro'])if(p[k]!==undefined)pb[k]=p[k];
+    if(p.magicX)pb.magicX*=p.magicX;
+    if(p.mult)pb.mult.push(...p.mult);
+  }
+  return pb;
+}
+// aplica as passivas de número no começo da batalha (guarda o que somou pra desfazer)
+function pbApply(u){
+  pbRevert(u);
+  const pb=u.pb=pbCompute(u),ap={hp:Math.round(u.maxhp*pb.hpPct/100),atk:0,def:pb.def,defMag:pb.defMag,per:pb.per,dmg:pb.dmg,crit:pb.crit,heal:pb.heal};
+  u.maxhp+=ap.hp;u.hp+=ap.hp;u.def+=ap.def;u.defMag+=ap.defMag;u.per+=ap.per;u.dmg[2]+=ap.dmg;u.critBonus=(u.critBonus||0)+ap.crit;u.healBonus=(u.healBonus||0)+ap.heal;
+  u.pbApplied=ap;u.kills=0;u.hitsTaken=0;
+  if(pb.sombras)addStatus(u,'furtivo',{src:u,quiet:true});
+}
+function pbRevert(u){
+  const ap=u.pbApplied;if(!ap)return;
+  u.maxhp=Math.max(1,u.maxhp-ap.hp);u.hp=Math.min(u.hp,u.maxhp);u.def-=ap.def;u.defMag-=ap.defMag;u.per-=ap.per;u.dmg[2]-=ap.dmg;u.critBonus-=ap.crit;u.healBonus=(u.healBonus||0)-ap.heal;
+  u.pbApplied=null;u.pb=null;
+}
+const rngOf=u=>u.alc+((u.pb&&u.pb.alc)||0)+((u.pb&&u.pb.onHigh&&u.pb.onHigh.alc&&hOf(u.r,u.c)>0)?u.pb.onHigh.alc:0);
+const climbOf=u=>1+((u.pb&&u.pb.climb)||0);
+// bônus de DEF que dependem da situação (aliados do lado, morro)
+function defBonus(t){
+  const pb=t.pb;if(!pb)return 0;let d=0;
+  if(pb.wall){const n=(t.side==='hero'?heroesAlive():enemiesAlive()).filter(a=>a!==t&&dist(a,t)<=1).length;d+=Math.min(pb.wall,n);}
+  if(pb.holy&&hOf(t.r,t.c)>0)d+=pb.holy.def;
+  return d;
+}
+// multiplicador e bônus fixo de dano de quem ataca contra aquele alvo
+function passiveDmg(u,t,opts,hu,ht,magic){
+  const pb=u.pb,out={x:1,flat:0,shock:null,crit:0};if(!pb)return out;
+  if(magic&&pb.magicX!==1)out.x*=pb.magicX;
+  if(pb.hi&&hu>ht)out.x*=1+Math.min(pb.hi.cap,pb.hi.perLvl*(hu-ht));
+  if(pb.onHigh&&pb.onHigh.x&&hu>0)out.x*=pb.onHigh.x;
+  if(pb.selfLow&&u.hp<=u.maxhp*pb.selfLow.hp)out.x*=pb.selfLow.x;
+  if(pb.perKill)out.flat+=Math.min(pb.perKill.cap,pb.perKill.flat*(u.kills||0));
+  if(pb.perHit)out.flat+=Math.min(pb.perHit.cap,pb.perHit.flat*(u.hitsTaken||0));
+  if(pb.coro)out.flat+=pb.coro.flat*(u.side==='hero'?heroesAlive():enemiesAlive()).filter(a=>a!==u&&dist(a,u)<=pb.coro.rad).length;
+  if(pb.exec&&t.hp<=t.maxhp*pb.exec.hp)out.x*=pb.exec.x;
+  if(pb.undead&&UNDEAD.includes(t.kind))out.x*=pb.undead;
+  const nDeb=(t.st||[]).filter(x=>STATUS[x.id].tipo==='debuff').length;
+  for(const m of pb.mult){
+    const ok=(m.ids&&m.ids.some(i=>hasSt(t,i)))||(m.groups&&m.groups.some(g=>stGroup(t,g)))||(m.min&&nDeb>=m.min);
+    if(ok)out.x*=m.x;
+  }
+  if(pb.combCrit&&hasSt(t,'queimadura'))out.crit+=3;
+  if(pb.shock&&opts.elem){const opp=opts.elem==='fogo'?'gelado':'queimadura';if(hasSt(t,opp)){out.x*=1.5;out.shock=opp;}}
+  return out;
+}
+
 const fxSkill=(u,col)=>{pulse(u.grp.position,col,1.1,0.5);burst(u.grp.position,{n:8,colors:[col,'#ffffff'],spread:0.5,up:1,y:0.8,life:0.6});};
 async function castSkill(u,plan){
   const sk=plan.sk;u.cd=u.cd||{};u.cd[sk.id]=sk.cd;
@@ -5083,7 +5239,7 @@ async function castSkill(u,plan){
   if(sk.kind==='atk'||sk.kind==='multi'||sk.kind==='aoe'){
     if(plan.tile&&(plan.tile.r!==u.r||plan.tile.c!==u.c)){await moveAlong(u,pathTo(plan.reach,plan.tile));await checkSecret(u);}
     if(!plan.target.alive)return;
-    const opts={label:sk.nome,mult:sk.mult||1,atkB:sk.atkB||0,st:sk.st,area:sk.area,leech:sk.leech};
+    const opts={label:sk.nome,mult:sk.mult||1,atkB:sk.atkB||0,st:sk.st,area:sk.area,leech:sk.leech,elem:sk.elem};
     await attack(u,plan.target,opts);
     if(sk.kind==='multi'&&plan.target.alive&&u.alive)for(let i=1;i<(sk.hits||2);i++)await attack(u,plan.target,{...opts,label:sk.nome+' ✕'+(i+1),st:null});
     return;
@@ -5099,11 +5255,11 @@ async function castSkill(u,plan){
     if(!sv.ok)addLog(`${plan.target.first} resistiu a ${sk.nome} (${sv.sum} vs ${sv.dc})`,'mut');
     else for(const x of sk.self||[]){await statusAttach(u,x.id);addStatus(u,x.id,{dur:x.dur,src:u,quiet:true});}
   }else if(sk.kind==='debuffArea'){
-    const foes=foesOf(u).filter(g=>dist(g,u)<=sk.rad);
+    const foes=foesOf(u).filter(g=>dist(g,u)<=(sk.rad+((u.pb&&u.pb.rad)||0)));
     await Promise.all(foes.map(async g=>{for(const x of sk.st){await statusFlight(u,g,x.id,true);addStatus(g,x.id,{dur:x.dur,src:u,quiet:true});}}));
   }else if(sk.kind==='buffAllies'||sk.kind==='buffAlly'){
     await Promise.all((plan.targets||[plan.target]).map(async a=>{
-      if(sk.inspire){a.inspired=sk.inspire+((u.attrBonus&&u.attrBonus.insp)||0);floatText(a,`♪ +${a.inspired} acerto`,'buff');await statusAttach(a,'inspirado');}
+      if(sk.inspire){a.inspired=sk.inspire+((u.attrBonus&&u.attrBonus.insp)||0)+((u.pb&&u.pb.insp)||0);floatText(a,`♪ +${a.inspired} acerto`,'buff');await statusAttach(a,'inspirado');}
       for(const x of sk.st||[]){await statusFlight(u,a,x.id,true);addStatus(a,x.id,{dur:x.dur,src:u,quiet:true,val:x.val?stVal(sk,x,u):null});}
     }));
   }else if(sk.kind==='cleanse'){
@@ -5120,18 +5276,22 @@ async function attack(u,t,opts={}){
   const parts=[[u.atk,'ATQ']];const hu=hOf(u.r,u.c),ht=hOf(t.r,t.c);
   const sm=stMods(u),tm=stMods(t);if(sm.atk)parts.push([sm.atk,'status']);if(opts.atkB)parts.push([opts.atkB,'habilidade']);
   if(hu>ht)parts.push([u.cls==='arqueiro'?4:2,'alto']);
+  const pbU=u.pb||{},pbT=t.pb||{};
+  if(pbU.onHigh&&pbU.onHigh.atk&&hu>0)parts.push([pbU.onHigh.atk,'posição']);
   if(u.inspired)parts.push([u.inspired,'balada']);
   if(sibActive(u))parts.push([1,'irmãos']);
   if(u.secretBuff)parts.push([1,'relíquia']);
   if(u.cls==='ladino'&&u.sub==='assassino'&&isIsolated(t))parts.push([3,'isolado']);
   if(u.cls==='arqueiro'&&u.sub==='patrulheiro'&&u.lastTargetId===t.id)parts.push([2,'foco']);
-  if(u.cls==='ladino'&&u.sub==='armadilheiro'&&!u.ambushDone)parts.push([3,'emboscada']);
+  if(u.cls==='ladino'&&u.sub==='armadilheiro'&&!u.ambushDone)parts.push([3+(pbU.emb||0),'emboscada']);
   u.lastTargetId=t.id;
   const magic=isMagicAttacker(u);let defVal=magic?(t.defMag??t.def):t.def;
   if(t.side==='hero'&&t.cls==='guerreiro'&&t.sub==='cavaleiro'&&heroesAlive().some(a=>a!==t&&dist(a,t)<=1&&a.hp<=a.maxhp*0.5))defVal+=2;
-  defVal+=tm.def;if(opts.ignoreDef)defVal-=opts.ignoreDef;
-  const roll=ri(1,20),critMin=20-(u.critBonus||0)-sm.crit-(u.trait&&u.trait.id==='sortudo'?1:0)-(hasSt(u,'furtivo')?19:0),sum=roll+parts.reduce((a,p)=>a+p[0],0);
-  const crit=roll>=critMin,hit=crit||(roll!==1&&sum>=defVal);
+  defVal+=tm.def+defBonus(t);if(opts.ignoreDef)defVal-=opts.ignoreDef;
+  const pd=passiveDmg(u,t,opts,hu,ht,magic);
+  const roll=ri(1,20),critMin=20-(u.critBonus||0)-sm.crit-pd.crit-(u.trait&&u.trait.id==='sortudo'?1:0)-(hasSt(u,'furtivo')?19:0),sum=roll+parts.reduce((a,p)=>a+p[0],0);
+  const crit=roll>=critMin;let hit=crit||(roll!==1&&sum>=defVal),dodged=false;
+  if(hit&&!crit&&pbT.dodge&&R()<pbT.dodge){hit=false;dodged=true;}
   followMid(u,t);
   tRing.visible=true;tRing.position.set(t.grp.position.x,t.grp.position.y+0.09,t.grp.position.z);tRing.scale.setScalar(t.big?1.25:1);
   const clearLine=aimLine(u,t,u.side==='hero'?'#e9b949':'#d4503f');
@@ -5146,12 +5306,14 @@ async function attack(u,t,opts={}){
   else{SFX.swing();swingArm(u,0.12,0.18);chargeEnd(u);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox-dx/len*0.14,z:oz-dz/len*0.14,duration:0.1,ease:'power1.out'}).to(p,{x:ox+dx/len*0.5,z:oz+dz/len*0.5,duration:0.09,ease:'power4.in'}).to(p,{x:ox,z:oz,duration:0.24,ease:'power2.out'});}
   clearLine();
   if(!hit){
-    SFX.miss();floatText(t,'MISS','miss');gsap.fromTo(t.plane.position,{x:0},{x:0.24,duration:0.1,yoyo:true,repeat:1,ease:'power1.out'});
+    SFX.miss();floatText(t,dodged?'Esquivou!':'MISS','miss');gsap.fromTo(t.plane.position,{x:0},{x:0.24,duration:0.1,yoyo:true,repeat:1,ease:'power1.out'});
     fxPlay('combat','parry-flash-32px_strip7.png',7,14,{x:t.grp.position.x,y:t.grp.position.y+0.1,z:t.grp.position.z},{w:1.3});
     addLog(`${u.first} errou ${t.first}${u.side==='hero'?` (${sum} vs ${defVal})`:''}`,'mut');tRing.visible=false;await wait(220);return;
   }
   const [n,s,b]=u.dmg;let dmg=dice(crit?n*2:n,s)+b+(u.trait&&u.trait.id==='bruto'?3:0)+(u.cls==='guerreiro'&&u.sub==='barbaro'&&u.hp<=u.maxhp*0.5?3:0);
-  dmg=Math.max(1,Math.round(dmg*sm.out*tm.inn*(opts.mult||1)));
+  dmg=Math.max(1,Math.round((dmg+pd.flat)*sm.out*tm.inn*(opts.mult||1)*pd.x));
+  if(pbT.flatRed)dmg=Math.max(1,dmg-pbT.flatRed);
+  if(pbT.holy&&ht>0)dmg=Math.max(1,Math.round(dmg*(1-pbT.holy.red)));
   if(crit&&u.side==='hero')stats.crits++;
   xp(u,8+(crit?12:0));
   if(u.side==='hero'&&u.cls==='arqueiro'&&hu>ht)u.highHits++;
@@ -5170,12 +5332,15 @@ async function attack(u,t,opts={}){
   else if(u.cls!=='mago')shakeCam(0.07,0.18);
   addLog(`${crit?'CRÍTICO! ':''}${u.first} ${VERB[u.cls||u.kind]} ${t.first}: ${dmg} de dano`,u.side==='hero'?(crit?'gold':'good'):'bad');
   damage(t,dmg,u,crit);
+  if(pd.shock){removeStatus(t,pd.shock);floatText(t,'Choque térmico!','crit');}
+  if(pbU.fireLeech&&opts.elem==='fogo'&&u.alive&&u.hp<u.maxhp){const lh=Math.max(1,Math.round(dmg*pbU.fireLeech));u.hp=Math.min(u.maxhp,u.hp+lh);floatText(u,`+${lh}`,'heal');}
+  if(pbU.poisonOnHit&&t.alive&&R()<pbU.poisonOnHit){await statusAttach(t,'veneno');addStatus(t,'veneno',{src:u,quiet:true});}
   if(t.alive)for(const x of opts.st||[])if(!x.chance||R()<x.chance){await statusAttach(t,x.id);addStatus(t,x.id,{dur:x.dur,src:u,quiet:true});}
   const oh=ENEMY_ONHIT[u.kind];if(oh&&u.side==='enemy'&&t.alive&&R()<oh[1]){await statusAttach(t,oh[0]);addStatus(t,oh[0],{src:u,quiet:true});}
   if(opts.leech&&u.alive&&u.hp<u.maxhp){const lh=Math.max(1,Math.round(dmg*opts.leech));u.hp=Math.min(u.maxhp,u.hp+lh);floatText(u,`+${lh}`,'heal');pulse(u.grp.position,'#6cc35e',0.8,0.4);}
   if(opts.area){
-    const center=opts.area.c==='self'?u:t;
-    const others=foesOf(u).filter(g=>g!==t&&g.alive&&(opts.area.c==='target'?cheb(g,center)<=opts.area.r:dist(g,center)<=1));
+    const center=opts.area.c==='self'?u:t,arad=opts.area.r+(opts.elem==='fogo'?((u.pb&&u.pb.areaPlus)||0):0);
+    const others=foesOf(u).filter(g=>g!==t&&g.alive&&(opts.area.c==='target'?cheb(g,center)<=arad:dist(g,center)<=1));
     for(const g of others){const d2=Math.max(1,Math.round(dmg*0.75*(stMods(g).inn)));
       floatText(g,`-${d2}`,'');burst(g.grp.position,{n:6,colors:sparks,spread:0.5,up:0.4,y:0.4,life:0.35});
       addLog(`${u.first} também atingiu ${g.first}: ${d2} de dano`,u.side==='hero'?'good':'bad');
@@ -5187,14 +5352,16 @@ async function attack(u,t,opts={}){
     floatText(u,`+${selfHeal}`,'heal');pulse(u.grp.position,'#6cc35e',0.8,0.4);
   }
   if(u.cls==='arqueiro'&&u.sub==='saraivador'){
+    const rico=(u.pb&&u.pb.ricochete)||0.4;
     const splashFoes=foesOf(u).filter(f=>f!==t&&f.alive&&dist(f,t)<=1);
     if(splashFoes.length){
-      const sp=pick(splashFoes),spDmg=Math.max(1,Math.round(dmg*0.4));
+      const sp=pick(splashFoes),spDmg=Math.max(1,Math.round(dmg*rico));
       floatText(sp,`-${spDmg}`,'');burst(sp.grp.position,{n:6,colors:sparks,spread:0.5,up:0.4,y:0.4,life:0.35});
       addLog(`${u.first} também acertou ${sp.first} de raspão: ${spDmg} de dano`,u.side==='hero'?'good':'bad');
       damage(sp,spDmg,u,false);
     }
   }
+  if(!opts.counter&&pbT.counter&&t.alive&&u.alive&&dist(u,t)<=1&&R()<pbT.counter){floatText(t,'Contra-golpe!','crit');await attack(t,u,{label:'Contra-golpe',counter:true});}
   tRing.visible=false;await waitS(0.9);   // deixa o resultado assentar
 }
 function tintUnit(u,from,to,duration,delay=0){
@@ -5217,6 +5384,7 @@ function hitStop(ms){
   setTimeout(()=>{gsap.globalTimeline.timeScale(ts);hitStopOn=false;},ms);
 }
 function damage(t,dmg,src,crit){
+  if(t.side==='hero'&&src&&src.side==='enemy')t.hitsTaken=(t.hitsTaken||0)+1;
   const sh=stOf(t,'escudo');
   if(sh&&sh.val>0&&dmg>0){
     const ab=Math.min(sh.val,dmg);sh.val-=ab;dmg-=ab;floatText(t,`🛡 -${ab}`,'buff');pulse(t.grp.position,'#cfe0ff',1,0.4);
@@ -5257,6 +5425,7 @@ function kill(t,src,crit){
   tintUnitTo(t,{r:0.5,g:0.5,b:0.5},0.3,0.1);
   fadeUnit(t,0,{delay:1,duration:0.5,onComplete:()=>{if(t.grp)t.grp.visible=false;if(t.side==='hero')addTomb(t);}});
   if(t.side==='enemy'){
+    if(src&&src.side==='hero')src.kills=(src.kills||0)+1;
     xp(src,Math.round(t.pts/4));stats.kills.push(t);addLog(`${t.first} foi derrotado (+${t.pts})`,'gold');
     setTimeout(()=>{},0);floatText(t,`+${t.pts}`,'gold');
     dropLoot(t);
@@ -5278,6 +5447,7 @@ async function heal(u,w,o={}){
   await chargeUp(u,'heal');chargeEnd(u);
   SFX.heal();pulse(w.grp.position,'#6cc35e',1.2,0.7);fxPlay('magic','healing-aura-32px_strip8.png',8,10,{x:w.grp.position.x,y:w.grp.position.y,z:w.grp.position.z},{w:1.7});
   floatText(w,`+${w.hp-before}`,'heal');tintUnit(w,{r:0.5,g:1,b:0.5},{r:1,g:1,b:1},0.7);
+  if(u.pb&&u.pb.overShield){const over=amt-(w.hp-before);if(over>0)addStatus(w,'escudo',{val:Math.max(1,Math.round(over*u.pb.overShield)),src:u});}
   xp(u,Math.max(5,(w.hp-before)*2));
   addLog(`${u.first} curou ${w===u?'a si mesmo':w.first} (+${w.hp-before})`,'heal');
   if(w!==u&&before<=w.maxhp*0.3)stats.hl.push({w:5,t:`${w.first} estava por um fio (${before} PV) e foi salvo pela cura de ${u.first}.`});
@@ -5316,11 +5486,21 @@ function showTurnCard(u){
   gsap.fromTo(el,{opacity:0,y:-10,scale:0.9},{opacity:1,y:0,scale:1,duration:0.22,ease:'back.out(2)'});
   return waitS(1.3).then(()=>gsap.to(el,{opacity:0,y:-6,duration:0.2,onComplete:()=>el.remove()}));
 }
-async function turn(u){try{await turnBody(u);}finally{statusTurnEnd(u);}}
+async function afterAttackMove(u){
+  const n=u.pb&&u.pb.moveAfter;if(!n||!u.alive||hasSt(u,'preso'))return;
+  const foes=foesOf(u);if(!foes.length)return;
+  const allies=(u.side==='hero'?heroesAlive():enemiesAlive()).filter(a=>a!==u);
+  const reach=bfsReach(u,n);let best=null,bs=-1e9;
+  for(const t of reach.values()){if(t.pass)continue;const adj=allies.filter(a=>dist(a,t)<=1).length,near=Math.min(...foes.map(f=>dist(t,f)));
+    const sc=hOf(t.r,t.c)*2+adj*1.5-near*0.3-t.d*0.05;if(sc>bs){bs=sc;best=t;}}
+  if(best&&(best.r!==u.r||best.c!==u.c)){showCallout(u,'Dar a Volta');await moveAlong(u,pathTo(reach,best));}
+}
+async function turn(u){try{await turnBody(u);await afterAttackMove(u);}finally{statusTurnEnd(u);}}
 async function turnBody(u){
   active=u;hudSel=u.side==='hero'?u:null;hudTile=null;renderOrder();renderUC(true);followCam(u);
   if(u.cd)for(const id in u.cd)if(u.cd[id]>0)u.cd[id]--;
   await statusTurnStart(u);if(!u.alive)return;
+  if(u.pb&&u.pb.auraRegen){for(const a of (u.side==='hero'?heroesAlive():enemiesAlive()).filter(a=>a!==u&&dist(a,u)<=1)){await statusAttach(a,'regeneracao');addStatus(a,'regeneracao',{src:u,quiet:true});}}
   if(hasSt(u,'atordoado')){showCallout(u,'Atordoado');addLog(`${u.first} está atordoado e perde o turno`,'mut');await waitS(1.3);return;}
   // a câmera leva um tempo pra chegar no personagem (followCam não é
   // esperado) — sem essa pausa, a ação dele já começava com a câmera
@@ -5339,7 +5519,8 @@ async function turnBody(u){
     if(cand.length){const f=pick(cand);addStatus(f,'abalado',{src:u});SFX.buff();showCallout(u,`♪ Desafina ${f.first}`);
       burst(u.grp.position,{n:6,colors:['#d98fe0','#f3cfff'],spread:0.4,up:1,y:0.9,life:0.7});pulse(f.grp.position,'#d98fe0',1,0.6);floatText(f,'♪ −2 defesa','miss');
       xp(u,6);addLog(`${u.first} desafinou a defesa de ${f.first} (−2 na próxima defesa)`,'good');await wait(450);}
-  }else if(u.cls==='bardo'){const cand=allies.filter(a=>dist(a,u)<=4&&!a.inspired);if(cand.length){const a=pick(cand);const ins=2+((u.attrBonus&&u.attrBonus.insp)||0);a.inspired=ins;SFX.buff();showCallout(u,`♪ Inspira ${a.first}`);
+  }else if(u.cls==='bardo'){const cand=allies.filter(a=>dist(a,u)<=4&&!a.inspired);if(cand.length){const a=pick(cand);const ins=2+((u.attrBonus&&u.attrBonus.insp)||0)+((u.pb&&u.pb.insp)||0);a.inspired=ins;SFX.buff();showCallout(u,`♪ Inspira ${a.first}`);
+    if(u.pb&&u.pb.harmony){const o2=cand.filter(x=>x!==a);if(o2.length){const b2=pick(o2);b2.inspired=ins;floatText(b2,`♪ +${ins} acerto`,'buff');}}
     burst(u.grp.position,{n:6,colors:['#79a8ec','#cfe0ff'],spread:0.4,up:1,y:0.9,life:0.7});pulse(a.grp.position,'#79a8ec',1,0.6);floatText(a,`♪ +${ins} acerto`,'buff');
     xp(u,6);addLog(`${u.first} tocou uma balada pra ${a.first} (+${ins} no próximo ataque)`,'good');await wait(450);}}
   if(hasSt(u,'medo')){
@@ -5361,7 +5542,7 @@ async function turnBody(u){
       await checkSecret(u);return;}}
   }
   if(SECRET&&u.side==='hero'&&!stats.secret&&!u.triedSecret&&stats.round<=6&&(u.cls==='ladino'||['curioso','atento'].includes(u.trait.id))){
-    const canHit=foes.some(f=>bestTileWithin(reach,f,u.alc,u));
+    const canHit=foes.some(f=>bestTileWithin(reach,f,rngOf(u),u));
     if(!canHit){
       const field=fieldFrom(SECRET_ADJ);let best=null,bv=1e9;
       for(const t of reach.values()){if(t.pass)continue;const v=field.get(k(t.r,t.c));if(v==null)continue;const s=v*10+t.d;if(s<bv){bv=s;best=t;}}
@@ -5375,7 +5556,7 @@ async function turnBody(u){
   const prov=stOf(u,'provocado');
   const target=prov&&prov.src&&prov.src.alive?prov.src:chooseTarget(u,foes,reach);if(!target)return;
   rangeTile(target.r,target.c,'red');
-  const tile=bestTileWithin(reach,target,u.alc,u);
+  const tile=bestTileWithin(reach,target,rngOf(u),u);
   if(tile){await moveAlong(u,pathTo(reach,tile));await checkSecret(u);await attack(u,target);}
   else{
     showCallout(u,'Deslocar');addLog(`${u.first} se deslocou`,'mut');
@@ -5401,6 +5582,7 @@ async function startBattle(){
   renderBattle();applySpeed();
   const all=[...heroesAlive(),...enemiesAlive()];
   all.forEach(u=>{u.st=[];u.cd={};u.initRoll=ri(1,20)+u.ini+R();});
+  heroesAlive().forEach(pbApply);
   stats.order=all.sort((a,b)=>b.initRoll-a.initRoll);
   $('#order').hidden=false;hudSel=null;hudTile=null;ucPop=null;ucKey='';renderOrder();
   await banner('Batalha!');
@@ -5457,6 +5639,7 @@ const xp=(u,n)=>{
 };
 
 function resetHero(h,first){
+  pbRevert(h);
   if(h.exausto){h.atk++;h.def++;h.exausto=false;}
   if(!first&&h.alive===false){h.hp=Math.ceil(h.maxhp*0.5);h.atk--;h.def--;h.exausto=true;}else h.hp=h.maxhp;
   Object.assign(h,{st:[],cd:{},poison:null,alive:true,r:null,c:null,triedSecret:false,inspired:false,highHits:0,fled:false,secretBuff:false,xp:0,bonus:false,diedRound:null,shaken:false,ambushDone:false,lastTargetId:null});
