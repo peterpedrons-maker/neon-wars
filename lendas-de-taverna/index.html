@@ -1164,6 +1164,19 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .ov .inner.kt .tdet .emb img{width:72px;height:101px}
 .ov .inner.kt .tdet .tact .btn{min-height:44px}
 .qd .qtop{height:68px;padding:0 16px;position:sticky;top:0;z-index:30}
+
+/* ===== Retratos centralizados: grupo no topo da Taverna e cartas da lista ===== */
+.ov .inner.kt .slots.big .slot{display:flex;align-items:center;justify-content:center;padding:12px 8px;overflow:hidden}
+.ov .inner.kt .slots.big .slot img{position:static;height:100%;width:auto;max-width:100%;object-fit:contain;margin:0}
+.ov .inner.kt .slots.big .slot .sbadge{display:none}
+.ov .inner.kt .slots.big .slot.req{padding:0}
+.ov .inner.kt .pc{align-items:center}
+.ov .inner.kt .pc img{align-self:center;justify-self:center;width:72px;height:96px;object-fit:contain;margin:0}
+.ov .inner.kt .pc .pcbody{align-self:center}
+.ov .inner.kt .tdet .emb{place-items:center}
+.ov .inner.kt .tdet .emb img{object-fit:contain}
+.kf .chip{justify-content:center}
+.kf .chip img{object-fit:contain;margin:0}
 </style>
 </head>
 <body>
@@ -3062,12 +3075,11 @@ function lpcPortrait(cls){
   const d=fg.getImageData(0,0,cw,ch).data;let x0=cw,x1=0,y0=ch,y1=0;
   for(let y=0;y<ch;y++)for(let x=0;x<cw;x++)if(d[(y*cw+x)*4+3]>24){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}
   if(x1<x0)return null;
-  // retrato de tamanho fixo (44x62 px do pack): pés na base e centrado, assim todos os heróis ficam na mesma escala
-  const W=Math.round(44*k),H=Math.round(62*k);
+  // recorte justo no desenho (sem margem vazia): o personagem preenche o quadro e dá pra centralizar de verdade
+  const pad=Math.max(1,Math.round(1*k)),W=x1-x0+1+pad*2,H=y1-y0+1+pad*2;
   const c=document.createElement('canvas');c.width=W;c.height=H;
   const g=c.getContext('2d');g.imageSmoothingEnabled=false;
-  const cx=(x0+x1+1)/2;
-  g.drawImage(f,Math.round(W/2-cx),Math.round(H-1-y1));
+  g.drawImage(f,x0,y0,x1-x0+1,y1-y0+1,pad,pad,x1-x0+1,y1-y0+1);
   return PORTRAIT_CACHE[cls]=c.toDataURL();
 }
 // só a cabeça (quadro parado, de frente), recortada do mesmo sheet — o
