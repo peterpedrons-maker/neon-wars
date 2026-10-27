@@ -4862,7 +4862,7 @@ const stVal=(sk,x,u)=>x.val==='lvl'?15+(u.level||1):x.val;
 /* ---------- Efeitos visuais e sonoros dos status ---------- */
 const STATUS_SND={veneno:'st_veneno',queimadura:'st_queimadura',sangramento:'st_sangramento',atordoado:'st_atordoado',preso:'st_preso',lento:'st_gelo',gelado:'st_gelo',
   medo:'st_medo',provocado:'st_marca',abalado:'st_debuff',enfraquecido:'st_debuff',marcado:'st_marca',cego:'st_debuff',
-  fortalecido:'st_buffup',protegido:'st_escudo',escudo:'st_escudo',regeneracao:'st_regen',veloz:'st_veloz',foco:'st_marca',inabalavel:'st_escudo',furtivo:'st_cast'};
+  fortalecido:'st_buffup',protegido:'st_escudo',escudo:'st_escudo',regeneracao:'st_regen',veloz:'st_veloz',foco:'st_marca',inabalavel:'st_escudo',furtivo:'st_cast',inspirado:'st_buffup'};
 const ICON_TEX={};
 function iconTex(id){return ICON_TEX[id]||(ICON_TEX[id]=new THREE.TextureLoader().load(`assets/status/${id}.png`));}
 function iconSprite(id,size){
@@ -4899,6 +4899,7 @@ const STATUS_LAND={
   foco:t=>{fxPlay('ui','target-marker-32px_strip8.png',8,14,{x:t.grp.position.x,y:t.grp.position.y+0.06,z:t.grp.position.z},{w:1.3,flat:true});pulse(t.grp.position,'#f3e08a',1.0,0.5);},
   inabalavel:t=>{pulse(t.grp.position,'#e9b949',1.5,0.6);fxPlay('combat','shockwave-32px_strip8.png',8,18,t.grp.position,{w:2.0});},
   furtivo:t=>{burst(t.grp.position,{n:10,colors:['#a8a8c8','#6a6a88'],spread:0.5,up:0.5,y:0.5,life:0.7});},
+  inspirado:t=>{pulse(t.grp.position,'#79c8ff',1.2,0.5);burst(t.grp.position,{n:10,colors:['#79c8ff','#ffffff','#cfe0ff'],spread:0.4,up:1.3,y:0.3,life:0.8});},
 };
 function statusAura(u,s){
   if(!u.grp||u.alive===false)return;
@@ -4914,7 +4915,7 @@ function statusAura(u,s){
 function statusLand(t,id,vol=0.8){
   if(!t||!t.grp)return;
   const f=STATUS_LAND[id];if(f)f(t);
-  playSfx(STATUS_SND[id]||(STATUS[id].tipo==='buff'?'st_buffup':'st_debuff'),{vol});
+  playSfx(STATUS_SND[id]||((STATUS[id]||{}).tipo==='buff'?'st_buffup':'st_debuff'),{vol});
 }
 // ícone do status aparece no ar, voa do conjurador até o alvo e "pega" (ou é resistido)
 async function statusFlight(src,t,id,ok=true){
