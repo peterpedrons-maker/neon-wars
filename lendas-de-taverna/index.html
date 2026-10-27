@@ -366,6 +366,17 @@ h4.sec{margin:6px 0 0;font-family:var(--f-display);font-size:15px;color:var(--ou
 .xr.dead .xv{color:var(--nevoa)}
 .rbar.two{gap:8px}
 .rbar.two .btn{flex:1}
+/* ficha: espaços de habilidade + botão da árvore */
+.skslots{display:flex;gap:6px;margin:6px 0 4px}
+.skslot{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:54px;border-radius:10px;border:2px solid #6b5640;background:#0006;color:#8a7560;font-size:18px;line-height:1;text-align:center}
+.skslot small{font-size:9px;line-height:1.05;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#cdb68a}
+.skslot.on{border-color:var(--c,#e9b949);background:color-mix(in srgb,var(--c,#e9b949) 18%,#120c08);box-shadow:0 0 8px color-mix(in srgb,var(--c,#e9b949) 50%,transparent)}
+.skslot .ic{display:block;width:24px;height:24px;background-repeat:no-repeat;image-rendering:pixelated;background-size:contain;background-position:center}
+.skslot .ic.mk{background-color:#fff0cf;-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat}
+.skslot.lk{opacity:.55}
+.trbtn{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:8px;padding:12px;border-radius:10px;cursor:pointer;font-weight:700;font-size:15px;color:#2b1e15;background:linear-gradient(#f0c150,#b88626);border:2px solid #7a5d1d;box-shadow:0 3px 0 #5b4310;text-align:center}
+.trbtn img{width:20px;height:20px}
+.trbtn b{background:#2b1e15;color:#ffd66e;border-radius:99px;padding:2px 9px;font-size:12px}
 .legend .ov{margin-left:auto;padding:5px 9px}
 .spd[aria-pressed="true"][data-act=overview]{background:var(--ouro);border-color:var(--ouro-2);color:var(--tinta)}
 @media (prefers-reduced-motion: reduce){ .pc,.ucard i,.ucard b,#order .oc{transition:none} }
@@ -1353,7 +1364,7 @@ function loadBuf(url){
   if(AUD.pend[url])return AUD.pend[url];
   return AUD.pend[url]=fetch(url).then(r=>r.arrayBuffer()).then(b=>new Promise((ok,no)=>actx.decodeAudioData(b,ok,no))).then(buf=>{AUD.bufs[url]=buf;delete AUD.pend[url];return buf;}).catch(e=>{delete AUD.pend[url];return null;});
 }
-const SFX_FILES=['ui_click','ui_open','ui_close','ui_confirm','ui_denied','turn_start','equip','coin','step_0','step_1','swing','hit_0','hit_1','slash','crit','miss','bow','arrow_hit','spell_cast','spell_hit','heal','buff','death','trap','victory','defeat','charge_melee','charge_ranged','charge_magic','charge_heal','st_cast','st_debuff','st_buffup','st_resist','st_quebra','st_veneno','st_queimadura','st_sangramento','st_gelo','st_atordoado','st_preso','st_medo','st_marca','st_escudo','st_regen','st_veloz'];
+const SFX_FILES=['ui_click','ui_open','ui_close','ui_confirm','ui_denied','turn_start','equip','coin','step_0','step_1','swing','hit_0','hit_1','slash','crit','miss','bow','arrow_hit','spell_cast','spell_hit','heal','buff','death','trap','victory','defeat','charge_melee','charge_ranged','charge_magic','charge_heal','st_cast','st_debuff','st_buffup','st_resist','st_quebra','st_veneno','st_queimadura','st_sangramento','st_gelo','st_atordoado','st_preso','st_medo','st_marca','st_escudo','st_regen','st_veloz','tr_open','tr_close','tr_select','tr_tab','tr_charge','tr_unlock_t','tr_unlock_p','tr_unlock_g','tr_unlock_b','tr_equip','tr_unequip','tr_refund','tr_reset','tr_auto','tr_nopts'];
 function preloadSfx(){if(!audioBus())return;SFX_FILES.forEach(n=>loadBuf(`assets/audio/sfx/${n}.ogg`));}
 function playSfx(name,{vol=1,rate=1,gap=0}={}){
   if(!actx||!audioBus())return false;
@@ -1371,6 +1382,7 @@ Object.keys(NEWSFX).forEach(k=>{SFX[k]=()=>playSfx(NEWSFX[k][0],{vol:NEWSFX[k][1
 function wantedTrack(){try{return wantedTrack0();}catch(e){return 'vila';}}
 function wantedTrack0(){
   const res=document.getElementById('result');if(res&&!res.hidden)return null;
+  if(view==='tree')return 'arvore';
   if(phase==='battle'){const mp=typeof LV!=='undefined'&&LV&&LV.mp;if(!mp)return 'campina';if(mp.chefe||mp.boss)return 'chefe';return ['campina','campina','ruinas','caverna','gelo','cripta'][mp.ato]||'campina';}
   if(phase==='place')return 'formacao';
   if(phase==='tavern')return 'taverna';
@@ -2993,6 +3005,7 @@ function makeHero(used,cls,level){
     // recruta que já nasce depois do nível-gatilho vem com subclasse sorteada
     if(h.level>=SUB_UNLOCK_LEVEL)setSub(h,pick(SUBCLASSES[cls]));
   }
+  treeInit(h);if(h.level>1)autoTree(h);
   h.sprite=heroSprite(h);h.portrait=lpcPortrait(h.loadout)||BLANK_IMG;
   return h;
 }
@@ -3930,7 +3943,7 @@ function serializeHero(h){
     critBonus:(h.critBonus||0)-((h.pbApplied&&h.pbApplied.crit)||0),look:h.look,arma:h.arma,armadura:h.armadura,
     xpTotal:h.xpTotal||0,xpRun:h.xpRun||0,level:h.level||1,
     injured:!!h.injured,injuredMissionsLeft:h.injuredMissionsLeft||0,benchXpBonus:h.benchXpBonus||0,
-    ver:2,attrBase:h.attrBase,attrPts:h.attrPts,afin:h.afin,attrBonus:h.attrBonus,loadout:h.loadout,sub:h.sub,equip};
+    ver:2,attrBase:h.attrBase,attrPts:h.attrPts,afin:h.afin,attrBonus:h.attrBonus,loadout:h.loadout,sub:h.sub,tree:h.tree?{l:h.tree.l.slice(),s:h.tree.s.slice()}:null,equip};
 }
 function hydrateHero(s){
   const trait=TRAITS.find(x=>x.id===s.traitId)||TRAITS[0];
@@ -3953,6 +3966,8 @@ function hydrateHero(s){
     initAttrs(h);for(let l=2;l<=(h.level||1);l++)gainLevelPoints(h,l);
     recomputeAttrBonus(h);h.hp=Math.max(1,Math.round(h.maxhp*ratio));
   }
+  if(s.tree&&Array.isArray(s.tree.l)){h.tree={l:s.tree.l.slice(),s:(s.tree.s||[]).slice()};treeClean(h);}
+  else{treeInit(h);autoTree(h);}   // save antigo: o herói ganha a árvore já montada pelo perfil dele
   h.sprite=heroSprite(h);h.portrait=lpcPortrait(h.loadout)||BLANK_IMG;
   return h;
 }
@@ -4211,7 +4226,7 @@ function renderTavern(){
       <div class="pcbody">
         <span class="nm">${h.first}</span>
         <span class="cl">${ico('classe',h.cls)}${CLASSES[h.cls].nome} · ${h.sub?SUB_INFO[h.sub].nome:CLASSES[h.cls].papel}</span>
-        ${h.injured?`<span class="pcstats">${ico('vila','ferido')} Recuperando (${h.injuredMissionsLeft})</span>`:`<span class="pcstats row"><span>Nv.${h.level||1}</span><span>${ico('stat','vida')}${h.maxhp}</span><span>${ico('stat','atq')}${h.atk}</span><span>${ico('stat','def')}${h.def}</span></span>`}
+        ${h.injured?`<span class="pcstats">${ico('vila','ferido')} Recuperando (${h.injuredMissionsLeft})</span>`:`<span class="pcstats row"><span>Nv.${h.level||1}${treeFree(h)?` <b style="color:#e9b949" title="pontos de habilidade livres">✦${treeFree(h)}</b>`:''}</span><span>${ico('stat','vida')}${h.maxhp}</span><span>${ico('stat','atq')}${h.atk}</span><span>${ico('stat','def')}${h.def}</span></span>`}
         <span class="tr">${h.trait.nome}</span>
       </div>
     </button>`).join('');
@@ -4272,15 +4287,17 @@ const skDesc=x=>{
   }
   return '';
 };
-function skillsBlock(h){
-  const sk=skillsOf(h),pv=passivesOf(h);
-  const nxt=[...Object.values(SK),...Object.values(PV)].filter(x=>x.cls===h.cls&&(!x.sub||x.sub===h.sub)&&(h.level||1)<x.lv).sort((a,b)=>a.lv-b.lv)[0];
+function skillsBlock(h,isR){
+  const T=treeOf(h.cls),tr=treeClean(h),sk=tr.s.map(id=>id?SK[id]:null),pv=tr.l.map(id=>PV[id]).filter(Boolean),fr=treeFree(h);
+  const ico_=id=>{const i=trIcon_(trIcon(id));return `<span class="ic${i.cls}" style="${i.st}"></span>`;};
+  const slots=[0,1,2,3].map(i=>{const x=sk[i];return !slotOpen(h,i)?`<span class="skslot lk" title="Libera no nível ${TREE_SLOT_LV[i]}">🔒<small>Nv ${TREE_SLOT_LV[i]}</small></span>`:x?`<span class="skslot on" style="--c:${TREE_COL[T.by[x.id].r]}">${ico_(x.id)}<small>${x.nome}</small></span>`:`<span class="skslot">+<small>vazio</small></span>`;}).join('');
   const row=(x,tp,ex)=>`<div class="skr"><b>${x.nome}</b><small>${tp}${ex||''}</small><p>${x.kind?skDesc(x):x.desc}</p></div>`;
   return `<div class="rpf wide"><h4 class="sec" style="margin:0">Habilidades</h4>
-    ${sk.length?sk.map(x=>row(x,'ativa',` · recarga ${x.cd}`)).join(''):''}
-    ${pv.length?pv.map(x=>row(x,'passiva','')).join(''):''}
-    ${!sk.length&&!pv.length?'<p class="note" style="color:#f0dfb9">Nenhuma ainda: as primeiras habilidades chegam no nível 3.</p>':''}
-    ${nxt?`<p class="note" style="color:#c9b88f;margin-top:6px">Próxima: <b>${nxt.nome}</b> no nível ${nxt.lv}.</p>`:''}</div>`;
+    <div class="skslots">${slots}</div>
+    ${sk.filter(Boolean).map(x=>row(x,'ativa equipada',` · recarga ${x.cd}`)).join('')}
+    ${pv.length?`<p class="note" style="color:#c9b88f;margin:6px 0 2px">${pv.length} passiva${pv.length>1?'s':''} aprendida${pv.length>1?'s':''}: ${pv.map(x=>x.nome).join(', ')}.</p>`:''}
+    ${!sk.filter(Boolean).length&&!pv.length?'<p class="note" style="color:#f0dfb9">Nenhuma ainda: cada nível dá 1 ponto para gastar na árvore.</p>':''}
+    ${isR?`<button class="trbtn" data-tree="${h.id}">${ico('stat','dano')} Abrir árvore de habilidades${fr?`<b>${fr} ponto${fr>1?'s':''} livre${fr>1?'s':''}</b>`:''}</button>`:''}</div>`;
 }
 function renderSheet(id,src){
   if(src)tvSrc=src;
@@ -4309,7 +4326,7 @@ function renderSheet(id,src){
     <div class="rpf"><h4 class="sec" style="margin:0">Combate</h4><div class="stgrid"><span><em>${ico('stat','atq')}Ataque</em><b>+${h.atk}</b></span><span><em>${ico('stat','def')}Defesa</em><b>${h.def}</b></span><span><em>${ico('stat','res')}Res. Mágica</em><b>${h.defMag}</b></span><span><em>${ico('stat','mov')}Mover</em><b>${h.mov}</b></span><span><em>${ico('stat','alc')}Alcance</em><b>${h.alc}</b></span><span><em>${ico('stat','crit')}Crítico</em><b>${h.critBonus?`${20-h.critBonus}–20`:'20'}</b></span><span><em>${ico('stat','ini')}Iniciativa</em><b>${h.ini>=0?'+':''}${h.ini}</b></span><span><em>${ico('stat','dano')}Dano</em><b>${h.dmg[0]}d${h.dmg[1]}${h.dmg[2]?'+'+h.dmg[2]:''}</b></span><span><em>${ico('stat','vida')}Vida</em><b>${h.maxhp}</b></span></div></div>
     <div class="rpf"><h4 class="sec" style="margin:0">Atributos</h4>${ATTR_NAMES.map(a=>`<div class="arow"><span>${AN[a]}${afG.includes(a)?' <small style="color:#9fe0a0">▲</small>':''}</span><b>${at[a]??'—'}</b><div class="mini"><i style="width:${Math.min(100,Math.round((at[a]||0)/amax*100))}%"></i></div></div>`).join('')}</div>
     <div class="rpf"><h4 class="sec" style="margin:0">Equipamento</h4><div class="eqlist">${eq}</div></div>
-    ${skillsBlock(h)}
+    ${skillsBlock(h,isR)}
     <div class="rpf">${h.sub?`<div class="hhead">${ico('subclasse',h.sub,'xl')}<div class="grow"><h4 class="sec" style="margin:0">${SUB_INFO[h.sub].nome}</h4><p class="note" style="color:#f0dfb9">${SUB_INFO[h.sub].desc}</p></div></div>`:`<h4 class="sec" style="margin:0">Subclasse</h4><p class="note" style="color:#f0dfb9">Escolhe no nível ${SUB_UNLOCK_LEVEL}, na Forja: ${SUBCLASSES[h.cls].map(x=>SUB_INFO[x].nome).join(' ou ')}.</p>`}</div>
     <div class="rpf wide"><div class="rg-row"><div><span>Movimento (${h.mov})</span>${rangeGrid(h.mov,'#79a8ec')}</div><div><span>Alcance (${h.alc})</span>${rangeGrid(h.alc,'#d4503f')}</div></div>
       <div class="sec2"><h4>Como joga</h4><p><b>No campo.</b> ${cm.campo}</p><p><b>Contra inimigos.</b> ${cm.inimigos}</p><p><b>Com aliados.</b> ${cm.aliados}</p><p class="note">${c.resumo} Dica de posição: ${c.dica}</p></div></div>
@@ -4450,6 +4467,7 @@ PI_.addEventListener('click',e=>{
   const hero=t.closest('[data-hero]');if(hero){const id=+hero.dataset.hero;if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderTavern();return;}
   const nav=t.closest('[data-nav]');if(nav){const L=tvSrc==='roster'?roster:draw,i=L.findIndex(h=>h.id===tvFocus);renderSheet(L[(i+ +nav.dataset.nav+L.length)%L.length].id);return;}
   const hire=t.closest('[data-hire]');if(hire){const id=+hire.dataset.hire;if(tvSrc==='draw'){recruitHero(id);renderRecruit();return;}if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderSheet(id);return;}
+  const trb=t.closest('[data-tree]');if(trb){const id=+trb.dataset.tree;if(roster.some(x=>x.id===id)){renderTree(id);return;}}
   const shb=t.closest('[data-sheet]');if(shb){sheetFrom=shb.dataset.from||'tavern';renderSheet(+shb.dataset.sheet,'roster');return;}
   const sl=t.closest('[data-slot]');if(sl){selected.delete(+sl.dataset.slot);view==='sheet'?renderSheet(tvFocus):renderTavern();return;}
   const eqp=t.closest('[data-eqpick]');if(eqp){const h=party.find(x=>x.id===+eqp.dataset.eqhero),item=run.inventory[+eqp.dataset.eqpick];if(h&&item&&canEquip(h,item))equipItem(h,slotKeyFor(h,item),item,run.inventory);renderEquip();return;}
@@ -4884,7 +4902,6 @@ const SK={
   cancao_ninar:{nome:'Canção de Ninar',cls:'bardo',sub:'consonante',lv:14,cd:7,kind:'debuffArea',rad:1,st:[{id:'atordoado'}]},
 };
 Object.keys(SK).forEach(id=>SK[id].id=id);
-const skillsOf=h=>h.side!=='hero'?[]:Object.values(SK).filter(x=>x.cls===h.cls&&(h.level||1)>=x.lv&&(!x.sub||x.sub===h.sub));
 const skReady=(u,sk)=>!((u.cd&&u.cd[sk.id])>0);
 const cheb=(a,b)=>Math.max(Math.abs(a.r-b.r),Math.abs(a.c-b.c));
 const stVal=(sk,x,u)=>x.val==='lvl'?15+(u.level||1):x.val;
@@ -5176,7 +5193,508 @@ const PV={
   maestro_caos:{nome:'Maestro do Caos',cls:'bardo',sub:'dissonante',lv:16,desc:'+25% de dano contra alvos com 2 ou mais debuffs.',mult:[{min:2,x:1.25}]},
 };
 Object.keys(PV).forEach(id=>PV[id].id=id);
-const passivesOf=h=>h.side!=='hero'?[]:Object.values(PV).filter(x=>x.cls===h.cls&&(h.level||1)>=x.lv&&(!x.sub||x.sub===h.sub));
+/* ================= Árvore de habilidades (motor) — ver HABILIDADES.md =================
+   Uma árvore por classe, montada sozinha a partir de SK (ativas) e PV (passivas) + nós pequenos de número.
+   Ponto de habilidade: 1 por nível a partir do 2. Ativa (grande) custa 3, passiva (média) 2, número (pequeno) 1.
+   Cada nó pede o nível `lv` da habilidade e que um vizinho já esteja aprendido. Só as ativas EQUIPADAS (4 espaços)
+   entram na batalha; passivas aprendidas valem sempre. O herói guarda h.tree={l:[ids aprendidos],s:[4 espaços]}. */
+const TREE_COST={A:3,P:2,S:1},TREE_SLOT_LV=[1,1,1,15],TREE_COL={t:'#e9b949',p:'#f0782f',g:'#5fc4d8',b:'#b58cf0'};
+const TR_SMALL={
+  guerreiro:[['hpPct',4,'+4% de PV','heart-plus'],['def',1,'+1 DEF','shield'],['dmg',1,'+1 de dano','claw-slashes'],['hpPct',4,'+4% de PV','heart-plus'],['defMag',1,'+1 Res. Mágica','magic-shield'],['dmg',1,'+1 de dano','claw-slashes'],['def',1,'+1 DEF','shield']],
+  ladino:[['dmg',1,'+1 de dano','claw-slashes'],['per',2,'+2 Percepção','eye-of-horus'],['hpPct',4,'+4% de PV','heart-plus'],['def',1,'+1 DEF','shield'],['dmg',1,'+1 de dano','claw-slashes'],['per',2,'+2 Percepção','eye-of-horus'],['defMag',1,'+1 Res. Mágica','magic-shield']],
+  mago:[['dmg',1,'+1 de dano','claw-slashes'],['defMag',1,'+1 Res. Mágica','magic-shield'],['hpPct',4,'+4% de PV','heart-plus'],['dmg',1,'+1 de dano','claw-slashes'],['def',1,'+1 DEF','shield'],['defMag',1,'+1 Res. Mágica','magic-shield'],['hpPct',4,'+4% de PV','heart-plus']],
+  clerigo:[['heal',1,'+1 de cura','healing'],['defMag',1,'+1 Res. Mágica','magic-shield'],['hpPct',4,'+4% de PV','heart-plus'],['dmg',1,'+1 de dano','claw-slashes'],['heal',1,'+1 de cura','healing'],['def',1,'+1 DEF','shield'],['defMag',1,'+1 Res. Mágica','magic-shield']],
+  arqueiro:[['dmg',1,'+1 de dano','claw-slashes'],['per',2,'+2 Percepção','eye-of-horus'],['hpPct',4,'+4% de PV','heart-plus'],['dmg',1,'+1 de dano','claw-slashes'],['def',1,'+1 DEF','shield'],['per',2,'+2 Percepção','eye-of-horus'],['defMag',1,'+1 Res. Mágica','magic-shield']],
+  bardo:[['heal',1,'+1 de cura','healing'],['hpPct',4,'+4% de PV','heart-plus'],['defMag',1,'+1 Res. Mágica','magic-shield'],['dmg',1,'+1 de dano','claw-slashes'],['def',1,'+1 DEF','shield'],['heal',1,'+1 de cura','healing'],['hpPct',4,'+4% de PV','heart-plus']]
+};
+Object.keys(TR_SMALL).forEach(cls=>TR_SMALL[cls].forEach(([k,v,nome,ic],i)=>{const id=`sm_${cls}_${i}`;PV[id]={id,cls,nome,lv:2,desc:nome+'.',stat:{[k]:v},small:true,ic};}));
+/* ícones: u:ui-icons (cor do ramo) · s:status · m:tira do SpritePilot (pasta:nome:quadros) */
+const TICON={
+  golpe_poderoso:'u:pointy-sword',grito_guerra:'u:horned-helm',provocar:'u:eye-shield',corte_profundo:'u:claw-slashes',giratorio:'u:whirlwind',escudo_aliado:'u:kite',
+  estocada_dupla:'u:daggers',golpe_costas:'u:cloak-dagger',marcar_alvo:'s:marcado',lamina_envenenada:'s:veneno',rede:'s:preso',
+  bola_fogo:'m:magic:fireball:8',escudo_arcano:'m:magic:shield-bubble:12',chama_viva:'u:magic-swirl',nevasca:'u:snowflake-1',tremor:'u:thor-fist',
+  cura_maior:'m:magic:healing-aura:8',bencao:'u:sparkles',castigo:'u:winged-scepter',golpe_sagrado:'u:holy-symbol',purificar:'u:healing',punicao:'u:scales',
+  tiro_certeiro:'u:bullseye',chuva_flechas:'u:arrow-cluster',flecha_incendiaria:'u:bow-arrow',marca_cacador:'u:target-arrows',
+  nota_aguda:'u:lyre',hino_coragem:'s:fortalecido',desafinar:'s:abalado',cancao_vigor:'s:regeneracao',pavor:'s:medo',cancao_ninar:'u:harp',
+  pele_ferro:'u:chest-armor',firmeza:'u:shield',dar_volta:'u:wind-slap',veterano:'u:centurion-helmet',muralha:'u:round-shield',terreno_sagrado:'u:dragon-shield',punho_vingativo:'u:mailed-fist',contra_golpe:'u:crossed-swords',
+  sede_sangue:'s:sangramento',selvageria:'u:barbarian',queda_pesada:'u:battle-axe',carniceiro:'u:claws',
+  pes_leves:'u:running-shoe',evasao:'u:hooded-figure',maos_leves:'u:gloves',predador:'u:eye-of-horus',sombras:'u:rogue',execucao:'u:sacrificial-dagger',mestre_terreno:'u:fur-boot',preparado:'u:hooded-assassin',gatuno:'u:broad-dagger',
+  mente_aguda:'u:crystal-ball',sabio:'u:open-book',explosao:'u:tornado-discs',combustao:'s:queimadura',pirofagia:'u:health-potion',brasa_longa:'u:fire-gem',pele_pedra:'u:crystal-cluster',gelo_rachante:'s:gelado',alto_torreao:'u:greek-temple',choque_termico:'m:magic:lightning-strike:8',
+  fe_inabalavel:'u:magic-shield',devoto:'u:heart-necklace',aura_vital:'u:sunrise',luz_restauradora:'u:sun-priest',bencao_prolongada:'u:infinity',escudo_fe:'u:round-shield',luz_vingadora:'u:skull-staff',zelo:'u:warhammer',passo_abencoado:'u:sandal',
+  olhar_aguia:'u:eye-of-horus',agilidade:'u:tabi-boot',posicao_elevada:'u:archer',instinto:'u:claw-string',escalador:'u:boots',municao_pesada:'u:bracer',ricochete:'u:flying-dagger',flechas_venenosas:'s:veneno',olho_treinado:'u:ring',
+  inspiracao_maior:'u:clover',voz_alta:'u:tribal-pendant',harmonia:'u:harp',coro:'u:team-idea',eco_benigno:'u:infinity',eco:'u:wind-slap',maestro_caos:'u:drama-masks'
+};
+const trIcon=id=>{const x=PV[id];return TICON[id]||(x&&x.small?'u:'+x.ic:'u:sparkles');};
+function trTags(x,isSk){
+  const T=[];
+  if(isSk&&x.st)T.push(['st','Aplica '+x.st.map(y=>STATUS[y.id].nome).join(', ')]);
+  if(isSk&&x.self&&x.self.length)T.push(['st','Ganha '+x.self.map(y=>STATUS[y.id].nome).join(', ')]);
+  if(!isSk){
+    if(x.hi||x.onHigh||x.holy||(x.stat&&x.stat.climb))T.push(['alt','Bônus de altura']);
+    if(x.mult||x.exec||x.shock||x.combCrit||x.undead)T.push(['st',x.exec?'Bônus vs PV baixo':x.undead?'Bônus vs mortos-vivos':'Bônus vs status']);
+  }
+  return T;
+}
+const TREE_CACHE={};
+function treeOf(cls){
+  if(TREE_CACHE[cls])return TREE_CACHE[cls];
+  const [sa,sb]=SUBCLASSES[cls],ord=(a,b)=>a.lv-b.lv||(b.t==='A')-(a.t==='A');
+  const raw=[];
+  Object.values(SK).filter(x=>x.cls===cls).forEach(x=>raw.push({id:x.id,t:'A',lv:x.lv,sub:x.sub||null,nome:x.nome,desc:skDesc(x)+' Recarga '+x.cd+'.',cd:x.cd,tg:trTags(x,true),ic:trIcon(x.id)}));
+  Object.values(PV).filter(x=>x.cls===cls&&!x.small).forEach(x=>raw.push({id:x.id,t:'P',lv:x.lv,sub:x.sub||null,nome:x.nome,desc:x.desc,tg:trTags(x,false),ic:trIcon(x.id)}));
+  const smalls=Object.values(PV).filter(x=>x.cls===cls&&x.small);let si=0;
+  const lists={t:[],p:[],g:[]};raw.forEach(n=>lists[n.sub===sa?'p':n.sub===sb?'g':'t'].push(n));
+  const bridge=lists.t.filter(n=>n.lv>=20);lists.t=lists.t.filter(n=>n.lv<20);
+  const addSmall=(L,at)=>{at.forEach(i=>{const x=smalls[si++];if(!x)return;const prev=L[Math.min(i,L.length)-1];const lv=prev?prev.lv:2;x.lv=lv;L.splice(Math.min(i,L.length),0,{id:x.id,t:'S',lv,sub:null,nome:x.nome,desc:x.desc,tg:[],ic:trIcon(x.id)});});};
+  Object.values(lists).forEach(L=>L.sort(ord));
+  addSmall(lists.t,[1,4,6]);addSmall(lists.p,[1,4]);addSmall(lists.g,[1,4]);
+  const nodes=[{id:'raiz',t:'P',z:'m',r:'t',lv:1,pais:[],c:0,nome:'Aprendiz',desc:'Ponto de partida. '+CLASSES[cls].resumo,tg:[],ic:'u:'+IC.classe[cls],u:0,x:180}];
+  const fin=(n,r,u,x,pais)=>{n.z=n.t==='A'?'l':n.t==='P'?'m':'s';n.r=r;n.c=TREE_COST[n.t];n.u=u;n.x=x;n.pais=pais;nodes.push(n);};
+  let uC=0,prevC='raiz';
+  lists.t.forEach((n,i)=>{
+    const k=Math.floor(i/3),m=i%3,uc=84+k*96;
+    if(m===0){fin(n,'t',uc,180,[prevC]);prevC=n.id;uC=uc;}
+    else fin(n,'t',uc,m===1?84:276,[prevC]);
+  });
+  const uF=uC+104;let uTop=uF;const tops={};
+  [['p',[64,140]],['g',[296,220]]].forEach(([r,cols])=>{
+    const L=lists[r];
+    L.forEach((n,j)=>{
+      const tier=Math.floor(j/2),col=j%2,u=uF+tier*96+(col?34:0);
+      const pais=j<2?[prevC]:[L[j-2].id];if(col&&j>0)pais.push(L[j-1].id);
+      fin(n,r,u,cols[col],pais);uTop=Math.max(uTop,u);
+    });
+    tops[r]=L[L.length-1];
+  });
+  bridge.sort(ord).forEach((n,i)=>fin(n,'b',uTop+110+i*100,180,[tops.p&&tops.p.id,tops.g&&tops.g.id].filter(Boolean)));
+  const uMax=Math.max(...nodes.map(n=>n.u)),H=uMax+134,yR=H-76;
+  nodes.forEach(n=>n.y=yR-n.u);
+  const by={};nodes.forEach(n=>by[n.id]=n);
+  return TREE_CACHE[cls]={nodes,by,H,uF,yR,counts:{t:lists.t.length,p:lists.p.length,g:lists.g.length}};
+}
+const treeInit=h=>{if(!h.tree||!Array.isArray(h.tree.l))h.tree={l:['raiz'],s:[null,null,null,null]};if(!h.tree.l.includes('raiz'))h.tree.l.unshift('raiz');while(h.tree.s.length<4)h.tree.s.push(null);return h.tree;};
+function treeClean(h){
+  const T=treeOf(h.cls),tr=treeInit(h);
+  tr.l=tr.l.filter((id,i,a)=>T.by[id]&&a.indexOf(id)===i);if(!tr.l.includes('raiz'))tr.l.unshift('raiz');
+  tr.s=tr.s.map(id=>(id&&tr.l.includes(id)&&T.by[id].t==='A')?id:null);
+  for(let i=0;i<4;i++)if(tr.s.indexOf(tr.s[i])!==i)tr.s[i]=null;
+  return tr;
+}
+const treeSpent=h=>{const T=treeOf(h.cls);return treeInit(h).l.reduce((a,id)=>a+(T.by[id]?T.by[id].c:0),0);};
+const treeFree=h=>Math.max(0,(h.level||1)-1-treeSpent(h));
+const slotOpen=(h,i)=>(h.level||1)>=TREE_SLOT_LV[i];
+// estado de um nó: on (aprendido) · can (dá pra aprender agora) · lvl (vizinho ok mas falta nível) · lock
+function treeState(h,n){
+  const tr=treeInit(h);if(tr.l.includes(n.id))return 'on';
+  if(!n.pais.some(p=>tr.l.includes(p)))return 'lock';
+  return (h.level||1)>=n.lv?'can':'lvl';
+}
+function treeCanRefund(h,id){
+  if(id==='raiz')return false;
+  const T=treeOf(h.cls),t=new Set(treeInit(h).l);t.delete(id);
+  const ok=new Set(['raiz']);let ch=true;
+  while(ch){ch=false;T.nodes.forEach(m=>{if(t.has(m.id)&&!ok.has(m.id)&&m.pais.some(p=>ok.has(p))){ok.add(m.id);ch=true;}});}
+  return [...t].every(i=>ok.has(i));
+}
+// distribuição automática: vai pelo perfil (ramo da subclasse primeiro, ativas antes, depois por nível) até acabar os pontos
+function autoTree(h){
+  const T=treeOf(h.cls),tr=treeInit(h),subR=h.sub?(h.sub===SUBCLASSES[h.cls][0]?'p':'g'):null;
+  const pri=n=>[n.r==='t'?0:n.r==='b'?2:(subR?n.r===subR:true)?1:3,n.lv,n.t==='A'?0:n.t==='P'?1:2];
+  const cmp=(a,b)=>{const x=pri(a),y=pri(b);for(let i=0;i<3;i++)if(x[i]!==y[i])return x[i]-y[i];return 0;};
+  let free=treeFree(h),n=0;
+  for(;;){
+    const c=T.nodes.filter(m=>treeState(h,m)==='can'&&m.c<=free).sort(cmp)[0];
+    if(!c)break;tr.l.push(c.id);free-=c.c;n++;
+  }
+  tr.l.filter(id=>T.by[id].t==='A').sort((a,b)=>T.by[a].lv-T.by[b].lv).forEach(id=>{
+    if(tr.s.includes(id))return;const i=tr.s.findIndex((s,k)=>!s&&slotOpen(h,k));if(i>=0)tr.s[i]=id;
+  });
+  return n;
+}
+const skillsOf=h=>{if(h.side!=='hero')return[];const tr=treeClean(h);return tr.s.map(id=>id?SK[id]:null).filter(Boolean);};
+const passivesOf=h=>{if(h.side!=='hero')return[];return treeClean(h).l.map(id=>PV[id]).filter(Boolean);};
+
+const TR_CSS=`
+:host{display:block;height:100%;--mesa:#14100d;--madeira:#2a1f17;--borda:#5a4330;--papel:#efe2c4;--papel-2:#e0cfa8;--tinta:#2b1e15;--ouro:#e9b949;--ouro-2:#a97e22;--nevoa:#a8a39a;
+--c-tronco:#e9b949;--c-piro:#f0782f;--c-geo:#5fc4d8;--c-ponte:#b58cf0;
+--f-display:"Pixelify Sans",ui-monospace,monospace;--f-body:"Rubik",system-ui,sans-serif}
+*{box-sizing:border-box;-webkit-user-select:none;user-select:none}
+button{font:inherit;color:inherit}
+.app{position:relative;height:100%;width:100%;display:flex;flex-direction:column;background:var(--mesa);overflow:hidden;color:var(--papel);font-family:var(--f-body)}
+.px{image-rendering:pixelated}
+/* ---------- cabeçalho ---------- */
+.top{position:relative;z-index:8;background:linear-gradient(#2d2118,#1d1510);border-bottom:2px solid var(--borda)}
+.r0{display:flex;align-items:center;justify-content:space-between;padding:8px 10px 0}
+.back{display:flex;align-items:center;gap:6px;height:36px;padding:0 12px 0 8px;border-radius:11px;border:2px solid var(--borda);background:#0006;font:700 13px var(--f-display);cursor:pointer;color:var(--papel)}
+.back span{font-size:20px;line-height:1;margin-top:-2px}
+.ttl{font:700 11px var(--f-display);letter-spacing:2px;color:var(--ouro);text-transform:uppercase;opacity:.9}
+.r1{display:flex;align-items:center;gap:11px;padding:8px 12px 8px}
+.portrait{position:relative;flex:0 0 48px;height:48px;border-radius:12px;border:2px solid var(--ouro-2);background:radial-gradient(circle at 50% 30%,#55358f,#1b1230);display:grid;place-items:center;box-shadow:0 0 14px #7d52d466}
+.portrait img{width:34px;height:34px}
+.portrait i{position:absolute;right:-6px;bottom:-6px;font:700 11px var(--f-display);font-style:normal;background:#0c0805;border:2px solid var(--ouro-2);color:var(--ouro);border-radius:99px;padding:0 6px;line-height:16px}
+.who{min-width:0;flex:1}
+.who h1{margin:0;font:700 18px/1.1 var(--f-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who small{display:block;color:var(--nevoa);font-size:11.5px;margin-top:3px}
+.ptsbox{display:flex;align-items:center;gap:7px;background:#000a;border:2px solid var(--ouro-2);border-radius:99px;padding:5px 13px 5px 8px;box-shadow:inset 0 0 10px #e9b94922}
+.ptsbox img{width:22px;height:22px;filter:drop-shadow(0 0 4px #e9b949)}
+.ptsbox b{font:700 22px/1 var(--f-display);color:var(--ouro);min-width:14px;text-align:center}
+.ptsbox span{font:600 9px/1.1 var(--f-display);letter-spacing:1px;color:var(--papel-2);text-transform:uppercase}
+.ptsbox.bump{animation:bump .45s ease}
+.ptsbox.shake{animation:shake .4s ease;border-color:#d4503f}
+@keyframes bump{40%{transform:scale(1.18);box-shadow:0 0 18px #e9b949}}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.menu{flex:0 0 36px;height:36px;border-radius:11px;border:2px solid var(--borda);background:#0006;font-size:18px;line-height:1;cursor:pointer}
+.pop{position:absolute;right:10px;top:40px;z-index:20;background:#1d1510;border:2px solid var(--ouro-2);border-radius:12px;padding:6px;display:none;flex-direction:column;gap:4px;box-shadow:0 10px 30px #000}
+.pop.on{display:flex}
+.pop button{font:600 13px var(--f-display);background:#0006;border:1px solid var(--borda);border-radius:8px;padding:10px 14px;text-align:left;cursor:pointer;white-space:nowrap}
+.tabs{display:flex;padding:0 8px}
+.tab{flex:1;position:relative;padding:8px 2px 9px;text-align:center;background:none;border:0;cursor:pointer;color:var(--nevoa);--c:var(--c-tronco)}
+.tab.p{--c:var(--c-piro)}.tab.g{--c:var(--c-geo)}
+.tab b{display:block;font:700 13px var(--f-display);letter-spacing:.5px}
+.tab small{display:block;font-size:10px;margin-top:1px;opacity:.8}
+.tab:after{content:"";position:absolute;left:18%;right:18%;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--c);transform:scaleX(0);transition:transform .25s}
+.tab.on{color:var(--papel)}.tab.on b{color:var(--c)}.tab.on:after{transform:scaleX(1);box-shadow:0 0 8px var(--c)}
+/* ---------- árvore ---------- */
+.scroller{position:relative;flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+.scroller::-webkit-scrollbar{display:none}
+.world{position:relative;width:360px;height:1190px;margin:0 auto;
+ background:
+  radial-gradient(170px 290px at 70px 560px,#f0782f26,transparent 70%),
+  radial-gradient(170px 290px at 292px 560px,#5fc4d826,transparent 70%),
+  radial-gradient(150px 220px at 180px 980px,#e9b94924,transparent 70%),
+  radial-gradient(90px 160px at 180px 450px,#b58cf022,transparent 70%)}
+.world:before{content:"";position:absolute;inset:0;background-image:radial-gradient(#ffffff22 1px,transparent 1.2px),radial-gradient(#ffffff14 1px,transparent 1.2px);background-size:46px 46px,29px 29px;background-position:0 0,13px 17px;opacity:.5}
+svg.links{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.lab{position:absolute;text-align:center;font:700 11px var(--f-display);letter-spacing:4px;opacity:.5;width:150px}
+.lab.p{color:var(--c-piro);left:0}.lab.g{color:var(--c-geo);right:0}.lab.t{color:var(--c-tronco);left:105px}
+.tier{position:absolute;left:0;right:0;border-top:1px dashed #5a433066;font:10px var(--f-display);color:#8a7560;text-align:right;padding:1px 6px;letter-spacing:1px}
+.node{position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;cursor:pointer;--c:var(--c-tronco);touch-action:manipulation;z-index:2}
+.node.p{--c:var(--c-piro)}.node.g{--c:var(--c-geo)}.node.b{--c:var(--c-ponte)}
+.node .ic{position:relative;z-index:1;display:block;background-repeat:no-repeat;image-rendering:pixelated;background-size:contain;background-position:center}
+.node .ic:not(.mk){filter:brightness(1.4) contrast(1.1)}
+.ic.mk{background-color:var(--tint,#cdbb98);-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat}
+.node.on .ic.mk{--tint:color-mix(in srgb,var(--c) 35%,#fff)}
+.node.lock .ic.mk{--tint:#8a7560}
+.node .nm{position:absolute;top:100%;margin-top:3px;width:92px;text-align:center;font:600 10px/1.1 var(--f-display);color:var(--papel);text-shadow:0 1px 0 #000,0 0 4px #000;pointer-events:none;left:50%;transform:translateX(-50%)}
+.node.sel .nm{color:#fff;text-shadow:0 0 8px var(--c),0 1px 0 #000}
+.node.s{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 50% 35%,#3b2c20,#17100b);border:2px solid #6b5640;box-shadow:inset 0 0 6px #000}
+.node.s .ic{width:20px;height:20px}
+.node.m{width:46px;height:46px}
+.node.m:before{content:"";position:absolute;inset:3px;transform:rotate(45deg);border-radius:7px;background:radial-gradient(circle at 40% 30%,#3b2c20,#17100b);border:2px solid #6b5640;box-shadow:inset 0 0 8px #000}
+.node.m .ic{width:26px;height:26px}
+.node.l{width:64px;height:64px}
+.node.l:before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 30deg,#6b5640,#3b2c20,#6b5640,#3b2c20,#6b5640);border:2px solid #7a6247;box-shadow:0 3px 8px #000}
+.node.l:after{content:"";position:absolute;inset:7px;border-radius:50%;background:radial-gradient(circle at 50% 30%,#35261b,#120c08);box-shadow:inset 0 0 10px #000,0 0 0 2px #00000099}
+.node.l .ic{width:36px;height:36px}
+.cd{position:absolute;right:-4px;bottom:-2px;z-index:3;font:700 10px var(--f-display);background:#0c0805;border:1.5px solid #6b5640;border-radius:99px;padding:0 5px;color:var(--papel-2)}
+.eqn{position:absolute;left:-3px;bottom:-3px;z-index:3;font:700 10px var(--f-display);width:18px;height:18px;border-radius:5px;background:var(--ouro);color:var(--tinta);display:grid;place-items:center;border:1.5px solid #5b4310;box-shadow:0 0 6px #e9b94988}
+.node.lock{filter:saturate(.45) brightness(.78)}
+.node.lock.s,.node.lock.m:before,.node.lock.l:before{border-color:color-mix(in srgb,var(--c) 35%,#6b5640)}
+.node.can.s,.node.can.m:before,.node.can.l:before{border-color:var(--c)}
+.node.can{animation:breathe 2s ease-in-out infinite}
+@keyframes breathe{50%{filter:drop-shadow(0 0 6px var(--c)) brightness(1.12)}}
+.node.on.s{border-color:var(--c);background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--c) 45%,#2a1f17),#1a110b);box-shadow:0 0 10px color-mix(in srgb,var(--c) 70%,transparent),inset 0 0 6px #0008}
+.node.on.m:before{border-color:var(--c);background:radial-gradient(circle at 40% 30%,color-mix(in srgb,var(--c) 50%,#2a1f17),#1a110b);box-shadow:0 0 12px color-mix(in srgb,var(--c) 70%,transparent),inset 0 0 8px #0008}
+.node.on.l:before{background:conic-gradient(from 30deg,var(--c),#fff8,var(--c),#0006,var(--c));border-color:var(--c);box-shadow:0 0 16px color-mix(in srgb,var(--c) 75%,transparent),0 3px 8px #000}
+.node.on.l:after{background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--c) 35%,#35261b),#120c08)}
+/* botão + */
+.plus{position:absolute;right:-9px;top:-9px;z-index:5;width:24px;height:24px;border-radius:50%;border:2px solid #5b4310;background:linear-gradient(#ffd66e,#d99a22);color:#2b1e15;font:700 18px/18px var(--f-display);padding:0;display:grid;place-items:center;cursor:pointer;box-shadow:0 0 10px #e9b949aa;animation:plusp 1.4s ease-in-out infinite}
+.plus:before{content:"";position:absolute;inset:-9px}
+.plus.dis{background:#4a3d31;border-color:#2b1e15;color:#9b8670;box-shadow:none;animation:none}
+.node.s .plus{right:-10px;top:-10px;width:22px;height:22px}
+@keyframes plusp{50%{transform:scale(1.14)}}
+/* seleção */
+.sel-ring,.sel-glow{display:none;position:absolute;border-radius:50%;pointer-events:none}
+.node.sel .sel-ring,.node.sel .sel-glow{display:block}
+.sel-ring{inset:-8px;z-index:0;background:conic-gradient(from 0deg,transparent 0 35%,var(--c) 100%);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));animation:spin 2.2s linear infinite;filter:drop-shadow(0 0 4px var(--c))}
+.sel-glow{inset:-16px;z-index:0;background:radial-gradient(circle,color-mix(in srgb,var(--c) 38%,transparent) 0,transparent 68%);animation:glow 1.8s ease-in-out infinite}
+.node.l .sel-ring{inset:-10px}.node.s .sel-ring{inset:-7px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes glow{50%{opacity:.45;transform:scale(1.12)}}
+.node.sel{z-index:4}
+.node.tap{animation:tapb .28s ease}
+@keyframes tapb{0%{transform:translate(-50%,-50%) scale(1)}40%{transform:translate(-50%,-50%) scale(.86)}75%{transform:translate(-50%,-50%) scale(1.07)}100%{transform:translate(-50%,-50%) scale(1)}}
+.node.wait{filter:brightness(.9)}
+.node.pop{animation:popn .7s cubic-bezier(.2,1.6,.4,1)}
+@keyframes popn{0%{transform:translate(-50%,-50%) scale(.8);filter:brightness(2.6) saturate(1.4)}45%{transform:translate(-50%,-50%) scale(1.32);filter:brightness(2)}100%{transform:translate(-50%,-50%) scale(1);filter:none}}
+.node.src{animation:srcp .55s ease}
+@keyframes srcp{40%{transform:translate(-50%,-50%) scale(1.14);filter:brightness(1.6) drop-shadow(0 0 10px var(--c))}}
+/* efeitos */
+.fx{position:absolute;pointer-events:none;z-index:6;transform:translate(-50%,-50%)}
+.rip{width:20px;height:20px;border-radius:50%;border:2px solid var(--c);animation:rip .55s ease-out forwards}
+@keyframes rip{to{transform:translate(-50%,-50%) scale(3.4);opacity:0}}
+.flash{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,#fff 0,var(--c) 35%,transparent 70%);animation:flash .6s ease-out forwards}
+@keyframes flash{0%{transform:translate(-50%,-50%) scale(.2);opacity:1}100%{transform:translate(-50%,-50%) scale(3.2);opacity:0}}
+.ring2{width:40px;height:40px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 14px var(--c),inset 0 0 10px var(--c);animation:ring2 .75s ease-out forwards}
+@keyframes ring2{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}100%{transform:translate(-50%,-50%) scale(3.6);opacity:0}}
+.ray{width:3px;height:46px;background:linear-gradient(transparent,#fff,transparent);transform-origin:50% 50%;animation:ray .7s ease-out forwards}
+@keyframes ray{0%{opacity:1;transform:translate(-50%,-50%) rotate(var(--a)) translateY(0) scaleY(.3)}100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--a)) translateY(-44px) scaleY(1.4)}}
+.spk{width:6px;height:6px;background:#fff;box-shadow:0 0 8px var(--c),0 0 3px #fff;border-radius:1px;animation:spk .8s ease-out forwards}
+@keyframes spk{0%{opacity:1;transform:translate(-50%,-50%) rotate(0)}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(220deg) scale(.4)}}
+path.fillp{stroke-dasharray:1;stroke-dashoffset:1;animation:fillp .62s cubic-bezier(.4,0,.3,1) .08s forwards}
+@keyframes fillp{to{stroke-dashoffset:0}}
+.unl{position:absolute;left:12px;right:12px;top:-90px;z-index:15;display:flex;gap:11px;align-items:center;background:linear-gradient(#35261b,#1d1510);border:2px solid var(--c,var(--ouro));border-radius:14px;padding:9px 12px;box-shadow:0 8px 28px #000,0 0 22px color-mix(in srgb,var(--c,var(--ouro)) 45%,transparent);transition:top .4s cubic-bezier(.2,1.3,.4,1);pointer-events:none}
+.unl.on{top:122px}
+.unl .ui{flex:0 0 44px;height:44px;border-radius:10px;border:2px solid var(--c);background:radial-gradient(circle at 50% 30%,#35261b,#120c08);display:grid;place-items:center}
+.unl .ui .ic{width:30px;height:30px;display:block;background-repeat:no-repeat;image-rendering:pixelated;background-size:contain;background-position:center}
+.unl small{display:block;font:600 10px var(--f-display);letter-spacing:1.5px;color:var(--c);text-transform:uppercase}
+.unl b{display:block;font:700 16px var(--f-display);margin:1px 0}
+.unl em{font-style:normal;font-size:11px;color:var(--nevoa)}
+/* ---------- barra de equipadas ---------- */
+.slots{position:relative;z-index:7;display:flex;align-items:center;gap:8px;padding:8px 12px;background:linear-gradient(#1d1510,#17100c);border-top:2px solid var(--borda)}
+.slots>label{flex:0 0 58px;font:700 10px/1.2 var(--f-display);letter-spacing:1px;color:var(--papel-2);text-transform:uppercase}
+.slots>label small{display:block;font:500 10px var(--f-body);letter-spacing:0;color:var(--nevoa);text-transform:none;margin-top:2px}
+.slot{position:relative;flex:1;aspect-ratio:1;max-width:60px;border-radius:50%;border:2px solid #6b5640;background:radial-gradient(circle at 50% 30%,#2a1f17,#0f0a07);display:grid;place-items:center;cursor:pointer;padding:0;box-shadow:inset 0 0 10px #000;--c:var(--ouro)}
+.slot .n{position:absolute;left:-2px;top:-3px;font:700 10px var(--f-display);width:17px;height:17px;border-radius:5px;background:#0c0805;border:1.5px solid #6b5640;color:var(--papel-2);display:grid;place-items:center;z-index:2}
+.slot .plus2{font:700 22px/1 var(--f-display);color:#5a4330}
+.slot .ic{width:60%;height:60%;display:block;background-repeat:no-repeat;image-rendering:pixelated;background-size:contain;background-position:center}
+.slot .ic:not(.mk){filter:brightness(1.4)}
+.slot .ic.mk{background-color:#fff0cf;-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat}
+.slot.fill{border-color:var(--c);background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--c) 30%,#2a1f17),#120c08);box-shadow:0 0 12px color-mix(in srgb,var(--c) 55%,transparent),inset 0 0 8px #0008}
+.slot.fill .n{background:var(--c);color:var(--tinta);border-color:#0006}
+.slot .cdp{position:absolute;right:-4px;bottom:-3px;font:700 9px var(--f-display);background:#0c0805;border:1.5px solid #6b5640;border-radius:99px;padding:0 4px;color:var(--papel-2)}
+.slot.lk{opacity:.55;cursor:default}
+.slot.lk img{width:45%;filter:invert(.8)}
+.slot.lk i{position:absolute;bottom:-9px;font:700 9px var(--f-display);font-style:normal;color:var(--nevoa);background:#0c0805;border-radius:99px;padding:0 5px;border:1px solid #5a4330}
+.slot.want{border-color:var(--ouro);animation:want 1s ease-in-out infinite}
+.slot.want .plus2{color:var(--ouro)}
+@keyframes want{50%{box-shadow:0 0 16px var(--ouro),inset 0 0 10px #e9b94955;transform:scale(1.07)}}
+.slot.got{animation:got .6s cubic-bezier(.2,1.6,.4,1)}
+@keyframes got{0%{transform:scale(.6)}50%{transform:scale(1.2);filter:brightness(2)}100%{transform:scale(1)}}
+.fly{position:fixed;z-index:50;pointer-events:none;transition:transform .5s cubic-bezier(.5,0,.2,1),opacity .5s;background-repeat:no-repeat;image-rendering:pixelated;background-size:contain;background-position:center;filter:drop-shadow(0 0 8px #e9b949)}
+/* ---------- folha de detalhe ---------- */
+.sheet{position:relative;z-index:6;background:linear-gradient(#2a1f17,#1d1510);border-top:2px solid var(--ouro-2);padding:12px 14px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -10px 24px #000b}
+.sh-top{display:flex;gap:11px;align-items:center}
+.sh-ic{flex:0 0 56px;height:56px;border-radius:14px;border:2px solid var(--c);background:radial-gradient(circle at 50% 30%,#35261b,#120c08);display:grid;place-items:center;box-shadow:0 0 14px color-mix(in srgb,var(--c) 45%,transparent)}
+.sh-ic .ic{width:38px;height:38px;display:block;background-repeat:no-repeat;image-rendering:pixelated;background-size:contain;background-position:center}
+.sh-ic .ic.mk{background-color:color-mix(in srgb,var(--c) 35%,#fff);-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat}
+.sh-t{flex:1;min-width:0}
+.sh-t h2{margin:0;font:700 18px/1.1 var(--f-display)}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.tg{font:600 10px var(--f-display);padding:2px 8px;border-radius:99px;border:1px solid;letter-spacing:.3px}
+.tg.a{color:#ffd37a;border-color:#a97e22;background:#a97e2233}
+.tg.pa{color:#a9d6ff;border-color:#4b78a8;background:#4b78a833}
+.tg.alt{color:#9be07a;border-color:#4d8a38;background:#4d8a3833}
+.tg.st{color:#ff9d8a;border-color:#a8483a;background:#a8483a33}
+.tg.cdt{color:var(--papel-2);border-color:#5a4330;background:#0006}
+.tg.pt{color:#e8c8ff;border-color:#8a5cc0;background:#8a5cc033}
+.tg.req{color:#ffb4a8;border-color:#a8483a;background:#a8483a22}
+.cost{flex:0 0 auto;text-align:center;font:700 20px/1 var(--f-display);color:var(--ouro)}
+.cost small{display:block;font:600 8px var(--f-display);letter-spacing:1px;color:var(--nevoa);margin-top:3px}
+.desc{font-size:13px;line-height:1.45;color:var(--papel);margin:9px 0 10px}
+.desc b{color:var(--ouro);font-weight:600}
+.row{display:flex;gap:8px}
+.btn{flex:1;font:700 15px var(--f-display);padding:12px 8px;border-radius:11px;border:2px solid #7a5d1d;background:linear-gradient(#f0c150,#b88626);color:#2b1e15;cursor:pointer;box-shadow:0 3px 0 #5b4310;text-align:center;position:relative;overflow:hidden}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #5b4310}
+.btn.sec{background:#00000066;color:var(--papel);border-color:var(--borda);box-shadow:0 3px 0 #000}
+.btn.off{filter:grayscale(1) brightness(.55);cursor:not-allowed;box-shadow:none}
+.btn.blue{background:linear-gradient(#7fb2f2,#3e72b8);border-color:#254a7d;box-shadow:0 3px 0 #1b3557;color:#0e1d33}
+
+.node .lvp{position:absolute;left:50%;top:-12px;transform:translateX(-50%);z-index:4;font:700 9px var(--f-display);background:#0c0805;border:1.5px solid #6b5640;border-radius:99px;padding:0 5px;color:#ffb4a8;white-space:nowrap}
+.node.s .lvp{top:-14px}
+.tg.lvr{color:#ffb4a8;border-color:#a8483a;background:#a8483a22}
+`;
+/* ================= Tela da árvore de habilidades (Shadow DOM: o estilo não vaza pro resto do jogo) ================= */
+const trSnd=(n,o)=>{try{playSfx(n,o||{});}catch(e){}};
+const trBuzz=ms=>{try{navigator.vibrate&&navigator.vibrate(ms);}catch(e){}};
+function trIcon_(spec){
+  const [k,a,b,c]=spec.split(':');
+  if(k==='u')return {cls:' mk',st:`--m:url(assets/ui-icons/${a}.png)`};
+  if(k==='s')return {cls:'',st:`background-image:url(assets/status/${a}.png)`};
+  const f=+c;return {cls:'',st:`background-image:url(assets/spritepilot/${a}/32px/${b}-32px_strip${f}.png);background-size:${f*100}% 100%;background-position:${Math.round(f/2)*100/(f-1)}% 0`,f,anim:true};
+}
+const trIc=(spec,extra='')=>{const i=trIcon_(spec);return `<span class="ic${i.cls}" ${extra} style="${i.st}"></span>`;};
+function mountTree(h,host){
+  const T=treeOf(h.cls),by=T.by,tr=treeClean(h),root=host.attachShadow({mode:'open'});
+  const SI=SUB_INFO,[sa,sb]=SUBCLASSES[h.cls];
+  const BR={t:'Tronco',p:SI[sa].nome,g:SI[sb].nome};
+  root.innerHTML=`<style>${TR_CSS}</style><div class="app">
+    <div class="top">
+      <div class="r0"><button class="back" id="back"><span>‹</span>Ficha</button><div class="ttl">Árvore de habilidades</div><button class="menu" id="menu" aria-label="Mais opções">⋯</button></div>
+      <div class="r1">
+        <div class="portrait"><img src="${h.portrait}" alt=""><i>${h.level||1}</i></div>
+        <div class="who"><h1>${h.first}</h1><small>${CLASSES[h.cls].nome}${h.sub?' · '+SI[h.sub].nome:''} · nível ${h.level||1}</small></div>
+        <div class="ptsbox" id="ptsbox"><img class="px" src="assets/ui-icons/sparkles.png" alt=""><b id="pts">0</b><span>pontos<br>livres</span></div>
+      </div>
+      <div class="tabs"><button class="tab p" data-r="p"><b>${BR.p}</b><small id="cp"></small></button><button class="tab t on" data-r="t"><b>Tronco</b><small id="ct"></small></button><button class="tab g" data-r="g"><b>${BR.g}</b><small id="cg"></small></button></div>
+      <div class="pop" id="pop"><button id="auto">✦ Distribuir automático</button><button id="zero">↺ Zerar tudo (grátis)</button></div>
+    </div>
+    <div class="scroller" id="scr"><div class="world" id="world" style="height:${T.H}px"><svg class="links" id="links" width="360" height="${T.H}"></svg></div></div>
+    <div class="slots" id="slots"></div><div class="sheet" id="sheet"></div><div class="unl" id="unl"></div>
+  </div>`;
+  const $=s=>root.querySelector(s),$$=s=>root.querySelectorAll(s);
+  const L=()=>new Set(tr.l),has=id=>tr.l.includes(id),slotOf=id=>tr.s.indexOf(id),free=()=>treeFree(h);
+  const st=n=>pending===n.id?'wait':treeState(h,n);
+  let sel=(T.nodes.filter(n=>treeState(h,n)==='can').sort((a,b)=>a.lv-b.lv)[0]||T.by.raiz).id,pending=null,equipMode=false;
+  const save=()=>{try{saveGame();}catch(e){}};
+  const pathD=(a,b)=>{const my=(a.y+b.y)/2;return `M${a.x} ${a.y} C ${a.x} ${my}, ${b.x} ${my}, ${b.x} ${b.y}`;};
+  /* ---------- árvore ---------- */
+  function build(){
+    const w=$('#world');w.querySelectorAll('.node,.lab').forEach(e=>e.remove());
+    [['TRONCO',T.yR+52,'t',105]].forEach(([t,y,r,x])=>{if(!t)return;const l=document.createElement('div');l.className='lab '+r;l.textContent=t;l.style.top=y+'px';l.style.left=x+'px';w.appendChild(l);});
+    [['p',75],['g',null]].forEach(([r,x])=>{const l=document.createElement('div');l.className='lab '+r;l.textContent=BR[r].toUpperCase();l.style.top=(T.yR-T.uF+56)+'px';w.appendChild(l);});
+    T.nodes.forEach(n=>{
+      const e=document.createElement('div'),s=st(n);
+      e.className=`node ${n.z} ${n.r} ${s==='lvl'?'lock':s}${sel===n.id?' sel':''}`;
+      e.style.left=n.x+'px';e.style.top=n.y+'px';e.dataset.id=n.id;
+      const q=slotOf(n.id),fr=free();
+      e.innerHTML=`<span class="sel-glow"></span><span class="sel-ring"></span>${trIc(n.ic)}`+
+        (n.z!=='s'?`<span class="nm">${n.nome}</span>`:'')+
+        (n.z==='l'?`<span class="cd">⏱${n.cd}</span>`:'')+
+        (q>=0?`<span class="eqn">${q+1}</span>`:'')+
+        (s==='lvl'?`<span class="lvp">Nv ${n.lv}</span>`:'')+
+        (s==='can'?`<button class="plus${fr<n.c?' dis':''}" aria-label="Aprender">+</button>`:'');
+      e.onclick=ev=>{
+        if(pending)return;
+        if(ev.target.closest('.plus')){tryLearn(n);return;}
+        e.classList.add('tap');fx('rip',n.x,n.y,TREE_COL[n.r]);trBuzz(6);
+        trSnd('tr_select',{vol:.8,rate:{t:1,p:.84,g:1.18,b:1.4}[n.r]});
+        sel=n.id;build();sheet();
+      };
+      w.appendChild(e);
+    });
+    links();counts();$('#pts').textContent=free();slotsUI();
+  }
+  function links(){
+    let hh='';
+    T.nodes.forEach(n=>n.pais.forEach(p=>{
+      const a=by[p],c=TREE_COL[n.r],on=has(a.id)&&has(n.id)&&pending!==n.id,open=has(a.id)&&!on,d=pathD(a,n);
+      if(on)hh+=`<path d="${d}" stroke="${c}" stroke-width="8" fill="none" opacity=".2"/><path d="${d}" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+      else hh+=`<path d="${d}" stroke="${open?c:'#5a4330'}" stroke-width="2.5" fill="none" stroke-dasharray="${open?'2 6':'3 5'}" stroke-linecap="round" opacity="${open?.85:.5}"/>`;
+    }));
+    $('#links').innerHTML=hh;
+  }
+  function counts(){
+    ['t','p','g'].forEach(r=>{const A=T.nodes.filter(n=>n.r===r&&n.id!=='raiz'&&(r!=='t'||true));const k=A.filter(n=>has(n.id)).length;$('#c'+r).textContent=`${k}/${A.length} nós`;});
+  }
+  /* ---------- barra de equipadas ---------- */
+  const canEquipSel=()=>{const n=by[sel];return n&&n.t==='A'&&has(n.id)&&slotOf(n.id)<0;};
+  function slotsUI(){
+    let hh='<label>Equipadas<small>vão pra batalha</small></label>';
+    for(let i=0;i<4;i++){
+      const id=tr.s[i];
+      if(!slotOpen(h,i)){hh+=`<button class="slot lk" data-i="${i}"><img class="px" src="assets/ui-icons/padlock.png" alt=""><i>Nv ${TREE_SLOT_LV[i]}</i></button>`;continue;}
+      if(id){const n=by[id];hh+=`<button class="slot fill" data-i="${i}" style="--c:${TREE_COL[n.r]}"><span class="n">${i+1}</span>${trIc(n.ic)}<span class="cdp">⏱${n.cd}</span></button>`;}
+      else hh+=`<button class="slot${equipMode||canEquipSel()?' want':''}" data-i="${i}"><span class="n">${i+1}</span><span class="plus2">+</span></button>`;
+    }
+    $('#slots').innerHTML=hh;
+    $$('.slot').forEach(b=>b.onclick=()=>slotTap(+b.dataset.i));
+  }
+  function slotTap(i){
+    if(!slotOpen(h,i)){trSnd('ui_denied',{vol:.8});toast('Espaço libera no nível '+TREE_SLOT_LV[i],'no');return;}
+    const id=tr.s[i];
+    if(canEquipSel()&&(equipMode||!id)){equip(sel,i);return;}
+    if(id){trSnd('tr_select',{vol:.7,rate:1.1});sel=id;build();sheet();scrollTo_(by[id]);return;}
+    trSnd('ui_denied',{vol:.6});toast('Escolha uma ativa aprendida para equipar','no');
+  }
+  function equip(id,i){
+    const old=slotOf(id);if(old>=0)tr.s[old]=null;
+    tr.s[i]=id;equipMode=false;save();
+    const from=$('#shic');build();sheet();
+    const to=root.querySelector(`.slot[data-i="${i}"]`);if(from&&to)fly(from,to,by[id]);
+    setTimeout(()=>{const t=root.querySelector(`.slot[data-i="${i}"]`);t&&t.classList.add('got');},430);
+    trSnd('tr_equip',{vol:.9});toast(by[id].nome+' equipada no espaço '+(i+1),'ok');trBuzz(12);
+  }
+  function unequip(id){const i=slotOf(id);if(i<0)return;tr.s[i]=null;save();trSnd('tr_unequip',{vol:.8});build();sheet();toast('Espaço '+(i+1)+' liberado');}
+  function fly(from,to,n){
+    const a=from.getBoundingClientRect(),b=to.getBoundingClientRect(),i=trIcon_(n.ic),e=document.createElement('div');e.className='fly';
+    e.style.cssText+=`left:${a.left}px;top:${a.top}px;width:${a.width}px;height:${a.height}px;`+(i.cls?`background:#fff0cf;-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat;${i.st}`:i.st);
+    root.querySelector('.app').appendChild(e);
+    requestAnimationFrame(()=>{const dx=b.left+b.width/2-(a.left+a.width/2),dy=b.top+b.height/2-(a.top+a.height/2),s=(b.width*.6)/a.width;e.style.transform=`translate(${dx}px,${dy}px) scale(${s})`;});
+    setTimeout(()=>{e.style.opacity=0;setTimeout(()=>e.remove(),300);},450);
+  }
+  /* ---------- efeitos ---------- */
+  function fx(cls,x,y,c,extra=''){const e=document.createElement('div');e.className='fx '+cls;e.style.cssText=`left:${x}px;top:${y}px;--c:${c};${extra}`;$('#world').appendChild(e);setTimeout(()=>e.remove(),1000);}
+  function burst(n){
+    const c=TREE_COL[n.r];fx('flash',n.x,n.y,c);fx('ring2',n.x,n.y,c);
+    for(let i=0;i<8;i++)fx('ray',n.x,n.y,c,`--a:${i*45+22}deg`);
+    for(let i=0;i<14;i++){const a=Math.random()*6.28,r=34+Math.random()*34;fx('spk',n.x,n.y,c,`--dx:${Math.cos(a)*r}px;--dy:${Math.sin(a)*r}px;animation-delay:${Math.random()*.1}s`);}
+  }
+  const ptsAnim=k=>{const b=$('#ptsbox');b.classList.remove('bump','shake');void b.offsetWidth;b.classList.add(k);};
+  /* ---------- aprender ---------- */
+  function tryLearn(n){
+    if(treeState(h,n)!=='can')return;
+    if(free()<n.c){ptsAnim('shake');trSnd('tr_nopts',{vol:.9});toast(`Faltam ${n.c-free()} ponto${n.c-free()>1?'s':''} para ${n.nome}`,'no');trBuzz(30);return;}
+    learn(n);
+  }
+  function learn(n){
+    const src=n.pais.filter(p=>has(p)).map(p=>by[p]).sort((a,b)=>Math.hypot(a.x-n.x,a.y-n.y)-Math.hypot(b.x-n.x,b.y-n.y))[0];
+    tr.l.push(n.id);pending=n.id;sel=n.id;save();
+    build();sheet();ptsAnim('bump');
+    const c=TREE_COL[n.r],d=pathD(src,n),svg=$('#links');
+    svg.insertAdjacentHTML('beforeend',`<path d="${d}" stroke="${c}" stroke-width="9" fill="none" opacity=".35" pathLength="1" class="fillp" stroke-linecap="round"/><path d="${d}" stroke="#fff" stroke-width="3.5" fill="none" pathLength="1" class="fillp" stroke-linecap="round" style="filter:drop-shadow(0 0 5px ${c})"/><circle r="6" fill="#fff" style="filter:drop-shadow(0 0 8px ${c}) drop-shadow(0 0 4px ${c})"><animateMotion dur=".62s" begin="indefinite" fill="freeze" path="${d}" keyTimes="0;1" keySplines=".4 0 .3 1" calcMode="spline"/></circle>`);
+    const m=svg.querySelector('circle:last-of-type animateMotion');setTimeout(()=>m&&m.beginElement&&m.beginElement(),80);
+    const se=root.querySelector(`.node[data-id="${src.id}"]`);if(se){se.classList.add('src');fx('rip',src.x,src.y,c);}
+    trSnd('tr_charge',{vol:.9});trBuzz(10);
+    setTimeout(()=>{
+      pending=null;if(!host.isConnected)return;build();sheet();burst(n);trBuzz([14,30,22]);
+      trSnd('tr_unlock_'+n.r,{vol:1});
+      const ne=root.querySelector(`.node[data-id="${n.id}"]`);ne&&ne.classList.add('pop');
+      popup(n,src);
+    },720);
+  }
+  function popup(n,src){
+    const u=$('#unl');u.style.setProperty('--c',TREE_COL[n.r]);
+    u.innerHTML=`<div class="ui">${trIc(n.ic)}</div><div><small>${n.t==='A'?'Habilidade desbloqueada':n.t==='P'?'Passiva desbloqueada':'Bônus desbloqueado'}</small><b>${n.nome}</b><em>ligada a ${src.nome}${n.t==='A'?' · já pode equipar':''}</em></div>`;
+    u.classList.add('on');clearTimeout(popup.t);popup.t=setTimeout(()=>u.classList.remove('on'),2400);
+  }
+  function refund(n){
+    const q=slotOf(n.id);if(q>=0)tr.s[q]=null;
+    tr.l.splice(tr.l.indexOf(n.id),1);save();trSnd('tr_refund',{vol:.9});build();sheet();ptsAnim('bump');toast('Voltaram '+n.c+' ponto'+(n.c>1?'s':''));
+  }
+  /* ---------- detalhe ---------- */
+  function sheet(){
+    const n=by[sel],s=st(n),col=TREE_COL[n.r],q=slotOf(n.id);
+    const typeTag=n.t==='A'?'<span class="tg a">ATIVA</span>':n.t==='P'?'<span class="tg pa">PASSIVA</span>':'<span class="tg pa">BÔNUS</span>';
+    const tags=(n.tg||[]).map(([k,t])=>`<span class="tg ${k}">${k==='alt'?'▲ ':''}${t}</span>`).join('');
+    const cdt=n.t==='A'?`<span class="tg cdt">⏱ recarga ${n.cd}</span>`:'';
+    const req=s==='lock'?`<span class="tg req">🔒 precisa de ${n.pais.map(p=>by[p].nome).join(' ou ')}</span>`:s==='lvl'?`<span class="tg lvr">🔒 nível ${n.lv}</span>`:'';
+    let btn='';
+    if(s==='wait')btn='<div class="btn off">Desbloqueando…</div>';
+    else if(s==='on'){
+      if(n.id==='raiz')btn='<div class="btn off" style="filter:none;opacity:.8">Ponto de partida</div>';
+      else{
+        if(n.t==='A')btn=q>=0?`<div class="btn sec" id="uneq">Remover do espaço ${q+1}</div>`:`<div class="btn blue" id="eq">⚔ Equipar</div>`;
+        else btn='<div class="btn off" style="filter:none;opacity:.9;color:#9fe08a;border-color:#4d8a38;background:#4d8a3822;box-shadow:none">✔ Sempre ativa</div>';
+        if(treeCanRefund(h,n.id))btn+='<div class="btn sec" id="ref" style="flex:0 0 auto;padding:12px 14px;font-size:13px">Devolver</div>';
+      }
+    }else if(s==='can')btn=`<div class="btn${free()<n.c?' off':''}" id="learn">${free()<n.c?'Faltam '+(n.c-free())+' pt':'＋ Aprender'}</div>`;
+    else btn='<div class="btn off">Bloqueada</div>';
+    const sh=$('#sheet');sh.style.setProperty('--c',col);
+    sh.innerHTML=`<div class="sh-top"><div class="sh-ic">${trIc(n.ic,'id="shic"')}</div><div class="sh-t"><h2>${n.nome}</h2><div class="tags">${typeTag}${cdt}${tags}${req}</div></div><div class="cost">${n.c||'—'}<small>${n.c===1?'PONTO':'PONTOS'}</small></div></div><div class="desc">${n.desc}</div><div class="row">${btn}</div>`;
+    const g=id=>root.getElementById?root.getElementById(id):sh.querySelector('#'+id);
+    g('learn')&&(g('learn').onclick=()=>tryLearn(n));
+    g('ref')&&(g('ref').onclick=()=>refund(n));
+    g('uneq')&&(g('uneq').onclick=()=>unequip(n.id));
+    g('eq')&&(g('eq').onclick=()=>{const i=tr.s.findIndex((x,k)=>!x&&slotOpen(h,k));if(i>=0)equip(n.id,i);else{equipMode=true;slotsUI();trSnd('tr_select',{vol:.8});toast('Toque no espaço que quer trocar','ok');}});
+    animate(n);
+  }
+  let tm;
+  function animate(n){clearInterval(tm);const i=trIcon_(n.ic);if(!i.anim)return;const e=$('#shic');let f=0;tm=setInterval(()=>{if(!host.isConnected){clearInterval(tm);return;}f=(f+1)%i.f;e.style.backgroundPosition=(f*100/(i.f-1))+'% 0';},110);}
+  let tt;function toast(t,k){const u=$('#unl');if(u.classList.contains('on')&&!k)return;u.style.setProperty('--c',k==='no'?'#d4503f':'#e9b949');u.innerHTML=`<div><b style="font-size:14px;margin:0">${t}</b></div>`;u.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>u.classList.remove('on'),1600);}
+  const scrollTo_=n=>{const s=$('#scr');s.scrollTo({top:n.y-s.clientHeight/2,behavior:'smooth'});};
+  /* ---------- menu / abas / voltar ---------- */
+  $('#menu').onclick=e=>{e.stopPropagation();trSnd('ui_click',{vol:.7});$('#pop').classList.toggle('on');};
+  root.addEventListener('click',()=>$('#pop').classList.remove('on'));
+  $('#back').onclick=()=>{trSnd('tr_close',{vol:.9});renderSheet(h.id,'roster');};
+  $('#zero').onclick=()=>{const n=tr.l.length-1,pts=treeSpent(h);tr.l=['raiz'];tr.s=[null,null,null,null];save();trSnd('tr_reset',{vol:.9});build();sheet();ptsAnim('bump');toast(n?`Árvore zerada: ${pts} pontos de volta`:'Nada para zerar');};
+  $('#auto').onclick=()=>{const k=autoTree(h);save();trSnd('tr_auto',{vol:.9});build();sheet();ptsAnim('bump');toast(k?`Distribuído pelo perfil (${k} nós)`:'Sem pontos para distribuir','ok');};
+  $$('.tab').forEach(c=>c.onclick=()=>{
+    const r=c.dataset.r,s=$('#scr'),y=r==='t'?T.yR-100:T.yR-T.uF-170;
+    trSnd('tr_tab',{vol:.8,rate:{t:1,p:.9,g:1.1}[r]});
+    s.scrollTo({top:y-s.clientHeight/2+60,behavior:'smooth'});$$('.tab').forEach(x=>x.classList.remove('on'));c.classList.add('on');
+  });
+  build();sheet();
+  const scr=$('#scr');scr.scrollTop=Math.max(0,by[sel].y-scr.clientHeight/2);
+}
+function renderTree(id){
+  const h=roster.find(x=>x.id===id);if(!h)return renderTavern();
+  view='tree';tvFocus=id;setMode('tavern');PI_.classList.add('qd');
+  PI_.innerHTML='<div id="trhost" style="position:absolute;inset:0"></div>';
+  trSnd('tr_open',{vol:.9});
+  mountTree(h,$('#trhost'));
+}
+
 const NUMK=['atk','def','dmg','mov','alc','crit','defMag','per','hpPct','climb','flatRed','insp','heal','moveAfter','buffDur','debuffDur','rad','emb'];
 function pbCompute(u){
   const pb={list:passivesOf(u),mult:[],magicX:1,undead:0};NUMK.forEach(k=>pb[k]=0);

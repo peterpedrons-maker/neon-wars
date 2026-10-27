@@ -1,3 +1,24 @@
+# Árvore de habilidades — IMPLEMENTADA (v3)
+
+Mockup aprovado: `mockups/arvore-mago.html`. No jogo: Ficha do herói → **Abrir árvore de habilidades** (só heróis do elenco).
+
+**Regras**
+- **Pontos:** 1 por nível a partir do nível 2 (gastar é opcional; a ficha e o elenco mostram `✦N` quando sobra).
+- **Custo:** ativa (medalhão grande) 3 · passiva (losango) 2 · bônus de número (círculo pequeno) 1.
+- **Liga:** cada nó pede um vizinho já aprendido **e** o nível da habilidade (`lv` em `SK`/`PV`). Nós com "Nv N" estão travados por nível.
+- **Livre:** os dois ramos da classe ficam abertos (a subclasse da Forja segue como especialização do herói). Respec é grátis: "Devolver" por nó (só se nada depender dele) ou "Zerar tudo".
+- **Equipadas:** 4 espaços (o 4º libera no nível 15). **Só as ativas equipadas entram na batalha** (a IA usa as equipadas); passivas aprendidas valem sempre.
+- **Automático:** ramo da subclasse primeiro, ativas antes, por nível; também equipa. Usado para heróis recrutados em nível alto e para saves antigos.
+- A árvore de cada classe é **montada sozinha** a partir de `SK` + `PV` (+ 7 bônus pequenos por classe em `TR_SMALL`): tronco (sem subclasse) no meio, ramos nas laterais, passivas de nível ≥ 20 do tronco viram "pontes" no topo. Para uma habilidade nova aparecer na árvore basta cadastrá-la em `SK`/`PV` e dar um ícone em `TICON`.
+- Salvo em `h.tree = {l:[ids aprendidos], s:[4 espaços]}`.
+
+**Interação (tudo com som):** tocar no nó só **lê** (descrição embaixo); o **+** dourado no nó, ou "Aprender", gasta o ponto. Ao aprender: o nó de origem pulsa, uma linha de energia preenche a ligação, o novo nó explode em luz e um card diz "desbloqueado — ligada a X". Equipar faz o ícone voar até o espaço.
+
+**Áudio** (`assets/audio/sfx/tr_*.ogg`, música `arvore.ogg` enquanto a tela está aberta):
+`tr_open/close` abrir/voltar · `tr_select` tocar num nó (tom por ramo) · `tr_tab` trocar de região · `tr_charge` energia subindo pela ligação · `tr_unlock_t/p/g/b` estouro do desbloqueio (ouro/fogo/gelo/ponte) · `tr_equip/unequip` · `tr_refund` · `tr_reset` · `tr_auto` · `tr_nopts` sem pontos.
+
+---
+
 # Árvores de habilidades — versão 2 (grafo ARPG, com status e movimento)
 
 Formato (decidido): uma árvore por classe, em grafo. **Pequeno** (custo 1: +atributo/valor), **médio** (custo 2: passiva,
