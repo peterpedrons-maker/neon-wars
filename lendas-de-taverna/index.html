@@ -1179,6 +1179,11 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .kf .chip img{object-fit:contain;margin:0}
 .ov .inner.kt .slots.big .slot{padding:7px 6px;height:clamp(70px,9.5vh,84px)}
 .ov .inner.kt .slots.big .slot img{height:100%}
+
+/* formação: voltar no topo, igual às outras telas */
+.kf>.head{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px;padding:0 18px 0 14px;height:66px}
+.kf>.head .wt{flex:1;min-width:0}
+.kf>.head h2{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
@@ -3992,12 +3997,12 @@ function renderPlace(){
   const fams=siblingFams(),all=party.every(h=>h.r!=null),left=party.filter(h=>h.r==null).length,mp=LV.mp;
   PI_.innerHTML=`
   ${stepper(3)}
-  <div class="head">${wt('board',`Fase ${run.phaseNo} · Mapa ${mp.n}`,mp.nome)}</div>
+  <div class="head">${run.phaseNo===1?navBack('toVillage','Praça'):''}${wt('board',`Fase ${run.phaseNo} · Mapa ${mp.n}`,mp.nome)}</div>
   <div class="ptags"><span class="tag">Grupo de ${party.length} · ×${MULT[party.length].toFixed(1).replace('.',',')}</span>${fams.length?`<span class="tag fam">Irmãos ${fams.join(' e ')} · +1</span>`:''}</div>
   <div class="roster">${party.map(h=>`<button class="chip ${h.r!=null?'ok':''}" data-hid="${h.id}" aria-pressed="${selHero===h}"><img src="${h.portrait}" alt=""><span>${h.first}${gearBadge(h)}</span><small>${h.exausto?'Exausto':h.r!=null?'✓ no mapa':selHero===h?'toque o mapa':CLASSES[h.cls].nome}</small></button>`).join('')}</div>
   <p class="hint" id="hint">${hint||'Toque num herói e depois numa casa dourada do mapa.'}</p>
   <div class="legend"><span><i class="lg free"></i>Casa livre</span><span><i class="lg hill"></i>Morro: +2 de acerto</span>${SECRET?'<span><i class="lg wall"></i>Parede suspeita</span>':''}<button class="btn ghost sm ov" data-act="overview">Ver mapa todo</button></div>
-  <div class="actions">${run.phaseNo===1?'<button class="btn ghost" data-act="toVillage">Voltar</button>':''}<button class="btn ghost" data-act="equip">${ico('vila','bolsa')} Equipar${run.inventory.length?` (${run.inventory.length})`:''}</button><button class="btn ghost" data-act="auto">Automático</button><button class="btn cta" data-act="start" ${all?'':'disabled'}>${all?'Começar batalha':`Falta posicionar ${left}`}</button></div>`;
+  <div class="actions"><button class="btn ghost" data-act="equip">${ico('vila','bolsa')} Equipar${run.inventory.length?` (${run.inventory.length})`:''}</button><button class="btn ghost" data-act="auto">Automático</button><button class="btn cta" data-act="start" ${all?'':'disabled'}>${all?'Começar batalha':`Falta posicionar ${left}`}</button></div>`;
 }
 const rarTag=it=>`<b style="color:${RARITY[it.rar].cor}">${RARITY[it.rar].nome}</b>`;
 const EQ_SLOTS=['weapon','offhand','head','body','hands','feet','acc1','acc2'];
