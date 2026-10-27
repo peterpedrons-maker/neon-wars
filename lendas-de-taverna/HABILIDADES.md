@@ -3,14 +3,25 @@
 Combina com o que já está decidido: recarga **por turno** (sem mana) e IA que escolhe quando usar
 (depois os gatilhos). O jogador escolhe **o que desbloquear**; atributos continuam automáticos.
 
-## Regras
-- **1 ponto de habilidade a cada 2 níveis** a partir do nível 2 (25 pontos no Nv 50, 30 no Nv 60).
-- Cada classe tem 14 nós: **tronco** (4, todo mundo) + **2 ramos de 5**, um por subclasse.
-  Com 25–30 pontos o jogador completa o tronco, um ramo e boa parte do outro: **há escolha**, não dá pra ter tudo.
-- Nó exige o anterior do ramo. Botão **"Automático"** segue a ordem recomendada da subclasse.
-- Ativa: gasta a ação do turno no lugar do ataque básico, com recarga em turnos. A IA usa a ativa quando está pronta
-  e faz sentido (alvo isolado, aliado ferido, grupo de inimigos…).
-- **Respec grátis** na Taverna.
+## Formato: árvore em grafo, estilo ARPG (decisão do dono)
+Uma árvore por classe, em forma de mapa de nós ligados (como Path of Exile / Diablo 4), em vez de lista.
+- **Nó pequeno (círculo, custo 1):** +atributo ou +valor (ex.: +2 Força, +1 DEF, +3% PV). A maioria dos nós.
+- **Nó médio (hexágono, custo 2):** passiva marcante (ex.: Pele de Ferro, Muralha). Pode **melhorar uma ativa vizinha**
+  (menos recarga, mais dano, efeito extra).
+- **Nó grande (losango, custo 3):** **habilidade ativa** nova (ex.: Golpe Poderoso) ou passiva-chave que muda o jeito de jogar.
+- **Posição na árvore:** começa no centro-baixo; **tronco** no meio, **um braço por subclasse** nas laterais e
+  **pontes** entre os braços (nós híbridos) para builds mistas. O caminho entre nós grandes passa por pequenos/médios,
+  então as escolhas custam pontos de verdade.
+- **Pontos:** 1 por nível a partir do nível 2 (49 pontos no Nv 50, 59 no Nv 60). Cada árvore terá ~70 nós; ninguém pega todos.
+- **Respec grátis** na Taverna; botão **"Automático"** segue o caminho recomendado da subclasse (o jogo joga sozinho).
+- **Tela:** árvore que se arrasta e dá zoom (pinça), nó selecionado abre o detalhe embaixo, abas Árvore · Ativas · Resumo.
+  Mockup do Guerreiro (parte inicial) enviado na conversa.
+- **Ativas:** usam a ação do turno no lugar do ataque básico, recarga em turnos; a IA decide o momento (depois, gatilhos).
+- Os nós médios e grandes são os que estão listados abaixo (14 por classe, escritos à mão); os pequenos e as pontes
+  são gerados por modelo conforme a região da árvore (Tronco, Defesa, Ofensa…).
+
+## Nós médios e grandes por classe (ativa = grande; passiva = médio)
+(a tabela abaixo continua valendo; a regra de pontos e o formato são os de cima)
 
 ## Guerreiro
 | Nó | Tipo | Efeito | Recarga |

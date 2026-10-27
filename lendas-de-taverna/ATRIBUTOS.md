@@ -18,8 +18,8 @@ pequena). Os valores-base da classe (ATQ, DEF, PV…) continuam como hoje; o atr
 | **Sabedoria** | cura: +1 a cada 2 pts | +1 Res. Mágica a cada 3 pts; +1 segredos a cada 2 pts |
 | **Carisma** | dano do Bardo (+1 a cada 2 pts) e inspiração (+1 a cada 6 pts) | +1% de drop e de XP a cada 2 pts |
 
-Qual atributo vale pro golpe depende da arma da classe: Guerreiro e Clérigo (corpo a corpo)
-→ Força · Ladino e Arqueiro → Destreza · Mago → Inteligência · Bardo → Carisma.
+Qual atributo vale pro golpe depende da classe: Guerreiro → Força · Clérigo → Sabedoria (golpe de fé) ·
+Ladino e Arqueiro → Destreza · Mago → Inteligência · Bardo → Carisma.
 Isso faz cada classe se destacar sozinha, e dá espaço pra variar *dentro* da classe
 (um Guerreiro de Constituição alta é tanque; de Força alta é atacante).
 
