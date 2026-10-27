@@ -1098,6 +1098,8 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .float.buff .ft .sf{color:#8fc4ff}
 .float.miss .ft .sf{color:#d8d2c4}
 .float.gold .ft .sf{color:#ffd65a}
+.float.xp .ft .sf{color:#9fe0ff;font-size:20px}
+.float.xp .xl{font-style:normal;font-size:13px;margin-left:4px;color:#d6f2ff}
 .float.crit .ft .sf{color:#ffd65a;text-shadow:-3px -3px #3a1400,3px -3px #3a1400,-3px 3px #3a1400,3px 3px #3a1400,-4px 0 #3a1400,4px 0 #3a1400,0 -4px #3a1400,0 4px #3a1400,0 6px 0 #0009}
 .float.crit.onhero .ft .sf{color:#ff6a58}
 .float.crit{filter:drop-shadow(0 0 12px #ff9a3acc) drop-shadow(0 4px 0 #0009)}
@@ -4840,7 +4842,12 @@ function overviewCam(){
   else if(phase==='battle'&&active)followCam(active);
   else aimCam(...phaseView(),0.7);
 }
-const xp=(u,n)=>{if(u&&u.side==='hero'&&u.alive!==false)u.xp=(u.xp||0)+n;};
+const xp=(u,n)=>{
+  if(!u||u.side!=='hero'||u.alive===false)return;
+  u.xp=(u.xp||0)+n;
+  // como no FFT: o ganho de Exp. aparece junto de quem ganhou, logo depois do golpe
+  if(n>0&&u.grp)gsap.delayedCall(0.5,()=>{if(u.grp&&phase==='battle')floatText(u,`<span class="ft"><b class="sf">+${n}<em class="xl">Exp.</em></b></span>`,'xp',true);});
+};
 
 function resetHero(h,first){
   if(h.exausto){h.atk++;h.def++;h.exausto=false;}
