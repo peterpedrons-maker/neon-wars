@@ -3122,7 +3122,7 @@ function lpcCharge(u){
   L.holdFrame=Math.min(WINDUP[L.action]||2,L.sheets[L.action].cols-2);L.state=L.action;L.since=null;return true;
 }
 function lpcRelease(u){const L=u.lpc;if(!L||L.holdFrame==null)return;L.since=(L.lastS||0)-L.holdFrame/8;L.holdFrame=null;}
-const CHARGE_COL={melee:{r:2.0,g:1.5,b:0.95},ranged:{r:1.5,g:1.9,b:1.0},magic:{r:1.0,g:1.5,b:2.4},heal:{r:1.1,g:2.1,b:1.2}};
+const CHARGE_COL={melee:{r:1.55,g:1.25,b:0.9},ranged:{r:1.25,g:1.5,b:0.9},magic:{r:0.9,g:1.25,b:1.85},heal:{r:1.0,g:1.6,b:1.05}};
 const CHARGE_FX={melee:['#ffb347','#fff2c0'],ranged:['#b6e86a','#fff2c0'],magic:['#7fc4ff','#e6f7ff'],heal:['#8fe08a','#e8ffd8']};
 async function chargeUp(u,kind){
   if(!u.grp)return;
