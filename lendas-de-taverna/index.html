@@ -367,6 +367,18 @@ h4.sec{margin:6px 0 0;font-family:var(--f-display);font-size:15px;color:var(--ou
 .rbar.two{gap:8px}
 .rbar.two .btn{flex:1}
 /* ficha: espaços de habilidade + botão da árvore */
+.hstrip{flex:none;display:flex;gap:8px;overflow-x:auto;padding:10px 12px 8px;background:#150e0a;border-block:2px solid #5a4330;scrollbar-width:none}
+.hstrip::-webkit-scrollbar{display:none}
+.hcd{all:unset;box-sizing:border-box;flex:0 0 78px;border-radius:12px;border:2px solid #4a392a;background:#241a12;padding:6px 4px 5px;text-align:center;position:relative;cursor:pointer;transition:.15s;color:#efe2c4}
+.hcd .hpt{display:grid;place-items:center;height:54px;border-radius:8px;background:radial-gradient(circle at 50% 30%,#4a2f7a,#1b1230);margin-bottom:4px;overflow:hidden}
+.hcd .hpt img{height:50px;width:auto;image-rendering:pixelated}
+.hcd b{display:block;font:700 12px var(--f-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hcd small{display:block;font-size:10px;color:#a8a39a;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hcd small.nv{color:#e9b949}
+.hcd.on{border-color:#e9b949;background:#3a2a1c;box-shadow:0 0 14px #e9b94955;transform:translateY(-2px)}
+.hcd .hck{position:absolute;right:-5px;top:-6px;width:20px;height:20px;border-radius:50%;background:#6cc35e;color:#10230c;font:700 12px/20px var(--f-display);text-align:center;display:none;border:2px solid #14100d}
+.hcd.hired .hck{display:block}
+.hcd .hsib{position:absolute;left:4px;top:4px;z-index:2;font:700 8px var(--f-display);background:#a97e22;color:#2b1e15;border-radius:4px;padding:0 4px}
+.trbtn.big{margin:0;font-size:16px;padding:14px}
 .skslots{display:flex;gap:6px;margin:6px 0 4px}
 .skslot{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:54px;border-radius:10px;border:2px solid #6b5640;background:#0006;color:#8a7560;font-size:18px;line-height:1;text-align:center}
 .skslot small{font-size:9px;line-height:1.05;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#cdb68a}
@@ -4247,26 +4259,21 @@ function renderTavern(){
   ${det}
   <div class="tfoot"><div class="tl"><span>${ico('vila','grupo')}<b>${n}/5</b> no grupo</span></div><button class="btn cta" data-act="toVillage" ${n>=5?'':'disabled'}>${n>=5?'Confirmar grupo →':`Escolha mais ${5-n}`}</button></div>`;
 }
+let recIdx=0;
 function renderRecruit(){
+  if(draw.length){const i=draw.findIndex(x=>x.id===tvFocus);return renderSheet(draw[i>=0?i:Math.min(recIdx,draw.length-1)].id,'draw');}
+  // sem candidatos: só a tela vazia com o sorteio
   view='recruit';setMode('tavern');PI_.classList.add('qd','kt');
-  const sc=surCount(),full=roster.length>=ROSTER_CAP;
   PI_.innerHTML=`
   <div class="head">${navBack('toVillage','Praça')}${wt('tavern','Taverna do Javali Torto','Recrutar heróis')}
     <div class="btns"><button class="btn ghost sm" data-act="reroll" ${rerolls?'':'disabled'}>Sortear (${rerolls})</button></div></div>
   ${tvTabs('recruit')}
-  <p class="hint">${full?`Seu elenco está cheio (${ROSTER_CAP}). Não dá pra contratar mais até abrir vaga.`:'Toque num herói pra ver a ficha completa e contratar — ele fica com você pra sempre, não só nesta run.'}</p>
-  <div class="pool">${draw.map(h=>`
-    <button class="pc" data-recruit="${h.id}" ${full?'disabled':''}>
-      ${sc[h.sur]>1?'<span class="sib">Irmãos</span>':''}
-      <img src="${h.portrait}" alt="">
-      <div class="pcbody">
-        <span class="nm">${h.first}</span>
-        <span class="cl">${ico('classe',h.cls)}${CLASSES[h.cls].nome}${h.sub?' · '+SUB_INFO[h.sub].nome:' · '+CLASSES[h.cls].papel}</span>
-        <span class="pcstats">Nv.${h.level||1} · ${ico('stat','vida')}${h.maxhp} ${ico('stat','atq')}${h.atk} ${ico('stat','def')}${h.def} ${ico('stat','mov')}${h.mov} ${ico('stat','alc')}${h.alc}</span>
-        <span class="tr"><b>${h.trait.nome}</b> — ${h.trait.desc}</span>
-        <span class="pcgear">${h.arma} · ${h.armadura}</span>
-      </div>
-    </button>`).join('')}</div>`;
+  <div class="empty">${ico('vila','tavern','xl')}<p>Ninguém novo na taverna agora. ${rerolls?'Sorteie outro grupo de candidatos.':'Volte depois de uma missão.'}</p></div>`;
+}
+/* faixa de heróis no topo da ficha: dá pra trocar de herói sem sair da ficha */
+function heroStrip(list,cur,isR){
+  const sc=isR?rosterSibCount():surCount();
+  return `<div class="hstrip" id="hstrip">${list.map(x=>`<button class="hcd ${x.id===cur.id?'on':''} ${isR&&selected.has(x.id)?'hired':''}" data-hsel="${x.id}" aria-label="Ver ${x.first}">${sc[x.sur]>1?'<span class="hsib">IRMÃOS</span>':''}<span class="hck">✓</span><span class="hpt"><img src="${x.portrait}" alt=""></span><b>${x.first}</b><small>${CLASSES[x.cls].nome}</small><small class="nv">Nv ${x.level||1}${isR&&treeFree(x)?` ✦${treeFree(x)}`:''}</small></button>`).join('')}</div>`;
 }
 function rangeGrid(r,col){
   const Q=5;let h='';
@@ -4298,13 +4305,13 @@ function skillsBlock(h,isR){
     ${sk.filter(Boolean).map(x=>row(x,'ativa equipada',` · recarga ${x.cd}`)).join('')}
     ${pv.length?`<p class="note" style="color:#c9b88f;margin:6px 0 2px">${pv.length} passiva${pv.length>1?'s':''} aprendida${pv.length>1?'s':''}: ${pv.map(x=>x.nome).join(', ')}.</p>`:''}
     ${!sk.filter(Boolean).length&&!pv.length?'<p class="note" style="color:#f0dfb9">Nenhuma ainda: cada nível dá 1 ponto para gastar na árvore.</p>':''}
-    ${isR?`<button class="trbtn" data-tree="${h.id}">${ico('stat','dano')} Abrir árvore de habilidades${fr?`<b>${fr} ponto${fr>1?'s':''} livre${fr>1?'s':''}</b>`:''}</button>`:''}</div>`;
+    <button class="trbtn" data-tree="${h.id}" data-src="${isR?'roster':'draw'}">${ico('stat','dano')} ${isR?'Abrir árvore de habilidades':'Ver árvore de habilidades'}${isR&&fr?`<b>${fr} ponto${fr>1?'s':''} livre${fr>1?'s':''}</b>`:''}</button></div>`;
 }
 function renderSheet(id,src){
   if(src)tvSrc=src;
   const list=tvSrc==='roster'?roster:draw,h=list.find(x=>x.id===id);
   if(!h)return tvSrc==='roster'?renderTavern():renderRecruit();
-  view='sheet';tvFocus=id;if(tvSrc==='roster')tvSel=id;setMode('tavern');PI_.classList.add('qd','kt');
+  view='sheet';tvFocus=id;if(tvSrc==='roster')tvSel=id;else recIdx=Math.max(0,list.indexOf(h));setMode('tavern');PI_.classList.add('qd','kt');
   const c=CLASSES[h.cls],cm=COMO[h.cls],sc=tvSrc==='roster'?rosterSibCount():surCount(),isR=tvSrc==='roster';
   const lv=h.level||1,xb=xpForLevel(lv),xn=xpForLevel(lv+1),pct=lv>=LEVEL_CAP?100:Math.max(0,Math.min(100,Math.round(((h.xpTotal||0)-xb)/(xn-xb)*100)));
   const at=h.attrs||{},AN=ATTR_LABEL,afG=h.afin&&AFINIDADES[h.afin]?AFINIDADES[h.afin].attrs:[];
@@ -4315,8 +4322,9 @@ function renderSheet(id,src){
     :`<button class="btn cta" data-hire="${id}" ${rosterFull?'disabled':''}>${rosterFull?`Elenco cheio (${ROSTER_CAP})`:'Contratar'}</button>`;
   const hpPct=isR?Math.round(h.hp/h.maxhp*100):100;
   PI_.innerHTML=`
-  <div class="head">${navBack('',isR&&sheetFrom==='forge'?'Forja':'Lista',isR&&sheetFrom==='forge'?'data-bld="forge"':`data-act="${isR?'toTavern':'recruit'}"`)}<div class="wt">${ico('classe',h.cls,'lg')}<div><div class="eyebrow">Ficha do herói · ${list.indexOf(h)+1}/${list.length}</div><h2>${h.nome}</h2></div></div><div class="btns"><button class="btn ghost sm" data-nav="-1" aria-label="Herói anterior">‹</button><button class="btn ghost sm" data-nav="1" aria-label="Próximo herói">›</button></div></div>
-  ${isR?tvTabs('sheet'):''}
+  <div class="head">${navBack('',isR&&sheetFrom==='forge'?'Forja':isR?'Lista':'Praça',isR&&sheetFrom==='forge'?'data-bld="forge"':`data-act="${isR?'toTavern':'toVillage'}"`)}<div class="wt">${ico('classe',h.cls,'lg')}<div><div class="eyebrow">Ficha do herói · ${list.indexOf(h)+1}/${list.length}</div><h2>${h.nome}</h2></div></div><div class="btns">${isR?'':`<button class="btn ghost sm" data-act="reroll" ${rerolls?'':'disabled'}>Sortear (${rerolls})</button>`}<button class="btn ghost sm" data-nav="-1" aria-label="Herói anterior">‹</button><button class="btn ghost sm" data-nav="1" aria-label="Próximo herói">›</button></div></div>
+  ${tvTabs(isR?'sheet':'recruit')}
+  ${heroStrip(list,h,isR)}
   <div class="scroll"><div class="sheet2">
     <div class="rpf wide"><div class="sh2-top"><img src="${h.portrait}" alt=""><div style="min-width:0;flex:1">
       <div class="tags"><span class="tag cls">${ico('classe',h.cls)}${c.nome}</span>${h.sub?`<span class="tag cls">${ico('subclasse',h.sub)}${SUB_INFO[h.sub].nome}</span>`:''}<span class="tag">${c.papel}</span><span class="tag">Nv.${lv}</span>${sc[h.sur]>1?'<span class="tag fam">Irmãos '+h.sur+'</span>':''}</div>
@@ -4324,6 +4332,7 @@ function renderSheet(id,src){
       <div class="pbar-l"><span>Vida</span><span>${isR?`${h.hp}/${h.maxhp}`:h.maxhp}</span></div><div class="pbar"><i class="f red" style="width:${hpPct}%"></i></div>
       ${isR?`<div class="pbar-l"><span>XP ${fmt(h.xpTotal||0)}</span><span>${lv>=LEVEL_CAP?'nível máximo':`faltam ${fmt(xn-(h.xpTotal||0))}`}</span></div><div class="pbar"><i class="f blue" style="width:${pct}%"></i></div>`:''}
     </div></div></div>
+    <button class="trbtn big" data-tree="${h.id}" data-src="${isR?'roster':'draw'}">${ico('stat','dano')} Árvore de habilidades${treeFree(h)?`<b>${treeFree(h)} ponto${treeFree(h)>1?'s':''} livre${treeFree(h)>1?'s':''}</b>`:''}</button>
     <div class="rpf"><h4 class="sec" style="margin:0">Combate</h4><div class="stgrid"><span><em>${ico('stat','atq')}Ataque</em><b>+${h.atk}</b></span><span><em>${ico('stat','def')}Defesa</em><b>${h.def}</b></span><span><em>${ico('stat','res')}Res. Mágica</em><b>${h.defMag}</b></span><span><em>${ico('stat','mov')}Mover</em><b>${h.mov}</b></span><span><em>${ico('stat','alc')}Alcance</em><b>${h.alc}</b></span><span><em>${ico('stat','crit')}Crítico</em><b>${h.critBonus?`${20-h.critBonus}–20`:'20'}</b></span><span><em>${ico('stat','ini')}Iniciativa</em><b>${h.ini>=0?'+':''}${h.ini}</b></span><span><em>${ico('stat','dano')}Dano</em><b>${h.dmg[0]}d${h.dmg[1]}${h.dmg[2]?'+'+h.dmg[2]:''}</b></span><span><em>${ico('stat','vida')}Vida</em><b>${h.maxhp}</b></span></div></div>
     <div class="rpf"><h4 class="sec" style="margin:0">Atributos</h4>${ATTR_NAMES.map(a=>`<div class="arow"><span>${AN[a]}${afG.includes(a)?' <small style="color:#9fe0a0">▲</small>':''}</span><b>${at[a]??'—'}</b><div class="mini"><i style="width:${Math.min(100,Math.round((at[a]||0)/amax*100))}%"></i></div></div>`).join('')}</div>
     <div class="rpf"><h4 class="sec" style="margin:0">Equipamento</h4><div class="eqlist">${eq}</div></div>
@@ -4334,6 +4343,12 @@ function renderSheet(id,src){
   </div></div>
   ${isR?partyBar():''}
   ${cta}`;
+  // faixa: centraliza o herói atual; deslizar a ficha pro lado troca de herói
+  const hs=PI_.querySelector('#hstrip'),cur=hs&&hs.querySelector('.hcd.on');if(cur)hs.scrollLeft=cur.offsetLeft-hs.clientWidth/2+cur.offsetWidth/2;
+  const sc2=PI_.querySelector('.scroll');let sx=null,sy=null;
+  if(sc2){sc2.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
+    sc2.addEventListener('touchend',e=>{if(sx==null)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;sx=null;
+      if(Math.abs(dx)>80&&Math.abs(dy)<45){const L=tvSrc==='roster'?roster:draw,i=L.findIndex(x=>x.id===tvFocus);if(i>=0&&L.length>1){SFX.click();renderSheet(L[(i+(dx<0?1:-1)+L.length)%L.length].id);}}});}
 }
 
 /* ---------- Formação ---------- */
@@ -4468,7 +4483,8 @@ PI_.addEventListener('click',e=>{
   const hero=t.closest('[data-hero]');if(hero){const id=+hero.dataset.hero;if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderTavern();return;}
   const nav=t.closest('[data-nav]');if(nav){const L=tvSrc==='roster'?roster:draw,i=L.findIndex(h=>h.id===tvFocus);renderSheet(L[(i+ +nav.dataset.nav+L.length)%L.length].id);return;}
   const hire=t.closest('[data-hire]');if(hire){const id=+hire.dataset.hire;if(tvSrc==='draw'){recruitHero(id);renderRecruit();return;}if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderSheet(id);return;}
-  const trb=t.closest('[data-tree]');if(trb){const id=+trb.dataset.tree;if(roster.some(x=>x.id===id)){renderTree(id);return;}}
+  const hsel=t.closest('[data-hsel]');if(hsel){SFX.click();renderSheet(+hsel.dataset.hsel);return;}
+  const trb=t.closest('[data-tree]');if(trb){renderTree(+trb.dataset.tree,trb.dataset.src||'roster');return;}
   const shb=t.closest('[data-sheet]');if(shb){sheetFrom=shb.dataset.from||'tavern';renderSheet(+shb.dataset.sheet,'roster');return;}
   const sl=t.closest('[data-slot]');if(sl){selected.delete(+sl.dataset.slot);view==='sheet'?renderSheet(tvFocus):renderTavern();return;}
   const eqp=t.closest('[data-eqpick]');if(eqp){const h=party.find(x=>x.id===+eqp.dataset.eqhero),item=run.inventory[+eqp.dataset.eqpick];if(h&&item&&canEquip(h,item))equipItem(h,slotKeyFor(h,item),item,run.inventory);renderEquip();return;}
@@ -5200,15 +5216,23 @@ Object.keys(PV).forEach(id=>PV[id].id=id);
    Cada nó pede o nível `lv` da habilidade e que um vizinho já esteja aprendido. Só as ativas EQUIPADAS (4 espaços)
    entram na batalha; passivas aprendidas valem sempre. O herói guarda h.tree={l:[ids aprendidos],s:[4 espaços]}. */
 const TREE_COST={A:3,P:2,S:1},TREE_SLOT_LV=[1,1,1,15],TREE_COL={t:'#e9b949',p:'#f0782f',g:'#5fc4d8',b:'#b58cf0'};
-const TR_SMALL={
-  guerreiro:[['hpPct',4,'+4% de PV','heart-plus'],['def',1,'+1 DEF','shield'],['dmg',1,'+1 de dano','claw-slashes'],['hpPct',4,'+4% de PV','heart-plus'],['defMag',1,'+1 Res. Mágica','magic-shield'],['dmg',1,'+1 de dano','claw-slashes'],['def',1,'+1 DEF','shield']],
-  ladino:[['dmg',1,'+1 de dano','claw-slashes'],['per',2,'+2 Percepção','eye-of-horus'],['hpPct',4,'+4% de PV','heart-plus'],['def',1,'+1 DEF','shield'],['dmg',1,'+1 de dano','claw-slashes'],['per',2,'+2 Percepção','eye-of-horus'],['defMag',1,'+1 Res. Mágica','magic-shield']],
-  mago:[['dmg',1,'+1 de dano','claw-slashes'],['defMag',1,'+1 Res. Mágica','magic-shield'],['hpPct',4,'+4% de PV','heart-plus'],['dmg',1,'+1 de dano','claw-slashes'],['def',1,'+1 DEF','shield'],['defMag',1,'+1 Res. Mágica','magic-shield'],['hpPct',4,'+4% de PV','heart-plus']],
-  clerigo:[['heal',1,'+1 de cura','healing'],['defMag',1,'+1 Res. Mágica','magic-shield'],['hpPct',4,'+4% de PV','heart-plus'],['dmg',1,'+1 de dano','claw-slashes'],['heal',1,'+1 de cura','healing'],['def',1,'+1 DEF','shield'],['defMag',1,'+1 Res. Mágica','magic-shield']],
-  arqueiro:[['dmg',1,'+1 de dano','claw-slashes'],['per',2,'+2 Percepção','eye-of-horus'],['hpPct',4,'+4% de PV','heart-plus'],['dmg',1,'+1 de dano','claw-slashes'],['def',1,'+1 DEF','shield'],['per',2,'+2 Percepção','eye-of-horus'],['defMag',1,'+1 Res. Mágica','magic-shield']],
-  bardo:[['heal',1,'+1 de cura','healing'],['hpPct',4,'+4% de PV','heart-plus'],['defMag',1,'+1 Res. Mágica','magic-shield'],['dmg',1,'+1 de dano','claw-slashes'],['def',1,'+1 DEF','shield'],['heal',1,'+1 de cura','healing'],['hpPct',4,'+4% de PV','heart-plus']]
+const TR_KIND={
+  hpPct:{ic:'heart-plus',v:[4,5,6],n:v=>`+${v}% de PV`},dmg:{ic:'claw-slashes',v:[1,1,2],n:v=>`+${v} de dano`},def:{ic:'shield',v:[1,1,2],n:v=>`+${v} DEF`},
+  defMag:{ic:'magic-shield',v:[1,1,2],n:v=>`+${v} Res. Mágica`},per:{ic:'eye-of-horus',v:[2,3,4],n:v=>`+${v} Percepção`},heal:{ic:'healing',v:[1,1,2],n:v=>`+${v} de cura`}
 };
-Object.keys(TR_SMALL).forEach(cls=>TR_SMALL[cls].forEach(([k,v,nome,ic],i)=>{const id=`sm_${cls}_${i}`;PV[id]={id,cls,nome,lv:2,desc:nome+'.',stat:{[k]:v},small:true,ic};}));
+const TR_EXTRA={ladino:2,arqueiro:3,bardo:3};
+const TR_CYCLE={   // ordem dos bônus pequenos de cada classe (21 por árvore: 5 no centro, 8 em cada ramo)
+  guerreiro:['hpPct','def','dmg','hpPct','defMag','dmg','def','hpPct'],
+  ladino:['dmg','per','hpPct','def','dmg','per','defMag','hpPct'],
+  mago:['dmg','defMag','hpPct','dmg','def','defMag','hpPct','per'],
+  clerigo:['heal','defMag','hpPct','dmg','heal','def','defMag','hpPct'],
+  arqueiro:['dmg','per','hpPct','dmg','def','per','defMag','hpPct'],
+  bardo:['heal','hpPct','defMag','dmg','def','heal','hpPct','per']
+};
+Object.keys(TR_CYCLE).forEach(cls=>{for(let i=0;i<30;i++){const k=TR_CYCLE[cls][i%8],id=`sm_${cls}_${i}`;PV[id]={id,cls,kind:k,lv:2,small:true,stat:{[k]:1},nome:'',desc:''};}});
+// o valor do bônus cresce com o nível em que ele cai na árvore
+function trFinishSmall(x,lv){const K=TR_KIND[x.kind],tier=lv>=17?2:lv>=9?1:0,v=K.v[tier];x.lv=lv;x.stat={[x.kind]:v};x.nome=K.n(v);x.desc=x.nome+'.';x.ic=K.ic;return x;}
+const trCost=n=>TREE_COST[n.t]+[0,1,n.t==='S'?2:3][n.lv>=17?2:n.lv>=9?1:0];   // nós mais fortes (nível maior) custam mais
 /* ícones: u:ui-icons (cor do ramo) · s:status · m:tira do SpritePilot (pasta:nome:quadros) */
 const TICON={
   golpe_poderoso:'c:golpe_poderoso',grito_guerra:'c:grito_guerra',provocar:'u:eye-shield',corte_profundo:'c:corte_profundo',giratorio:'u:whirlwind',escudo_aliado:'c:escudo_aliado',
@@ -5246,11 +5270,17 @@ function treeOf(cls){
   const smalls=Object.values(PV).filter(x=>x.cls===cls&&x.small);let si=0;
   const lists={t:[],p:[],g:[]};raw.forEach(n=>lists[n.sub===sa?'p':n.sub===sb?'g':'t'].push(n));
   const bridge=lists.t.filter(n=>n.lv>=20);lists.t=lists.t.filter(n=>n.lv<20);
-  const addSmall=(L,at)=>{at.forEach(i=>{const x=smalls[si++];if(!x)return;const prev=L[Math.min(i,L.length)-1];const lv=prev?prev.lv:2;x.lv=lv;L.splice(Math.min(i,L.length),0,{id:x.id,t:'S',lv,sub:null,nome:x.nome,desc:x.desc,tg:[],ic:trIcon(x.id)});});};
   Object.values(lists).forEach(L=>L.sort(ord));
-  addSmall(lists.t,[1,4,6]);addSmall(lists.p,[1,4]);addSmall(lists.g,[1,4]);
+  const spread=(L,k)=>{   // espalha k bônus pequenos pela lista, um a cada tanto
+    const out=[],step=L.length/k;let next=step/2+.5,placed=0;
+    L.forEach((n,i)=>{out.push(n);while(placed<k&&i+1>=next){const x=smalls[si++];const prev=out[out.length-1];trFinishSmall(x,prev?prev.lv:2);out.push({id:x.id,t:'S',lv:x.lv,sub:null,nome:x.nome,desc:x.desc,tg:[],ic:trIcon(x.id)});placed++;next+=step;}});
+    while(placed<k){const x=smalls[si++];const prev=out[out.length-1];trFinishSmall(x,prev?prev.lv:2);out.push({id:x.id,t:'S',lv:x.lv,sub:null,nome:x.nome,desc:x.desc,tg:[],ic:trIcon(x.id)});placed++;}
+    return out;
+  };
+  const e=TR_EXTRA[cls]||0;   // classes com menos habilidades ganham mais bônus pequenos, pra árvore ter o mesmo peso
+  lists.t=spread(lists.t,5+e);lists.p=spread(lists.p,8+e);lists.g=spread(lists.g,8+e);
   const nodes=[{id:'raiz',t:'P',z:'m',r:'t',lv:1,pais:[],c:0,nome:'Aprendiz',desc:'Ponto de partida. '+CLASSES[cls].resumo,tg:[],ic:'u:'+IC.classe[cls],u:0,x:180}];
-  const fin=(n,r,u,x,pais)=>{n.z=n.t==='A'?'l':n.t==='P'?'m':'s';n.r=r;n.c=TREE_COST[n.t];n.u=u;n.x=x;n.pais=pais;nodes.push(n);};
+  const fin=(n,r,u,x,pais)=>{n.z=n.t==='A'?'l':n.t==='P'?'m':'s';n.r=r;n.c=trCost(n);n.u=u;n.x=x;n.pais=pais;nodes.push(n);};
   let uC=0,prevC='raiz';
   lists.t.forEach((n,i)=>{
     const k=Math.floor(i/3),m=i%3,uc=84+k*96;
@@ -5277,6 +5307,12 @@ const treeInit=h=>{if(!h.tree||!Array.isArray(h.tree.l))h.tree={l:['raiz'],s:[nu
 function treeClean(h){
   const T=treeOf(h.cls),tr=treeInit(h);
   tr.l=tr.l.filter((id,i,a)=>T.by[id]&&a.indexOf(id)===i);if(!tr.l.includes('raiz'))tr.l.unshift('raiz');
+  // a árvore mudou de versão? tira o que ficou sem ligação com a raiz e o que passa do orçamento (os pontos voltam)
+  const reach=l=>{const ok=new Set(['raiz']);let ch=true;while(ch){ch=false;T.nodes.forEach(m=>{if(l.includes(m.id)&&!ok.has(m.id)&&m.pais.some(p=>ok.has(p))){ok.add(m.id);ch=true;}});}return ok;};
+  let ok=reach(tr.l);tr.l=tr.l.filter(id=>ok.has(id));
+  const budget=Math.max(0,(h.level||1)-1);
+  while(tr.l.length>1&&tr.l.reduce((a,id)=>a+T.by[id].c,0)>budget)tr.l.pop();
+  ok=reach(tr.l);tr.l=tr.l.filter(id=>ok.has(id));
   tr.s=tr.s.map(id=>(id&&tr.l.includes(id)&&T.by[id].t==='A')?id:null);
   for(let i=0;i<4;i++)if(tr.s.indexOf(tr.s[i])!==i)tr.s[i]=null;
   return tr;
@@ -5506,13 +5542,14 @@ function trIcon_(spec){
   const f=+c;return {cls:'',st:`background-image:url(assets/spritepilot/${a}/32px/${b}-32px_strip${f}.png);background-size:${f*100}% 100%;background-position:${Math.round(f/2)*100/(f-1)}% 0`,f,anim:true};
 }
 const trIc=(spec,extra='')=>{const i=trIcon_(spec);return `<span class="ic${i.cls}" ${extra} style="${i.st}"></span>`;};
-function mountTree(h,host){
+function mountTree(h,host,src){
+  const ro=src==='draw';
   const T=treeOf(h.cls),by=T.by,tr=treeClean(h),root=host.attachShadow({mode:'open'});
   const SI=SUB_INFO,[sa,sb]=SUBCLASSES[h.cls];
   const BR={t:CLASSES[h.cls].nome,p:SI[sa].nome,g:SI[sb].nome};
   root.innerHTML=`<style>${TR_CSS}</style><div class="app">
     <div class="top">
-      <div class="r0"><button class="back" id="back"><span>‹</span>Ficha</button><div class="ttl">Árvore de habilidades</div><button class="menu" id="menu" aria-label="Mais opções">⋯</button></div>
+      <div class="r0"><button class="back" id="back"><span>‹</span>Ficha</button><div class="ttl">${ro?'Árvore · só leitura':'Árvore de habilidades'}</div>${ro?'<span style="width:36px"></span>':'<button class="menu" id="menu" aria-label="Mais opções">⋯</button>'}</div>
       <div class="r1">
         <div class="portrait"><img src="${h.portrait}" alt=""><i>${h.level||1}</i></div>
         <div class="who"><h1>${h.first}</h1><small>${CLASSES[h.cls].nome}${h.sub?' · '+SI[h.sub].nome:''} · nível ${h.level||1}</small></div>
@@ -5545,7 +5582,7 @@ function mountTree(h,host){
         (n.z==='l'?`<span class="cd">⏱${n.cd}</span>`:'')+
         (q>=0?`<span class="eqn">${q+1}</span>`:'')+
         (s==='lvl'?`<span class="lvp">Nv ${n.lv}</span>`:'')+
-        (s==='can'?`<button class="plus${fr<n.c?' dis':''}" aria-label="Aprender">+</button>`:'');
+        (s==='can'&&!ro?`<button class="plus${fr<n.c?' dis':''}" aria-label="Aprender">+</button>`:'');
       e.onclick=ev=>{
         if(pending)return;
         if(ev.target.closest('.plus')){tryLearn(n);return;}
@@ -5652,7 +5689,8 @@ function mountTree(h,host){
     const cdt=n.t==='A'?`<span class="tg cdt">⏱ recarga ${n.cd}</span>`:'';
     const req=s==='lock'?`<span class="tg req">🔒 precisa de ${n.pais.map(p=>by[p].nome).join(' ou ')}</span>`:s==='lvl'?`<span class="tg lvr">🔒 nível ${n.lv}</span>`:'';
     let btn='';
-    if(s==='wait')btn='<div class="btn off">Desbloqueando…</div>';
+    if(ro)btn=s==='on'?(n.id==='raiz'?'<div class="btn off" style="filter:none;opacity:.8">Ponto de partida</div>':n.t==='A'?'<div class="btn off" style="filter:none;opacity:.9;color:#ffd37a">Ativa que ele já sabe</div>':'<div class="btn off" style="filter:none;opacity:.9;color:#9fe0a0">✔ Passiva que ele já tem</div>'):'<div class="btn off" style="filter:none;opacity:.8;font-size:13px">Só leitura — contrate para evoluir</div>';
+    else if(s==='wait')btn='<div class="btn off">Desbloqueando…</div>';
     else if(s==='on'){
       if(n.id==='raiz')btn='<div class="btn off" style="filter:none;opacity:.8">Ponto de partida</div>';
       else{
@@ -5676,11 +5714,11 @@ function mountTree(h,host){
   let tt;function toast(t,k){const u=$('#unl');if(u.classList.contains('on')&&!k)return;u.style.setProperty('--c',k==='no'?'#d4503f':'#e9b949');u.innerHTML=`<div><b style="font-size:14px;margin:0">${t}</b></div>`;u.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>u.classList.remove('on'),1600);}
   const scrollTo_=n=>{const s=$('#scr');s.scrollTo({top:n.y-s.clientHeight/2,behavior:'smooth'});};
   /* ---------- menu / abas / voltar ---------- */
-  $('#menu').onclick=e=>{e.stopPropagation();trSnd('ui_click',{vol:.7});$('#pop').classList.toggle('on');};
+  if(!ro)$('#menu').onclick=e=>{e.stopPropagation();trSnd('ui_click',{vol:.7});$('#pop').classList.toggle('on');};
   root.addEventListener('click',()=>$('#pop').classList.remove('on'));
-  $('#back').onclick=()=>{trSnd('tr_close',{vol:.9});renderSheet(h.id,'roster');};
-  $('#zero').onclick=()=>{const n=tr.l.length-1,pts=treeSpent(h);tr.l=['raiz'];tr.s=[null,null,null,null];save();trSnd('tr_reset',{vol:.9});build();sheet();ptsAnim('bump');toast(n?`Árvore zerada: ${pts} pontos de volta`:'Nada para zerar');};
-  $('#auto').onclick=()=>{const k=autoTree(h);save();trSnd('tr_auto',{vol:.9});build();sheet();ptsAnim('bump');toast(k?`Distribuído pelo perfil (${k} nós)`:'Sem pontos para distribuir','ok');};
+  $('#back').onclick=()=>{trSnd('tr_close',{vol:.9});renderSheet(h.id,src||'roster');};
+  if(!ro)$('#zero').onclick=()=>{const n=tr.l.length-1,pts=treeSpent(h);tr.l=['raiz'];tr.s=[null,null,null,null];save();trSnd('tr_reset',{vol:.9});build();sheet();ptsAnim('bump');toast(n?`Árvore zerada: ${pts} pontos de volta`:'Nada para zerar');};
+  if(!ro)$('#auto').onclick=()=>{const k=autoTree(h);save();trSnd('tr_auto',{vol:.9});build();sheet();ptsAnim('bump');toast(k?`Distribuído pelo perfil (${k} nós)`:'Sem pontos para distribuir','ok');};
   $$('.tab').forEach(c=>c.onclick=()=>{
     const r=c.dataset.r,s=$('#scr'),y=r==='t'?T.yR-100:T.yR-T.uF-170;
     trSnd('tr_tab',{vol:.8,rate:{t:1,p:.9,g:1.1}[r]});
@@ -5689,12 +5727,12 @@ function mountTree(h,host){
   build();sheet();
   const scr=$('#scr');scr.scrollTop=Math.max(0,by[sel].y-scr.clientHeight/2);
 }
-function renderTree(id){
-  const h=roster.find(x=>x.id===id);if(!h)return renderTavern();
-  view='tree';tvFocus=id;setMode('tavern');PI_.classList.add('qd');
+function renderTree(id,src){
+  src=src||'roster';const h=(src==='draw'?draw:roster).find(x=>x.id===id);if(!h)return renderTavern();
+  view='tree';tvFocus=id;tvSrc=src;setMode('tavern');PI_.classList.add('qd');
   PI_.innerHTML='<div id="trhost" style="position:absolute;inset:0"></div>';
   trSnd('tr_open',{vol:.9});
-  mountTree(h,$('#trhost'));
+  mountTree(h,$('#trhost'),src);
 }
 
 const NUMK=['atk','def','dmg','mov','alc','crit','defMag','per','hpPct','climb','flatRed','insp','heal','moveAfter','buffDur','debuffDur','rad','emb'];

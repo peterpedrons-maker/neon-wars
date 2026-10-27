@@ -4,12 +4,12 @@ Mockup aprovado: `mockups/arvore-mago.html`. No jogo: Ficha do herói → **Abri
 
 **Regras**
 - **Pontos:** 1 por nível a partir do nível 2 (gastar é opcional; a ficha e o elenco mostram `✦N` quando sobra).
-- **Custo:** ativa (medalhão grande) 3 · passiva (losango) 2 · bônus de número (círculo pequeno) 1.
+- **Custo:** base ativa 3 · passiva 2 · bônus de número 1, **mais um acréscimo por nível da habilidade** (nível 9–16: +1; 17+: +3, bônus pequeno +2). Nós fortes e tardios custam mais; o começo continua barato.
 - **Liga:** cada nó pede um vizinho já aprendido **e** o nível da habilidade (`lv` em `SK`/`PV`). Nós com "Nv N" estão travados por nível.
 - **Livre:** os dois ramos da classe ficam abertos (a subclasse da Forja segue como especialização do herói). Respec é grátis: "Devolver" por nó (só se nada depender dele) ou "Zerar tudo".
 - **Equipadas:** 4 espaços (o 4º libera no nível 15). **Só as ativas equipadas entram na batalha** (a IA usa as equipadas); passivas aprendidas valem sempre.
 - **Automático:** ramo da subclasse primeiro, ativas antes, por nível; também equipa. Usado para heróis recrutados em nível alto e para saves antigos.
-- A árvore de cada classe é **montada sozinha** a partir de `SK` + `PV` (+ 7 bônus pequenos por classe em `TR_SMALL`): tronco (sem subclasse) no meio, ramos nas laterais, passivas de nível ≥ 20 do tronco viram "pontes" no topo. Para uma habilidade nova aparecer na árvore basta cadastrá-la em `SK`/`PV` e dar um ícone em `TICON`.
+- A árvore de cada classe é **montada sozinha** a partir de `SK` + `PV` (+ bônus pequenos de número: 21 por árvore, 30 em Ladino/Arqueiro/Bardo, ver `TR_CYCLE`/`TR_EXTRA`): tronco (sem subclasse) no meio, ramos nas laterais, passivas de nível ≥ 20 do tronco viram "pontes" no topo. Para uma habilidade nova aparecer na árvore basta cadastrá-la em `SK`/`PV` e dar um ícone em `TICON`.
 - Salvo em `h.tree = {l:[ids aprendidos], s:[4 espaços]}`.
 
 **Interação (tudo com som):** tocar no nó só **lê** (descrição embaixo); o **+** dourado no nó, ou "Aprender", gasta o ponto. Ao aprender: o nó de origem pulsa, uma linha de energia preenche a ligação, o novo nó explode em luz e um card diz "desbloqueado — ligada a X". Equipar faz o ícone voar até o espaço.
@@ -107,3 +107,16 @@ Eco (P) debuffs do bardo duram +1 turno · Maestro do Caos (P) +25% de dano cont
 
 ## Ordem de implementação sugerida
 Status → motor de habilidades (ativa, recarga, IA usa) → tronco e um ramo por classe → pontes e ramos restantes → tela da árvore.
+
+
+## Escolhas obrigatórias (pontos × tamanho da árvore)
+No nível 60 o herói tem 59 pontos. A árvore de cada classe custa **82–109** pontos (≈ 55–70% dela fica de fora): dá pra focar numa subclasse ou dividir, mas nunca pegar tudo.
+| Classe | Custo total | Tronco | Ramo A | Ramo B | Pontes | Cobertura no nv 60 |
+|---|---|---|---|---|---|---|
+| Guerreiro | 109 | 23 | 43 | 43 | 0 | 54% |
+| Ladino | 103 | 22 | 42 | 39 | 0 | 57% |
+| Mago | 97 | 15 | 40 | 37 | 5 | 61% |
+| Clérigo | 97 | 20 | 34 | 43 | 0 | 61% |
+| Arqueiro | 105 | 15 | 41 | 44 | 5 | 56% |
+| Bardo | 98 | 18 | 44 | 36 | 0 | 60% |
+Tronco + o ramo mais caro já passa de 59 em quase todas as classes. Saves antigos: nós que perderam a ligação ou passam do orçamento voltam como pontos livres (respec grátis).
