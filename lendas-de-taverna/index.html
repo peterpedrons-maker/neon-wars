@@ -675,9 +675,9 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .hpf .tm .ic{width:9px;height:9px;margin:0}
 .hpf{flex-wrap:wrap;justify-content:center}
 .sts{display:flex;flex-wrap:wrap;gap:1px;justify-content:center;width:100%;margin-top:1px}.sts:empty{display:none}
-.stc{font:700 6.5px/1 var(--f-display,sans-serif);font-style:normal;padding:1px 2px;border:1px solid var(--c,#999);color:var(--c,#999);background:#120d09e6;letter-spacing:.2px;white-space:nowrap}
+.stc{font:700 8px/1 var(--f-display,sans-serif);font-style:normal;padding:1px 2px;border:1px solid var(--c,#999);color:var(--c,#999);background:#120d09e6;letter-spacing:.2px;white-space:nowrap}
 .stc.buff{background:#0f1f14e6}.stc em{font-style:normal;margin-left:1px;color:#fff}
-.uc-sts{justify-content:flex-start;margin-top:3px}.uc-sts .stc{font-size:8px;padding:1px 3px}
+.uc-sts{justify-content:flex-start;margin-top:3px}.uc-sts .stc{font-size:9px;padding:1px 3px}
 .hpf .bar{position:relative;width:34px;height:7px;background:#1c1510;border:2px solid #0e0a07;overflow:hidden}
 .hpf .bar b{position:absolute;left:0;top:0;bottom:0;background:#efe2c4;transition:width .5s .3s}
 .hpf .bar i{position:relative;display:block;height:100%;background:linear-gradient(#8fdc7e,#4f9f3f);transition:width .15s}
@@ -3796,7 +3796,7 @@ const levelPts=lv=>lv<=30?2:1;   // pontos de atributo ganhos ao chegar no níve
    FOR/DES/INT/CAR (o do ataque da classe): +1 ATQ a cada 8 pts e +1 dano a cada 2 pts;
    FOR: +1 PV/pt · CON: +2 PV/pt e +1 Res. Mágica a cada 8 · DES: +1 DEF a cada 8 ·
    INT: +1 crítico a cada 8 · SAB: cura +1 a cada 2, Res. Mágica +1 a cada 6, segredos +1 a cada 2 ·
-   CAR: inspiração +1 a cada 6, +1% de XP e de drop a cada 2 pts. */
+   CAR: inspiração +1 a cada 6 (máx. +2), +1% de XP e de drop a cada 2 pts. */
 const asg=x=>x>=10?x-10:-Math.floor((10-x)/2);
 const abv=(x,d)=>x>=10?Math.floor((x-10)/d):-Math.floor((10-x)/(2*d));
 const zeroBonus=()=>({atk:0,dmg:0,hp:0,def:0,defMag:0,crit:0,heal:0,per:0,insp:0,pct:0});
@@ -3805,7 +3805,7 @@ function attrEffects(a,atkAttr){
   return {atk:abv(A,8),dmg:Math.floor(asg(A)/2),hp:asg(a.forca)+2*asg(a.constituicao),def:abv(a.destreza,8),
     defMag:abv(a.constituicao,8)+abv(a.sabedoria,6),crit:Math.max(0,abv(a.inteligencia,8)),
     heal:Math.max(0,Math.floor(asg(a.sabedoria)/2)),per:Math.floor(asg(a.sabedoria)/2),
-    insp:Math.max(0,abv(a.carisma,6)),pct:Math.max(0,Math.floor(asg(a.carisma)/2))};
+    insp:Math.min(2,Math.max(0,abv(a.carisma,6))),pct:Math.max(0,Math.floor(asg(a.carisma)/2))};
 }
 function growWeights(cls,afin){
   const w={...CLASS_GROWTH[cls]};
