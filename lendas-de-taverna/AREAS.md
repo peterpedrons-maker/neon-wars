@@ -30,3 +30,12 @@ Diagrama: `mockups/areas-formas.png`.
 2. Converter as habilidades atuais para formas e criar as novas (Muralha de Chamas, Sopro Gélido, Cura em Área, Raio…).
 3. Mostrar a área na batalha (casas coloridas durante a mira) e um mini desenho da forma na descrição da habilidade.
 4. Tática na ficha e no level up; ajuste de balanceamento (dano em área sem 75%, muralhas viram zonas depois).
+
+---
+## Implementado (v1)
+- Formas: explosão, cruz, quadrado 2×2, nova, linha, cone (`areaCells`). Todos na área levam **o mesmo dano**, sem rolagem de acerto (só o alvo principal rola), e **aliados também** (fogo amigo). Status de golpe também vale para quem for atingido.
+- IA (`planArea`): pontua as casas de mira (inimigos, aliados, abates) e escolhe a melhor; só usa a habilidade se atingir ≥2 inimigos (cura em área: ≥2 aliados feridos).
+- **Tática** (0–10): herói = INT (peso 3) + SAB + DES; inimigo = tipo de IA (+1 mágico, +2 chefe). Efeito pequeno: Tática baixa só mira em personagens, ignora o aliado na área e erra mais a escolha; alta olha mais casas (inclusive chão vazio) e evita fogo amigo. Inimigos: baixa = ataca o mais perto; alta = foca feridos, magos e clérigos.
+- Habilidades convertidas: Julgamento (cruz), Saraivada Total (cone), Nota Aguda e Grito Estridente (2×2). Novas (nível 18, subclasse): **Muralha de Chamas** (piromante, linha de 4), **Sopro Gélido** (geomante, cone de 3), **Cura em Área** (curandeiro, 2×2; cura inimigos que estiverem dentro).
+- UI: Tática na ficha (resumo e detalhes), nível de Tática do inimigo no briefing do mapa, mini desenho da forma na descrição da habilidade, casas da área acesas na batalha.
+- Decisões das perguntas em aberto: dano igual para todos; Muralha de Chamas só dano imediato em linha; Tática na ficha + rótulo de inteligência dos inimigos.
