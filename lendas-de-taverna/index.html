@@ -6440,12 +6440,12 @@ function levelUpFx(u,lv){
   pulse(P,'#ffd34a',2.2,0.8);gsap.delayedCall(0.18,()=>pulse(P,'#fff3b0',1.6,0.7));
   for(let i=0;i<3;i++)gsap.delayedCall(i*0.16,()=>burst(P,{n:8,colors:['#ffd34a','#fff3b0','#ffffff'],spread:0.5,up:1.6,y:0.2,life:1.1,size:1.2}));
   // seta grande e translúcida envolvendo o personagem, subindo
-  {const [fx,fy]=worldToScreen(new THREE.Vector3(P.x,P.y,P.z)),[,hy]=screenOf(u,0.1),h=Math.max(60,(fy-hy)*1.9),w=h*0.85;
+  {const [fx,fy]=worldToScreen(new THREE.Vector3(P.x,P.y,P.z)),[,hy]=screenOf(u,0.1),h=Math.max(100,(fy-hy)*2.9),w=h*0.9;
    for(let k=0;k<3;k++){const a=document.createElement('div');a.className='lvarrow';a.style.cssText=`left:${fx}px;top:${fy-(fy-hy)/2}px;width:${w}px;height:${h}px;`;
-     a.innerHTML='<svg viewBox="0 0 100 120" preserveAspectRatio="none"><defs><linearGradient id="lvg'+k+'" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffb62e" stop-opacity=".05"/><stop offset=".6" stop-color="#ffd34a" stop-opacity=".55"/><stop offset="1" stop-color="#fff6c0" stop-opacity=".85"/></linearGradient></defs><path d="M50 2 L98 56 H70 V118 H30 V56 H2 Z" fill="url(#lvg'+k+')" stroke="#fff3b0" stroke-opacity=".7" stroke-width="2.5" stroke-linejoin="round"/></svg>';
+     a.innerHTML='<svg viewBox="0 0 100 120" preserveAspectRatio="none"><defs><linearGradient id="lvg'+k+'" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffb62e" stop-opacity=".05"/><stop offset=".6" stop-color="#ffd34a" stop-opacity=".7"/><stop offset="1" stop-color="#fff6c0" stop-opacity=".95"/></linearGradient></defs><path d="M50 2 L98 56 H70 V118 H30 V56 H2 Z" fill="url(#lvg'+k+')" stroke="#fff3b0" stroke-opacity=".7" stroke-width="2.5" stroke-linejoin="round"/></svg>';
      hud.appendChild(a);
      gsap.timeline({delay:k*0.32,onComplete:()=>a.remove()}).fromTo(a,{opacity:0,y:h*0.45,scale:0.85},{opacity:1,y:0,scale:1,duration:0.45,ease:'power2.out'}).to(a,{y:-h*0.6,duration:0.9,ease:'power1.in'},0.45).to(a,{opacity:0,duration:0.5,ease:'power1.in'},0.8);}}
-  const [x,y]=screenOf(u,0.1),d=document.createElement('div');d.className='lvup';d.style.left=x+'px';d.style.top=(y+10)+'px';
+  const [x,y]=screenOf(u,0.1),d=document.createElement('div');d.className='lvup';d.style.left=x+'px';d.style.top=(y-26)+'px';
   d.innerHTML=`<b>NÍVEL ${lv}!</b><em>${u.first} subiu de nível</em>`;hud.appendChild(d);
   gsap.timeline({onComplete:()=>d.remove()}).fromTo(d,{opacity:0,scale:0.3,y:10},{opacity:1,scale:1.15,y:-8,duration:0.28,ease:'back.out(3)'}).to(d,{scale:1,duration:0.15})
     .to(d,{y:-34,duration:1.3,ease:'power1.out'},0.4).to(d,{opacity:0,duration:0.4},1.5);
