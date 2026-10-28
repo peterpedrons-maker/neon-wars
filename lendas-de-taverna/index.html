@@ -1637,9 +1637,9 @@ const ico=(g,k,cls='',style='')=>{const nn=(NIC[g]||{})[k];if(nn)return `<i clas
 const navBack=(act,label,attr='')=>`<button class="nback" ${attr||`data-act="${act}"`} aria-label="Voltar"><span>‹</span>${label}</button>`;
 const wt=(key,eb,title)=>`<div class="wt">${ico('vila',key,'lg')}<div><div class="eyebrow">${eb}</div><h2>${title}</h2></div></div>`;
 const slotIco=(slot,cls='')=>ico('slot',slot==='accessory'?'acc1':slot,cls);
-const itemIco=(it,cls='')=>(NIC.item[it.id]?ico('item',it.id,cls,`filter:drop-shadow(0 0 1px ${RARITY[it.rar].cor}) drop-shadow(0 0 2px ${RARITY[it.rar].cor})`):slotIco(it.slot,cls));
+const itemIco=(it,cls='')=>(it.ic?`<i class="ic img ${cls}" style="background-image:url(assets/ico/${it.ic}.png);filter:drop-shadow(0 0 1px ${RARITY[it.rar].cor}) drop-shadow(0 0 2px ${RARITY[it.rar].cor})"></i>`:NIC.item[it.id]?ico('item',it.id,cls,`filter:drop-shadow(0 0 1px ${RARITY[it.rar].cor}) drop-shadow(0 0 2px ${RARITY[it.rar].cor})`):slotIco(it.slot,cls));
 /* ---- Sinais de força do item (o ícone só diz o tipo; o resto vem daqui) ---- */
-const MOD_META={atk:['stat','atq','ATQ',3],def:['stat','def','DEF',2],mov:['stat','mov','Mov',2],alc:['stat','alc','Alc',2],dmgBonus:['stat','dano','dano',1.5],maxhp:['stat','vida','PV',0.5],crit:['stat','crit','Crít',3],per:['vila','mapa','segredos',0.5]};
+const MOD_META={atk:['stat','atq','ATQ',3],def:['stat','def','DEF',2],mov:['stat','mov','Mov',2],alc:['stat','alc','Alc',2],dmgBonus:['stat','dano','dano',1.5],maxhp:['stat','vida','PV',0.5],crit:['stat','crit','Crít',3],per:['vila','mapa','segredos',0.5],defMag:['stat','res','Res. Mág.',2],forca:['x','x','Força',2],destreza:['x','x','Destreza',2],constituicao:['x','x','Constituição',2],inteligencia:['x','x','Inteligência',2],sabedoria:['x','x','Sabedoria',2],carisma:['x','x','Carisma',2]};
 const itemScore=it=>it?Object.entries(it.mods||{}).reduce((a,[k,v])=>a+(MOD_META[k]?MOD_META[k][3]:1)*v,0):0;
 function itemMain(it){const e=Object.entries(it.mods||{}).filter(([k])=>MOD_META[k]).sort((a,b)=>Math.abs(b[1]*MOD_META[b[0]][3])-Math.abs(a[1]*MOD_META[a[0]][3]))[0];return e?{k:e[0],v:e[1]}:null;}
 const stars=n=>'★'.repeat(n)+'<span class="off">'+'★'.repeat(Math.max(0,5-n))+'</span>';
@@ -1648,7 +1648,7 @@ function itemBadges(it){const m=itemMain(it);
 // diferença do item em relação ao que o herói já usa naquele espaço
 function itemDiff(h,it){const cur=h.equip[slotKeyFor(h,it)],ks=new Set([...Object.keys(it.mods||{}),...Object.keys(cur?cur.mods||{}:{})]);
   const parts=[...ks].filter(k=>MOD_META[k]).map(k=>[k,(it.mods[k]||0)-((cur&&cur.mods[k])||0)]).filter(([,d])=>d).sort((a,b)=>Math.abs(b[1]*MOD_META[b[0]][3])-Math.abs(a[1]*MOD_META[a[0]][3])).slice(0,2);
-  const d=itemScore(it)-itemScore(cur);
+  const d=heroScore(h,it)-heroScore(h,cur);
   return {d,cls:!cur?'new':d>0?'up':d<0?'down':'eq',cur,txt:parts.map(([k,v])=>`${v>0?'+':''}${v} ${MOD_META[k][2]}`).join(' · ')};}
 const ITEMS=[
   // ===== Arma (weapon) =====
@@ -1753,11 +1753,13 @@ function applyMods(h,mods,sign){
   if(mods.mov)h.mov+=sign*mods.mov;
   if(mods.alc)h.alc+=sign*mods.alc;
   if(mods.per)h.per+=sign*mods.per;
+  if(mods.defMag)h.defMag+=sign*mods.defMag;
+  if(ATTR_NAMES.some(a=>mods[a])){h.itemAttr=h.itemAttr||{};ATTR_NAMES.forEach(a=>{if(mods[a])h.itemAttr[a]=(h.itemAttr[a]||0)+sign*mods[a];});syncAttrs(h);recomputeAttrBonus(h);}
   if(mods.dmgBonus)h.dmg[2]+=sign*mods.dmgBonus;
   if(mods.crit)h.critBonus=(h.critBonus||0)+sign*mods.crit;
   if(mods.maxhp){h.maxhp=Math.max(1,h.maxhp+sign*mods.maxhp);h.hp=Math.max(1,Math.min(h.maxhp,h.hp+sign*mods.maxhp));}
 }
-function canEquip(h,item){return !(item.slot==='offhand'&&CLASSES[h.cls].twoHanded);}
+function canEquip(h,item){return !(item.slot==='offhand'&&CLASSES[h.cls].twoHanded)&&!(item.cls&&!item.cls.includes(h.cls));}
 function slotKeyFor(h,item){
   if(item.slot==='accessory')return !h.equip.acc1?'acc1':!h.equip.acc2?'acc2':'acc1';
   return item.slot;
@@ -1773,11 +1775,110 @@ function unequipItem(h,slot,pool){
   const item=h.equip[slot];if(!item)return;
   applyMods(h,item.mods,-1);h.equip[slot]=null;pool.push(item);
 }
+/* ================= Itens por tier (ver ITENS.md) =================
+   Item = molde (tipo/família) × tier (1–12) × raridade. Fixos e previsíveis: o id (`molde.tier.raridade`) basta pra reconstruir o item. */
+const TIER_ADJ=[['Rústico','Rústica'],['Rúnico','Rúnica'],['Basáltico','Basáltica'],['Boreal','Boreal'],['Sepulcral','Sepulcral'],['Crepuscular','Crepuscular'],['Profundo','Profunda'],['Ancestral','Ancestral'],['Eterno','Eterna'],['Esquecido','Esquecida'],['Régio','Régia'],['Primordial','Primordial']];
+const RAR_F={1:0.6,2:0.8,3:1,4:1.25,5:1.5},RAR_LINES={1:2,2:2,3:3,4:3,5:4};
+const MAIN_ATTR={guerreiro:'forca',ladino:'destreza',mago:'inteligencia',clerigo:'sabedoria',arqueiro:'destreza',bardo:'carisma'};
+const SEC_ATTR={guerreiro:'constituicao',ladino:'constituicao',mago:'sabedoria',clerigo:'constituicao',arqueiro:'constituicao',bardo:'destreza'};
+const ARMOR_GRP={guerreiro:'heavy',clerigo:'mid',ladino:'light',arqueiro:'light',bardo:'light',mago:'cloth'};
+// [id, slot, nome, gênero, ícone, classes, receita]
+const ITEM_BASES=[
+  ['espada','weapon','Espada','f','i_espada',['guerreiro'],'w'],['machado','weapon','Machado','m','i_machado',['guerreiro'],'w'],
+  ['adaga','weapon','Adaga','f','i_adaga',['ladino'],'w'],['rapieira','weapon','Rapieira','f','i_espada',['ladino'],'w'],
+  ['cajado','weapon','Cajado','m','i_cajado',['mago'],'w'],['varinha','weapon','Varinha','f','i_cetro',['mago'],'w'],
+  ['maca','weapon','Maça','f','i_martelo',['clerigo'],'w'],['martelo','weapon','Martelo','m','i_martelo',['clerigo'],'w'],
+  ['arcocurto','weapon','Arco Curto','m','i_arco',['arqueiro'],'w'],['arcolongo','weapon','Arco Longo','m','i_arco',['arqueiro'],'w'],
+  ['florete','weapon','Florete','m','i_espada',['bardo'],'w'],['flauta','weapon','Flauta','f','i_cetro',['bardo'],'w'],
+  ['escudo','offhand','Escudo','m','i_escudo',['guerreiro','clerigo'],'shield'],['adagares','offhand','Adaga Reserva','f','i_adaga',['ladino'],'dagger'],
+  ['elmo','head','Elmo','m','i_elmo',['guerreiro'],'head'],['couraca','body','Couraça','f','i_couraca',['guerreiro'],'bodyH'],['manoplas','hands','Manoplas','f','i_manoplas',['guerreiro'],'hands'],['grevas','feet','Grevas','f','i_grevas',['guerreiro'],'feet'],
+  ['capacete','head','Capacete','m','i_elmo',['clerigo'],'head'],['cota','body','Cota de Malha','f','i_cota',['clerigo'],'bodyH'],['manoplasl','hands','Manoplas Leves','f','i_luvas',['clerigo'],'hands'],['botasr','feet','Botas Reforçadas','f','i_botas',['clerigo'],'feet'],
+  ['capuz','head','Capuz','m','i_capuz',['ladino','arqueiro','bardo'],'head'],['gibao','body','Gibão','m','i_colete',['ladino','arqueiro','bardo'],'bodyL'],['luvas','hands','Luvas','f','i_luvas',['ladino','arqueiro','bardo'],'hands'],['botas','feet','Botas','f','i_botas',['ladino','arqueiro','bardo'],'feet'],
+  ['chapeu','head','Chapéu','m','i_capuz',['mago'],'head'],['manto','body','Manto','m','i_manto',['mago'],'bodyL'],['luvasf','hands','Luvas Finas','f','i_luvas',['mago'],'hands'],['sandalias','feet','Sandálias','f','i_sandalias',['mago'],'feet'],
+  ['anelf','accessory','Anel de Força','m','i_anel',null,'acc:forca'],['braced','accessory','Bracelete da Destreza','m','i_bracelete',null,'acc:destreza'],['amuletoc','accessory','Amuleto do Vigor','m','i_coracao',null,'acc:constituicao'],
+  ['talismai','accessory','Talismã da Mente','m','i_talisma',null,'acc:inteligencia'],['pingentes','accessory','Pingente da Sabedoria','m','i_pingente',null,'acc:sabedoria'],['colarc','accessory','Colar do Carisma','m','i_colar',null,'acc:carisma']
+].map(([id,slot,nome,g,ic,cls,rec])=>({id,slot,nome,g,ic,cls,rec}));
+const BASE_BY_ID={};ITEM_BASES.forEach(b=>BASE_BY_ID[b.id]=b);
+// receita: ordem das linhas (a raridade define quantas valem)
+function itemRecipe(b,cls){
+  const M='main',S='sec',rec=b.rec;
+  if(rec==='w')return [M,'dmg','atk','crit'];
+  if(rec==='shield')return [S,'def','hp','res'];
+  if(rec==='dagger')return [M,'atk','dmg','crit'];
+  if(rec==='head')return [S,'hp','def','atk'];
+  if(rec==='bodyH')return ['constituicao','def','hp','res'];
+  if(rec==='bodyL')return [M,'res','hp','def'];
+  if(rec==='hands')return [M,'atk','dmg','def'];
+  if(rec==='feet')return [S,'def','hp','mov'];
+  return [rec.slice(4),'hp','def','res'];   // acessório: o atributo dele
+}
+function genItem(baseId,tier,rar,forCls){
+  const b=BASE_BY_ID[baseId];if(!b)return null;
+  tier=Math.max(1,Math.min(12,tier));const f=RAR_F[rar],t=tier;
+  // armadura do corpo: pesada/média leem "constituição", leve/tecido leem o atributo principal; o molde já sabe a classe
+  const cls0=forCls||(b.cls&&b.cls[0])||'guerreiro',rec=itemRecipe(b,cls0),mods={};let n=0;
+  const attr=k=>k==='main'?MAIN_ATTR[cls0]:k==='sec'?SEC_ATTR[cls0]:k;
+  for(const k of rec){
+    if(n>=RAR_LINES[rar])break;let v=0,key=null;
+    if(k==='dmg'){key='dmgBonus';v=Math.max(1,Math.round(0.4*t*f));}
+    else if(k==='hp'){key='maxhp';v=Math.max(1,Math.round(1.2*t*f));}
+    else if(k==='atk'){key='atk';v=Math.round(t/6*f);}
+    else if(k==='def'){key='def';v=Math.round(t/8*f);}
+    else if(k==='res'){key='defMag';v=Math.round(t/8*f);}
+    else if(k==='crit'){key='crit';v=(rar>=4&&t>=6)?1:0;}
+    else if(k==='mov'){key='mov';v=(rar>=4&&t>=4)?1:0;}
+    else{key=attr(k);v=Math.max(1,Math.round((1+0.35*(t-1))*f));}
+    if(!key||!v||mods[key])continue;mods[key]=v;n++;
+  }
+  let ad=TIER_ADJ[t-1][b.g==='f'?1:0];
+  if(['manoplas','manoplasl','grevas','botasr','luvas','botas','luvasf','sandalias'].includes(baseId))ad=ad.endsWith('al')?ad.slice(0,-2)+'ais':ad.endsWith('ar')?ad+'es':ad+'s';
+  const it={id:`${baseId}.${tier}.${rar}`,nome:`${b.nome} ${ad}`,slot:b.slot,rar,tier,ic:b.ic,cls:b.cls,mods,icon:'',base:baseId};
+  it.desc=Object.entries(mods).map(([k,v])=>`${v>0?'+':''}${v} ${MOD_META[k]?MOD_META[k][2]:k}`).join(', ');
+  return it;
+}
+function itemById(id){
+  const old=ITEMS.find(i=>i.id===id);if(old)return old;
+  const m=/^([a-z]+)\.(\d+)\.(\d)$/.exec(id||'');if(!m)return null;
+  return genItem(m[1],+m[2],+m[3]);
+}
+// pontuação de um item PARA um herói: atributo principal pesa mais, secundário médio
+function heroScore(h,it){
+  if(!it)return 0;const M=MAIN_ATTR[h.cls],S=SEC_ATTR[h.cls];
+  return Object.entries(it.mods||{}).reduce((a,[k,v])=>{
+    const w=ATTR_NAMES.includes(k)?(k===M?3:k===S?2:k==='constituicao'?1.5:0.5):(MOD_META[k]?MOD_META[k][3]:1);
+    return a+w*v;},0)+(it.tier||0)*0.01;
+}
+// "Equipar o melhor": em cada espaço fica a peça de maior pontuação para o herói (respeita classe e mãos). Devolve quantas trocas.
+function equipBest(h,pool){
+  let n=0;
+  for(const sl of EQ_SLOTS){
+    if(sl==='offhand'&&CLASSES[h.cls].twoHanded)continue;
+    const kind=sl.startsWith('acc')?'accessory':sl,cur=h.equip[sl];
+    let best=cur,bs=cur?heroScore(h,cur):-1;
+    for(const it of pool){if(it.slot!==kind||!canEquip(h,it))continue;const sc=heroScore(h,it);if(sc>bs+0.001){bs=sc;best=it;}}
+    if(best&&best!==cur){equipItem(h,sl,best,pool);n++;}
+  }
+  return n;
+}
+// raridade por tier (Comum/Raro/Mágico/Épico; lendário não rola)
+const RAR_TIER=[[65,28,7,0],[65,28,7,0],[50,30,17,3],[50,30,17,3],[40,32,21,7],[40,32,21,7],[30,32,27,11],[30,32,27,11],[22,30,31,17],[22,30,31,17],[15,25,35,25],[15,25,35,25]];
+function rollRarityT(tier,min){
+  const w=RAR_TIER[Math.max(0,Math.min(11,tier-1))].map((x,i)=>i+1>=min?x:0),tot=w.reduce((a,b)=>a+b,0);
+  let r=R()*tot;for(let i=0;i<4;i++){if(r<w[i])return i+1;r-=w[i];}return Math.max(min,1);
+}
+function rollItemFor(tier,rar,classes){
+  const c=pick(classes),slots=['weapon','offhand','head','body','hands','feet','accessory','accessory'].filter(sl=>!(sl==='offhand'&&CLASSES[c].twoHanded));
+  const sl=pick(slots),pool=ITEM_BASES.filter(b=>b.slot===sl&&(!b.cls||(b.cls.includes(c)&&(sl!=='weapon'&&sl!=='head'&&sl!=='body'&&sl!=='hands'&&sl!=='feet'?true:true))));
+  const cand=pool.filter(b=>!b.cls||b.cls.includes(c));if(!cand.length)return null;
+  return genItem(pick(cand).id,tier,rar,c);
+}
 function dropLoot(t){
   const carPct=Math.max(0,...heroesAlive().map(h=>(h.attrBonus&&h.attrBonus.pct)||0)),chance=isBossK(t.kind)?1:0.16*(1+carPct/100);
   if(R()>=chance)return;
-  const rar=rollRarity(isBossK(t.kind)?3:1);
-  const item=rollItem(rar);if(!item)return;
+  const mp=LV&&LV.mp?LV.mp:{ato:1},tier=Math.max(1,Math.min(12,(mp.ato||1)-(R()<0.25?1:0)+(isBossK(t.kind)&&R()<0.3?1:0)));
+  const rar=rollRarityT(tier,isBossK(t.kind)?3:1);
+  const cl=(party.length?party:[{cls:'guerreiro'}]).map(h=>h.cls);
+  const item=rollItemFor(tier,rar,cl);if(!item)return;
   run.inventory.push(item);
   item.rar>=4?SFX.secret():SFX.loot();
   floatText(t,itemIco(item,'lg'),'gold',true);
@@ -4101,7 +4202,7 @@ function growWeights(cls,afin){
   if(afin&&AFINIDADES[afin])AFINIDADES[afin].attrs.forEach(a=>w[a]=(w[a]||0)+0.2);
   const t=Object.values(w).reduce((x,y)=>x+y,0);for(const a in w)w[a]/=t;return w;
 }
-function syncAttrs(h){h.attrs={};ATTR_NAMES.forEach(a=>h.attrs[a]=h.attrBase[a]+Math.floor(h.attrPts[a]+1e-9));}
+function syncAttrs(h){h.attrs={};ATTR_NAMES.forEach(a=>h.attrs[a]=h.attrBase[a]+Math.floor(h.attrPts[a]+1e-9)+((h.itemAttr&&h.itemAttr[a])||0));}
 function initAttrs(h){
   h.attrBase={};h.attrPts={};
   ATTR_NAMES.forEach(a=>{h.attrBase[a]=Math.max(4,ATTR_BASE[h.cls][a]+jit([-1,0,0,0,1]));h.attrPts[a]=0;});
@@ -4222,7 +4323,8 @@ function hydrateHero(s){
     loadout:(s.loadout&&s.loadout!=='arqueiro_b'&&LPC_RECIPES[s.loadout])?s.loadout:s.cls,
     sub:(s.sub&&SUBCLASSES[s.cls]&&SUBCLASSES[s.cls].includes(s.sub))?s.sub:null,
     r:null,c:null,equip:{}};
-  EQ_SLOTS.forEach(sl=>{const id=s.equip&&s.equip[sl];h.equip[sl]=id?ITEMS.find(i=>i.id===id)||null:null;});
+  EQ_SLOTS.forEach(sl=>{const id=s.equip&&s.equip[sl];h.equip[sl]=id?itemById(id):null;});
+  h.itemAttr={};EQ_SLOTS.forEach(sl=>{const it=h.equip[sl];if(it&&it.mods)ATTR_NAMES.forEach(a=>{if(it.mods[a])h.itemAttr[a]=(h.itemAttr[a]||0)+it.mods[a];});});
   if(s.ver>=2){
     h.attrBase={...s.attrBase};h.attrPts={...s.attrPts};h.afin=s.afin;h.attrBonus={...zeroBonus(),...s.attrBonus};h.healBonus=h.attrBonus.heal;syncAttrs(h);
   }else{
@@ -4250,7 +4352,7 @@ function loadGame(){
     const s=JSON.parse(raw);
     return {nextUid:s.nextUid||1,mission:s.mission||null,gold:s.gold||0,
       roster:(s.roster||[]).map(hydrateHero),
-      stash:(s.stash||[]).map(id=>ITEMS.find(i=>i.id===id)).filter(Boolean)};
+      stash:(s.stash||[]).map(id=>itemById(id)).filter(Boolean)};
   }catch(e){return null;}
 }
 const unlocked=n=>n<=loadProg()+1;
@@ -4680,6 +4782,7 @@ function heroEquipBox(h,ns){
         <b class="nm">${h.first}</b><span class="cl"> · ${CLASSES[h.cls].nome}${CLASSES[h.cls].twoHanded?' · arma de duas mãos':''}</span>
         <div class="note" style="margin:2px 0 0">${attrLine(h)}</div>
       </div>
+      <button class="btn ghost sm" data-${ns==='eq'?'eqbest':'stbest'}="${h.id}">Equipar o melhor</button>
     </div>
     <div class="eqslots">
       ${EQ_SLOTS.map(s=>{
@@ -4726,7 +4829,7 @@ function renderStash(){
       <small>${sel.desc}</small>
       <div class="invpick">${roster.filter(h=>canEquip(h,sel)).map(h=>{const df=itemDiff(h,sel);return `<button class="btn ghost sm cmp ${df.cls}" data-stashequip="${h.id}"><span>Equipar em ${h.first}</span><em>${df.cls==='new'?'▲ espaço livre':df.cls==='up'?'▲ melhor':df.cls==='down'?'▼ pior':'= igual'}${df.txt?` · ${df.txt}`:''}</em></button>`;}).join('')||'<span class="note">Nenhum herói no elenco pode usar este item.</span>'}</div>
     </div>`:''}
-  `:`<div class="scroll">${roster.length?roster.map(h=>heroEquipBox(h,'steq')).join(''):'<p class="note">Recrute heróis na taverna primeiro.</p>'}</div>`}`;
+  `:`<div class="scroll">${roster.length?`<button class="btn cta sm" data-stbestall="1" style="margin-bottom:8px">Equipar o melhor em todos</button>`+roster.map(h=>heroEquipBox(h,'steq')).join(''):'<p class="note">Recrute heróis na taverna primeiro.</p>'}</div>`}`;
 }
 function injuryRushCost(h){return INJURY_RUSH_BASE+(h.level||1)*INJURY_RUSH_PER_LEVEL;}
 function renderForge(){
@@ -4799,7 +4902,10 @@ PI_.addEventListener('click',e=>{
   const stb=t.closest('[data-stashtab]');if(stb){stashFilter=stb.dataset.stashtab;stashSel=null;renderStash();return;}
   const sti=t.closest('[data-stashtile]');if(sti){stashSel=+sti.dataset.stashtile;renderStash();return;}
   const steq=t.closest('[data-stashequip]');if(steq){const h=roster.find(x=>x.id===+steq.dataset.stashequip),item=stashSel!=null?stash[stashSel]:null;if(h&&item&&canEquip(h,item)){equipItem(h,slotKeyFor(h,item),item,stash);stashSel=null;saveGame();}renderStash();return;}
-  const stequn=t.closest('[data-steqnslot]');if(stequn){const h=roster.find(x=>x.id===+stequn.dataset.steqnhero);if(h){unequipItem(h,stequn.dataset.steqnslot,stash);saveGame();}renderStash();return;}
+  const stequn=t.closest('[data-stequnslot]');if(stequn){const h=roster.find(x=>x.id===+stequn.dataset.stequnhero);if(h){unequipItem(h,stequn.dataset.stequnslot,stash);saveGame();}renderStash();return;}
+  const stbest=t.closest('[data-stbest]');if(stbest){const h=roster.find(x=>x.id===+stbest.dataset.stbest);let n=0;if(h)n=equipBest(h,stash);if(n){SFX.confirm();saveGame();}else SFX.denied();renderStash();return;}
+  const stbestAll=t.closest('[data-stbestall]');if(stbestAll){let n=0;roster.forEach(h=>{n+=equipBest(h,stash);});if(n){SFX.confirm();saveGame();}else SFX.denied();renderStash();return;}
+  const eqbest=t.closest('[data-eqbest]');if(eqbest){const h=party.find(x=>x.id===+eqbest.dataset.eqbest);let n=0;if(h)n=equipBest(h,run.inventory);if(n)SFX.confirm();else SFX.denied();renderEquip();return;}
   const chip=t.closest('.chip');
   if(chip){selHero=party.find(h=>h.id===+chip.dataset.hid);hint=`${selHero.first} (${CLASSES[selHero.cls].nome}${selHero.sub?' · '+SUB_INFO[selHero.sub].nome:''}): ${selHero.sub?SUB_INFO[selHero.sub].desc:COMO[selHero.cls].campo} Toque numa casa dourada.`;renderPlace();if(selHero.grp)pulse(selHero.grp.position,'#e9b949',0.8,0.5);return;}
   const spd=t.closest('[data-spd]');

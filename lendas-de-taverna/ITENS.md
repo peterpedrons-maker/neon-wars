@@ -76,3 +76,12 @@ Ver `tools/sim_endgame.py`. Resumo no relatório da conversa; pontos de ajuste e
    Precisa de teto de DEF/ATQ e de crescimento maior do inimigo (DEF por nível, PV/dano).
 3. **Mago é o único frágil** (PV ~110–150): bom, é a identidade da classe.
 4. Crítico sobe sem limite com Inteligência (Mago): limitar a +6.
+
+---
+## Implementado (v1)
+- Itens gerados por molde × tier × raridade (`genItem`), id `molde.tier.raridade` (ex.: `espada.6.3`); `itemById` reconstrói qualquer item (saves antigos com os 17 itens antigos continuam válidos).
+- Moldes por classe (armas, 4 peças de armadura por grupo pesada/média/leve/tecido, escudo/adaga reserva, 6 acessórios por atributo). Itens de uma classe só servem a ela (`item.cls`).
+- Linhas e valores seguem as fórmulas deste documento; atributos de item entram na conta dos atributos (`h.itemAttr`) e rebatem em dano/crítico/PV.
+- Drop: tier = ato do mapa (25% de vir do tier anterior; chefe pode subir 1), classe/espaço sorteados entre o grupo (loot útil), raridade pela tabela por tier (chefe: Mágico no mínimo). Lendário não rola.
+- **Equipar o melhor** (`equipBest`): por herói e "em todos" no Cofre, e por herói na mochila da missão; pontuação por classe (`heroScore`: atributo principal 3, secundário 2, Constituição 1,5).
+- Corrigido: tirar item de herói pelo Cofre (seletor errado no clique).
