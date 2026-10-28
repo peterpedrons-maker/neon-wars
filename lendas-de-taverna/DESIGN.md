@@ -487,3 +487,9 @@ da ideia original sem precisar do modo manual completo.
 - Detalhes: mesas e barris na taverna, carroça, jardim e estátua no templo, bigorna/boneco de treino/rack de armas/lenha na forja, segunda barraca, hortas, cercas, feno, varal, lagoa com doca e peixes, flores, arbustos, pedras, lampiões, pássaros, vaga-lumes e folhas.
 - Arte: tudo procedural em 3D (caixas/cilindros) + sprites já no projeto (SpritePilot, CC0). Sites de packs externos (Kenney, OpenGameArt) são bloqueados no ambiente de desenvolvimento, então não foram usados.
 - Futuro: arrastar a câmera para explorar a vila (hoje `camT` já tem limites no modo village).
+
+## Combate: KO, reviver, armadilhas e fuga (v1)
+- **KO como no FFT:** herói que cai fica no chão (`KO_TURNS`=3 rodadas, contagem sobre o corpo). O Clérigo revive aliado caído (30% de vida, 50% se Curandeiro; recarga 4 turnos) — a IA vai até ele. Zerou a contagem, o herói "caiu de vez" (`h.dead`): sai da run e só volta pagando a ressurreição no Templo (3× o custo de cura).
+- **Inimigo morrendo:** pisca, achata, vira fumaça com efeito de teletransporte e uma faísca de alma sobe; chefes ganham onda de choque.
+- **Armadilhas no chão:** Armadilha de Espinhos e Campo Minado (Ladino Armadilheiro) ficam armadas numa casa; só inimigos ativam. A IA escolhe casas no caminho dos inimigos. Inimigo com Tática ≥ 6 desvia, o burro pisa.
+- **Fuga por Tática:** quem tem Tática ≥ 5 (mago, arqueiro, clérigo, bardo…) e está com pouca vida sob ameaça recua para uma casa mais segura (e ainda atira se der). Inimigos espertos (Tática ≥ 6) fazem o mesmo. Guerreiro não foge.
