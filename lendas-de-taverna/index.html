@@ -291,6 +291,10 @@ details.box[open]>summary::after{content:"−"}
 .xpbar{height:8px;background:var(--sombra);border-radius:4px;overflow:hidden;margin-top:6px}
 .xpbar i{display:block;height:100%;background:var(--ouro)}
 .stgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.stgrid span.up{border-color:#4d8a38!important}.stgrid span.dn{border-color:#a8483a!important}
+.stgrid .mod{font-style:normal;font-size:10px;line-height:1.2;margin-top:2px;color:#9fe0a0}.stgrid .dn .mod,.stgrid span.dn .mod{color:#ff9d8a}
+.note.trn{margin:8px 0 0;font-size:12px;line-height:1.4;color:#f0dfb9}.note.trn b{color:#ffe9b8}.note.trn.up b{color:#9fe0a0}
+.stgrid .ic img,.stgrid img.ic{width:16px;height:16px;image-rendering:pixelated}
 .stgrid span{display:flex;flex-direction:column;background:var(--madeira);border:2px solid var(--borda);border-radius:6px;padding:6px 8px;font-size:11px;color:var(--nevoa)}
 .stgrid span b{font-family:var(--f-display);font-size:18px;color:var(--papel);font-weight:600}
 .eqlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;font-size:12px;color:var(--papel-2)}
@@ -367,11 +371,65 @@ h4.sec{margin:6px 0 0;font-family:var(--f-display);font-size:15px;color:var(--ou
 .rbar.two{gap:8px}
 .rbar.two .btn{flex:1}
 /* ficha: espaços de habilidade + botão da árvore */
+.hstrip{flex:none;display:flex;gap:8px;overflow-x:auto;padding:10px 12px 8px;background:#150e0a;border-block:2px solid #5a4330;scrollbar-width:none}
+.hstrip::-webkit-scrollbar{display:none}
+.hcd{all:unset;box-sizing:border-box;flex:0 0 84px;border-radius:12px;border:2px solid #4a392a;background:#241a12;padding:6px 4px 5px;text-align:center;position:relative;cursor:pointer;transition:.15s;color:#efe2c4}
+.hcd .hpt{display:grid;place-items:center;height:54px;border-radius:8px;background:radial-gradient(circle at 50% 30%,#4a2f7a,#1b1230);margin-bottom:4px;overflow:hidden}
+.hcd .hpt img{height:50px;width:auto;image-rendering:pixelated}
+.hcd b{display:block;font:700 12px var(--f-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hcd small{display:block;font-size:10px;color:#a8a39a;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hcd small.nv{color:#e9b949}
+.hcd small.tr{color:#9fe0a0;font-size:9.5px;margin-top:2px}
+.hcd.on{border-color:#e9b949;background:#3a2a1c;box-shadow:0 0 14px #e9b94955;transform:translateY(-2px)}
+.hcd .hck{position:absolute;right:-5px;top:-6px;width:20px;height:20px;border-radius:50%;background:#6cc35e;color:#10230c;font:700 12px/20px var(--f-display);text-align:center;display:none;border:2px solid #14100d}
+.hcd.hired .hck{display:block}
+.hcd .hsib{position:absolute;left:4px;top:4px;z-index:2;font:700 8px var(--f-display);background:#a97e22;color:#2b1e15;border-radius:4px;padding:0 4px}
+.trbtn.big{margin:0;font-size:16px;padding:14px}
+/* ficha resumida (estilo cartão: retrato + atributos + mini árvore + ativas) */
+.flt{flex:none;display:flex;gap:6px;overflow-x:auto;padding:8px 10px 2px;scrollbar-width:none}.flt::-webkit-scrollbar{display:none}
+.fc{all:unset;box-sizing:border-box;flex:0 0 auto;display:flex;align-items:center;gap:5px;padding:7px 11px;border-radius:9px;border:2px solid #5a4330;background:#241a12;color:#e0cfa8;font:600 12px var(--f-display);cursor:pointer;white-space:nowrap}
+.fc .ic{width:16px;height:16px;margin:0}.fc.on{border-color:#e9b949;background:linear-gradient(#4a371f,#33250f);color:#ffe9b8;box-shadow:0 0 10px #e9b94944}
+.hpill{font:700 12px var(--f-display);padding:6px 10px;border-radius:99px;border:2px solid #a97e22;background:#0007;color:#e9b949;white-space:nowrap}
+.shres{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:8px;padding-bottom:8px;align-items:start}
+.hbar{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;color:#e0cfa8;margin:6px 1px 3px}.hbar b{font:700 13px var(--f-display);color:#f6e8c6}
+.bar2{height:12px;border-radius:6px;background:#0e0805;border:2px solid #4a3824;overflow:hidden;box-sizing:content-box}
+.bar2 i{display:block;height:100%;border-radius:4px}.bar2 i.red{background:linear-gradient(#f07a68,#c4402f)}.bar2 i.blue{background:linear-gradient(#8fc4ff,#3e72b8)}
+.trbtn.wide{grid-column:1/-1}
+.shres .wide{grid-column:1/-1}.shl{display:flex;flex-direction:column;gap:8px;min-width:0}.shr{min-width:0}
+.shid{padding:8px!important}
+.shport{position:relative;height:150px;border-radius:10px;background:radial-gradient(circle at 50% 75%,#7a58aa 0,#2a1a45 55%,#14091f);border:2px solid #5a4330;overflow:hidden;margin-bottom:6px}
+.shport::after{content:'';position:absolute;bottom:4px;left:50%;width:72%;height:14px;transform:translateX(-50%);background:radial-gradient(ellipse,#000a,transparent 70%)}
+.shport img{position:absolute;left:50%;bottom:-4px;height:158px;width:auto;transform:translateX(-50%);image-rendering:pixelated;filter:drop-shadow(0 4px 0 #0008);z-index:1}
+.shname{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap}.shname b{font:700 19px var(--f-display);color:#f6e8c6}
+.shsum{margin:4px 0 6px;font-size:11.5px;line-height:1.35;color:#cdb68a}
+.shrow{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;margin-top:4px;background:rgba(30,16,8,.55);border-radius:7px;font-size:12px;color:#e0cfa8}
+.shrow span{display:flex;align-items:center;gap:6px}.shrow .ic{width:16px;height:16px;margin:0}.shrow b{font:700 15px var(--f-display);color:#f6e8c6}
+.md{font-style:normal;font-size:11px;margin-left:3px}.md.up{color:#9fe0a0}.md.dn{color:#ff9d8a}
+.mt{cursor:pointer}.mtabs{display:flex;gap:4px;margin:6px 0}
+.mtab{all:unset;box-sizing:border-box;flex:1;min-width:0;text-align:center;padding:6px 2px;border-radius:7px;border:2px solid #4a392a;background:#1c130d;color:#a8a39a;font:600 10px var(--f-display);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mtab.on{border-color:var(--c);color:#fff;background:color-mix(in srgb,var(--c) 22%,#1c130d)}
+.mtbox{position:relative;width:100%;aspect-ratio:150/250;margin:0 auto;border-radius:10px;background:radial-gradient(circle at 50% 40%,#2a1e14,#150e09);border:2px solid #4a392a;overflow:hidden}
+.mtbox svg{position:absolute;inset:0;width:100%;height:100%}
+.mtn{position:absolute;display:block;border-radius:50%;border:2px solid #5a4330;background:#120c08;filter:saturate(.35) brightness(.8);padding:3px}
+.mtn.on{border-color:var(--c);filter:none;box-shadow:0 0 8px color-mix(in srgb,var(--c) 70%,transparent);background:color-mix(in srgb,var(--c) 22%,#120c08)}
+.mtn.a{border-radius:50%}.mtn:not(.a){border-radius:7px;transform:rotate(0)}
+.mtn{padding:2px}.mtn .ic{display:block;width:100%;height:100%;background-repeat:no-repeat;background-size:contain;background-position:center;image-rendering:pixelated}
+.mtn .ic.mk{background-color:#cdbb98;-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat}
+.mtn.on .ic.mk{background-color:#fff0cf}
+.mtn i{position:absolute;right:-5px;bottom:-5px;width:14px;height:14px;border-radius:50%;background:#6cc35e;color:#10230c;font:700 9px/14px var(--f-display);font-style:normal;text-align:center}
+.ov .inner.kt .shres .rpf{border:2px solid #5a4330;border-image:none;border-radius:12px;background:linear-gradient(#2d2118,#211810);padding:8px 9px;box-shadow:none}
+.ov .inner.kt .shres .rpf::before,.ov .inner.kt .shres .rpf::after{display:none}
+.ov .inner.kt .shres h4.sec{font-size:12px;letter-spacing:1.2px;color:#e9b949;margin-bottom:2px!important}
+.mtn2{margin:6px 0 0!important;text-align:center;font-size:11px}.mtn2 b{color:#e9b949}
+.skslot small.n{color:#e9b949;font-size:9px}
+.abar{flex:none;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr) minmax(0,1fr);gap:6px;align-items:stretch}
+.abar .btn{min-height:52px;font-size:13px;padding:3px 2px;white-space:nowrap}.abar .btn.cta{font-size:14px}
+.abar.two{grid-template-columns:minmax(0,1fr) minmax(0,1.8fr)}
 .skslots{display:flex;gap:6px;margin:6px 0 4px}
 .skslot{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:54px;border-radius:10px;border:2px solid #6b5640;background:#0006;color:#8a7560;font-size:18px;line-height:1;text-align:center}
 .skslot small{font-size:9px;line-height:1.05;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#cdb68a}
 .skslot.on{border-color:var(--c,#e9b949);background:color-mix(in srgb,var(--c,#e9b949) 18%,#120c08);box-shadow:0 0 8px color-mix(in srgb,var(--c,#e9b949) 50%,transparent)}
 .skslot .ic{display:block;width:24px;height:24px;background-repeat:no-repeat;image-rendering:pixelated;background-size:contain;background-position:center}
+.skslot .ic:not(.mk),.mtn .ic:not(.mk){background-color:transparent;-webkit-mask:none;mask:none}
 .skslot .ic.mk{background-color:#fff0cf;-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat}
 .skslot.lk{opacity:.55}
 .trbtn{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:8px;padding:12px;border-radius:10px;cursor:pointer;font-weight:700;font-size:15px;color:#2b1e15;background:linear-gradient(#f0c150,#b88626);border:2px solid #7a5d1d;box-shadow:0 3px 0 #5b4310;text-align:center}
@@ -544,6 +602,7 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .slots.big .slot.req{border:3px dashed #b8832f;background:none;box-shadow:none;place-items:center;font-size:30px;color:#e9b949}
 .sbadge{position:absolute;top:3px;left:3px;width:22px;height:22px;display:grid;place-items:center;background:#2a1d12;border:2px solid var(--lar);color:#ffe9b8}.sbadge .ic{width:14px;height:14px;margin:0;filter:none}
 .tabs{display:grid;grid-template-columns:1fr 1.25fr 1fr;flex:0 0 auto}
+.tabs.two{grid-template-columns:1fr 1fr}
 .tab{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 6px;font-family:var(--f-display);font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:#d8c9a8;background:#2a1d12;border:3px solid #120b08;box-shadow:inset 0 0 0 2px #5a4330;white-space:nowrap;min-width:0}
 .tab.on{background:linear-gradient(#e9c25b,#c9962e);color:var(--ink);box-shadow:inset 0 0 0 2px #fff0c0}
 .tab[disabled]{opacity:.45;cursor:default}
@@ -906,7 +965,8 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .ov .inner.kt .sh2-top{gap:12px}
 .ov .inner.kt h4.sec{color:#e9b949;letter-spacing:.06em;padding-left:8px}
 .ov .inner.kt .rpf{padding:26px 32px 22px}
-.ov .inner.kt .pbar{background:#0e0805;border:2px solid #4a3824}
+.ov .inner.kt .pbar{height:14px;border-radius:7px;overflow:hidden;background:#0e0805;border:2px solid #4a3824;box-sizing:content-box;margin-top:3px}
+.ov .inner.kt .pbar .f{top:0;height:100%;background-size:auto 100%}
 .ov .inner.kt .scroll{padding:0 0 8px}
 .ov .inner.kt>.btn.cta{margin-inline:14px;flex:none;width:auto}
 .ov .inner.kt .party{background:none;border:0}
@@ -951,7 +1011,7 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .ov .inner.kt .tdet .emb img{width:97px;height:136px}
 .ov .inner.kt .tdet .tact{grid-column:1/-1;flex-direction:row}
 .ov .inner.kt .tdet .tact .btn{flex:1;width:auto}
-.ov .inner.kt .sh2-top img{width:132px;height:186px}
+.ov .inner.kt .sh2-top img{width:104px;height:146px}
 .ov .inner.kt .slots.big .slot{height:clamp(78px,11vh,98px)}
 .ov .inner.kt .slots.big .slot img{height:92%;width:auto;max-width:92%}
 .qd .qec img{width:44px;height:62px}
@@ -1125,6 +1185,7 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .float.gold .ft .sf{color:#ffd65a}
 .float.xp .ft .sf{color:#9fe0ff;font-size:20px}
 .float.xp .xl{font-style:normal;font-size:13px;margin-left:4px;color:#d6f2ff}
+.float.xpk .ft .sf{color:#ffe08a;font-size:24px}.float.xpk .ft .sf i{font-style:italic;font-weight:700}.float.xpk .xl{color:#fff0b8}
 .float.crit .ft .sf{color:#ffd65a;text-shadow:-3px -3px #3a1400,3px -3px #3a1400,-3px 3px #3a1400,3px 3px #3a1400,-4px 0 #3a1400,4px 0 #3a1400,0 -4px #3a1400,0 4px #3a1400,0 6px 0 #0009}
 .float.crit.onhero .ft .sf{color:#ff6a58}
 .float.crit{filter:drop-shadow(0 0 12px #ff9a3acc) drop-shadow(0 4px 0 #0009)}
@@ -3164,14 +3225,10 @@ const LPC_RECIPES={
   clerigo_b:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/chainmail/male/walk.png','weapon/sword/dagger/walk/dagger.png','shield/round/walk/silver.png'],
     slash:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/chainmail/male/slash.png','weapon/sword/dagger/slash/dagger.png','shield/round/slash/silver.png'],
     hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/chainmail/male/hurt.png','weapon/sword/dagger/hurt/dagger.png']},
-  bardo:{action:'slash',oversize:true,walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/clothes/longsleeve/formal/male/walk.png','hat/cloth/leather_cap/feather/adult/walk.png','weapon/sword/rapier/walk/rapier.png'],
-    hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/clothes/longsleeve/formal/male/hurt.png','hat/cloth/leather_cap/feather/adult/hurt.png','weapon/sword/rapier/hurt/rapier.png'],
-    actionBody:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/clothes/longsleeve/formal/male/slash.png','hat/cloth/leather_cap/feather/adult/slash.png'],
+  bardo:{action:'slash',oversize:true,walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/clothes/longsleeve/formal/male/walk.png','hat/cloth/leather_cap/adult/walk.png','hat/cloth/leather_cap/feather/adult/walk.png','weapon/sword/rapier/walk/rapier.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/clothes/longsleeve/formal/male/hurt.png','hat/cloth/leather_cap/adult/hurt.png','hat/cloth/leather_cap/feather/adult/hurt.png','weapon/sword/rapier/hurt/rapier.png'],
+    actionBody:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/clothes/longsleeve/formal/male/slash.png','hat/cloth/leather_cap/adult/slash.png','hat/cloth/leather_cap/feather/adult/slash.png'],
     actionBehind:'weapon/sword/rapier/attack_slash/behind/rapier.png',actionFront:'weapon/sword/rapier/attack_slash/rapier.png'},
-  // variante B: adaga + escudo — fica perto do grupo apoiando, em vez do florete
-  bardo_b:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/clothes/longsleeve/formal/male/walk.png','hat/cloth/leather_cap/feather/adult/walk.png','weapon/sword/dagger/walk/dagger.png','shield/round/walk/silver.png'],
-    slash:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/clothes/longsleeve/formal/male/slash.png','hat/cloth/leather_cap/feather/adult/slash.png','weapon/sword/dagger/slash/dagger.png','shield/round/slash/silver.png'],
-    hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/clothes/longsleeve/formal/male/hurt.png','hat/cloth/leather_cap/feather/adult/hurt.png','weapon/sword/dagger/hurt/dagger.png']},
   // inimigos — cabeça de orc/goblin trocada no mesmo corpo humano, igual
   // reskin de "cabeça" que o pacote já foi feito pra suportar
   goblin:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/goblin/adult/walk.png','legs/pantaloons/male/walk.png','weapon/sword/dagger/walk/dagger.png'],
@@ -3878,7 +3935,7 @@ const LOADOUTS={
   mago:['mago'],
   clerigo:['clerigo','clerigo_b'],
   arqueiro:['arqueiro'],   // a besta (arqueiro_b) lia-se como espada e usava a pose de estocada: removida
-  bardo:['bardo','bardo_b'],
+  bardo:['bardo'],   // sempre o florete com boné de pena (a variante adaga+escudo parecia guerreiro)
 };
 /* ---------- Subclasses (ver DESIGN.md "Classes e subclasses") --------------
    Cada herói sorteia uma das 2 subclasses da sua classe na criação — divide
@@ -4210,7 +4267,7 @@ function recruitHero(id){
   saveGame();
 }
 function tvTabs(act){
-  return `<div class="tabs"><button class="tab ${act==='roster'?'on':''}" data-act="toTavern">${ico('vila','grupo')} Elenco (${roster.length})</button><button class="tab ${act==='sheet'?'on':''}" ${tvSel&&roster.length?`data-sheet="${tvSel}"`:'disabled'}>${ico('vila','board')} Ficha do herói</button><button class="tab ${act==='recruit'?'on':''}" data-act="recruit">${ico('vila','tavern')} Recrutar</button></div>`;
+  return `<div class="tabs two"><button class="tab ${act==='roster'?'on':''}" data-act="toTavern">${ico('vila','grupo')} Elenco (${roster.length})</button><button class="tab ${act==='recruit'?'on':''}" data-act="recruit">${ico('vila','tavern')} Recrutar</button></div>`;
 }
 function renderTavern(){
   view='tavern';tvFocus=null;setMode('tavern');PI_.classList.add('qd','kt');
@@ -4246,26 +4303,22 @@ function renderTavern(){
   ${det}
   <div class="tfoot"><div class="tl"><span>${ico('vila','grupo')}<b>${n}/5</b> no grupo</span></div><button class="btn cta" data-act="toVillage" ${n>=5?'':'disabled'}>${n>=5?'Confirmar grupo →':`Escolha mais ${5-n}`}</button></div>`;
 }
+let recIdx=0;
 function renderRecruit(){
+  if(draw.length){const i=draw.findIndex(x=>x.id===tvFocus);return renderSheet(draw[i>=0?i:Math.min(recIdx,draw.length-1)].id,'draw');}
+  // sem candidatos: só a tela vazia com o sorteio
   view='recruit';setMode('tavern');PI_.classList.add('qd','kt');
-  const sc=surCount(),full=roster.length>=ROSTER_CAP;
   PI_.innerHTML=`
   <div class="head">${navBack('toVillage','Praça')}${wt('tavern','Taverna do Javali Torto','Recrutar heróis')}
     <div class="btns"><button class="btn ghost sm" data-act="reroll" ${rerolls?'':'disabled'}>Sortear (${rerolls})</button></div></div>
   ${tvTabs('recruit')}
-  <p class="hint">${full?`Seu elenco está cheio (${ROSTER_CAP}). Não dá pra contratar mais até abrir vaga.`:'Toque num herói pra ver a ficha completa e contratar — ele fica com você pra sempre, não só nesta run.'}</p>
-  <div class="pool">${draw.map(h=>`
-    <button class="pc" data-recruit="${h.id}" ${full?'disabled':''}>
-      ${sc[h.sur]>1?'<span class="sib">Irmãos</span>':''}
-      <img src="${h.portrait}" alt="">
-      <div class="pcbody">
-        <span class="nm">${h.first}</span>
-        <span class="cl">${ico('classe',h.cls)}${CLASSES[h.cls].nome}${h.sub?' · '+SUB_INFO[h.sub].nome:' · '+CLASSES[h.cls].papel}</span>
-        <span class="pcstats">Nv.${h.level||1} · ${ico('stat','vida')}${h.maxhp} ${ico('stat','atq')}${h.atk} ${ico('stat','def')}${h.def} ${ico('stat','mov')}${h.mov} ${ico('stat','alc')}${h.alc}</span>
-        <span class="tr"><b>${h.trait.nome}</b> — ${h.trait.desc}</span>
-        <span class="pcgear">${h.arma} · ${h.armadura}</span>
-      </div>
-    </button>`).join('')}</div>`;
+  <div class="empty">${ico('vila','tavern','xl')}<p>Ninguém novo na taverna agora. ${rerolls?'Sorteie outro grupo de candidatos.':'Volte depois de uma missão.'}</p></div>`;
+}
+/* faixa de heróis no topo da ficha: dá pra trocar de herói sem sair da ficha */
+function heroStrip(list,cur,isR){
+  // "irmão" só aparece quando importa: candidato com irmão já no elenco, ou dois irmãos juntos no grupo
+  const sib=x=>isR?(selected.has(x.id)&&roster.some(y=>y!==x&&y.sur===x.sur&&selected.has(y.id))?'+1 JUNTOS':''):(roster.some(y=>y.sur===x.sur)?'IRMÃO':'');
+  return `<div class="hstrip" id="hstrip">${list.map(x=>{const s=sib(x);return `<button class="hcd ${x.id===cur.id?'on':''} ${isR&&selected.has(x.id)?'hired':''}" data-hsel="${x.id}" aria-label="Ver ${x.first}">${s?`<span class="hsib">${s}</span>`:''}<span class="hck">✓</span><span class="hpt"><img src="${x.portrait}" alt=""></span><b>${x.first}</b><small>${CLASSES[x.cls].nome} · Nv ${x.level||1}${isR&&treeFree(x)?` ✦${treeFree(x)}`:''}</small><small class="tr">${x.trait.nome}</small></button>`;}).join('')}</div>`;
 }
 function rangeGrid(r,col){
   const Q=5;let h='';
@@ -4297,42 +4350,81 @@ function skillsBlock(h,isR){
     ${sk.filter(Boolean).map(x=>row(x,'ativa equipada',` · recarga ${x.cd}`)).join('')}
     ${pv.length?`<p class="note" style="color:#c9b88f;margin:6px 0 2px">${pv.length} passiva${pv.length>1?'s':''} aprendida${pv.length>1?'s':''}: ${pv.map(x=>x.nome).join(', ')}.</p>`:''}
     ${!sk.filter(Boolean).length&&!pv.length?'<p class="note" style="color:#f0dfb9">Nenhuma ainda: cada nível dá 1 ponto para gastar na árvore.</p>':''}
-    ${isR?`<button class="trbtn" data-tree="${h.id}">${ico('stat','dano')} Abrir árvore de habilidades${fr?`<b>${fr} ponto${fr>1?'s':''} livre${fr>1?'s':''}</b>`:''}</button>`:''}</div>`;
+    <button class="trbtn" data-tree="${h.id}" data-src="${isR?'roster':'draw'}">${ico('stat','dano')} ${isR?'Abrir árvore de habilidades':'Ver árvore de habilidades'}${isR&&fr?`<b>${fr} ponto${fr>1?'s':''} livre${fr>1?'s':''}</b>`:''}</button></div>`;
 }
+let shFilter=null,shMode='resumo';
+const shList=()=>(tvSrc==='roster'?roster:draw).filter(x=>!shFilter||x.cls===shFilter);
 function renderSheet(id,src){
-  if(src)tvSrc=src;
-  const list=tvSrc==='roster'?roster:draw,h=list.find(x=>x.id===id);
+  if(src){if(src!==tvSrc)shFilter=null;shMode='resumo';tvSrc=src;}
+  const fullList=tvSrc==='roster'?roster:draw,list=shList(),h=fullList.find(x=>x.id===id);
   if(!h)return tvSrc==='roster'?renderTavern():renderRecruit();
-  view='sheet';tvFocus=id;if(tvSrc==='roster')tvSel=id;setMode('tavern');PI_.classList.add('qd','kt');
+  view='sheet';tvFocus=id;if(tvSrc==='roster')tvSel=id;else recIdx=Math.max(0,fullList.indexOf(h));setMode('tavern');PI_.classList.add('qd','kt');
+  const SI_=SUBCLASSES[h.cls].map(x=>SUB_INFO[x].nome);
   const c=CLASSES[h.cls],cm=COMO[h.cls],sc=tvSrc==='roster'?rosterSibCount():surCount(),isR=tvSrc==='roster';
   const lv=h.level||1,xb=xpForLevel(lv),xn=xpForLevel(lv+1),pct=lv>=LEVEL_CAP?100:Math.max(0,Math.min(100,Math.round(((h.xpTotal||0)-xb)/(xn-xb)*100)));
   const at=h.attrs||{},AN=ATTR_LABEL,afG=h.afin&&AFINIDADES[h.afin]?AFINIDADES[h.afin].attrs:[];
   const amax=Math.max(30,...ATTR_NAMES.map(a=>at[a]||0));
   const eq=isR?EQ_SLOTS.map(sl=>{const it=h.equip&&h.equip[sl];return `<div>${it?itemIco(it):slotIco(sl)}<span><b>${(SLOT_INFO[sl]||{label:'Acessório'}).label}:</b> ${it?it.nome:'—'}</span></div>`;}).join(''):`<div>${slotIco('weapon')}<span><b>Arma:</b> ${h.arma}</span></div><div>${slotIco('body')}<span><b>Armadura:</b> ${h.armadura}</span></div>`;
+  // efeitos do traço aparecem em cima do status que eles mexem (▲ ganha · ▼ perde)
+  const TID=h.trait.id,MOD={covarde:{def:['▲','+3']},fanfarrao:{atq:['▲','+2']},sortudo:{crit:['▲','19–20'],per:['▲','+3']},atento:{per:['▲','+5']},bruto:{dano:['▲','+3'],def:['▼','−2']},veterano:{vida:['▲','+8']}}[TID]||{};
+  const tile=(k,ic,lab,val)=>{const m=MOD[k];return `<span class="${m?(m[0]==='▲'?'up':'dn'):''}"><em>${ic}${lab}</em><b>${val}</b>${m?`<i class="mod">${m[0]} ${h.trait.nome} ${m[1]}</i>`:''}</span>`;};
+  const perV=(h.per||0)+(TID==='atento'?5:0)+(TID==='sortudo'?3:0),critMin=20-(h.critBonus||0)-(TID==='sortudo'?1:0);
   const hired=selected.has(id),full=selected.size>=5&&!hired,rosterFull=roster.length>=ROSTER_CAP;
   const cta=isR?(h.injured?`<button class="btn cta" disabled>Ferido — descansando no Templo</button>`:`<button class="btn cta" data-hire="${id}" ${full?'disabled':''}>${hired?'Tirar do grupo':full?'Grupo cheio (5)':'Colocar no grupo'}</button>`)
     :`<button class="btn cta" data-hire="${id}" ${rosterFull?'disabled':''}>${rosterFull?`Elenco cheio (${ROSTER_CAP})`:'Contratar'}</button>`;
   const hpPct=isR?Math.round(h.hp/h.maxhp*100):100;
-  PI_.innerHTML=`
-  <div class="head">${navBack('',isR&&sheetFrom==='forge'?'Forja':'Lista',isR&&sheetFrom==='forge'?'data-bld="forge"':`data-act="${isR?'toTavern':'recruit'}"`)}<div class="wt">${ico('classe',h.cls,'lg')}<div><div class="eyebrow">Ficha do herói · ${list.indexOf(h)+1}/${list.length}</div><h2>${h.nome}</h2></div></div><div class="btns"><button class="btn ghost sm" data-nav="-1" aria-label="Herói anterior">‹</button><button class="btn ghost sm" data-nav="1" aria-label="Próximo herói">›</button></div></div>
-  ${isR?tvTabs('sheet'):''}
-  <div class="scroll"><div class="sheet2">
+  const DETALHES=`<div class="scroll"><div class="sheet2">
     <div class="rpf wide"><div class="sh2-top"><img src="${h.portrait}" alt=""><div style="min-width:0;flex:1">
-      <div class="tags"><span class="tag cls">${ico('classe',h.cls)}${c.nome}</span>${h.sub?`<span class="tag cls">${ico('subclasse',h.sub)}${SUB_INFO[h.sub].nome}</span>`:''}<span class="tag">${c.papel}</span><span class="tag">Nv.${lv}</span>${sc[h.sur]>1?'<span class="tag fam">Irmãos '+h.sur+'</span>':''}</div>
-      <div class="note" style="margin:6px 0;color:#f0dfb9"><b style="color:#ffe9b8">${h.trait.nome}:</b> ${h.trait.desc}</div>${h.afin&&AFINIDADES[h.afin]?`<div class="note" style="margin:0 0 6px;color:#f0dfb9"><b style="color:#9fe0a0">Afinidade ${AFINIDADES[h.afin].nome}:</b> ${AFINIDADES[h.afin].desc}</div>`:''}
+      <div class="tags"><span class="tag cls">${ico('classe',h.cls)}${c.nome}</span><span class="tag">Nv.${lv}</span></div>
+      <div class="note" style="margin:2px 0 10px;color:#cdb68a">${h.sub?SUB_INFO[h.sub].nome:c.papel}</div>
       <div class="pbar-l"><span>Vida</span><span>${isR?`${h.hp}/${h.maxhp}`:h.maxhp}</span></div><div class="pbar"><i class="f red" style="width:${hpPct}%"></i></div>
       ${isR?`<div class="pbar-l"><span>XP ${fmt(h.xpTotal||0)}</span><span>${lv>=LEVEL_CAP?'nível máximo':`faltam ${fmt(xn-(h.xpTotal||0))}`}</span></div><div class="pbar"><i class="f blue" style="width:${pct}%"></i></div>`:''}
     </div></div></div>
-    <div class="rpf"><h4 class="sec" style="margin:0">Combate</h4><div class="stgrid"><span><em>${ico('stat','atq')}Ataque</em><b>+${h.atk}</b></span><span><em>${ico('stat','def')}Defesa</em><b>${h.def}</b></span><span><em>${ico('stat','res')}Res. Mágica</em><b>${h.defMag}</b></span><span><em>${ico('stat','mov')}Mover</em><b>${h.mov}</b></span><span><em>${ico('stat','alc')}Alcance</em><b>${h.alc}</b></span><span><em>${ico('stat','crit')}Crítico</em><b>${h.critBonus?`${20-h.critBonus}–20`:'20'}</b></span><span><em>${ico('stat','ini')}Iniciativa</em><b>${h.ini>=0?'+':''}${h.ini}</b></span><span><em>${ico('stat','dano')}Dano</em><b>${h.dmg[0]}d${h.dmg[1]}${h.dmg[2]?'+'+h.dmg[2]:''}</b></span><span><em>${ico('stat','vida')}Vida</em><b>${h.maxhp}</b></span></div></div>
-    <div class="rpf"><h4 class="sec" style="margin:0">Atributos</h4>${ATTR_NAMES.map(a=>`<div class="arow"><span>${AN[a]}${afG.includes(a)?' <small style="color:#9fe0a0">▲</small>':''}</span><b>${at[a]??'—'}</b><div class="mini"><i style="width:${Math.min(100,Math.round((at[a]||0)/amax*100))}%"></i></div></div>`).join('')}</div>
+    <button class="trbtn big" data-tree="${h.id}" data-src="${isR?'roster':'draw'}">${ico('stat','dano')} Árvore de habilidades${treeFree(h)?`<b>${treeFree(h)} ponto${treeFree(h)>1?'s':''} livre${treeFree(h)>1?'s':''}</b>`:''}</button>
+    <div class="rpf"><h4 class="sec" style="margin:0">Combate</h4><div class="stgrid">${tile('atq',ico('stat','atq'),'Ataque','+'+h.atk)}${tile('def',ico('stat','def'),'Defesa',h.def)}${tile('res',ico('stat','res'),'Res. Mágica',h.defMag)}${tile('mov',ico('stat','mov'),'Mover',h.mov)}${tile('alc',ico('stat','alc'),'Alcance',h.alc)}${tile('crit',ico('stat','crit'),'Crítico',critMin<20?`${critMin}–20`:'20')}${tile('ini',ico('stat','ini'),'Iniciativa',(h.ini>=0?'+':'')+h.ini)}${tile('dano',ico('stat','dano'),'Dano',`${h.dmg[0]}d${h.dmg[1]}${h.dmg[2]?'+'+h.dmg[2]:''}`)}${tile('vida',ico('stat','vida'),'Vida',h.maxhp)}${tile('per','<img class="ic" src="assets/ui-icons/eye-of-horus.png" alt="">','Percepção','+'+perV)}</div>
+      <p class="note trn"><b>${h.trait.nome}:</b> ${h.trait.desc}</p></div>
+    <div class="rpf"><h4 class="sec" style="margin:0">Atributos</h4>${h.afin&&AFINIDADES[h.afin]?`<p class="note trn up"><small style="color:#9fe0a0">▲</small> <b>Afinidade ${AFINIDADES[h.afin].nome}:</b> ${AFINIDADES[h.afin].desc}</p>`:''}${ATTR_NAMES.map(a=>`<div class="arow"><span>${AN[a]}${afG.includes(a)?' <small style="color:#9fe0a0">▲</small>':''}</span><b>${at[a]??'—'}</b><div class="mini"><i style="width:${Math.min(100,Math.round((at[a]||0)/amax*100))}%"></i></div></div>`).join('')}</div>
     <div class="rpf"><h4 class="sec" style="margin:0">Equipamento</h4><div class="eqlist">${eq}</div></div>
     ${skillsBlock(h,isR)}
     <div class="rpf">${h.sub?`<div class="hhead">${ico('subclasse',h.sub,'xl')}<div class="grow"><h4 class="sec" style="margin:0">${SUB_INFO[h.sub].nome}</h4><p class="note" style="color:#f0dfb9">${SUB_INFO[h.sub].desc}</p></div></div>`:`<h4 class="sec" style="margin:0">Subclasse</h4><p class="note" style="color:#f0dfb9">Escolhe no nível ${SUB_UNLOCK_LEVEL}, na Forja: ${SUBCLASSES[h.cls].map(x=>SUB_INFO[x].nome).join(' ou ')}.</p>`}</div>
     <div class="rpf wide"><div class="rg-row"><div><span>Movimento (${h.mov})</span>${rangeGrid(h.mov,'#79a8ec')}</div><div><span>Alcance (${h.alc})</span>${rangeGrid(h.alc,'#d4503f')}</div></div>
       <div class="sec2"><h4>Como joga</h4><p><b>No campo.</b> ${cm.campo}</p><p><b>Contra inimigos.</b> ${cm.inimigos}</p><p><b>Com aliados.</b> ${cm.aliados}</p><p class="note">${c.resumo} Dica de posição: ${c.dica}</p></div></div>
-  </div></div>
+  </div></div>`;
+  const free=treeFree(h),tr0=treeClean(h),T0=treeOf(h.cls),sb=tr0.s;
+  const rowM=(k,ic,lab,val)=>{const m=MOD[k];return `<div class="shrow"><span>${ic}${lab}</span><b>${val}${m?`<i class="md ${m[0]==='▲'?'up':'dn'}" title="${h.trait.nome} ${m[1]}">${m[0]}</i>`:''}</b></div>`;};
+  const sub=h.sub?SUB_INFO[h.sub].nome:null;
+  const classes=[...new Set((tvSrc==='roster'?roster:draw).map(x=>x.cls))];
+  const chips=`<div class="flt"><button class="fc ${shFilter?'':'on'}" data-flt="">${ico('vila','grupo')}Todos</button>${classes.map(k=>`<button class="fc ${shFilter===k?'on':''}" data-flt="${k}">${ico('classe',k)}${CLASSES[k].nome}</button>`).join('')}</div>`;
+  const slotsH=[0,1,2,3].map(i=>{const x=sb[i]?SK[sb[i]]:null;return !slotOpen(h,i)?`<span class="skslot lk">🔒<small>Nv ${TREE_SLOT_LV[i]}</small></span>`:x?`<span class="skslot on" style="--c:${TREE_COL[T0.by[x.id].r]}">${trIc(T0.by[x.id].ic)}<small>${x.nome}</small><small class="n">Nv ${x.lv}</small></span>`:`<span class="skslot">+<small>vazio</small></span>`;}).join('');
+  const resumo=`<div class="scroll"><div class="shres">
+    <div class="rpf shid"><div class="shport"><img src="${h.portrait}" alt=""></div>
+      <div class="shname"><b>${h.first}</b><span class="tag cls">${ico('classe',h.cls)}${c.nome}</span></div>
+      <p class="shsum">${c.resumo}</p>
+      <div class="tags"><span class="tag">Nv.${lv}</span>${sub?`<span class="tag">${sub}</span>`:''}</div>
+      <div class="hbar"><span>Vida</span><b>${isR?`${h.hp}/${h.maxhp}`:h.maxhp}</b></div><div class="bar2"><i class="red" style="width:${hpPct}%"></i></div>
+      ${isR?`<div class="hbar"><span>XP</span><b>${lv>=LEVEL_CAP?'máx.':`faltam ${fmt(xn-(h.xpTotal||0))}`}</b></div><div class="bar2"><i class="blue" style="width:${pct}%"></i></div>`:''}
+    </div>
+    <div class="rpf"><h4 class="sec" style="margin:0">Atributos</h4>${rowM('atq',ico('stat','atq'),'Ataque','+'+h.atk)}${rowM('def',ico('stat','def'),'Defesa',h.def)}${rowM('res',ico('stat','res'),'Res. Mágica',h.defMag)}${rowM('mov',ico('stat','mov'),'Mover',h.mov)}${rowM('alc',ico('stat','alc'),'Alcance',h.alc)}${rowM('vida',ico('stat','vida'),'Vida',h.maxhp)}</div>
+    <button class="trbtn big wide" data-tree="${h.id}" data-src="${isR?'roster':'draw'}">${ico('stat','dano')} ${isR?'Árvore de habilidades':'Ver árvore de habilidades'}${isR&&free?`<b>${free} ponto${free>1?'s':''} livre${free>1?'s':''}</b>`:''}</button>
+    <div class="rpf wide"><h4 class="sec" style="margin:0">Habilidades ativas</h4><div class="skslots">${slotsH}</div></div>
+  </div></div>`;
+  const left=shMode==='detalhes'?`<button class="btn ghost" data-shmode="resumo">◂ Resumo</button>`:`<button class="btn ghost" data-shmode="detalhes">${ico('stat','crit')} Detalhes</button>`;
+  const right=isR?'':`<button class="btn ghost" data-act="reroll" ${rerolls?'':'disabled'}>Sortear (${rerolls})</button>`;
+  const pill=isR?(free?`<b class="hpill">✦ ${free} pontos</b>`:`<b class="hpill">Nv.${lv}</b>`):`<b class="hpill">Elenco ${roster.length}/${ROSTER_CAP}</b>`;
+  PI_.innerHTML=`
+  <div class="head">${navBack('',isR&&sheetFrom==='forge'?'Forja':isR?'Lista':'Praça',isR&&sheetFrom==='forge'?'data-bld="forge"':`data-act="${isR?'toTavern':'toVillage'}"`)}<div class="wt">${isR?ico('classe',h.cls,'lg'):ico('vila','tavern','lg')}<div><div class="eyebrow">${isR?`Ficha do herói · ${fullList.indexOf(h)+1}/${fullList.length}`:'Taverna'}</div><h2>${isR?h.nome:'Recrutar heróis'}</h2></div></div><div class="btns">${pill}</div></div>
+  ${tvTabs(isR?'roster':'recruit')}
+  ${shMode==='detalhes'?'':chips}
+  ${heroStrip(list,h,isR)}
+  ${shMode==='detalhes'?`${DETALHES}`:resumo}
   ${isR?partyBar():''}
-  ${cta}`;
+  <div class="abar ${isR?'two':''}">${left}${cta}${right}</div>`;
+  // faixa: centraliza o herói atual; deslizar a ficha pro lado troca de herói
+  const hs=PI_.querySelector('#hstrip'),cur=hs&&hs.querySelector('.hcd.on');if(cur)hs.scrollLeft=cur.offsetLeft-hs.clientWidth/2+cur.offsetWidth/2;
+  const sc2=PI_.querySelector('.scroll');let sx=null,sy=null;
+  if(sc2){sc2.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
+    sc2.addEventListener('touchend',e=>{if(sx==null)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;sx=null;
+      if(Math.abs(dx)>80&&Math.abs(dy)<45){const L=shList(),i=L.findIndex(x=>x.id===tvFocus);if(i>=0&&L.length>1){SFX.click();renderSheet(L[(i+(dx<0?1:-1)+L.length)%L.length].id);}}});}
 }
 
 /* ---------- Formação ---------- */
@@ -4467,7 +4559,10 @@ PI_.addEventListener('click',e=>{
   const hero=t.closest('[data-hero]');if(hero){const id=+hero.dataset.hero;if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderTavern();return;}
   const nav=t.closest('[data-nav]');if(nav){const L=tvSrc==='roster'?roster:draw,i=L.findIndex(h=>h.id===tvFocus);renderSheet(L[(i+ +nav.dataset.nav+L.length)%L.length].id);return;}
   const hire=t.closest('[data-hire]');if(hire){const id=+hire.dataset.hire;if(tvSrc==='draw'){recruitHero(id);renderRecruit();return;}if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderSheet(id);return;}
-  const trb=t.closest('[data-tree]');if(trb){const id=+trb.dataset.tree;if(roster.some(x=>x.id===id)){renderTree(id);return;}}
+  const flt=t.closest('[data-flt]');if(flt){SFX.click();shFilter=flt.dataset.flt||null;const L=shList();renderSheet(L.some(x=>x.id===tvFocus)?tvFocus:(L[0]||{id:tvFocus}).id);return;}
+  const smd=t.closest('[data-shmode]');if(smd){SFX.click();shMode=smd.dataset.shmode;renderSheet(tvFocus);return;}
+  const hsel=t.closest('[data-hsel]');if(hsel){SFX.click();renderSheet(+hsel.dataset.hsel);return;}
+  const trb=t.closest('[data-tree]');if(trb){renderTree(+trb.dataset.tree,trb.dataset.src||'roster');return;}
   const shb=t.closest('[data-sheet]');if(shb){sheetFrom=shb.dataset.from||'tavern';renderSheet(+shb.dataset.sheet,'roster');return;}
   const sl=t.closest('[data-slot]');if(sl){selected.delete(+sl.dataset.slot);view==='sheet'?renderSheet(tvFocus):renderTavern();return;}
   const eqp=t.closest('[data-eqpick]');if(eqp){const h=party.find(x=>x.id===+eqp.dataset.eqhero),item=run.inventory[+eqp.dataset.eqpick];if(h&&item&&canEquip(h,item))equipItem(h,slotKeyFor(h,item),item,run.inventory);renderEquip();return;}
@@ -5199,30 +5294,38 @@ Object.keys(PV).forEach(id=>PV[id].id=id);
    Cada nó pede o nível `lv` da habilidade e que um vizinho já esteja aprendido. Só as ativas EQUIPADAS (4 espaços)
    entram na batalha; passivas aprendidas valem sempre. O herói guarda h.tree={l:[ids aprendidos],s:[4 espaços]}. */
 const TREE_COST={A:3,P:2,S:1},TREE_SLOT_LV=[1,1,1,15],TREE_COL={t:'#e9b949',p:'#f0782f',g:'#5fc4d8',b:'#b58cf0'};
-const TR_SMALL={
-  guerreiro:[['hpPct',4,'+4% de PV','heart-plus'],['def',1,'+1 DEF','shield'],['dmg',1,'+1 de dano','claw-slashes'],['hpPct',4,'+4% de PV','heart-plus'],['defMag',1,'+1 Res. Mágica','magic-shield'],['dmg',1,'+1 de dano','claw-slashes'],['def',1,'+1 DEF','shield']],
-  ladino:[['dmg',1,'+1 de dano','claw-slashes'],['per',2,'+2 Percepção','eye-of-horus'],['hpPct',4,'+4% de PV','heart-plus'],['def',1,'+1 DEF','shield'],['dmg',1,'+1 de dano','claw-slashes'],['per',2,'+2 Percepção','eye-of-horus'],['defMag',1,'+1 Res. Mágica','magic-shield']],
-  mago:[['dmg',1,'+1 de dano','claw-slashes'],['defMag',1,'+1 Res. Mágica','magic-shield'],['hpPct',4,'+4% de PV','heart-plus'],['dmg',1,'+1 de dano','claw-slashes'],['def',1,'+1 DEF','shield'],['defMag',1,'+1 Res. Mágica','magic-shield'],['hpPct',4,'+4% de PV','heart-plus']],
-  clerigo:[['heal',1,'+1 de cura','healing'],['defMag',1,'+1 Res. Mágica','magic-shield'],['hpPct',4,'+4% de PV','heart-plus'],['dmg',1,'+1 de dano','claw-slashes'],['heal',1,'+1 de cura','healing'],['def',1,'+1 DEF','shield'],['defMag',1,'+1 Res. Mágica','magic-shield']],
-  arqueiro:[['dmg',1,'+1 de dano','claw-slashes'],['per',2,'+2 Percepção','eye-of-horus'],['hpPct',4,'+4% de PV','heart-plus'],['dmg',1,'+1 de dano','claw-slashes'],['def',1,'+1 DEF','shield'],['per',2,'+2 Percepção','eye-of-horus'],['defMag',1,'+1 Res. Mágica','magic-shield']],
-  bardo:[['heal',1,'+1 de cura','healing'],['hpPct',4,'+4% de PV','heart-plus'],['defMag',1,'+1 Res. Mágica','magic-shield'],['dmg',1,'+1 de dano','claw-slashes'],['def',1,'+1 DEF','shield'],['heal',1,'+1 de cura','healing'],['hpPct',4,'+4% de PV','heart-plus']]
+const TR_KIND={
+  hpPct:{ic:'heart-plus',v:[4,5,6],n:v=>`+${v}% de PV`},dmg:{ic:'claw-slashes',v:[1,1,2],n:v=>`+${v} de dano`},def:{ic:'shield',v:[1,1,2],n:v=>`+${v} DEF`},
+  defMag:{ic:'magic-shield',v:[1,1,2],n:v=>`+${v} Res. Mágica`},per:{ic:'eye-of-horus',v:[2,3,4],n:v=>`+${v} Percepção`},heal:{ic:'healing',v:[1,1,2],n:v=>`+${v} de cura`}
 };
-Object.keys(TR_SMALL).forEach(cls=>TR_SMALL[cls].forEach(([k,v,nome,ic],i)=>{const id=`sm_${cls}_${i}`;PV[id]={id,cls,nome,lv:2,desc:nome+'.',stat:{[k]:v},small:true,ic};}));
+const TR_EXTRA={ladino:2,arqueiro:3,bardo:3};
+const TR_CYCLE={   // ordem dos bônus pequenos de cada classe (21 por árvore: 5 no centro, 8 em cada ramo)
+  guerreiro:['hpPct','def','dmg','hpPct','defMag','dmg','def','hpPct'],
+  ladino:['dmg','per','hpPct','def','dmg','per','defMag','hpPct'],
+  mago:['dmg','defMag','hpPct','dmg','def','defMag','hpPct','per'],
+  clerigo:['heal','defMag','hpPct','dmg','heal','def','defMag','hpPct'],
+  arqueiro:['dmg','per','hpPct','dmg','def','per','defMag','hpPct'],
+  bardo:['heal','hpPct','defMag','dmg','def','heal','hpPct','per']
+};
+Object.keys(TR_CYCLE).forEach(cls=>{for(let i=0;i<30;i++){const k=TR_CYCLE[cls][i%8],id=`sm_${cls}_${i}`;PV[id]={id,cls,kind:k,lv:2,small:true,stat:{[k]:1},nome:'',desc:''};}});
+// o valor do bônus cresce com o nível em que ele cai na árvore
+function trFinishSmall(x,lv){const K=TR_KIND[x.kind],tier=lv>=17?2:lv>=9?1:0,v=K.v[tier];x.lv=lv;x.stat={[x.kind]:v};x.nome=K.n(v);x.desc=x.nome+'.';x.ic=K.ic;return x;}
+const trCost=n=>TREE_COST[n.t]+[0,1,n.t==='S'?2:3][n.lv>=17?2:n.lv>=9?1:0];   // nós mais fortes (nível maior) custam mais
 /* ícones: u:ui-icons (cor do ramo) · s:status · m:tira do SpritePilot (pasta:nome:quadros) */
 const TICON={
-  golpe_poderoso:'u:pointy-sword',grito_guerra:'u:horned-helm',provocar:'u:eye-shield',corte_profundo:'u:claw-slashes',giratorio:'u:whirlwind',escudo_aliado:'u:kite',
-  estocada_dupla:'u:daggers',golpe_costas:'u:cloak-dagger',marcar_alvo:'s:marcado',lamina_envenenada:'s:veneno',rede:'s:preso',
-  bola_fogo:'m:magic:fireball:8',escudo_arcano:'m:magic:shield-bubble:12',chama_viva:'u:magic-swirl',nevasca:'u:snowflake-1',tremor:'u:thor-fist',
-  cura_maior:'m:magic:healing-aura:8',bencao:'u:sparkles',castigo:'u:winged-scepter',golpe_sagrado:'u:holy-symbol',purificar:'u:healing',punicao:'u:scales',
-  tiro_certeiro:'u:bullseye',chuva_flechas:'u:arrow-cluster',flecha_incendiaria:'u:bow-arrow',marca_cacador:'u:target-arrows',
+  golpe_poderoso:'c:golpe_poderoso',grito_guerra:'c:grito_guerra',provocar:'u:eye-shield',corte_profundo:'c:corte_profundo',giratorio:'u:whirlwind',escudo_aliado:'c:escudo_aliado',
+  estocada_dupla:'u:daggers',golpe_costas:'c:golpe_costas',marcar_alvo:'s:marcado',lamina_envenenada:'c:lamina_envenenada',rede:'s:preso',
+  bola_fogo:'m:magic:fireball:8',escudo_arcano:'m:magic:shield-bubble:12',chama_viva:'s:queimadura',nevasca:'u:snowflake-1',tremor:'c:tremor',
+  cura_maior:'m:magic:healing-aura:8',bencao:'u:sparkles',castigo:'u:winged-scepter',golpe_sagrado:'c:golpe_sagrado',purificar:'u:healing',punicao:'u:scales',
+  tiro_certeiro:'u:bullseye',chuva_flechas:'u:arrow-cluster',flecha_incendiaria:'c:flecha_incendiaria',marca_cacador:'u:target-arrows',
   nota_aguda:'u:lyre',hino_coragem:'s:fortalecido',desafinar:'s:abalado',cancao_vigor:'s:regeneracao',pavor:'s:medo',cancao_ninar:'u:harp',
   pele_ferro:'u:chest-armor',firmeza:'u:shield',dar_volta:'u:wind-slap',veterano:'u:centurion-helmet',muralha:'u:round-shield',terreno_sagrado:'u:dragon-shield',punho_vingativo:'u:mailed-fist',contra_golpe:'u:crossed-swords',
   sede_sangue:'s:sangramento',selvageria:'u:barbarian',queda_pesada:'u:battle-axe',carniceiro:'u:claws',
   pes_leves:'u:running-shoe',evasao:'u:hooded-figure',maos_leves:'u:gloves',predador:'u:eye-of-horus',sombras:'u:rogue',execucao:'u:sacrificial-dagger',mestre_terreno:'u:fur-boot',preparado:'u:hooded-assassin',gatuno:'u:broad-dagger',
-  mente_aguda:'u:crystal-ball',sabio:'u:open-book',explosao:'u:tornado-discs',combustao:'s:queimadura',pirofagia:'u:health-potion',brasa_longa:'u:fire-gem',pele_pedra:'u:crystal-cluster',gelo_rachante:'s:gelado',alto_torreao:'u:greek-temple',choque_termico:'m:magic:lightning-strike:8',
-  fe_inabalavel:'u:magic-shield',devoto:'u:heart-necklace',aura_vital:'u:sunrise',luz_restauradora:'u:sun-priest',bencao_prolongada:'u:infinity',escudo_fe:'u:round-shield',luz_vingadora:'u:skull-staff',zelo:'u:warhammer',passo_abencoado:'u:sandal',
-  olhar_aguia:'u:eye-of-horus',agilidade:'u:tabi-boot',posicao_elevada:'u:archer',instinto:'u:claw-string',escalador:'u:boots',municao_pesada:'u:bracer',ricochete:'u:flying-dagger',flechas_venenosas:'s:veneno',olho_treinado:'u:ring',
-  inspiracao_maior:'u:clover',voz_alta:'u:tribal-pendant',harmonia:'u:harp',coro:'u:team-idea',eco_benigno:'u:infinity',eco:'u:wind-slap',maestro_caos:'u:drama-masks'
+  mente_aguda:'u:crystal-ball',sabio:'u:open-book',explosao:'u:sparkles',combustao:'s:queimadura',pirofagia:'u:health-potion',brasa_longa:'u:fire-gem',pele_pedra:'u:crystal-cluster',gelo_rachante:'s:gelado',alto_torreao:'u:greek-temple',choque_termico:'m:magic:lightning-strike:8',
+  fe_inabalavel:'u:magic-shield',devoto:'u:heart-necklace',aura_vital:'u:sunrise',luz_restauradora:'u:sun-priest',bencao_prolongada:'u:infinity',escudo_fe:'u:holy-symbol',luz_vingadora:'u:skull-staff',zelo:'u:warhammer',passo_abencoado:'u:sandal',
+  olhar_aguia:'u:eye-of-horus',agilidade:'u:tabi-boot',posicao_elevada:'u:archer',instinto:'u:claw-string',escalador:'u:boots',municao_pesada:'u:bracer',ricochete:'u:flying-dagger',flechas_venenosas:'s:veneno',olho_treinado:'u:eye-shield',
+  inspiracao_maior:'u:clover',voz_alta:'u:tribal-pendant',harmonia:'u:harp',coro:'u:team-idea',eco_benigno:'u:healing',eco:'u:tornado-discs',maestro_caos:'u:drama-masks'
 };
 const trIcon=id=>{const x=PV[id];return TICON[id]||(x&&x.small?'u:'+x.ic:'u:sparkles');};
 function trTags(x,isSk){
@@ -5245,11 +5348,17 @@ function treeOf(cls){
   const smalls=Object.values(PV).filter(x=>x.cls===cls&&x.small);let si=0;
   const lists={t:[],p:[],g:[]};raw.forEach(n=>lists[n.sub===sa?'p':n.sub===sb?'g':'t'].push(n));
   const bridge=lists.t.filter(n=>n.lv>=20);lists.t=lists.t.filter(n=>n.lv<20);
-  const addSmall=(L,at)=>{at.forEach(i=>{const x=smalls[si++];if(!x)return;const prev=L[Math.min(i,L.length)-1];const lv=prev?prev.lv:2;x.lv=lv;L.splice(Math.min(i,L.length),0,{id:x.id,t:'S',lv,sub:null,nome:x.nome,desc:x.desc,tg:[],ic:trIcon(x.id)});});};
   Object.values(lists).forEach(L=>L.sort(ord));
-  addSmall(lists.t,[1,4,6]);addSmall(lists.p,[1,4]);addSmall(lists.g,[1,4]);
+  const spread=(L,k)=>{   // espalha k bônus pequenos pela lista, um a cada tanto
+    const out=[],step=L.length/k;let next=step/2+.5,placed=0;
+    L.forEach((n,i)=>{out.push(n);while(placed<k&&i+1>=next){const x=smalls[si++];const prev=out[out.length-1];trFinishSmall(x,prev?prev.lv:2);out.push({id:x.id,t:'S',lv:x.lv,sub:null,nome:x.nome,desc:x.desc,tg:[],ic:trIcon(x.id)});placed++;next+=step;}});
+    while(placed<k){const x=smalls[si++];const prev=out[out.length-1];trFinishSmall(x,prev?prev.lv:2);out.push({id:x.id,t:'S',lv:x.lv,sub:null,nome:x.nome,desc:x.desc,tg:[],ic:trIcon(x.id)});placed++;}
+    return out;
+  };
+  const e=TR_EXTRA[cls]||0;   // classes com menos habilidades ganham mais bônus pequenos, pra árvore ter o mesmo peso
+  lists.t=spread(lists.t,5+e);lists.p=spread(lists.p,8+e);lists.g=spread(lists.g,8+e);
   const nodes=[{id:'raiz',t:'P',z:'m',r:'t',lv:1,pais:[],c:0,nome:'Aprendiz',desc:'Ponto de partida. '+CLASSES[cls].resumo,tg:[],ic:'u:'+IC.classe[cls],u:0,x:180}];
-  const fin=(n,r,u,x,pais)=>{n.z=n.t==='A'?'l':n.t==='P'?'m':'s';n.r=r;n.c=TREE_COST[n.t];n.u=u;n.x=x;n.pais=pais;nodes.push(n);};
+  const fin=(n,r,u,x,pais)=>{n.z=n.t==='A'?'l':n.t==='P'?'m':'s';n.r=r;n.c=trCost(n);n.u=u;n.x=x;n.pais=pais;nodes.push(n);};
   let uC=0,prevC='raiz';
   lists.t.forEach((n,i)=>{
     const k=Math.floor(i/3),m=i%3,uc=84+k*96;
@@ -5276,6 +5385,12 @@ const treeInit=h=>{if(!h.tree||!Array.isArray(h.tree.l))h.tree={l:['raiz'],s:[nu
 function treeClean(h){
   const T=treeOf(h.cls),tr=treeInit(h);
   tr.l=tr.l.filter((id,i,a)=>T.by[id]&&a.indexOf(id)===i);if(!tr.l.includes('raiz'))tr.l.unshift('raiz');
+  // a árvore mudou de versão? tira o que ficou sem ligação com a raiz e o que passa do orçamento (os pontos voltam)
+  const reach=l=>{const ok=new Set(['raiz']);let ch=true;while(ch){ch=false;T.nodes.forEach(m=>{if(l.includes(m.id)&&!ok.has(m.id)&&m.pais.some(p=>ok.has(p))){ok.add(m.id);ch=true;}});}return ok;};
+  let ok=reach(tr.l);tr.l=tr.l.filter(id=>ok.has(id));
+  const budget=Math.max(0,(h.level||1)-1);
+  while(tr.l.length>1&&tr.l.reduce((a,id)=>a+T.by[id].c,0)>budget)tr.l.pop();
+  ok=reach(tr.l);tr.l=tr.l.filter(id=>ok.has(id));
   tr.s=tr.s.map(id=>(id&&tr.l.includes(id)&&T.by[id].t==='A')?id:null);
   for(let i=0;i<4;i++)if(tr.s.indexOf(tr.s[i])!==i)tr.s[i]=null;
   return tr;
@@ -5501,22 +5616,24 @@ function trIcon_(spec){
   const [k,a,b,c]=spec.split(':');
   if(k==='u')return {cls:' mk',st:`--m:url(assets/ui-icons/${a}.png)`};
   if(k==='s')return {cls:'',st:`background-image:url(assets/status/${a}.png)`};
+  if(k==='c')return {cls:'',st:`background-image:url(assets/skill-icons/${a}.png)`};
   const f=+c;return {cls:'',st:`background-image:url(assets/spritepilot/${a}/32px/${b}-32px_strip${f}.png);background-size:${f*100}% 100%;background-position:${Math.round(f/2)*100/(f-1)}% 0`,f,anim:true};
 }
 const trIc=(spec,extra='')=>{const i=trIcon_(spec);return `<span class="ic${i.cls}" ${extra} style="${i.st}"></span>`;};
-function mountTree(h,host){
+function mountTree(h,host,src){
+  const ro=src==='draw';
   const T=treeOf(h.cls),by=T.by,tr=treeClean(h),root=host.attachShadow({mode:'open'});
   const SI=SUB_INFO,[sa,sb]=SUBCLASSES[h.cls];
-  const BR={t:'Tronco',p:SI[sa].nome,g:SI[sb].nome};
+  const BR={t:CLASSES[h.cls].nome,p:SI[sa].nome,g:SI[sb].nome};
   root.innerHTML=`<style>${TR_CSS}</style><div class="app">
     <div class="top">
-      <div class="r0"><button class="back" id="back"><span>‹</span>Ficha</button><div class="ttl">Árvore de habilidades</div><button class="menu" id="menu" aria-label="Mais opções">⋯</button></div>
+      <div class="r0"><button class="back" id="back"><span>‹</span>Ficha</button><div class="ttl">${ro?'Árvore · só leitura':'Árvore de habilidades'}</div>${ro?'<span style="width:36px"></span>':'<button class="menu" id="menu" aria-label="Mais opções">⋯</button>'}</div>
       <div class="r1">
         <div class="portrait"><img src="${h.portrait}" alt=""><i>${h.level||1}</i></div>
         <div class="who"><h1>${h.first}</h1><small>${CLASSES[h.cls].nome}${h.sub?' · '+SI[h.sub].nome:''} · nível ${h.level||1}</small></div>
         <div class="ptsbox" id="ptsbox"><img class="px" src="assets/ui-icons/sparkles.png" alt=""><b id="pts">0</b><span>pontos<br>livres</span></div>
       </div>
-      <div class="tabs"><button class="tab p" data-r="p"><b>${BR.p}</b><small id="cp"></small></button><button class="tab t on" data-r="t"><b>Tronco</b><small id="ct"></small></button><button class="tab g" data-r="g"><b>${BR.g}</b><small id="cg"></small></button></div>
+      <div class="tabs"><button class="tab p" data-r="p"><b>${BR.p}</b><small id="cp"></small></button><button class="tab t on" data-r="t"><b>${BR.t}</b><small id="ct"></small></button><button class="tab g" data-r="g"><b>${BR.g}</b><small id="cg"></small></button></div>
       <div class="pop" id="pop"><button id="auto">✦ Distribuir automático</button><button id="zero">↺ Zerar tudo (grátis)</button></div>
     </div>
     <div class="scroller" id="scr"><div class="world" id="world" style="height:${T.H}px"><svg class="links" id="links" width="360" height="${T.H}"></svg></div></div>
@@ -5531,7 +5648,7 @@ function mountTree(h,host){
   /* ---------- árvore ---------- */
   function build(){
     const w=$('#world');w.querySelectorAll('.node,.lab').forEach(e=>e.remove());
-    [['TRONCO',T.yR+52,'t',105]].forEach(([t,y,r,x])=>{if(!t)return;const l=document.createElement('div');l.className='lab '+r;l.textContent=t;l.style.top=y+'px';l.style.left=x+'px';w.appendChild(l);});
+    [[BR.t.toUpperCase(),T.yR+52,'t',105]].forEach(([t,y,r,x])=>{if(!t)return;const l=document.createElement('div');l.className='lab '+r;l.textContent=t;l.style.top=y+'px';l.style.left=x+'px';w.appendChild(l);});
     [['p',75],['g',null]].forEach(([r,x])=>{const l=document.createElement('div');l.className='lab '+r;l.textContent=BR[r].toUpperCase();l.style.top=(T.yR-T.uF+56)+'px';w.appendChild(l);});
     T.nodes.forEach(n=>{
       const e=document.createElement('div'),s=st(n);
@@ -5543,7 +5660,7 @@ function mountTree(h,host){
         (n.z==='l'?`<span class="cd">⏱${n.cd}</span>`:'')+
         (q>=0?`<span class="eqn">${q+1}</span>`:'')+
         (s==='lvl'?`<span class="lvp">Nv ${n.lv}</span>`:'')+
-        (s==='can'?`<button class="plus${fr<n.c?' dis':''}" aria-label="Aprender">+</button>`:'');
+        (s==='can'&&!ro?`<button class="plus${fr<n.c?' dis':''}" aria-label="Aprender">+</button>`:'');
       e.onclick=ev=>{
         if(pending)return;
         if(ev.target.closest('.plus')){tryLearn(n);return;}
@@ -5650,7 +5767,8 @@ function mountTree(h,host){
     const cdt=n.t==='A'?`<span class="tg cdt">⏱ recarga ${n.cd}</span>`:'';
     const req=s==='lock'?`<span class="tg req">🔒 precisa de ${n.pais.map(p=>by[p].nome).join(' ou ')}</span>`:s==='lvl'?`<span class="tg lvr">🔒 nível ${n.lv}</span>`:'';
     let btn='';
-    if(s==='wait')btn='<div class="btn off">Desbloqueando…</div>';
+    if(ro)btn=s==='on'?(n.id==='raiz'?'<div class="btn off" style="filter:none;opacity:.8">Ponto de partida</div>':n.t==='A'?'<div class="btn off" style="filter:none;opacity:.9;color:#ffd37a">Ativa que ele já sabe</div>':'<div class="btn off" style="filter:none;opacity:.9;color:#9fe0a0">✔ Passiva que ele já tem</div>'):'<div class="btn off" style="filter:none;opacity:.8;font-size:13px">Só leitura — contrate para evoluir</div>';
+    else if(s==='wait')btn='<div class="btn off">Desbloqueando…</div>';
     else if(s==='on'){
       if(n.id==='raiz')btn='<div class="btn off" style="filter:none;opacity:.8">Ponto de partida</div>';
       else{
@@ -5674,11 +5792,11 @@ function mountTree(h,host){
   let tt;function toast(t,k){const u=$('#unl');if(u.classList.contains('on')&&!k)return;u.style.setProperty('--c',k==='no'?'#d4503f':'#e9b949');u.innerHTML=`<div><b style="font-size:14px;margin:0">${t}</b></div>`;u.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>u.classList.remove('on'),1600);}
   const scrollTo_=n=>{const s=$('#scr');s.scrollTo({top:n.y-s.clientHeight/2,behavior:'smooth'});};
   /* ---------- menu / abas / voltar ---------- */
-  $('#menu').onclick=e=>{e.stopPropagation();trSnd('ui_click',{vol:.7});$('#pop').classList.toggle('on');};
+  if(!ro)$('#menu').onclick=e=>{e.stopPropagation();trSnd('ui_click',{vol:.7});$('#pop').classList.toggle('on');};
   root.addEventListener('click',()=>$('#pop').classList.remove('on'));
-  $('#back').onclick=()=>{trSnd('tr_close',{vol:.9});renderSheet(h.id,'roster');};
-  $('#zero').onclick=()=>{const n=tr.l.length-1,pts=treeSpent(h);tr.l=['raiz'];tr.s=[null,null,null,null];save();trSnd('tr_reset',{vol:.9});build();sheet();ptsAnim('bump');toast(n?`Árvore zerada: ${pts} pontos de volta`:'Nada para zerar');};
-  $('#auto').onclick=()=>{const k=autoTree(h);save();trSnd('tr_auto',{vol:.9});build();sheet();ptsAnim('bump');toast(k?`Distribuído pelo perfil (${k} nós)`:'Sem pontos para distribuir','ok');};
+  $('#back').onclick=()=>{trSnd('tr_close',{vol:.9});renderSheet(h.id,src||'roster');};
+  if(!ro)$('#zero').onclick=()=>{const n=tr.l.length-1,pts=treeSpent(h);tr.l=['raiz'];tr.s=[null,null,null,null];save();trSnd('tr_reset',{vol:.9});build();sheet();ptsAnim('bump');toast(n?`Árvore zerada: ${pts} pontos de volta`:'Nada para zerar');};
+  if(!ro)$('#auto').onclick=()=>{const k=autoTree(h);save();trSnd('tr_auto',{vol:.9});build();sheet();ptsAnim('bump');toast(k?`Distribuído pelo perfil (${k} nós)`:'Sem pontos para distribuir','ok');};
   $$('.tab').forEach(c=>c.onclick=()=>{
     const r=c.dataset.r,s=$('#scr'),y=r==='t'?T.yR-100:T.yR-T.uF-170;
     trSnd('tr_tab',{vol:.8,rate:{t:1,p:.9,g:1.1}[r]});
@@ -5687,12 +5805,12 @@ function mountTree(h,host){
   build();sheet();
   const scr=$('#scr');scr.scrollTop=Math.max(0,by[sel].y-scr.clientHeight/2);
 }
-function renderTree(id){
-  const h=roster.find(x=>x.id===id);if(!h)return renderTavern();
-  view='tree';tvFocus=id;setMode('tavern');PI_.classList.add('qd');
+function renderTree(id,src){
+  src=src||'roster';const h=(src==='draw'?draw:roster).find(x=>x.id===id);if(!h)return renderTavern();
+  view='tree';tvFocus=id;tvSrc=src;setMode('tavern');PI_.classList.add('qd');
   PI_.innerHTML='<div id="trhost" style="position:absolute;inset:0"></div>';
   trSnd('tr_open',{vol:.9});
-  mountTree(h,$('#trhost'));
+  mountTree(h,$('#trhost'),src);
 }
 
 const NUMK=['atk','def','dmg','mov','alc','crit','defMag','per','hpPct','climb','flatRed','insp','heal','moveAfter','buffDur','debuffDur','rad','emb'];
@@ -5751,8 +5869,10 @@ function passiveDmg(u,t,opts,hu,ht,magic){
 }
 
 const fxSkill=(u,col)=>{pulse(u.grp.position,col,1.1,0.5);burst(u.grp.position,{n:8,colors:[col,'#ffffff'],spread:0.5,up:1,y:0.8,life:0.6});};
+// o Bardo não tem sprite de instrumento no pack: a música aparece como notas flutuando em volta dele
+const bardNotes=u=>{if(!u||u.cls!=='bardo'||!u.grp)return;['♪','♫','♪'].forEach((n,i)=>gsap.delayedCall(i*0.22,()=>{if(u.grp&&phase==='battle')floatText(u,n,'buff');}));};
 async function castSkill(u,plan){
-  const sk=plan.sk;u.cd=u.cd||{};u.cd[sk.id]=sk.cd;
+  const sk=plan.sk;u.cd=u.cd||{};u.cd[sk.id]=sk.cd;bardNotes(u);
   addLog(`${u.first} usa ${sk.nome}`,u.side==='hero'?'good':'bad');
   if(sk.kind==='atk'||sk.kind==='multi'||sk.kind==='aoe'){
     if(plan.tile&&(plan.tile.r!==u.r||plan.tile.c!==u.c)){await moveAlong(u,pathTo(plan.reach,plan.tile));await checkSecret(u);}
@@ -5944,8 +6064,7 @@ function kill(t,src,crit){
   fadeUnit(t,0,{delay:1,duration:0.5,onComplete:()=>{if(t.grp)t.grp.visible=false;if(t.side==='hero')addTomb(t);}});
   if(t.side==='enemy'){
     if(src&&src.side==='hero')src.kills=(src.kills||0)+1;
-    xp(src,Math.round(t.pts/4));stats.kills.push(t);addLog(`${t.first} foi derrotado (+${t.pts})`,'gold');
-    setTimeout(()=>{},0);floatText(t,`+${t.pts}`,'gold');
+    xp(src,Math.round(t.pts/4),true);stats.kills.push(t);addLog(`${t.first} foi derrotado (+${t.pts})`,'gold');
     dropLoot(t);
     if(isBossK(t.kind)){stats.hl.push({w:8,t:`${src.first} derrubou ${t.first}${crit?' com um crítico':''}.`});shakeCam(0.4,0.6);flash('#e9b949',0.3);}
     else if(crit)stats.hl.push({w:6,t:`${src.first} tirou um crítico e derrubou ${t.first} de uma vez.`});
@@ -6036,11 +6155,11 @@ async function turnBody(u){
     const cand=foes.filter(f=>dist(f,u)<=4&&!hasSt(f,'abalado'));
     if(cand.length){const f=pick(cand);addStatus(f,'abalado',{src:u});SFX.buff();showCallout(u,`♪ Desafina ${f.first}`);
       burst(u.grp.position,{n:6,colors:['#d98fe0','#f3cfff'],spread:0.4,up:1,y:0.9,life:0.7});pulse(f.grp.position,'#d98fe0',1,0.6);floatText(f,'♪ −2 defesa','miss');
-      xp(u,6);addLog(`${u.first} desafinou a defesa de ${f.first} (−2 na próxima defesa)`,'good');await wait(450);}
+      bardNotes(u);xp(u,6);addLog(`${u.first} desafinou a defesa de ${f.first} (−2 na próxima defesa)`,'good');await wait(450);}
   }else if(u.cls==='bardo'){const cand=allies.filter(a=>dist(a,u)<=4&&!a.inspired);if(cand.length){const a=pick(cand);const ins=2+((u.attrBonus&&u.attrBonus.insp)||0)+((u.pb&&u.pb.insp)||0);a.inspired=ins;SFX.buff();showCallout(u,`♪ Inspira ${a.first}`);
     if(u.pb&&u.pb.harmony){const o2=cand.filter(x=>x!==a);if(o2.length){const b2=pick(o2);b2.inspired=ins;floatText(b2,`♪ +${ins} acerto`,'buff');}}
     burst(u.grp.position,{n:6,colors:['#79a8ec','#cfe0ff'],spread:0.4,up:1,y:0.9,life:0.7});pulse(a.grp.position,'#79a8ec',1,0.6);floatText(a,`♪ +${ins} acerto`,'buff');
-    xp(u,6);addLog(`${u.first} tocou uma balada pra ${a.first} (+${ins} no próximo ataque)`,'good');await wait(450);}}
+    bardNotes(u);xp(u,6);addLog(`${u.first} tocou uma balada pra ${a.first} (+${ins} no próximo ataque)`,'good');await wait(450);}}
   if(hasSt(u,'medo')){
     let best=null,bs=-1;for(const t of reach.values()){if(t.pass)continue;const s=Math.min(...foes.map(f=>dist(t,f)))*2+hOf(t.r,t.c);if(s>bs){bs=s;best=t;}}
     showCallout(u,'Com medo!');addLog(`${u.first} foge de medo`,'mut');
@@ -6148,12 +6267,16 @@ function overviewCam(){
   else if(phase==='battle'&&active)followCam(active);
   else aimCam(...phaseView(),0.7);
 }
-const xp=(u,n)=>{
+const xp=(u,n,kill)=>{
   if(!u||u.side!=='hero'||u.alive===false)return;
   const k=1+((u.attrBonus&&u.attrBonus.pct)||0)/100;n=Math.round(n*k);
   u.xp=(u.xp||0)+n;
-  // como no FFT: o ganho de Exp. aparece junto de quem ganhou, logo depois do golpe
-  if(n>0&&u.grp)gsap.delayedCall(0.5,()=>{if(u.grp&&phase==='battle')floatText(u,`<span class="ft"><b class="sf">+${n}<em class="xl">Exp.</em></b></span>`,'xp',true);});
+  // como no FFT: o ganho de Exp. aparece junto de quem ganhou, logo depois do golpe.
+  // Golpe + abate no mesmo instante viram UM número só (somado); com abate ele sai em itálico.
+  if(n>0&&u.grp){
+    if(!u._xpf){u._xpf={n:0,kill:false};gsap.delayedCall(0.6,()=>{const q=u._xpf;u._xpf=null;if(q&&u.grp&&phase==='battle')floatText(u,`<span class="ft"><b class="sf">${q.kill?`<i>+${q.n}</i>`:`+${q.n}`}<em class="xl">${q.kill?'Exp. · abate':'Exp.'}</em></b></span>`,q.kill?'xp xpk':'xp',true);});}
+    u._xpf.n+=n;if(kill)u._xpf.kill=true;
+  }
 };
 
 function resetHero(h,first){

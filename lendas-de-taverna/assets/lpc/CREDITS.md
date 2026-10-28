@@ -72,7 +72,7 @@ Licenças: CC-BY-SA 3.0, GPL 2.0, GPL 3.0
 Autores: Johannes Sjölund (wulax), JaidynReiman
 Licenças: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
 
-**hat/cloth/leather_cap/feather** (chapéu do Bardo)
+**hat/cloth/leather_cap** e **hat/cloth/leather_cap/feather** (boné com pena do Bardo)
 Autores: Johannes Sjölund (wulax), Matthew Krohn (Makrohn), JaidynReiman
 Licenças: OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0
 
