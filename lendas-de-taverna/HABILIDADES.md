@@ -120,3 +120,10 @@ No nível 60 o herói tem 59 pontos. A árvore de cada classe custa **82–109**
 | Arqueiro | 105 | 15 | 41 | 44 | 5 | 56% |
 | Bardo | 98 | 18 | 44 | 36 | 0 | 60% |
 Tronco + o ramo mais caro já passa de 59 em quase todas as classes. Saves antigos: nós que perderam a ligação ou passam do orçamento voltam como pontos livres (respec grátis).
+
+
+## Dano em área (v2) e alcance por habilidade
+- **Alcance é da habilidade, não só da classe.** `alc` na habilidade vale para o alcance dela; sem `alc`, usa o da classe. `spell:true` faz a habilidade usar Res. Mágica do alvo e pose/brilho de magia mesmo em quem ataca no corpo a corpo.
+- **Bardo** agora ataca **corpo a corpo** com o florete (alcance 1, 19 PV). Nota Aguda (alc 4, magia, área), Desafinar e Pavor (alc 4) e o novo Grito Estridente (alc 4, magia, área) alcançam de longe; as músicas de buff usam raio em volta dele.
+- **Novas em área** (aoe, sem fogo amigo, o alvo principal leva o dano cheio e os vizinhos 75%): Armadilha de Espinhos (Ladino armadilheiro, raio 1 + Preso, alc 4), Campo Minado (raio 2 + Lento, alc 4), Chuva de Meteoros (Mago piromante, raio 2 + Queimadura), Terremoto (Mago geomante, raio 2 + Lento), Julgamento (Clérigo templário, raio 1 + Marcado), Saraivada Total (Arqueiro saraivador, raio 2), Grito Estridente (Bardo dissonante, raio 1 + Abalado). A IA só as usa quando pega pelo menos 2 inimigos.
+- Ainda não existem armadilhas que ficam no chão esperando o inimigo: as de agora explodem na hora.

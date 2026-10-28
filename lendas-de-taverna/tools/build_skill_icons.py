@@ -73,3 +73,20 @@ def arrow(d):
 save(comp(draw_layer(arrow)),'flecha_incendiaria')
 # Golpe Sagrado: espada rúnica dourada com brilho
 save(comp(draw_layer(lambda d:d.ellipse([4,4,60,60],outline=GOLD+(140,),width=3)),base('broadsword',GOLD),draw_layer(lambda d:[star(d,52,10,(255,255,255),2),star(d,10,52,(255,240,180),2),star(d,54,50,(255,240,180),2)])),'golpe_sagrado')
+# --- habilidades em área (v2) ---
+def meteor(d,x,y,u=3):
+    line(d,(x-18,y-18),(x-2,y-2),(255,170,60),4);line(d,(x-26,y-14),(x-10,y),(255,120,40),2)
+    d.ellipse([x-6,y-6,x+6,y+6],fill=(255,200,80));d.ellipse([x-3,y-3,x+3,y+3],fill=(255,255,220))
+save(draw_layer(lambda d:[meteor(d,26,26),meteor(d,48,38),meteor(d,18,48)]),'meteoros')
+def quake(d):
+    d.line([(4,44),(16,38),(22,46),(34,36),(42,48),(54,40),(60,46)],fill=BROWN,width=4)
+    d.line([(14,50),(24,58),(34,52),(46,60)],fill=(160,100,50),width=3)
+    for x,y,s in ((10,24,5),(28,18,4),(46,22,6),(52,10,4),(20,8,3)):d.rectangle([x,y,x+s,y+s],fill=(200,160,110))
+    for x,y in ((6,30),(30,30),(50,32)):d.rectangle([x,y,x+2,y+2],fill=(120,80,40))
+save(draw_layer(quake),'terremoto')
+save(comp(draw_layer(lambda d:d.ellipse([6,6,58,58],outline=GOLD+(120,),width=3)),base('scales',GOLD),draw_layer(lambda d:[star(d,52,10,(255,255,255),2),star(d,10,52,(255,240,180),2)])),'julgamento')
+save(comp(base('arrow-cluster',(214,232,255)),draw_layer(lambda d:[star(d,52,52,BLUE,2),star(d,12,14,BLUE,2),line(d,(8,4),(14,10),BLUE,2),line(d,(56,4),(50,10),BLUE,2)])),'saraivada_total')
+def waves(d):
+    for r,c in ((27,RED),(32,(255,120,90))):
+        d.arc([32-r,32-r,32+r,32+r],-45,45,fill=c,width=3);d.arc([32-r,32-r,32+r,32+r],135,225,fill=c,width=3)
+save(comp(base('lyre',(255,214,214)),draw_layer(waves)),'grito_estridente')
