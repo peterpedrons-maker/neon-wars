@@ -2,6 +2,7 @@
   "name": "Hearthblade",
   "short_name": "Hearthblade",
   "description": "RPG tático de mesa, com heróis, missões e batalhas por turno.",
+  "id": "./?app=hearthblade",
   "start_url": "./index.html",
   "scope": "./",
   "display": "fullscreen",
