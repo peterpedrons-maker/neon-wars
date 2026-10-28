@@ -1191,6 +1191,10 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .float.buff .ft .sf{color:#8fc4ff}
 .float.miss .ft .sf{color:#d8d2c4}
 .float.gold .ft .sf{color:#ffd65a}
+.lvup{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;pointer-events:none;font-family:var(--f-display);font-weight:700;text-align:center;white-space:nowrap;filter:drop-shadow(0 4px 0 #000a)}
+.lvup b{font-size:30px;letter-spacing:.06em;color:#ffe08a;text-shadow:0 0 14px #ffb62e,0 2px 0 #5a3a08;-webkit-text-stroke:1px #7a4d0a}
+.lvup em{font-style:normal;font-size:13px;color:#fff6d0;margin-top:2px;text-shadow:0 2px 0 #000}
+.lvup .lva{display:flex;gap:6px}.lvup .lva i{font-style:normal;font-size:22px;line-height:1;color:#9cff8a;text-shadow:0 0 10px #4fd13a,0 2px 0 #1d5a12}
 .float.xp .ft .sf{color:#9fe0ff;font-size:20px}
 .float.xp .xl{font-style:normal;font-size:13px;margin-left:4px;color:#d6f2ff}
 .float.xpk .ft .sf{color:#ffe08a;font-size:24px}.float.xpk .ft .sf i{font-style:italic;font-weight:700}.float.xpk .xl{color:#fff0b8}
@@ -1463,7 +1467,7 @@ function loadBuf(url){
   if(AUD.pend[url])return AUD.pend[url];
   return AUD.pend[url]=fetch(url).then(r=>r.arrayBuffer()).then(b=>new Promise((ok,no)=>actx.decodeAudioData(b,ok,no))).then(buf=>{AUD.bufs[url]=buf;delete AUD.pend[url];return buf;}).catch(e=>{delete AUD.pend[url];return null;});
 }
-const SFX_FILES=['ui_click','ui_open','ui_close','ui_confirm','ui_denied','turn_start','equip','coin','step_0','step_1','swing','hit_0','hit_1','slash','crit','miss','bow','arrow_hit','spell_cast','spell_hit','heal','buff','death','trap','victory','defeat','charge_melee','charge_ranged','charge_magic','charge_heal','st_cast','st_debuff','st_buffup','st_resist','st_quebra','st_veneno','st_queimadura','st_sangramento','st_gelo','st_atordoado','st_preso','st_medo','st_marca','st_escudo','st_regen','st_veloz','tr_open','tr_close','tr_select','tr_tab','tr_charge','tr_unlock_t','tr_unlock_p','tr_unlock_g','tr_unlock_b','tr_equip','tr_unequip','tr_refund','tr_reset','tr_auto','tr_nopts','intro_start','intro_tap'];
+const SFX_FILES=['ui_click','ui_open','ui_close','ui_confirm','ui_denied','turn_start','equip','coin','step_0','step_1','swing','hit_0','hit_1','slash','crit','miss','bow','arrow_hit','spell_cast','spell_hit','heal','buff','death','trap','victory','defeat','charge_melee','charge_ranged','charge_magic','charge_heal','st_cast','st_debuff','st_buffup','st_resist','st_quebra','st_veneno','st_queimadura','st_sangramento','st_gelo','st_atordoado','st_preso','st_medo','st_marca','st_escudo','st_regen','st_veloz','tr_open','tr_close','tr_select','tr_tab','tr_charge','tr_unlock_t','tr_unlock_p','tr_unlock_g','tr_unlock_b','tr_equip','tr_unequip','tr_refund','tr_reset','tr_auto','tr_nopts','intro_start','intro_tap','sk_fogo','sk_explosao','sk_gelo','sk_raio','sk_terra','sk_sagrado','sk_golpe','sk_corte','sk_estocada','sk_veneno','sk_flechas','sk_meteoros','sk_grito','sk_nota','sk_trap','levelup'];
 function preloadSfx(){if(!audioBus())return;SFX_FILES.forEach(n=>loadBuf(`assets/audio/sfx/${n}.ogg`));}
 function playSfx(name,{vol=1,rate=1,gap=0}={}){
   if(!actx||!audioBus())return false;
@@ -3698,8 +3702,7 @@ function spriteTopScreen(u){
 }
 const floatRecent=new Map();
 function floatText(u,text,cls,html){
-  if(!u.grp)return;const [x,y0]=screenOf(u,0.1);const y=y0-34;
-  cls=cls||'';
+  if(!u.grp)return;const [x,y0]=screenOf(u,0.1);cls=cls||'';const isXp=/\bxp\b/.test(cls),y=isXp?y0+4:y0-34;
   const now=performance.now(),rec=(floatRecent.get(u)||[]).filter(t=>now-t<700);rec.push(now);floatRecent.set(u,rec);
   const stack=rec.length-1;
   const d=document.createElement('div');d.className='float '+cls+(u.side==='hero'?' onhero':' onfoe');
@@ -3714,7 +3717,7 @@ function floatText(u,text,cls,html){
   const tl=gsap.timeline({onComplete:()=>d.remove()});
   tl.fromTo(d,{opacity:0,scale:big?0.2:0.4,y:6,x:0},{opacity:1,scale:big?1.5:1.3,y:-14,x:dx*0.25,duration:0.14,ease:'power2.out'})
     .to(d,{scale:big?1.15:1,duration:0.16,ease:'back.out(3)'})
-    .to(d,{y:-58-stack*4,x:dx,duration:0.7,ease:'power1.out'},0.18)
+    .to(d,{y:(isXp?-22:-58)-stack*4,x:isXp?dx*0.2:dx,duration:isXp?0.9:0.7,ease:'power1.out'},0.18)
     .to(d,{opacity:0,duration:0.32,ease:'power1.in'},0.78);
   if(big){const bu=d.querySelector('.burst');if(bu)gsap.fromTo(bu,{scale:0.2,opacity:0.95,rotation:0},{scale:1.7,opacity:0,rotation:50,duration:0.5,ease:'power2.out'});
     gsap.fromTo(d,{rotation:-6},{rotation:0,duration:0.4,ease:'elastic.out(1,0.4)'});}
@@ -4189,17 +4192,17 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{navigator.se
 const HUB_LABELS=[['tavern','Taverna',3.9],['temple','Templo',3.0],['forge','Forja',2.5],['stash','Cofre',2.4],['board','Missões',1.9],['market','Mercado',1.8],['well','Poço',1.9]];
 function renderVillage(){
   view='hub';setMode('village');
-  const m=run.mission?mapOf(run.mission):null,np=selected.size,ready=m&&np>=5,best=bestRun();
+  const np=selected.size,ready=np>=5,best=bestRun();
   const injuredN=roster.filter(h=>h.injured).length,forgeReady=roster.filter(h=>!h.sub&&(h.level||1)>=SUB_UNLOCK_LEVEL).length;
   PI_.innerHTML='';
   $('#vbar').innerHTML=`<div class="vt">Vila de Brumavale</div><div class="vr"><span class="tag">${ico('vila','ouro')} ${fmt(gold)}</span>${best?`<span class="tag">Melhor run: ${fmt(best)}</span>`:''}<button class="btn ghost sm" data-act="snd">Som</button><button class="btn ghost sm" data-act="help">Como jogar</button></div>`;
   const badge={temple:injuredN,forge:forgeReady,stash:stash.length};
-  const step=!m?1:np<5?2:3,nextB=step===1?'board':step===2?'tavern':null;
+  const step=np<5?1:2,nextB=step===1?'tavern':null;
   $('#vnames').innerHTML=HUB_LABELS.map(([id,nome])=>`<button class="vn ${id==='market'||id==='well'?'soon':''} ${id===nextB?'next':''}" ${id===nextB?`data-step="${step}"`:''} data-bld="${id}">${ico('vila',id)}${nome}${badge[id]?`<b>${badge[id]}</b>`:''}</button>`).join('');
-  const stepTxt=step===1?'<b>Passo 1 de 3:</b> toque no <b>Quadro de Missões</b> e escolha o mapa.':step===2?`<b>Passo 2 de 3:</b> toque na <b>Taverna</b> e escolha 5 heróis (faltam ${5-np}).`:'<b>Passo 3 de 3:</b> tudo pronto! Toque em <b>Partir pra missão</b>.';
+  const stepTxt=step===1?`<b>Passo 1 de 2:</b> toque na <b>Taverna</b> e escolha 5 heróis (faltam ${5-np}).`:'<b>Passo 2 de 2:</b> grupo pronto! Toque em <b>Ir para a batalha</b> e escolha a missão.';
   $('#vfoot').innerHTML=`<p class="hint stepb" id="hint">${hint||(injuredN?`${injuredN} ${injuredN>1?'heróis estão':'herói está'} se recuperando no Templo. `:'')+stepTxt}</p>
-    <div class="vs"><span class="tag">${ico('vila','mapa')} ${m?`${m.secreta?'Dungeon':'Mapa '+m.n}: ${m.nome}`:'Escolha o mapa no Quadro de Missões'}</span><span class="tag">${ico('vila','grupo')} ${np}/5 no grupo (Taverna)</span></div>
-    <button class="btn cta" data-act="depart" ${ready?'':'disabled'}>${ready?'Partir pra missão':'Escolha o mapa e o grupo'}</button>`;
+    <div class="vs"><span class="tag">${ico('vila','grupo')} ${np}/5 no grupo (Taverna)</span></div>
+    <button class="btn cta" data-act="depart" ${ready?'':'disabled'}>${ready?'Ir para a batalha':'Monte o grupo na Taverna'}</button>`;
   placeVillageNames();
 }
 const _vp=new THREE.Vector3();
@@ -4222,12 +4225,12 @@ function placeVillageNames(){
 $('#vui').addEventListener('click',e=>{
   const bl=e.target.closest('[data-bld]');if(bl){SFX.click();openBld(bl.dataset.bld);return;}
   const a=e.target.closest('[data-act]');if(!a)return;
-  if(a.dataset.act==='help')showHelp();else if(a.dataset.act==='depart')departRun();
+  if(a.dataset.act==='help')showHelp();else if(a.dataset.act==='depart'){SFX.open();renderMissions();}
 });
 function goVillage(){hint='';renderVillage();aim('village');}
 function openBld(id){
   hint='';SFX.open();
-  if(id==='board'){renderMissions();}
+  if(id==='board'){if(selected.size<5){hint='Primeiro monte o grupo na Taverna (5 heróis).';renderVillage();return;}renderMissions();}
   else if(id==='tavern'){enterTavern();return;}
   else if(id==='stash'){renderStash();return;}
   else if(id==='temple'){renderTemple();return;}
@@ -4266,7 +4269,7 @@ function renderMissions(){
       <span class="tx"><b>${m.nome}</b><small>Nv. ${m.nivel} · ${BIOMES[m.biome].nome} · ${m.chefe?'chefe do ato':m.grid||m.fixo?'mapa fixo':'terreno muda'}</small></span>${isDone?'<img class="bd" src="assets/ui/b_check.png" alt="">':'<span class="go">Jogar</span>'}</button>`;}).join('');
   const secs=MAPS.filter(m=>m.secreta&&m.ato===a.id&&secretFound(m.n)).map(m=>`<button class="qrow dung ${run.mission===m.n?'pick':''}" data-map="${m.n}"><span class="tx"><b>${m.nome}</b><small>Dungeon secreta · Nv. ${m.nivel}${sc.cleared&&sc.cleared.includes(m.n)?' · concluída':''}</small></span>${sc.cleared&&sc.cleared.includes(m.n)?'<img class="bd" src="assets/ui/b_check.png" alt="">':'<span class="go">Jogar</span>'}</button>`).join('');
   PI_.innerHTML=`
-  <div class="qtop">${navBack('toVillage','Praça')}<div class="qtt"><h2>Escolha o mapa</h2><small>Quadro de Missões</small></div></div>
+  <div class="qtop">${navBack('toVillage','Praça')}<div class="qtt"><h2>Escolha o mapa</h2><small>Dungeons e missões</small></div></div>
   <div class="qstrip">${strip}</div>
   <div class="qinfo"><span class="art" style="background-image:url(assets/regioes/${a.art}.jpg);${a.tom||''}"></span><div><h3>${sh[0]} · ${sh[1]}</h3><p>${ms.length?`Nv. ${a.niv[0]}–${a.niv[1]} · ${sel.done} de ${ms.length} mapas concluídos`:`Nv. ${a.niv[0]}–${a.niv[1]} · em breve`}<br>${msg}</p>${ms.length?`<div class="qpb"><i style="width:${pct}%"></i></div>`:''}</div></div>
   <div class="qlist">${sel.open?`<div class="qband"><span>Missões</span></div>${rows}${secs}${hidden>0?`<p class="qmore">+ ${hidden} ${hidden>1?'mapas ainda não descobertos':'mapa ainda não descoberto'}</p>`:''}`:''}
@@ -4289,7 +4292,7 @@ function renderBrief(n){
     <div class="qegrid">${m.pool.map(t=>{const e=ENEMIES[t];return `<div class="qec"><img src="${ePortrait(t)}" alt=""><div><b>${e.nome}</b><em>${t==='ogro'?'Chefe · ':''}${IA_TXT[e.ia]}</em><small>${e.resumo}</small></div></div>`;}).join('')}</div>
     <p class="qnote">Quais inimigos aparecem, e quantos, muda a cada run. Você só sabe o conjunto.</p>
   </div>
-  <div class="qfoot"><button class="qcta" data-pickmap="${m.n}">Escolher esta missão</button></div>`;
+  <div class="qfoot"><button class="qcta" data-pickmap="${m.n}">Partir nesta missão</button></div>`;
 }
 
 /* ---------- Taverna ---------- */
@@ -4599,7 +4602,7 @@ PI_.addEventListener('click',e=>{
   const bld=t.closest('[data-bld]');if(bld){openBld(bld.dataset.bld);return;}
   const ra=t.closest('[data-ato]');if(ra){if(!ra.classList.contains('lock')){SFX.click();qdAto=+ra.dataset.ato;renderMissions();}return;}
   const mp=t.closest('[data-map]');if(mp){renderBrief(+mp.dataset.map);return;}
-  const pm=t.closest('[data-pickmap]');if(pm){SFX.confirm();run.mission=+pm.dataset.pickmap;goVillage();return;}
+  const pm=t.closest('[data-pickmap]');if(pm){SFX.confirm();run.mission=+pm.dataset.pickmap;departRun();return;}
   const hero=t.closest('[data-hero]');if(hero){const id=+hero.dataset.hero;if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderTavern();return;}
   const nav=t.closest('[data-nav]');if(nav){const L=tvSrc==='roster'?roster:draw,i=L.findIndex(h=>h.id===tvFocus);renderSheet(L[(i+ +nav.dataset.nav+L.length)%L.length].id);return;}
   const hire=t.closest('[data-hire]');if(hire){const id=+hire.dataset.hire;if(tvSrc==='draw'){recruitHero(id);renderRecruit();return;}if(selected.has(id))selected.delete(id);else if(selected.size<5)selected.add(id);renderSheet(id);return;}
@@ -5058,6 +5061,11 @@ const STATUS_SND={veneno:'st_veneno',queimadura:'st_queimadura',sangramento:'st_
   medo:'st_medo',provocado:'st_marca',abalado:'st_debuff',enfraquecido:'st_debuff',marcado:'st_marca',cego:'st_debuff',
   fortalecido:'st_buffup',protegido:'st_escudo',escudo:'st_escudo',regeneracao:'st_regen',veloz:'st_veloz',foco:'st_marca',inabalavel:'st_escudo',furtivo:'st_cast',inspirado:'st_buffup'};
 const ICON_TEX={};
+// som de cada habilidade: c = ao lançar/golpear, h = ao acertar (o som genérico de golpe não toca quando há h)
+const SKSND={golpe_poderoso:{c:'sk_golpe'},corte_profundo:{c:'sk_corte'},giratorio:{c:'sk_golpe'},estocada_dupla:{c:'sk_estocada'},golpe_costas:{c:'sk_estocada'},lamina_envenenada:{c:'sk_veneno'},
+  bola_fogo:{c:'sk_fogo',h:'sk_explosao'},chama_viva:{c:'sk_fogo',h:'sk_fogo'},nevasca:{c:'spell_cast',h:'sk_gelo'},chuva_meteoros:{c:'sk_meteoros',h:'sk_explosao'},terremoto:{c:'spell_cast',h:'sk_terra'},
+  castigo:{h:'sk_sagrado'},golpe_sagrado:{h:'sk_sagrado'},julgamento:{c:'spell_cast',h:'sk_sagrado'},chuva_flechas:{c:'sk_flechas'},saraivada_total:{c:'sk_flechas'},flecha_incendiaria:{c:'bow',h:'sk_fogo'},tiro_certeiro:{c:'bow'},
+  armadilha_espinhos:{c:'sk_trap',h:'trap'},campo_minado:{c:'sk_trap',h:'trap'},nota_aguda:{c:'sk_nota'},grito_estridente:{c:'sk_grito'}};
 function iconTex(id){return ICON_TEX[id]||(ICON_TEX[id]=new THREE.TextureLoader().load(`assets/status/${id}.png`));}
 function iconSprite(id,size){
   const m=new THREE.SpriteMaterial({map:iconTex(id),transparent:true,depthTest:false,opacity:0});
@@ -5929,7 +5937,7 @@ async function castSkill(u,plan){
   if(sk.kind==='atk'||sk.kind==='multi'||sk.kind==='aoe'){
     if(plan.tile&&(plan.tile.r!==u.r||plan.tile.c!==u.c)){await moveAlong(u,pathTo(plan.reach,plan.tile));await checkSecret(u);}
     if(!plan.target.alive)return;
-    const opts={label:sk.nome,mult:sk.mult||1,atkB:sk.atkB||0,st:sk.st,area:sk.area,leech:sk.leech,elem:sk.elem,spell:sk.spell,far:sk.alc>1?true:undefined};
+    const opts={label:sk.nome,mult:sk.mult||1,atkB:sk.atkB||0,st:sk.st,area:sk.area,leech:sk.leech,elem:sk.elem,spell:sk.spell,far:sk.alc>1?true:undefined,sn:SKSND[sk.id]};
     await attack(u,plan.target,opts);
     if(sk.kind==='multi'&&plan.target.alive&&u.alive)for(let i=1;i<(sk.hits||2);i++)await attack(u,plan.target,{...opts,label:sk.nome+' ✕'+(i+1),st:null});
     return;
@@ -5987,13 +5995,14 @@ async function attack(u,t,opts={}){
   const clearLine=aimLine(u,t,u.side==='hero'?'#e9b949':'#d4503f');
   await waitS(0.9);                      // câmera enquadra atacante e alvo; o alvo fica destacado
   await showRoll({u,skill:`${magic?'✨':far?'➶':'⚔'} ${opts.label||skillOf(u)}`,roll,outcome:crit?'crit':hit?'hit':'miss'});
+  focusCam(u.grp.position.x,u.grp.position.z,1.9,0.4);   // zoom no atacante
   await chargeUp(u,magic?'magic':far?'ranged':'melee');   // canaliza o golpe (pose + brilho) antes de soltar
   if(u.inspired){u.inspired=false;}
   if(hasSt(u,'furtivo'))removeStatus(u,'furtivo');
   if(u.cls==='ladino'&&u.sub==='armadilheiro'){u.ambushDone=true;}
   const p=u.grp.position,ox=p.x,oz=p.z,dx=t.c-u.c,dz=t.r-u.r,len=Math.hypot(dx,dz)||1;
-  if(far){SFX.shoot();drawBow(u,0.3);chargeEnd(u);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox-dx/len*0.12,z:oz-dz/len*0.12,duration:0.08}).to(p,{x:ox,z:oz,duration:0.1});await projectile(u,t);}
-  else{SFX.swing();swingArm(u,0.12,0.18);chargeEnd(u);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox-dx/len*0.14,z:oz-dz/len*0.14,duration:0.1,ease:'power1.out'}).to(p,{x:ox+dx/len*0.5,z:oz+dz/len*0.5,duration:0.09,ease:'power4.in'}).to(p,{x:ox,z:oz,duration:0.24,ease:'power2.out'});}
+  if(far){if(opts.sn&&opts.sn.c)playSfx(opts.sn.c,{vol:0.95});else if(magic)SFX.cast();else SFX.shoot();drawBow(u,0.3);chargeEnd(u);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox-dx/len*0.12,z:oz-dz/len*0.12,duration:0.08}).to(p,{x:ox,z:oz,duration:0.1});await projectile(u,t);}
+  else{if(opts.sn&&opts.sn.c)playSfx(opts.sn.c,{vol:0.95});else SFX.swing();swingArm(u,0.12,0.18);chargeEnd(u);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox-dx/len*0.14,z:oz-dz/len*0.14,duration:0.1,ease:'power1.out'}).to(p,{x:ox+dx/len*0.5,z:oz+dz/len*0.5,duration:0.09,ease:'power4.in'}).to(p,{x:ox,z:oz,duration:0.24,ease:'power2.out'});}
   clearLine();
   if(!hit){
     SFX.miss();floatText(t,dodged?'Esquivou!':'MISS','miss');gsap.fromTo(t.plane.position,{x:0},{x:0.24,duration:0.1,yoyo:true,repeat:1,ease:'power1.out'});
@@ -6008,11 +6017,15 @@ async function attack(u,t,opts={}){
   xp(u,8+(crit?12:0));
   if(u.side==='hero'&&u.cls==='arqueiro'&&hu>ht)u.highHits++;
   const sparks=u.side==='hero'?['#ffd34a','#ffffff','#ff9a3a']:['#ff5a4a','#ffffff','#a01e1e'];
+  focusCam(t.grp.position.x,t.grp.position.z,1.7,0.25);   // e no alvo, no impacto
   if(u.alc===1)slash(t,crit);
   if(u.cls==='mago'||(u.side==='enemy'&&magic)){
-    SFX.spellHit();
-    fxPlay('magic','lightning-strike-32px_strip8.png',8,18,{x:t.grp.position.x,y:t.grp.position.y,z:t.grp.position.z},{w:crit?2.6:2,h:crit?3.6:3});
-    fxPlay('magic','energy-orb-32px_strip8.png',8,20,{x:t.grp.position.x,y:t.grp.position.y+0.4,z:t.grp.position.z},{w:crit?2.4:1.7});
+    const tp0={x:t.grp.position.x,y:t.grp.position.y,z:t.grp.position.z};
+    if(opts.elem==='fogo'){fxPlay('magic','fireball-32px_strip8.png',8,16,{...tp0,y:tp0.y+0.4},{w:crit?3:2.3});}
+    else if(opts.elem==='gelo'){fxPlay('magic','ice-shard-32px_strip8.png',8,16,{...tp0,y:tp0.y+0.4},{w:crit?3:2.3});}
+    else{if(!(opts.sn&&opts.sn.h))playSfx('sk_raio',{vol:0.95});
+      fxPlay('magic','lightning-strike-32px_strip8.png',8,18,tp0,{w:crit?2.6:2,h:crit?3.6:3});
+      fxPlay('magic','energy-orb-32px_strip8.png',8,20,{...tp0,y:tp0.y+0.4},{w:crit?2.4:1.7});}
     pulse(t.grp.position,'#9fdcff',crit?2.2:1.6,0.5,0.12);
     if(crit)fxPlay('combat','critical-hit-32px_strip8.png',8,14,{x:t.grp.position.x,y:t.grp.position.y+0.4,z:t.grp.position.z},{w:1.9});
     if(!crit){flash('#bfe3ff',0.3);shakeCam(0.2,0.3);}
@@ -6021,7 +6034,7 @@ async function attack(u,t,opts={}){
   if(crit){flash('#fffaf0',0.4);shakeCam(0.28,0.4);pulse(t.grp.position,'#ffd34a',1.4,0.5);}
   else if(u.cls!=='mago')shakeCam(0.07,0.18);
   addLog(`${crit?'CRÍTICO! ':''}${u.first} ${VERB[u.cls||u.kind]} ${t.first}: ${dmg} de dano`,u.side==='hero'?(crit?'gold':'good'):'bad');
-  damage(t,dmg,u,crit);
+  damage(t,dmg,u,crit,opts.sn&&opts.sn.h);
   if(pd.shock){removeStatus(t,pd.shock);floatText(t,'Choque térmico!','crit');}
   if(pbU.fireLeech&&opts.elem==='fogo'&&u.alive&&u.hp<u.maxhp){const lh=Math.max(1,Math.round(dmg*pbU.fireLeech));u.hp=Math.min(u.maxhp,u.hp+lh);floatText(u,`+${lh}`,'heal');}
   if(pbU.poisonOnHit&&t.alive&&R()<pbU.poisonOnHit){await statusAttach(t,'veneno');addStatus(t,'veneno',{src:u,quiet:true});}
@@ -6034,7 +6047,7 @@ async function attack(u,t,opts={}){
     for(const g of others){const d2=Math.max(1,Math.round(dmg*0.75*(stMods(g).inn)));
       floatText(g,`-${d2}`,'');burst(g.grp.position,{n:6,colors:sparks,spread:0.5,up:0.4,y:0.4,life:0.35});
       addLog(`${u.first} também atingiu ${g.first}: ${d2} de dano`,u.side==='hero'?'good':'bad');
-      damage(g,d2,u,false);
+      damage(g,d2,u,false,opts.sn&&opts.sn.h);
       if(g.alive)for(const x of opts.st||[])addStatus(g,x.id,{dur:x.dur,src:u});}
   }
   if(u.cls==='clerigo'&&u.sub==='templario'&&u.alive&&u.hp>0&&u.hp<u.maxhp){
@@ -6073,7 +6086,7 @@ function hitStop(ms){
   hitStopOn=true;gsap.globalTimeline.timeScale(0.001);
   setTimeout(()=>{gsap.globalTimeline.timeScale(ts);hitStopOn=false;},ms);
 }
-function damage(t,dmg,src,crit){
+function damage(t,dmg,src,crit,snd){
   if(t.side==='hero'&&src&&src.side==='enemy')t.hitsTaken=(t.hitsTaken||0)+1;
   const sh=stOf(t,'escudo');
   if(sh&&sh.val>0&&dmg>0){
@@ -6081,7 +6094,8 @@ function damage(t,dmg,src,crit){
     if(sh.val<=0){removeStatus(t,'escudo');playSfx('st_quebra',{vol:0.9});fxPlay('combat','parry-flash-32px_strip7.png',7,20,headPos(t,0.8),{w:1.6});floatText(t,'Escudo quebrou','miss');}else playSfx('st_resist',{vol:0.6});
     if(dmg<=0)return;
   }
-  crit?SFX.crit():SFX.hit();
+  if(snd)playSfx(snd,{vol:0.95,gap:90});
+  if(crit)SFX.crit();else if(!snd)SFX.hit();
   const lethal=t.hp-dmg<=0,heavy=crit||dmg>=t.maxhp*0.35;
   t.hp=Math.max(0,t.hp-dmg);floatText(t,crit?`-${dmg}!`:`-${dmg}`,crit?'crit':'');
   const tp=t.grp.position;
@@ -6307,6 +6321,10 @@ function followCam(u,zoom=1.35){
   if(camMode!=='follow'||performance.now()<followUntil||!u||!u.grp)return;
   aimCam(u.grp.position.x,0.3,u.grp.position.z,zoom,0.55);
 }
+function focusCam(x,z,zoom,dur){
+  if(camMode!=='follow'||performance.now()<followUntil)return;
+  aimCam(x,0.3,z,zoom,dur);
+}
 function followMid(a,b){
   if(camMode!=='follow'||performance.now()<followUntil||!a.grp||!b.grp)return;
   const d=Math.hypot(a.grp.position.x-b.grp.position.x,a.grp.position.z-b.grp.position.z);
@@ -6319,10 +6337,27 @@ function overviewCam(){
   else if(phase==='battle'&&active)followCam(active);
   else aimCam(...phaseView(),0.7);
 }
+function levelUpFx(u,lv){
+  const P=u.grp.position;
+  playSfx('levelup',{vol:0.95});
+  flash('#fff3b0',0.25);
+  fxPlay('magic','healing-aura-32px_strip8.png',8,12,P,{w:2.2});
+  pulse(P,'#ffd34a',2.2,0.8);gsap.delayedCall(0.18,()=>pulse(P,'#fff3b0',1.6,0.7));
+  for(let i=0;i<3;i++)gsap.delayedCall(i*0.16,()=>burst(P,{n:8,colors:['#ffd34a','#fff3b0','#ffffff'],spread:0.5,up:1.6,y:0.2,life:1.1,size:1.2}));
+  const [x,y]=screenOf(u,0.1),d=document.createElement('div');d.className='lvup';d.style.left=x+'px';d.style.top=(y+10)+'px';
+  d.innerHTML=`<span class="lva"><i>▲</i><i>▲</i><i>▲</i></span><b>NÍVEL ${lv}!</b><em>${u.first} subiu de nível</em>`;hud.appendChild(d);
+  gsap.timeline({onComplete:()=>d.remove()}).fromTo(d,{opacity:0,scale:0.3,y:10},{opacity:1,scale:1.15,y:-8,duration:0.28,ease:'back.out(3)'}).to(d,{scale:1,duration:0.15})
+    .to(d,{y:-34,duration:1.3,ease:'power1.out'},0.4).to(d,{opacity:0,duration:0.4},1.5);
+  gsap.fromTo(d.querySelectorAll('.lva i'),{y:14,opacity:0},{y:-6,opacity:1,duration:0.5,stagger:0.12,repeat:2,ease:'power1.out'});
+  addLog(`${u.first} subiu para o nível ${lv}!`,'gold');
+}
 const xp=(u,n,kill)=>{
   if(!u||u.side!=='hero'||u.alive===false)return;
   const k=1+((u.attrBonus&&u.attrBonus.pct)||0)/100;n=Math.round(n*k);
+  const lv0=levelForXp((u.xpTotal||0)+(u.xp||0));
   u.xp=(u.xp||0)+n;
+  const lv1=levelForXp((u.xpTotal||0)+u.xp);
+  if(lv1>lv0&&u.grp)gsap.delayedCall(1.3,()=>{if(u.grp&&phase==='battle')levelUpFx(u,lv1);});
   // como no FFT: o ganho de Exp. aparece junto de quem ganhou, logo depois do golpe.
   // Golpe + abate no mesmo instante viram UM número só (somado); com abate ele sai em itálico.
   if(n>0&&u.grp){
