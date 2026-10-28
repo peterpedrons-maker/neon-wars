@@ -6189,10 +6189,10 @@ async function castSkill(u,plan){
 }
 
 /* ---------- Tática + áreas (ver AREAS.md) ---------- */
-// Tática: 0–10. Herói: INT (peso 2), SAB e DES. Inimigo: pelo tipo de IA (+1 mágico, +2 chefe). O efeito é pequeno de propósito.
+// Tática: 0–10. Herói: INT (peso 3), SAB e DES (1 cada). Inimigo: pelo tipo de IA (+1 mágico, +2 chefe). O efeito é pequeno de propósito.
 const TAT_IA={rush:2,guard:3,flank:5,skirmish:6,healer:7};
 function tatOf(u){
-  if(u.side==='hero'){const a=u.attrs||{};const v=(2*(a.inteligencia||10)+(a.sabedoria||10)+(a.destreza||10))/4;return Math.max(0,Math.min(10,Math.round((v-10)/1.6)));}
+  if(u.side==='hero'){const a=u.attrs||{};const v=(3*(a.inteligencia||10)+(a.sabedoria||10)+(a.destreza||10))/5;return Math.max(0,Math.min(10,Math.round((v-8.5)*1.2)));}
   const e=ENEMIES[u.kind]||{};return e.tat!=null?e.tat:Math.min(10,(TAT_IA[e.ia]||3)+(e.magico?1:0)+(u.kind==='ogro'||u.lider?2:0));
 }
 const TAT_TXT=t=>t>=8?'Muito alta':t>=6?'Alta':t>=4?'Média':t>=2?'Baixa':'Instintiva';
