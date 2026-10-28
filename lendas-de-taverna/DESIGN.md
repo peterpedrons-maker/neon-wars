@@ -481,3 +481,9 @@ da ideia original sem precisar do modo manual completo.
 - **Falta:** dungeons secretas da Run 2, endgame (~12 dungeons muito difíceis +
   chefes secretos/opcionais), balanceamento de XP/HP/ATK e do `escala`,
   Modo Interminável usa agora o último mapa da campanha (não o fim do array).
+
+## Vila v3 (ilha grande, preenche a tela)
+- Ilha 17×50 com borda de floresta; os prédios ficam espalhados na estrada principal (Taverna no topo, Templo/Forja, praça de pedra com o poço, Missões/Mercado, Cofre/casas) e sobra terreno livre (lote marcado com estacas ao sul) para prédios e mecânicas futuras.
+- Detalhes: mesas e barris na taverna, carroça, jardim e estátua no templo, bigorna/boneco de treino/rack de armas/lenha na forja, segunda barraca, hortas, cercas, feno, varal, lagoa com doca e peixes, flores, arbustos, pedras, lampiões, pássaros, vaga-lumes e folhas.
+- Arte: tudo procedural em 3D (caixas/cilindros) + sprites já no projeto (SpritePilot, CC0). Sites de packs externos (Kenney, OpenGameArt) são bloqueados no ambiente de desenvolvimento, então não foram usados.
+- Futuro: arrastar a câmera para explorar a vila (hoje `camT` já tem limites no modo village).
