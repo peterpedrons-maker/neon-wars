@@ -291,6 +291,10 @@ details.box[open]>summary::after{content:"−"}
 .xpbar{height:8px;background:var(--sombra);border-radius:4px;overflow:hidden;margin-top:6px}
 .xpbar i{display:block;height:100%;background:var(--ouro)}
 .stgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.stgrid span.up{border-color:#4d8a38!important}.stgrid span.dn{border-color:#a8483a!important}
+.stgrid .mod{font-style:normal;font-size:10px;line-height:1.2;margin-top:2px;color:#9fe0a0}.stgrid .dn .mod,.stgrid span.dn .mod{color:#ff9d8a}
+.note.trn{margin:8px 0 0;font-size:12px;line-height:1.4;color:#f0dfb9}.note.trn b{color:#ffe9b8}.note.trn.up b{color:#9fe0a0}
+.stgrid .ic img,.stgrid img.ic{width:16px;height:16px;image-rendering:pixelated}
 .stgrid span{display:flex;flex-direction:column;background:var(--madeira);border:2px solid var(--borda);border-radius:6px;padding:6px 8px;font-size:11px;color:var(--nevoa)}
 .stgrid span b{font-family:var(--f-display);font-size:18px;color:var(--papel);font-weight:600}
 .eqlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;font-size:12px;color:var(--papel-2)}
@@ -963,7 +967,7 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .ov .inner.kt .tdet .emb img{width:97px;height:136px}
 .ov .inner.kt .tdet .tact{grid-column:1/-1;flex-direction:row}
 .ov .inner.kt .tdet .tact .btn{flex:1;width:auto}
-.ov .inner.kt .sh2-top img{width:132px;height:186px}
+.ov .inner.kt .sh2-top img{width:104px;height:146px}
 .ov .inner.kt .slots.big .slot{height:clamp(78px,11vh,98px)}
 .ov .inner.kt .slots.big .slot img{height:92%;width:auto;max-width:92%}
 .qd .qec img{width:44px;height:62px}
@@ -4317,6 +4321,10 @@ function renderSheet(id,src){
   const at=h.attrs||{},AN=ATTR_LABEL,afG=h.afin&&AFINIDADES[h.afin]?AFINIDADES[h.afin].attrs:[];
   const amax=Math.max(30,...ATTR_NAMES.map(a=>at[a]||0));
   const eq=isR?EQ_SLOTS.map(sl=>{const it=h.equip&&h.equip[sl];return `<div>${it?itemIco(it):slotIco(sl)}<span><b>${(SLOT_INFO[sl]||{label:'Acessório'}).label}:</b> ${it?it.nome:'—'}</span></div>`;}).join(''):`<div>${slotIco('weapon')}<span><b>Arma:</b> ${h.arma}</span></div><div>${slotIco('body')}<span><b>Armadura:</b> ${h.armadura}</span></div>`;
+  // efeitos do traço aparecem em cima do status que eles mexem (▲ ganha · ▼ perde)
+  const TID=h.trait.id,MOD={covarde:{def:['▲','+3']},fanfarrao:{atq:['▲','+2']},sortudo:{crit:['▲','19–20'],per:['▲','+3']},atento:{per:['▲','+5']},bruto:{dano:['▲','+3'],def:['▼','−2']},veterano:{vida:['▲','+8']}}[TID]||{};
+  const tile=(k,ic,lab,val)=>{const m=MOD[k];return `<span class="${m?(m[0]==='▲'?'up':'dn'):''}"><em>${ic}${lab}</em><b>${val}</b>${m?`<i class="mod">${m[0]} ${h.trait.nome} ${m[1]}</i>`:''}</span>`;};
+  const perV=(h.per||0)+(TID==='atento'?5:0)+(TID==='sortudo'?3:0),critMin=20-(h.critBonus||0)-(TID==='sortudo'?1:0);
   const hired=selected.has(id),full=selected.size>=5&&!hired,rosterFull=roster.length>=ROSTER_CAP;
   const cta=isR?(h.injured?`<button class="btn cta" disabled>Ferido — descansando no Templo</button>`:`<button class="btn cta" data-hire="${id}" ${full?'disabled':''}>${hired?'Tirar do grupo':full?'Grupo cheio (5)':'Colocar no grupo'}</button>`)
     :`<button class="btn cta" data-hire="${id}" ${rosterFull?'disabled':''}>${rosterFull?`Elenco cheio (${ROSTER_CAP})`:'Contratar'}</button>`;
@@ -4327,14 +4335,15 @@ function renderSheet(id,src){
   ${heroStrip(list,h,isR)}
   <div class="scroll"><div class="sheet2">
     <div class="rpf wide"><div class="sh2-top"><img src="${h.portrait}" alt=""><div style="min-width:0;flex:1">
-      <div class="tags"><span class="tag cls">${ico('classe',h.cls)}${c.nome}</span>${h.sub?`<span class="tag cls">${ico('subclasse',h.sub)}${SUB_INFO[h.sub].nome}</span>`:''}<span class="tag">${c.papel}</span><span class="tag">Nv.${lv}</span>${sc[h.sur]>1?'<span class="tag fam">Irmãos '+h.sur+'</span>':''}</div>
-      <div class="note" style="margin:6px 0;color:#f0dfb9"><b style="color:#ffe9b8">${h.trait.nome}:</b> ${h.trait.desc}</div>${h.afin&&AFINIDADES[h.afin]?`<div class="note" style="margin:0 0 6px;color:#f0dfb9"><b style="color:#9fe0a0">Afinidade ${AFINIDADES[h.afin].nome}:</b> ${AFINIDADES[h.afin].desc}</div>`:''}
+      <div class="tags"><span class="tag cls">${ico('classe',h.cls)}${c.nome}</span><span class="tag">Nv.${lv}</span></div>
+      <div class="note" style="margin:2px 0 10px;color:#cdb68a">${h.sub?SUB_INFO[h.sub].nome:c.papel}</div>
       <div class="pbar-l"><span>Vida</span><span>${isR?`${h.hp}/${h.maxhp}`:h.maxhp}</span></div><div class="pbar"><i class="f red" style="width:${hpPct}%"></i></div>
       ${isR?`<div class="pbar-l"><span>XP ${fmt(h.xpTotal||0)}</span><span>${lv>=LEVEL_CAP?'nível máximo':`faltam ${fmt(xn-(h.xpTotal||0))}`}</span></div><div class="pbar"><i class="f blue" style="width:${pct}%"></i></div>`:''}
     </div></div></div>
     <button class="trbtn big" data-tree="${h.id}" data-src="${isR?'roster':'draw'}">${ico('stat','dano')} Árvore de habilidades${treeFree(h)?`<b>${treeFree(h)} ponto${treeFree(h)>1?'s':''} livre${treeFree(h)>1?'s':''}</b>`:''}</button>
-    <div class="rpf"><h4 class="sec" style="margin:0">Combate</h4><div class="stgrid"><span><em>${ico('stat','atq')}Ataque</em><b>+${h.atk}</b></span><span><em>${ico('stat','def')}Defesa</em><b>${h.def}</b></span><span><em>${ico('stat','res')}Res. Mágica</em><b>${h.defMag}</b></span><span><em>${ico('stat','mov')}Mover</em><b>${h.mov}</b></span><span><em>${ico('stat','alc')}Alcance</em><b>${h.alc}</b></span><span><em>${ico('stat','crit')}Crítico</em><b>${h.critBonus?`${20-h.critBonus}–20`:'20'}</b></span><span><em>${ico('stat','ini')}Iniciativa</em><b>${h.ini>=0?'+':''}${h.ini}</b></span><span><em>${ico('stat','dano')}Dano</em><b>${h.dmg[0]}d${h.dmg[1]}${h.dmg[2]?'+'+h.dmg[2]:''}</b></span><span><em>${ico('stat','vida')}Vida</em><b>${h.maxhp}</b></span></div></div>
-    <div class="rpf"><h4 class="sec" style="margin:0">Atributos</h4>${ATTR_NAMES.map(a=>`<div class="arow"><span>${AN[a]}${afG.includes(a)?' <small style="color:#9fe0a0">▲</small>':''}</span><b>${at[a]??'—'}</b><div class="mini"><i style="width:${Math.min(100,Math.round((at[a]||0)/amax*100))}%"></i></div></div>`).join('')}</div>
+    <div class="rpf"><h4 class="sec" style="margin:0">Combate</h4><div class="stgrid">${tile('atq',ico('stat','atq'),'Ataque','+'+h.atk)}${tile('def',ico('stat','def'),'Defesa',h.def)}${tile('res',ico('stat','res'),'Res. Mágica',h.defMag)}${tile('mov',ico('stat','mov'),'Mover',h.mov)}${tile('alc',ico('stat','alc'),'Alcance',h.alc)}${tile('crit',ico('stat','crit'),'Crítico',critMin<20?`${critMin}–20`:'20')}${tile('ini',ico('stat','ini'),'Iniciativa',(h.ini>=0?'+':'')+h.ini)}${tile('dano',ico('stat','dano'),'Dano',`${h.dmg[0]}d${h.dmg[1]}${h.dmg[2]?'+'+h.dmg[2]:''}`)}${tile('vida',ico('stat','vida'),'Vida',h.maxhp)}${tile('per','<img class="ic" src="assets/ui-icons/eye-of-horus.png" alt="">','Percepção','+'+perV)}</div>
+      <p class="note trn"><b>${h.trait.nome}:</b> ${h.trait.desc}</p></div>
+    <div class="rpf"><h4 class="sec" style="margin:0">Atributos</h4>${h.afin&&AFINIDADES[h.afin]?`<p class="note trn up"><small style="color:#9fe0a0">▲</small> <b>Afinidade ${AFINIDADES[h.afin].nome}:</b> ${AFINIDADES[h.afin].desc}</p>`:''}${ATTR_NAMES.map(a=>`<div class="arow"><span>${AN[a]}${afG.includes(a)?' <small style="color:#9fe0a0">▲</small>':''}</span><b>${at[a]??'—'}</b><div class="mini"><i style="width:${Math.min(100,Math.round((at[a]||0)/amax*100))}%"></i></div></div>`).join('')}</div>
     <div class="rpf"><h4 class="sec" style="margin:0">Equipamento</h4><div class="eqlist">${eq}</div></div>
     ${skillsBlock(h,isR)}
     <div class="rpf">${h.sub?`<div class="hhead">${ico('subclasse',h.sub,'xl')}<div class="grow"><h4 class="sec" style="margin:0">${SUB_INFO[h.sub].nome}</h4><p class="note" style="color:#f0dfb9">${SUB_INFO[h.sub].desc}</p></div></div>`:`<h4 class="sec" style="margin:0">Subclasse</h4><p class="note" style="color:#f0dfb9">Escolhe no nível ${SUB_UNLOCK_LEVEL}, na Forja: ${SUBCLASSES[h.cls].map(x=>SUB_INFO[x].nome).join(' ou ')}.</p>`}</div>
