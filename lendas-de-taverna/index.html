@@ -373,11 +373,12 @@ h4.sec{margin:6px 0 0;font-family:var(--f-display);font-size:15px;color:var(--ou
 /* ficha: espaços de habilidade + botão da árvore */
 .hstrip{flex:none;display:flex;gap:8px;overflow-x:auto;padding:10px 12px 8px;background:#150e0a;border-block:2px solid #5a4330;scrollbar-width:none}
 .hstrip::-webkit-scrollbar{display:none}
-.hcd{all:unset;box-sizing:border-box;flex:0 0 78px;border-radius:12px;border:2px solid #4a392a;background:#241a12;padding:6px 4px 5px;text-align:center;position:relative;cursor:pointer;transition:.15s;color:#efe2c4}
+.hcd{all:unset;box-sizing:border-box;flex:0 0 84px;border-radius:12px;border:2px solid #4a392a;background:#241a12;padding:6px 4px 5px;text-align:center;position:relative;cursor:pointer;transition:.15s;color:#efe2c4}
 .hcd .hpt{display:grid;place-items:center;height:54px;border-radius:8px;background:radial-gradient(circle at 50% 30%,#4a2f7a,#1b1230);margin-bottom:4px;overflow:hidden}
 .hcd .hpt img{height:50px;width:auto;image-rendering:pixelated}
 .hcd b{display:block;font:700 12px var(--f-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hcd small{display:block;font-size:10px;color:#a8a39a;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hcd small.nv{color:#e9b949}
+.hcd small.tr{color:#9fe0a0;font-size:9.5px;margin-top:2px}
 .hcd.on{border-color:#e9b949;background:#3a2a1c;box-shadow:0 0 14px #e9b94955;transform:translateY(-2px)}
 .hcd .hck{position:absolute;right:-5px;top:-6px;width:20px;height:20px;border-radius:50%;background:#6cc35e;color:#10230c;font:700 12px/20px var(--f-display);text-align:center;display:none;border:2px solid #14100d}
 .hcd.hired .hck{display:block}
@@ -395,8 +396,9 @@ h4.sec{margin:6px 0 0;font-family:var(--f-display);font-size:15px;color:var(--ou
 .trbtn.wide{grid-column:1/-1}
 .shres .wide{grid-column:1/-1}.shl{display:flex;flex-direction:column;gap:8px;min-width:0}.shr{min-width:0}
 .shid{padding:8px!important}
-.shport{height:128px;border-radius:10px;background:radial-gradient(circle at 50% 70%,#6b4a9a 0,#2a1a45 55%,#14091f);border:2px solid #5a4330;display:grid;place-items:end center;overflow:hidden;margin-bottom:6px}
-.shport img{height:122px;width:auto;image-rendering:pixelated;filter:drop-shadow(0 4px 0 #0008)}
+.shport{position:relative;height:150px;border-radius:10px;background:radial-gradient(circle at 50% 75%,#7a58aa 0,#2a1a45 55%,#14091f);border:2px solid #5a4330;overflow:hidden;margin-bottom:6px}
+.shport::after{content:'';position:absolute;bottom:4px;left:50%;width:72%;height:14px;transform:translateX(-50%);background:radial-gradient(ellipse,#000a,transparent 70%)}
+.shport img{position:absolute;left:50%;bottom:-4px;height:158px;width:auto;transform:translateX(-50%);image-rendering:pixelated;filter:drop-shadow(0 4px 0 #0008);z-index:1}
 .shname{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap}.shname b{font:700 19px var(--f-display);color:#f6e8c6}
 .shsum{margin:4px 0 6px;font-size:11.5px;line-height:1.35;color:#cdb68a}
 .shrow{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;margin-top:4px;background:rgba(30,16,8,.55);border-radius:7px;font-size:12px;color:#e0cfa8}
@@ -600,6 +602,7 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .slots.big .slot.req{border:3px dashed #b8832f;background:none;box-shadow:none;place-items:center;font-size:30px;color:#e9b949}
 .sbadge{position:absolute;top:3px;left:3px;width:22px;height:22px;display:grid;place-items:center;background:#2a1d12;border:2px solid var(--lar);color:#ffe9b8}.sbadge .ic{width:14px;height:14px;margin:0;filter:none}
 .tabs{display:grid;grid-template-columns:1fr 1.25fr 1fr;flex:0 0 auto}
+.tabs.two{grid-template-columns:1fr 1fr}
 .tab{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 6px;font-family:var(--f-display);font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:#d8c9a8;background:#2a1d12;border:3px solid #120b08;box-shadow:inset 0 0 0 2px #5a4330;white-space:nowrap;min-width:0}
 .tab.on{background:linear-gradient(#e9c25b,#c9962e);color:var(--ink);box-shadow:inset 0 0 0 2px #fff0c0}
 .tab[disabled]{opacity:.45;cursor:default}
@@ -3222,14 +3225,10 @@ const LPC_RECIPES={
   clerigo_b:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/chainmail/male/walk.png','weapon/sword/dagger/walk/dagger.png','shield/round/walk/silver.png'],
     slash:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/chainmail/male/slash.png','weapon/sword/dagger/slash/dagger.png','shield/round/slash/silver.png'],
     hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/chainmail/male/hurt.png','weapon/sword/dagger/hurt/dagger.png']},
-  bardo:{action:'slash',oversize:true,walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/clothes/longsleeve/formal/male/walk.png','hat/cloth/leather_cap/feather/adult/walk.png','weapon/sword/rapier/walk/rapier.png'],
-    hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/clothes/longsleeve/formal/male/hurt.png','hat/cloth/leather_cap/feather/adult/hurt.png','weapon/sword/rapier/hurt/rapier.png'],
-    actionBody:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/clothes/longsleeve/formal/male/slash.png','hat/cloth/leather_cap/feather/adult/slash.png'],
+  bardo:{action:'slash',oversize:true,walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/clothes/longsleeve/formal/male/walk.png','hat/cloth/leather_cap/adult/walk.png','hat/cloth/leather_cap/feather/adult/walk.png','weapon/sword/rapier/walk/rapier.png'],
+    hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/clothes/longsleeve/formal/male/hurt.png','hat/cloth/leather_cap/adult/hurt.png','hat/cloth/leather_cap/feather/adult/hurt.png','weapon/sword/rapier/hurt/rapier.png'],
+    actionBody:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/clothes/longsleeve/formal/male/slash.png','hat/cloth/leather_cap/adult/slash.png','hat/cloth/leather_cap/feather/adult/slash.png'],
     actionBehind:'weapon/sword/rapier/attack_slash/behind/rapier.png',actionFront:'weapon/sword/rapier/attack_slash/rapier.png'},
-  // variante B: adaga + escudo — fica perto do grupo apoiando, em vez do florete
-  bardo_b:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/human/male/walk.png','legs/pantaloons/male/walk.png','torso/clothes/longsleeve/formal/male/walk.png','hat/cloth/leather_cap/feather/adult/walk.png','weapon/sword/dagger/walk/dagger.png','shield/round/walk/silver.png'],
-    slash:['body/bodies/male/slash.png','head/heads/human/male/slash.png','legs/pantaloons/male/slash.png','torso/clothes/longsleeve/formal/male/slash.png','hat/cloth/leather_cap/feather/adult/slash.png','weapon/sword/dagger/slash/dagger.png','shield/round/slash/silver.png'],
-    hurt:['body/bodies/male/hurt.png','head/heads/human/male/hurt.png','legs/pantaloons/male/hurt.png','torso/clothes/longsleeve/formal/male/hurt.png','hat/cloth/leather_cap/feather/adult/hurt.png','weapon/sword/dagger/hurt/dagger.png']},
   // inimigos — cabeça de orc/goblin trocada no mesmo corpo humano, igual
   // reskin de "cabeça" que o pacote já foi feito pra suportar
   goblin:{action:'slash',walk:['body/bodies/male/walk.png','head/heads/goblin/adult/walk.png','legs/pantaloons/male/walk.png','weapon/sword/dagger/walk/dagger.png'],
@@ -3936,7 +3935,7 @@ const LOADOUTS={
   mago:['mago'],
   clerigo:['clerigo','clerigo_b'],
   arqueiro:['arqueiro'],   // a besta (arqueiro_b) lia-se como espada e usava a pose de estocada: removida
-  bardo:['bardo','bardo_b'],
+  bardo:['bardo'],   // sempre o florete com boné de pena (a variante adaga+escudo parecia guerreiro)
 };
 /* ---------- Subclasses (ver DESIGN.md "Classes e subclasses") --------------
    Cada herói sorteia uma das 2 subclasses da sua classe na criação — divide
@@ -4268,7 +4267,7 @@ function recruitHero(id){
   saveGame();
 }
 function tvTabs(act){
-  return `<div class="tabs"><button class="tab ${act==='roster'?'on':''}" data-act="toTavern">${ico('vila','grupo')} Elenco (${roster.length})</button><button class="tab ${act==='sheet'?'on':''}" ${tvSel&&roster.length?`data-sheet="${tvSel}"`:'disabled'}>${ico('vila','board')} Ficha do herói</button><button class="tab ${act==='recruit'?'on':''}" data-act="recruit">${ico('vila','tavern')} Recrutar</button></div>`;
+  return `<div class="tabs two"><button class="tab ${act==='roster'?'on':''}" data-act="toTavern">${ico('vila','grupo')} Elenco (${roster.length})</button><button class="tab ${act==='recruit'?'on':''}" data-act="recruit">${ico('vila','tavern')} Recrutar</button></div>`;
 }
 function renderTavern(){
   view='tavern';tvFocus=null;setMode('tavern');PI_.classList.add('qd','kt');
@@ -4317,8 +4316,9 @@ function renderRecruit(){
 }
 /* faixa de heróis no topo da ficha: dá pra trocar de herói sem sair da ficha */
 function heroStrip(list,cur,isR){
-  const sc=isR?rosterSibCount():surCount();
-  return `<div class="hstrip" id="hstrip">${list.map(x=>`<button class="hcd ${x.id===cur.id?'on':''} ${isR&&selected.has(x.id)?'hired':''}" data-hsel="${x.id}" aria-label="Ver ${x.first}">${sc[x.sur]>1?'<span class="hsib">IRMÃOS</span>':''}<span class="hck">✓</span><span class="hpt"><img src="${x.portrait}" alt=""></span><b>${x.first}</b><small>${CLASSES[x.cls].nome}</small><small class="nv">Nv ${x.level||1}${isR&&treeFree(x)?` ✦${treeFree(x)}`:''}</small></button>`).join('')}</div>`;
+  // "irmão" só aparece quando importa: candidato com irmão já no elenco, ou dois irmãos juntos no grupo
+  const sib=x=>isR?(selected.has(x.id)&&roster.some(y=>y!==x&&y.sur===x.sur&&selected.has(y.id))?'+1 JUNTOS':''):(roster.some(y=>y.sur===x.sur)?'IRMÃO':'');
+  return `<div class="hstrip" id="hstrip">${list.map(x=>{const s=sib(x);return `<button class="hcd ${x.id===cur.id?'on':''} ${isR&&selected.has(x.id)?'hired':''}" data-hsel="${x.id}" aria-label="Ver ${x.first}">${s?`<span class="hsib">${s}</span>`:''}<span class="hck">✓</span><span class="hpt"><img src="${x.portrait}" alt=""></span><b>${x.first}</b><small>${CLASSES[x.cls].nome} · Nv ${x.level||1}${isR&&treeFree(x)?` ✦${treeFree(x)}`:''}</small><small class="tr">${x.trait.nome}</small></button>`;}).join('')}</div>`;
 }
 function rangeGrid(r,col){
   const Q=5;let h='';
@@ -4413,7 +4413,7 @@ function renderSheet(id,src){
   const pill=isR?(free?`<b class="hpill">✦ ${free} pontos</b>`:`<b class="hpill">Nv.${lv}</b>`):`<b class="hpill">Elenco ${roster.length}/${ROSTER_CAP}</b>`;
   PI_.innerHTML=`
   <div class="head">${navBack('',isR&&sheetFrom==='forge'?'Forja':isR?'Lista':'Praça',isR&&sheetFrom==='forge'?'data-bld="forge"':`data-act="${isR?'toTavern':'toVillage'}"`)}<div class="wt">${isR?ico('classe',h.cls,'lg'):ico('vila','tavern','lg')}<div><div class="eyebrow">${isR?`Ficha do herói · ${fullList.indexOf(h)+1}/${fullList.length}`:'Taverna'}</div><h2>${isR?h.nome:'Recrutar heróis'}</h2></div></div><div class="btns">${pill}</div></div>
-  ${tvTabs(isR?'sheet':'recruit')}
+  ${tvTabs(isR?'roster':'recruit')}
   ${shMode==='detalhes'?'':chips}
   ${heroStrip(list,h,isR)}
   ${shMode==='detalhes'?`${DETALHES}`:resumo}
@@ -5869,8 +5869,10 @@ function passiveDmg(u,t,opts,hu,ht,magic){
 }
 
 const fxSkill=(u,col)=>{pulse(u.grp.position,col,1.1,0.5);burst(u.grp.position,{n:8,colors:[col,'#ffffff'],spread:0.5,up:1,y:0.8,life:0.6});};
+// o Bardo não tem sprite de instrumento no pack: a música aparece como notas flutuando em volta dele
+const bardNotes=u=>{if(!u||u.cls!=='bardo'||!u.grp)return;['♪','♫','♪'].forEach((n,i)=>gsap.delayedCall(i*0.22,()=>{if(u.grp&&phase==='battle')floatText(u,n,'buff');}));};
 async function castSkill(u,plan){
-  const sk=plan.sk;u.cd=u.cd||{};u.cd[sk.id]=sk.cd;
+  const sk=plan.sk;u.cd=u.cd||{};u.cd[sk.id]=sk.cd;bardNotes(u);
   addLog(`${u.first} usa ${sk.nome}`,u.side==='hero'?'good':'bad');
   if(sk.kind==='atk'||sk.kind==='multi'||sk.kind==='aoe'){
     if(plan.tile&&(plan.tile.r!==u.r||plan.tile.c!==u.c)){await moveAlong(u,pathTo(plan.reach,plan.tile));await checkSecret(u);}
@@ -6153,11 +6155,11 @@ async function turnBody(u){
     const cand=foes.filter(f=>dist(f,u)<=4&&!hasSt(f,'abalado'));
     if(cand.length){const f=pick(cand);addStatus(f,'abalado',{src:u});SFX.buff();showCallout(u,`♪ Desafina ${f.first}`);
       burst(u.grp.position,{n:6,colors:['#d98fe0','#f3cfff'],spread:0.4,up:1,y:0.9,life:0.7});pulse(f.grp.position,'#d98fe0',1,0.6);floatText(f,'♪ −2 defesa','miss');
-      xp(u,6);addLog(`${u.first} desafinou a defesa de ${f.first} (−2 na próxima defesa)`,'good');await wait(450);}
+      bardNotes(u);xp(u,6);addLog(`${u.first} desafinou a defesa de ${f.first} (−2 na próxima defesa)`,'good');await wait(450);}
   }else if(u.cls==='bardo'){const cand=allies.filter(a=>dist(a,u)<=4&&!a.inspired);if(cand.length){const a=pick(cand);const ins=2+((u.attrBonus&&u.attrBonus.insp)||0)+((u.pb&&u.pb.insp)||0);a.inspired=ins;SFX.buff();showCallout(u,`♪ Inspira ${a.first}`);
     if(u.pb&&u.pb.harmony){const o2=cand.filter(x=>x!==a);if(o2.length){const b2=pick(o2);b2.inspired=ins;floatText(b2,`♪ +${ins} acerto`,'buff');}}
     burst(u.grp.position,{n:6,colors:['#79a8ec','#cfe0ff'],spread:0.4,up:1,y:0.9,life:0.7});pulse(a.grp.position,'#79a8ec',1,0.6);floatText(a,`♪ +${ins} acerto`,'buff');
-    xp(u,6);addLog(`${u.first} tocou uma balada pra ${a.first} (+${ins} no próximo ataque)`,'good');await wait(450);}}
+    bardNotes(u);xp(u,6);addLog(`${u.first} tocou uma balada pra ${a.first} (+${ins} no próximo ataque)`,'good');await wait(450);}}
   if(hasSt(u,'medo')){
     let best=null,bs=-1;for(const t of reach.values()){if(t.pass)continue;const s=Math.min(...foes.map(f=>dist(t,f)))*2+hOf(t.r,t.c);if(s>bs){bs=s;best=t;}}
     showCallout(u,'Com medo!');addLog(`${u.first} foge de medo`,'mut');
