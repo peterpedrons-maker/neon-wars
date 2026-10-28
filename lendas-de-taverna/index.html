@@ -4475,6 +4475,8 @@ function tvTabs(act){
   return `<div class="tabs two"><button class="tab ${act==='roster'?'on':''}" data-act="toTavern">${ico('vila','grupo')} Elenco (${roster.length})</button><button class="tab ${act==='recruit'?'on':''}" data-act="recruit">${ico('vila','tavern')} Recrutar</button></div>`;
 }
 function renderTavern(){
+  // Elenco = a mesma ficha em cartão do Recrutar (só cai na tela antiga quando o elenco está vazio)
+  if(roster.length){const h0=roster.find(h=>h.id===tvSel)||roster.find(h=>selected.has(h.id))||roster[0];return renderSheet(h0.id,'roster');}
   view='tavern';tvFocus=null;setMode('tavern');PI_.classList.add('qd','kt');
   const sc=rosterSibCount(),n=selected.size,full=roster.length>=ROSTER_CAP;
   if(!roster.some(h=>h.id===tvSel))tvSel=(roster.find(h=>selected.has(h.id))||roster[0]||{}).id||null;
@@ -4575,7 +4577,7 @@ function renderSheet(id,src){
   const tile=(k,ic,lab,val)=>{const m=MOD[k];return `<span class="${m?(m[0]==='▲'?'up':'dn'):''}"><em>${ic}${lab}</em><b>${val}</b>${m?`<i class="mod">${m[0]} ${h.trait.nome} ${m[1]}</i>`:''}</span>`;};
   const perV=(h.per||0)+(TID==='atento'?5:0)+(TID==='sortudo'?3:0),critMin=20-(h.critBonus||0)-(TID==='sortudo'?1:0);
   const hired=selected.has(id),full=selected.size>=5&&!hired,rosterFull=roster.length>=ROSTER_CAP;
-  const cta=isR?(h.injured?`<button class="btn cta" disabled>Ferido — descansando no Templo</button>`:`<button class="btn cta" data-hire="${id}" ${full?'disabled':''}>${hired?'Tirar do grupo':full?'Grupo cheio (5)':'Colocar no grupo'}</button>`)
+  const cta=isR&&selected.size>=5?`<button class="btn cta" data-act="toVillage">Confirmar grupo →</button>`:isR?(h.injured?`<button class="btn cta" disabled>Ferido — descansando no Templo</button>`:`<button class="btn cta" data-hire="${id}" ${full?'disabled':''}>${hired?'Tirar do grupo':full?'Grupo cheio (5)':'Colocar no grupo'}</button>`)
     :`<button class="btn cta" data-hire="${id}" ${rosterFull?'disabled':''}>${rosterFull?`Elenco cheio (${ROSTER_CAP})`:'Contratar'}</button>`;
   const hpPct=isR?Math.round(h.hp/h.maxhp*100):100;
   const DETALHES=`<div class="scroll"><div class="sheet2">
@@ -4617,7 +4619,7 @@ function renderSheet(id,src){
   const right=isR?'':`<button class="btn ghost" data-act="reroll" ${rerolls?'':'disabled'}>Sortear (${rerolls})</button>`;
   const pill=isR?(free?`<b class="hpill">✦ ${free} pontos</b>`:`<b class="hpill">Nv.${lv}</b>`):`<b class="hpill">Elenco ${roster.length}/${ROSTER_CAP}</b>`;
   PI_.innerHTML=`
-  <div class="head">${navBack('',isR&&sheetFrom==='forge'?'Forja':isR?'Lista':'Praça',isR&&sheetFrom==='forge'?'data-bld="forge"':`data-act="${isR?'toTavern':'toVillage'}"`)}<div class="wt">${isR?ico('classe',h.cls,'lg'):ico('vila','tavern','lg')}<div><div class="eyebrow">${isR?`Ficha do herói · ${fullList.indexOf(h)+1}/${fullList.length}`:'Taverna'}</div><h2>${isR?h.nome:'Recrutar heróis'}</h2></div></div><div class="btns">${pill}</div></div>
+  <div class="head">${navBack('',isR&&sheetFrom==='forge'?'Forja':'Praça',isR&&sheetFrom==='forge'?'data-bld="forge"':'data-act="toVillage"')}<div class="wt">${isR?ico('classe',h.cls,'lg'):ico('vila','tavern','lg')}<div><div class="eyebrow">${isR?`Ficha do herói · ${fullList.indexOf(h)+1}/${fullList.length}`:'Taverna'}</div><h2>${isR?h.nome:'Recrutar heróis'}</h2></div></div><div class="btns">${pill}</div></div>
   ${tvTabs(isR?'roster':'recruit')}
   ${shMode==='detalhes'?'':chips}
   ${heroStrip(list,h,isR)}
