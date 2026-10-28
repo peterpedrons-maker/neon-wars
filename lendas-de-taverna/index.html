@@ -3553,6 +3553,13 @@ function lpcBuild(cls){
 // retrato de verdade nas telas de menu, no lugar do rascunho pixelado antigo.
 const BLANK_IMG='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
 const PORTRAIT_CACHE={};
+// retrato em branco (sprite ainda não montado, ou carregado de um save antigo): tenta de novo na hora de desenhar
+function ensurePortraits(){
+  let n=0;
+  [roster,draw,(run&&run.party)||[]].forEach(L=>L.forEach(h=>{
+    if(h&&(!h.portrait||h.portrait===BLANK_IMG)){let u=null;try{u=lpcPortrait(h.loadout)||lpcPortrait(h.cls);}catch(e){}if(u){h.portrait=u;n++;}}}));
+  return n;
+}
 function lpcPortrait(cls){
   if(PORTRAIT_CACHE[cls])return PORTRAIT_CACHE[cls];
   const sheets=LPC_SHEETS[cls];if(!sheets)return null;
@@ -4477,6 +4484,7 @@ function tvTabs(act){
   return `<div class="tabs two"><button class="tab ${act==='roster'?'on':''}" data-act="toTavern">${ico('vila','grupo')} Elenco (${roster.length})</button><button class="tab ${act==='recruit'?'on':''}" data-act="recruit">${ico('vila','tavern')} Recrutar</button></div>`;
 }
 function renderTavern(){
+  ensurePortraits();
   // Elenco = a mesma ficha em cartão do Recrutar (só cai na tela antiga quando o elenco está vazio)
   if(roster.length){const h0=roster.find(h=>h.id===tvSel)||roster.find(h=>selected.has(h.id))||roster[0];return renderSheet(h0.id,'roster');}
   view='tavern';tvFocus=null;setMode('tavern');PI_.classList.add('qd','kt');
@@ -4564,6 +4572,7 @@ function skillsBlock(h,isR){
 let shFilter=null,shMode='resumo';
 const shList=()=>(tvSrc==='roster'?roster:draw).filter(x=>!shFilter||x.cls===shFilter);
 function renderSheet(id,src){
+  ensurePortraits();
   if(src){if(src!==tvSrc)shFilter=null;shMode='resumo';tvSrc=src;}
   const fullList=tvSrc==='roster'?roster:draw,list=shList(),h=fullList.find(x=>x.id===id);
   if(!h)return tvSrc==='roster'?renderTavern():renderRecruit();
@@ -6776,7 +6785,7 @@ applySpeed();
 // pré-carrega os sheets LPC (heróis + inimigos humanoides) e as strips de
 // criatura assim que o jogo abre, pra já estarem prontos quando a pessoa
 // chegar na Taverna/Quadro — os retratos de menu usam esse mesmo sprite.
-const LPC_READY=Promise.all(Object.keys(LPC_RECIPES).map(lpcBuild));
+const LPC_READY=Promise.allSettled(Object.keys(LPC_RECIPES).map(k=>lpcBuild(k).catch(e=>{console.warn('lpcBuild',k,e);})));
 LPC_READY.then(()=>{
   // heróis sorteados/carregados antes dos sheets prontos ficaram com retrato vazio: preenche e redesenha a tela aberta
   const fix=h=>{if(h&&LPC_SHEETS[h.loadout]){h.portrait=lpcPortrait(h.loadout)||h.portrait;}};
@@ -6784,6 +6793,8 @@ LPC_READY.then(()=>{
   Object.keys(enemyCache).forEach(k=>{if(enemyCache[k]&&enemyCache[k].url===BLANK_IMG)delete enemyCache[k];});
   try{if(view==='tavern')renderTavern();else if(view==='recruit')renderRecruit();else if(view==='sheet')renderSheet(tvFocus);else if(view==='brief'&&briefN)renderBrief(briefN);}catch(e){}
 });
+// rede de segurança: se algum retrato ficou em branco, tenta de novo algumas vezes e redesenha a tela aberta
+{let tries=0;const iv=setInterval(()=>{tries++;if(ensurePortraits()){try{if(view==='tavern')renderTavern();else if(view==='recruit')renderRecruit();else if(view==='sheet')renderSheet(tvFocus);}catch(e){}}if(tries>=30)clearInterval(iv);},1500);}
 Object.keys(CREATURE_DEFS).forEach(creatureImg);
 initVillagers();
 applyLevel(MAPS[0],MAPS[0].seed);buildBoard();spawnEnemies(rollEnemies(LV.mp));newDraw();setMode('village');renderVillage();
