@@ -4289,6 +4289,7 @@ function setMode(m){
   const camTgt=(m==='village'||m==='tavern')?-AZ0:0;
   if(m==='battle'||m==='place'){if(camRot===-AZ0){if(camSpin)camSpin.tw.kill();camSpin=null;setCamRot(0);}}
   else if(camRot!==camTgt||camSpin){if(camSpin)camSpin.tw.kill();camSpin=null;setCamRot(camTgt);}
+  village.visible=(m==='village'||m==='tavern');   // fora da vila não desenha (nem as luzes dela): batalha mais leve
   app.className='m-'+m+(hub?' hub':'')+(ov?' ov':'');phase=m;PI_.classList.remove('qd','kt','kf');
   if(!hub&&bubble){bubble.el.remove();bubble=null;}
   stage.dataset.bio=(m==='place'||m==='battle')&&LV?LV.mp.biome:'';
