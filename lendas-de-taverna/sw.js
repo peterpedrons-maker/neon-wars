@@ -1,4 +1,4 @@
-const CACHE = 'lendas-taverna-v2';
+const CACHE = 'hearthblade-v3';
 const CORE = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
