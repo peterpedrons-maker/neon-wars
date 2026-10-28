@@ -1309,6 +1309,12 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .kf>.head h2{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .callout{display:none !important}
+/* nomes dos prédios: os prédios já têm a temática; só o próximo passo mostra um nome pequeno, e avisos (nº) ficam como bolinha */
+.vn:not(.next){border:0!important;border-image:none!important;padding:0!important;background:none!important;font-size:0!important;filter:none!important;box-shadow:none!important;pointer-events:none}
+.vn:not(.next) .ic{display:none!important}
+.vn:not(.next) b{font-size:12px!important;padding:1px 7px!important;pointer-events:auto;box-shadow:0 2px 0 #000a;border:2px solid #f4e6c0}
+.vn.next{font-size:11px!important;border-width:7px 10px!important}
+.vn.next .ic{width:14px!important;height:14px!important}
 </style>
 </head>
 <body>
@@ -2846,32 +2852,90 @@ function building(id,o){
   const cob=ptex('#9a9d96',['#85888182'.slice(0,7),'#adb0a8','#767a74'],{size:48,n:260,repeat:[3,3]});
   const plaza=new THREE.Mesh(new THREE.CircleGeometry(3.3,36),new THREE.MeshLambertMaterial({map:cob}));plaza.rotation.x=-Math.PI/2;plaza.position.set(0,0.012,-2.2);village.add(plaza);
   const ring=new THREE.Mesh(new THREE.RingGeometry(3.3,3.5,36),new THREE.MeshLambertMaterial({color:'#6b6f69'}));ring.rotation.x=-Math.PI/2;ring.position.set(0,0.014,-2.2);village.add(ring);
-  // Taverna
-  const tav=building('tavern',{x:0,z:-12.8,w:3.6,d:2.5,h:2.4,wall:'#b98a55',roof:'#7a2f24',wins:[[-1.1,0.75],[1.1,0.75],[-1.1,1.75],[0,1.75],[1.1,1.75]],chimney:[1.2,0.6,-0.4],roofH:1.2});
-  vbox(0.06,0.06,0.7,'#3b2616',1.65,1.6,1.4,tav);
-  const sign=new THREE.Mesh(new THREE.PlaneGeometry(0.86,0.5),new THREE.MeshBasicMaterial({map:nearestTex(signSprite()),transparent:true,alphaTest:0.5,side:THREE.DoubleSide}));
-  sign.position.set(1.65,1.27,1.72);sign.rotation.y=Math.PI/2;tav.add(sign);
-  vbox(0.12,0.16,0.12,'#ffd27a',-0.45,0.95,1.3,tav,true);vbox(0.12,0.16,0.12,'#ffd27a',0.45,0.95,1.3,tav,true);
-  const pl=new THREE.PointLight('#ffb35a',0.9,4.5);pl.position.set(0,1.1,1.8);tav.add(pl);
-  [[-1.75,1.6],[-1.4,1.8],[1.7,1.65]].forEach(([bx,bz])=>{const br=new THREE.Mesh(new THREE.CylinderGeometry(0.17,0.17,0.42,10),new THREE.MeshLambertMaterial({color:'#7a4e2a'}));br.position.set(bx,0.21,bz);tav.add(br);vbox(0.36,0.04,0.04,'#3b2616',bx,0.16,bz+0.17,tav);vbox(0.36,0.04,0.04,'#3b2616',bx,0.3,bz+0.17,tav);});
-  // mesas e bancos na frente da taverna
-  [[-2.8,-10.3],[2.9,-10.2]].forEach(([tx,tz])=>{const t=new THREE.Group();t.position.set(tx,0,tz);village.add(t);
-    const top=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.42,0.06,12),new THREE.MeshPhongMaterial({color:'#8a5a32'}));top.position.y=0.5;t.add(top);vbox(0.1,0.5,0.1,'#5a3a22',0,0.25,0,t);
-    [[0.7,0],[-0.7,0],[0,0.7],[0,-0.7]].forEach(([sx,sz])=>{const st=new THREE.Mesh(new THREE.CylinderGeometry(0.17,0.17,0.3,8),new THREE.MeshPhongMaterial({color:'#6a4a2a'}));st.position.set(sx,0.15,sz);t.add(st);});
-    vbox(0.12,0.16,0.12,'#e9b949',0.1,0.6,0.05,t,true);});
-  // Templo
-  const tem=building('temple',{x:-4.9,z:-7.8,w:2.3,d:2.1,h:1.9,wall:'#a6a9a2',roof:'#3f4a63',wins:[[0,1.3]],roofH:0.9});
-  vbox(0.8,1.4,0.8,'#9a9d97',0,2.55,-0.4,tem);vbox(0.3,0.3,0.1,'#e9b949',0,2.8,0.01,tem,true);
-  const cap=new THREE.Mesh(new THREE.ConeGeometry(0.66,0.8,4),new THREE.MeshLambertMaterial({color:'#3f4a63'}));cap.position.set(0,3.65,-0.4);cap.rotation.y=Math.PI/4;tem.add(cap);
-  // Forja
-  const frg=building('forge',{x:4.9,z:-7.8,w:2.3,d:1.9,h:1.55,wall:'#8a7a66',roof:'#4a4a4a',wins:[[0.6,0.9]],door:-0.4,chimney:[-0.6,0.5,-0.2]});
-  vbox(0.42,0.22,0.24,'#3a3d42',0.6,0.42,1.5,frg);vbox(0.2,0.3,0.2,'#3a3d42',0.6,0.15,1.5,frg);
-  const glow=vbox(0.5,0.3,0.3,'#ff8a3a',-0.65,0.35,1.15,frg,true);
-  const fl=new THREE.PointLight('#ff7a2a',0.8,3);fl.position.set(-0.6,0.6,1.55);frg.add(fl);
+  /* ---- prédios com a temática embutida (taverna de enxaimel, templo de pedra clara, forja, cofre/armazém) ---- */
+  const grp=(id,x,z)=>{const g=new THREE.Group();g.position.set(x,0,z);village.add(g);g.userData={bld:id};villagePicks.push(g);BLD[id]={x,z};return g;};
+  const gable=(w,d,h,col,y0,ov,parent)=>{const sh=new THREE.Shape();sh.moveTo(-w/2-ov,0);sh.lineTo(w/2+ov,0);sh.lineTo(0,h);sh.lineTo(-w/2-ov,0);
+    const g=new THREE.ExtrudeGeometry(sh,{depth:d+0.4,bevelEnabled:false});g.translate(0,y0,-(d+0.4)/2);
+    const m=new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:col,shininess:20,specular:0x4a3a28}));parent.add(m);return m;};
+  const winP=(x,y,z,parent,sz=0.42,shut='#5a3a22')=>{const w=new THREE.Mesh(new THREE.PlaneGeometry(sz,sz),new THREE.MeshBasicMaterial({map:nearestTex(windowSprite())}));w.position.set(x,y,z);parent.add(w);
+    vbox(0.1,sz,0.05,shut,x-sz/2-0.06,y,z,parent);vbox(0.1,sz,0.05,shut,x+sz/2+0.06,y,z,parent);vbox(sz+0.2,0.05,0.08,'#4a3220',x,y-sz/2-0.03,z+0.02,parent);};
+  const doorP=(x,y,z,w,h,parent)=>{const d=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:nearestTex(doorSprite())}));d.position.set(x,y,z);parent.add(d);return d;};
+  // TAVERNA: enxaimel de dois andares, balcão em balanço, placa de caneca, lampiões e telhado vermelho com mansarda
+  const T=grp('tavern',0,-12.8);
+  vbox(4.5,0.3,3.1,'#7b7770',0,0.15,0,T);
+  vbox(4.2,1.5,2.8,'#e8d5a8',0,1.05,0,T);vbox(4.55,1.3,3.15,'#dcc795',0,2.5,0,T);
+  [-2.1,-1.05,0,1.05,2.1].forEach(x=>vbox(0.14,1.5,0.14,'#4a3220',x,1.05,1.43,T));
+  [-2.275,-1.1,0,1.1,2.275].forEach(x=>vbox(0.14,1.3,0.14,'#4a3220',x,2.5,1.6,T));
+  vbox(4.3,0.14,0.14,'#4a3220',0,0.34,1.43,T);vbox(4.6,0.18,0.18,'#4a3220',0,1.82,1.6,T);vbox(4.6,0.14,0.14,'#4a3220',0,3.13,1.6,T);
+  [[-1.65,0.85],[1.65,-0.85],[-0.55,-0.85],[0.55,0.85]].forEach(([x,sg])=>{const br=vbox(0.95,0.09,0.09,'#4a3220',x,2.5,1.62,T);br.rotation.z=sg*0.75;});
+  [-1.45,1.45].forEach(x=>winP(x,1.15,1.43,T,0.5));[-1.65,0,1.65].forEach(x=>winP(x,2.5,1.62,T,0.48));
+  doorP(0,0.62,1.44,1.0,1.1,T);vbox(0.12,1.2,0.14,'#4a3220',-0.58,0.7,1.46,T);vbox(0.12,1.2,0.14,'#4a3220',0.58,0.7,1.46,T);vbox(1.3,0.14,0.16,'#4a3220',0,1.32,1.46,T);
+  const awn=new THREE.Mesh(new THREE.BoxGeometry(1.7,0.06,0.6),M(ptex('#efe2c4',['#efe2c4'],{n:1,draw:(g)=>{g.fillStyle='#b8342a';for(let x=0;x<16;x+=4)g.fillRect(x,0,2,16);}})));awn.position.set(0,1.48,1.75);awn.rotation.x=0.35;T.add(awn);
+  gable(4.55,3.15,1.55,'#9a3326',3.15,0.32,T);
+  vbox(4.9,0.07,0.07,'#6a2018',0,4.7,0,T);
+  const dorm=new THREE.Group();dorm.position.set(0.0,3.7,0.9);T.add(dorm);vbox(1.1,0.7,0.8,'#dcc795',0,0.35,0,dorm);winP(0,0.35,0.41,dorm,0.36);gable(1.1,0.8,0.5,'#9a3326',0.7,0.1,dorm);
+  vbox(0.5,1.4,0.5,'#8a857b',1.5,4.0,-0.7,T);vbox(0.58,0.12,0.58,'#6a655b',1.5,4.75,-0.7,T);chimneys.push(new THREE.Vector3(VX+1.5,4.95,VZ-12.8-0.7));
+  vbox(0.8,0.07,0.07,'#2b2b2b',2.7,2.28,1.66,T);vbox(0.06,0.5,0.06,'#2b2b2b',2.35,2.04,1.66,T);
+  const sign=new THREE.Mesh(new THREE.PlaneGeometry(0.95,0.62),new THREE.MeshBasicMaterial({map:nearestTex(signSprite()),transparent:true,alphaTest:0.5,side:THREE.DoubleSide}));sign.position.set(2.75,1.88,1.66);T.add(sign);
+  vbox(0.02,0.14,0.02,'#2b2b2b',2.4,2.2,1.66,T);vbox(0.02,0.14,0.02,'#2b2b2b',3.1,2.2,1.66,T);
+  [-0.85,0.85].forEach(x=>{vbox(0.05,0.3,0.05,'#2b2b2b',x,1.5,1.55,T);vbox(0.14,0.18,0.14,'#ffd27a',x,1.3,1.55,T,true);});
+  const pl=new THREE.PointLight('#ffb35a',1.0,5);pl.position.set(0,1.2,2.2);T.add(pl);
+  [[-1.95,1.95],[-1.55,2.1],[1.9,1.95]].forEach(([bx,bz])=>{const br=new THREE.Mesh(new THREE.CylinderGeometry(0.17,0.17,0.42,10),new THREE.MeshLambertMaterial({color:'#7a4e2a'}));br.position.set(bx,0.21,bz);T.add(br);vbox(0.36,0.04,0.04,'#3b2616',bx,0.16,bz+0.17,T);vbox(0.36,0.04,0.04,'#3b2616',bx,0.3,bz+0.17,T);});
+  // TEMPLO: pedra clara, colunas, frontão com sol dourado, torre do sino, vitral redondo
+  const Tm=grp('temple',-4.9,-7.8);
+  vbox(3.1,0.25,2.9,'#b9b6ae',0,0.125,0,Tm);vbox(2.6,2.0,2.4,'#e8e5dc',0,1.25,0,Tm);
+  vbox(1.5,0.12,0.45,'#cfcbc1',0,0.31,1.55,Tm);vbox(1.2,0.12,0.3,'#dad6cc',0,0.43,1.62,Tm);
+  [-0.82,0.82].forEach(x=>{const c=new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.15,1.75,12),new THREE.MeshLambertMaterial({color:'#f6f3ea'}));c.position.set(x,1.25,1.4);Tm.add(c);vbox(0.4,0.1,0.4,'#e1ddd2',x,0.38,1.4,Tm);vbox(0.4,0.12,0.4,'#e1ddd2',x,2.18,1.4,Tm);});
+  vbox(2.2,0.14,0.34,'#e1ddd2',0,2.3,1.38,Tm);
+  const ped=new THREE.Shape();ped.moveTo(-1.35,0);ped.lineTo(1.35,0);ped.lineTo(0,0.9);ped.lineTo(-1.35,0);
+  const pg=new THREE.ExtrudeGeometry(ped,{depth:0.14,bevelEnabled:false});pg.translate(0,2.36,1.28);Tm.add(new THREE.Mesh(pg,new THREE.MeshPhongMaterial({color:'#f2efe6',shininess:20})));
+  const sunD=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,0.05,18),new THREE.MeshBasicMaterial({color:'#f2c14a'}));sunD.rotation.x=Math.PI/2;sunD.position.set(0,2.72,1.44);Tm.add(sunD);
+  for(let i=0;i<8;i++){const a=i*Math.PI/4,r=vbox(0.06,0.16,0.03,'#f2c14a',Math.cos(a)*0.33,2.72+Math.sin(a)*0.33,1.44,Tm,true);r.rotation.z=a-Math.PI/2;}
+  gable(2.6,2.4,1.0,'#4a6ea8',2.25,0.25,Tm);
+  const stain=new THREE.Mesh(new THREE.CircleGeometry(0.3,16),new THREE.MeshBasicMaterial({color:'#5f9fe0'}));stain.position.set(0,1.75,1.22);Tm.add(stain);
+  const stainR=new THREE.Mesh(new THREE.RingGeometry(0.3,0.38,16),new THREE.MeshBasicMaterial({color:'#f2c14a'}));stainR.position.set(0,1.75,1.225);Tm.add(stainR);
+  vbox(0.08,0.6,0.03,'#f2c14a',0,1.75,1.23,Tm,true);vbox(0.6,0.08,0.03,'#f2c14a',0,1.75,1.23,Tm,true);
+  doorP(0,0.76,1.22,0.62,1.0,Tm);vbox(0.78,0.1,0.1,'#d9b24a',0,1.3,1.24,Tm);
+  [-0.4,0.4].forEach(x=>{vbox(0.06,0.3,0.06,'#f4f0e0',x,0.55,1.5,Tm);vbox(0.07,0.1,0.07,'#ffd27a',x,0.75,1.5,Tm,true);});
+  vbox(1.0,1.2,1.0,'#e8e5dc',0,3.6,-0.5,Tm);vbox(1.1,0.1,1.1,'#d9d5cb',0,4.2,-0.5,Tm);
+  const sp=new THREE.Mesh(new THREE.ConeGeometry(0.78,1.1,4),new THREE.MeshLambertMaterial({color:'#4a6ea8'}));sp.position.set(0,4.8,-0.5);sp.rotation.y=Math.PI/4;Tm.add(sp);
+  vbox(0.36,0.5,0.06,'#14100c',0,3.7,0.02,Tm);vbox(0.2,0.24,0.06,'#f2c14a',0,3.68,0.04,Tm,true);vbox(0.05,0.5,0.05,'#f2c14a',0,5.5,-0.5,Tm,true);vbox(0.24,0.05,0.05,'#f2c14a',0,5.4,-0.5,Tm,true);
+  const tl=new THREE.PointLight('#ffe8a0',0.5,3.5);tl.position.set(0,1,2);Tm.add(tl);
+  // FORJA: base de pedra, tábuas escuras, boca da forja em brasa, chaminé alta, porche com bigorna e foles
+  const F=grp('forge',4.9,-7.8);
+  vbox(3.3,0.9,2.7,'#7a7468',0,0.45,0,F);vbox(3.3,0.95,2.7,'#5a4636',0,1.37,0,F);
+  [-1.55,-0.5,0.5,1.55].forEach(x=>vbox(0.12,0.95,0.12,'#3b2a1e',x,1.37,1.36,F));vbox(3.4,0.12,0.14,'#3b2a1e',0,1.87,1.36,F);
+  vbox(1.3,1.1,0.18,'#5f5a50',-0.8,0.65,1.32,F);vbox(0.95,0.8,0.1,'#14100c',-0.8,0.6,1.42,F);
+  const fglow=vbox(0.8,0.55,0.05,'#ff8a3a',-0.8,0.5,1.47,F,true);vbox(0.9,0.12,0.12,'#3a3d42',-0.8,1.08,1.45,F);
+  doorP(0.95,0.5,1.37,0.55,0.95,F);winP(1.25,1.45,1.37,F,0.3,'#3b2a1e');
+  vbox(0.9,2.7,0.9,'#6a655b',-1.0,2.15,-0.3,F);vbox(0.7,0.35,0.7,'#2a2623',-1.0,3.65,-0.3,F);vbox(0.55,0.2,0.55,'#2a2623',-1.0,3.9,-0.3,F);chimneys.push(new THREE.Vector3(VX+4.9-1.0,4.1,VZ-7.8-0.3));
+  gable(3.3,2.7,0.75,'#4a4f58',1.85,0.3,F);vbox(3.4,0.08,0.08,'#2f3238',0,2.6,0,F);
+  const pr=new THREE.Mesh(new THREE.BoxGeometry(3.5,0.1,1.0),new THREE.MeshPhongMaterial({color:'#3a3d42',shininess:14}));pr.position.set(0,1.78,1.95);pr.rotation.x=0.22;F.add(pr);
+  [-1.65,1.65].forEach(x=>vbox(0.12,1.8,0.12,'#3b2a1e',x,0.9,2.1,F));
+  const anv=new THREE.Group();anv.position.set(0.9,0,2.05);F.add(anv);vbox(0.3,0.3,0.3,'#5a3a22',0,0.15,0,anv);vbox(0.55,0.14,0.22,'#3a3d42',0,0.37,0,anv);vbox(0.22,0.1,0.18,'#3a3d42',0.33,0.38,0,anv);vbox(0.2,0.06,0.16,'#3a3d42',0,0.47,0,anv);
+  const bel=new THREE.Group();bel.position.set(-1.2,0,2.0);F.add(bel);vbox(0.6,0.35,0.35,'#7a4a2a',0,0.3,0,bel);vbox(0.5,0.12,0.3,'#5a3a22',0.1,0.52,0,bel);vbox(0.5,0.08,0.08,'#2b2b2b',0.45,0.3,0,bel);
+  [[-0.2,0.9],[0.15,0.9],[0.5,0.9]].forEach(([x,y],i)=>{vbox(0.06,0.7,0.03,'#a8aeb6',x+0.55,1.35,1.39,F);vbox(0.2,0.05,0.05,'#5a3a22',x+0.55,1.02,1.39,F);});
+  vbox(0.05,0.55,0.05,'#5a3a22',1.4,1.3,1.39,F);vbox(0.2,0.14,0.14,'#8a8d92',1.4,1.62,1.39,F);
+  const wbar=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,0.5,10),new THREE.MeshLambertMaterial({color:'#6a4a2a'}));wbar.position.set(1.4,0.25,2.1);F.add(wbar);const wsf=new THREE.Mesh(new THREE.CircleGeometry(0.17,10),new THREE.MeshBasicMaterial({color:'#2a5a8a'}));wsf.rotation.x=-Math.PI/2;wsf.position.set(1.4,0.51,2.1);F.add(wsf);
+  for(let i=0;i<5;i++){const c=new THREE.Mesh(new THREE.DodecahedronGeometry(0.1,0),new THREE.MeshLambertMaterial({color:'#1d1a18',flatShading:true}));c.position.set(-1.9+(i%3)*0.18,0.1,1.9+Math.floor(i/3)*0.2);F.add(c);}
+  const fl=new THREE.PointLight('#ff7a2a',0.9,3.2);fl.position.set(-0.8,0.8,2);F.add(fl);
   gsap.to(fl,{intensity:0.35,duration:0.25,repeat:-1,yoyo:true,ease:'rough({strength:2,points:8})'});
-  gsap.to(glow.material.color,{r:1,g:0.75,b:0.3,duration:0.3,repeat:-1,yoyo:true});
+  gsap.to(fglow.material.color,{r:1,g:0.75,b:0.3,duration:0.3,repeat:-1,yoyo:true});
+  // COFRE / ARMAZÉM: cofre de pedra com faixas de ferro, porta de cofre com cadeado e um baú dourado no telhado
+  const S=grp('stash',-4.9,6.7);
+  vbox(3.1,0.25,2.5,'#6f737c',0,0.125,0,S);vbox(2.8,1.55,2.2,'#8d929b',0,1.02,0,S);
+  [0.5,1.05,1.6].forEach(y=>vbox(2.86,0.1,2.26,'#3a3d42',0,y,0,S));[-1.4,1.4].forEach(x=>[-1.1,1.1].forEach(z=>vbox(0.14,1.6,0.14,'#3a3d42',x,1.02,z,S)));
+  vbox(1.25,1.2,0.12,'#6a5240',0,0.85,1.14,S);[0.5,0.85,1.2].forEach(y=>vbox(1.3,0.09,0.15,'#2f3238',0,y,1.16,S));vbox(0.07,1.2,0.15,'#2f3238',0,0.85,1.16,S);
+  [-0.45,0.45].forEach(x=>{vbox(0.1,0.1,0.1,'#e9b949',x,0.85,1.25,S,true);});
+  vbox(0.28,0.24,0.1,'#e9b949',0,0.68,1.26,S,true);const sh=new THREE.Mesh(new THREE.TorusGeometry(0.08,0.025,6,12,Math.PI),new THREE.MeshLambertMaterial({color:'#444'}));sh.position.set(0,0.8,1.26);S.add(sh);
+  [-0.85,0.85].forEach(x=>{vbox(0.3,0.34,0.05,'#14100c',x,1.35,1.12,S);[-0.07,0.07].forEach(dx=>vbox(0.03,0.34,0.06,'#6a6e76',x+dx,1.35,1.13,S));});
+  gable(2.8,2.2,0.6,'#3f444e',1.8,0.22,S);
+  const ch=new THREE.Group();ch.position.set(0,2.4,0.45);S.add(ch);vbox(0.9,0.4,0.55,'#8a5a32',0,0.2,0,ch);
+  const lid=new THREE.Mesh(new THREE.CylinderGeometry(0.275,0.275,0.9,14,1,false,0,Math.PI),new THREE.MeshPhongMaterial({color:'#8a5a32',shininess:20}));lid.rotation.z=Math.PI/2;lid.rotation.y=Math.PI/2;lid.position.set(0,0.4,0);ch.add(lid);
+  [-0.3,0,0.3].forEach(x=>vbox(0.07,0.42,0.6,'#e9b949',x,0.22,0,ch,true));vbox(0.12,0.14,0.06,'#ffe08a',0,0.42,0.3,ch,true);
+  [[1.75,0.6,'#d8c9a6'],[1.95,0.95,'#cdbd96']].forEach(([x,z,c],i)=>{const sk=new THREE.Mesh(new THREE.IcosahedronGeometry(0.26,0),new THREE.MeshLambertMaterial({color:c,flatShading:true}));sk.position.set(x,0.22,z+i*0.25);sk.scale.y=0.8;S.add(sk);});
+  vbox(0.42,0.42,0.42,'#9a7040',1.95,0.21,-0.3,S);vbox(0.44,0.04,0.44,'#6a4a28',1.95,0.21,-0.3,S);
   // Casas
-  building('stash',{x:-4.9,z:6.7,w:2,d:1.7,h:1.35,wall:'#e2d3b0',roof:'#8a3a2a',wins:[[0.55,0.75]],door:-0.4,chimney:[0.5,0.4,0]});
   building('house2',{x:4.9,z:7,w:2.1,d:1.7,h:1.45,wall:'#d9c39a',roof:'#5a6a3a',wins:[[-0.55,0.8],[0.55,0.8]],chimney:[-0.5,0.4,0]});
   building('house3',{x:-3.4,z:11.6,w:1.6,d:1.4,h:1.15,wall:'#e8dcc0',roof:'#6a4a8a',wins:[[0.4,0.65]],door:-0.3});
   // Poço
@@ -2922,7 +2986,6 @@ function building(id,o){
   flowers(-6.6,-5.8,26,1.0,['#f4f0ff','#ffd34a','#ff9ac8']);fence(-7.4,-9.6,-7.4,-5.2);fence(-7.4,-5.2,-6,-5.2);
   const st=new THREE.Group();st.position.set(-3.1,0,-9.6);village.add(st);vbox(0.5,0.3,0.5,'#8b8e88',0,0.15,0,st);vbox(0.26,0.55,0.2,'#a9ada6',0,0.58,0,st);const hd=new THREE.Mesh(new THREE.IcosahedronGeometry(0.15,0),new THREE.MeshLambertMaterial({color:'#b4b8b0',flatShading:true}));hd.position.y=1.0;st.add(hd);vbox(0.06,0.4,0.06,'#e9b949',0.2,0.8,0.1,st,true);
   // forja: bigorna, treino, lenha, armas
-  const an=new THREE.Group();an.position.set(3.2,0,-6.6);village.add(an);vbox(0.3,0.28,0.3,'#5a3a22',0,0.14,0,an);vbox(0.5,0.14,0.22,'#3a3d42',0,0.35,0,an);vbox(0.2,0.1,0.18,'#3a3d42',0.3,0.36,0,an);
   const dm=new THREE.Group();dm.position.set(7,0,-5.2);village.add(dm);vbox(0.1,1,0.1,'#6b4a2a',0,0.5,0,dm);vbox(0.6,0.08,0.08,'#6b4a2a',0,0.8,0,dm);vbox(0.34,0.5,0.28,'#d8b04a',0,0.55,0,dm);const dh=new THREE.Mesh(new THREE.SphereGeometry(0.17,8,8),new THREE.MeshLambertMaterial({color:'#d8b04a'}));dh.position.y=1.0;dm.add(dh);vbox(0.08,0.5,0.04,'#c8463c',0.22,0.5,0.14,dm);
   const rk=new THREE.Group();rk.position.set(7,0,-8.6);rk.rotation.y=-0.4;village.add(rk);vbox(1.0,0.06,0.1,'#6b4a2a',0,0.5,0,rk);vbox(0.06,0.7,0.1,'#6b4a2a',-0.5,0.35,0,rk);vbox(0.06,0.7,0.1,'#6b4a2a',0.5,0.35,0,rk);
   for(let i=0;i<4;i++){vbox(0.05,0.8,0.05,'#8a8d92',-0.35+i*0.23,0.9,0.02,rk);vbox(0.12,0.05,0.05,'#5a3a22',-0.35+i*0.23,0.5,0.02,rk);}
@@ -4284,7 +4347,7 @@ installEl.addEventListener('click',e=>{
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});
 
 /* ---------- Praça: passo a passo ---------- */
-const HUB_LABELS=[['tavern','Taverna',3.9],['temple','Templo',3.0],['forge','Forja',2.5],['stash','Cofre',2.4],['board','Missões',1.9],['market','Mercado',1.8],['well','Poço',1.9]];
+const HUB_LABELS=[['tavern','Taverna',5.6],['temple','Templo',5.4],['forge','Forja',4.2],['stash','Cofre',3.0],['board','Missões',1.9],['market','Mercado',1.8],['well','Poço',1.9]];
 function renderVillage(){
   view='hub';setMode('village');
   const np=selected.size,ready=np>=5,best=bestRun();
