@@ -1239,7 +1239,7 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .inbar{width:min(220px,56%);height:8px;border-radius:5px;background:#1c1520;border:2px solid #3a2e44;overflow:hidden}.inbar i{display:block;height:100%;width:0;background:linear-gradient(#ffe9a8,#e9b949)}
 #intro,#intro p,#intro b,#intro small,#intro h1{font-family:var(--f-display)!important}
 .pubimg{display:block;max-width:min(78vw,420px);max-height:34vh;object-fit:contain;filter:drop-shadow(0 4px 0 #000a)}
-.tlogo{display:block;max-width:min(86vw,460px);max-height:30vh;object-fit:contain;filter:drop-shadow(0 5px 0 #000a) drop-shadow(0 0 14px #e9b94955)}
+.tlogo{display:block;max-width:min(94vw,540px);max-height:32vh;object-fit:contain;filter:drop-shadow(0 5px 0 #000a) drop-shadow(0 0 14px #e9b94955)}
 #intap{margin:0;font-size:14px;letter-spacing:2px;color:#cdb68a}
 #intap.go{color:#ffe9b8;animation:blink 1.3s ease-in-out infinite}
 @keyframes blink{50%{opacity:.35}}
@@ -7228,7 +7228,7 @@ function runIntro(done){
   let hasLogo=false;
   const brandImg=(src,cb)=>{const im=new Image();im.onload=()=>cb(im);im.onerror=()=>{};im.src=src;};
   brandImg('assets/brand/publisher.png',im=>{im.className='pubimg';const b=q('.publ');b.innerHTML='';b.appendChild(im);});
-  brandImg('assets/brand/logo.png',im=>{hasLogo=true;im.className='tlogo';const n=q('#tname');n.innerHTML='';n.appendChild(im);});
+  brandImg('assets/brand/logo.png',im=>{hasLogo=true;q('.tico').style.display='none';im.className='tlogo';const n=q('#tname');n.innerHTML='';n.appendChild(im);});
   // 1) logo da publicadora
   gsap.timeline().to('.publ',{opacity:1,y:0,duration:1.1,ease:'power2.out'},0.3).fromTo('.pico',{scale:0.6},{scale:1,duration:1.1,ease:'back.out(2)'},0.3)
     .to('.inld',{opacity:1,duration:0.6},1.4);
