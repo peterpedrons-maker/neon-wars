@@ -1537,11 +1537,11 @@ const CLASSES={
     dica:'Coloque num morro, atrás da linha de frente.',
     armas:[['Arco curto',1,-1],['Arco longo',0,0],['Arco composto',0,1]],
     armad:[['Gibão verde',0,0],['Capa de caça',1,-2],['Colete acolchoado',-1,3]]},
-  bardo:{nome:'Bardo',papel:'Suporte (bônus)',twoHanded:true,hp:17,atk:2,def:12,mov:3,alc:3,dmg:[1,4,1],ini:2,per:2,
+  bardo:{nome:'Bardo',papel:'Suporte (bônus)',twoHanded:true,hp:19,atk:2,def:12,mov:3,alc:1,dmg:[1,4,1],ini:2,per:2,
     resumo:'Inspira: +2 no acerto.',
-    como:['Todo turno toca uma balada pra um aliado a até 4 casas: +2 no próximo acerto.','Depois ataca de média distância (alcance 3).'],
+    como:['Todo turno toca uma balada pra um aliado a até 4 casas: +2 no próximo acerto.','Depois ataca corpo a corpo com o florete; as músicas de ataque e de enfraquecer alcançam de longe.'],
     dica:'Coloque no centro, perto dos atacantes.',
-    armas:[['Alaúde','0','0'],['Flauta',1,-1],['Violino',0,1]].map(a=>[a[0],+a[1],+a[2]]),
+    armas:[['Florete','0','0'],['Rapieira',1,-1],['Espada fina',0,1]].map(a=>[a[0],+a[1],+a[2]]),
     armad:[['Casaco colorido',0,0],['Capa de viagem',1,-2],['Colete bordado',-1,3]]},
 };
 const TRAITS=[
@@ -3790,7 +3790,7 @@ const COMO={
   mago:{campo:'Escolhe a casa mais longe dos inimigos de onde ainda alcança, de preferência no alto.',inimigos:'Raio no inimigo mais ferido, a até 4 casas.',aliados:'Depende deles: é frágil e precisa de gente na frente.'},
   clerigo:{campo:'Vai até o aliado que estiver abaixo de 55% de vida.',inimigos:'Se ninguém precisa de cura, ataca de perto.',aliados:'Cura 2d4+2 em quem estiver mais ferido (até ele mesmo).'},
   arqueiro:{campo:'Procura morros: do alto ganha +4 de acerto.',inimigos:'Atira no mais ferido a até 5 casas e evita ficar perto.',aliados:'Fica atrás da linha de frente.'},
-  bardo:{campo:'Mantém distância média (alcance 3).',inimigos:'Ataca o mais ferido ao alcance, com golpe fraco.',aliados:'Todo turno inspira um aliado a até 4 casas: +2 no próximo acerto.'},
+  bardo:{campo:'Fica no meio do grupo, perto dos aliados que apoia.',inimigos:'Ataca corpo a corpo com o florete, golpe fraco; as músicas de ataque e de enfraquecer alcançam de longe.',aliados:'Todo turno inspira um aliado a até 4 casas: +2 no próximo acerto.'},
 };
 const IA_TXT={rush:'Avança',skirmish:'Atira de longe',flank:'Caça os frágeis',healer:'Cura aliados',guard:'Vigia o posto'};
 let run={mission:null,map:0,phaseNo:0,results:[],party:[],enemyList:null,total:0,inventory:[],endless:false};
@@ -4330,7 +4330,7 @@ const skDesc=x=>{
   switch(x.kind){
     case 'atk':return `Ataque ×${x.mult}${x.atkB?`, ${x.atkB>0?'+':''}${x.atkB} de acerto`:''}${st?` e aplica ${st}`:''}${x.leech?', recupera parte do dano':''}${x.need?' (só em alvo isolado)':''}.`;
     case 'multi':return `${x.hits} ataques seguidos${x.atkB?` (${x.atkB} de acerto)`:''}.`;
-    case 'aoe':return `Dano em área${x.area.c==='self'?' em volta de quem usa':' em volta do alvo'}${st?` e aplica ${st}`:''}.`;
+    case 'aoe':return `Dano em área${x.area.r>1?` (raio ${x.area.r})`:''}${x.area.c==='self'?' em volta de quem usa':' em volta do alvo'}${st?` e aplica ${st}`:''}${x.alc>1?` · alcance ${x.alc}`:''}.`;
     case 'debuff':return `Aplica ${st} no alvo (ele pode resistir).`;
     case 'debuffArea':return `Aplica ${st} nos inimigos a ${x.rad} casa${x.rad>1?'s':''}.`;
     case 'buffAllies':return `${x.inspire?`Aliados a ${x.rad} casas ganham +${x.inspire} de acerto`:`Aliados a ${x.rad} casas ganham ${st}`}.`;
@@ -4989,7 +4989,15 @@ const SK={
   chuva_flechas:{nome:'Chuva de Flechas',cls:'arqueiro',sub:'saraivador',lv:10,cd:4,kind:'aoe',area:{c:'target',r:1},mult:0.7},
   flecha_incendiaria:{nome:'Flecha Incendiária',cls:'arqueiro',sub:'saraivador',lv:14,cd:4,kind:'atk',mult:0.9,st:[{id:'queimadura'}],elem:'fogo'},
   marca_cacador:{nome:'Marca do Caçador',cls:'arqueiro',sub:'patrulheiro',lv:10,cd:4,kind:'debuff',st:[{id:'marcado'}],self:[{id:'foco'}]},
-  nota_aguda:{nome:'Nota Aguda',cls:'bardo',lv:3,cd:3,kind:'aoe',area:{c:'target',r:1},mult:0.6},
+  // em área (v2): armadilha, meteoros, terremoto, julgamento, saraivada, grito
+  armadilha_espinhos:{nome:'Armadilha de Espinhos',cls:'ladino',sub:'armadilheiro',lv:18,cd:5,kind:'aoe',alc:4,area:{c:'target',r:1},mult:0.6,st:[{id:'preso'}]},
+  campo_minado:{nome:'Campo Minado',cls:'ladino',sub:'armadilheiro',lv:24,cd:8,kind:'aoe',alc:4,area:{c:'target',r:2},mult:0.7,st:[{id:'lento'}]},
+  chuva_meteoros:{nome:'Chuva de Meteoros',cls:'mago',sub:'piromante',lv:24,cd:8,kind:'aoe',area:{c:'target',r:2},mult:1,elem:'fogo',st:[{id:'queimadura'}]},
+  terremoto:{nome:'Terremoto',cls:'mago',sub:'geomante',lv:24,cd:8,kind:'aoe',area:{c:'target',r:2},mult:0.8,st:[{id:'lento'}]},
+  julgamento:{nome:'Julgamento',cls:'clerigo',sub:'templario',lv:22,cd:6,kind:'aoe',area:{c:'target',r:1},mult:0.9,st:[{id:'marcado'}]},
+  saraivada_total:{nome:'Saraivada Total',cls:'arqueiro',sub:'saraivador',lv:24,cd:8,kind:'aoe',area:{c:'target',r:2},mult:0.8},
+  grito_estridente:{nome:'Grito Estridente',cls:'bardo',sub:'dissonante',lv:18,cd:5,kind:'aoe',alc:4,spell:true,area:{c:'target',r:1},mult:0.5,st:[{id:'abalado'}]},
+  nota_aguda:{nome:'Nota Aguda',cls:'bardo',lv:3,cd:3,kind:'aoe',alc:4,spell:true,area:{c:'target',r:1},mult:0.6},
   hino_coragem:{nome:'Hino de Coragem',cls:'bardo',lv:6,cd:5,kind:'buffAllies',rad:3,st:[{id:'fortalecido'}]},
   desafinar:{nome:'Desafinar',cls:'bardo',sub:'dissonante',lv:10,cd:3,kind:'debuff',alc:4,st:[{id:'abalado'}]},
   cancao_vigor:{nome:'Canção de Vigor',cls:'bardo',sub:'consonante',lv:10,cd:4,kind:'buffAllies',rad:2,st:[{id:'regeneracao'}]},
@@ -5315,7 +5323,7 @@ const trCost=n=>TREE_COST[n.t]+[0,1,n.t==='S'?2:3][n.lv>=17?2:n.lv>=9?1:0];   //
 const TICON={
   golpe_poderoso:'c:golpe_poderoso',grito_guerra:'c:grito_guerra',provocar:'u:eye-shield',corte_profundo:'c:corte_profundo',giratorio:'u:whirlwind',escudo_aliado:'c:escudo_aliado',
   estocada_dupla:'u:daggers',golpe_costas:'c:golpe_costas',marcar_alvo:'s:marcado',lamina_envenenada:'c:lamina_envenenada',rede:'s:preso',
-  bola_fogo:'m:magic:fireball:8',escudo_arcano:'m:magic:shield-bubble:12',chama_viva:'s:queimadura',nevasca:'u:snowflake-1',tremor:'c:tremor',
+  bola_fogo:'m:magic:fireball:8',escudo_arcano:'m:magic:shield-bubble:12',chama_viva:'s:queimadura',armadilha_espinhos:'m:environment:spike-trap:8',campo_minado:'u:claws',chuva_meteoros:'c:meteoros',terremoto:'c:terremoto',julgamento:'c:julgamento',saraivada_total:'c:saraivada_total',grito_estridente:'c:grito_estridente',nevasca:'u:snowflake-1',tremor:'c:tremor',
   cura_maior:'m:magic:healing-aura:8',bencao:'u:sparkles',castigo:'u:winged-scepter',golpe_sagrado:'c:golpe_sagrado',purificar:'u:healing',punicao:'u:scales',
   tiro_certeiro:'u:bullseye',chuva_flechas:'u:arrow-cluster',flecha_incendiaria:'c:flecha_incendiaria',marca_cacador:'u:target-arrows',
   nota_aguda:'u:lyre',hino_coragem:'s:fortalecido',desafinar:'s:abalado',cancao_vigor:'s:regeneracao',pavor:'s:medo',cancao_ninar:'u:harp',
@@ -5877,7 +5885,7 @@ async function castSkill(u,plan){
   if(sk.kind==='atk'||sk.kind==='multi'||sk.kind==='aoe'){
     if(plan.tile&&(plan.tile.r!==u.r||plan.tile.c!==u.c)){await moveAlong(u,pathTo(plan.reach,plan.tile));await checkSecret(u);}
     if(!plan.target.alive)return;
-    const opts={label:sk.nome,mult:sk.mult||1,atkB:sk.atkB||0,st:sk.st,area:sk.area,leech:sk.leech,elem:sk.elem};
+    const opts={label:sk.nome,mult:sk.mult||1,atkB:sk.atkB||0,st:sk.st,area:sk.area,leech:sk.leech,elem:sk.elem,spell:sk.spell,far:sk.alc>1?true:undefined};
     await attack(u,plan.target,opts);
     if(sk.kind==='multi'&&plan.target.alive&&u.alive)for(let i=1;i<(sk.hits||2);i++)await attack(u,plan.target,{...opts,label:sk.nome+' ✕'+(i+1),st:null});
     return;
@@ -5923,7 +5931,7 @@ async function attack(u,t,opts={}){
   if(u.cls==='arqueiro'&&u.sub==='patrulheiro'&&u.lastTargetId===t.id)parts.push([2,'foco']);
   if(u.cls==='ladino'&&u.sub==='armadilheiro'&&!u.ambushDone)parts.push([3+(pbU.emb||0),'emboscada']);
   u.lastTargetId=t.id;
-  const magic=isMagicAttacker(u);let defVal=magic?(t.defMag??t.def):t.def;
+  const magic=isMagicAttacker(u)||!!opts.spell,far=opts.far!=null?opts.far:u.alc>1;let defVal=magic?(t.defMag??t.def):t.def;
   if(t.side==='hero'&&t.cls==='guerreiro'&&t.sub==='cavaleiro'&&heroesAlive().some(a=>a!==t&&dist(a,t)<=1&&a.hp<=a.maxhp*0.5))defVal+=2;
   defVal+=tm.def+defBonus(t);if(opts.ignoreDef)defVal-=opts.ignoreDef;
   const pd=passiveDmg(u,t,opts,hu,ht,magic);
@@ -5934,13 +5942,13 @@ async function attack(u,t,opts={}){
   tRing.visible=true;tRing.position.set(t.grp.position.x,t.grp.position.y+0.09,t.grp.position.z);tRing.scale.setScalar(t.big?1.25:1);
   const clearLine=aimLine(u,t,u.side==='hero'?'#e9b949':'#d4503f');
   await waitS(0.9);                      // câmera enquadra atacante e alvo; o alvo fica destacado
-  await showRoll({u,skill:`${magic?'✨':u.alc>1?'➶':'⚔'} ${opts.label||skillOf(u)}`,roll,outcome:crit?'crit':hit?'hit':'miss'});
-  await chargeUp(u,magic?'magic':u.alc>1?'ranged':'melee');   // canaliza o golpe (pose + brilho) antes de soltar
+  await showRoll({u,skill:`${magic?'✨':far?'➶':'⚔'} ${opts.label||skillOf(u)}`,roll,outcome:crit?'crit':hit?'hit':'miss'});
+  await chargeUp(u,magic?'magic':far?'ranged':'melee');   // canaliza o golpe (pose + brilho) antes de soltar
   if(u.inspired){u.inspired=false;}
   if(hasSt(u,'furtivo'))removeStatus(u,'furtivo');
   if(u.cls==='ladino'&&u.sub==='armadilheiro'){u.ambushDone=true;}
   const p=u.grp.position,ox=p.x,oz=p.z,dx=t.c-u.c,dz=t.r-u.r,len=Math.hypot(dx,dz)||1;
-  if(u.alc>1){SFX.shoot();drawBow(u,0.3);chargeEnd(u);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox-dx/len*0.12,z:oz-dz/len*0.12,duration:0.08}).to(p,{x:ox,z:oz,duration:0.1});await projectile(u,t);}
+  if(far){SFX.shoot();drawBow(u,0.3);chargeEnd(u);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox-dx/len*0.12,z:oz-dz/len*0.12,duration:0.08}).to(p,{x:ox,z:oz,duration:0.1});await projectile(u,t);}
   else{SFX.swing();swingArm(u,0.12,0.18);chargeEnd(u);if(u.lpc)lpcSetState(u,u.lpc.action);await gsap.timeline().to(p,{x:ox-dx/len*0.14,z:oz-dz/len*0.14,duration:0.1,ease:'power1.out'}).to(p,{x:ox+dx/len*0.5,z:oz+dz/len*0.5,duration:0.09,ease:'power4.in'}).to(p,{x:ox,z:oz,duration:0.24,ease:'power2.out'});}
   clearLine();
   if(!hit){
