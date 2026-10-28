@@ -1394,6 +1394,10 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .vemo .vb-in{font-size:24px;line-height:1;filter:drop-shadow(0 2px 0 #000a);animation:vpop .28s cubic-bezier(.2,1.6,.4,1) both,vfloat 1.3s ease-out both}
 @keyframes vpop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
 @keyframes vfloat{from{margin-top:0}to{margin-top:-14px}}
+/* herói caído (KO): contagem regressiva sobre o corpo */
+.koel{position:absolute;z-index:7;transform:translate(-50%,-100%);display:flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;background:#1a0d0d;border:2px solid #d4503f;color:#ffd0c8;font:700 11px var(--f-display);pointer-events:none;box-shadow:0 2px 0 #000a;animation:koblink 1.2s ease-in-out infinite}
+.koel b{color:#ff8a78;letter-spacing:.06em}.koel span{background:#d4503f;color:#fff;border-radius:99px;padding:0 6px}
+@keyframes koblink{50%{opacity:.65}}
 </style>
 </head>
 <body>
@@ -2266,7 +2270,7 @@ const BIOMES={
 /* ---------- Mapa atual (reconstruído a cada fase) ---------- */
 /* Caracteres: . chão, 1/2 morro, w água, b ponte, r pedra, t árvore/cacto, S parede rachada */
 const DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
-let TRAPS=new Set(), REVEALED=new Set();
+let TRAPS=new Set(), REVEALED=new Set(), HTRAPS=new Map();
 let LV=null, MAP=[], ROWS=16, COLS=16, OFFX=7.5, OFFZ=7.5, SECRET=null, SECRET_ADJ=[], ZONE=new Set(), EZONE=[];
 const k=(r,c)=>r*COLS+c;
 const cell=(r,c)=>MAP[r][c];
@@ -2386,7 +2390,7 @@ function applyLevel(mp,seed){
   const lv=genLevel(mp,seed);
   LV={mp,seed,reach:lv.reach};
   MAP=lv.map;ROWS=MAP.length;COLS=MAP[0].length;OFFX=(COLS-1)/2;OFFZ=(ROWS-1)/2;SECRET=lv.secret;
-  TRAPS=lv.traps||new Set();REVEALED=new Set();
+  TRAPS=lv.traps||new Set();REVEALED=new Set();HTRAPS=new Map();
   if(lv.zone){ZONE=lv.zone;EZONE=lv.ezone;}
   else{ZONE=new Set();EZONE=[];for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(!passable(r,c))continue;if(r>=ROWS-zoneRows(ROWS))ZONE.add(r*COLS+c);if(r<enemyRows(ROWS)+1)EZONE.push({r,c});}}
   const ext=Math.max(ROWS,COLS)/2+4;
@@ -4218,7 +4222,7 @@ const COMO={
   guerreiro:{campo:'Avança pelo caminho mais curto até o inimigo.',inimigos:'Ataca de perto o inimigo mais ferido que alcançar.',aliados:'Fica na frente: quem está atrás dele sofre menos.'},
   ladino:{campo:'Corre (mover 4). Nos primeiros turnos, sem alvo ao alcance, vai examinar paredes suspeitas.',inimigos:'Golpeia de perto o inimigo mais ferido.',aliados:'Joga sozinho, mas o que ele acha (passagens, baús) ajuda o grupo todo.'},
   mago:{campo:'Escolhe a casa mais longe dos inimigos de onde ainda alcança, de preferência no alto.',inimigos:'Raio no inimigo mais ferido, a até 4 casas.',aliados:'Depende deles: é frágil e precisa de gente na frente.'},
-  clerigo:{campo:'Vai até o aliado que estiver abaixo de 55% de vida.',inimigos:'Se ninguém precisa de cura, ataca de perto.',aliados:'Cura 2d4+2 em quem estiver mais ferido (até ele mesmo).'},
+  clerigo:{campo:'Vai até o aliado que estiver abaixo de 55% de vida.',inimigos:'Se ninguém precisa de cura, ataca de perto.',aliados:'Cura 2d4+2 em quem estiver mais ferido (até ele mesmo) e revive aliado caído (30% de vida, 50% se Curandeiro) se chegar a tempo: o KO dura 3 rodadas.'},
   arqueiro:{campo:'Procura morros: do alto ganha +4 de acerto.',inimigos:'Atira no mais ferido a até 5 casas e evita ficar perto.',aliados:'Fica atrás da linha de frente.'},
   bardo:{campo:'Fica no meio do grupo, perto dos aliados que apoia.',inimigos:'Ataca corpo a corpo com o florete, golpe fraco; as músicas de ataque e de enfraquecer alcançam de longe.',aliados:'Todo turno inspira um aliado a até 4 casas: +2 no próximo acerto.'},
 };
@@ -4429,7 +4433,7 @@ function serializeHero(h){
     maxhp:h.maxhp-((h.pbApplied&&h.pbApplied.hp)||0),hp:Math.min(h.hp,h.maxhp-((h.pbApplied&&h.pbApplied.hp)||0)),atk:h.atk,def:h.def-((h.pbApplied&&h.pbApplied.def)||0),defMag:h.defMag-((h.pbApplied&&h.pbApplied.defMag)||0),mov:h.mov,alc:h.alc,dmg:[h.dmg[0],h.dmg[1],h.dmg[2]-((h.pbApplied&&h.pbApplied.dmg)||0)],ini:h.ini,per:h.per-((h.pbApplied&&h.pbApplied.per)||0),
     critBonus:(h.critBonus||0)-((h.pbApplied&&h.pbApplied.crit)||0),look:h.look,arma:h.arma,armadura:h.armadura,
     xpTotal:h.xpTotal||0,xpRun:h.xpRun||0,level:h.level||1,
-    injured:!!h.injured,injuredMissionsLeft:h.injuredMissionsLeft||0,benchXpBonus:h.benchXpBonus||0,
+    injured:!!h.injured,dead:!!h.dead,injuredMissionsLeft:h.injuredMissionsLeft||0,benchXpBonus:h.benchXpBonus||0,
     ver:2,attrBase:h.attrBase,attrPts:h.attrPts,afin:h.afin,attrBonus:h.attrBonus,loadout:h.loadout,sub:h.sub,tree:h.tree?{l:h.tree.l.slice(),s:h.tree.s.slice()}:null,equip};
 }
 function hydrateHero(s){
@@ -4438,7 +4442,7 @@ function hydrateHero(s){
     maxhp:s.maxhp,hp:s.hp,atk:s.atk,def:s.def,defMag:s.defMag!=null?s.defMag:baseDefMag(CLASSES[s.cls].def),mov:s.mov,alc:s.alc,dmg:s.dmg.slice(),ini:s.ini,per:s.per,
     critBonus:s.critBonus||0,look:s.look,arma:s.arma,armadura:s.armadura,
     xpTotal:s.xpTotal||0,xpRun:s.xpRun||0,xp:0,level:s.level||1,
-    injured:!!s.injured,injuredMissionsLeft:s.injuredMissionsLeft||0,benchXpBonus:s.benchXpBonus||0,
+    injured:!!s.injured,dead:!!s.dead,injuredMissionsLeft:s.injuredMissionsLeft||0,benchXpBonus:s.benchXpBonus||0,
     loadout:(s.loadout&&s.loadout!=='arqueiro_b'&&LPC_RECIPES[s.loadout])?s.loadout:s.cls,
     sub:(s.sub&&SUBCLASSES[s.cls]&&SUBCLASSES[s.cls].includes(s.sub))?s.sub:null,
     r:null,c:null,equip:{}};
@@ -4723,7 +4727,7 @@ function renderTavern(){
       <div class="pcbody">
         <span class="nm">${h.first}</span>
         <span class="cl">${ico('classe',h.cls)}${CLASSES[h.cls].nome} · ${h.sub?SUB_INFO[h.sub].nome:CLASSES[h.cls].papel}</span>
-        ${h.injured?`<span class="pcstats">${ico('vila','ferido')} Recuperando (${h.injuredMissionsLeft})</span>`:`<span class="pcstats row"><span>Nv.${h.level||1}${treeFree(h)?` <b style="color:#e9b949" title="pontos de habilidade livres">✦${treeFree(h)}</b>`:''}</span><span>${ico('stat','vida')}${h.maxhp}</span><span>${ico('stat','atq')}${h.atk}</span><span>${ico('stat','def')}${h.def}</span></span>`}
+        ${h.injured?`<span class="pcstats">${ico('vila','ferido')} ${h.dead?'Caído — Templo':`Recuperando (${h.injuredMissionsLeft})`}</span>`:`<span class="pcstats row"><span>Nv.${h.level||1}${treeFree(h)?` <b style="color:#e9b949" title="pontos de habilidade livres">✦${treeFree(h)}</b>`:''}</span><span>${ico('stat','vida')}${h.maxhp}</span><span>${ico('stat','atq')}${h.atk}</span><span>${ico('stat','def')}${h.def}</span></span>`}
         <span class="tr">${h.trait.nome}</span>
       </div>
     </button>`).join('');
@@ -4771,6 +4775,7 @@ const skDesc=x=>{
     case 'atk':return `Ataque ×${x.mult}${x.atkB?`, ${x.atkB>0?'+':''}${x.atkB} de acerto`:''}${st?` e aplica ${st}`:''}${x.leech?', recupera parte do dano':''}${x.need?' (só em alvo isolado)':''}.`;
     case 'multi':return `${x.hits} ataques seguidos${x.atkB?` (${x.atkB} de acerto)`:''}.`;
     case 'aoe':return `Dano em área (${x.area.shape?AREA_TXT[x.area.shape]+(x.area.len?' de '+x.area.len+' casas':''):x.area.c==='self'?'em volta de quem usa':'explosão'+(x.area.r>1?' raio '+x.area.r:'')}), igual para todos${st?`; aplica ${st}`:''}${x.alc>1?` · alcance ${x.alc}`:''}. Acerta aliados também.`;
+    case 'trap':return `Deixa uma armadilha no chão (${x.area.r?'explode em raio '+x.area.r:'só na casa'}): quem pisar leva dano${st?` e fica ${st}`:''}. Só inimigos ativam · alcance ${x.alc}.`;
     case 'healArea':return `Cura ×${x.mult} todos na área (${AREA_TXT[x.area.shape]}) · alcance ${x.alc}. Cura inimigos que estiverem dentro.`;
     case 'debuff':return `Aplica ${st} no alvo (ele pode resistir).`;
     case 'debuffArea':return `Aplica ${st} nos inimigos a ${x.rad} casa${x.rad>1?'s':''}.`;
@@ -4977,6 +4982,7 @@ function renderStash(){
   `:`<div class="scroll">${roster.length?`<div class="stg-bar"><span>${roster.length} ${roster.length===1?'herói':'heróis'}</span><button class="btn ghost sm" data-stbestall="1">Equipar o melhor em todos</button></div>`+roster.map(h=>heroEquipBox(h,'steq')).join(''):'<p class="note">Recrute heróis na taverna primeiro.</p>'}</div>`}`;
 }
 function injuryRushCost(h){return INJURY_RUSH_BASE+(h.level||1)*INJURY_RUSH_PER_LEVEL;}
+const healCost=h=>h.dead?injuryRushCost(h)*3:injuryRushCost(h);
 function renderForge(){
   view='forge';setMode('village');PI_.classList.add('qd','kt');
   const row=h=>{
@@ -4999,13 +5005,13 @@ function renderTemple(){
   const injured=roster.filter(h=>h.injured);
   PI_.innerHTML=`
   <div class="head">${navBack('toVillage','Praça')}${wt('temple','Vila de Brumavale','Templo da Aurora')}</div>
-  <p class="hint">${ico('vila','ouro')} ${fmt(gold)} ouro. Herói ferido se recupera sozinho com o tempo (uma missão concluída = um passo), ou pague pra acelerar.</p>
+  <p class="hint">${ico('vila','ouro')} ${fmt(gold)} ouro. Herói ferido se recupera sozinho com o tempo (uma missão concluída = um passo), ou pague pra acelerar. Quem caiu e ninguém reviveu em ${KO_TURNS} turnos só volta pagando a ressurreição.</p>
   <div class="scroll">
-    ${injured.length?injured.map(h=>{const cost=injuryRushCost(h),can=gold>=cost;return`
+    ${injured.length?injured.sort((a,b)=>(b.dead?1:0)-(a.dead?1:0)).map(h=>{const cost=healCost(h),can=gold>=cost;return`
     <div class="hcard">
       <div class="hhead"><img src="${h.portrait}" alt=""><div class="grow"><b class="nm">${h.first}</b><div class="cl" style="color:#e8d3a8">${ico('classe',h.cls)}${CLASSES[h.cls].nome} · Nv.${h.level||1}</div>
-        <div class="note" style="color:#f0dfb9">${ico('vila','ferido')} Faltam ${h.injuredMissionsLeft} ${h.injuredMissionsLeft===1?'missão':'missões'} pra voltar sozinho.</div></div></div>
-      <button class="btn ${can?'':'ghost'} sm" data-healhero="${h.id}" ${can?'':'disabled'}>Curar agora · ${ico('vila','ouro')} ${fmt(cost)}</button>
+        <div class="note" style="color:${h.dead?'#ff9a8a':'#f0dfb9'}">${ico('vila','ferido')} ${h.dead?'Caiu em combate e não foi revivido. Só volta com uma oração no Templo.':`Faltam ${h.injuredMissionsLeft} ${h.injuredMissionsLeft===1?'missão':'missões'} pra voltar sozinho.`}</div></div></div>
+      <button class="btn ${can?'':'ghost'} sm" data-healhero="${h.id}" ${can?'':'disabled'}>${h.dead?'Ressuscitar':'Curar agora'} · ${ico('vila','ouro')} ${fmt(cost)}</button>
     </div>`;}).join(''):`<div class="empty">${ico('subclasse','curandeiro','xl')}<p>Ninguém precisa de cuidados agora.<br>Seu elenco todo está pronto pra lutar.</p></div>`}
   </div>`;
 }
@@ -5041,7 +5047,7 @@ PI_.addEventListener('click',e=>{
   const fg=t.closest('[data-forge]');if(fg){const [id,sub]=fg.dataset.forge.split(':');const h=roster.find(x=>x.id===+id);
     if(h&&(h.level||1)>=SUB_UNLOCK_LEVEL&&SUBCLASSES[h.cls].includes(sub)&&h.sub!==sub){const cost=h.sub?subRespecCost(h):0;
       if(gold>=cost){gold-=cost;setSub(h,sub);saveGame();}}renderForge();return;}
-  const heal=t.closest('[data-healhero]');if(heal){const h=roster.find(x=>x.id===+heal.dataset.healhero);if(h&&h.injured){const cost=injuryRushCost(h);if(gold>=cost){gold-=cost;h.injured=false;h.injuredMissionsLeft=0;h.hp=h.maxhp;saveGame();}}renderTemple();return;}
+  const heal=t.closest('[data-healhero]');if(heal){const h=roster.find(x=>x.id===+heal.dataset.healhero);if(h&&h.injured){const cost=healCost(h),was=h.dead;if(gold>=cost){gold-=cost;h.injured=false;h.dead=false;h.injuredMissionsLeft=0;h.hp=was?Math.ceil(h.maxhp*0.6):h.maxhp;saveGame();}}renderTemple();return;}
   const rec=t.closest('[data-recruit]');if(rec){renderSheet(+rec.dataset.recruit,'draw');return;}
   const sv=t.closest('[data-stashview]');if(sv){stashView=sv.dataset.stashview;stashSel=null;renderStash();return;}
   const stb=t.closest('[data-stashtab]');if(stb){stashFilter=stb.dataset.stashtab;stashSel=null;renderStash();return;}
@@ -5174,6 +5180,7 @@ function bfsReach(u,limit){
       const nr=r+dr,nc=c+dc;if(!passable(nr,nc))continue;const kk=k(nr,nc);if(res.has(kk))continue;
       if(Math.abs(hOf(nr,nc)-hOf(r,c))>climbOf(u))continue;
       if(TRAPS.has(kk)&&(u.side==='enemy'||REVEALED.has(kk)))continue; // inimigos conhecem a masmorra; heróis só depois de ver
+      if(HTRAPS.has(kk)&&(u.side==='hero'||tatOf(u)>=6))continue;   // armadilha dos heróis: eles sabem onde está; inimigo esperto desvia, o burro pisa
       const occ=unitAt(nr,nc);
       if(occ&&occ!==u){if(occ.side!==u.side)continue;res.set(kk,{r:nr,c:nc,d:cur.d+1,prev:k(r,c),pass:true});q.push([nr,nc]);continue;}
       res.set(kk,{r:nr,c:nc,d:cur.d+1,prev:k(r,c)});q.push([nr,nc]);
@@ -5244,6 +5251,7 @@ async function moveAlong(u,path){
     await gsap.timeline().to(u.grp.position,{x:tx,z:tz,duration:0.24,ease:'none'},0).to(u.grp.position,{y:peak,duration:0.12,ease:'power1.out'},0).to(u.grp.position,{y:ty,duration:0.12,ease:'power1.in'},0.12);
     burst(u.grp.position,{n:3,colors:['#c9b28a','#a08a62'],spread:0.3,up:0.1,y:0.03,life:0.3,size:0.7});
     if(u.side==='hero'&&TRAPS.has(k(p.r,p.c))&&!REVEALED.has(k(p.r,p.c))){await springTrap(u,p);if(!u.alive)break;}
+    {const ht=HTRAPS.get(k(p.r,p.c));if(ht&&u.side!==ht.owner.side){await springHeroTrap(ht,u);if(!u.alive)break;}}
     const bl=stOf(u,'sangramento');if(bl){const bd=3*bl.n;floatText(u,`SAN -${bd}`,'miss');damage(u,bd,{first:'o sangramento',side:'trap'},false);if(!u.alive)break;}
   }
   removeMk();
@@ -5252,6 +5260,38 @@ async function moveAlong(u,path){
   if(callout&&callout.u===u&&callout.el.classList.contains('mv')){const c=callout;c.el.classList.remove('go');gsap.to(c.el,{opacity:0,y:-8,duration:0.25,delay:0.1,onComplete:()=>{if(callout===c)hideCallout();}});}
 }
 // armadilha escondida: só os heróis caem; depois de disparada fica marcada no chão
+const htrapTex=(kind)=>{const c=document.createElement('canvas');c.width=c.height=32;const g=c.getContext('2d');
+  g.strokeStyle='#ffd34a';g.lineWidth=2;g.setLineDash([4,3]);g.beginPath();g.arc(16,16,13,0,7);g.stroke();g.setLineDash([]);
+  g.fillStyle=kind==='mina'?'#d4503f':'#cfd6dc';
+  if(kind==='mina'){g.beginPath();g.arc(16,16,5,0,7);g.fill();g.fillRect(15,6,2,5);g.fillRect(15,21,2,5);g.fillRect(6,15,5,2);g.fillRect(21,15,5,2);}
+  else[[10,20],[16,22],[22,20],[13,13],[19,13]].forEach(([x,y])=>{g.beginPath();g.moveTo(x-2,y+3);g.lineTo(x,y-5);g.lineTo(x+2,y+3);g.fill();});
+  const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;return t;};
+function placeHeroTrap(u,C,sk){
+  const kk=k(C.r,C.c);if(HTRAPS.has(kk))return;
+  const pos={x:wx(C.c),y:topY(C.r,C.c),z:wz(C.r)};
+  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(0.85,0.85),new THREE.MeshBasicMaterial({map:htrapTex(sk.trap),transparent:true,depthWrite:false,opacity:0.9}));
+  mesh.rotation.x=-Math.PI/2;mesh.position.set(pos.x,pos.y+0.03,pos.z);boardGroup.add(mesh);
+  HTRAPS.set(kk,{r:C.r,c:C.c,owner:u,sk,mesh});
+  SFX.trap();pulse(pos,'#ffd34a',1.1,0.5,0.05);burst(pos,{n:8,colors:['#ffd34a','#ffffff'],spread:0.4,up:0.5,y:0.1,life:0.5});
+  floatText(u,'Armadilha armada','buff');addLog(`${u.first} armou ${sk.nome}`,'good');xp(u,8);
+}
+async function springHeroTrap(ht,u){
+  HTRAPS.delete(k(ht.r,ht.c));boardGroup.remove(ht.mesh);
+  const pos={x:wx(ht.c),y:topY(ht.r,ht.c),z:wz(ht.r)},o=ht.owner,sk=ht.sk;
+  SFX.trap();fxPlay('environment','spike-trap-32px_strip8.png',8,14,pos,{w:1.4});shakeCam(0.18,0.3);
+  if(sk.trap==='mina'){fxPlay('magic','fireball-32px_strip8.png',8,18,{x:pos.x,y:pos.y+0.3,z:pos.z},{w:2.4});SFX.spellHit();}
+  showCallout(u,`⚠ ${sk.nome}!`);
+  const cells=areaCells({r:ht.r,c:ht.c},{r:ht.r,c:ht.c},{...sk.area,c:'target'});
+  const [n,sd,b]=o.dmg||[1,6,2];
+  for(const v of unitsIn(cells.length?cells:[{r:ht.r,c:ht.c}])){
+    if(v.side===o.side||!v.alive)continue;
+    const d=Math.max(1,Math.round((dice(n,sd)+b)*(sk.mult||1)*stMods(v).inn));
+    floatText(v,`-${d}`,'');addLog(`${v.first} caiu na ${sk.nome} de ${o.first}: ${d} de dano`,'good');
+    damage(v,d,o,false);
+    if(v.alive)for(const x of sk.st||[]){await statusAttach(v,x.id);addStatus(v,x.id,{dur:x.dur,src:o,quiet:true});}
+  }
+  await wait(450);
+}
 async function springTrap(u,p){
   SFX.trap();
   const kk=k(p.r,p.c),veneno=(p.r*7+p.c*3)%2===1;REVEALED.add(kk);
@@ -5469,8 +5509,8 @@ const SK={
   flecha_incendiaria:{nome:'Flecha Incendiária',cls:'arqueiro',sub:'saraivador',lv:14,cd:4,kind:'atk',mult:0.9,st:[{id:'queimadura'}],elem:'fogo'},
   marca_cacador:{nome:'Marca do Caçador',cls:'arqueiro',sub:'patrulheiro',lv:10,cd:4,kind:'debuff',st:[{id:'marcado'}],self:[{id:'foco'}]},
   // em área (v2): armadilha, meteoros, terremoto, julgamento, saraivada, grito
-  armadilha_espinhos:{nome:'Armadilha de Espinhos',cls:'ladino',sub:'armadilheiro',lv:18,cd:5,kind:'aoe',alc:4,area:{c:'target',r:1},mult:0.6,st:[{id:'preso'}]},
-  campo_minado:{nome:'Campo Minado',cls:'ladino',sub:'armadilheiro',lv:24,cd:8,kind:'aoe',alc:4,area:{c:'target',r:2},mult:0.7,st:[{id:'lento'}]},
+  armadilha_espinhos:{nome:'Armadilha de Espinhos',cls:'ladino',sub:'armadilheiro',lv:18,cd:4,kind:'trap',alc:4,area:{c:'target',r:0,shape:'burst'},mult:0.9,st:[{id:'preso'}],trap:'espinhos'},
+  campo_minado:{nome:'Campo Minado',cls:'ladino',sub:'armadilheiro',lv:24,cd:6,kind:'trap',alc:4,area:{c:'target',r:1,shape:'burst'},mult:0.9,st:[{id:'lento'}],trap:'mina'},
   chuva_meteoros:{nome:'Chuva de Meteoros',cls:'mago',sub:'piromante',lv:24,cd:8,kind:'aoe',area:{c:'target',r:2},mult:1,elem:'fogo',st:[{id:'queimadura'}]},
   terremoto:{nome:'Terremoto',cls:'mago',sub:'geomante',lv:24,cd:8,kind:'aoe',area:{c:'target',r:2},mult:0.8,st:[{id:'lento'}]},
   julgamento:{nome:'Julgamento',cls:'clerigo',sub:'templario',lv:22,cd:6,kind:'aoe',area:{c:'target',shape:'cross'},mult:0.9,st:[{id:'marcado'}]},
@@ -5721,6 +5761,20 @@ function skillPlan(u,foes,allies,reach){
     }else if(sk.kind==='aoe'||sk.kind==='healArea'){
       const pl=planArea(u,sk,foes,allies,reach,rng);
       if(pl)consider(sk,pl.score,pl.plan);
+    }else if(sk.kind==='trap'){
+      if([...HTRAPS.values()].filter(t=>t.owner===u).length>=2)continue;
+      let b=null,bsv=0;
+      const cand=new Map();
+      foes.forEach(f=>{for(let dr=-3;dr<=3;dr++)for(let dc=-3;dc<=3;dc++){const r2=f.r+dr,c2=f.c+dc;if(inB(r2,c2)&&passable(r2,c2)&&!unitAt(r2,c2)&&!HTRAPS.has(k(r2,c2))&&!TRAPS.has(k(r2,c2)))cand.set(k(r2,c2),{r:r2,c:c2});}});
+      for(const C of cand.values()){
+        const tile=bestTileWithin(reach,C,rng,u);if(!tile)continue;
+        const nearU=dist(C,u);if(nearU<2)continue;
+        // casas por onde os inimigos vão passar: perto deles, no caminho até nós
+        let sc=0;foes.forEach(f=>{const d=dist(f,C),toUs=dist(f,u);if(d<=movOf(f)+1&&d>=1&&dist(C,u)<toUs)sc+=10-d*1.5;});
+        allies.concat([u]).forEach(a=>{if(dist(a,C)<=(sk.area.r||0)+0)sc-=6;});
+        if(sc>bsv){bsv=sc;b={target:foes[0],tile,center:C};}
+      }
+      if(b&&bsv>=9)consider(sk,44+Math.min(20,bsv),b);
     }else if(sk.kind==='debuff'){
       const c=foes.filter(f=>inRange(f,rng)&&!hasSt(f,sk.st[0].id));
       if(!c.length)continue;const t=c.sort((a,b)=>b.maxhp-a.maxhp)[0];
@@ -6428,6 +6482,8 @@ async function castSkill(u,plan){
       if(sk.inspire){a.inspired=sk.inspire+((u.attrBonus&&u.attrBonus.insp)||0)+((u.pb&&u.pb.insp)||0);floatText(a,`♪ +${a.inspired} acerto`,'buff');await statusAttach(a,'inspirado');}
       for(const x of sk.st||[]){await statusFlight(u,a,x.id,true);addStatus(a,x.id,{dur:x.dur,src:u,quiet:true,val:x.val?stVal(sk,x,u):null});}
     }));
+  }else if(sk.kind==='trap'){
+    placeHeroTrap(u,plan.center,sk);await wait(500);
   }else if(sk.kind==='healArea'){
     const cells=areaCells(u,plan.center,sk.area);cells.forEach(x=>rangeTile(x.r,x.c,'blue'));
     const vic=unitsIn(cells);
@@ -6636,21 +6692,69 @@ function damage(t,dmg,src,crit,snd){
   if(t.hp>0)lpcSetState(t,'hurt');
   if(t.hp<=0)kill(t,src,crit);
 }
-function kill(t,src,crit){
+const KO_TURNS=3;
+function deathFxEnemy(t){
+  const P=t.grp.position,boss=isBossK(t.kind)||t.big;
   SFX.kill();
+  burst(P,{n:boss?26:14,colors:['#ff9a3a','#ffffff','#ffd34a'],spread:1.1,up:1.1,y:0.6,life:0.6,fall:true});
+  pulse(P,'#ffffff',boss?3:1.9,0.5,0.12);
+  tintUnit(t,{r:3,g:3,b:3},{r:1,g:0.3,b:0.25},0.2);
+  fxPlay('magic','teleport-32px_strip12.png',12,20,{x:P.x,y:P.y+0.05,z:P.z},{w:boss?3.2:2});
+  // achata, vira fumaça e sobe uma faísca de alma
+  gsap.timeline().to(t.pivot.scale,{x:1.4,y:0.12,duration:0.32,ease:'power2.in'},0.12).to(t.plane.position,{y:'-=0.1',duration:0.32,ease:'power2.in'},0.12);
+  gsap.delayedCall(0.3,()=>{burst(P,{n:10,colors:['#9a948a','#c9c2b4','#6a655d'],spread:0.7,up:0.5,y:0.2,life:0.7,size:1.4});burst(P,{n:8,colors:['#cfe0ff','#ffffff','#9fdcff'],spread:0.25,up:1.9,y:0.4,life:1,size:0.9});});
+  fadeUnit(t,0,{delay:0.18,duration:0.45,onComplete:()=>{if(t.grp)t.grp.visible=false;}});
+  if(boss){shockwaveAt(P);}
+}
+const shockwaveAt=P=>fxPlay('combat','shockwave-32px_strip8.png',8,18,{x:P.x,y:P.y,z:P.z},{w:3.4,flat:false});
+// herói cai e fica no chão por KO_TURNS rodadas; um clérigo pode reviver. Passou disso, só o Templo traz de volta.
+function koDown(t){
+  t.ko=KO_TURNS;SFX.kill();
+  burst(t.grp.position,{n:12,colors:['#ffd34a','#ffffff'],spread:0.9,up:0.9,y:0.6,life:0.6,fall:true});
+  pulse(t.grp.position,'#ffffff',1.6,0.45,0.12);
+  gsap.to(t.pivot.rotation,{x:-1.45,duration:0.5,ease:'bounce.out'});
+  tintUnitTo(t,{r:0.6,g:0.6,b:0.66},0.3,0.1);
+  const el=document.createElement('div');el.className='koel';el.innerHTML=`<b>KO</b><span>${t.ko}</span>`;hud.appendChild(el);t.koEl=el;
+}
+function kill(t,src,crit){
   t.alive=false;t.diedRound=stats.round;if(t.hpEl)t.hpEl.hidden=true;
-  burst(t.grp.position,{n:14,colors:t.side==='hero'?['#ffd34a','#ffffff']:['#ff9a3a','#ffffff','#ffd34a'],spread:1.1,up:1.1,y:0.6,life:0.6,fall:true});
-  pulse(t.grp.position,'#ffffff',1.9,0.45,0.12);
-  gsap.to(t.pivot.rotation,{x:-1.45,duration:0.5,ease:'bounce.out',onComplete:()=>burst(t.grp.position,{n:16,colors:['#9a948a','#c9c2b4','#6a655d'],spread:0.8,up:0.25,y:0.1,life:0.6})});
-  tintUnitTo(t,{r:0.5,g:0.5,b:0.5},0.3,0.1);
-  fadeUnit(t,0,{delay:1,duration:0.5,onComplete:()=>{if(t.grp)t.grp.visible=false;if(t.side==='hero')addTomb(t);}});
+  if(t.side==='hero')koDown(t);else deathFxEnemy(t);
   if(t.side==='enemy'){
     if(src&&src.side==='hero')src.kills=(src.kills||0)+1;
     xp(src,Math.round(t.pts/4),true);stats.kills.push(t);addLog(`${t.first} foi derrotado (+${t.pts})`,'gold');
     dropLoot(t);
     if(isBossK(t.kind)){stats.hl.push({w:8,t:`${src.first} derrubou ${t.first}${crit?' com um crítico':''}.`});shakeCam(0.4,0.6);flash('#e9b949',0.3);}
     else if(crit)stats.hl.push({w:6,t:`${src.first} tirou um crítico e derrubou ${t.first} de uma vez.`});
-  }else{addLog(`${t.first} caiu em combate`,'bad');flash('#d4503f',0.25);stats.hl.push({w:3,t:`${t.first} caiu no turno ${stats.round}, lutando contra ${src.first}.`});}
+  }else{addLog(`${t.first} caiu em combate — ${KO_TURNS} turnos para ser revivido`,'bad');flash('#d4503f',0.25);stats.hl.push({w:3,t:`${t.first} caiu no turno ${stats.round}, lutando contra ${src.first}.`});}
+}
+// a cada rodada o relógio dos caídos anda; zerou, o herói está fora (só o Templo resolve)
+function tickKO(){
+  for(const h of party){
+    if(h.alive||h.dead||!(h.ko>0))continue;
+    h.ko--;if(h.koEl)h.koEl.lastChild.textContent=h.ko;
+    if(h.ko<=0){
+      h.dead=true;if(h.koEl){h.koEl.remove();h.koEl=null;}
+      floatText(h,'Caiu de vez','crit');addLog(`${h.first} não foi revivido: só o Templo traz de volta`,'bad');SFX.defeat();
+      fadeUnit(h,0,{delay:0.4,duration:0.6,onComplete:()=>{if(h.grp)h.grp.visible=false;addTomb(h);}});
+    }else floatText(h,`KO ${h.ko}`,'miss');
+  }
+}
+async function revive(u,w,o={}){
+  const pct=o.pct||(u.sub==='curandeiro'?0.5:0.3);
+  pulse(u.grp.position,'#ffe08a',1,0.5);await wait(250);
+  await showRoll({u,skill:'✚ Reviver',roll:Math.round(pct*100),numText:Math.round(pct*100)+'% de vida',outcome:'hit'});
+  await chargeUp(u,'heal');chargeEnd(u);
+  w.alive=true;w.ko=0;w.hp=Math.max(1,Math.ceil(w.maxhp*pct));w.st=[];
+  if(w.koEl){w.koEl.remove();w.koEl=null;}if(w.hpEl)w.hpEl.hidden=false;
+  gsap.to(w.pivot.rotation,{x:0,duration:0.55,ease:'back.out(2)'});
+  tintUnit(w,{r:2.4,g:2.3,b:1.6},{r:1,g:1,b:1},0.9);
+  SFX.heal();playSfx('levelup',{vol:0.55});
+  fxPlay('magic','healing-aura-32px_strip8.png',8,10,{x:w.grp.position.x,y:w.grp.position.y,z:w.grp.position.z},{w:2.2});
+  burst(w.grp.position,{n:16,colors:['#ffe08a','#ffffff','#6cc35e'],spread:0.5,up:1.8,y:0.2,life:1,size:1.1});pulse(w.grp.position,'#ffe08a',2,0.7);
+  floatText(w,'Reviveu!','heal');lpcSetState(w,'stand');
+  xp(u,25);addLog(`${u.first} reviveu ${w.first} (${w.hp} PV)`,'heal');
+  stats.hl.push({w:6,t:`${u.first} reviveu ${w.first} a tempo.`});
+  await wait(600);
 }
 function addTomb(t){
   const m=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.38,0.1),new THREE.MeshLambertMaterial({color:'#8d918b'}));
@@ -6752,6 +6856,25 @@ async function turnBody(u){
     let best=null,bs=-1;for(const t of reach.values()){if(t.pass)continue;const s=Math.min(...foes.map(f=>dist(t,f)))*2+hOf(t.r,t.c);if(s>bs){bs=s;best=t;}}
     if(best&&(best.r!==u.r||best.c!==u.c)){showCallout(u,'Deslocar');addLog(`${u.first} se deslocou`,'mut');u.fled=true;await moveAlong(u,pathTo(reach,best));await checkSecret(u);return;}
   }
+  {const tat=tatOf(u),thr=0.26+0.03*tat;   // quem tem Tática (mago, arqueiro, clérigo, bardo…) sabe sair de perto quando está apanhando
+    if(tat>=5&&u.hp<=u.maxhp*thr&&u.cls!=='guerreiro'&&foes.some(f=>dist(f,u)<=movOf(f)+rngOf(f))){
+      const reachF=f=>movOf(f)+rngOf(f)+1,danger=t=>foes.reduce((a,f)=>a+Math.max(0,reachF(f)-dist(t,f)),0);
+      let best=null,bs=1e9;
+      for(const t of reach.values()){if(t.pass)continue;const sc=danger(t)*3-hOf(t.r,t.c)*0.8+t.d*0.1-allies.filter(a=>dist(a,t)<=2).length*0.6;if(sc<bs){bs=sc;best=t;}}
+      const cur=danger({r:u.r,c:u.c})*3;
+      if(best&&(best.r!==u.r||best.c!==u.c)&&bs<cur-1.5){
+        showCallout(u,'Recuar!');addLog(`${u.first} recua, ferido`,'mut');u.fled=true;
+        await moveAlong(u,pathTo(reach,best));await checkSecret(u);
+        const tg=foes.filter(f=>dist(f,u)<=rngOf(u)).sort((a,b)=>a.hp-b.hp)[0];
+        if(tg&&u.alc>1)await attack(u,tg);
+        return;
+      }
+    }}
+  if(u.cls==='clerigo'&&!(u.cd&&u.cd.reviver>0)){
+    const downed=party.filter(a=>!a.alive&&!a.dead&&a.ko>0&&a.r!=null).sort((a,b)=>a.ko-b.ko);
+    for(const w of downed){const t=bestTileWithin(reach,w,2,u,'heal');if(t){
+      await moveAlong(u,pathTo(reach,t));u.cd=u.cd||{};u.cd.reviver=4;await revive(u,w);await checkSecret(u);return;}}
+  }
   if(u.cls==='clerigo'){
     const wounded=[u,...allies].filter(a=>a.hp<=a.maxhp*0.55).sort((a,b)=>a.hp/a.maxhp-b.hp/b.maxhp);
     for(const w of wounded){const t=w===u?reach.get(k(u.r,u.c)):bestTileWithin(reach,w,3,u,'heal');if(t){
@@ -6806,7 +6929,7 @@ async function startBattle(){
   $('#order').hidden=false;hudSel=null;hudTile=null;ucPop=null;ucKey='';renderOrder();
   await banner('Batalha!');
   for(let round=1;round<=24;round++){
-    stats.round=round;const re=$('#round');if(re){re.textContent=round;gsap.fromTo(re,{scale:1.6,color:'#e9b949'},{scale:1,color:'#efe2c4',duration:0.4});}
+    stats.round=round;if(round>1)tickKO();const re=$('#round');if(re){re.textContent=round;gsap.fromTo(re,{scale:1.6,color:'#e9b949'},{scale:1,color:'#efe2c4',duration:0.4});}
     for(const u of stats.order){if(!u.alive)continue;if(over())break;await turn(u);hideCallout();clearRange();await waitS(0.7);}
     stats.roundsDone=round;
     if(over())break;
@@ -6891,7 +7014,7 @@ function resetHero(h,first){
   pbRevert(h);
   if(h.exausto){h.atk++;h.def++;h.exausto=false;}
   if(!first&&h.alive===false){h.hp=Math.ceil(h.maxhp*0.5);h.atk--;h.def--;h.exausto=true;}else h.hp=h.maxhp;
-  Object.assign(h,{st:[],cd:{},poison:null,alive:true,r:null,c:null,triedSecret:false,inspired:false,highHits:0,fled:false,secretBuff:false,xp:0,bonus:false,diedRound:null,shaken:false,ambushDone:false,lastTargetId:null});
+  Object.assign(h,{ko:0,koEl:null,st:[],cd:{},poison:null,alive:true,r:null,c:null,triedSecret:false,inspired:false,highHits:0,fled:false,secretBuff:false,xp:0,bonus:false,diedRound:null,shaken:false,ambushDone:false,lastTargetId:null});
   if(first)h.xpRun=0;
 }
 function departRun(){
@@ -6920,12 +7043,15 @@ function startPhase(){
   setTimeout(()=>{if(phase==='place')aimCam(...zoneView(),first?1.2:0.9);},80);
 }
 function nextPhase(){
-  $('#result').hidden=true;run.map+=1;run.phaseNo+=1;startPhase();
+  $('#result').hidden=true;run.map+=1;run.phaseNo+=1;
+  run.fallen=(run.fallen||[]).concat(run.party.filter(h=>h.dead));run.party=run.party.filter(h=>!h.dead);
+  startPhase();
 }
 
 /* ---------- Fim de fase ---------- */
 function finish(){
   gsap.globalTimeline.timeScale(1);
+  party.forEach(h=>{if(h.koEl){h.koEl.remove();h.koEl=null;}});
   const win=won();
   const alive=heroesAlive();
   const archer=party.filter(h=>h.highHits>=2).sort((a,b)=>b.highHits-a.highHits)[0];
@@ -7001,12 +7127,13 @@ function finalResult(win,cash){
   // "ferido" de verdade: quem não sobreviveu até aqui só volta a poder ser
   // escalado depois de curar no Templo (ou o tempo passar sozinho).
   roster.forEach(h=>{
-    if(h.injured){
+    if(h.injured&&!h.dead){
       h.injuredMissionsLeft=Math.max(0,h.injuredMissionsLeft-1);
       if(h.injuredMissionsLeft===0){h.injured=false;h.hp=Math.max(h.hp,Math.round(h.maxhp*0.75));}
     }
   });
-  party.forEach(h=>{if(!h.alive){h.injured=true;h.injuredMissionsLeft=INJURY_MISSIONS;selected.delete(h.id);}});
+  [...party,...(run.fallen||[])].forEach(h=>{if(h.dead){h.injured=true;h.injuredMissionsLeft=999;selected.delete(h.id);}else if(!h.alive){h.injured=true;h.injuredMissionsLeft=INJURY_MISSIONS;selected.delete(h.id);}});
+  run.fallen=[];
   stash.push(...run.inventory);run.inventory=[];
   saveGame();
   const last=run.results[run.results.length-1],mult=MULT[run.party.length],sub=runSub(),total=Math.round(sub*mult);
@@ -7076,6 +7203,7 @@ function loop(t){
       if(phase==='battle'){const [hx,hy]=screenOf(u,u.hbarExtra!=null?u.hbarExtra:-0.16-0.24*u.sz);u.hpEl.style.left=hx+'px';u.hpEl.style.top=hy+'px';}}
   }
   if(phase==='battle'){renderObjs();renderUC();}
+  if(phase==='battle')for(const h of party){if(h.koEl&&h.grp){const [kx,ky]=screenOf(h,0.2);h.koEl.style.left=kx+'px';h.koEl.style.top=ky+'px';}}
   villagers.forEach(v=>{v.pivot.scale.y=1+Math.sin(s*2.4+v.id)*0.02;if(v.lpc)tickLPC(v,s);});
   if(app.classList.contains('hub')){placeVillageNames();placeVBubs();}
   if(active&&active.grp){ring.position.set(active.grp.position.x,active.grp.position.y+0.09,active.grp.position.z);ring.material.opacity=0.65+Math.sin(s*6)*0.3;}
