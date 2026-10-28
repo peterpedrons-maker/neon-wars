@@ -1336,13 +1336,41 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .hp-act{display:flex;flex-direction:column;align-items:stretch;gap:4px;min-width:84px}.hp-act .btn{min-height:34px;font-size:13px;padding:2px 8px}
 .hp-badge{font:700 10px var(--f-display);text-align:center;letter-spacing:.04em;text-transform:uppercase;color:#cdb68a}
 .hp-row.up .hp-badge{color:#8fe08a}.hp-row.new .hp-badge{color:#ffd65a}.hp-row.down .hp-badge{color:#ff9a8a}
-.ov .inner.kt .stashdetail.sd2{background:linear-gradient(#1d140e,#140d09);border:3px solid #8a6a3c;border-radius:12px;padding:12px;margin-inline:0;box-shadow:0 -6px 18px #000a,inset 0 0 0 1px #0008;max-height:66vh;display:flex;flex-direction:column;overflow:hidden}
+.ov .inner.kt .stashdetail.sd2{background:linear-gradient(#1d140e,#140d09);border:3px solid #8a6a3c;border-radius:12px;padding:12px;margin-inline:0;box-shadow:0 -6px 18px #000a,inset 0 0 0 1px #0008;max-height:54vh;display:flex;flex-direction:column;overflow:hidden;position:sticky}
+.sd-x{all:unset;cursor:pointer;position:absolute;right:8px;top:8px;width:30px;height:30px;border-radius:50%;background:#000a;border:2px solid #8a6a3c;color:#f4e6c0;text-align:center;line-height:26px;font-size:14px;z-index:3}
+.sd2 .sd-head{padding-right:34px}
 .ov .inner.kt .stashdetail.sd2 .hplist{max-height:none;flex:1 1 auto;min-height:0}
 .sd2 *{min-width:0;overflow-wrap:anywhere}
 .sd2 .sd-head b{overflow-wrap:anywhere}
 .sd2 .hp-swap *{overflow-wrap:normal}.sd2 .hp-swap .mt{white-space:nowrap}
 @media (max-width:400px){.sd2 .hp-swap{flex-direction:column;align-items:flex-start;gap:2px}.sd2 .hp-swap>span.cur,.sd2 .hp-swap>span.new{flex:none;max-width:100%}.sd2 .hp-swap i{display:none}.sd2 .hp-swap>span.cur{opacity:.75}.sd2 .hp-swap>span.new::before{content:'→ ';color:#e9b949}.sd2 .hp-act{min-width:74px}}
 .ov .inner.kt .stashdetail .hp-name small .ic{width:14px;height:14px}.ov .inner.kt .stashdetail .hp-swap .ic{width:20px;height:20px}.ov .inner.kt .stashdetail .sd-head .ic{width:44px;height:44px}
+/* Cofre: abas, filtros e cartões de herói */
+.stg-seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:2px 10px 6px;padding:4px;border-radius:12px;background:#120b07;border:2px solid #4a3828}
+.stg-seg button{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 6px;border-radius:9px;color:#d9c9a4;font:700 13px var(--f-display)}
+.stg-seg button .ic{width:20px;height:20px}.stg-seg button i{font-style:normal;font-size:11px;padding:0 7px;border-radius:99px;background:#0009;color:#e9b949}
+.stg-seg button.on{background:linear-gradient(#f0c75a,#c9972a);color:#2b1812}.stg-seg button.on i{background:#2b1812;color:#ffe08a}
+.stg-seg .ic.img,.stg-chip .ic.img,.eqinfo .ic.img,.eqstats .ic.img,.eqc .ic.img{background-color:transparent!important;-webkit-mask:none!important;mask:none!important}
+.stg-seg .ic{flex:none;width:22px!important;height:22px!important;min-width:22px;background-size:contain!important;background-repeat:no-repeat!important;background-position:center!important}.stg-seg button.on .ic{filter:drop-shadow(0 0 1px #fff8) brightness(1.1)}
+.stg-note{margin:0 12px 6px;font-size:12px;color:#bba98a;text-align:center}
+.stg-chips{display:flex;gap:6px;overflow-x:auto;padding:2px 12px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.stg-chips::-webkit-scrollbar{display:none}
+.stg-chip{all:unset;cursor:pointer;flex:none;display:flex;align-items:center;gap:5px;padding:6px 10px;border-radius:99px;background:#1a110c;border:2px solid #4a3828;color:#d9c9a4;font:600 12px var(--f-display)}
+.stg-chip .ic{width:16px;height:16px}.stg-chip i{font-style:normal;font-size:10px;padding:0 6px;border-radius:99px;background:#0009;color:#cdb68a}
+.stg-chip.on{background:#3a2a14;border-color:#e9b949;color:#fff2cc}.stg-chip.on i{background:#e9b949;color:#2b1812}.stg-chip.z{opacity:.45}
+.stg-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 12px 8px;font-size:12px;color:#cdb68a}.stg-bar span{white-space:nowrap}.stg-bar .btn{min-height:34px;font-size:12px;flex:0 1 auto;max-width:72%;white-space:nowrap;padding-inline:12px}
+.stashtile .tt{position:absolute;left:5px;bottom:4px;font:700 10px var(--f-display);color:#ffe08a;background:#000a;padding:0 5px;border-radius:5px}
+.stashtile{position:relative}
+.eqcard{margin:0 12px 10px;padding:10px;border-radius:12px;background:linear-gradient(#1d140e,#140d09);border:2px solid #5a4330;display:flex;flex-direction:column;gap:8px}
+.eqh{display:flex;gap:10px;align-items:center}.eqinfo{min-width:0;display:flex;flex-direction:column;gap:3px}.eqinfo b{font-size:16px;color:#f4e6c0}
+.eqinfo small{display:flex;align-items:center;gap:4px;color:#bba98a;font-size:12px}.eqinfo small .ic{width:14px;height:14px}
+.eqstats{display:flex;flex-wrap:wrap;gap:8px;font-size:12px;color:#e6d4a8}.eqstats span{display:flex;align-items:center;gap:3px}.eqstats .ic{width:14px;height:14px}
+.eqgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.eqc{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;padding:6px 3px 5px;min-height:76px;border-radius:9px;background:#120b07;border:2px dashed #3d2f22;text-align:center;opacity:.55}
+.eqc .ic{width:28px;height:28px}.eqc small{font-size:10px;line-height:1.15;color:#bba98a;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;max-width:100%}
+.eqc em{font-style:normal;font-size:9px;letter-spacing:1px}
+.eqc.on{opacity:1;cursor:pointer;border:2px solid var(--c);background:#1b130d;box-shadow:inset 0 0 8px #0008}.eqc.on small{color:#f4e6c0}
+.eqc.on:active{transform:scale(.97)}.eqc.off{opacity:.4;border-style:dotted}
+.eqbestb{width:100%;min-height:36px}
 </style>
 </head>
 <body>
@@ -4800,22 +4828,19 @@ function attrLine(h){
   return ATTR_NAMES.map(a=>`${ATTR_LABEL[a]} ${h.attrs[a]}`).join(' · ');
 }
 function heroEquipBox(h,ns){
-  return `<div class="box">
-    <div style="display:flex;align-items:center;gap:8px">
-      <img src="${h.portrait}" alt="" style="width:28px;height:34px;image-rendering:pixelated">
-      <div style="flex:1;min-width:0">
-        <b class="nm">${h.first}</b><span class="cl"> · ${CLASSES[h.cls].nome}${CLASSES[h.cls].twoHanded?' · arma de duas mãos':''}</span>
-        <div class="note" style="margin:2px 0 0">${attrLine(h)}</div>
-      </div>
-      <button class="btn ghost sm" data-${ns==='eq'?'eqbest':'stbest'}="${h.id}">Equipar o melhor</button>
-    </div>
-    <div class="eqslots">
-      ${EQ_SLOTS.map(s=>{
-        if(s==='offhand'&&CLASSES[h.cls].twoHanded)return`<span class="eqslot off">${slotIco('offhand')} Mão secundária: ocupada pela arma</span>`;
-        const it=h.equip[s];
-        return`<button class="eqslot" data-${ns}unhero="${h.id}" data-${ns}unslot="${s}">${it?`${itemIco(it)} ${it.nome} · ${rarTag(it)} (guardar)`:`${slotIco(s)} ${SLOT_INFO[s].label}: vazio`}</button>`;
-      }).join('')}
-    </div>
+  const two=CLASSES[h.cls].twoHanded;
+  const cells=EQ_SLOTS.map(sl=>{
+    if(sl==='offhand'&&two)return `<span class="eqc off">${slotIco('offhand')}<small>Arma de 2 mãos</small></span>`;
+    const it=h.equip[sl];
+    return it?`<button class="eqc on" style="--c:${RARITY[it.rar].cor}" data-${ns}unhero="${h.id}" data-${ns}unslot="${sl}" aria-label="Guardar ${it.nome}">${itemIco(it)}<small>${it.nome}</small><em style="color:${RARITY[it.rar].cor}">${'★'.repeat(it.rar)}</em></button>`
+      :`<span class="eqc">${slotIco(sl)}<small>${SLOT_INFO[sl].label}</small></span>`;
+  }).join('');
+  return `<div class="eqcard">
+    <div class="eqh"><div class="hp-face"><img src="${h.portrait}" alt=""></div>
+      <div class="eqinfo"><b>${h.first}</b><small>${ico('classe',h.cls)}${CLASSES[h.cls].nome} · Nv.${h.level||1}</small>
+        <div class="eqstats"><span>${ico('stat','atq')}+${h.atk}</span><span>${ico('stat','def')}${h.def}</span><span>${ico('stat','vida')}${h.maxhp}</span><span>${ico('stat','dano')}${h.dmg[0]}d${h.dmg[1]}${h.dmg[2]?'+'+h.dmg[2]:''}</span></div></div></div>
+    <div class="eqgrid">${cells}</div>
+    <button class="btn ghost sm eqbestb" data-${ns==='eq'?'eqbest':'stbest'}="${h.id}">Equipar o melhor</button>
   </div>`;
 }
 function renderEquip(){
@@ -4866,22 +4891,24 @@ function renderStash(){
   const sel=stashSel!=null?stash[stashSel]:null;
   PI_.innerHTML=`
   <div class="head">${navBack('toVillage','Praça')}${wt('stash','Vila de Brumavale','Cofre da Guilda')}</div>
-  <p class="hint">Itens guardados aqui valem pra sempre: equipe em qualquer herói do seu elenco a qualquer momento, mesmo fora de missão.</p>
-  <div class="stashtabs">
-    <button class="stashtab ${stashView==='items'?'on':''}" data-stashview="items">${ico('vila','bolsa')} Itens (${stash.length})</button>
-    <button class="stashtab ${stashView==='heroes'?'on':''}" data-stashview="heroes">${ico('vila','grupo')} Heróis</button>
+  <div class="stg-seg">
+    <button class="${stashView==='items'?'on':''}" data-stashview="items">${ico('vila','bolsa')}<b>Itens</b><i>${stash.length}</i></button>
+    <button class="${stashView==='heroes'?'on':''}" data-stashview="heroes">${ico('vila','grupo')}<b>Heróis</b><i>${roster.length}</i></button>
   </div>
+  <p class="stg-note">${stashView==='items'?'Itens guardados valem pra sempre. Toque num item para ver quem usa melhor.':'Toque num item equipado para guardá-lo de volta no Cofre.'}</p>
   ${stashView==='items'?`
-    <div class="stashtabs">${tabs.map(k=>`<button class="stashtab ${stashFilter===k?'on':''}" data-stashtab="${k}">${tabLabel(k)}</button>`).join('')}</div>
-    ${items.length?`<div class="stashgrid">${items.map(({it,i})=>`<button class="stashtile ${stashSel===i?'sel':''}" style="border-color:${RARITY[it.rar].cor}" data-stashtile="${i}" aria-label="${it.nome}">${itemIco(it,'lg')}${itemBadges(it)}</button>`).join('')}</div>`:'<p class="note">Nenhum item aqui ainda. Derrote inimigos em missão pra encontrar equipamentos.</p>'}
+    <div class="stg-chips">${tabs.map(k=>{const n=k==='all'?stash.length:stash.filter(x=>x.slot===k).length;return `<button class="stg-chip ${stashFilter===k?'on':''} ${n?'':'z'}" data-stashtab="${k}">${k==='all'?'':slotIco(k)}<span>${tabLabel(k)}</span><i>${n}</i></button>`;}).join('')}</div>
+    <div class="stg-bar"><span>${items.length} ${items.length===1?'item':'itens'}${stashFilter!=='all'?' · '+tabLabel(stashFilter):''}</span><button class="btn ghost sm" data-stbestall="1">Equipar o melhor em todos</button></div>
+    ${items.length?`<div class="stashgrid">${items.map(({it,i})=>`<button class="stashtile ${stashSel===i?'sel':''}" style="border-color:${RARITY[it.rar].cor}" data-stashtile="${i}" aria-label="${it.nome}">${itemIco(it,'lg')}${itemBadges(it)}${it.tier?`<span class="tt">T${it.tier}</span>`:''}</button>`).join('')}</div>`:'<p class="note">Nenhum item aqui ainda. Derrote inimigos em missão pra encontrar equipamentos.</p>'}
     ${sel?`<div class="stashdetail sd2">
+      <button class="sd-x" data-stashclose="1" aria-label="Fechar">✕</button>
       <div class="sd-head">${itemIco(sel,'lg')}<div><b style="color:${RARITY[sel.rar].cor}">${sel.nome}</b>
         <div class="sdline"><span class="stars" style="color:${RARITY[sel.rar].cor}">${stars(sel.rar)}</span> ${rarTag(sel)} · <i>${SLOT_INFO[sel.slot]?SLOT_INFO[sel.slot].label:'Acessório'}${sel.tier?` · Tier ${sel.tier}`:''}</i></div>
         <div class="hp-chips">${Object.entries(sel.mods||{}).filter(([k])=>MOD_META[k]).map(([k,v])=>`<em class="${v>0?'up':'down'}">${v>0?'+':'−'}${Math.abs(v)} ${MOD_META[k][2]}</em>`).join('')}</div></div></div>
       <h4 class="sd-t">Quem usa melhor</h4>
       ${heroPickList(sel,roster,h=>`data-stashequip="${h.id}"`)}
     </div>`:''}
-  `:`<div class="scroll">${roster.length?`<button class="btn cta sm" data-stbestall="1" style="margin-bottom:8px">Equipar o melhor em todos</button>`+roster.map(h=>heroEquipBox(h,'steq')).join(''):'<p class="note">Recrute heróis na taverna primeiro.</p>'}</div>`}`;
+  `:`<div class="scroll">${roster.length?`<div class="stg-bar"><span>${roster.length} ${roster.length===1?'herói':'heróis'}</span><button class="btn ghost sm" data-stbestall="1">Equipar o melhor em todos</button></div>`+roster.map(h=>heroEquipBox(h,'steq')).join(''):'<p class="note">Recrute heróis na taverna primeiro.</p>'}</div>`}`;
 }
 function injuryRushCost(h){return INJURY_RUSH_BASE+(h.level||1)*INJURY_RUSH_PER_LEVEL;}
 function renderForge(){
@@ -4952,6 +4979,7 @@ PI_.addEventListener('click',e=>{
   const rec=t.closest('[data-recruit]');if(rec){renderSheet(+rec.dataset.recruit,'draw');return;}
   const sv=t.closest('[data-stashview]');if(sv){stashView=sv.dataset.stashview;stashSel=null;renderStash();return;}
   const stb=t.closest('[data-stashtab]');if(stb){stashFilter=stb.dataset.stashtab;stashSel=null;renderStash();return;}
+  const sx=t.closest('[data-stashclose]');if(sx){SFX.close();stashSel=null;renderStash();return;}
   const sti=t.closest('[data-stashtile]');if(sti){stashSel=+sti.dataset.stashtile;renderStash();return;}
   const steq=t.closest('[data-stashequip]');if(steq){const h=roster.find(x=>x.id===+steq.dataset.stashequip),item=stashSel!=null?stash[stashSel]:null;if(h&&item&&canEquip(h,item)){equipItem(h,slotKeyFor(h,item),item,stash);stashSel=null;saveGame();}renderStash();return;}
   const stequn=t.closest('[data-stequnslot]');if(stequn){const h=roster.find(x=>x.id===+stequn.dataset.stequnhero);if(h){unequipItem(h,stequn.dataset.stequnslot,stash);saveGame();}renderStash();return;}
