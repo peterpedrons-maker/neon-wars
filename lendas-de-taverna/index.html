@@ -1336,7 +1336,12 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .hp-act{display:flex;flex-direction:column;align-items:stretch;gap:4px;min-width:84px}.hp-act .btn{min-height:34px;font-size:13px;padding:2px 8px}
 .hp-badge{font:700 10px var(--f-display);text-align:center;letter-spacing:.04em;text-transform:uppercase;color:#cdb68a}
 .hp-row.up .hp-badge{color:#8fe08a}.hp-row.new .hp-badge{color:#ffd65a}.hp-row.down .hp-badge{color:#ff9a8a}
-.ov .inner.kt .stashdetail.sd2{padding:34px 24px 24px}
+.ov .inner.kt .stashdetail.sd2{background:linear-gradient(#1d140e,#140d09);border:3px solid #8a6a3c;border-radius:12px;padding:12px;margin-inline:0;box-shadow:0 -6px 18px #000a,inset 0 0 0 1px #0008;max-height:66vh;display:flex;flex-direction:column;overflow:hidden}
+.ov .inner.kt .stashdetail.sd2 .hplist{max-height:none;flex:1 1 auto;min-height:0}
+.sd2 *{min-width:0;overflow-wrap:anywhere}
+.sd2 .sd-head b{overflow-wrap:anywhere}
+.sd2 .hp-swap *{overflow-wrap:normal}.sd2 .hp-swap .mt{white-space:nowrap}
+@media (max-width:400px){.sd2 .hp-swap{flex-direction:column;align-items:flex-start;gap:2px}.sd2 .hp-swap>span.cur,.sd2 .hp-swap>span.new{flex:none;max-width:100%}.sd2 .hp-swap i{display:none}.sd2 .hp-swap>span.cur{opacity:.75}.sd2 .hp-swap>span.new::before{content:'→ ';color:#e9b949}.sd2 .hp-act{min-width:74px}}
 .ov .inner.kt .stashdetail .hp-name small .ic{width:14px;height:14px}.ov .inner.kt .stashdetail .hp-swap .ic{width:20px;height:20px}.ov .inner.kt .stashdetail .sd-head .ic{width:44px;height:44px}
 </style>
 </head>
