@@ -1194,6 +1194,7 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .lvup{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;pointer-events:none;font-family:var(--f-display);font-weight:700;text-align:center;white-space:nowrap;filter:drop-shadow(0 4px 0 #000a)}
 .lvup b{font-size:30px;letter-spacing:.06em;color:#ffe08a;text-shadow:0 0 14px #ffb62e,0 2px 0 #5a3a08;-webkit-text-stroke:1px #7a4d0a}
 .lvup em{font-style:normal;font-size:13px;color:#fff6d0;margin-top:2px;text-shadow:0 2px 0 #000}
+.amini{float:right;display:inline-grid;grid-template-columns:repeat(7,8px);gap:1px;margin:0 0 4px 8px}.amini i{width:8px;height:8px;background:#2a1d12;border-radius:1px}.amini i.on{background:#d4503f}.amini i.me{background:#e9b949}
 .lvarrow{position:absolute;transform:translate(-50%,-50%);pointer-events:none;filter:drop-shadow(0 0 10px #ffb62e)}.lvarrow svg{width:100%;height:100%;display:block}
 .float.xp .ft .sf{color:#9fe0ff;font-size:20px}
 .float.xp .xl{font-style:normal;font-size:13px;margin-left:4px;color:#d6f2ff}
@@ -4456,7 +4457,7 @@ function renderBrief(n){
     ${roster.length&&avgLv<m.nivel-2?`<p class="qwarn">Seu grupo está em média no Nv. ${avgLv}, abaixo do recomendado (${m.nivel}). Vai ser difícil.</p>`:''}
     ${m.luz==='breu'?'<p class="qwarn">Mapa às escuras: o terreno não aparece. Só os personagens, as tochas e as marcações do jogo ficam visíveis.</p>':''}
     <div class="qband"><span>Inimigos possíveis</span></div>
-    <div class="qegrid">${m.pool.map(t=>{const e=ENEMIES[t];return `<div class="qec"><img src="${ePortrait(t)}" alt=""><div><b>${e.nome}</b><em>${t==='ogro'?'Chefe · ':''}${IA_TXT[e.ia]}</em><small>${e.resumo}</small></div></div>`;}).join('')}</div>
+    <div class="qegrid">${m.pool.map(t=>{const e=ENEMIES[t];return `<div class="qec"><img src="${ePortrait(t)}" alt=""><div><b>${e.nome}</b><em>${t==='ogro'?'Chefe · ':''}${IA_TXT[e.ia]} · Tática ${TAT_TXT(tatOf({side:'enemy',kind:t}))}</em><small>${e.resumo}</small></div></div>`;}).join('')}</div>
     <p class="qnote">Quais inimigos aparecem, e quantos, muda a cada run. Você só sabe o conjunto.</p>
   </div>
   <div class="qfoot"><button class="qcta" data-pickmap="${m.n}">Partir nesta missão</button></div>`;
@@ -4547,7 +4548,8 @@ const skDesc=x=>{
   switch(x.kind){
     case 'atk':return `Ataque ×${x.mult}${x.atkB?`, ${x.atkB>0?'+':''}${x.atkB} de acerto`:''}${st?` e aplica ${st}`:''}${x.leech?', recupera parte do dano':''}${x.need?' (só em alvo isolado)':''}.`;
     case 'multi':return `${x.hits} ataques seguidos${x.atkB?` (${x.atkB} de acerto)`:''}.`;
-    case 'aoe':return `Dano em área${x.area.r>1?` (raio ${x.area.r})`:''}${x.area.c==='self'?' em volta de quem usa':' em volta do alvo'}${st?` e aplica ${st}`:''}${x.alc>1?` · alcance ${x.alc}`:''}.`;
+    case 'aoe':return `Dano em área (${x.area.shape?AREA_TXT[x.area.shape]+(x.area.len?' de '+x.area.len+' casas':''):x.area.c==='self'?'em volta de quem usa':'explosão'+(x.area.r>1?' raio '+x.area.r:'')}), igual para todos${st?`; aplica ${st}`:''}${x.alc>1?` · alcance ${x.alc}`:''}. Acerta aliados também.`;
+    case 'healArea':return `Cura ×${x.mult} todos na área (${AREA_TXT[x.area.shape]}) · alcance ${x.alc}. Cura inimigos que estiverem dentro.`;
     case 'debuff':return `Aplica ${st} no alvo (ele pode resistir).`;
     case 'debuffArea':return `Aplica ${st} nos inimigos a ${x.rad} casa${x.rad>1?'s':''}.`;
     case 'buffAllies':return `${x.inspire?`Aliados a ${x.rad} casas ganham +${x.inspire} de acerto`:`Aliados a ${x.rad} casas ganham ${st}`}.`;
@@ -4561,7 +4563,7 @@ function skillsBlock(h,isR){
   const T=treeOf(h.cls),tr=treeClean(h),sk=tr.s.map(id=>id?SK[id]:null),pv=tr.l.map(id=>PV[id]).filter(Boolean),fr=treeFree(h);
   const ico_=id=>{const i=trIcon_(trIcon(id));return `<span class="ic${i.cls}" style="${i.st}"></span>`;};
   const slots=[0,1,2,3].map(i=>{const x=sk[i];return !slotOpen(h,i)?`<span class="skslot lk" title="Libera no nível ${TREE_SLOT_LV[i]}">🔒<small>Nv ${TREE_SLOT_LV[i]}</small></span>`:x?`<span class="skslot on" style="--c:${TREE_COL[T.by[x.id].r]}">${ico_(x.id)}<small>${x.nome}</small></span>`:`<span class="skslot">+<small>vazio</small></span>`;}).join('');
-  const row=(x,tp,ex)=>`<div class="skr"><b>${x.nome}</b><small>${tp}${ex||''}</small><p>${x.kind?skDesc(x):x.desc}</p></div>`;
+  const row=(x,tp,ex)=>`<div class="skr"><b>${x.nome}</b><small>${tp}${ex||''}</small>${x.area?areaMiniHtml(x.area):''}<p>${x.kind?skDesc(x):x.desc}</p></div>`;
   return `<div class="rpf wide"><h4 class="sec" style="margin:0">Habilidades</h4>
     <div class="skslots">${slots}</div>
     ${sk.filter(Boolean).map(x=>row(x,'ativa equipada',` · recarga ${x.cd}`)).join('')}
@@ -4599,7 +4601,7 @@ function renderSheet(id,src){
       ${isR?`<div class="pbar-l"><span>XP ${fmt(h.xpTotal||0)}</span><span>${lv>=LEVEL_CAP?'nível máximo':`faltam ${fmt(xn-(h.xpTotal||0))}`}</span></div><div class="pbar"><i class="f blue" style="width:${pct}%"></i></div>`:''}
     </div></div></div>
     <button class="trbtn big" data-tree="${h.id}" data-src="${isR?'roster':'draw'}">${ico('stat','dano')} Árvore de habilidades${treeFree(h)?`<b>${treeFree(h)} ponto${treeFree(h)>1?'s':''} livre${treeFree(h)>1?'s':''}</b>`:''}</button>
-    <div class="rpf"><h4 class="sec" style="margin:0">Combate</h4><div class="stgrid">${tile('atq',ico('stat','atq'),'Ataque','+'+h.atk)}${tile('def',ico('stat','def'),'Defesa',h.def)}${tile('res',ico('stat','res'),'Res. Mágica',h.defMag)}${tile('mov',ico('stat','mov'),'Mover',h.mov)}${tile('alc',ico('stat','alc'),'Alcance',h.alc)}${tile('crit',ico('stat','crit'),'Crítico',critMin<20?`${critMin}–20`:'20')}${tile('ini',ico('stat','ini'),'Iniciativa',(h.ini>=0?'+':'')+h.ini)}${tile('dano',ico('stat','dano'),'Dano',`${h.dmg[0]}d${h.dmg[1]}${h.dmg[2]?'+'+h.dmg[2]:''}`)}${tile('vida',ico('stat','vida'),'Vida',h.maxhp)}${tile('per','<img class="ic" src="assets/ui-icons/eye-of-horus.png" alt="">','Percepção','+'+perV)}</div>
+    <div class="rpf"><h4 class="sec" style="margin:0">Combate</h4><div class="stgrid">${tile('atq',ico('stat','atq'),'Ataque','+'+h.atk)}${tile('def',ico('stat','def'),'Defesa',h.def)}${tile('res',ico('stat','res'),'Res. Mágica',h.defMag)}${tile('mov',ico('stat','mov'),'Mover',h.mov)}${tile('alc',ico('stat','alc'),'Alcance',h.alc)}${tile('crit',ico('stat','crit'),'Crítico',critMin<20?`${critMin}–20`:'20')}${tile('ini',ico('stat','ini'),'Iniciativa',(h.ini>=0?'+':'')+h.ini)}${tile('dano',ico('stat','dano'),'Dano',`${h.dmg[0]}d${h.dmg[1]}${h.dmg[2]?'+'+h.dmg[2]:''}`)}${tile('vida',ico('stat','vida'),'Vida',h.maxhp)}${tile('per','<img class="ic" src="assets/ui-icons/eye-of-horus.png" alt="">','Percepção','+'+perV)}${tile('tat','<img class="ic" src="assets/ui-icons/target-arrows.png" alt="">','Tática',`${tatOf(h)} · ${TAT_TXT(tatOf(h))}`)}</div>
       <p class="note trn"><b>${h.trait.nome}:</b> ${h.trait.desc}</p></div>
     <div class="rpf"><h4 class="sec" style="margin:0">Atributos</h4>${h.afin&&AFINIDADES[h.afin]?`<p class="note trn up"><small style="color:#9fe0a0">▲</small> <b>Afinidade ${AFINIDADES[h.afin].nome}:</b> ${AFINIDADES[h.afin].desc}</p>`:''}${ATTR_NAMES.map(a=>`<div class="arow"><span>${AN[a]}${afG.includes(a)?' <small style="color:#9fe0a0">▲</small>':''}</span><b>${at[a]??'—'}</b><div class="mini"><i style="width:${Math.min(100,Math.round((at[a]||0)/amax*100))}%"></i></div></div>`).join('')}</div>
     <div class="rpf"><h4 class="sec" style="margin:0">Equipamento</h4><div class="eqlist">${eq}</div></div>
@@ -4622,7 +4624,7 @@ function renderSheet(id,src){
       <div class="hbar"><span>Vida</span><b>${isR?`${h.hp}/${h.maxhp}`:h.maxhp}</b></div><div class="bar2"><i class="red" style="width:${hpPct}%"></i></div>
       ${isR?`<div class="hbar"><span>XP</span><b>${lv>=LEVEL_CAP?'máx.':`faltam ${fmt(xn-(h.xpTotal||0))}`}</b></div><div class="bar2"><i class="blue" style="width:${pct}%"></i></div>`:''}
     </div>
-    <div class="rpf"><h4 class="sec" style="margin:0">Atributos</h4>${rowM('atq',ico('stat','atq'),'Ataque','+'+h.atk)}${rowM('def',ico('stat','def'),'Defesa',h.def)}${rowM('res',ico('stat','res'),'Res. Mágica',h.defMag)}${rowM('mov',ico('stat','mov'),'Mover',h.mov)}${rowM('alc',ico('stat','alc'),'Alcance',h.alc)}${rowM('vida',ico('stat','vida'),'Vida',h.maxhp)}</div>
+    <div class="rpf"><h4 class="sec" style="margin:0">Atributos</h4>${rowM('atq',ico('stat','atq'),'Ataque','+'+h.atk)}${rowM('def',ico('stat','def'),'Defesa',h.def)}${rowM('res',ico('stat','res'),'Res. Mágica',h.defMag)}${rowM('mov',ico('stat','mov'),'Mover',h.mov)}${rowM('alc',ico('stat','alc'),'Alcance',h.alc)}${rowM('vida',ico('stat','vida'),'Vida',h.maxhp)}${rowM('tat','<img class="ic" src="assets/ui-icons/target-arrows.png" alt="">','Tática',`${tatOf(h)} · ${TAT_TXT(tatOf(h))}`)}</div>
     <button class="trbtn big wide" data-tree="${h.id}" data-src="${isR?'roster':'draw'}">${ico('stat','dano')} ${isR?'Árvore de habilidades':'Ver árvore de habilidades'}${isR&&free?`<b>${free} ponto${free>1?'s':''} livre${free>1?'s':''}</b>`:''}</button>
     <div class="rpf wide"><h4 class="sec" style="margin:0">Habilidades ativas</h4><div class="skslots">${slotsH}</div></div>
   </div></div>`;
@@ -4948,7 +4950,13 @@ function bestTileWithin(reach,target,range,u,mode){
 function chooseTarget(u,foes,reach){
   if(u.side==='enemy'){const fan=foes.find(f=>f.trait&&f.trait.id==='fanfarrao');if(fan&&(bestTileWithin(reach,fan,rngOf(u),u)||dist(u,fan)<=7))return fan;}
   const att=foes.filter(f=>bestTileWithin(reach,f,rngOf(u),u));
-  if(att.length)return att.sort((a,b)=>(a.hp-b.hp)||(a.def-b.def))[0];
+  if(att.length){
+    if(u.side==='enemy'){const tat=tatOf(u);
+      if(tat<=3)return att.sort((a,b)=>dist(u,a)-dist(u,b))[Math.random()<0.3?Math.min(1,att.length-1):0];   // instintivo: o mais perto
+      if(tat>=7){const sc=f=>(1-f.hp/f.maxhp)*10+(f.cls==='mago'||f.cls==='clerigo'?6:0)+(f.def<12?2:0);return att.sort((a,b)=>sc(b)-sc(a))[0];}   // focado: fecha feridos e frágeis
+    }
+    return att.sort((a,b)=>(a.hp-b.hp)||(a.def-b.def))[0];
+  }
   let best=null,bd=1e9;
   for(const f of foes){const d=fieldFrom([[f.r,f.c]]).get(k(u.r,u.c));const dd=d==null?99:d;if(dd<bd){bd=dd;best=f;}}
   return best;
@@ -5212,10 +5220,13 @@ const SK={
   campo_minado:{nome:'Campo Minado',cls:'ladino',sub:'armadilheiro',lv:24,cd:8,kind:'aoe',alc:4,area:{c:'target',r:2},mult:0.7,st:[{id:'lento'}]},
   chuva_meteoros:{nome:'Chuva de Meteoros',cls:'mago',sub:'piromante',lv:24,cd:8,kind:'aoe',area:{c:'target',r:2},mult:1,elem:'fogo',st:[{id:'queimadura'}]},
   terremoto:{nome:'Terremoto',cls:'mago',sub:'geomante',lv:24,cd:8,kind:'aoe',area:{c:'target',r:2},mult:0.8,st:[{id:'lento'}]},
-  julgamento:{nome:'Julgamento',cls:'clerigo',sub:'templario',lv:22,cd:6,kind:'aoe',area:{c:'target',r:1},mult:0.9,st:[{id:'marcado'}]},
-  saraivada_total:{nome:'Saraivada Total',cls:'arqueiro',sub:'saraivador',lv:24,cd:8,kind:'aoe',area:{c:'target',r:2},mult:0.8},
-  grito_estridente:{nome:'Grito Estridente',cls:'bardo',sub:'dissonante',lv:18,cd:5,kind:'aoe',alc:4,spell:true,area:{c:'target',r:1},mult:0.5,st:[{id:'abalado'}]},
-  nota_aguda:{nome:'Nota Aguda',cls:'bardo',lv:3,cd:3,kind:'aoe',alc:4,spell:true,area:{c:'target',r:1},mult:0.6},
+  julgamento:{nome:'Julgamento',cls:'clerigo',sub:'templario',lv:22,cd:6,kind:'aoe',area:{c:'target',shape:'cross'},mult:0.9,st:[{id:'marcado'}]},
+  saraivada_total:{nome:'Saraivada Total',cls:'arqueiro',sub:'saraivador',lv:24,cd:8,kind:'aoe',area:{c:'target',shape:'cone',len:3},mult:0.8},
+  muralha_chamas:{nome:'Muralha de Chamas',cls:'mago',sub:'piromante',lv:18,cd:5,kind:'aoe',alc:3,area:{c:'target',shape:'line',len:4},mult:0.7,elem:'fogo',st:[{id:'queimadura'}]},
+  sopro_gelido:{nome:'Sopro Gélido',cls:'mago',sub:'geomante',lv:18,cd:5,kind:'aoe',alc:3,area:{c:'target',shape:'cone',len:3},mult:0.6,elem:'gelo',st:[{id:'gelado'}]},
+  cura_area:{nome:'Cura em Área',cls:'clerigo',sub:'curandeiro',lv:18,cd:5,kind:'healArea',alc:3,area:{c:'target',shape:'sq'},mult:1},
+  grito_estridente:{nome:'Grito Estridente',cls:'bardo',sub:'dissonante',lv:18,cd:5,kind:'aoe',alc:4,spell:true,area:{c:'target',shape:'sq'},mult:0.5,st:[{id:'abalado'}]},
+  nota_aguda:{nome:'Nota Aguda',cls:'bardo',lv:3,cd:3,kind:'aoe',alc:4,spell:true,area:{c:'target',shape:'sq'},mult:0.6},
   hino_coragem:{nome:'Hino de Coragem',cls:'bardo',lv:6,cd:5,kind:'buffAllies',rad:3,st:[{id:'fortalecido'}]},
   desafinar:{nome:'Desafinar',cls:'bardo',sub:'dissonante',lv:10,cd:3,kind:'debuff',alc:4,st:[{id:'abalado'}]},
   cancao_vigor:{nome:'Canção de Vigor',cls:'bardo',sub:'consonante',lv:10,cd:4,kind:'buffAllies',rad:2,st:[{id:'regeneracao'}]},
@@ -5236,7 +5247,7 @@ const ICON_TEX={};
 const SKSND={golpe_poderoso:{c:'sk_golpe'},corte_profundo:{c:'sk_corte'},giratorio:{c:'sk_golpe'},estocada_dupla:{c:'sk_estocada'},golpe_costas:{c:'sk_estocada'},lamina_envenenada:{c:'sk_veneno'},
   bola_fogo:{c:'sk_fogo',h:'sk_explosao'},chama_viva:{c:'sk_fogo',h:'sk_fogo'},nevasca:{c:'spell_cast',h:'sk_gelo'},chuva_meteoros:{c:'sk_meteoros',h:'sk_explosao'},terremoto:{c:'spell_cast',h:'sk_terra'},
   castigo:{h:'sk_sagrado'},golpe_sagrado:{h:'sk_sagrado'},julgamento:{c:'spell_cast',h:'sk_sagrado'},chuva_flechas:{c:'sk_flechas'},saraivada_total:{c:'sk_flechas'},flecha_incendiaria:{c:'bow',h:'sk_fogo'},tiro_certeiro:{c:'bow'},
-  armadilha_espinhos:{c:'sk_trap',h:'trap'},campo_minado:{c:'sk_trap',h:'trap'},nota_aguda:{c:'sk_nota'},grito_estridente:{c:'sk_grito'}};
+  armadilha_espinhos:{c:'sk_trap',h:'trap'},campo_minado:{c:'sk_trap',h:'trap'},nota_aguda:{c:'sk_nota'},grito_estridente:{c:'sk_grito'},muralha_chamas:{c:'sk_fogo',h:'sk_fogo'},sopro_gelido:{c:'spell_cast',h:'sk_gelo'}};
 function iconTex(id){return ICON_TEX[id]||(ICON_TEX[id]=new THREE.TextureLoader().load(`assets/status/${id}.png`));}
 function iconSprite(id,size){
   const m=new THREE.SpriteMaterial({map:iconTex(id),transparent:true,depthTest:false,opacity:0});
@@ -5404,6 +5415,43 @@ function statusSave(u,t,sk){
 }
 
 // escolhe a melhor habilidade pronta pra usar agora (ou null)
+// IA de mira no chão: pontua as casas possíveis (inimigos, aliados, abates). Tática alta olha mais casas e evita fogo amigo.
+function planArea(u,sk,foes,allies,reach,rng){
+  const tat=tatOf(u),heal=sk.kind==='healArea',ar=sk.area,self=ar.c==='self'&&!ar.shape||ar.shape==='nova';
+  const wAlly=0.25+0.75*tat/10,noise=(1-tat/10)*0.6;
+  const est=(u.dmg?u.dmg[0]*(u.dmg[1]+1)/2+u.dmg[2]:4)*(sk.mult||1);
+  const arf=a=>{const o={...a};if(o.r&&sk.elem==='fogo')o.r+=(u.pb&&u.pb.areaPlus)||0;return o;};
+  const score=(origin,center)=>{
+    const cells=areaCells(origin,center,arf(ar)),inC=new Set(cells.map(x=>x.r*100+x.c));
+    let sc=0,nf=0,nw=0;
+    for(const g of unitsIn(cells)){
+      if(g===u)continue;
+      const foe=g.side!==u.side,miss=g.maxhp-g.hp;
+      if(heal){if(foe)sc-=8*wAlly;else if(miss>0){sc+=Math.min(1,miss/g.maxhp)*22;nw++;}}
+      else if(foe){nf++;sc+=10+Math.min(1,est/Math.max(1,g.hp))*10+(est>=g.hp?10:0);}
+      else sc-=(12+Math.min(1,est/Math.max(1,g.hp))*10+(est>=g.hp?15:0))*wAlly;
+    }
+    if(inC.has(origin.r*100+origin.c)&&!self)sc-=heal?0:(14*wAlly);
+    return {sc,nf,nw};
+  };
+  let best=null;
+  const consider=(sc,plan)=>{const v=sc*(1+(Math.random()-0.5)*noise);if(!best||v>best.v)best={v,sc,plan};};
+  if(self){
+    for(const t of reach.values()){if(t.pass)continue;const o=score(t,t);if(heal?o.nw>=2:o.nf>=2)consider(o.sc,{target:foes.slice().sort((a,b)=>dist(a,t)-dist(b,t))[0],tile:t,center:{r:t.r,c:t.c}});}
+  }else{
+    const base=heal?[u,...allies]:foes,cm=new Map(),addC=(r,c)=>{if(r>=0&&c>=0&&r<ROWS&&c<COLS)cm.set(r*100+c,{r,c});};
+    base.forEach(f=>{addC(f.r,f.c);if(tat>=4)[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr,dc])=>addC(f.r+dr,f.c+dc));});
+    if(tat>=7)for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(base.some(f=>cheb(f,{r,c})<=3))addC(r,c);
+    for(const C of cm.values()){
+      const tile=bestTileWithin(reach,C,rng,u);if(!tile)continue;
+      const o=score(tile,C);if(heal?o.nw<2:o.nf<2)continue;
+      let tg=null;if(!heal){const inA=unitsIn(areaCells(tile,C,arf(ar))).filter(g=>g.side!==u.side);tg=inA.sort((a,b)=>dist(a,C)-dist(b,C))[0];if(!tg)continue;}
+      consider(o.sc,{target:tg||u,tile,center:C});
+    }
+  }
+  if(!best||best.sc<(heal?30:20))return null;
+  return {score:Math.min(95,45+best.sc*0.6),plan:best.plan};
+}
 function skillPlan(u,foes,allies,reach){
   const list=skillsOf(u).filter(x=>skReady(u,x)&&!['healSkill'].includes(x.kind));if(!list.length)return null;
   let best=null,bs=0;
@@ -5417,13 +5465,9 @@ function skillPlan(u,foes,allies,reach){
       if(sk.st&&sk.st.length)c=c.filter(f=>!hasSt(f,sk.st[0].id));
       if(!c.length)continue;const t=c.sort((a,b)=>b.hp-a.hp||0)[0];
       consider(sk,40+(sk.st?8:0)+(sk.mult||1)*5,{target:t,tile:inRange(t,rng)});
-    }else if(sk.kind==='aoe'){
-      let b=null,bn=0;
-      for(const f of foes){const tile=inRange(f,rng);if(!tile)continue;
-        const center=sk.area.c==='self'?tile:f;
-        const n=foes.filter(g=>cheb(g,center)<=sk.area.r&&(sk.area.c==='target'||dist(g,center)<=1)).length;
-        if(n>bn){bn=n;b={target:f,tile};}}
-      if(bn>=2)consider(sk,52+bn*5,b);
+    }else if(sk.kind==='aoe'||sk.kind==='healArea'){
+      const pl=planArea(u,sk,foes,allies,reach,rng);
+      if(pl)consider(sk,pl.score,pl.plan);
     }else if(sk.kind==='debuff'){
       const c=foes.filter(f=>inRange(f,rng)&&!hasSt(f,sk.st[0].id));
       if(!c.length)continue;const t=c.sort((a,b)=>b.maxhp-a.maxhp)[0];
@@ -5546,7 +5590,7 @@ const trCost=n=>TREE_COST[n.t]+[0,1,n.t==='S'?2:3][n.lv>=17?2:n.lv>=9?1:0];   //
 const TICON={
   golpe_poderoso:'c:golpe_poderoso',grito_guerra:'c:grito_guerra',provocar:'u:eye-shield',corte_profundo:'c:corte_profundo',giratorio:'u:whirlwind',escudo_aliado:'c:escudo_aliado',
   estocada_dupla:'u:daggers',golpe_costas:'c:golpe_costas',marcar_alvo:'s:marcado',lamina_envenenada:'c:lamina_envenenada',rede:'s:preso',
-  bola_fogo:'m:magic:fireball:8',escudo_arcano:'m:magic:shield-bubble:12',chama_viva:'s:queimadura',armadilha_espinhos:'m:environment:spike-trap:8',campo_minado:'u:claws',chuva_meteoros:'c:meteoros',terremoto:'c:terremoto',julgamento:'c:julgamento',saraivada_total:'c:saraivada_total',grito_estridente:'c:grito_estridente',nevasca:'u:snowflake-1',tremor:'c:tremor',
+  bola_fogo:'m:magic:fireball:8',escudo_arcano:'m:magic:shield-bubble:12',chama_viva:'s:queimadura',armadilha_espinhos:'m:environment:spike-trap:8',muralha_chamas:'m:magic:fireball:8',sopro_gelido:'u:snowflake-1',cura_area:'m:magic:healing-aura:8',campo_minado:'u:claws',chuva_meteoros:'c:meteoros',terremoto:'c:terremoto',julgamento:'c:julgamento',saraivada_total:'c:saraivada_total',grito_estridente:'c:grito_estridente',nevasca:'u:snowflake-1',tremor:'c:tremor',
   cura_maior:'m:magic:healing-aura:8',bencao:'u:sparkles',castigo:'u:winged-scepter',golpe_sagrado:'c:golpe_sagrado',purificar:'u:healing',punicao:'u:scales',
   tiro_certeiro:'u:bullseye',chuva_flechas:'u:arrow-cluster',flecha_incendiaria:'c:flecha_incendiaria',marca_cacador:'u:target-arrows',
   nota_aguda:'u:lyre',hino_coragem:'s:fortalecido',desafinar:'s:abalado',cancao_vigor:'s:regeneracao',pavor:'s:medo',cancao_ninar:'u:harp',
@@ -6108,7 +6152,7 @@ async function castSkill(u,plan){
   if(sk.kind==='atk'||sk.kind==='multi'||sk.kind==='aoe'){
     if(plan.tile&&(plan.tile.r!==u.r||plan.tile.c!==u.c)){await moveAlong(u,pathTo(plan.reach,plan.tile));await checkSecret(u);}
     if(!plan.target.alive)return;
-    const opts={label:sk.nome,mult:sk.mult||1,atkB:sk.atkB||0,st:sk.st,area:sk.area,leech:sk.leech,elem:sk.elem,spell:sk.spell,far:sk.alc>1?true:undefined,sn:SKSND[sk.id]};
+    const opts={label:sk.nome,mult:sk.mult||1,atkB:sk.atkB||0,st:sk.st,area:sk.area,center:plan.center,leech:sk.leech,elem:sk.elem,spell:sk.spell,far:sk.alc>1?true:undefined,sn:SKSND[sk.id]};
     await attack(u,plan.target,opts);
     if(sk.kind==='multi'&&plan.target.alive&&u.alive)for(let i=1;i<(sk.hits||2);i++)await attack(u,plan.target,{...opts,label:sk.nome+' ✕'+(i+1),st:null});
     return;
@@ -6131,6 +6175,10 @@ async function castSkill(u,plan){
       if(sk.inspire){a.inspired=sk.inspire+((u.attrBonus&&u.attrBonus.insp)||0)+((u.pb&&u.pb.insp)||0);floatText(a,`♪ +${a.inspired} acerto`,'buff');await statusAttach(a,'inspirado');}
       for(const x of sk.st||[]){await statusFlight(u,a,x.id,true);addStatus(a,x.id,{dur:x.dur,src:u,quiet:true,val:x.val?stVal(sk,x,u):null});}
     }));
+  }else if(sk.kind==='healArea'){
+    const cells=areaCells(u,plan.center,sk.area);cells.forEach(x=>rangeTile(x.r,x.c,'blue'));
+    const vic=unitsIn(cells);
+    for(const g of vic)await heal(u,g,{mult:sk.mult,label:sk.nome,quick:true});
   }else if(sk.kind==='cleanse'){
     const a=plan.target;fxSkill(a,'#ffffff');playSfx('st_buffup',{vol:0.8});
     (a.st||[]).filter(x=>STATUS[x.id].tipo==='debuff').forEach(x=>removeStatus(a,x.id));
@@ -6139,6 +6187,44 @@ async function castSkill(u,plan){
   xp(u,6);await wait(450);
 }
 
+/* ---------- Tática + áreas (ver AREAS.md) ---------- */
+// Tática: 0–10. Herói: INT (peso 2), SAB e DES. Inimigo: pelo tipo de IA (+1 mágico, +2 chefe). O efeito é pequeno de propósito.
+const TAT_IA={rush:2,guard:3,flank:5,skirmish:6,healer:7};
+function tatOf(u){
+  if(u.side==='hero'){const a=u.attrs||{};const v=(2*(a.inteligencia||10)+(a.sabedoria||10)+(a.destreza||10))/4;return Math.max(0,Math.min(10,Math.round((v-10)/1.6)));}
+  const e=ENEMIES[u.kind]||{};return e.tat!=null?e.tat:Math.min(10,(TAT_IA[e.ia]||3)+(e.magico?1:0)+(u.kind==='ogro'||u.lider?2:0));
+}
+const TAT_TXT=t=>t>=8?'Muito alta':t>=6?'Alta':t>=4?'Média':t>=2?'Baixa':'Instintiva';
+// casas atingidas por uma habilidade em área. c = casa mirada; u = quem lança (direção de linha/cone, centro da "nova")
+function areaCells(u,c,a){
+  const out=[],add=(r,cc)=>{if(r>=0&&cc>=0&&r<ROWS&&cc<COLS)out.push({r,c:cc});};
+  const sh=a.shape||(a.c==='self'?'nova':'burst'),R=a.r||1;
+  if(sh==='burst'){for(let r=c.r-R;r<=c.r+R;r++)for(let cc=c.c-R;cc<=c.c+R;cc++)add(r,cc);}
+  else if(sh==='cross'){add(c.r,c.c);add(c.r-1,c.c);add(c.r+1,c.c);add(c.r,c.c-1);add(c.r,c.c+1);}
+  else if(sh==='sq'){add(c.r,c.c);add(c.r+1,c.c);add(c.r,c.c+1);add(c.r+1,c.c+1);}
+  else if(sh==='nova'){for(let r=u.r-R;r<=u.r+R;r++)for(let cc=u.c-R;cc<=u.c+R;cc++)if(!(r===u.r&&cc===u.c))add(r,cc);}
+  else{
+    const dr=c.r-u.r,dc=c.c-u.c;let sr=0,sc=0;if(Math.abs(dr)>=Math.abs(dc))sr=Math.sign(dr)||1;else sc=Math.sign(dc);
+    const L=a.len||4;
+    for(let d=1;d<=L;d++){
+      if(sh==='line')add(u.r+sr*d,u.c+sc*d);
+      else for(let k=-(d-1);k<=d-1;k++){if(sr)add(u.r+sr*d,u.c+k);else add(u.r+k,u.c+sc*d);}
+    }
+  }
+  return out;
+}
+const unitsIn=cells=>{const ks=new Set(cells.map(x=>x.r*100+x.c));return units().filter(g=>g.alive&&g.r!=null&&ks.has(g.r*100+g.c));};
+const AREA_TXT={burst:'explosão',cross:'cruz',sq:'quadrado 2×2',nova:'em volta de quem lança',line:'linha',cone:'cone'};
+function areaMiniHtml(a){   // 7×7: quem lança embaixo ao centro (dourado), área em vermelho
+  const u={r:6,c:3},tgt=a.c==='self'?u:(a.shape==='line'||a.shape==='cone')?{r:0,c:3}:{r:3,c:3};
+  const ks=new Set(areaCells(u,tgt,a).map(x=>x.r*7+x.c));let h='';
+  for(let r=0;r<7;r++)for(let c=0;c<7;c++)h+=`<i class="${r===6&&c===3?'me':ks.has(r*7+c)?'on':''}"></i>`;
+  return `<span class="amini" title="Forma da área">${h}</span>`;
+}
+function areaMini(a){   // mini desenho da forma (quem lança no centro de baixo, mira pra cima)
+  const Q=3,cells=areaCells({r:Q,c:Q},{r:0,c:Q},a.shape==='burst'||a.shape==='cross'||a.shape==='sq'?{...a}:a);
+  return cells;
+}
 async function attack(u,t,opts={}){
   if(!u.alive)return;
   faceToward(u,t.grp.position.x,t.grp.position.z);
@@ -6213,11 +6299,17 @@ async function attack(u,t,opts={}){
   const oh=ENEMY_ONHIT[u.kind];if(oh&&u.side==='enemy'&&t.alive&&R()<oh[1]){await statusAttach(t,oh[0]);addStatus(t,oh[0],{src:u,quiet:true});}
   if(opts.leech&&u.alive&&u.hp<u.maxhp){const lh=Math.max(1,Math.round(dmg*opts.leech));u.hp=Math.min(u.maxhp,u.hp+lh);floatText(u,`+${lh}`,'heal');pulse(u.grp.position,'#6cc35e',0.8,0.4);}
   if(opts.area){
-    const center=opts.area.c==='self'?u:t,arad=opts.area.r+(opts.elem==='fogo'?((u.pb&&u.pb.areaPlus)||0):0);
-    const others=foesOf(u).filter(g=>g!==t&&g.alive&&(opts.area.c==='target'?cheb(g,center)<=arad:dist(g,center)<=1));
-    for(const g of others){const d2=Math.max(1,Math.round(dmg*0.75*(stMods(g).inn)));
+    const cen=opts.center||(opts.area.c==='self'?{r:u.r,c:u.c}:{r:t.r,c:t.c});
+    const ar={...opts.area};if(ar.r&&opts.elem==='fogo')ar.r+=(u.pb&&u.pb.areaPlus)||0;
+    const cells=areaCells(u,cen,ar);
+    cells.forEach(x=>rangeTile(x.r,x.c,'red'));
+    // acerta todo mundo na área (aliados também): mesmo dano para todos, sem rolagem de acerto
+    for(const g of unitsIn(cells)){
+      if(g===t||!g.alive)continue;
+      const friend=g.side===u.side,d2=Math.max(1,Math.round(dmg*(stMods(g).inn)));
       floatText(g,`-${d2}`,'');burst(g.grp.position,{n:6,colors:sparks,spread:0.5,up:0.4,y:0.4,life:0.35});
-      addLog(`${u.first} também atingiu ${g.first}: ${d2} de dano`,u.side==='hero'?'good':'bad');
+      addLog(`${u.first} ${friend?'acertou o aliado':'também atingiu'} ${g.first}: ${d2} de dano`,friend?'bad':(u.side==='hero'?'good':'bad'));
+      if(friend)floatText(g,'Fogo amigo!','miss');
       damage(g,d2,u,false,opts.sn&&opts.sn.h);
       if(g.alive)for(const x of opts.st||[])addStatus(g,x.id,{dur:x.dur,src:u});}
   }
@@ -6314,18 +6406,18 @@ function addTomb(t){
 }
 async function heal(u,w,o={}){
   if(!u.alive)return;
-  pulse(u.grp.position,'#6cc35e',0.9,0.5);await wait(250);
+  if(!o.quick){pulse(u.grp.position,'#6cc35e',0.9,0.5);await wait(250);}
   const subHeal=u.sub==='curandeiro'?3:0;
   const amt=Math.round((dice(2,4)+2+(u.healBonus||0)+subHeal)*(o.mult||1)),before=w.hp;w.hp=Math.min(w.maxhp,w.hp+amt);
-  await showRoll({u,skill:'✚ '+(o.label||'Cura'),roll:amt,numText:'+'+amt,outcome:'hit'});
-  await chargeUp(u,'heal');chargeEnd(u);
+  if(!o.quick){await showRoll({u,skill:'✚ '+(o.label||'Cura'),roll:amt,numText:'+'+amt,outcome:'hit'});
+  await chargeUp(u,'heal');chargeEnd(u);}
   SFX.heal();pulse(w.grp.position,'#6cc35e',1.2,0.7);fxPlay('magic','healing-aura-32px_strip8.png',8,10,{x:w.grp.position.x,y:w.grp.position.y,z:w.grp.position.z},{w:1.7});
   floatText(w,`+${w.hp-before}`,'heal');tintUnit(w,{r:0.5,g:1,b:0.5},{r:1,g:1,b:1},0.7);
   if(u.pb&&u.pb.overShield){const over=amt-(w.hp-before);if(over>0)addStatus(w,'escudo',{val:Math.max(1,Math.round(over*u.pb.overShield)),src:u});}
-  xp(u,Math.max(5,(w.hp-before)*2));
-  addLog(`${u.first} curou ${w===u?'a si mesmo':w.first} (+${w.hp-before})`,'heal');
+  if(w.side===u.side)xp(u,Math.max(5,(w.hp-before)*2));
+  addLog(`${u.first} curou ${w===u?'a si mesmo':w.first}${w.side!==u.side?' (inimigo!)':''} (+${w.hp-before})`,w.side!==u.side?'bad':'heal');
   if(w!==u&&before<=w.maxhp*0.3)stats.hl.push({w:5,t:`${w.first} estava por um fio (${before} PV) e foi salvo pela cura de ${u.first}.`});
-  await wait(550);
+  await wait(o.quick?250:550);
 }
 async function checkSecret(u){
   if(!SECRET||u.side!=='hero'||stats.secret||u.triedSecret||dist(u,SECRET)!==1)return;
