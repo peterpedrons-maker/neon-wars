@@ -1,4 +1,4 @@
-# Lendas de Taverna
+# Hearthblade
 
 RPG tático de grupo (estilo auto-battler) em um único arquivo HTML
 autocontido — sem build, sem dependências locais. Usa Three.js e GSAP

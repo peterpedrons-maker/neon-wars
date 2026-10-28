@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Lendas de Taverna</title>
+<title>Hearthblade</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#14100d">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1339,7 +1339,7 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
   </div>
   <div id="result" hidden></div>
   <div id="help" hidden><div class="hbox" role="dialog" aria-label="Como jogar">
-    <div><div class="eyebrow">Brumavale</div><h2>Como jogar</h2></div>
+    <div><div class="eyebrow">Hearthblade</div><h2>Como jogar</h2></div>
     <ol>
       <li><div><b>Praça</b>Cada prédio tem o seu menu. Faça os passos 1 e 2 e parta.</div></li>
       <li><div><b>Missão</b>No Quadro de Missões, veja o mapa e os inimigos que podem aparecer. Mapa 1 é sempre igual; o resto muda.</div></li>
@@ -1352,7 +1352,7 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
     <button class="btn" data-close>Entendi</button>
   </div></div>
   <div id="install" hidden><div class="hbox" role="dialog" aria-label="Instalar o jogo">
-    <div class="ibox"><div class="icn"></div><div><div class="eyebrow">Brumavale</div><h2>Instalar o jogo</h2></div></div>
+    <div class="ibox"><div class="icn"></div><div><div class="eyebrow">Hearthblade</div><h2>Instalar o jogo</h2></div></div>
     <p class="ihelp">Instale na tela inicial pra jogar em tela cheia, sem a barra do navegador — igual um app de verdade.</p>
     <ol id="iosSteps" hidden>
       <li><div><b>Compartilhar</b>Toque no ícone de compartilhar <span class="ishare">⬆️</span> na barra do Safari.</div></li>
@@ -6530,7 +6530,7 @@ function loop(t){
 }
 
 /* ================= Abertura (publicadora → toque → título sobre a vila → zoom) ================= */
-const GAME_TITLE='BRUMAVALE',GAME_TAG='TÁTICA & LENDAS';
+const GAME_TITLE='HEARTHBLADE',GAME_TAG='TACTICAL HEROES';
 function runIntro(done){
   const q=s=>document.querySelector(s),pub=q('#in-pub'),tit=q('#in-title');
   q('#tname').innerHTML=[...GAME_TITLE].map(c=>`<span>${c}</span>`).join('');q('#tsub').textContent=GAME_TAG;
