@@ -1237,6 +1237,9 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .pn{font-size:30px;letter-spacing:5px;color:#f3e6c6;text-shadow:0 3px 0 #000}.pg{font-size:12px;letter-spacing:6px;color:#cdb68a}
 .inld{position:absolute;left:0;right:0;bottom:calc(60px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:12px;opacity:0}
 .inbar{width:min(220px,56%);height:8px;border-radius:5px;background:#1c1520;border:2px solid #3a2e44;overflow:hidden}.inbar i{display:block;height:100%;width:0;background:linear-gradient(#ffe9a8,#e9b949)}
+#intro,#intro p,#intro b,#intro small,#intro h1{font-family:var(--f-display)!important}
+.pubimg{display:block;max-width:min(78vw,420px);max-height:34vh;object-fit:contain;filter:drop-shadow(0 4px 0 #000a)}
+.tlogo{display:block;max-width:min(86vw,460px);max-height:30vh;object-fit:contain;filter:drop-shadow(0 5px 0 #000a) drop-shadow(0 0 14px #e9b94955)}
 #intap{margin:0;font-size:14px;letter-spacing:2px;color:#cdb68a}
 #intap.go{color:#ffe9b8;animation:blink 1.3s ease-in-out infinite}
 @keyframes blink{50%{opacity:.35}}
@@ -1381,6 +1384,16 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 @media (max-height:860px){.hcd small.tr{display:none}.hcd .hpt{height:44px}.hcd .hpt img{height:40px}.shres .shsum{display:none}.shres .shport{height:108px}.shres .shport img{height:114px}.ov .inner.kt .party .slot,.party .slot{height:48px!important;width:42px!important}}
 @media (max-height:860px){.shres{padding-bottom:0;gap:6px}.shres .rpf{padding:8px 10px}.shres .shname{margin:2px 0}.shres .tags{margin:2px 0}}
 @media (max-height:760px){.flt{display:none}.shres .shport{height:92px}.shres .shport img{height:98px}.shres .rpf{padding:8px}.shres .shrow{padding:3px 8px;margin-top:2px}}
+/* balões dos moradores (seguem o personagem) */
+.vbub,.vemo{position:absolute;z-index:6;transform:translate(-50%,-100%);pointer-events:none}
+.vbub{max-width:190px}.vb-in{animation:vpop .28s cubic-bezier(.2,1.6,.4,1) both;transform-origin:50% 100%}
+.vbub .vb-in{position:relative;background:#f3e6c6;color:#2b1e15;border:2px solid #120b08;border-radius:10px;padding:6px 9px;font:600 12px/1.3 var(--f-body,system-ui);box-shadow:0 3px 0 #0007}
+.vbub .vb-in::after{content:"";position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);border:6px solid transparent;border-bottom:0;border-top-color:#120b08}
+.vbub .vb-in::before{content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);border:5px solid transparent;border-bottom:0;border-top-color:#f3e6c6;z-index:1}
+.vbub em{display:block;font:700 10px var(--f-display);font-style:normal;color:#8a5a22;margin-bottom:2px;letter-spacing:.04em}
+.vemo .vb-in{font-size:24px;line-height:1;filter:drop-shadow(0 2px 0 #000a);animation:vpop .28s cubic-bezier(.2,1.6,.4,1) both,vfloat 1.3s ease-out both}
+@keyframes vpop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+@keyframes vfloat{from{margin-top:0}to{margin-top:-14px}}
 </style>
 </head>
 <body>
@@ -2986,7 +2999,8 @@ function vbox(w,h,d,color,x,y,z,parent=village,basic=false){
   const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),basic?new THREE.MeshBasicMaterial({color}):new THREE.MeshPhongMaterial({color,shininess:14,specular:0x332518}));
   m.position.set(x,y,z);parent.add(m);return m;
 }
-function vplane(w,d,tex,x,y,z){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshLambertMaterial({map:tex}));m.rotation.x=-Math.PI/2;m.position.set(x,y,z);village.add(m);return m;}
+function vplane(w,d,tex,x,y,z){const k=-Math.round(1+y*1500);const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshLambertMaterial({map:tex,polygonOffset:true,polygonOffsetFactor:k,polygonOffsetUnits:k}));m.rotation.x=-Math.PI/2;m.position.set(x,y,z);village.add(m);return m;}
+const lay=(m,y)=>{const k=-Math.round(1+y*1500);m.material.polygonOffset=true;m.material.polygonOffsetFactor=k;m.material.polygonOffsetUnits=k;return m;};
 function shade(hex,amt){const n=parseInt(hex.slice(1),16);const f=v=>Math.max(0,Math.min(255,v+amt));return '#'+[f(n>>16),f(n>>8&255),f(n&255)].map(v=>v.toString(16).padStart(2,'0')).join('');}
 function building(id,o){
   const {x,z,w,d,h,wall,roof,wins=[],door=0,chimney=null,roofH=0.9}=o;
@@ -3017,8 +3031,8 @@ function building(id,o){
   road(12.5,1.1,0,-6.2,0.006);road(12,1.1,0,5,0.006);road(10,1,0,10.2,0.006);road(4.5,1,-5.4,-12.6,0.006);
   // praça de pedra no poço
   const cob=ptex('#9a9d96',['#85888182'.slice(0,7),'#adb0a8','#767a74'],{size:48,n:260,repeat:[3,3]});
-  const plaza=new THREE.Mesh(new THREE.CircleGeometry(3.3,36),new THREE.MeshLambertMaterial({map:cob}));plaza.rotation.x=-Math.PI/2;plaza.position.set(0,0.012,-2.2);village.add(plaza);
-  const ring=new THREE.Mesh(new THREE.RingGeometry(3.3,3.5,36),new THREE.MeshLambertMaterial({color:'#6b6f69'}));ring.rotation.x=-Math.PI/2;ring.position.set(0,0.014,-2.2);village.add(ring);
+  const plaza=new THREE.Mesh(new THREE.CircleGeometry(3.3,36),new THREE.MeshLambertMaterial({map:cob}));plaza.rotation.x=-Math.PI/2;plaza.position.set(0,0.02,-2.2);lay(plaza,0.02);village.add(plaza);
+  const ring=new THREE.Mesh(new THREE.RingGeometry(3.3,3.5,36),new THREE.MeshLambertMaterial({color:'#6b6f69'}));ring.rotation.x=-Math.PI/2;ring.position.set(0,0.026,-2.2);lay(ring,0.026);village.add(ring);
   /* ---- prédios com a temática embutida (taverna de enxaimel, templo de pedra clara, forja, cofre/armazém) ---- */
   const grp=(id,x,z)=>{const g=new THREE.Group();g.position.set(x,0,z);village.add(g);g.userData={bld:id};villagePicks.push(g);BLD[id]={x,z};return g;};
   const gable=(w,d,h,col,y0,ov,parent)=>{const sh=new THREE.Shape();sh.moveTo(-w/2-ov,0);sh.lineTo(w/2+ov,0);sh.lineTo(0,h);sh.lineTo(-w/2-ov,0);
@@ -3175,8 +3189,8 @@ function building(id,o){
   [[2.6,12.9],[5.6,12.9]].forEach(([x,z])=>{vbox(0.03,0.03,3,'#d9d3c4',x,0.55,z);});
   vbox(3,0.04,3,'#7a6a4a',4.1,0.03,12.9);vbox(0.08,0.9,0.08,'#6b4a2a',4.1,0.45,11.0);const csg=new THREE.Mesh(new THREE.PlaneGeometry(0.9,0.4),new THREE.MeshBasicMaterial({color:'#e8d9a8',side:THREE.DoubleSide}));csg.position.set(4.1,0.95,11.04);village.add(csg);crate(3.5,13.2,0.36);crate(4.6,13.6,0.3,0.4);
   // lagoa com doca e juncos (sudoeste)
-  const pond=new THREE.Mesh(new THREE.CircleGeometry(2.4,28),new THREE.MeshLambertMaterial({color:'#3a7fb0',transparent:true,opacity:0.95}));pond.rotation.x=-Math.PI/2;pond.position.set(-5.8,0.02,15.4);pond.scale.set(1.25,1,1);village.add(pond);
-  const shore=new THREE.Mesh(new THREE.RingGeometry(2.38,2.9,28),new THREE.MeshLambertMaterial({color:'#b9a272'}));shore.rotation.x=-Math.PI/2;shore.position.set(-5.8,0.015,15.4);shore.scale.set(1.25,1,1);village.add(shore);
+  const pond=new THREE.Mesh(new THREE.CircleGeometry(2.4,28),new THREE.MeshLambertMaterial({color:'#3a7fb0',transparent:true,opacity:0.95}));pond.rotation.x=-Math.PI/2;pond.position.set(-5.8,0.03,15.4);pond.scale.set(1.25,1,1);lay(pond,0.03);village.add(pond);
+  const shore=new THREE.Mesh(new THREE.RingGeometry(2.38,2.9,28),new THREE.MeshLambertMaterial({color:'#b9a272'}));shore.rotation.x=-Math.PI/2;shore.position.set(-5.8,0.022,15.4);shore.scale.set(1.25,1,1);lay(shore,0.022);village.add(shore);
   vbox(0.9,0.06,2.4,'#8a5a32',-3.6,0.18,14.6);for(const dz of [13.6,15.6])for(const dx of [-4,-3.2])vbox(0.08,0.35,0.08,'#5a3a22',dx,0.1,dz);
   for(let i=0;i<14;i++){const a=rnd()*6.28,d=2.4+rnd()*0.7,px=-5.8+Math.cos(a)*d*1.25,pz=15.4+Math.sin(a)*d;vbox(0.04,0.5+rnd()*0.3,0.04,'#5d8f3f',px,0.3,pz);vbox(0.07,0.16,0.07,'#6b4a2a',px,0.62,pz);}
   // pedras, arbustos e flores espalhados
@@ -3227,7 +3241,7 @@ village.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
 // padronizar a vila com o resto do jogo — antes era um pixel-art à parte.
 function standeeLPC(cls,sz,parent){
   const grp=new THREE.Group();
-  const sh=new THREE.Mesh(new THREE.CircleGeometry(0.3,16),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.3,depthWrite:false}));sh.rotation.x=-Math.PI/2;sh.position.y=0.012;grp.add(sh);
+  const sh=new THREE.Mesh(new THREE.CircleGeometry(0.3,16),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.3,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-40,polygonOffsetUnits:-40}));sh.rotation.x=-Math.PI/2;sh.position.y=0.05;sh.renderOrder=3;grp.add(sh);
   const lp=lpcHeroMesh(cls,sz);
   const pivot=bb(new THREE.Group());pivot.rotation.y=AZ;pivot.add(lp.mesh);grp.add(pivot);
   parent.add(grp);return {grp,pivot,plane:lp.mesh,sz,lpc:lp.lpc};
@@ -3247,22 +3261,64 @@ function initVillagers(){
     const v={...s,nome,at,id:100+i};walk(v,Math.random()*2);return v;
   });
 }
+const nodeBusy=(v,n)=>villagers.some(o=>o!==v&&(o.at===n||o.next===n));
 function walk(v,delay){
-  const next=vpick(WE[v.at]);const [x,z]=WP[next];const p=v.grp.position;
+  const opts=WE[v.at].filter(n=>!nodeBusy(v,n));
+  if(!opts.length){gsap.delayedCall(0.7+Math.random()*0.8,()=>walk(v,0));return;}   // caminho ocupado: espera, não atravessa ninguém
+  const next=vpick(opts);v.next=next;const [x,z]=WP[next];const p=v.grp.position;
   const dur=Math.hypot(x-p.x,z-p.z)/0.7;
-  gsap.delayedCall(delay,()=>{if(v.lpc)lpcSetState(v,'walk');});
-  gsap.timeline({delay,onComplete:()=>{v.at=next;if(v.lpc)lpcSetState(v,'stand');walk(v,0.6+Math.random()*2.6);}}).to(p,{x,z,duration:dur,ease:'none'},0);
+  gsap.delayedCall(delay,()=>{if(v.lpc&&!v.talk)lpcSetState(v,'walk');});
+  v.tl=gsap.timeline({delay,onComplete:()=>{v.at=next;v.next=null;if(v.lpc)lpcSetState(v,'stand');walk(v,0.6+Math.random()*2.6);}}).to(p,{x,z,duration:dur,ease:'none'},0);
+}
+// pausa curta para conversar (os dois param, o balão continua colado em cada um)
+function pauseV(v,ms){
+  if(v.talk||!v.tl)return;v.talk=true;v.tl.pause();if(v.lpc)lpcSetState(v,'stand');
+  gsap.delayedCall(ms/1000,()=>{v.talk=false;if(v.tl)v.tl.play();if(v.lpc&&v.tl&&v.tl.isActive())lpcSetState(v,'walk');});
+}
+/* balões que seguem o morador pela vila */
+const vbubs=[],_vw=new THREE.Vector3();
+function vBubble(v,html,cls,ms){
+  const el=document.createElement('div');el.className=cls;el.innerHTML=`<div class="vb-in">${html}</div>`;hud.appendChild(el);
+  const b={v,el};vbubs.push(b);
+  setTimeout(()=>{gsap.to(el,{opacity:0,duration:0.3,onComplete:()=>{el.remove();const i=vbubs.indexOf(b);if(i>=0)vbubs.splice(i,1);}});},ms);
+  placeVBubs();return b;
+}
+function placeVBubs(){
+  const hub=app.classList.contains('hub');
+  for(let i=vbubs.length-1;i>=0;i--){
+    const b=vbubs[i];if(!b.el.isConnected||!hub){b.el.remove();vbubs.splice(i,1);continue;}
+    b.v.grp.getWorldPosition(_vw);_vw.y+=b.v.sz*0.95+0.25;
+    const [x,y]=worldToScreen(_vw);b.el.style.left=x+'px';b.el.style.top=y+'px';
+  }
 }
 let bubble=null;
 function sayRumor(){
-  if(phase!=='village'||bubble||!app.classList.contains('hub'))return;
-  const vis=villagers.filter(v=>{const [x,y]=worldToScreen(v.grp.getWorldPosition(new THREE.Vector3()));return x>40&&x<stage.clientWidth-40&&y>80&&y<stage.clientHeight;});
+  if(phase!=='village'||bubble||window.__intro||!app.classList.contains('hub'))return;
+  const vis=villagers.filter(v=>{const [x,y]=worldToScreen(v.grp.getWorldPosition(new THREE.Vector3()));return x>50&&x<stage.clientWidth-50&&y>110&&y<stage.clientHeight-150;});
   if(!vis.length)return;
-  const v=vpick(vis);const el=document.createElement('div');el.className='bubble';el.innerHTML=`<em>${v.nome}</em>${vpick(RUMORS)}`;hud.appendChild(el);
-  bubble={v,el};gsap.fromTo(el,{opacity:0,y:6},{opacity:1,y:0,duration:0.25});
-  setTimeout(()=>{gsap.to(el,{opacity:0,duration:0.3,onComplete:()=>{el.remove();if(bubble&&bubble.el===el)bubble=null;}});},4200);
+  const v=vpick(vis),b=vBubble(v,`<em>${v.nome}</em>${vpick(RUMORS)}`,'vbub',4600);
+  bubble=b;setTimeout(()=>{if(bubble===b)bubble=null;},4900);
 }
-setInterval(sayRumor,5500);setTimeout(sayRumor,1200);
+setInterval(sayRumor,5200);setTimeout(sayRumor,1500);
+// encontros: quando dois moradores passam perto, param um instante e trocam emoji
+const EMO_HI=['👋','🙂','😀'],EMO_TALK=['💬','😄','🤔','😮','🍺','❤️','😂','🎵','🙄','😠','🥖'];
+const pairCool=new Map();
+function villagersMeet(){
+  if(phase!=='village'||window.__intro||!app.classList.contains('hub'))return;
+  const now=performance.now(),ps=[];
+  for(let i=0;i<villagers.length;i++)for(let j=i+1;j<villagers.length;j++){
+    const a=villagers[i],b=villagers[j];if(a.talk||b.talk)continue;
+    const d=Math.hypot(a.grp.position.x-b.grp.position.x,a.grp.position.z-b.grp.position.z);
+    if(d<2.3&&now-(pairCool.get(a.id+'-'+b.id)||0)>9000)ps.push([a,b]);
+  }
+  if(!ps.length||Math.random()<0.4)return;
+  const [a,b]=vpick(ps);pairCool.set(a.id+'-'+b.id,now);
+  pauseV(a,2600);pauseV(b,2600);
+  vBubble(a,vpick(EMO_HI),'vemo',1300);
+  setTimeout(()=>vBubble(b,vpick(EMO_HI),'vemo',1200),650);
+  setTimeout(()=>vBubble(Math.random()<0.5?a:b,vpick(EMO_TALK),'vemo',1200),1500);
+}
+setInterval(villagersMeet,1300);
 function puffSmoke(){
   if(phase!=='village'&&phase!=='tavern')return;
   chimneys.forEach(c=>{
@@ -7021,23 +7077,30 @@ function loop(t){
   }
   if(phase==='battle'){renderObjs();renderUC();}
   villagers.forEach(v=>{v.pivot.scale.y=1+Math.sin(s*2.4+v.id)*0.02;if(v.lpc)tickLPC(v,s);});
-  if(app.classList.contains('hub'))placeVillageNames();
+  if(app.classList.contains('hub')){placeVillageNames();placeVBubs();}
   if(active&&active.grp){ring.position.set(active.grp.position.x,active.grp.position.y+0.09,active.grp.position.z);ring.material.opacity=0.65+Math.sin(s*6)*0.3;}
   if(tRing.visible)tRing.material.opacity=0.6+Math.sin(s*10)*0.35;
   if(callout&&callout.u.grp){const cu=callout.u,[x,y]=spriteTopScreen(cu);   // topo real do sprite na tela (o plano é inclinado: a fórmula vertical errava)
     const gap=callout.el.classList.contains('mv')?9:11;callout.el.style.left=Math.max(x,24)+'px';callout.el.style.top=Math.max(y-gap,50)+'px';}
+  if(window.__introFrozen)return;
   renderer.render(scene,cam);renderDie();
 }
 
 /* ================= Abertura (publicadora → toque → título sobre a vila → zoom) ================= */
-const GAME_TITLE='HEARTHBLADE',GAME_TAG='TACTICAL HEROES';
+const GAME_TITLE='HEARTHBLADE',GAME_TAG='TACTICAL FORGE';
 function runIntro(done){
   const q=s=>document.querySelector(s),pub=q('#in-pub'),tit=q('#in-title');
   q('#tname').innerHTML=[...GAME_TITLE].map(c=>`<span>${c}</span>`).join('');q('#tsub').textContent=GAME_TAG;
   hubFit(true);const V=VIEW.village.slice();
   const place=(z)=>{camT.set(V[0],V[1],V[2]);cam.zoom=V[3]*z;cam.updateProjectionMatrix();};place(0.7);
-  // a câmera paira devagar atrás do título, como se a vila respirasse
-  const drift=gsap.timeline({repeat:-1,yoyo:true}).to(camT,{x:V[0]+0.55,z:V[2]-0.8,duration:7,ease:'sine.inOut'}).to(cam,{zoom:V[3]*0.78,duration:7,ease:'sine.inOut',onUpdate:()=>cam.updateProjectionMatrix()},0);
+  // o fundo fica parado (um quadro congelado, desfocado) enquanto o logo e o título aparecem
+  place(0.82);setTimeout(()=>{window.__introFrozen=true;},500);
+  const drift={kill(){}};
+  // logos de imagem (opcionais): assets/brand/publisher.png e assets/brand/logo.png — sem arquivo, fica o texto
+  let hasLogo=false;
+  const brandImg=(src,cb)=>{const im=new Image();im.onload=()=>cb(im);im.onerror=()=>{};im.src=src;};
+  brandImg('assets/brand/publisher.png',im=>{im.className='pubimg';const b=q('.publ');b.innerHTML='';b.appendChild(im);});
+  brandImg('assets/brand/logo.png',im=>{hasLogo=true;im.className='tlogo';const n=q('#tname');n.innerHTML='';n.appendChild(im);});
   // 1) logo da publicadora
   gsap.timeline().to('.publ',{opacity:1,y:0,duration:1.1,ease:'power2.out'},0.3).fromTo('.pico',{scale:0.6},{scale:1,duration:1.1,ease:'back.out(2)'},0.3)
     .to('.inld',{opacity:1,duration:0.6},1.4);
@@ -7052,16 +7115,17 @@ function runIntro(done){
       if(!ready)return;stage=2;SFX.introTap();
       gsap.to('#in-pub',{opacity:0,duration:0.7,onComplete:()=>{pub.style.display='none';}});
       tit.style.display='grid';
-      const tl=gsap.timeline({delay:0.5});
-      tl.fromTo('.tico',{opacity:0,scale:0.5,y:-14},{opacity:1,scale:1,y:0,duration:0.8,ease:'back.out(2)'})
-        .to('.tname span',{opacity:1,duration:0.01,stagger:0.1},0.35)
-        .fromTo('.tname span',{y:26,scale:1.5},{y:0,scale:1,duration:0.5,stagger:0.1,ease:'back.out(2.2)'},0.35)
-        .to('.tsub',{opacity:1,duration:0.8},'>-0.1')
-        .to('#tstart',{opacity:1,duration:0.6,onComplete:()=>{q('#tstart').classList.add('on');stage=3;}},'>0.2');
+      const tl=gsap.timeline({delay:0.15});
+      tl.fromTo('.tico',{opacity:0,scale:0.5,y:-14},{opacity:1,scale:1,y:0,duration:0.4,ease:'back.out(2)'});
+      if(hasLogo)tl.fromTo('.tlogo',{opacity:0,scale:0.7,y:16},{opacity:1,scale:1,y:0,duration:0.55,ease:'back.out(1.8)'},0.1);
+      else tl.to('.tname span',{opacity:1,duration:0.01,stagger:0.04},0.1)
+        .fromTo('.tname span',{y:22,scale:1.4},{y:0,scale:1,duration:0.3,stagger:0.04,ease:'back.out(2.2)'},0.1);
+      tl.to('.tsub',{opacity:1,duration:0.35},'>-0.15')
+        .to('#tstart',{opacity:1,duration:0.35,onComplete:()=>{q('#tstart').classList.add('on');stage=3;}},'>0.05');
       gsap.to('.tbox',{y:'+=6',duration:2.6,repeat:-1,yoyo:true,ease:'sine.inOut'});
     }else if(stage===3){
-      stage=4;SFX.introStart();drift.kill();
-      gsap.to(['.tname span','.tico','.tsub','#tstart'],{opacity:0,y:-18,duration:0.8,stagger:0.03,ease:'power2.in'});
+      stage=4;SFX.introStart();window.__introFrozen=false;
+      gsap.to(['.tname span','.tlogo','.tico','.tsub','#tstart'],{opacity:0,y:-18,duration:0.8,stagger:0.03,ease:'power2.in'});
       gsap.to('.inblur',{'--b':'0px',opacity:0,duration:1.6,ease:'power2.inOut'});
       aimCam(...V,2.1);
       gsap.delayedCall(1.7,()=>{tit.style.display='none';window.__intro=false;document.body.classList.remove('intro');gsap.fromTo('#vui',{opacity:0},{opacity:1,duration:0.9});done();});
