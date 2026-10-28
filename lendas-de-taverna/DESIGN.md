@@ -1,4 +1,4 @@
-# Lendas de Taverna — documento de design
+# Hearthblade — documento de design
 
 Registro vivo das decisões de design do projeto. Objetivo: ninguém (eu ou uma
 sessão futura) precisa reconstruir o histórico de conversa pra saber o que já
