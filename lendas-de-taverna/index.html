@@ -1551,7 +1551,7 @@ function audioBus(){
 }
 function applyVol(){
   if(!actx||!sfxBus)return;
-  master.gain.value=AUD.vol.mute?0:0.5;sfxBus.gain.value=AUD.vol.sfx;musBus.gain.value=AUD.vol.music*0.75;
+  master.gain.value=AUD.vol.mute?0:0.5;sfxBus.gain.value=AUD.vol.sfx;musBus.gain.value=AUD.vol.music*0.5;
 }
 function loadBuf(url){
   if(AUD.bufs[url])return Promise.resolve(AUD.bufs[url]);
@@ -2095,7 +2095,7 @@ const RUMORS=[
   'Os lobos sempre vão atrás de quem usa cajado.',
   'Mate o xamã primeiro, ou o bando nunca morre.',
 ];
-const VNAMES=['Dona Neca','Seu Tonho','Zezinho','Guarda Bento','Tia Lurdes','Mané da Feira','Cacá','Guarda Rita','Vovó Zefa'];
+const VNAMES=['Dona Neca','Seu Tonho','Zezinho','Guarda Bento','Tia Lurdes','Mané da Feira'];
 
 /* ---------- Campanha ---------- */
 /* Campanha em atos (estilo FFT): cada ato é um capítulo com faixa de nível e
@@ -3073,8 +3073,8 @@ function vbox(w,h,d,color,x,y,z,parent=village,basic=false){
   const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),basic?new THREE.MeshBasicMaterial({color}):new THREE.MeshPhongMaterial({color,shininess:14,specular:0x332518}));
   m.position.set(x,y,z);parent.add(m);return m;
 }
-function vplane(w,d,tex,x,y,z){const k=-Math.round(1+y*1500);const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshLambertMaterial({map:tex,polygonOffset:true,polygonOffsetFactor:k,polygonOffsetUnits:k}));m.rotation.x=-Math.PI/2;m.position.set(x,y,z);village.add(m);return m;}
-const lay=(m,y)=>{const k=-Math.round(1+y*1500);m.material.polygonOffset=true;m.material.polygonOffsetFactor=k;m.material.polygonOffsetUnits=k;return m;};
+function vplane(w,d,tex,x,y,z){const k=-Math.round(1+y/0.012);const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshLambertMaterial({map:tex,polygonOffset:true,polygonOffsetFactor:k,polygonOffsetUnits:k}));m.rotation.x=-Math.PI/2;m.position.set(x,y,z);village.add(m);return m;}
+const lay=(m,y)=>{const k=-Math.round(1+y/0.012);m.material.polygonOffset=true;m.material.polygonOffsetFactor=k;m.material.polygonOffsetUnits=k;return m;};
 function shade(hex,amt){const n=parseInt(hex.slice(1),16);const f=v=>Math.max(0,Math.min(255,v+amt));return '#'+[f(n>>16),f(n>>8&255),f(n&255)].map(v=>v.toString(16).padStart(2,'0')).join('');}
 function building(id,o){
   const {x,z,w,d,h,wall,roof,wins=[],door=0,chimney=null,roofH=0.9}=o;
@@ -3101,12 +3101,12 @@ function building(id,o){
   vplane(IW,ID,ptex('#5d8f3f',['#6ea64b','#4e7c34','#7fb356'],{size:48,n:300,repeat:[IW/3.1,ID/3.1]}),0,0.002,IZ);
   const dirt=ptex('#8a6a45',['#7a5c3b','#9a7a52','#6b4e30'],{repeat:[1,1]});
   const road=(w,d,x,z,y)=>vplane(w,d,ptex('#8a6a45',['#7a5c3b','#9a7a52','#6b4e30'],{repeat:[w,d]}),x,y,z);
-  road(1.2,ID,0,IZ,0.008);                                   // estrada principal
-  road(12.5,1.1,0,-6.2,0.006);road(12,1.1,0,5,0.006);road(10,1,0,10.2,0.006);road(4.5,1,-5.4,-12.6,0.006);
+  road(1.2,ID,0,IZ,0.03);                                   // estrada principal
+  road(12.5,1.1,0,-6.2,0.018);road(12,1.1,0,5,0.018);road(10,1,0,10.2,0.018);road(4.5,1,-5.4,-12.6,0.018);
   // praça de pedra no poço
   const cob=ptex('#9a9d96',['#85888182'.slice(0,7),'#adb0a8','#767a74'],{size:48,n:260,repeat:[3,3]});
-  const plaza=new THREE.Mesh(new THREE.CircleGeometry(3.3,36),new THREE.MeshLambertMaterial({map:cob}));plaza.rotation.x=-Math.PI/2;plaza.position.set(0,0.02,-2.2);lay(plaza,0.02);village.add(plaza);
-  const ring=new THREE.Mesh(new THREE.RingGeometry(3.3,3.5,36),new THREE.MeshLambertMaterial({color:'#6b6f69'}));ring.rotation.x=-Math.PI/2;ring.position.set(0,0.026,-2.2);lay(ring,0.026);village.add(ring);
+  const plaza=new THREE.Mesh(new THREE.CircleGeometry(3.3,36),new THREE.MeshLambertMaterial({map:cob}));plaza.rotation.x=-Math.PI/2;plaza.position.set(0,0.045,-2.2);lay(plaza,0.045);village.add(plaza);
+  const ring=new THREE.Mesh(new THREE.RingGeometry(3.3,3.5,36),new THREE.MeshLambertMaterial({color:'#6b6f69'}));ring.rotation.x=-Math.PI/2;ring.position.set(0,0.06,-2.2);lay(ring,0.06);village.add(ring);
   /* ---- prédios com a temática embutida (taverna de enxaimel, templo de pedra clara, forja, cofre/armazém) ---- */
   const grp=(id,x,z)=>{const g=new THREE.Group();g.position.set(x,0,z);village.add(g);g.userData={bld:id};villagePicks.push(g);BLD[id]={x,z};return g;};
   const gable=(w,d,h,col,y0,ov,parent)=>{const sh=new THREE.Shape();sh.moveTo(-w/2-ov,0);sh.lineTo(w/2+ov,0);sh.lineTo(0,h);sh.lineTo(-w/2-ov,0);
@@ -3263,8 +3263,8 @@ function building(id,o){
   [[2.6,12.9],[5.6,12.9]].forEach(([x,z])=>{vbox(0.03,0.03,3,'#d9d3c4',x,0.55,z);});
   vbox(3,0.04,3,'#7a6a4a',4.1,0.03,12.9);vbox(0.08,0.9,0.08,'#6b4a2a',4.1,0.45,11.0);const csg=new THREE.Mesh(new THREE.PlaneGeometry(0.9,0.4),new THREE.MeshBasicMaterial({color:'#e8d9a8',side:THREE.DoubleSide}));csg.position.set(4.1,0.95,11.04);village.add(csg);crate(3.5,13.2,0.36);crate(4.6,13.6,0.3,0.4);
   // lagoa com doca e juncos (sudoeste)
-  const pond=new THREE.Mesh(new THREE.CircleGeometry(2.4,28),new THREE.MeshLambertMaterial({color:'#3a7fb0',transparent:true,opacity:0.95}));pond.rotation.x=-Math.PI/2;pond.position.set(-5.8,0.03,15.4);pond.scale.set(1.25,1,1);lay(pond,0.03);village.add(pond);
-  const shore=new THREE.Mesh(new THREE.RingGeometry(2.38,2.9,28),new THREE.MeshLambertMaterial({color:'#b9a272'}));shore.rotation.x=-Math.PI/2;shore.position.set(-5.8,0.022,15.4);shore.scale.set(1.25,1,1);lay(shore,0.022);village.add(shore);
+  const pond=new THREE.Mesh(new THREE.CircleGeometry(2.4,28),new THREE.MeshLambertMaterial({color:'#3a7fb0',transparent:true,opacity:0.95}));pond.rotation.x=-Math.PI/2;pond.position.set(-5.8,0.05,15.4);pond.scale.set(1.25,1,1);lay(pond,0.05);village.add(pond);
+  const shore=new THREE.Mesh(new THREE.RingGeometry(2.38,2.9,28),new THREE.MeshLambertMaterial({color:'#b9a272'}));shore.rotation.x=-Math.PI/2;shore.position.set(-5.8,0.035,15.4);shore.scale.set(1.25,1,1);lay(shore,0.035);village.add(shore);
   vbox(0.9,0.06,2.4,'#8a5a32',-3.6,0.18,14.6);for(const dz of [13.6,15.6])for(const dx of [-4,-3.2])vbox(0.08,0.35,0.08,'#5a3a22',dx,0.1,dz);
   for(let i=0;i<14;i++){const a=rnd()*6.28,d=2.4+rnd()*0.7,px=-5.8+Math.cos(a)*d*1.25,pz=15.4+Math.sin(a)*d;vbox(0.04,0.5+rnd()*0.3,0.04,'#5d8f3f',px,0.3,pz);vbox(0.07,0.16,0.07,'#6b4a2a',px,0.62,pz);}
   // pedras, arbustos e flores espalhados
@@ -3315,7 +3315,7 @@ village.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
 // padronizar a vila com o resto do jogo — antes era um pixel-art à parte.
 function standeeLPC(cls,sz,parent){
   const grp=new THREE.Group();
-  const sh=new THREE.Mesh(new THREE.CircleGeometry(0.3,16),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.3,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-40,polygonOffsetUnits:-40}));sh.rotation.x=-Math.PI/2;sh.position.y=0.05;sh.renderOrder=3;grp.add(sh);
+  const sh=new THREE.Mesh(new THREE.CircleGeometry(0.3,16),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.3,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));sh.rotation.x=-Math.PI/2;sh.position.y=0.07;sh.renderOrder=2;grp.add(sh);
   const lp=lpcHeroMesh(cls,sz);
   const pivot=bb(new THREE.Group());pivot.rotation.y=AZ;pivot.add(lp.mesh);grp.add(pivot);
   parent.add(grp);return {grp,pivot,plane:lp.mesh,sz,lpc:lp.lpc};
@@ -3339,15 +3339,13 @@ const nodeBusy=(v,n)=>villagers.some(o=>o!==v&&(o.at===n||o.next===n));
 function walk(v,delay){
   const opts=WE[v.at].filter(n=>!nodeBusy(v,n));
   if(!opts.length){gsap.delayedCall(0.7+Math.random()*0.8,()=>walk(v,0));return;}   // caminho ocupado: espera, não atravessa ninguém
-  const next=vpick(opts);v.next=next;const [x,z]=WP[next];const p=v.grp.position;
+  const next=vpick(opts);v.next=next;const [wx0,wz0]=WP[next];const p=v.grp.position;
+  // cada um anda pela sua "faixa" (como na mão direita): quem vem no sentido contrário passa ao lado, não por dentro
+  const [fx,fz]=WP[v.at],ex=wx0-fx,ez=wz0-fz,el=Math.hypot(ex,ez)||1,lane=0.27;
+  const x=wx0+(-ez/el)*lane,z=wz0+(ex/el)*lane;
   const dur=Math.hypot(x-p.x,z-p.z)/0.7;
-  gsap.delayedCall(delay,()=>{if(v.lpc&&!v.talk)lpcSetState(v,'walk');});
+  gsap.delayedCall(delay,()=>{if(v.lpc)lpcSetState(v,'walk');});
   v.tl=gsap.timeline({delay,onComplete:()=>{v.at=next;v.next=null;if(v.lpc)lpcSetState(v,'stand');walk(v,0.6+Math.random()*2.6);}}).to(p,{x,z,duration:dur,ease:'none'},0);
-}
-// pausa curta para conversar (os dois param, o balão continua colado em cada um)
-function pauseV(v,ms){
-  if(v.talk||!v.tl)return;v.talk=true;v.tl.pause();if(v.lpc)lpcSetState(v,'stand');
-  gsap.delayedCall(ms/1000,()=>{v.talk=false;if(v.tl)v.tl.play();if(v.lpc&&v.tl&&v.tl.isActive())lpcSetState(v,'walk');});
 }
 /* balões que seguem o morador pela vila */
 const vbubs=[],_vw=new THREE.Vector3();
@@ -3374,25 +3372,21 @@ function sayRumor(){
   bubble=b;setTimeout(()=>{if(bubble===b)bubble=null;},4900);
 }
 setInterval(sayRumor,5200);setTimeout(sayRumor,1500);
-// encontros: quando dois moradores passam perto, param um instante e trocam emoji
-const EMO_HI=['👋','🙂','😀'],EMO_TALK=['💬','😄','🤔','😮','🍺','❤️','😂','🎵','🙄','😠','🥖'];
-const pairCool=new Map();
-function villagersMeet(){
-  if(phase!=='village'||window.__intro||!app.classList.contains('hub'))return;
-  const now=performance.now(),ps=[];
-  for(let i=0;i<villagers.length;i++)for(let j=i+1;j<villagers.length;j++){
-    const a=villagers[i],b=villagers[j];if(a.talk||b.talk)continue;
-    const d=Math.hypot(a.grp.position.x-b.grp.position.x,a.grp.position.z-b.grp.position.z);
-    if(d<2.3&&now-(pairCool.get(a.id+'-'+b.id)||0)>9000)ps.push([a,b]);
+// ninguém passa por dentro de ninguém: se dois chegam perto demais, o de id maior espera o outro sair
+function villagerSeparate(){
+  for(const v of villagers){
+    let near=false,px=0,pz=0;
+    for(const o of villagers){if(o===v)continue;
+      const dx=v.grp.position.x-o.grp.position.x,dz=v.grp.position.z-o.grp.position.z,d=Math.hypot(dx,dz);
+      if(d<0.9){const k=(0.9-d)/0.9;px+=(dx/(d||0.01))*k*0.34;pz+=(dz/(d||0.01))*k*0.34;}   // afastam um pouco um do outro (só o desenho)
+      if(o.id<v.id&&d<(v.held?0.85:0.62))near=true;}
+    v.off=v.off||[0,0];v.off[0]+=(px-v.off[0])*0.2;v.off[1]+=(pz-v.off[1])*0.2;
+    v.grp.children.forEach(c=>{c.position.x=v.off[0];c.position.z=v.off[1];});
+    if(!v.tl)continue;
+    if(near&&!v.held){v.held=true;v.tl.pause();if(v.lpc)lpcSetState(v,'stand');}
+    else if(!near&&v.held){v.held=false;v.tl.play();if(v.lpc)lpcSetState(v,'walk');}
   }
-  if(!ps.length||Math.random()<0.4)return;
-  const [a,b]=vpick(ps);pairCool.set(a.id+'-'+b.id,now);
-  pauseV(a,2600);pauseV(b,2600);
-  vBubble(a,vpick(EMO_HI),'vemo',1300);
-  setTimeout(()=>vBubble(b,vpick(EMO_HI),'vemo',1200),650);
-  setTimeout(()=>vBubble(Math.random()<0.5?a:b,vpick(EMO_TALK),'vemo',1200),1500);
 }
-setInterval(villagersMeet,1300);
 function puffSmoke(){
   if(phase!=='village'&&phase!=='tavern')return;
   chimneys.forEach(c=>{
@@ -4584,7 +4578,10 @@ function setMode(m){
   const camTgt=(m==='village'||m==='tavern')?-AZ0:0;
   if(m==='battle'||m==='place'){if(camRot===-AZ0){if(camSpin)camSpin.tw.kill();camSpin=null;setCamRot(0);}}
   else if(camRot!==camTgt||camSpin){if(camSpin)camSpin.tw.kill();camSpin=null;setCamRot(camTgt);}
-  village.visible=(m==='village'||m==='tavern');if(m!=='place'&&m!=='battle'&&typeof weatherStop==='function')weatherStop();   // fora da vila não desenha (nem as luzes dela): batalha mais leve
+  village.visible=(m==='village'||m==='tavern');if(typeof weatherStop==='function'){
+    if(m==='village'||m==='tavern'){if(!(WX.on&&WX.scene==='vila'))weatherInit('vila','vila');}
+    else if(m!=='place'&&m!=='battle')weatherStop();
+  }   // fora da vila não desenha (nem as luzes dela): batalha mais leve
   app.className='m-'+m+(hub?' hub':'')+(ov?' ov':'');phase=m;PI_.classList.remove('qd','kt','kf');
   if(!hub&&bubble){bubble.el.remove();bubble=null;}
   stage.dataset.bio=(m==='place'||m==='battle')&&LV?LV.mp.biome:'';
@@ -6890,7 +6887,9 @@ async function afterAttackMove(u){
     const sc=hOf(t.r,t.c)*2+adj*1.5-near*0.3-t.d*0.05;if(sc>bs){bs=sc;best=t;}}
   if(best&&(best.r!==u.r||best.c!==u.c)){showCallout(u,'Dar a Volta');await moveAlong(u,pathTo(reach,best));}
 }
-async function turn(u){try{await turnBody(u);await afterAttackMove(u);}finally{statusTurnEnd(u);}}
+// como no FFT: depois de agir, a câmera espera o ganho de XP (e o nível) terminarem de aparecer antes de ir pro próximo
+async function holdForXp(u){const rest=(u._hold||0)-performance.now();if(rest>60&&phase==='battle')await wait(rest*SPEED_SCALE);}
+async function turn(u){try{await turnBody(u);await afterAttackMove(u);await holdForXp(u);}finally{statusTurnEnd(u);}}
 async function turnBody(u){
   active=u;hudSel=u.side==='hero'?u:null;hudTile=null;renderOrder();renderUC(true);followCam(u);
   if(u.cd)for(const id in u.cd)if(u.cd[id]>0)u.cd[id]--;
@@ -7073,7 +7072,7 @@ function levelUpFx(u,lv){
   pulse(P,'#ffd34a',2.2,0.8);gsap.delayedCall(0.18,()=>pulse(P,'#fff3b0',1.6,0.7));
   for(let i=0;i<3;i++)gsap.delayedCall(i*0.16,()=>burst(P,{n:8,colors:['#ffd34a','#fff3b0','#ffffff'],spread:0.5,up:1.6,y:0.2,life:1.1,size:1.2}));
   // seta grande e translúcida envolvendo o personagem, subindo
-  {const [fx,fy]=worldToScreen(new THREE.Vector3(P.x,P.y,P.z)),[,hy]=screenOf(u,0.1),h=Math.max(100,(fy-hy)*2.9),w=h*0.9;
+  {const [fx,fy]=worldToScreen(new THREE.Vector3(P.x,P.y,P.z)),[,hy]=screenOf(u,0.1),h=Math.max(64,(fy-hy)*1.9),w=h*0.9;
    for(let k=0;k<3;k++){const a=document.createElement('div');a.className='lvarrow';a.style.cssText=`left:${fx}px;top:${fy-(fy-hy)/2}px;width:${w}px;height:${h}px;`;
      a.innerHTML='<svg viewBox="0 0 100 120" preserveAspectRatio="none"><defs><linearGradient id="lvg'+k+'" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffb62e" stop-opacity=".05"/><stop offset=".6" stop-color="#ffd34a" stop-opacity=".7"/><stop offset="1" stop-color="#fff6c0" stop-opacity=".95"/></linearGradient></defs><path d="M50 2 L98 56 H70 V118 H30 V56 H2 Z" fill="url(#lvg'+k+')" stroke="#fff3b0" stroke-opacity=".7" stroke-width="2.5" stroke-linejoin="round"/></svg>';
      hud.appendChild(a);
@@ -7090,7 +7089,8 @@ const xp=(u,n,kill)=>{
   const lv0=levelForXp((u.xpTotal||0)+(u.xp||0));
   u.xp=(u.xp||0)+n;
   const lv1=levelForXp((u.xpTotal||0)+u.xp);
-  if(lv1>lv0&&u.grp)gsap.delayedCall(1.3,()=>{if(u.grp&&phase==='battle')levelUpFx(u,lv1);});
+  if(n>0&&u.grp)u._hold=Math.max(u._hold||0,performance.now()+2000);   // a câmera fica nele até o número de XP aparecer e sumir
+  if(lv1>lv0&&u.grp){u._hold=Math.max(u._hold||0,performance.now()+4200);gsap.delayedCall(1.3,()=>{if(u.grp&&phase==='battle')levelUpFx(u,lv1);});}
   // como no FFT: o ganho de Exp. aparece junto de quem ganhou, logo depois do golpe.
   // Golpe + abate no mesmo instante viram UM número só (somado); com abate ele sai em itálico.
   if(n>0&&u.grp){
@@ -7308,6 +7308,7 @@ function loop(t){
   }
   if(phase==='battle'){renderObjs();renderUC();}
   if(phase==='battle')for(const h of party){if(h.koEl&&h.grp){const [kx,ky]=screenOf(h,0.2);h.koEl.style.left=kx+'px';h.koEl.style.top=ky+'px';}}
+  villagerSeparate();
   villagers.forEach(v=>{v.pivot.scale.y=1+Math.sin(s*2.4+v.id)*0.02;if(v.lpc)tickLPC(v,s);});
   if(app.classList.contains('hub')){placeVillageNames();placeVBubs();}
   if(active&&active.grp){ring.position.set(active.grp.position.x,active.grp.position.y+0.09,active.grp.position.z);ring.material.opacity=0.65+Math.sin(s*6)*0.3;}
@@ -7337,6 +7338,7 @@ const WX_SEQ={
   deserto:[['sol',40],['areia',34],['sol',40]],
   ruinas:[['nublado',26],['areia',26],['sol',36]],
   gelo:[['nublado',20],['neve',48],['sol',26]],
+  vila:[['sol',55],['nublado',20],['chuva',30],['tempestade',14],['nublado',18]],
   cripta:[['neblina',90]],
   caverna:[['neblina',90]],
 };
@@ -7362,8 +7364,8 @@ function wxLoop(name,vol){
   }catch(e){}
 }
 function wxStopAudio(){Object.keys(WX.loops).forEach(k=>{try{const L=WX.loops[k];L.g.gain.value=0;L.src.stop();}catch(e){}});WX.loops={};}
-function weatherInit(biome){
-  weatherEls();WX.on=true;WX.seq=WX_SEQ[biome]||WX_SEQ.campina;
+function weatherInit(biome,scene){
+  weatherEls();WX.on=true;WX.scene=scene||'battle';WX.seq=WX_SEQ[biome]||WX_SEQ.campina;
   WX.i=Math.floor(Math.random()*WX.seq.length);WX.t=0;WX.mode=WX.seq[WX.i][0];
   Object.assign(WX.v,WX_STATES[WX.mode]);WX.nextBolt=4+Math.random()*6;WX.drops=[];WX.flakes=[];WX.sand=[];WX.puffs=[];WX.splash=[];
   wxCv.style.display='';wxDark.style.display='';wxTint.style.display='';
@@ -7384,7 +7386,7 @@ function weatherBolt(){
 }
 const wxLerp=(a,b,k)=>a+(b-a)*k;
 function weatherTick(dt){
-  if(!WX.on||(phase!=='battle'&&phase!=='place'))return;
+  if(!WX.on||window.__intro||(phase!=='battle'&&phase!=='place'&&phase!=='village'&&phase!=='tavern'))return;
   // avança a sequência
   WX.t+=dt;const [nm,dur]=WX.seq[WX.i];
   if(WX.t>=dur){WX.i=(WX.i+1)%WX.seq.length;WX.t=0;WX.mode=WX.seq[WX.i][0];}
