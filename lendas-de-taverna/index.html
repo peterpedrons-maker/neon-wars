@@ -1558,7 +1558,7 @@ function loadBuf(url){
   if(AUD.pend[url])return AUD.pend[url];
   return AUD.pend[url]=fetch(url).then(r=>r.arrayBuffer()).then(b=>new Promise((ok,no)=>actx.decodeAudioData(b,ok,no))).then(buf=>{AUD.bufs[url]=buf;delete AUD.pend[url];return buf;}).catch(e=>{delete AUD.pend[url];return null;});
 }
-const SFX_FILES=['ui_click','ui_open','ui_close','ui_confirm','ui_denied','turn_start','equip','coin','step_0','step_1','swing','hit_0','hit_1','slash','crit','miss','bow','arrow_hit','spell_cast','spell_hit','heal','buff','death','trap','victory','defeat','charge_melee','charge_ranged','charge_magic','charge_heal','st_cast','st_debuff','st_buffup','st_resist','st_quebra','st_veneno','st_queimadura','st_sangramento','st_gelo','st_atordoado','st_preso','st_medo','st_marca','st_escudo','st_regen','st_veloz','tr_open','tr_close','tr_select','tr_tab','tr_charge','tr_unlock_t','tr_unlock_p','tr_unlock_g','tr_unlock_b','tr_equip','tr_unequip','tr_refund','tr_reset','tr_auto','tr_nopts','intro_start','intro_tap','sk_fogo','sk_explosao','sk_gelo','sk_raio','sk_terra','sk_sagrado','sk_golpe','sk_corte','sk_estocada','sk_veneno','sk_flechas','sk_meteoros','sk_grito','sk_nota','sk_trap','levelup'];
+const SFX_FILES=['ui_click','ui_open','ui_close','ui_confirm','ui_denied','turn_start','equip','coin','step_0','step_1','swing','hit_0','hit_1','slash','crit','miss','bow','arrow_hit','spell_cast','spell_hit','heal','buff','death','trap','victory','defeat','charge_melee','charge_ranged','charge_magic','charge_heal','st_cast','st_debuff','st_buffup','st_resist','st_quebra','st_veneno','st_queimadura','st_sangramento','st_gelo','st_atordoado','st_preso','st_medo','st_marca','st_escudo','st_regen','st_veloz','tr_open','tr_close','tr_select','tr_tab','tr_charge','tr_unlock_t','tr_unlock_p','tr_unlock_g','tr_unlock_b','tr_equip','tr_unequip','tr_refund','tr_reset','tr_auto','tr_nopts','intro_start','intro_tap','sk_fogo','sk_explosao','sk_gelo','sk_raio','sk_terra','sk_sagrado','sk_golpe','sk_corte','sk_estocada','sk_veneno','sk_flechas','sk_meteoros','sk_grito','sk_nota','sk_trap','levelup','wx_rain','wx_wind','wx_thunder'];
 function preloadSfx(){if(!audioBus())return;SFX_FILES.forEach(n=>loadBuf(`assets/audio/sfx/${n}.ogg`));}
 function playSfx(name,{vol=1,rate=1,gap=0}={}){
   if(!actx||!audioBus())return false;
@@ -2805,19 +2805,105 @@ const leafMat=col=>{
   return LEAF_MATS[col];
 };
 const BARK_MAT=M(ptex('#5a3a22',[shade('#5a3a22',18),shade('#5a3a22',-18)],{size:8,n:16}));
-function makeTree(parent,x,y,z,s=1){
-  const g=new THREE.Group();g.position.set(x,y,z);g.scale.setScalar(s);parent.add(g);
-  const tr=new THREE.Mesh(new THREE.BoxGeometry(0.22,0.5,0.22),BARK_MAT);tr.position.y=0.25;g.add(tr);
-  // galho fino saindo do tronco, pra dar pra diferenciar galho de folhagem
-  const branch=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.06,0.06),BARK_MAT);
-  branch.position.set(0.18,0.44,0.05);branch.rotation.z=-0.35;g.add(branch);
-  const foliage=new THREE.Group();foliage.position.y=0.5;g.add(foliage);
-  const f1=new THREE.Mesh(new THREE.BoxGeometry(0.8,0.55,0.8),leafMat('#2f5e2c'));f1.position.y=0.25;foliage.add(f1);
-  const f2=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.4,0.5),leafMat('#3d7a37'));f2.position.y=0.7;foliage.add(f2);
-  g.userData={sway:R()*Math.PI*2,foliage,board:parent===boardGroup};
-  trees.push(g);
+
+
+/* ================= Cenário em pixel art (billboards) =================
+   Árvores, cactos, túmulos, colunas e estalagmites são desenhados em canvas pequeno (pixel art, luz de cima-esquerda,
+   contorno escuro) e viram sprites que olham pra câmera. 4 variações de cada, geradas por semente. */
+const SP_RNG=seed=>{let t=seed>>>0;return()=>{t+=0x6D2B79F5;let r=Math.imul(t^t>>>15,1|t);r^=r+Math.imul(r^r>>>7,61|r);return((r^r>>>14)>>>0)/4294967296;};};
+const SP_TEX={};
+const spShade=(c,k)=>c.map(v=>Math.max(0,Math.min(255,Math.round(v*k))));
+function spCanvas(W,H){const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+  const put=(x,y,c,a=255)=>{x|=0;y|=0;if(x<0||y<0||x>=W||y>=H)return;g.fillStyle=`rgba(${c[0]},${c[1]},${c[2]},${a/255})`;g.fillRect(x,y,1,1);};
+  return {cv,g,put,W,H};}
+function spGroundShadow(P,cx,cy,rx,ry){for(let y=cy-ry;y<=cy+ry;y++)for(let x=cx-rx;x<=cx+rx;x++)if(((x-cx)/rx)**2+((y-cy)/ry)**2<=1)P.put(x,y,[0,0,0],70);}
+const SP_OUT=[24,34,22];
+const PAINT={
+  carvalho(seed){
+    const P=spCanvas(44,52),R=SP_RNG(seed),{put,W,H}=P,bark=[112,76,44];
+    spGroundShadow(P,22,H-4,14,2);
+    for(let y=24;y<H-4;y++){const t=(y-24)/(H-28),w=3+Math.floor(t*3.2);for(let x=22-w;x<=22+w;x++){const e=Math.abs(x-22);let c=e===w?SP_OUT:spShade(bark,x<22-w/2?1.25:x>22+w/2?0.78:1);if((y*3+x)%9===0&&e<w)c=spShade(bark,0.7);put(x,y,c);}}
+    [-1,1].forEach(dx=>{for(let i=0;i<5;i++)put(22+dx*(6+Math.floor(i/2)),H-5+Math.floor(i/3),i%2?SP_OUT:spShade(bark,0.8));});
+    [[22,32,12,22],[22,30,33,20],[22,28,22,16]].forEach(([x0,y0,x1,y1])=>{const n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=y0+(y1-y0)*i/n;put(Math.floor(x),Math.floor(y),spShade(bark,0.95));put(Math.floor(x)+1,Math.floor(y),spShade(bark,0.7));}});
+    const hue=[[66,142,58],[78,150,52],[58,128,66],[92,150,50]][seed%4];
+    const blob=(cx,cy,r,b)=>{for(let y=Math.floor(cy-r)-1;y<=cy+r+1;y++)for(let x=Math.floor(cx-r)-1;x<=cx+r+1;x++){const dx=(x-cx)/r,dy=(y-cy)/(r*0.9),wob=1+0.08*Math.sin(x*1.7+y*0.9+seed)+0.06*Math.sin(y*2.3),d=Math.hypot(dx,dy);if(d<=wob){const lit=-(dx*0.55+dy*0.8);let c;if(d>wob-0.14)c=((x+y)%7)?SP_OUT:spShade(b,0.55);else if(lit>0.55)c=spShade(b,1.35);else if(lit>0.15)c=spShade(b,1.1);else if(lit>-0.35)c=b;else c=spShade(b,0.72);if(R()<0.07)c=spShade(c,1.18);put(x,y,c);}}};
+    const j=()=>Math.round((R()-0.5)*3);
+    blob(12+j(),22,8,spShade(hue,0.8));blob(32+j(),21,8.5,spShade(hue,0.85));blob(22,15+j(),10,hue);blob(15,12+j(),7,spShade(hue,1.12));blob(29,11+j(),6.5,spShade(hue,1.12));blob(22,8,6,spShade(hue,1.25));
+    return P.cv;
+  },
+  pinho(seed){
+    const P=spCanvas(40,52),{put,W,H}=P,bark=[104,70,42],base=[[40,100,74],[34,92,70],[46,106,80],[38,96,64]][seed%4];
+    spGroundShadow(P,20,H-4,11,2);
+    for(let y=H-14;y<H-4;y++)for(let x=18;x<23;x++)put(x,y,(x===18||x===22)?SP_OUT:spShade(bark,x<20?1.1:0.8));
+    [[H-14,14],[H-24,11],[H-33,8],[H-40,5]].forEach(([cy,r])=>{for(let y=cy-9;y<=cy;y++){const hw=Math.floor(r*(1-(cy-y)/10))+1;for(let x=20-hw;x<=20+hw;x++){const e=Math.abs(x-20)/Math.max(hw,1),lit=-(x-20)/Math.max(hw,1)*0.6+(y<cy-5?0.4:-0.1);let c=(e>0.88||y===cy)?SP_OUT:spShade(base,lit>0.45?1.3:lit>0?1.05:0.78);if((x+y)%5===0&&c!==SP_OUT)c=spShade(c,1.1);put(x,y,c);}}});
+    [[20,H-47],[19,H-46],[21,H-46],[16,H-35],[24,H-26],[14,H-17]].forEach(([x,y])=>put(x,y,[235,245,250]));
+    return P.cv;
+  },
+  cacto(seed){
+    const P=spCanvas(30,42),R=SP_RNG(seed),{put,W,H}=P,b=[[74,140,70],[88,150,62],[66,130,76],[96,146,60]][seed%4];
+    spGroundShadow(P,15,H-3,10,2);
+    const rect=(x0,y0,x1,y1)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const e=(x===x0||x===x1||y===y0)||(y===y1&&false);let c=e?SP_OUT:(x<=x0+1?spShade(b,1.3):x>=x1-1?spShade(b,0.7):b);if(!e&&(x-x0)%3===1)c=spShade(c,0.88);put(x,y,c);}};
+    rect(12,8,18,H-5);put(12,8,[0,0,0],0);
+    const lh=12+Math.floor(R()*4),rh=7+Math.floor(R()*4);
+    rect(5,lh+8,12,lh+11);rect(5,lh,8,lh+11);          // braço esquerdo
+    rect(18,rh+10,25,rh+13);rect(22,rh,25,rh+13);      // braço direito
+    for(let i=0;i<22;i++){const x=Math.floor(R()*30),y=6+Math.floor(R()*30);put(x,y,[235,235,200]);}
+    [[15,6],[6,lh-2],[23,rh-2]].forEach(([x,y],i)=>{if(i===0||R()<0.6){put(x,y,[240,100,150]);put(x+1,y,[255,150,190]);put(x,y-1,[255,220,120]);}});
+    for(let x=11;x<=19;x++)put(x,H-4,SP_OUT);
+    return P.cv;
+  },
+  tumulo(seed){
+    const P=spCanvas(38,38),R=SP_RNG(seed),{put,W,H}=P,st=[[124,118,134],[138,132,142],[112,108,122],[130,124,128]][seed%4];
+    spGroundShadow(P,19,H-3,15,2);
+    const box=(x0,y0,x1,y1,c)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const e=x===x0||x===x1||y===y0||y===y1;put(x,y,e?[22,18,30]:(x<x0+3?spShade(c,1.25):x>x1-3?spShade(c,0.7):y<y0+3?spShade(c,1.15):c));}};
+    box(7,18,31,H-5,st);box(5,13,33,19,spShade(st,0.82));
+    // cruz esculpida na tampa
+    for(let y=4;y<=13;y++){put(18,y,[22,18,30]);put(19,y,spShade(st,1.2));put(20,y,[22,18,30]);}
+    for(let x=15;x<=23;x++){put(x,7,[22,18,30]);put(x,8,spShade(st,1.2));put(x,9,[22,18,30]);}
+    // musgo e rachaduras
+    for(let i=0;i<14;i++){const x=7+Math.floor(R()*25),y=19+Math.floor(R()*12);put(x,y,[70,110,60]);if(R()<0.5)put(x+1,y,[88,130,70]);}
+    for(let i=0;i<6;i++)put(12+i,24+(i%2),spShade(st,0.5));
+    return P.cv;
+  },
+  coluna(seed){
+    const P=spCanvas(28,46),R=SP_RNG(seed),{put,W,H}=P,m=[[190,184,168],[176,172,160],[200,192,172],[182,176,176]][seed%4];
+    spGroundShadow(P,14,H-3,11,2);
+    const top=8+Math.floor(R()*8);
+    for(let y=top;y<H-8;y++)for(let x=7;x<=19;x++){const e=x===7||x===19;const cut=(y<top+3&&((x+seed)%5<2))||(y===top&&x>12);if(cut)continue;let c=e?[60,56,52]:(x<10?spShade(m,1.18):x>16?spShade(m,0.72):m);if(!e&&(x-7)%4===0)c=spShade(c,0.84);put(x,y,c);}
+    for(let x=5;x<=21;x++){put(x,H-9,[60,56,52]);put(x,H-8,spShade(m,1.1));put(x,H-7,spShade(m,0.9));put(x,H-6,[60,56,52]);}
+    for(let x=4;x<=22;x++){for(let y=H-5;y<=H-3;y++)put(x,y,(y===H-3||x===4||x===22)?[60,56,52]:spShade(m,x<9?1.1:0.8));}
+    for(let i=0;i<5;i++)put(6+Math.floor(R()*16),H-5+Math.floor(R()*2),spShade(m,0.6));
+    for(let i=0;i<8;i++)put(7+Math.floor(R()*13),top+4+Math.floor(R()*20),[84,124,72]);
+    return P.cv;
+  },
+  estalagmite(seed){
+    const P=spCanvas(32,42),R=SP_RNG(seed),{put,W,H}=P,b=[[96,80,84],[88,76,86],[104,84,78],[92,86,96]][seed%4];
+    spGroundShadow(P,16,H-3,12,2);
+    const cone=(cx,base,hh,hw)=>{for(let y=base-hh;y<=base;y++){const w=Math.max(0.5,hw*(y-(base-hh))/hh);for(let x=Math.floor(cx-w);x<=Math.ceil(cx+w);x++){const e=Math.abs(x-cx)>=w-0.8||y===base;const lit=-(x-cx)/Math.max(w,1)+(y<base-hh*0.7?0.25:0);let c=e?[26,20,24]:spShade(b,lit>0.5?1.4:lit>0?1.12:lit>-0.4?0.9:0.7);if(!e&&R()<0.05)c=spShade(c,1.25);put(x,y,c);}}};
+    cone(8,H-4,20,6);cone(24,H-4,15,5);cone(16,H-4,34,8);
+    [[15,10],[16,18]].forEach(([x,y])=>put(x,y,[190,170,175]));
+    return P.cv;
+  },
+};
+function spBuild(parent,x,y,z,kind,seed,w){
+  const key=kind+seed;
+  if(!SP_TEX[key]){const cv=PAINT[kind](seed),t=new THREE.CanvasTexture(cv);t.magFilter=t.minFilter=THREE.NearestFilter;t.generateMipmaps=false;SP_TEX[key]={t,ratio:cv.height/cv.width};}
+  const T=SP_TEX[key],g=new THREE.Group();g.position.set(x,y,z);parent.add(g);
+  const sway=new THREE.Group();g.add(sway);const piv=new THREE.Group();sway.add(piv);
+  const h=w*T.ratio;
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:T.t,transparent:true,alphaTest:0.4,side:THREE.DoubleSide}));
+  m.position.y=h/2-0.04;piv.add(m);piv.rotation.y=AZ;bb(piv);
+  g.userData.sway=Math.random()*6;g.userData.foliage=sway;g.userData.board=parent===boardGroup;
   return g;
 }
+const spSeed=(x,z)=>(Math.abs(Math.round(x*13+z*7))%4)+1;
+
+function makeTree(parent,x,y,z,s=1){const g=spBuild(parent,x,y,z,'carvalho',spSeed(x,z),1.75*s);trees.push(g);return g;}
+function makePine(parent,x,y,z){const g=spBuild(parent,x,y,z,'pinho',spSeed(x,z),1.6);trees.push(g);return g;}
+function makeCactus(parent,x,y,z){return spBuild(parent,x,y,z,'cacto',spSeed(x,z),1.05);}
+function makeTomb(parent,x,y,z){return spBuild(parent,x,y,z,'tumulo',spSeed(x,z),1.15);}
+function makeColumn(parent,x,y,z){return spBuild(parent,x,y,z,'coluna',spSeed(x,z),0.95);}
+function makeStalagmite(parent,x,y,z){return spBuild(parent,x,y,z,'estalagmite',spSeed(x,z),1.05);}
 
 /* ---------- Tabuleiro da batalha (reconstruído a cada fase) ---------- */
 const boardGroup=new THREE.Group();scene.add(boardGroup);
@@ -2842,48 +2928,6 @@ function biomeMats(b){
   return BM[b];
 }
 const SG={};const sbox=(w,h,d)=>{const key=w+'_'+h+'_'+d;if(!SG[key]){SG[key]=new THREE.BoxGeometry(w,h,d);SG[key].userData.shared=true;}return SG[key];};
-function makeTomb(parent,x,y,z){
-  const g=new THREE.Group();g.position.set(x,y,z);parent.add(g);
-  const m=new THREE.MeshLambertMaterial({color:'#7d7686'}),d=new THREE.MeshLambertMaterial({color:'#3a3442'});
-  const base=new THREE.Mesh(new THREE.BoxGeometry(0.62,0.34,0.4),m);base.position.y=0.17;g.add(base);
-  const lid=new THREE.Mesh(new THREE.BoxGeometry(0.68,0.1,0.46),d);lid.position.y=0.39;g.add(lid);
-  const cv=new THREE.Mesh(new THREE.BoxGeometry(0.08,0.4,0.08),m);cv.position.y=0.64;g.add(cv);
-  const ch=new THREE.Mesh(new THREE.BoxGeometry(0.28,0.08,0.08),m);ch.position.y=0.72;g.add(ch);
-  g.rotation.y=((x*3+z*7)%4)*0.4;
-  return g;
-}
-function makePine(parent,x,y,z){
-  const g=new THREE.Group();g.position.set(x,y,z);parent.add(g);
-  const bark=new THREE.Mesh(new THREE.BoxGeometry(0.16,0.35,0.16),BARK_MAT);bark.position.y=0.17;g.add(bark);
-  [['#2f5a44',0.46,0.3,0.42],['#3a6b52',0.36,0.28,0.68],['#e8f1f5',0.24,0.26,0.92]].forEach(([c,r,h,yy])=>{
-    const cone=new THREE.Mesh(new THREE.ConeGeometry(r,h,7),new THREE.MeshLambertMaterial({color:c}));cone.position.y=yy;g.add(cone);});
-  return g;
-}
-function makeStalagmite(parent,x,y,z){
-  const g=new THREE.Group();g.position.set(x,y,z);parent.add(g);
-  const m=new THREE.MeshLambertMaterial({color:'#2f2629'}),h=0.7+((x*7+z*11)%5)*0.15;
-  const c=new THREE.Mesh(new THREE.ConeGeometry(0.26,h,6),m);c.position.y=h/2;g.add(c);
-  const c2=new THREE.Mesh(new THREE.ConeGeometry(0.14,h*0.6,5),m);c2.position.set(0.22,h*0.3,0.1);g.add(c2);
-  return g;
-}
-function makeColumn(parent,x,y,z){
-  const g=new THREE.Group();g.position.set(x,y,z);parent.add(g);
-  const m=new THREE.MeshLambertMaterial({color:'#b3ae9c'}),h=0.55+((x*7+z*13)%5)*0.12;
-  const base=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.14,0.5),m);base.position.y=0.07;g.add(base);
-  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(0.17,0.2,h,8),m);shaft.position.y=0.14+h/2;g.add(shaft);
-  const top=new THREE.Mesh(new THREE.DodecahedronGeometry(0.2,0),m);top.position.set(0.04,0.14+h+0.05,0);top.scale.y=0.6;g.add(top);
-  return g;
-}
-function makeCactus(parent,x,y,z){
-  const g=new THREE.Group();g.position.set(x,y,z);parent.add(g);
-  const m=new THREE.MeshLambertMaterial({color:'#4f8a3c'});
-  const a=new THREE.Mesh(new THREE.BoxGeometry(0.24,0.9,0.24),m);a.position.y=0.45;g.add(a);
-  const b=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.14,0.14),m);b.position.set(-0.2,0.5,0);g.add(b);
-  const c=new THREE.Mesh(new THREE.BoxGeometry(0.14,0.3,0.14),m);c.position.set(-0.34,0.64,0);g.add(c);
-  const d=new THREE.Mesh(new THREE.BoxGeometry(0.34,0.14,0.14),m);d.position.set(0.18,0.68,0);g.add(d);
-  const e=new THREE.Mesh(new THREE.BoxGeometry(0.14,0.28,0.14),m);e.position.set(0.3,0.8,0);g.add(e);
-  return g;
-}
 /* ---------- fade de obstáculos: árvore/pedra/coluna na frente de um personagem
    fica translúcida pra ele continuar visível ---------- */
 const blockers=[];
@@ -2973,7 +3017,18 @@ function lifeBoard(bio){
   const rnd=mulberry32((LV.seed||1)^0x51ed),water=[],tr=[];
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const ch=cell(r,c);if(ch==='w')water.push([r,c]);else if(ch==='t')tr.push([r,c]);}
   const every=(a,n,m,off=0)=>a.filter((_,i)=>i%n===off).slice(0,m);
-  every(water,4,8).forEach(([r,c],i)=>ambient(boardGroup,'creatures','fish-32px_strip8.png',8,10,wx(c),0.2,wz(r),{w:0.5,variant:i%3}));
+  // peixes submersos: ficam dentro da água (só passeiam para o lado onde a casa vizinha também é água)
+  const isW=(rr,cc)=>inB(rr,cc)&&cell(rr,cc)==='w';
+  every(water,3,8).forEach(([r,c],i)=>{
+    const lim=(a,b)=>[a?0.42:0.14,b?0.42:0.14],lx=lim(isW(r,c-1),isW(r,c+1)),lz=lim(isW(r-1,c),isW(r+1,c));
+    const x0=wx(c),z0=wz(r),e=ambient(boardGroup,'creatures','fish-32px_strip8.png',8,10,x0,0.175,z0,{w:0.56,flat:true,variant:i%3});
+    e.mat.color.setRGB(0.14,0.32,0.52);e.mat.opacity=0.74;
+    const dir={a:Math.random()<0.5?-1:1},sz=Math.random()<0.5?-1:1,tx=x0+dir.a*lx[dir.a>0?1:0]*0.8,tz=z0+sz*lz[sz>0?1:0]*0.8;
+    boardTw.push(gsap.to(e.holder.position,{x:tx,z:tz,duration:3.2+(i%3),repeat:-1,yoyo:true,ease:'sine.inOut'}));
+    e.holder.children[0].rotation.z=dir.a>0?0:Math.PI;
+    const ring=new THREE.Mesh(new THREE.RingGeometry(0.1,0.15,20),new THREE.MeshBasicMaterial({color:'#cfeaff',transparent:true,opacity:0,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.set(x0,0.18,z0);boardGroup.add(ring);
+    boardTw.push(gsap.timeline({repeat:-1,delay:i*0.9,repeatDelay:3}).to(ring.material,{opacity:0.8,duration:0.1}).to(ring.scale,{x:3,y:3,duration:1.1,ease:'power1.out'},0).to(ring.material,{opacity:0,duration:0.9},0.2).set(ring.scale,{x:1,y:1}));
+  });
   if(bio!=='deserto'){
     every(tr,5,7).forEach(([r,c],i)=>{
       const e=ambient(boardGroup,'creatures','bee-32px_strip8.png',8,16,wx(c)+0.3,topY(r,c)+1.0,wz(r)+0.2,{w:0.36,variant:i%3});
@@ -4550,7 +4605,7 @@ function setMode(m){
   const camTgt=(m==='village'||m==='tavern')?-AZ0:0;
   if(m==='battle'||m==='place'){if(camRot===-AZ0){if(camSpin)camSpin.tw.kill();camSpin=null;setCamRot(0);}}
   else if(camRot!==camTgt||camSpin){if(camSpin)camSpin.tw.kill();camSpin=null;setCamRot(camTgt);}
-  village.visible=(m==='village'||m==='tavern');   // fora da vila não desenha (nem as luzes dela): batalha mais leve
+  village.visible=(m==='village'||m==='tavern');if(m!=='place'&&m!=='battle'&&typeof weatherStop==='function')weatherStop();   // fora da vila não desenha (nem as luzes dela): batalha mais leve
   app.className='m-'+m+(hub?' hub':'')+(ov?' ov':'');phase=m;PI_.classList.remove('qd','kt','kf');
   if(!hub&&bubble){bubble.el.remove();bubble=null;}
   stage.dataset.bio=(m==='place'||m==='battle')&&LV?LV.mp.biome:'';
@@ -7085,7 +7140,7 @@ function startPhase(){
   party.forEach(disposeUnit);
   stats=null;active=null;
   applyLevel(mp,mp.fixo?mp.seed:((Math.random()*1e9)>>>0));
-  buildBoard();
+  buildBoard();weatherInit(mp.biome);
   spawnEnemies(rollEnemies(mp));
   party=run.party;
   party.forEach(h=>resetHero(h,first));
@@ -7257,7 +7312,7 @@ function newRun(){
 function loop(t){
   requestAnimationFrame(loop);const s=t/1000;
   const _dt=Math.min(0.1,s-(loop.t||s));loop.t=s;
-  applyCam();fadeTick(_dt);
+  applyCam();fadeTick(_dt);weatherTick(_dt);
   spStripTick(waterStrip,s);spStripTick(lavaStrip,s);fxTick(s);
   waterTex.offset.x=Math.sin(s*0.6)*0.025;waterTex.offset.y=s*0.015;
   waterTiles.forEach(wt=>{wt.position.y=0.08+Math.sin(s*1.4+(wt.userData.r+wt.userData.c)*0.6)*0.015;});
@@ -7282,6 +7337,118 @@ function loop(t){
     const gap=callout.el.classList.contains('mv')?9:11;callout.el.style.left=Math.max(x,24)+'px';callout.el.style.top=Math.max(y-gap,50)+'px';}
   if(window.__introFrozen)return;
   renderer.render(scene,cam);renderDie();
+}
+
+
+/* ================= Clima (só visual e sonoro) =================
+   Cada região tem uma sequência de estados; os valores (escuridão, chuva, areia, neve, neblina, raios) se misturam devagar. */
+const WX_STATES={
+  sol:{dark:0,rain:0,sand:0,snow:0,fog:0,bolt:0,tint:'#000',tintA:0},
+  nublado:{dark:0.17,rain:0,sand:0,snow:0,fog:0,bolt:0,tint:'#000',tintA:0},
+  chuva:{dark:0.38,rain:1,sand:0,snow:0,fog:0.1,bolt:0,tint:'#0b1830',tintA:0.14},
+  tempestade:{dark:0.58,rain:1.7,sand:0,snow:0,fog:0.15,bolt:1,tint:'#0a1228',tintA:0.2},
+  areia:{dark:0.1,rain:0,sand:1,snow:0,fog:0,bolt:0,tint:'#c27a2e',tintA:0.34},
+  neve:{dark:0.1,rain:0,sand:0,snow:1,fog:0.18,bolt:0,tint:'#cfe3ff',tintA:0.14},
+  neblina:{dark:0.2,rain:0,sand:0,snow:0,fog:1,bolt:0,tint:'#9aa8b4',tintA:0.22},
+};
+// [estado, duração em segundos]; a sequência recomeça no fim
+const WX_SEQ={
+  campina:[['sol',45],['nublado',22],['chuva',32],['tempestade',26],['nublado',18]],
+  floresta:[['nublado',24],['chuva',34],['tempestade',24],['nublado',20],['sol',30]],
+  deserto:[['sol',40],['areia',34],['sol',40]],
+  ruinas:[['nublado',26],['areia',26],['sol',36]],
+  gelo:[['nublado',20],['neve',48],['sol',26]],
+  cripta:[['neblina',90]],
+  caverna:[['neblina',90]],
+};
+const WX={on:false,seq:null,i:0,t:0,v:{dark:0,rain:0,sand:0,snow:0,fog:0,bolt:0,tintA:0,tint:'#000'},drops:[],flakes:[],sand:[],puffs:[],splash:[],boltPath:null,boltT:0,nextBolt:6,loops:{},mode:'sol'};
+let wxDark,wxTint,wxCv,wxFlash;
+function weatherEls(){
+  if(wxCv)return;
+  const mk=(css)=>{const d=document.createElement('div');d.style.cssText='position:absolute;inset:0;pointer-events:none;'+css;return d;};
+  wxDark=mk('z-index:2;background:#070d1a;opacity:0');wxTint=mk('z-index:2;opacity:0');
+  wxCv=document.createElement('canvas');wxCv.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2';
+  wxFlash=mk('z-index:3;background:#eaf2ff;opacity:0');
+  const hudEl=document.getElementById('hud');
+  [wxDark,wxTint,wxCv,wxFlash].forEach(e=>stage.insertBefore(e,hudEl));
+  new ResizeObserver(()=>{wxCv.width=Math.round(stage.clientWidth*0.75);wxCv.height=Math.round(stage.clientHeight*0.75);}).observe(stage);
+}
+function wxLoop(name,vol){
+  try{
+    if(!audioBus()||!actx)return;const url=`assets/audio/sfx/${name}.ogg`,buf=AUD.bufs[url];
+    let L=WX.loops[name];
+    if(!buf){loadBuf(url);return;}
+    if(!L){const src=actx.createBufferSource();src.buffer=buf;src.loop=true;const g=actx.createGain();g.gain.value=0;src.connect(g);g.connect(sfxBus);src.start();L=WX.loops[name]={src,g};}
+    L.g.gain.value=vol;
+  }catch(e){}
+}
+function wxStopAudio(){Object.keys(WX.loops).forEach(k=>{try{const L=WX.loops[k];L.g.gain.value=0;L.src.stop();}catch(e){}});WX.loops={};}
+function weatherInit(biome){
+  weatherEls();WX.on=true;WX.seq=WX_SEQ[biome]||WX_SEQ.campina;
+  WX.i=Math.floor(Math.random()*WX.seq.length);WX.t=0;WX.mode=WX.seq[WX.i][0];
+  Object.assign(WX.v,WX_STATES[WX.mode]);WX.nextBolt=4+Math.random()*6;WX.drops=[];WX.flakes=[];WX.sand=[];WX.puffs=[];WX.splash=[];
+  wxCv.style.display='';wxDark.style.display='';wxTint.style.display='';
+}
+function weatherStop(){
+  if(!WX.on)return;WX.on=false;
+  if(wxCv){wxCv.style.display='none';wxDark.style.display='none';wxTint.style.display='none';wxFlash.style.opacity=0;}
+  wxStopAudio();
+}
+function weatherBolt(){
+  const w=wxCv.width,h=wxCv.height;let x=w*(0.2+Math.random()*0.6),y=0;const pts=[[x,y]];
+  while(y<h*(0.45+Math.random()*0.25)){y+=h*0.03+Math.random()*h*0.04;x+=(Math.random()-0.5)*w*0.1;pts.push([x,y]);}
+  WX.boltPath=pts;WX.boltT=0.22;
+  wxFlash.style.transition='none';wxFlash.style.opacity=0.5;
+  setTimeout(()=>{wxFlash.style.transition='opacity .45s';wxFlash.style.opacity=0;},80);
+  setTimeout(()=>{wxFlash.style.transition='none';wxFlash.style.opacity=0.3;setTimeout(()=>{wxFlash.style.transition='opacity .5s';wxFlash.style.opacity=0;},60);},190);
+  setTimeout(()=>{if(WX.on)playSfx('wx_thunder',{vol:0.8});},450+Math.random()*700);
+}
+const wxLerp=(a,b,k)=>a+(b-a)*k;
+function weatherTick(dt){
+  if(!WX.on||(phase!=='battle'&&phase!=='place'))return;
+  // avança a sequência
+  WX.t+=dt;const [nm,dur]=WX.seq[WX.i];
+  if(WX.t>=dur){WX.i=(WX.i+1)%WX.seq.length;WX.t=0;WX.mode=WX.seq[WX.i][0];}
+  const T=WX_STATES[WX.mode],k=Math.min(1,dt*0.45),V=WX.v;
+  ['dark','rain','sand','snow','fog','bolt','tintA'].forEach(n=>V[n]=wxLerp(V[n],T[n],k));
+  V.tint=T.tint;
+  wxDark.style.opacity=V.dark.toFixed(3);wxTint.style.background=V.tint;wxTint.style.opacity=V.tintA.toFixed(3);
+  const g=wxCv.getContext('2d'),w=wxCv.width,h=wxCv.height;g.clearRect(0,0,w,h);
+  // chuva
+  if(V.rain>0.03){
+    const n=Math.floor(110*V.rain);while(WX.drops.length<n)WX.drops.push({x:Math.random()*w,y:Math.random()*h,v:11+Math.random()*7,l:7+Math.random()*7});
+    if(WX.drops.length>n)WX.drops.length=n;
+    g.strokeStyle=`rgba(215,230,250,${Math.min(0.55,0.25+V.rain*0.2)})`;g.lineWidth=1;g.beginPath();
+    for(const d of WX.drops){g.moveTo(d.x,d.y);g.lineTo(d.x-d.l*0.25,d.y+d.l);d.y+=d.v;d.x-=d.v*0.25;
+      if(d.y>h){if(Math.random()<0.28&&WX.splash.length<40)WX.splash.push({x:d.x,y:h*(0.35+Math.random()*0.6),t:0});d.y=-12;d.x=Math.random()*(w+60);}}
+    g.stroke();
+    g.strokeStyle='rgba(200,225,250,.45)';
+    for(let i=WX.splash.length-1;i>=0;i--){const sp=WX.splash[i];sp.t+=dt;const a=1-sp.t/0.4;if(a<=0){WX.splash.splice(i,1);continue;}g.globalAlpha=a*0.6;g.beginPath();g.ellipse(sp.x,sp.y,2+sp.t*14,1+sp.t*6,0,0,6.3);g.stroke();}
+    g.globalAlpha=1;
+  }else WX.drops.length=0;
+  // neve
+  if(V.snow>0.03){
+    const n=Math.floor(90*V.snow);while(WX.flakes.length<n)WX.flakes.push({x:Math.random()*w,y:Math.random()*h,v:1.2+Math.random()*1.6,p:Math.random()*6,s:1+Math.random()*1.6});
+    if(WX.flakes.length>n)WX.flakes.length=n;g.fillStyle='rgba(255,255,255,.9)';
+    for(const f of WX.flakes){f.y+=f.v;f.p+=0.03;f.x+=Math.sin(f.p)*0.6-0.2;g.fillRect(f.x,f.y,f.s,f.s);if(f.y>h){f.y=-4;f.x=Math.random()*w;}}
+  }else WX.flakes.length=0;
+  // tempestade de areia
+  if(V.sand>0.03){
+    const n=Math.floor(130*V.sand);while(WX.sand.length<n)WX.sand.push({x:Math.random()*w,y:Math.random()*h,v:9+Math.random()*9,l:6+Math.random()*12});
+    if(WX.sand.length>n)WX.sand.length=n;g.strokeStyle='rgba(238,208,150,.55)';g.lineWidth=1.2;g.beginPath();
+    for(const d of WX.sand){g.moveTo(d.x,d.y);g.lineTo(d.x-d.l,d.y+d.l*0.18);d.x+=d.v;d.y+=d.v*0.16;if(d.x>w+20){d.x=-20;d.y=Math.random()*h;}}
+    g.stroke();
+  }else WX.sand.length=0;
+  // neblina: manchas largas que passam devagar
+  if(V.fog>0.03){
+    while(WX.puffs.length<7)WX.puffs.push({x:Math.random()*w,y:h*(0.2+Math.random()*0.7),r:h*(0.18+Math.random()*0.2),v:0.15+Math.random()*0.3});
+    for(const p of WX.puffs){p.x+=p.v;if(p.x-p.r>w)p.x=-p.r;const gr=g.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);gr.addColorStop(0,`rgba(205,215,225,${0.2*V.fog})`);gr.addColorStop(1,'rgba(205,215,225,0)');g.fillStyle=gr;g.fillRect(p.x-p.r,p.y-p.r,p.r*2,p.r*2);}
+  }
+  // raios
+  if(V.bolt>0.5){WX.nextBolt-=dt;if(WX.nextBolt<=0){weatherBolt();WX.nextBolt=5+Math.random()*9;}}
+  if(WX.boltT>0&&WX.boltPath){WX.boltT-=dt;g.strokeStyle='rgba(255,252,210,.95)';g.lineWidth=3;g.shadowColor='#bfe0ff';g.shadowBlur=14;g.beginPath();WX.boltPath.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.stroke();g.shadowBlur=0;}
+  // som: chuva e vento acompanham a intensidade
+  wxLoop('wx_rain',Math.min(0.5,V.rain*0.3));wxLoop('wx_wind',Math.min(0.5,V.sand*0.45+(WX.mode==='tempestade'?0.22:0)+V.snow*0.14+V.fog*0.1));
 }
 
 /* ================= Abertura (publicadora → toque → título sobre a vila → zoom) ================= */
