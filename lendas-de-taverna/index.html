@@ -1398,6 +1398,8 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .koel{position:absolute;z-index:7;transform:translate(-50%,-100%);display:flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;background:#1a0d0d;border:2px solid #d4503f;color:#ffd0c8;font:700 11px var(--f-display);pointer-events:none;box-shadow:0 2px 0 #000a;animation:koblink 1.2s ease-in-out infinite}
 .koel b{color:#ff8a78;letter-spacing:.06em}.koel span{background:#d4503f;color:#fff;border-radius:99px;padding:0 6px}
 @keyframes koblink{50%{opacity:.65}}
+.rwl{display:flex;flex-direction:column;gap:6px}.rwi{display:flex;align-items:center;gap:10px;padding:6px 8px;border:2px solid;border-radius:9px;background:#140d09}
+.rwi .ic{width:34px;height:34px;flex:none}.rwi div{min-width:0}.rwi b{display:block;font-size:14px}.rwi small{display:block;color:#bba98a;font-size:11px;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -1952,18 +1954,52 @@ function rollItemFor(tier,rar,classes){
   const cand=pool.filter(b=>!b.cls||b.cls.includes(c));if(!cand.length)return null;
   return genItem(pick(cand).id,tier,rar,c);
 }
+/* ---------- Baús no mapa (estilo FFT): o inimigo derrotado deixa um baú; um herói tem que andar até lá. O que ficar no chão se perde. ---------- */
+let CHESTS=new Map();
+const hasTreasure=h=>passivesOf(h).some(x=>x.treasure);
 function dropLoot(t){
-  const carPct=Math.max(0,...heroesAlive().map(h=>(h.attrBonus&&h.attrBonus.pct)||0)),chance=isBossK(t.kind)?1:0.16*(1+carPct/100);
+  const carPct=Math.max(0,...heroesAlive().map(h=>(h.attrBonus&&h.attrBonus.pct)||0)),tre=heroesAlive().some(hasTreasure)?0.1:0;
+  const chance=isBossK(t.kind)?1:0.16*(1+carPct/100)+tre;
   if(R()>=chance)return;
   const mp=LV&&LV.mp?LV.mp:{ato:1},tier=Math.max(1,Math.min(12,(mp.ato||1)-(R()<0.25?1:0)+(isBossK(t.kind)&&R()<0.3?1:0)));
   const rar=rollRarityT(tier,isBossK(t.kind)?3:1);
   const cl=(party.length?party:[{cls:'guerreiro'}]).map(h=>h.cls);
   const item=rollItemFor(tier,rar,cl);if(!item)return;
-  run.inventory.push(item);
-  item.rar>=4?SFX.secret():SFX.loot();
-  floatText(t,itemIco(item,'lg'),'gold',true);
-  addLog(`🎁 ${RARITY[item.rar].nome}: ${item.nome}`,'gold');
-  if(item.rar>=4)stats.hl.push({w:item.rar===5?9:5,t:`O grupo encontrou ${item.nome}, um item ${RARITY[item.rar].nome.toLowerCase()}.`});
+  placeChest(t.r,t.c,item);
+}
+function placeChest(r0,c0,item){
+  // casa livre mais próxima (o corpo do inimigo some, mas pode ter outro baú ou herói em cima)
+  let spot=null,bd=1e9;
+  for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const rr=r0+dr,cc=c0+dc;if(!inB(rr,cc)||!passable(rr,cc)||CHESTS.has(k(rr,cc)))continue;const d=Math.abs(dr)+Math.abs(dc);if(d<bd){bd=d;spot={r:rr,c:cc};}}
+  if(!spot)return;
+  const pos={x:wx(spot.c),y:topY(spot.r,spot.c),z:wz(spot.r)},col=RARITY[item.rar].cor;
+  const e=spBill('pickups','chest-32px_strip10.png',10,0.0001,{w:1.6});e.holder.position.set(pos.x,pos.y+0.78,pos.z);scene.add(e.holder);ambLive.push({e,st:e.state});
+  const ring=new THREE.Mesh(new THREE.RingGeometry(0.42,0.62,28),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.85,depthWrite:false,side:THREE.DoubleSide}));
+  ring.rotation.x=-Math.PI/2;ring.position.set(pos.x,pos.y+0.05,pos.z);scene.add(ring);
+  const tw=gsap.to(ring.scale,{x:1.35,y:1.35,duration:0.8,repeat:-1,yoyo:true,ease:'sine.inOut'});
+  const bob=gsap.to(e.holder.position,{y:pos.y+0.88,duration:0.9,repeat:-1,yoyo:true,ease:'sine.inOut'});
+  const ch={r:spot.r,c:spot.c,item,e,ring,tw,bob,pos};CHESTS.set(k(spot.r,spot.c),ch);
+  burst({x:pos.x,y:pos.y,z:pos.z},{n:10,colors:[col,'#ffffff'],spread:0.5,up:1.2,y:0.2,life:0.6,fall:true});
+  SFX.loot();addLog(`Um baú caiu em ${spot.r},${spot.c}: alguém precisa buscar`,'gold');
+}
+function clearChests(){
+  CHESTS.forEach(ch=>{try{ch.tw.kill();ch.bob.kill();}catch(e){}scene.remove(ch.e.holder);scene.remove(ch.ring);const i=ambLive.findIndex(a=>a.e===ch.e);if(i>=0)ambLive.splice(i,1);});
+  CHESTS=new Map();
+}
+async function openChest(u,ch){
+  CHESTS.delete(k(ch.r,ch.c));ch.tw.kill();ch.bob.kill();scene.remove(ch.ring);
+  scene.remove(ch.e.holder);{const i=ambLive.findIndex(a=>a.e===ch.e);if(i>=0)ambLive.splice(i,1);}
+  const it=ch.item,col=RARITY[it.rar].cor,pos=ch.pos;
+  fxPlay('pickups','chest-32px_strip10.png',10,14,{x:pos.x,y:pos.y+0.78,z:pos.z},{w:1.6});
+  pulse({x:pos.x,y:pos.y,z:pos.z},col,1.4,0.6,0.05);
+  await wait(520);
+  run.inventory.push(it);it.rar>=4?SFX.secret():SFX.loot();
+  burst({x:pos.x,y:pos.y+0.3,z:pos.z},{n:14,colors:[col,'#ffe08a','#ffffff'],spread:0.6,up:1.6,y:0.3,life:0.8,fall:true});
+  floatText(u,itemIco(it,'lg'),'gold',true);setTimeout(()=>{if(u.grp)floatText(u,it.nome,'gold');},350);
+  addLog(`${u.first} abriu o baú: ${RARITY[it.rar].nome} — ${it.nome}`,'gold');xp(u,10);
+  stats.chests=(stats.chests||0)+1;
+  if(it.rar>=4)stats.hl.push({w:it.rar===5?9:5,t:`${u.first} abriu um baú com ${it.nome}, um item ${RARITY[it.rar].nome.toLowerCase()}.`});
+  await wait(300);
 }
 const ENEMIES={
   goblin:{nome:'Goblin',ia:'rush',hp:9,atk:3,def:12,mov:4,alc:1,dmg:[1,6,1],ini:3,pts:100,
@@ -2390,7 +2426,7 @@ function applyLevel(mp,seed){
   const lv=genLevel(mp,seed);
   LV={mp,seed,reach:lv.reach};
   MAP=lv.map;ROWS=MAP.length;COLS=MAP[0].length;OFFX=(COLS-1)/2;OFFZ=(ROWS-1)/2;SECRET=lv.secret;
-  TRAPS=lv.traps||new Set();REVEALED=new Set();HTRAPS=new Map();
+  TRAPS=lv.traps||new Set();REVEALED=new Set();HTRAPS=new Map();if(typeof clearChests==='function')clearChests();
   if(lv.zone){ZONE=lv.zone;EZONE=lv.ezone;}
   else{ZONE=new Set();EZONE=[];for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(!passable(r,c))continue;if(r>=ROWS-zoneRows(ROWS))ZONE.add(r*COLS+c);if(r<enemyRows(ROWS)+1)EZONE.push({r,c});}}
   const ext=Math.max(ROWS,COLS)/2+4;
@@ -5251,6 +5287,7 @@ async function moveAlong(u,path){
     await gsap.timeline().to(u.grp.position,{x:tx,z:tz,duration:0.24,ease:'none'},0).to(u.grp.position,{y:peak,duration:0.12,ease:'power1.out'},0).to(u.grp.position,{y:ty,duration:0.12,ease:'power1.in'},0.12);
     burst(u.grp.position,{n:3,colors:['#c9b28a','#a08a62'],spread:0.3,up:0.1,y:0.03,life:0.3,size:0.7});
     if(u.side==='hero'&&TRAPS.has(k(p.r,p.c))&&!REVEALED.has(k(p.r,p.c))){await springTrap(u,p);if(!u.alive)break;}
+    if(u.side==='hero'&&u.alive){const ch=CHESTS.get(k(p.r,p.c));if(ch)await openChest(u,ch);}
     {const ht=HTRAPS.get(k(p.r,p.c));if(ht&&u.side!==ht.owner.side){await springHeroTrap(ht,u);if(!u.alive)break;}}
     const bl=stOf(u,'sangramento');if(bl){const bd=3*bl.n;floatText(u,`SAN -${bd}`,'miss');damage(u,bd,{first:'o sangramento',side:'trap'},false);if(!u.alive)break;}
   }
@@ -5821,6 +5858,7 @@ const PV={
   carniceiro:{nome:'Carniceiro',cls:'guerreiro',sub:'barbaro',lv:24,desc:'+30% de dano contra alvos com Sangramento ou Abalado.',mult:[{ids:['sangramento','abalado'],x:1.3}]},
   // Ladino
   pes_leves:{nome:'Pés Leves',cls:'ladino',lv:4,desc:'+1 Movimento.',stat:{mov:1}},
+  faro_tesouro:{nome:'Faro de Tesouro',cls:'ladino',lv:6,desc:'Sente baús de longe e corre atrás deles, até no meio da luta. +10% de chance de os inimigos deixarem baú.',treasure:true},
   evasao:{nome:'Evasão',cls:'ladino',lv:8,desc:'15% de desviar totalmente de um golpe.',dodge:0.15},
   maos_leves:{nome:'Mãos Leves',cls:'ladino',lv:12,desc:'+3 em achar segredos.',stat:{per:3}},
   predador:{nome:'Predador',cls:'ladino',sub:'assassino',lv:12,desc:'+30% de dano contra alvos com controle ou Marcados.',mult:[{groups:['ctrl'],ids:['marcado'],x:1.3}]},
@@ -5903,7 +5941,7 @@ const TICON={
   nota_aguda:'u:lyre',hino_coragem:'s:fortalecido',desafinar:'s:abalado',cancao_vigor:'s:regeneracao',pavor:'s:medo',cancao_ninar:'u:harp',
   pele_ferro:'u:chest-armor',firmeza:'u:shield',dar_volta:'u:wind-slap',veterano:'u:centurion-helmet',muralha:'u:round-shield',terreno_sagrado:'u:dragon-shield',punho_vingativo:'u:mailed-fist',contra_golpe:'u:crossed-swords',
   sede_sangue:'s:sangramento',selvageria:'u:barbarian',queda_pesada:'u:battle-axe',carniceiro:'u:claws',
-  pes_leves:'u:running-shoe',evasao:'u:hooded-figure',maos_leves:'u:gloves',predador:'u:eye-of-horus',sombras:'u:rogue',execucao:'u:sacrificial-dagger',mestre_terreno:'u:fur-boot',preparado:'u:hooded-assassin',gatuno:'u:broad-dagger',
+  faro_tesouro:'m:pickups:chest:10',pes_leves:'u:running-shoe',evasao:'u:hooded-figure',maos_leves:'u:gloves',predador:'u:eye-of-horus',sombras:'u:rogue',execucao:'u:sacrificial-dagger',mestre_terreno:'u:fur-boot',preparado:'u:hooded-assassin',gatuno:'u:broad-dagger',
   mente_aguda:'u:crystal-ball',sabio:'u:open-book',explosao:'u:sparkles',combustao:'s:queimadura',pirofagia:'u:health-potion',brasa_longa:'u:fire-gem',pele_pedra:'u:crystal-cluster',gelo_rachante:'s:gelado',alto_torreao:'u:greek-temple',choque_termico:'m:magic:lightning-strike:8',
   fe_inabalavel:'u:magic-shield',devoto:'u:heart-necklace',aura_vital:'u:sunrise',luz_restauradora:'u:sun-priest',bencao_prolongada:'u:infinity',escudo_fe:'u:holy-symbol',luz_vingadora:'u:skull-staff',zelo:'u:warhammer',passo_abencoado:'u:sandal',
   olhar_aguia:'u:eye-of-horus',agilidade:'u:tabi-boot',posicao_elevada:'u:archer',instinto:'u:claw-string',escalador:'u:boots',municao_pesada:'u:bracer',ricochete:'u:flying-dagger',flechas_venenosas:'s:veneno',olho_treinado:'u:eye-shield',
@@ -6891,6 +6929,23 @@ async function turnBody(u){
       if(best){showCallout(u,'Deslocar');addLog(`${u.first} se deslocou`,'mut');await moveAlong(u,pathTo(reach,best));await checkSecret(u);return;}
     }
   }
+  if(u.side==='hero'&&CHESTS.size){
+    // quem busca: se não tem ninguém para bater, o herói vai ao baú mais perto; Ladino (Faro de Tesouro) e Tática alta pegam também no meio da luta, se for seguro
+    const tre=hasTreasure(u),tat=tatOf(u),engaged=foes.some(f=>bestTileWithin(reach,f,rngOf(u),u));
+    const danger=t=>foes.filter(f=>dist(f,t)<=movOf(f)+rngOf(f)).length;
+    const cands=[...CHESTS.values()].map(ch=>({ch,t:reach.get(k(ch.r,ch.c))})).filter(x=>x.t&&!x.t.pass);
+    let pickC=null;
+    if(cands.length&&(!engaged||tre||(tat>=6&&u.hp>u.maxhp*0.5))){
+      cands.sort((a,b)=>a.t.d-b.t.d+(danger(a.t)-danger(b.t))*(tat>=4?1.5:0));pickC=cands[0];
+      if(engaged&&!tre&&danger(pickC.t)>1)pickC=null;
+    }
+    if(!pickC&&!engaged){   // longe demais: anda na direção do baú mais perto (Faro de Tesouro enxerga todos; os outros só os próximos)
+      const far=[...CHESTS.values()].filter(ch=>tre||dist(u,ch)<=movOf(u)*2+4).sort((a,b)=>dist(u,a)-dist(u,b))[0];
+      if(far){const field=fieldFrom([[far.r,far.c]]);let best=null,bv=1e9;for(const t of reach.values()){if(t.pass)continue;const v=field.get(k(t.r,t.c));if(v==null)continue;if(v<bv){bv=v;best=t;}}
+        if(best&&(best.r!==u.r||best.c!==u.c)){showCallout(u,tre?'Faro de tesouro!':'Buscar baú');addLog(`${u.first} vai buscar um baú`,'mut');await moveAlong(u,pathTo(reach,best));await checkSecret(u);return;}}
+    }
+    if(pickC){showCallout(u,tre?'Faro de tesouro!':'Buscar baú');await moveAlong(u,pathTo(reach,pickC.t));await checkSecret(u);return;}
+  }
   if(u.side==='hero'){
     const plan=skillPlan(u,foes,allies,reach);
     if(plan){plan.reach=reach;if(plan.target)rangeTile(plan.target.r,plan.target.c,'red');await castSkill(u,plan);await checkSecret(u);return;}
@@ -7051,6 +7106,7 @@ function nextPhase(){
 /* ---------- Fim de fase ---------- */
 function finish(){
   gsap.globalTimeline.timeScale(1);
+  const lostChests=CHESTS.size;clearChests();HTRAPS.forEach(t=>boardGroup.remove(t.mesh));HTRAPS=new Map();
   party.forEach(h=>{if(h.koEl){h.koEl.remove();h.koEl=null;}});
   const win=won();
   const alive=heroesAlive();
@@ -7080,13 +7136,24 @@ function finish(){
   roster.filter(h=>!party.includes(h)).forEach(h=>{h.xpTotal=(h.xpTotal||0)+Math.round(avgXp*(BENCH_XP_SHARE+(h.benchXpBonus||0)));applyLevelUps(h);});
   saveClassXP(cxp);
   if(win&&!LV.mp.secreta)saveProg(run.map);
+  // prêmio de fim de dungeon: chance de 1 ou 2 itens (chefe do ato: sempre pelo menos 1)
+  const rewards=[];
+  if(win){
+    const boss=!!(LV.mp.chefe||LV.mp.secreta);let n=0;
+    if(boss)n=1+(R()<0.4?1:0);else n=R()<0.40?(R()<0.25?2:1):0;
+    if(party.some(hasTreasure)&&R()<0.25)n++;
+    const tier=Math.max(1,Math.min(12,LV.mp.ato||1)),cl=party.map(h=>h.cls);
+    for(let i=0;i<n;i++){const rar=rollRarityT(tier,boss?3:1),it=rollItemFor(tier,rar,cl);if(it){run.inventory.push(it);rewards.push(it);}}
+    if(rewards.some(i=>i.rar>=4))stats.hl.push({w:7,t:`O prêmio da dungeon trouxe ${rewards.find(i=>i.rar>=4).nome}.`});
+  }
+  stats.rewards=rewards;stats.lostChests=lostChests;
   let premio=0;
   if(win&&LV.mp.secreta){const sc=loadSecrets();sc.cleared=sc.cleared||[];if(!sc.cleared.includes(LV.mp.n)){sc.cleared.push(LV.mp.n);saveSecrets(sc);premio=LV.mp.premio||0;const it=rollItem(4);if(it){run.inventory.push(it);stats.hl.push({w:9,t:`O grupo limpou ${LV.mp.nome} pela primeira vez e levou ${it.nome}.`});}}}
   // Ouro: ganho pela fase. Fica aqui (não em finalResult) porque recompensa
   // deve chegar assim que a fase é vencida, mesmo que o jogador siga pra próxima.
   const goldGain=win?Math.round(sub*GOLD_PER_SCORE)+premio:0;gold+=goldGain;
   saveGame();
-  run.results.push({n:LV.mp.n,secreta:!!LV.mp.secreta,nome:LV.mp.nome,rows,sub,win,round:stats.round,moment:moment.t,goldGain,xpRows:party.map(h=>({h,xp:h.xp,alive:h.alive,bonus:h.bonus,catchup:h.catchup}))});
+  run.results.push({rewards:stats.rewards||[],chests:stats.chests||0,lostChests:stats.lostChests||0,n:LV.mp.n,secreta:!!LV.mp.secreta,nome:LV.mp.nome,rows,sub,win,round:stats.round,moment:moment.t,goldGain,xpRows:party.map(h=>({h,xp:h.xp,alive:h.alive,bonus:h.bonus,catchup:h.catchup}))});
   phase='result';
   const nxm=win&&!LV.mp.chefe&&!LV.mp.secreta?mapOf(run.map+1):null;
   const next=nxm&&nxm.ato===LV.mp.ato&&unlocked(run.map+1);
@@ -7103,6 +7170,9 @@ function phaseBoard(){
     <p class="sub">${r.nome}: o grupo limpou o mapa em ${r.round} turnos.</p></div>
     <div class="bigscore"><span>Pontos da fase</span><b id="tot">0</b><small>Run até agora: ${fmt(Math.round(runSub()*mult))} pontos (grupo de ${run.party.length} ×${mult.toFixed(1).replace('.',',')})${r.goldGain?` · ${ico('vila','ouro')} +${fmt(r.goldGain)}`:''}</small></div>
     <div class="box moment"><div class="eyebrow">Momento da batalha</div><p>${r.moment}</p></div>
+    <div class="box"><h3>Tesouros</h3>
+      <p class="note" style="margin:0 0 6px">Baús abertos na batalha: <b>${r.chests}</b>${r.lostChests?` · ficaram no chão: <b>${r.lostChests}</b> (perdidos)`:''}</p>
+      ${r.rewards.length?`<div class="rwl">${r.rewards.map(it=>`<div class="rwi" style="border-color:${RARITY[it.rar].cor}">${itemIco(it,'lg')}<div><b style="color:${RARITY[it.rar].cor}">${it.nome}</b><small>${RARITY[it.rar].nome} · ${it.desc}</small></div></div>`).join('')}</div>`:'<p class="note" style="margin:0">Prêmio da dungeon: dessa vez nada.</p>'}</div>
     <div class="box"><h3>Quadro de XP</h3>
       <div class="xpb">${r.xpRows.slice().sort((a,b)=>b.xp-a.xp).map(x=>`<div class="xr ${x.alive?'':'dead'}"><img src="${x.h.portrait}" alt=""><div><b>${x.h.first}${x.xp===top&&top>0?' ★':''}</b><small>${CLASSES[x.h.cls].nome} · ${x.alive?'vivo: +50 de bônus':'caiu: sem bônus'}${x.catchup?` · ⏫ ×${x.catchup.toFixed(1).replace('.',',')} (alcançando o grupo)`:''}</small></div><b class="xv">+${x.xp}</b></div>`).join('')}</div>
       <p class="note">XP vem só do que o herói faz em pé: acertos, golpes de misericórdia, curas, bênçãos. Quem caiu volta na próxima fase com 50% de vida e Exausto (−1 ATQ, −1 DEF). O XP vira XP de classe, guardado neste aparelho.</p></div>
