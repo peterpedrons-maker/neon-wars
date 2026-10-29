@@ -1319,8 +1319,8 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .vn:not(.next) b{font-size:12px!important;padding:1px 7px!important;pointer-events:auto;box-shadow:0 2px 0 #000a;border:2px solid #f4e6c0}
 .vn.next{border:0!important;border-image:none!important;padding:0!important;background:none!important;font-size:0!important;box-shadow:none!important;width:30px;height:30px}
 .vn.next .ic{display:none!important}
-.vn.next::before{left:3px!important;top:3px!important;width:26px!important;height:26px!important;line-height:26px!important}
-.vn.next::after{top:-20px!important}
+.vn.next::before{display:none!important}
+.vn.next::after{top:-26px!important;font-size:30px!important}
 /* escolha de herói para o item (Cofre / mochila) */
 .sd2{gap:8px}.sd-head{display:flex;gap:10px;align-items:center}.sd-head .ic{width:44px;height:44px}.sd-head>div{display:flex;flex-direction:column;gap:3px;min-width:0}.sd-head b{font-size:16px;display:block}.sd-head .sdline{display:block;position:static}
 .sd-t{margin:4px 0 0;font:700 12px var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:#e9b949}
@@ -4658,10 +4658,11 @@ function renderVillage(){
   PI_.innerHTML='';
   $('#vbar').innerHTML=`<div class="vt">Vila de Brumavale</div><div class="vr"><span class="tag">${ico('vila','ouro')} ${fmt(gold)}</span>${best?`<span class="tag">Melhor run: ${fmt(best)}</span>`:''}<button class="btn ghost sm" data-act="snd">Som</button><button class="btn ghost sm" data-act="help">Como jogar</button></div>`;
   const badge={temple:injuredN,forge:forgeReady,stash:stash.length};
-  const step=np<5?1:2,nextB=step===1?'tavern':null;
-  $('#vnames').innerHTML=HUB_LABELS.map(([id,nome])=>`<button class="vn ${id==='market'||id==='well'?'soon':''} ${id===nextB?'next':''}" ${id===nextB?`data-step="${step}"`:''} data-bld="${id}">${ico('vila',id)}${nome}${badge[id]?`<b>${badge[id]}</b>`:''}</button>`).join('');
-  const stepTxt=step===1?`<b>Passo 1 de 2:</b> toque na <b>Taverna</b> e escolha 5 heróis (faltam ${5-np}).`:'<b>Passo 2 de 2:</b> grupo pronto! Toque em <b>Ir para a batalha</b> e escolha a missão.';
-  $('#vfoot').innerHTML=`<p class="hint stepb" id="hint">${hint||(injuredN?`${injuredN} ${injuredN>1?'heróis estão':'herói está'} se recuperando no Templo. `:'')+stepTxt}</p>
+  // só na primeira vez (até abrir a Taverna): uma seta piscando em cima dela. Depois nada de passo a passo.
+  let seen=false;try{seen=localStorage.getItem('lendas_tav_seen')==='1';}catch(e){}
+  const nextB=(!seen&&roster.length<5)?'tavern':null;
+  $('#vnames').innerHTML=HUB_LABELS.map(([id,nome])=>`<button class="vn ${id==='market'||id==='well'?'soon':''} ${id===nextB?'next':''}" data-bld="${id}">${ico('vila',id)}${nome}${badge[id]?`<b>${badge[id]}</b>`:''}</button>`).join('');
+  $('#vfoot').innerHTML=`${hint?`<p class="hint" id="hint">${hint}</p>`:''}
     <div class="vs"><span class="tag">${ico('vila','grupo')} ${np}/5 no grupo (Taverna)</span></div>
     <button class="btn cta" data-act="depart" ${ready?'':'disabled'}>${ready?'Ir para a batalha':'Monte o grupo na Taverna'}</button>`;
   placeVillageNames();
@@ -4759,7 +4760,7 @@ function renderBrief(n){
 /* ---------- Taverna ---------- */
 const surCount=()=>{const sc={};draw.forEach(h=>sc[h.sur]=(sc[h.sur]||0)+1);return sc;};
 const rosterSibCount=()=>{const sc={};roster.forEach(h=>sc[h.sur]=(sc[h.sur]||0)+1);return sc;};
-function enterTavern(){hint='';view='tavern';tvFocus=null;setMode('tavern');renderTavern();aim('tavern');}
+function enterTavern(){try{localStorage.setItem('lendas_tav_seen','1');}catch(e){}hint='';view='tavern';tvFocus=null;setMode('tavern');renderTavern();aim('tavern');}
 function partyBar(){
   const sel=roster.filter(h=>selected.has(h.id)),n=sel.length;
   const sur={};sel.forEach(h=>sur[h.sur]=(sur[h.sur]||0)+1);const fams=Object.keys(sur).filter(x=>sur[x]>1);
