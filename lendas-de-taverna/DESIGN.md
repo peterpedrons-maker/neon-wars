@@ -504,3 +504,9 @@ da ideia original sem precisar do modo manual completo.
 - **Peixes submersos:** silhueta azul-escura sobre a água, nadam só para o lado onde a casa vizinha também é água (nunca atravessam a margem) e deixam anéis na superfície.
 - **Clima (só visual e sonoro):** estados `sol`, `nublado`, `chuva`, `tempestade` (raios + trovão), `areia`, `neve`, `neblina` misturados suavemente; cada região tem a sua sequência (`WX_SEQ`: campina e floresta alternam sol/chuva/tempestade; deserto e ruínas têm tempestade de areia; gelo nevasca; cripta e caverna neblina). Sons: `wx_rain`, `wx_wind`, `wx_thunder`.
 - Pendente: efeitos do clima no combate (ideias: chuva apaga fogo, raio em quem está no morro).
+
+## Vila: ajustes (v4)
+- Sem emojis/encontros entre moradores (sobrepunham); 6 moradores que andam em "faixas" ao lado do caminho, esperam quando alguém está no caminho e se afastam um pouco um do outro (nunca atravessam).
+- Chão da vila em camadas por altura (estrada 0,018–0,03, praça 0,045, lagoa 0,05) com `polygonOffset` proporcional — antes o offset grande engolia os pés dos sprites (sprites cortados/piscando).
+- Clima também na vila (`vila`: sol → nublado → chuva → tempestade), com os mesmos sons. Música 33% mais baixa que antes.
+- Combate: depois de agir, a câmera espera o ganho de XP (e o nível) aparecer antes de ir para o próximo (`holdForXp`); setas do nível menores.
