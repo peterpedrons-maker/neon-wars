@@ -2852,19 +2852,6 @@ const PAINT={
     for(let x=11;x<=19;x++)put(x,H-4,SP_OUT);
     return P.cv;
   },
-  tumulo(seed){
-    const P=spCanvas(38,38),R=SP_RNG(seed),{put,W,H}=P,st=[[124,118,134],[138,132,142],[112,108,122],[130,124,128]][seed%4];
-    spGroundShadow(P,19,H-3,15,2);
-    const box=(x0,y0,x1,y1,c)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const e=x===x0||x===x1||y===y0||y===y1;put(x,y,e?[22,18,30]:(x<x0+3?spShade(c,1.25):x>x1-3?spShade(c,0.7):y<y0+3?spShade(c,1.15):c));}};
-    box(7,18,31,H-5,st);box(5,13,33,19,spShade(st,0.82));
-    // cruz esculpida na tampa
-    for(let y=4;y<=13;y++){put(18,y,[22,18,30]);put(19,y,spShade(st,1.2));put(20,y,[22,18,30]);}
-    for(let x=15;x<=23;x++){put(x,7,[22,18,30]);put(x,8,spShade(st,1.2));put(x,9,[22,18,30]);}
-    // musgo e rachaduras
-    for(let i=0;i<14;i++){const x=7+Math.floor(R()*25),y=19+Math.floor(R()*12);put(x,y,[70,110,60]);if(R()<0.5)put(x+1,y,[88,130,70]);}
-    for(let i=0;i<6;i++)put(12+i,24+(i%2),spShade(st,0.5));
-    return P.cv;
-  },
   coluna(seed){
     const P=spCanvas(28,46),R=SP_RNG(seed),{put,W,H}=P,m=[[190,184,168],[176,172,160],[200,192,172],[182,176,176]][seed%4];
     spGroundShadow(P,14,H-3,11,2);
@@ -2874,14 +2861,6 @@ const PAINT={
     for(let x=4;x<=22;x++){for(let y=H-5;y<=H-3;y++)put(x,y,(y===H-3||x===4||x===22)?[60,56,52]:spShade(m,x<9?1.1:0.8));}
     for(let i=0;i<5;i++)put(6+Math.floor(R()*16),H-5+Math.floor(R()*2),spShade(m,0.6));
     for(let i=0;i<8;i++)put(7+Math.floor(R()*13),top+4+Math.floor(R()*20),[84,124,72]);
-    return P.cv;
-  },
-  estalagmite(seed){
-    const P=spCanvas(32,42),R=SP_RNG(seed),{put,W,H}=P,b=[[96,80,84],[88,76,86],[104,84,78],[92,86,96]][seed%4];
-    spGroundShadow(P,16,H-3,12,2);
-    const cone=(cx,base,hh,hw)=>{for(let y=base-hh;y<=base;y++){const w=Math.max(0.5,hw*(y-(base-hh))/hh);for(let x=Math.floor(cx-w);x<=Math.ceil(cx+w);x++){const e=Math.abs(x-cx)>=w-0.8||y===base;const lit=-(x-cx)/Math.max(w,1)+(y<base-hh*0.7?0.25:0);let c=e?[26,20,24]:spShade(b,lit>0.5?1.4:lit>0?1.12:lit>-0.4?0.9:0.7);if(!e&&R()<0.05)c=spShade(c,1.25);put(x,y,c);}}};
-    cone(8,H-4,20,6);cone(24,H-4,15,5);cone(16,H-4,34,8);
-    [[15,10],[16,18]].forEach(([x,y])=>put(x,y,[190,170,175]));
     return P.cv;
   },
 };
@@ -2901,9 +2880,9 @@ const spSeed=(x,z)=>(Math.abs(Math.round(x*13+z*7))%4)+1;
 function makeTree(parent,x,y,z,s=1){const g=spBuild(parent,x,y,z,'carvalho',spSeed(x,z),1.75*s);trees.push(g);return g;}
 function makePine(parent,x,y,z){const g=spBuild(parent,x,y,z,'pinho',spSeed(x,z),1.6);trees.push(g);return g;}
 function makeCactus(parent,x,y,z){return spBuild(parent,x,y,z,'cacto',spSeed(x,z),1.05);}
-function makeTomb(parent,x,y,z){return spBuild(parent,x,y,z,'tumulo',spSeed(x,z),1.15);}
 function makeColumn(parent,x,y,z){return spBuild(parent,x,y,z,'coluna',spSeed(x,z),0.95);}
-function makeStalagmite(parent,x,y,z){return spBuild(parent,x,y,z,'estalagmite',spSeed(x,z),1.05);}
+function makeRockProp(x,y,z,k,col){const m=new THREE.MeshLambertMaterial({color:col||'#5a5258',flatShading:true}),rg=new THREE.Group();rg.position.set(x,y,z);
+  const b=new THREE.Mesh(new THREE.DodecahedronGeometry(0.42,0),m);b.position.y=0.28;b.scale.set(1,0.8,1);b.rotation.y=k;rg.add(b);boardGroup.add(rg);return rg;}
 
 /* ---------- Tabuleiro da batalha (reconstruído a cada fase) ---------- */
 const boardGroup=new THREE.Group();scene.add(boardGroup);
@@ -2997,7 +2976,7 @@ function buildBoard(){
     mesh.userData={r,c};boardGroup.add(mesh);pickables.push(mesh);
     const ty=topY(r,c);
     if(ch==='r'){const b=new THREE.Mesh(new THREE.DodecahedronGeometry(0.4,0),new THREE.MeshLambertMaterial({color:rockCol}));const rg=new THREE.Group();rg.position.set(x,ty,z);b.position.y=0.28;b.scale.y=0.8;b.rotation.y=r+c;rg.add(b);boardGroup.add(rg);addBlocker(rg,0.4,0.6);}
-    if(ch==='t'){const ts=bio==='floresta'?1.1:1;let o,rad=0.4,hh=1;if(bio==='cripta'){o=makeTomb(boardGroup,x,ty,z);rad=0.35;hh=0.8;}else if(bio==='gelo'){o=makePine(boardGroup,x,ty,z);rad=0.45;hh=1.1;}else if(bio==='caverna'){o=makeStalagmite(boardGroup,x,ty,z);rad=0.3;hh=1;}else if(bio==='ruinas'){o=makeColumn(boardGroup,x,ty,z);rad=0.25;hh=1;}else if(bio==='deserto'){o=makeCactus(boardGroup,x,ty,z);rad=0.3;hh=0.95;}else{o=makeTree(boardGroup,x,ty,z,ts);rad=0.45*ts;hh=1.35*ts;}addBlocker(o,rad,hh);}
+    if(ch==='t'){const ts=bio==='floresta'?1.1:1;let o,rad=0.4,hh=1;if(bio==='cripta'||bio==='caverna'){o=makeRockProp(x,ty,z,r*7+c*3,rockCol);rad=0.4;hh=0.7;}else if(bio==='gelo'){o=makePine(boardGroup,x,ty,z);rad=0.45;hh=1.1;}else if(bio==='ruinas'){o=makeColumn(boardGroup,x,ty,z);rad=0.25;hh=1;}else if(bio==='deserto'){o=makeCactus(boardGroup,x,ty,z);rad=0.3;hh=0.95;}else{o=makeTree(boardGroup,x,ty,z,ts);rad=0.45*ts;hh=1.35*ts;}addBlocker(o,rad,hh);}
     if(ch==='S'){wallMesh=new THREE.Mesh(new THREE.BoxGeometry(0.97,1.2,0.97),mats.crack);wallMesh.position.set(x,0.6,z);boardGroup.add(wallMesh);}
     if(isZone(r,c)){
       const zm=new THREE.Mesh(new THREE.PlaneGeometry(0.86,0.86),new THREE.MeshBasicMaterial({color:'#e9a020',transparent:true,opacity:0.42,depthWrite:false}));
@@ -4241,7 +4220,7 @@ function terrainOf(r,c){
   if(ch==='w')return {nome:cav?'Lava':gel?'Água gelada':cri?'Sangue':'Água',alt:0,txt:'Intransponível',ic:cav?'#e0561e':gel?'#8fcdea':cri?'#b0303a':'#4a8fc9'};
   if(ch==='b')return {nome:'Ponte',alt:0,txt:'Passagem estreita',ic:'#8a5a32'};
   if(ch==='r')return {nome:'Pedra',alt:0,txt:'Bloqueia o caminho',ic:'#7d817c'};
-  if(ch==='t')return {nome:cri?'Sarcófago':gel?'Pinheiro':cav?'Estalagmite':rui?'Coluna':des?'Cacto':'Árvore',alt:0,txt:'Bloqueia o caminho',ic:'#3f7a3a'};
+  if(ch==='t')return {nome:cri||cav?'Pedra':gel?'Pinheiro':rui?'Coluna':des?'Cacto':'Árvore',alt:0,txt:'Bloqueia o caminho',ic:'#3f7a3a'};
   if(ch==='S')return {nome:'Parede rachada',alt:1,txt:'Esconde uma passagem',ic:'#7a7c76'};
   if(h>0)return {nome:cri||cav||rui?'Plataforma':gel?'Penhasco de gelo':'Morro',alt:h,txt:'+2 de acerto pra quem ataca de cima',ic:gel?'#e9f1f6':cav?'#6e5d58':rui?'#868d98':des?'#c9a46a':'#7aa858'};
   return {nome:cri?'Piso de cripta':gel?'Neve':cav?'Rocha vulcânica':rui?'Piso de pedra':des?'Areia':'Campina',alt:0,txt:'Terreno livre',ic:cri?'#4d4658':gel?'#dfe9ef':cav?'#5b4c4a':rui?'#6f7680':des?'#d2b078':'#5d8f3f'};
