@@ -1191,11 +1191,7 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 .float.buff .ft .sf{color:#8fc4ff}
 .float.miss .ft .sf{color:#d8d2c4}
 .float.gold .ft .sf{color:#ffd65a}
-.lvup{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;pointer-events:none;font-family:var(--f-display);font-weight:700;text-align:center;white-space:nowrap;filter:drop-shadow(0 4px 0 #000a)}
-.lvup b{font-size:30px;letter-spacing:.06em;color:#ffe08a;text-shadow:0 0 14px #ffb62e,0 2px 0 #5a3a08;-webkit-text-stroke:1px #7a4d0a}
-.lvup em{font-style:normal;font-size:13px;color:#fff6d0;margin-top:2px;text-shadow:0 2px 0 #000}
 .amini{float:right;display:inline-grid;grid-template-columns:repeat(7,8px);gap:1px;margin:0 0 4px 8px}.amini i{width:8px;height:8px;background:#2a1d12;border-radius:1px}.amini i.on{background:#d4503f}.amini i.me{background:#e9b949}
-.lvarrow{position:absolute;transform:translate(-50%,-50%);pointer-events:none;filter:drop-shadow(0 0 10px #ffb62e)}.lvarrow svg{width:100%;height:100%;display:block}
 .float.xp .ft .sf{color:#9fe0ff;font-size:20px}
 .float.xp .xl{font-style:normal;font-size:13px;margin-left:4px;color:#d6f2ff}
 .float.xpk .ft .sf{color:#ffe08a;font-size:24px}.float.xpk .ft .sf i{font-style:italic;font-weight:700}.float.xpk .xl{color:#fff0b8}
@@ -1400,6 +1396,7 @@ h4.sec,.sec2 h4{color:#ffe9b8;text-shadow:0 2px 0 #120b08}
 @keyframes koblink{50%{opacity:.65}}
 .rwl{display:flex;flex-direction:column;gap:6px}.rwi{display:flex;align-items:center;gap:10px;padding:6px 8px;border:2px solid;border-radius:9px;background:#140d09}
 .rwi .ic{width:34px;height:34px;flex:none}.rwi div{min-width:0}.rwi b{display:block;font-size:14px}.rwi small{display:block;color:#bba98a;font-size:11px;overflow-wrap:anywhere}
+.float.lvl .ft .sf{color:#ffe08a;font-size:24px;letter-spacing:.04em;text-align:center}.float.lvl .xl{display:block;margin:2px 0 0;font-size:12px;color:#fff0b8}
 </style>
 </head>
 <body>
@@ -1973,11 +1970,11 @@ function placeChest(r0,c0,item){
   for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const rr=r0+dr,cc=c0+dc;if(!inB(rr,cc)||!passable(rr,cc)||CHESTS.has(k(rr,cc)))continue;const d=Math.abs(dr)+Math.abs(dc);if(d<bd){bd=d;spot={r:rr,c:cc};}}
   if(!spot)return;
   const pos={x:wx(spot.c),y:topY(spot.r,spot.c),z:wz(spot.r)},col=RARITY[item.rar].cor;
-  const e=spBill('pickups','chest-32px_strip10.png',10,0.0001,{w:1.6});e.holder.position.set(pos.x,pos.y+0.78,pos.z);scene.add(e.holder);ambLive.push({e,st:e.state});
-  const ring=new THREE.Mesh(new THREE.RingGeometry(0.42,0.62,28),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.85,depthWrite:false,side:THREE.DoubleSide}));
+  const e=spBill('pickups','chest-32px_strip10.png',10,0.0001,{w:1.1});e.holder.position.set(pos.x,pos.y+0.58,pos.z);scene.add(e.holder);ambLive.push({e,st:e.state});
+  const ring=new THREE.Mesh(new THREE.RingGeometry(0.3,0.44,28),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.85,depthWrite:false,side:THREE.DoubleSide}));
   ring.rotation.x=-Math.PI/2;ring.position.set(pos.x,pos.y+0.05,pos.z);scene.add(ring);
   const tw=gsap.to(ring.scale,{x:1.35,y:1.35,duration:0.8,repeat:-1,yoyo:true,ease:'sine.inOut'});
-  const bob=gsap.to(e.holder.position,{y:pos.y+0.88,duration:0.9,repeat:-1,yoyo:true,ease:'sine.inOut'});
+  const bob=gsap.to(e.holder.position,{y:pos.y+0.64,duration:0.9,repeat:-1,yoyo:true,ease:'sine.inOut'});
   const ch={r:spot.r,c:spot.c,item,e,ring,tw,bob,pos};CHESTS.set(k(spot.r,spot.c),ch);
   burst({x:pos.x,y:pos.y,z:pos.z},{n:10,colors:[col,'#ffffff'],spread:0.5,up:1.2,y:0.2,life:0.6,fall:true});
   SFX.loot();addLog(`Um baú caiu em ${spot.r},${spot.c}: alguém precisa buscar`,'gold');
@@ -1990,7 +1987,7 @@ async function openChest(u,ch){
   CHESTS.delete(k(ch.r,ch.c));ch.tw.kill();ch.bob.kill();scene.remove(ch.ring);
   scene.remove(ch.e.holder);{const i=ambLive.findIndex(a=>a.e===ch.e);if(i>=0)ambLive.splice(i,1);}
   const it=ch.item,col=RARITY[it.rar].cor,pos=ch.pos;
-  fxPlay('pickups','chest-32px_strip10.png',10,14,{x:pos.x,y:pos.y+0.78,z:pos.z},{w:1.6});
+  fxPlay('pickups','chest-32px_strip10.png',10,14,{x:pos.x,y:pos.y+0.58,z:pos.z},{w:1.1});
   pulse({x:pos.x,y:pos.y,z:pos.z},col,1.4,0.6,0.05);
   await wait(520);
   run.inventory.push(it);it.rar>=4?SFX.secret():SFX.loot();
@@ -7068,20 +7065,11 @@ function overviewCam(){
 function levelUpFx(u,lv){
   const P=u.grp.position;
   playSfx('levelup',{vol:0.95});
-  flash('#fff3b0',0.25);
-  fxPlay('magic','healing-aura-32px_strip8.png',8,12,P,{w:2.2});
-  pulse(P,'#ffd34a',2.2,0.8);gsap.delayedCall(0.18,()=>pulse(P,'#fff3b0',1.6,0.7));
-  for(let i=0;i<3;i++)gsap.delayedCall(i*0.16,()=>burst(P,{n:8,colors:['#ffd34a','#fff3b0','#ffffff'],spread:0.5,up:1.6,y:0.2,life:1.1,size:1.2}));
-  // seta grande e translúcida envolvendo o personagem, subindo
-  {const [fx,fy]=worldToScreen(new THREE.Vector3(P.x,P.y,P.z)),[,hy]=screenOf(u,0.1),h=Math.max(64,(fy-hy)*1.9),w=h*0.9;
-   for(let k=0;k<3;k++){const a=document.createElement('div');a.className='lvarrow';a.style.cssText=`left:${fx}px;top:${fy-(fy-hy)/2}px;width:${w}px;height:${h}px;`;
-     a.innerHTML='<svg viewBox="0 0 100 120" preserveAspectRatio="none"><defs><linearGradient id="lvg'+k+'" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffb62e" stop-opacity=".05"/><stop offset=".6" stop-color="#ffd34a" stop-opacity=".7"/><stop offset="1" stop-color="#fff6c0" stop-opacity=".95"/></linearGradient></defs><path d="M50 2 L98 56 H70 V118 H30 V56 H2 Z" fill="url(#lvg'+k+')" stroke="#fff3b0" stroke-opacity=".7" stroke-width="2.5" stroke-linejoin="round"/></svg>';
-     hud.appendChild(a);
-     gsap.timeline({delay:k*0.32,onComplete:()=>a.remove()}).fromTo(a,{opacity:0,y:h*0.45,scale:0.85},{opacity:1,y:0,scale:1,duration:0.45,ease:'power2.out'}).to(a,{y:-h*0.6,duration:0.9,ease:'power1.in'},0.45).to(a,{opacity:0,duration:0.5,ease:'power1.in'},0.8);}}
-  const [x,y]=screenOf(u,0.1),d=document.createElement('div');d.className='lvup';d.style.left=x+'px';d.style.top=(y-26)+'px';
-  d.innerHTML=`<b>NÍVEL ${lv}!</b><em>${u.first} subiu de nível</em>`;hud.appendChild(d);
-  gsap.timeline({onComplete:()=>d.remove()}).fromTo(d,{opacity:0,scale:0.3,y:10},{opacity:1,scale:1.15,y:-8,duration:0.28,ease:'back.out(3)'}).to(d,{scale:1,duration:0.15})
-    .to(d,{y:-34,duration:1.3,ease:'power1.out'},0.4).to(d,{opacity:0,duration:0.4},1.5);
+  fxPlay('magic','healing-aura-32px_strip8.png',8,12,P,{w:1.6});
+  pulse(P,'#ffd34a',1.6,0.7);gsap.delayedCall(0.18,()=>pulse(P,'#fff3b0',1.6,0.7));
+  for(let i=0;i<2;i++)gsap.delayedCall(i*0.16,()=>burst(P,{n:7,colors:['#ffd34a','#fff3b0','#ffffff'],spread:0.5,up:1.6,y:0.2,life:1.1,size:1.2}));
+  // aviso igual ao do XP, junto do personagem: "Nível N!" em dourado
+  floatText(u,`<span class="ft"><b class="sf">Nível ${lv}!<em class="xl">${u.first} subiu de nível</em></b></span>`,'xp lvl',true);
   addLog(`${u.first} subiu para o nível ${lv}!`,'gold');
 }
 const xp=(u,n,kill)=>{
