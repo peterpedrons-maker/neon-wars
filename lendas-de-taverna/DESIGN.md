@@ -493,3 +493,8 @@ da ideia original sem precisar do modo manual completo.
 - **Inimigo morrendo:** pisca, achata, vira fumaça com efeito de teletransporte e uma faísca de alma sobe; chefes ganham onda de choque.
 - **Armadilhas no chão:** Armadilha de Espinhos e Campo Minado (Ladino Armadilheiro) ficam armadas numa casa; só inimigos ativam. A IA escolhe casas no caminho dos inimigos. Inimigo com Tática ≥ 6 desvia, o burro pisa.
 - **Fuga por Tática:** quem tem Tática ≥ 5 (mago, arqueiro, clérigo, bardo…) e está com pouca vida sob ameaça recua para uma casa mais segura (e ainda atira se der). Inimigos espertos (Tática ≥ 6) fazem o mesmo. Guerreiro não foge.
+
+## Baús e prêmios (v1)
+- Inimigo derrotado pode deixar um **baú** no chão (16%, +Carisma, +10% com Faro de Tesouro; chefe sempre). O baú só abre quando um herói **pisa** nele; a IA vai buscar (sem inimigo ao alcance; Ladino com Faro de Tesouro e quem tem Tática ≥ 6 também no meio da luta, se for seguro). Baú que ficar no chão no fim da batalha **se perde**.
+- **Prêmio de fim de dungeon:** vitória dá 40% de chance de 1 item (25% de ser 2); chefe do ato/dungeon secreta: pelo menos 1 (40% de 2). A tela de resultado lista os itens e quantos baús ficaram para trás.
+- Passiva do Ladino **Faro de Tesouro** (nível 6): enxerga baús de longe, corre atrás deles, +10% de chance de baú e +25% de item extra no prêmio.

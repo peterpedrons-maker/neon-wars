@@ -1973,11 +1973,11 @@ function placeChest(r0,c0,item){
   for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const rr=r0+dr,cc=c0+dc;if(!inB(rr,cc)||!passable(rr,cc)||CHESTS.has(k(rr,cc)))continue;const d=Math.abs(dr)+Math.abs(dc);if(d<bd){bd=d;spot={r:rr,c:cc};}}
   if(!spot)return;
   const pos={x:wx(spot.c),y:topY(spot.r,spot.c),z:wz(spot.r)},col=RARITY[item.rar].cor;
-  const e=spBill('pickups','chest-32px_strip10.png',10,0.0001,{w:0.95});e.holder.position.set(pos.x,pos.y+0.5,pos.z);scene.add(e.holder);ambLive.push({e,st:e.state});
-  const ring=new THREE.Mesh(new THREE.RingGeometry(0.34,0.5,28),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.85,depthWrite:false,side:THREE.DoubleSide}));
+  const e=spBill('pickups','chest-32px_strip10.png',10,0.0001,{w:1.6});e.holder.position.set(pos.x,pos.y+0.78,pos.z);scene.add(e.holder);ambLive.push({e,st:e.state});
+  const ring=new THREE.Mesh(new THREE.RingGeometry(0.42,0.62,28),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.85,depthWrite:false,side:THREE.DoubleSide}));
   ring.rotation.x=-Math.PI/2;ring.position.set(pos.x,pos.y+0.05,pos.z);scene.add(ring);
   const tw=gsap.to(ring.scale,{x:1.35,y:1.35,duration:0.8,repeat:-1,yoyo:true,ease:'sine.inOut'});
-  const bob=gsap.to(e.holder.position,{y:pos.y+0.58,duration:0.9,repeat:-1,yoyo:true,ease:'sine.inOut'});
+  const bob=gsap.to(e.holder.position,{y:pos.y+0.88,duration:0.9,repeat:-1,yoyo:true,ease:'sine.inOut'});
   const ch={r:spot.r,c:spot.c,item,e,ring,tw,bob,pos};CHESTS.set(k(spot.r,spot.c),ch);
   burst({x:pos.x,y:pos.y,z:pos.z},{n:10,colors:[col,'#ffffff'],spread:0.5,up:1.2,y:0.2,life:0.6,fall:true});
   SFX.loot();addLog(`Um baú caiu em ${spot.r},${spot.c}: alguém precisa buscar`,'gold');
@@ -1990,7 +1990,7 @@ async function openChest(u,ch){
   CHESTS.delete(k(ch.r,ch.c));ch.tw.kill();ch.bob.kill();scene.remove(ch.ring);
   scene.remove(ch.e.holder);{const i=ambLive.findIndex(a=>a.e===ch.e);if(i>=0)ambLive.splice(i,1);}
   const it=ch.item,col=RARITY[it.rar].cor,pos=ch.pos;
-  fxPlay('pickups','chest-32px_strip10.png',10,14,{x:pos.x,y:pos.y+0.5,z:pos.z},{w:0.95});
+  fxPlay('pickups','chest-32px_strip10.png',10,14,{x:pos.x,y:pos.y+0.78,z:pos.z},{w:1.6});
   pulse({x:pos.x,y:pos.y,z:pos.z},col,1.4,0.6,0.05);
   await wait(520);
   run.inventory.push(it);it.rar>=4?SFX.secret():SFX.loot();
