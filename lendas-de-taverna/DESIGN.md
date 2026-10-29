@@ -498,3 +498,9 @@ da ideia original sem precisar do modo manual completo.
 - Inimigo derrotado pode deixar um **baú** no chão (16%, +Carisma, +10% com Faro de Tesouro; chefe sempre). O baú só abre quando um herói **pisa** nele; a IA vai buscar (sem inimigo ao alcance; Ladino com Faro de Tesouro e quem tem Tática ≥ 6 também no meio da luta, se for seguro). Baú que ficar no chão no fim da batalha **se perde**.
 - **Prêmio de fim de dungeon:** vitória dá 40% de chance de 1 item (25% de ser 2); chefe do ato/dungeon secreta: pelo menos 1 (40% de 2). A tela de resultado lista os itens e quantos baús ficaram para trás.
 - Passiva do Ladino **Faro de Tesouro** (nível 6): enxerga baús de longe, corre atrás deles, +10% de chance de baú e +25% de item extra no prêmio.
+
+## Gráficos v2 e clima
+- **Cenário em pixel art:** árvores (carvalho em 4 variações, pinho com neve), cactos, túmulos, colunas e estalagmites agora são sprites desenhados por código (`PAINT`, luz de cima-esquerda, contorno escuro) em billboards; 4 variações de cada. Árvores balançam com o vento.
+- **Peixes submersos:** silhueta azul-escura sobre a água, nadam só para o lado onde a casa vizinha também é água (nunca atravessam a margem) e deixam anéis na superfície.
+- **Clima (só visual e sonoro):** estados `sol`, `nublado`, `chuva`, `tempestade` (raios + trovão), `areia`, `neve`, `neblina` misturados suavemente; cada região tem a sua sequência (`WX_SEQ`: campina e floresta alternam sol/chuva/tempestade; deserto e ruínas têm tempestade de areia; gelo nevasca; cripta e caverna neblina). Sons: `wx_rain`, `wx_wind`, `wx_thunder`.
+- Pendente: efeitos do clima no combate (ideias: chuva apaga fogo, raio em quem está no morro).
