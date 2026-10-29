@@ -1,4 +1,4 @@
-const CACHE = 'hearthblade-v4';
+const CACHE = 'hearthblade-v5';
 const CORE = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
