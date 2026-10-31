@@ -17,9 +17,19 @@ Acesso: `https://peterpedrons-maker.github.io/neon-wars/lendas-de-taverna/mmo/`
 - Modo **AUTO / MANUAL** (manual: toque no mapa para andar) e velocidade x1/x2.
 - Sons de todas as ações (reaproveitando `../assets/audio`) e música.
 
+## Etapa 2
+- **Itens**: 5 espaços (arma, elmo, armadura, botas, amuleto), 5 raridades (Comum a Lendário) com
+  bônus extras por raridade, ícones por classe, nível do item. Monstros dropam no chão (o herói
+  vai buscar); o chefe sempre dropa (mínimo Raro).
+- **Mochila** (24 vagas): comparar com o equipado, equipar, vender, equipar melhores, vender comuns,
+  **auto-equipar**, comprar **poções** (usadas sozinhas abaixo de 35% de vida).
+- **Habilidades**: as 3 de cada classe agora têm efeito (golpe, área, meteoros, escudo, reforço, veneno/queimadura),
+  disparam sozinhas; 1 ponto por nível para subir habilidades (até 5) e 4 passivas; reset por ouro.
+- Arqueiro e Mago recuam entre disparos (kiting). Chefe exige nível mínimo (zona + 4).
+- Balanceamento: zona 1 leva ~3 a 5 min no x1.
+
 ## Próximas etapas
-2. Itens/equipamentos, drops, árvore de habilidades (reaproveitando `ITENS.md`/`HABILIDADES.md`).
-3. Mais zonas e biomas, chefes finais, balanceamento, sincronização/nuvem.
+3. Mais zonas e biomas, chefes finais, itens únicos/lendários, subclasses, nuvem.
 
 ## Arquitetura
 - `index.html`: tudo em um arquivo (canvas 2D + HUD em DOM). Escala inteira de pixels (`G.K`).
