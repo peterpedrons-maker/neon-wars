@@ -178,6 +178,9 @@ button:active:not(:disabled){transform:scale(.97);filter:brightness(1.15)}
 .slot{width:50px}.slot img,.cell img{position:absolute;inset:0;margin:auto;width:76%;height:76%;image-rendering:pixelated;display:block}
 .slot .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:#5a5468;text-align:center;text-transform:uppercase;letter-spacing:.04em}
 .cell.e{cursor:default;opacity:.55}
+/* contorno de raridade estilo ARPG (PoE): moldura de 2px na cor da raridade sobre fundo escuro com leve tom da cor */
+[style*="--rc"].cell,[style*="--rc"].slot,[style*="--rc"].fs,[style*="--rc"].ic2,[style*="--rc"].ti{border-width:2px;border-style:solid;background:linear-gradient(155deg,color-mix(in srgb,var(--rc) 26%,#0d0b11),#0d0b11 78%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.9),inset 0 0 10px color-mix(in srgb,var(--rc) 38%,transparent)}
+.cell.sel[style*="--rc"],.slot.sel[style*="--rc"]{box-shadow:inset 0 0 0 1px #000,0 0 0 2px var(--ouroC),inset 0 0 10px color-mix(in srgb,var(--rc) 38%,transparent)}
 .slot.sel,.cell.sel{box-shadow:0 0 0 2px var(--ouroC)}
 .il{position:absolute;right:2px;bottom:0;font:700 10px var(--f);color:#fff;text-shadow:0 1px 0 #000,0 0 3px #000}
 .bag{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
@@ -402,16 +405,16 @@ const SAVE_KEY='hb_mmo_save_v1';
 /* ------------------------------ dados ----------------------------------- */
 const CLASSES={
   guerreiro:{nome:'Guerreiro',papel:'Tanque',desc:'Segura a linha de frente e aguenta pancada.',
-    hp:120,atk:14,def:8,rng:30,aspd:0.85,crit:.10,speed:70,bars:[1.0,.6,.95,.15],atk_:'slash',
+    hp:135,atk:14,def:8,rng:30,aspd:0.85,crit:.10,speed:70,bars:[1.0,.6,.95,.15],atk_:'slash',
     skills:[['golpe_poderoso','Golpe Poderoso',5,2.4,{t:'single',d:'Golpe forte em um alvo.'}],['grito_guerra','Grito de Guerra',12,0,{t:'buff',atk:.3,dur:8,d:'+30% de ataque por 8s.'}],['escudo_aliado','Escudo',14,0,{t:'shield',pct:.3,dur:8,d:'Escudo de 30% da vida por 8s.'}]]},
   ladino:{nome:'Ladino',papel:'Ágil',desc:'Rápido e letal. Muito crítico.',
-    hp:74,atk:13,def:4,rng:28,aspd:0.6,crit:.22,speed:84,bars:[.6,.8,.5,.15],atk_:'slash',
+    hp:68,atk:12,def:4,rng:28,aspd:0.68,crit:.22,speed:84,bars:[.6,.8,.5,.15],atk_:'slash',
     skills:[['golpe_costas','Golpe pelas Costas',4,2.6,{t:'single',crit:true,d:'Golpe crítico garantido.'}],['lamina_envenenada','Lâmina Envenenada',9,1.0,{t:'dot',dps:.4,dur:6,col:'#8ae04a',d:'Golpe + veneno por 6s.'}],['corte_profundo','Corte Profundo',12,1.6,{t:'aoe',r:62,d:'Corte em área ao redor.'}]]},
   mago:{nome:'Mago',papel:'Dano à distância',desc:'Raios arcanos de longe. Frágil.',
-    hp:70,atk:17,def:3,rng:150,aspd:1.1,crit:.12,speed:68,bars:[.45,1.0,.3,.8],atk_:'cast',
+    hp:70,atk:14,def:3,rng:150,aspd:1.1,crit:.12,speed:68,bars:[.45,1.0,.3,.8],atk_:'cast',
     skills:[['meteoros','Meteoros',7,2.0,{t:'meteor',d:'Chuva de meteoros na área do alvo.'}],['tremor','Tremor',10,1.2,{t:'aoe',r:84,stun:1,d:'Abala e atordoa quem está perto.'}],['m_pulso','Pulso Arcano',12,1.4,{t:'aoe',r:96,knock:2,d:'Onda arcana que empurra os inimigos.'}]]},
   clerigo:{nome:'Clérigo',papel:'Suporte',desc:'Cura a si mesmo e castiga o mal.',
-    hp:100,atk:12.5,def:7,rng:30,aspd:0.9,crit:.08,speed:68,bars:[.75,.45,.8,.15],atk_:'slash',
+    hp:108,atk:14,def:7,rng:30,aspd:0.9,crit:.08,speed:68,bars:[.75,.45,.8,.15],atk_:'slash',
     skills:[['golpe_sagrado','Golpe Sagrado',6,1.8,{t:'single',heal:.1,d:'Golpe que cura 10% da vida.'}],['julgamento','Julgamento',10,1.7,{t:'aoe',r:72,d:'Luz sagrada em área.'}],['c_escudo','Escudo Sagrado',12,0,{t:'shield',pct:.35,dur:8,d:'Escudo de 35% da vida por 8s.'}]]},
   arqueiro:{nome:'Arqueiro',papel:'Atirador',desc:'Flechas certeiras a grande distância.',
     hp:100,atk:15,def:5,rng:170,aspd:0.9,crit:.2,speed:76,bars:[.55,.7,.4,1.0],atk_:'shoot',
@@ -472,7 +475,7 @@ const MOBS={
   javali:{nome:'Javali',sheet:'javali',hp:125,atk:10,xp:33,gold:[5,11],speed:60,aggro:140,rng:26,aspd:1.5,sw:22},
   rato:{nome:'Rato Gigante',sheet:'rato',hp:42,atk:4,xp:11,gold:[1,4],speed:58,aggro:110,rng:20,aspd:1.0,sw:14}
 };
-const BOSS={nome:'Ogro de Brumavale',sheet:'ogro',hp:1500,atk:16,xp:260,gold:[80,140],speed:36,aggro:260,rng:44,aspd:1.7,scale:1.5};
+const BOSS={nome:'Ogro de Brumavale',sheet:'ogro',hp:700,atk:14,xp:260,gold:[80,140],speed:36,aggro:260,rng:44,aspd:1.7,scale:1.5};
 const BOSS_T0=480,BOSS_KILLS=60,BOSS_P=.008;   // o chefe só pode surgir depois de BOSS_T0 s e BOSS_KILLS abates; a cada segundo há BOSS_P de chance
 const bossLv=()=>6+(G.zoneLv-1)*BAL.zoneLv;
 const SLOTS=['arma','elmo','armadura','botas','amuleto'],SLOT_NAME={arma:'Arma',elmo:'Elmo',armadura:'Armadura',botas:'Botas',amuleto:'Amuleto'};
@@ -836,15 +839,17 @@ function heroStatsInto(h){
   h.speed=C.speed*(1+g.spd/100)*(1+.005*A.agi);h.rng=C.rng;h.aspd=C.aspd*Math.max(.55,1-.007*A.agi);h.crit=C.crit+g.crit/100+.01*A.sor;subApply(h);
 }
 /* dificuldade: o nível do monstro sobe com a profundidade na floresta (0 na entrada → 1 no fim da estrada) e +5 por zona */
-const BAL={mobHp:1.3,mobAtk:1.2,hpLv:.3,atkLv:.24,zoneLv:5};
+/* curvas ajustadas por modelo (tools/balance_fit.py): tempo para matar ≈ 8 s e vida perdida por abate ≈ 12–22 % em QUALQUER nível, com a mitigação por defesa estilo PoE (def/(def+5·dano), teto 85 %) */
+const BAL={hpC:1.58,hpA:.13,hpP:1.8,atkC:.77,atkA:.11,atkP:1.8,zoneLv:5};
+const mobHpMul=lv=>BAL.hpC*Math.pow(1+BAL.hpA*(lv-1),BAL.hpP),mobAtkMul=lv=>BAL.atkC*Math.pow(1+BAL.atkA*(lv-1),BAL.atkP);
 function mobLevel(y){const d=ZONE&&ZONE.h?Math.max(0,Math.min(1,1-(y||0)/ZONE.h)):0;return 1+Math.round(d*5)+rint(0,2)+(G.zoneLv-1)*BAL.zoneLv;}
 function mkMob(kind,x,y,sp){
   const T=MOBS[kind],lv=mobLevel(y),m={kind:'mob',type:kind,T,x,y,sx:x,sy:y,lv,row:1,state:'idle',animT:rnd(0,5),act:null,cd:rnd(.5,1.2),kvx:0,kvy:0,stun:0,flash:0,dead:false,deadT:0,respawn:0,sp,wx:x,wy:y,wt:rnd(0,3)};
-  m.maxhp=Math.round(T.hp*BAL.mobHp*(1+BAL.hpLv*(lv-1)));m.hp=m.maxhp;m.pow=T.atk*BAL.mobAtk*(1+BAL.atkLv*(lv-1));m.def=lv*1.3;m.name=T.nome;return m;
+  m.maxhp=Math.round(T.hp*mobHpMul(lv));m.hp=m.maxhp;m.pow=T.atk*mobAtkMul(lv);m.def=lv*1.3;m.name=T.nome;return m;
 }
 function mkBoss(bx,by){
   bx=bx===undefined?ZONE.boss[0]:bx;by=by===undefined?ZONE.boss[1]:by;const lv=8+(G.zoneLv-1)*BAL.zoneLv,m={kind:'boss',type:'boss',T:BOSS,x:bx,y:by,lv,row:2,state:'idle',animT:0,act:null,cd:1,kvx:0,kvy:0,stun:0,flash:0,dead:false,deadT:0,hp:0,sx:bx,sy:by};
-  m.maxhp=Math.round(BOSS.hp*1.8*(1+.5*(G.zoneLv-1)));m.hp=m.maxhp;m.pow=BOSS.atk*1.5*(1+.45*(G.zoneLv-1));m.def=lv*1.3;m.name=BOSS.nome;return m;
+  m.maxhp=Math.round(BOSS.hp*mobHpMul(lv));m.hp=m.maxhp;m.pow=BOSS.atk*mobAtkMul(lv);m.def=lv*1.3;m.name=BOSS.nome;return m;
 }
 function resetZone(){
   G.mobs=[];ZONE.spawns.forEach((s,i)=>{const kinds=['goblin','goblin','esq','javali','rato','esq'];G.mobs.push(mkMob(kinds[i%kinds.length],s[0],s[1],i));});
@@ -971,7 +976,7 @@ function sellItem(it,silent){SAVE.gold+=itemVal(it);if(!silent)sfx('coin',.6);}
 function recalcHero(keepRatio){const h=G.hero;const r=h.hp/h.maxhp;heroStatsInto(h);h.hp=keepRatio?Math.min(h.maxhp,Math.max(1,h.maxhp*r)):h.maxhp;}
 function dropLoot(m){
   const boss=m.kind==='boss',luck=(SAVE.elix&&SAVE.elix.sorte>0)?1:0;let n=boss?2:(Math.random()<(.2+.12*luck)?1:0);
-  for(let i=0;i<n;i++){const it=genItem(Math.max(1,Math.round(SAVE.lv*.8+m.lv*.4+(boss?3:0))),boss?(i===0?(Math.random()<.18?4:2):1):0,(boss?12:G.zoneLv*2)+luck*10);
+  for(let i=0;i<n;i++){const it=genItem(Math.max(1,Math.round(SAVE.lv*.5+m.lv*.5+(boss?2:0))),boss?(i===0?(Math.random()<.18?4:2):1):0,(boss?12:G.zoneLv*2)+luck*10);
     G.loot.push({x:m.x+rnd(-14,14)+i*10,y:m.y+rnd(-6,6),it,t:0});}
 }
 function badge(){const b=$('bdHero');if(!b)return;const pts=skPoints()+atPoints();b.style.display=pts>0?'block':'none';b.textContent=pts;}
@@ -981,7 +986,7 @@ function skCd(i){return CLASSES[SAVE.cls].skills[i][2]*(1-.06*(Math.max(1,SAVE.s
 function skSc(i){return 1+.2*(Math.max(1,SAVE.sk[i])-1);}
 function floatText(x,y,t,col,size=9,life=.9){G.floats.push({x,y,t,col,size,life,max:life});}
 function spark(x,y,n=6){for(let i=0;i<n;i++){const a=Math.random()*6.28,s=rnd(40,90);G.fx.push({k:'sp',x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.22,max:.22});}}
-function dmgCalc(att,def,mult=1,critCh=.1){let d=att*rnd(.85,1.15)*mult*(100/(100+def*4));let crit=Math.random()<critCh;if(crit)d*=1.8;return {d:Math.max(1,Math.round(d)),crit};}
+function dmgCalc(att,def,mult=1,critCh=.1){let d=att*rnd(.85,1.15)*mult*(1-Math.min(.85,def/(def+5*att)));let crit=Math.random()<critCh;if(crit)d*=1.8;return {d:Math.max(1,Math.round(d)),crit};}
 function knock(e,fx,fy,force){const d=Math.hypot(fx,fy)||1;e.kvx+=fx/d*force;e.kvy+=fy/d*force;}
 function hitMob(m,dmg,crit,fromX,fromY,kf=1){
   if(m.dead)return;if(m.vuln>0)dmg=Math.round(dmg*1.15);m.hp-=dmg;m.flash=.14;m.stun=crit?.45:.3;m.act=null;
@@ -1480,8 +1485,8 @@ function render(){
   for(const L of G.loot){const x=L.x-cx,y=L.y-cy,R=RAR[L.it.rar],b=Math.abs(Math.sin(G.t*4+L.x))*3;
     ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(x,y,6,2.4,0,0,7);ctx.fill();
     if(L.it.rar>=2){const g=ctx.createRadialGradient(x,y-8,1,x,y-8,18);g.addColorStop(0,R.c+'aa');g.addColorStop(1,R.c+'00');ctx.fillStyle=g;ctx.fillRect(x-18,y-26,36,36);}
-    const im=IMG_ICO[L.it.icon];if(im)ctx.drawImage(im,x-7,y-16-b,14,14);else{ctx.fillStyle=R.c;ctx.fillRect(x-3,y-10-b,6,6);}
-    ctx.strokeStyle=R.c;ctx.lineWidth=1;ctx.strokeRect(x-7.5,y-16.5-b,15,15);}
+    ctx.fillStyle='rgba(8,6,12,.88)';ctx.fillRect(x-8,y-17-b,16,16);ctx.fillStyle=R.c+'33';ctx.fillRect(x-8,y-17-b,16,16);const im=IMG_ICO[L.it.icon];if(im)ctx.drawImage(im,x-7,y-16-b,14,14);else{ctx.fillStyle=R.c;ctx.fillRect(x-3,y-10-b,6,6);}
+    ctx.strokeStyle='#000';ctx.lineWidth=2.6;ctx.strokeRect(x-8,y-17-b,16,16);ctx.strokeStyle=R.c;ctx.lineWidth=1.5;ctx.strokeRect(x-8,y-17-b,16,16);}
   if(h.shield>0){ctx.strokeStyle='rgba(140,200,255,'+(.5+.2*Math.sin(G.t*8))+')';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(h.x-cx,h.y-cy-18,16,24,0,0,7);ctx.stroke();}
   if(h.buff&&h.buff.t>0){ctx.strokeStyle='rgba(255,170,60,'+(.4+.3*Math.sin(G.t*9))+')';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(h.x-cx,h.y-cy,14,6,0,0,7);ctx.stroke();}
   // projéteis e efeitos
@@ -1515,7 +1520,7 @@ function cmpHTML(it,cur,plain){
   return ver+head+rows+eqc;
 }
 function tierLine(it){const R=RAR[it.rar],t=it.tier||tierOf(it.ilvl);return `<span class="st">${starsT(it)} <b style="color:${R.c}">${R.n}</b></span><span>Tier ${t} · ${TIER_ZONE[t-1]} · ${SLOT_NAME[it.slot]} · Nv ${it.ilvl}</span>`;}
-function itemCell(it,sel,onclk,cls){const R=RAR[it.rar];return `<div class="${cls} ${sel?'sel':''} ${(it.tier||1)>=12?'tc12':(it.tier||1)>=10?'tc10':''}" style="border-color:${R.c}" data-c="${onclk}"><img src="../assets/ico/${it.icon}.png"><span class="il">${it.up?'+'+it.up:it.ilvl}</span><i class="ts">${starsT(it)}</i>${SAVE.eq[it.slot]!==it&&itemScore(it)>itemScore(SAVE.eq[it.slot])+.01?'<i class="upg">▲</i>':''}</div>`;}
+function itemCell(it,sel,onclk,cls){const R=RAR[it.rar];return `<div class="${cls} ${sel?'sel':''} ${(it.tier||1)>=12?'tc12':(it.tier||1)>=10?'tc10':''}" style="--rc:${R.c};border-color:${R.c}" data-c="${onclk}"><img src="../assets/ico/${it.icon}.png"><span class="il">${it.up?'+'+it.up:it.ilvl}</span><i class="ts">${starsT(it)}</i>${SAVE.eq[it.slot]!==it&&itemScore(it)>itemScore(SAVE.eq[it.slot])+.01?'<i class="upg">▲</i>':''}</div>`;}
 function drawDoll(){
   const cv=$('pdoll'),sh=SHEETS.hero;if(!cv||!sh)return;
   const dpr=Math.min(devicePixelRatio||1,3),W=128,H=160;cv.width=W*dpr;cv.height=H*dpr;
@@ -1530,7 +1535,7 @@ function showTip(){
   const it=panSel.src==='bag'?SAVE.inv[panSel.k]:SAVE.eq[panSel.k];if(!it){hideTip();return;}
   const R=RAR[it.rar],cur=panSel.src==='bag'?SAVE.eq[it.slot]:null,el=$('pBody').querySelector('.sel');if(!el){hideTip();return;}
   t.style.borderColor=R.c;
-  t.innerHTML=`<div class="th"><div class="ti" style="border-color:${R.c}"><img src="../assets/ico/${it.icon}.png"></div><div><b style="color:${R.c}">${itemName(it)}</b>${tierLine(it)}</div></div>${cmpHTML(it,cur,panSel.src!=='bag')}${panSel.src==='bag'?`<div class="vl">Valor: ${itemVal(it)} ouro</div>`:''}<div class="ta">${panSel.src==='bag'?'<button class="g" data-a="equip">Equipar</button>':'<button data-a="unequip">Desequipar</button>'}</div>`;
+  t.innerHTML=`<div class="th"><div class="ti" style="--rc:${R.c};border-color:${R.c}"><img src="../assets/ico/${it.icon}.png"></div><div><b style="color:${R.c}">${itemName(it)}</b>${tierLine(it)}</div></div>${cmpHTML(it,cur,panSel.src!=='bag')}${panSel.src==='bag'?`<div class="vl">Valor: ${itemVal(it)} ouro</div>`:''}<div class="ta">${panSel.src==='bag'?'<button class="g" data-a="equip">Equipar</button>':'<button data-a="unequip">Desequipar</button>'}</div>`;
   t.querySelectorAll('[data-a]').forEach(e=>e.onclick=ev=>{ev.stopPropagation();panAct(e.dataset.a);});
   t.classList.add('on');
   const pr=$('pan').getBoundingClientRect(),r=el.getBoundingClientRect(),w=t.offsetWidth,hh=t.offsetHeight;
@@ -1620,7 +1625,7 @@ $('wbody').addEventListener('click',ev=>{const w=ev.target.closest('[data-w]');i
   const e=ev.target.closest('[data-a]');if(!e||e.disabled){if(G.wsel){G.wsel=null;renderWin();}return;}winAct(e.dataset.a);});
 function coin(n){return `<span class="pr"><img src="${UI}coins.png">${n}</span>`;}
 function itemTipHTML(it,cmp,extra,btns){const R=RAR[it.rar];
-  return `<div class="th"><div class="ti" style="border-color:${R.c}"><img src="../assets/ico/${it.icon}.png"></div><div><b style="color:${R.c}">${itemName(it)}</b>${tierLine(it)}</div></div>${cmpHTML(it,cmp)}${extra||''}<div class="ta">${btns||''}</div>`;}
+  return `<div class="th"><div class="ti" style="--rc:${R.c};border-color:${R.c}"><img src="../assets/ico/${it.icon}.png"></div><div><b style="color:${R.c}">${itemName(it)}</b>${tierLine(it)}</div></div>${cmpHTML(it,cmp)}${extra||''}<div class="ta">${btns||''}</div>`;}
 function anchorTip(t,anchor,root,bodyEl,color,html,onAct){
   t.style.borderColor=color;t.innerHTML=html;t.querySelectorAll('[data-a]').forEach(e=>e.onclick=ev=>{ev.stopPropagation();onAct(e.dataset.a);});
   t.classList.add('on');const pr=root.getBoundingClientRect(),r=anchor.getBoundingClientRect(),w=t.offsetWidth,hh=t.offsetHeight;
@@ -1631,7 +1636,7 @@ function anchorTip(t,anchor,root,bodyEl,color,html,onAct){
 function npcHead(ic,nm,line,gold){return `<div class="nh"><div class="np"><img src="${UI}${ic}.png"></div><div><b>${nm}</b><span>${line}</span></div>${gold===false?'':`<div class="gd"><img src="${UI}coins.png">${SAVE.gold}</div>`}</div>`;}
 function goldBar(){return `<div class="wgold"><img src="${UI}coins.png">${SAVE.gold} ouro</div>`;}
 function vItem(it,price,key,sel,afford){const R=RAR[it.rar];
-  return `<div class="vi ${sel?'sel':''} ${afford===false?'no':''}" data-w="${key}"><div class="ic2" style="border-color:${R.c}"><img src="../assets/ico/${it.icon}.png"></div><div class="tx2"><b style="color:${R.c}">${itemName(it)}</b><small class="st2">${starsT(it)} · Tier ${it.tier||1}</small><div class="pr2 ${afford===false?'bad':''}"><img src="${UI}coins.png">${price}</div></div></div>`;}
+  return `<div class="vi ${sel?'sel':''} ${afford===false?'no':''}" data-w="${key}"><div class="ic2" style="--rc:${R.c};border-color:${R.c}"><img src="../assets/ico/${it.icon}.png"></div><div class="tx2"><b style="color:${R.c}">${itemName(it)}</b><small class="st2">${starsT(it)} · Tier ${it.tier||1}</small><div class="pr2 ${afford===false?'bad':''}"><img src="${UI}coins.png">${price}</div></div></div>`;}
 function winTip(){
   const t=$('wtip');t.classList.remove('on');const w=G.wsel;if(!w||!G.winOpen)return;
   const el=$('wbody').querySelector('[data-w].sel');if(!el)return;
@@ -1672,7 +1677,7 @@ function winMercador(){
     h+='<div class="vg">'+G.shop.map((it,i)=>{if(!it)return '<div class="vi no" style="opacity:.25"><div class="tx2"><b style="color:#6c6678">Vendido</b></div></div>';const p=itemVal(it)*4;return vItem(it,p,'buy:'+i,G.wsel&&G.wsel.t==='buy'&&G.wsel.k===i,SAVE.gold>=p);}).join('')+'</div>';
     const rc=40+SAVE.lv*6;h+=`<div class="vfoot"><button class="db" data-a="restock" ${SAVE.gold<rc?'disabled':''}>Renovar estoque · ${rc}</button></div>`;
   }else if(tab==='sell'){
-    h+=`<div class="sec-h"><span>Mochila · toque para vender</span><span>${SAVE.inv.length} / 24</span></div><div class="bag">`+Array.from({length:24},(_,i)=>{const it=SAVE.inv[i];if(!it)return '<div class="cell e"></div>';const R=RAR[it.rar],sel=G.wsel&&G.wsel.t==='sell'&&G.wsel.k===i;return `<div class="cell vw ${sel?'sel':''}" style="border-color:${R.c}" data-w="sell:${i}"><img src="../assets/ico/${it.icon}.png"><span class="il">${it.up?'+'+it.up:it.ilvl}</span></div>`;}).join('')+'</div>';
+    h+=`<div class="sec-h"><span>Mochila · toque para vender</span><span>${SAVE.inv.length} / 24</span></div><div class="bag">`+Array.from({length:24},(_,i)=>{const it=SAVE.inv[i];if(!it)return '<div class="cell e"></div>';const R=RAR[it.rar],sel=G.wsel&&G.wsel.t==='sell'&&G.wsel.k===i;return `<div class="cell vw ${sel?'sel':''}" style="--rc:${R.c};border-color:${R.c}" data-w="sell:${i}"><img src="../assets/ico/${it.icon}.png"><span class="il">${it.up?'+'+it.up:it.ilvl}</span></div>`;}).join('')+'</div>';
     const c0=SAVE.inv.filter(x=>x.rar===0),c1=SAVE.inv.filter(x=>x.rar===1),g=a=>a.reduce((t,x)=>t+itemVal(x),0);
     h+=`<div class="vfoot"><button class="db" data-a="sellr:0" ${c0.length?'':'disabled'}>Comuns (${c0.length}) +${g(c0)}</button><button class="db" data-a="sellr:1" ${c1.length?'':'disabled'}>Incomuns (${c1.length}) +${g(c1)}</button></div><div class="sub">Itens equipados não são vendidos.</div>`;
   }else{
@@ -1687,10 +1692,10 @@ function upChance(it){const n=(it.up||0)+1;return n<=2?1:n===3?.9:n===4?.8:n===5
 function winForja(){
   $('wtt').textContent='Ferreiro';const it=SAVE.eq[G.fslot];
   let h=npcHead('anvil','Brasa, o Ferreiro','“Traga o aço, eu trago a glória.”')+'<div class="sec-h"><span>Equipamento equipado</span></div><div class="fslots">'+
-    SLOTS.map(k=>{const x=SAVE.eq[k];return x?`<div class="fs ${k===G.fslot?'sel':''}" style="border-color:${RAR[x.rar].c}" data-a="fs:${k}"><img src="../assets/ico/${x.icon}.png">${x.up?`<i>+${x.up}</i>`:''}</div>`:`<div class="fs" style="opacity:.35;display:flex;align-items:center;justify-content:center;font-size:9px;color:#8a7a5a;text-align:center" data-a="fs:${k}">${SLOT_NAME[k]}</div>`;}).join('')+'</div>';
+    SLOTS.map(k=>{const x=SAVE.eq[k];return x?`<div class="fs ${k===G.fslot?'sel':''}" style="--rc:${RAR[x.rar].c};border-color:${RAR[x.rar].c}" data-a="fs:${k}"><img src="../assets/ico/${x.icon}.png">${x.up?`<i>+${x.up}</i>`:''}</div>`:`<div class="fs" style="opacity:.35;display:flex;align-items:center;justify-content:center;font-size:9px;color:#8a7a5a;text-align:center" data-a="fs:${k}">${SLOT_NAME[k]}</div>`;}).join('')+'</div>';
   if(!it)h+='<div class="sub" style="padding:18px 0">Nenhum item equipado neste espaço.<br>Equipe um item na mochila.</div>';
   else{const R=RAR[it.rar],up=it.up||0,nx={...it,up:up+1},max=up>=10,ch=upChance(it),cost=upCost(it);
-    h+=`<div class="fcard"><div class="fi" id="fitem" style="border-color:${R.c}"><img src="../assets/ico/${it.icon}.png"></div><b style="color:${R.c}">${itemName(it)}</b><span>${R.n} · ${SLOT_NAME[it.slot]} · Nv ${it.ilvl}</span></div>`;
+    h+=`<div class="fcard"><div class="fi" id="fitem" style="--rc:${R.c};border-color:${R.c}"><img src="../assets/ico/${it.icon}.png"></div><b style="color:${R.c}">${itemName(it)}</b><span>${R.n} · ${SLOT_NAME[it.slot]} · Nv ${it.ilvl}</span></div>`;
     ['atk','def','hp','crit','spd'].filter(k=>it.s[k]).forEach(k=>{h+=`<div class="stline"><span>${STAT_LBL[k]}</span><span>${effS(it,k)} ${max?'':`<span class="up">▶ ${effS(nx,k)}</span>`}</span></div>`;});
     if(max)h+='<div class="sub" style="padding:8px 0;color:#ffd65a">Nível máximo (+10)</div>';
     else{const n=10;h+=`<div class="stline" style="border:0"><span>Chance de sucesso</span><span style="color:${ch<1?'#ffd678':'#96e08a'}">${Math.round(ch*100)}%</span></div><div class="seg">${Array.from({length:n},(_,i)=>`<i class="${i<Math.round(ch*n)?(ch<1?'mid':'on'):''}"></i>`).join('')}</div><div class="stline"><span>Custo</span>${coin(cost)}</div>`;}
@@ -1745,7 +1750,7 @@ const VAULT_MAX=40;
 function winCofre(){
   $('wtt').textContent='Cofre';SAVE.vault=SAVE.vault||[];const tab=G.ctab||'v';
   let h=npcHead('locked-chest','Gregor, o Banqueiro','“Seus bens, bem guardados.”');
-  const grid=(arr,pre,max)=>'<div class="bag">'+Array.from({length:max},(_,i)=>{const it=arr[i];if(!it)return '<div class="cell e"></div>';const R=RAR[it.rar],sel=G.wsel&&G.wsel.t===pre&&G.wsel.k===i;return `<div class="cell vw ${sel?'sel':''}" style="border-color:${R.c}" data-w="${pre}:${i}"><img src="../assets/ico/${it.icon}.png"><span class="il">${it.up?'+'+it.up:it.ilvl}</span></div>`;}).join('')+'</div>';
+  const grid=(arr,pre,max)=>'<div class="bag">'+Array.from({length:max},(_,i)=>{const it=arr[i];if(!it)return '<div class="cell e"></div>';const R=RAR[it.rar],sel=G.wsel&&G.wsel.t===pre&&G.wsel.k===i;return `<div class="cell vw ${sel?'sel':''}" style="--rc:${R.c};border-color:${R.c}" data-w="${pre}:${i}"><img src="../assets/ico/${it.icon}.png"><span class="il">${it.up?'+'+it.up:it.ilvl}</span></div>`;}).join('')+'</div>';
   h+=`<div class="sec-h"><span>Cofre · toque para retirar</span><span>${SAVE.vault.length} / ${VAULT_MAX}</span></div>`+grid(SAVE.vault,'vt',VAULT_MAX);
   h+=`<div class="sec-h"><span>Mochila · toque para guardar</span><span>${SAVE.inv.length} / 24</span></div>`+grid(SAVE.inv,'vb',24);
   $('wbody').innerHTML=h;
