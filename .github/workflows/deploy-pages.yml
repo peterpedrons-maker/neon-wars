@@ -31,7 +31,6 @@ jobs:
         run: |
           cp -r lendas-de-taverna dist/lendas-de-taverna
           cp -r hearthblade dist/hearthblade
-          rm -rf dist/hearthblade/tools
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
