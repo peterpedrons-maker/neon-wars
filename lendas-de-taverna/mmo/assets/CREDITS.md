@@ -28,3 +28,6 @@ Glifos de game-icons.net (CC BY 3.0; autores em `lendas-de-taverna/assets/ui-ico
 Ícones das subclasses: mesmo método (glifos do game-icons.net sobre ladrilhos coloridos, em `assets/skills/`).
 
 Ícones das habilidades (`assets/skills/`): silhuetas do **game-icons.net** (Lorc, Delapouite e colaboradores, CC BY 3.0 — https://game-icons.net), pintadas em estilo pixel por `tools/mmo/icons3/`.
+
+## Cidade
+A arte da cidade (`assets/town_ground.png`) foi gerada por IA a partir de um prompt do projeto (`tools/mmo/town_ai.jpg`), com camadas, colisões e portas feitas à mão (`tools/mmo/build_town3.py`).
