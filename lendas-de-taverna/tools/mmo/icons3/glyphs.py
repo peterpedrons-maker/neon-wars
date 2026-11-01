@@ -18,6 +18,7 @@ G={ # id: (glifo, cor)
 's_pat1':('eagle-head','#ffb050'),'s_pat2':('eye-target','#ff7a3a'),'s_pat3':('archer','#6ad090'),
 's_sar1':('arrow-flights','#e8d8a8'),'s_sar2':('cluster-bomb','#ff7a2a'),'s_sar3':('multiple-targets','#6aa0ff'),
 's_con1':('lyre','#5ee07a'),'s_con2':('pan-flute','#ffc060'),'s_con3':('bell-shield','#8ac8ff'),
+'m_pulso':('psychic-waves','#b080ff'),'b_hino':('trumpet','#ffc060'),'b_escudo':('ringing-bell','#8ac8ff'),'c_escudo':('cross-shield','#ffe27a'),'a_tiro':('archery-target','#ff8a50'),
 's_dis1':('harp','#e070c0'),'s_dis2':('death-skull','#a050d0'),'s_dis3':('drama-masks','#ff70a0')}
 d=json.load(open('/tmp/gi/node_modules/@iconify-json/game-icons/icons.json'))['icons']
 miss=[(k,v[0]) for k,v in G.items() if v[0] not in d]

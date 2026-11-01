@@ -107,22 +107,8 @@ button:active:not(:disabled){transform:scale(.97);filter:brightness(1.15)}
 #buffs{position:absolute;left:6px;top:calc(98px + env(safe-area-inset-top));display:flex;gap:3px}
 #buffs div{display:flex;align-items:center;gap:2px;background:var(--gl);border:1px solid var(--lin);padding:1px 4px 1px 2px;font-size:9px}
 #buffs img{width:14px;height:14px;image-rendering:pixelated}
-#chat{position:absolute;left:6px;bottom:calc(76px + env(safe-area-inset-bottom));width:66%;font-size:10.5px;line-height:1.35;background:linear-gradient(90deg,rgba(8,8,12,.55),rgba(8,8,12,0));padding:2px 6px;display:none}
+#chat{position:absolute;left:6px;bottom:calc(88px + env(safe-area-inset-bottom));width:60%;font-size:10.5px;line-height:1.35;background:linear-gradient(90deg,rgba(8,8,12,.55),rgba(8,8,12,0));padding:2px 6px;display:none}
 #chat div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#bar{position:absolute;left:6px;right:6px;bottom:calc(6px + env(safe-area-inset-bottom));height:62px;display:flex;align-items:center;gap:5px;padding:0 6px}
-#bar .sk{position:relative;width:42px;height:42px;background:#0d0b11;border:1px solid var(--lin);padding:2px;flex:none}
-#bar .sk img{width:100%;height:100%;image-rendering:pixelated;display:block}
-#bar .sk .cd{position:absolute;left:0;right:0;top:0;background:rgba(0,0,0,.62)}
-#bar .sk.lock img{filter:grayscale(1) brightness(.45)}
-#bar .sk .lv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#d8c8a0;text-shadow:0 1px 0 #000}
-#bar .sk.ready{border-color:var(--ouroC);box-shadow:0 0 8px rgba(243,217,142,.4)}
-.tb{height:42px;border:1px solid var(--lin);background:linear-gradient(#2a2433,#17131d);font:700 10.5px var(--ft);letter-spacing:.08em;padding:0 8px;flex:none}
-#bAuto.on{background:linear-gradient(#3fa04c,#256b30);border-color:#96e08a;color:#ecffe6}
-#sp{margin-left:auto}
-#bar .tb.ic{padding:0;width:42px;position:relative}
-#bar .tb.ic img{width:28px;height:28px;image-rendering:pixelated;display:block;margin:auto}
-#bar .tb.ic .n{position:absolute;right:2px;bottom:0;font-size:9.5px;color:#fff;text-shadow:0 1px 0 #000}
-#bar .tb.ic .bd{position:absolute;right:-4px;top:-5px;background:#d6403a;color:#fff;font-size:9px;border-radius:8px;min-width:15px;padding:0 3px;display:none;text-align:center}
 #toast{position:absolute;left:50%;top:32%;transform:translate(-50%,-50%);padding:9px 18px;font:600 13.5px var(--f);color:var(--ouroC);display:none;text-align:center;white-space:nowrap}
 #tapfx{position:absolute;pointer-events:none;width:30px;height:30px;border:2px solid #fff;border-radius:50%;transform:translate(-50%,-50%) scale(.3);opacity:0}
 #banner{position:absolute;left:0;right:0;top:calc(30% + env(safe-area-inset-top));text-align:center;pointer-events:none;opacity:0;padding:22px 8px 20px;background:linear-gradient(90deg,transparent,rgba(8,5,3,.62) 22%,rgba(8,5,3,.62) 78%,transparent)}
@@ -269,6 +255,31 @@ button:active:not(:disabled){transform:scale(.97);filter:brightness(1.15)}
 .sbc p{margin:0;font-size:12px;line-height:1.4;color:var(--papel)}
 .sbs{display:flex;gap:8px}.sbk{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;text-align:center}.sbk.sel img{border-color:var(--ouroC)}.sbk em{font:600 10px var(--f);font-style:normal;color:var(--papel2);line-height:1.15}
 .skc.sub{border-color:rgba(217,180,95,.35)}
+
+/* ===== barra de ação estilo MMO ===== */
+#bar{position:absolute;left:0;right:0;bottom:calc(8px + env(safe-area-inset-bottom));display:flex;justify-content:center;pointer-events:none;background:none!important;border:0!important;box-shadow:none!important;padding:0;height:auto}
+#bar>*{pointer-events:auto}
+.abar{display:flex;gap:6px;padding:7px;position:relative;background:var(--gl);border:1px solid var(--lin);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),0 6px 20px rgba(0,0,0,.55)}
+.abar::before,.abar::after{content:'';position:absolute;width:10px;height:10px;border:2px solid var(--ouroE);pointer-events:none}
+.abar::before{left:-2px;top:-2px;border-right:0;border-bottom:0}.abar::after{right:-2px;bottom:-2px;border-left:0;border-top:0}
+.slot2{position:relative;width:58px;height:58px;border:1px solid var(--lin);background:#0d0b11;padding:3px;flex:none}
+.slot2>img{width:100%;height:100%;image-rendering:pixelated;display:block}
+.slot2.sep{margin-left:6px}.slot2.sep::before{content:'';position:absolute;left:-7px;top:6px;bottom:6px;width:1px;background:var(--lin)}
+.slot2.lock>img{filter:grayscale(1) brightness(.4)}.slot2.empty>img{opacity:.22}
+.slot2.ready{border-color:var(--ouroC);box-shadow:0 0 10px rgba(243,217,142,.55),inset 0 0 8px rgba(243,217,142,.25)}
+.slot2 .key{position:absolute;left:3px;top:1px;font:700 9.5px var(--f);color:#d8c8a0;text-shadow:0 1px 0 #000,0 0 3px #000;z-index:2}
+.slot2 .cd{position:absolute;inset:3px;background:conic-gradient(rgba(0,0,0,.72) var(--p,0deg),transparent 0)}
+.slot2 .ct{position:absolute;inset:0;display:grid;place-items:center;font:700 15px var(--f);color:#fff;text-shadow:0 1px 2px #000,0 0 4px #000}
+.slot2 .n{position:absolute;right:4px;bottom:2px;font:700 11.5px var(--f);color:#fff;text-shadow:0 1px 0 #000,0 0 3px #000;z-index:2}
+.slot2 .lv{position:absolute;inset:0;display:grid;place-items:center;font:700 10px var(--ft);letter-spacing:.06em;color:#d8c8a0;text-shadow:0 1px 0 #000}
+.slot2 .lbl{background:rgba(0,0,0,.45);position:absolute;left:0;right:0;bottom:2px;text-align:center;font:600 8.5px var(--f);color:#e9e2d0;text-shadow:0 1px 2px #000,0 0 3px #000;letter-spacing:.04em;text-transform:uppercase}
+.slot2 .bd{position:absolute;right:-5px;top:-6px;background:#d6403a;color:#fff;font:700 10px var(--f);border-radius:9px;min-width:17px;padding:0 4px;display:none;text-align:center;z-index:3}
+#mmenu{position:absolute;right:6px;bottom:calc(90px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.mbtn{position:relative;width:44px;height:44px;pointer-events:auto;background:var(--gl);border:1px solid var(--lin);box-shadow:0 4px 12px rgba(0,0,0,.5);font:700 10px var(--ft);letter-spacing:.06em;color:var(--ouroC);padding:0;display:grid;place-items:center}
+.mbtn img{width:26px;height:26px;image-rendering:pixelated}
+.mbtn small{display:block;font:600 8px var(--f);color:var(--papel2);margin-top:-2px;letter-spacing:.04em}
+#bAuto.on{border-color:#96e08a;background:linear-gradient(#26502e,#183a20);color:#c8ffd0;box-shadow:0 0 10px rgba(120,230,140,.35)}
+.mbtn .bd{position:absolute;right:-5px;top:-6px;background:#d6403a;color:#fff;font:700 10px var(--f);border-radius:9px;min-width:17px;padding:0 4px;display:none;text-align:center}
 </style>
 </head>
 <body>
@@ -325,7 +336,7 @@ button:active:not(:disabled){transform:scale(.97);filter:brightness(1.15)}
     <div id="boss" class="panel"><div class="t txt-o" id="bosst">Ogro de Brumavale</div><div class="bar"><b style="width:100%"></b></div></div>
     <div id="buffs"></div>
     <div id="chat"></div>
-    <div id="bar" class="panel"></div>
+    <div id="bar"></div><div id="mmenu"></div>
     <div id="toast" class="panel txt-o"></div>
   </div>
   <div class="scr" id="ko"><div class="txt-o">Você caiu…<br><span style="font-size:11px">reanimando</span></div></div>
@@ -368,20 +379,20 @@ const CLASSES={
     skills:[['golpe_costas','Golpe pelas Costas',4,2.6,{t:'single',crit:true,d:'Golpe crítico garantido.'}],['lamina_envenenada','Lâmina Envenenada',9,1.0,{t:'dot',dps:.4,dur:6,col:'#8ae04a',d:'Golpe + veneno por 6s.'}],['corte_profundo','Corte Profundo',12,1.6,{t:'aoe',r:62,d:'Corte em área ao redor.'}]]},
   mago:{nome:'Mago',papel:'Dano à distância',desc:'Raios arcanos de longe. Frágil.',
     hp:70,atk:20,def:3,rng:150,aspd:1.1,crit:.12,speed:68,bars:[.45,1.0,.3,.8],atk_:'cast',
-    skills:[['meteoros','Meteoros',7,2.0,{t:'meteor',d:'Chuva de meteoros na área do alvo.'}],['tremor','Tremor',10,1.2,{t:'aoe',r:84,stun:1,d:'Abala e atordoa quem está perto.'}],['grito_estridente','Grito Estridente',12,1.4,{t:'aoe',r:96,knock:2,d:'Onda que empurra os inimigos.'}]]},
+    skills:[['meteoros','Meteoros',7,2.0,{t:'meteor',d:'Chuva de meteoros na área do alvo.'}],['tremor','Tremor',10,1.2,{t:'aoe',r:84,stun:1,d:'Abala e atordoa quem está perto.'}],['m_pulso','Pulso Arcano',12,1.4,{t:'aoe',r:96,knock:2,d:'Onda arcana que empurra os inimigos.'}]]},
   clerigo:{nome:'Clérigo',papel:'Suporte',desc:'Cura a si mesmo e castiga o mal.',
     hp:100,atk:10,def:7,rng:30,aspd:0.9,crit:.08,speed:68,bars:[.75,.45,.8,.15],atk_:'slash',
-    skills:[['golpe_sagrado','Golpe Sagrado',6,1.8,{t:'single',heal:.1,d:'Golpe que cura 10% da vida.'}],['julgamento','Julgamento',10,1.7,{t:'aoe',r:72,d:'Luz sagrada em área.'}],['escudo_aliado','Escudo',12,0,{t:'shield',pct:.35,dur:8,d:'Escudo de 35% da vida por 8s.'}]]},
+    skills:[['golpe_sagrado','Golpe Sagrado',6,1.8,{t:'single',heal:.1,d:'Golpe que cura 10% da vida.'}],['julgamento','Julgamento',10,1.7,{t:'aoe',r:72,d:'Luz sagrada em área.'}],['c_escudo','Escudo Sagrado',12,0,{t:'shield',pct:.35,dur:8,d:'Escudo de 35% da vida por 8s.'}]]},
   arqueiro:{nome:'Arqueiro',papel:'Atirador',desc:'Flechas certeiras a grande distância.',
     hp:88,atk:15,def:5,rng:170,aspd:0.9,crit:.2,speed:76,bars:[.55,.7,.4,1.0],atk_:'shoot',
-    skills:[['saraivada_total','Saraivada',6,1.0,{t:'multi',n:4,d:'4 flechas em sequência.'}],['flecha_incendiaria','Flecha Incendiária',10,1.4,{t:'dot',dps:.35,dur:5,col:'#ff9a3a',d:'Flecha que queima por 5s.'}],['golpe_costas','Tiro Certeiro',12,3.0,{t:'single',crit:true,d:'Tiro crítico garantido.'}]]},
+    skills:[['saraivada_total','Saraivada',6,1.0,{t:'multi',n:4,d:'4 flechas em sequência.'}],['flecha_incendiaria','Flecha Incendiária',10,1.4,{t:'dot',dps:.35,dur:5,col:'#ff9a3a',d:'Flecha que queima por 5s.'}],['a_tiro','Tiro Certeiro',12,3.0,{t:'single',crit:true,d:'Tiro crítico garantido.'}]]},
   bardo:{nome:'Bardo',papel:'Apoio',desc:'Canções que fortalecem. Acha mais ouro.',
     hp:90,atk:11,def:6,rng:30,aspd:0.8,crit:.1,speed:72,bars:[.65,.5,.55,.15],atk_:'slash',
-    skills:[['grito_estridente','Canção Estridente',6,1.6,{t:'aoe',r:72,d:'Canção que fere em área.'}],['grito_guerra','Hino de Guerra',12,0,{t:'buff',atk:.25,spd:.15,dur:8,d:'+25% ataque e +15% velocidade.'}],['escudo_aliado','Escudo',12,0,{t:'shield',pct:.3,dur:8,d:'Escudo de 30% da vida por 8s.'}]]}
+    skills:[['grito_estridente','Canção Estridente',6,1.6,{t:'aoe',r:72,d:'Canção que fere em área.'}],['b_hino','Hino de Guerra',12,0,{t:'buff',atk:.25,spd:.15,dur:8,d:'+25% ataque e +15% velocidade.'}],['b_escudo','Melodia Protetora',12,0,{t:'shield',pct:.3,dur:8,d:'Escudo de 30% da vida por 8s.'}]]}
 };
 /* ---- árvore de habilidades ampliada: 8 por classe (as 3 primeiras são as originais) ---- */
 const SLOT_UNL=[1,5,10],NSK=14;
-const NEWIC=new Set(['meteoros','tremor']);const skImg=id=>(/^[ns]_/.test(id)||NEWIC.has(id))?'assets/skills/'+id+'.png':'../assets/skill-icons/'+id+'.png';
+const NEWIC=new Set(['meteoros','tremor']);const skImg=id=>(/^[a-z]_/.test(id)||NEWIC.has(id))?'assets/skills/'+id+'.png':'../assets/skill-icons/'+id+'.png';
 (function(){
   const add=(c,l)=>l.forEach(x=>CLASSES[c].skills.push(x));
   [1,5,10].forEach((u,i)=>Object.values(CLASSES).forEach(C=>C.skills[i][4].u=u));
@@ -794,21 +805,27 @@ function enterDungeon(zlv){
 }
 function mkTb(id,html,cls,fn){const e=document.createElement('button');e.className=cls;e.id=id;e.style.pointerEvents='auto';e.innerHTML=html;e.onclick=fn;return e;}
 function buildBar(){
-  const C=CLASSES[SAVE.cls],b=$('bar');b.innerHTML='';
-  const pot=mkTb('bPot','<img src="../assets/ico/v_pocao.png"><span class="n" id="potn"></span>','tb ic',()=>usePotion(true));
-  const hb=mkTb('bHero','<img src="../assets/ico/v_bolsa.png"><span class="bd" id="bdHero"></span>','tb ic',()=>{sfx('ui_click');openPan('eq');});
+  const C=CLASSES[SAVE.cls],b=$('bar'),m=$('mmenu');b.innerHTML='';m.innerHTML='';
+  const ab=document.createElement('div');ab.className='abar';b.appendChild(ab);
+  const potHtml='<img src="../assets/ico/v_pocao.png"><span class="key">P</span><div class="cd"></div><div class="ct"></div><span class="n" id="potn"></span>';
   if(G.scene==='town'){
-    const t=document.createElement('div');t.style.cssText='flex:1;font-size:10px;line-height:1.35;color:#96e08a;padding-left:4px';t.innerHTML='<b style="font-size:11px">MODO CIDADE</b><br><span style="color:#cdb68a">toque para andar · mapa = atalhos</span>';
-    b.appendChild(t);b.appendChild(mkTb('bGo','<img src="../assets/ui-icons/treasure-map.png">','tb ic',()=>{if(G.winOpen)return;sfx('ui_click');openWin('locais');}));b.appendChild(pot);b.appendChild(hb);
-    b.appendChild(mkTb('bSkTown','<img src="'+skImg(C.skills[SAVE.eqs[0]>=0?SAVE.eqs[0]:0][0])+'">','tb ic',()=>{sfx('ui_click');openPan('sk');}));
+    const sk0=SAVE.eqs[0]>=0?SAVE.eqs[0]:0;
+    ab.appendChild(mkTb('bGo','<img src="../assets/ico/v_mapa.png" style="padding:6px 6px 12px"><span class="lbl">Atalhos</span>','slot2',()=>{if(G.winOpen)return;sfx('ui_click');openWin('locais');}));
+    ab.appendChild(mkTb('bPot',potHtml,'slot2',()=>usePotion(true)));
+    ab.appendChild(mkTb('bSkTown','<img src="'+skImg(C.skills[sk0][0])+'" style="padding:0 0 8px"><span class="lbl">Habil.</span>','slot2',()=>{sfx('ui_click');openPan('sk');}));
+    ab.appendChild(mkTb('bHero','<img src="../assets/ico/v_bolsa.png" style="padding:0 0 8px"><span class="lbl">Mochila</span><span class="bd" id="bdHero"></span>','slot2',()=>{sfx('ui_click');openPan('eq');}));
     updPot();badge();return;
   }
-  [0,1,2].forEach(k=>{const si=SAVE.eqs[k],lk=SAVE.lv<SLOT_UNL[k]||si<0||SAVE.sk[si]<1||!skAvail(si);const d=document.createElement('div');d.className='sk'+(lk?' lock':'');d.id='sk'+k;
-    d.innerHTML=(si>=0?`<img src="${skImg(C.skills[si][0])}">`:'<img src="../assets/ui-icons/magic-swirl.png" style="opacity:.25">')+'<div class="cd" style="height:0"></div>'+(lk?`<div class="lv">${SAVE.lv<SLOT_UNL[k]?'Nv'+SLOT_UNL[k]:'+'}</div>`:'');d.style.pointerEvents='auto';d.onclick=()=>{sfx('ui_click');openPan('sk');};b.appendChild(d);});
-  const a=mkTb('bAuto',G.auto?'AUTO':'MANUAL','tb'+(G.auto?' on':''),()=>{G.auto=!G.auto;a.classList.toggle('on',G.auto);a.textContent=G.auto?'AUTO':'MANUAL';sfx('ui_click');chat(G.auto?'Modo automático ligado':'Modo manual: toque no mapa para andar',1);G.wp=null;});
-  const tw=mkTb('bTownB','<img src="../assets/ui-icons/greek-temple.png">','tb ic',()=>{sfx('ui_click');if(confirm('Voltar para a cidade? O progresso desta clareira (abates) será perdido.')){enterTown(false);}});
-  const sp=mkTb('sp','x'+G.speed,'tb',()=>{G.speed=G.speed===1?2:1;sp.textContent='x'+G.speed;sfx('ui_click');});
-  b.insertBefore(a,b.firstChild);b.appendChild(pot);b.appendChild(hb);b.appendChild(tw);b.appendChild(sp);updPot();badge();
+  [0,1,2].forEach(k=>{const si=SAVE.eqs[k],lk=SAVE.lv<SLOT_UNL[k]||si<0||SAVE.sk[si]<1||!skAvail(si);const d=document.createElement('div');d.className='slot2'+(lk?' lock':'')+(si<0?' empty':'');d.id='sk'+k;
+    d.innerHTML=(si>=0?`<img src="${skImg(C.skills[si][0])}">`:'<img src="../assets/ui-icons/magic-swirl.png">')+`<span class="key">${k+1}</span><div class="cd"></div><div class="ct"></div>`+(lk?`<div class="lv">${SAVE.lv<SLOT_UNL[k]?'Nv '+SLOT_UNL[k]:'+'}</div>`:'');
+    d.style.pointerEvents='auto';d.onclick=()=>{sfx('ui_click');openPan('sk');};ab.appendChild(d);});
+  const pot=mkTb('bPot',potHtml,'slot2 sep',()=>usePotion(true));ab.appendChild(pot);
+  const a=mkTb('bAuto',G.auto?'AUTO':'MANUAL','mbtn'+(G.auto?' on':''),()=>{G.auto=!G.auto;a.classList.toggle('on',G.auto);a.textContent=G.auto?'AUTO':'MANUAL';sfx('ui_click');chat(G.auto?'Modo automático ligado':'Modo manual: toque no mapa para andar',1);G.wp=null;});
+  a.style.fontSize='8.5px';
+  const sp=mkTb('sp','x'+G.speed,'mbtn',()=>{G.speed=G.speed===1?2:1;sp.textContent='x'+G.speed;sfx('ui_click');});
+  const hb=mkTb('bHero','<img src="../assets/ico/v_bolsa.png"><span class="bd" id="bdHero"></span>','mbtn',()=>{sfx('ui_click');openPan('eq');});
+  const tw=mkTb('bTownB','<img src="../assets/ui-icons/greek-temple.png" style="filter:sepia(1) saturate(3) hue-rotate(-8deg) brightness(1.25)">','mbtn',()=>{sfx('ui_click');if(confirm('Voltar para a cidade? O progresso desta clareira (abates) será perdido.')){enterTown(false);}});
+  [a,sp,hb,tw].forEach(e=>m.appendChild(e));updPot();badge();
 }
 function updPot(){const n=$('potn');if(n)n.textContent=SAVE.potions+(SAVE.potL?'+'+SAVE.potL:'');}
 function usePotion(manual){const h=G.hero;if(!h||h.state==='ko')return;
@@ -831,7 +848,8 @@ function updHUD(force){
   const bs=G.boss;$('boss').style.display=(dg&&G.phase==='boss'&&bs&&!bs.dead)?'block':'none';
   const E=SAVE.elix||{},bf=[['forca','fist','Força'],['vigor','heart-plus','Vigor'],['sorte','clover','Sorte']].filter(x=>E[x[0]]>0).map(x=>`<div><img src="../assets/ui-icons/${x[1]}.png">${Math.floor(E[x[0]]/60)}:${String(Math.floor(E[x[0]]%60)).padStart(2,'0')}</div>`).join('');if($('buffs').dataset.v!==bf){$('buffs').dataset.v=bf;$('buffs').innerHTML=bf;}
   if(bs){$('boss').querySelector('.bar b').style.width=clamp(bs.hp/bs.maxhp*100,0,100)+'%';$('bosst').textContent=bs.name+' Nv.'+bs.lv;}
-  [0,1,2].forEach(k=>{const i=SAVE.eqs[k],e=$('sk'+k);if(!e||i<0)return;const cd=h.sk[i],tot=skCd(i);const el=e.querySelector('.cd');el.style.height=(cd>0?cd/tot*100:0)+'%';e.classList.toggle('ready',cd<=0&&SAVE.sk[i]>0);});
+  [0,1,2].forEach(k=>{const i=SAVE.eqs[k],e=$('sk'+k);if(!e||i<0)return;const cd=h.sk[i],tot=skCd(i);e.querySelector('.cd').style.setProperty('--p',(cd>0?cd/tot*360:0)+'deg');e.querySelector('.ct').textContent=cd>0?(cd>=1?Math.ceil(cd):cd.toFixed(1)):'';e.classList.toggle('ready',cd<=0&&SAVE.sk[i]>0&&SAVE.lv>=SLOT_UNL[k]);});
+  {const pe=$('bPot');if(pe&&pe.querySelector('.cd')){const pc=h.potCd||0;pe.querySelector('.cd').style.setProperty('--p',(pc>0?pc/8*360:0)+'deg');pe.querySelector('.ct').textContent=pc>0?Math.ceil(pc):'';}}
   $('hud').dataset.k=G.K;
 }
 /* ------------------------------ itens ----------------------------------- */
@@ -1132,14 +1150,14 @@ const SUBS={
   A('arqueiro',1,[['s_sar1','Rajada',14,.7,{t:'multi',n:10,u:10,d:'10 flechas em rajada.'}],['s_sar2','Flechas Explosivas',16,2.2,{t:'meteor',u:14,rq:[11,1],d:'Flechas que explodem na área.'}],['s_sar3','Barragem',14,1.1,{t:'multi',n:6,u:20,rq:[12,2],d:'6 flechas potentes seguidas.'}]]);
   A('bardo',0,[['s_con1','Hino Vital',16,0,{t:'heal',heal:.45,u:10,d:'Recupera 45% da vida.'}],['s_con2','Canto Revigorante',20,0,{t:'buff',atk:.25,def:.2,spd:.15,dur:12,u:14,rq:[8,1],d:'+25% ataque, +20% defesa e +15% velocidade.'}],['s_con3','Harmonia',18,0,{t:'shield',pct:.4,dur:10,u:20,rq:[9,2],d:'Escudo de 40% da vida por 10s.'}]]);
   A('bardo',1,[['s_dis1','Nota Estridente',10,1.6,{t:'aoe',r:90,stun:1,u:10,d:'Nota que fere e atordoa em área.'}],['s_dis2','Acorde Maldito',12,1.2,{t:'dot',dps:.7,dur:6,col:'#a050d0',u:14,rq:[11,1],d:'Maldição sonora por 6s.'}],['s_dis3','Cacofonia',16,3.2,{t:'aoe',r:120,knock:2,stun:1,u:20,rq:[12,2],d:'Cacofonia devastadora em área ampla.'}]]);
-  Object.assign(SKFX,{s_cav1:RC.slash('#a8c0ff','#fff'),s_cav2:RC.shield('#7aa0ff'),s_cav3:RC.spin('#ffe28a','#fff'),s_bar1:RC.shout('#ff3a2a','#ffb070'),s_bar2:RC.slash('#ff6a3a','#ffd070'),s_bar3:RC.sound('#ff7a3a',3),
+  Object.assign(SKFX,{m_pulso:RC.shout('#b070ff','#e0c0ff'),c_escudo:RC.shield('#ffe28a'),a_tiro:RC.exec('#ffb050'),b_hino:RC.buff('#ffc060',true),b_escudo:RC.shield('#8ac8ff'),s_cav1:RC.slash('#a8c0ff','#fff'),s_cav2:RC.shield('#7aa0ff'),s_cav3:RC.spin('#ffe28a','#fff'),s_bar1:RC.shout('#ff3a2a','#ffb070'),s_bar2:RC.slash('#ff6a3a','#ffd070'),s_bar3:RC.sound('#ff7a3a',3),
    s_ass1:RC.exec('#c03a5a'),s_ass2:RC.exec('#8a3aff'),s_ass3:RC.buff('#7a7aff'),s_arm1:RC.quake(false),s_arm2:RC.ice('#a0e0a0'),s_arm3:RC.exec('#9ac060'),
    s_pir1:RC.fire('#ff6a1a','#ffd070'),s_pir2:RC.fire('#ff3a0a','#ff9a3a'),s_pir3:RC.fire('#ff8a2a','#ffd070'),s_geo1:RC.buff('#c9a066'),s_geo2:RC.quake(false),s_geo3:RC.quake(true),
    s_cur1:RC.heal('#8ef08a'),s_cur2:RC.buff('#8ef0c0'),s_cur3:RC.heal('#c0ffd0'),s_tem1:RC.holy('#ffe28a'),s_tem2:RC.holy('#fff0a0'),s_tem3:RC.buff('#ffd070'),
    s_pat1:RC.exec('#ffb050'),s_pat2:RC.poison('#ff7a3a'),s_pat3:RC.buff('#6ad090'),s_sar1:RC.rain('#e8d8a8'),s_sar2:RC.fire('#ff7a2a','#ffd070'),s_sar3:RC.rain('#ffd070'),
    s_con1:RC.heal('#8ef08a',true),s_con2:RC.buff('#ffc060',true),s_con3:RC.shield('#8ac8ff'),s_dis1:RC.sound('#d070e0',4),s_dis2:RC.poison('#a050d0'),s_dis3:RC.sound('#ff70c0',9)});
-  Object.assign(BUFFCOL,{s_bar1:'#ff4a3a',s_ass3:'#8a8aff',s_geo1:'#c9a066',s_cur2:'#8ef0c0',s_tem3:'#ffd070',s_pat3:'#6ad090',s_con2:'#ffc060'});
-  Object.assign(PST,{s_ass1:'dagger',s_arm3:'dagger',s_pat1:'arrow',s_pat2:'fire',s_sar1:'arrow',s_sar3:'arrow',s_pir2:'fire',s_dis2:'orb'});
+  Object.assign(BUFFCOL,{b_hino:'#ffc060',s_bar1:'#ff4a3a',s_ass3:'#8a8aff',s_geo1:'#c9a066',s_cur2:'#8ef0c0',s_tem3:'#ffd070',s_pat3:'#6ad090',s_con2:'#ffc060'});
+  Object.assign(PST,{a_tiro:'arrow',s_ass1:'dagger',s_arm3:'dagger',s_pat1:'arrow',s_pat2:'fire',s_sar1:'arrow',s_sar3:'arrow',s_pir2:'fire',s_dis2:'orb'});
 })();
 const subOf=()=>SAVE.sub?SUBS[SAVE.cls].find(x=>x.id===SAVE.sub):null;
 const skAvail=i=>i<8||(SAVE.sub&&CLASSES[SAVE.cls].skills[i][4].sub===SAVE.sub);
