@@ -381,7 +381,7 @@ const CLASSES={
 };
 /* ---- árvore de habilidades ampliada: 8 por classe (as 3 primeiras são as originais) ---- */
 const SLOT_UNL=[1,5,10],NSK=14;
-const skImg=id=>/^[ns]_/.test(id)?'assets/skills/'+id+'.png':'../assets/skill-icons/'+id+'.png';
+const NEWIC=new Set(['meteoros','tremor']);const skImg=id=>(/^[ns]_/.test(id)||NEWIC.has(id))?'assets/skills/'+id+'.png':'../assets/skill-icons/'+id+'.png';
 (function(){
   const add=(c,l)=>l.forEach(x=>CLASSES[c].skills.push(x));
   [1,5,10].forEach((u,i)=>Object.values(CLASSES).forEach(C=>C.skills[i][4].u=u));
@@ -1384,7 +1384,7 @@ function renderPan(){
       const can=!lockLv&&!lockRq&&pts>0&&L<max,isEq=SAVE.eqs.includes(i);
       const note=lockLv?`<span class="warn">Requer nível ${u}</span>`:lockRq?`<span class="warn">Requer ${C.skills[rq[0]][1]} nv ${rq[1]}</span>`:L<1?'<span>Não aprendida</span>':`Nv ${L}/${max}`;
       html+=`<div class="skc ${lockLv||lockRq?'lock':''} ${i>=8?'sub':''}"><img src="${skImg(S[0])}"><div class="t"><b>${S[1]}</b> ${note}<br>${o.d}<br>${o.t==='buff'||o.t==='shield'||o.t==='heal'?'':'Dano x'+(S[3]*skScFor(Math.max(1,L))).toFixed(1)+' · '}Recarga ${skCdFor(i,Math.max(1,L)).toFixed(1)}s<div class="pips">${Array.from({length:max},(_,k)=>`<i class="${k<L?'on':''}"></i>`).join('')}</div></div><div class="sbt"><button class="pl" data-sk="${i}" ${can?'':'disabled'}>+</button><button class="eqb ${isEq?'on':''}" data-eq="${i}" ${L<1?'disabled':''}>${isEq?'✓':'Equipar'}</button></div></div>`;});
-    if(!SAVE.sub)html+=`<div class="skc sub lock" style="opacity:1"><img src="${UI}${SUBS[SAVE.cls][0].ic}.png" style="filter:sepia(1) saturate(4) hue-rotate(-8deg) brightness(1.2);padding:6px"><div class="t"><b>Subclasse</b><br>${SAVE.lv<SUB_LV?`Desbloqueia no nível ${SUB_LV}. Veja as opções na criação do herói ou com o Mestre de Classe na cidade.`:'Disponível! Fale com o Mestre de Classe na cidade para escolher: '+SUBS[SAVE.cls].map(x=>x.nome).join(' ou ')+'.'}</div></div>`;
+    if(!SAVE.sub)html+=`<div class="skc sub lock" style="opacity:1"><img src="${UI}${SUBS[SAVE.cls][0].ic}.png" style="filter:sepia(1) saturate(4) hue-rotate(-8deg) brightness(1.2);padding:6px"><div class="t"><b>Subclasse</b><br>${SAVE.lv<SUB_LV?`Desbloqueia no nível ${SUB_LV}. Veja as opções na criação do herói ou com o Mestre de Classe na cidade.`:'Disponível! Fale com o Mestre de Classe na cidade e escolha uma (definitiva): '+SUBS[SAVE.cls].map(x=>x.nome).join(' ou ')+'.'}</div></div>`;
     html+=`<div class="acts"><button data-a="reset" ${SAVE.gold<resetCost()?'disabled':''}>Redistribuir habilidades (${resetCost()} ouro)</button></div>`;
     B.innerHTML=html;
     B.querySelectorAll('[data-slot]').forEach(e=>e.onclick=()=>{const k=+e.dataset.slot;if(SAVE.lv<SLOT_UNL[k]){sfx('ui_denied');toast('Slot libera no nível '+SLOT_UNL[k],1100);return;}skSlot=k;sfx('ui_click',.6);renderPan();});
@@ -1545,15 +1545,15 @@ function winPortal(){
    <button class="gb big" data-a="go">Entrar na dungeon</button>`;
   $('wbody').innerHTML=h;
 }
-const subCost=()=>60+SAVE.lv*20;
 function winSub(){
-  $('wtt').textContent='Mestre de Classe';const C=CLASSES[SAVE.cls],list=SUBS[SAVE.cls],cur=SAVE.sub,ok=SAVE.lv>=SUB_LV;
-  let h=npcHead('holy-symbol','Mestre Aurelius','“Todo herói chega a uma encruzilhada.”');
-  h+=`<div class="sec-h"><span>Subclasses de ${C.nome}</span><span>${ok?'Disponível':'Nível '+SUB_LV}</span></div>`;
-  list.forEach((sb,j)=>{const own=cur===sb.id,cost=cur&&!own?subCost():0;
+  $('wtt').textContent='Mestre de Classe';const C=CLASSES[SAVE.cls],cur=SAVE.sub,ok=SAVE.lv>=SUB_LV;
+  const list=SUBS[SAVE.cls].map((sb,j)=>({sb,j})).filter(x=>!cur||x.sb.id===cur);
+  let h=npcHead('holy-symbol','Mestre Aurelius',cur?'“Que o seu caminho seja longo e glorioso.”':'“Todo herói chega a uma encruzilhada.”');
+  h+=`<div class="sec-h"><span>${cur?'Sua subclasse':'Subclasses de '+C.nome}</span><span>${cur?'Definitiva':ok?'Escolha uma':'Nível '+SUB_LV}</span></div>`;
+  list.forEach(({sb,j})=>{const own=cur===sb.id;
     h+=`<div class="sbc ${own?'sel':''}"><div class="sbh"><div class="np"><img src="${UI}${sb.ic}.png"></div><div><b>${sb.nome}</b><span>${sb.papel}</span></div></div><p>${sb.desc}</p><div class="sbs">${[0,1,2].map(n=>{const i=8+j*3+n,S=C.skills[i],sel=G.wsel&&G.wsel.t==='sbs'&&G.wsel.k===i;return `<div class="sbk ${sel?'sel':''}" data-w="sbs:${i}"><img src="${skImg(S[0])}"><em>${S[1]}</em></div>`;}).join('')}</div>
-    <button class="${own?'db':'gb'}" data-a="sub:${sb.id}" ${own||!ok||SAVE.gold<cost?'disabled':''}>${own?'Subclasse atual':cur?`Trocar · ${cost} ouro`:ok?'Escolher (grátis)':'Disponível no nível '+SUB_LV}</button></div>`;});
-  h+=`<div class="sub">${cur?'Trocar de subclasse zera os pontos gastos nas habilidades dela.':'A primeira escolha é grátis. Trocar depois custa ouro.'}</div>`;
+    ${own?'':`<button class="gb" data-a="sub:${sb.id}" ${ok?'':'disabled'}>${ok?'Escolher '+sb.nome:'Disponível no nível '+SUB_LV}</button>`}</div>`;});
+  h+=`<div class="sub">${cur?'A subclasse escolhida é definitiva.':'Atenção: a escolha é definitiva e não pode ser trocada.'}</div>`;
   $('wbody').innerHTML=h;
 }
 function winAct(a){
@@ -1573,7 +1573,7 @@ function winAct(a){
     renderWin();const f=$('fitem');if(f)f.animate([{transform:'scale(1)'},{transform:'scale(1.18)'},{transform:'scale(1)'}],{duration:320});writeSave();return;}
   else if(k==='bp'){const big=v==='l',p=big?Math.round(potPrice()*2.6):potPrice();if(SAVE.gold<p){sfx('ui_denied');return;}SAVE.gold-=p;if(big)SAVE.potL++;else SAVE.potions++;sfx('coin',.7);}
   else if(k==='be'){const p=elixPrice();if(SAVE.gold<p){sfx('ui_denied');return;}SAVE.gold-=p;SAVE.elix[v]=300;recalcHero(true);sfx('heal',.8);sfx('coin',.5);}
-  else if(k==='sub'){if(SAVE.lv<SUB_LV)return;const cost=SAVE.sub&&SAVE.sub!==v?subCost():0;if(SAVE.gold<cost||SAVE.sub===v){sfx('ui_denied');return;}SAVE.gold-=cost;if(SAVE.sub!==v){for(let i=8;i<14;i++)SAVE.sk[i]=0;SAVE.eqs=SAVE.eqs.map(i=>i>=8?-1:i);}SAVE.sub=v;recalcHero(true);buildBar();sfx('levelup',.9);sfx('ui_confirm',.6);chat('Você agora é '+subOf().nome+'!',4);banner(subOf().nome,'Nova subclasse');}
+  else if(k==='sub'){if(SAVE.lv<SUB_LV||SAVE.sub){sfx('ui_denied');return;}const sb=SUBS[SAVE.cls].find(x=>x.id===v);if(!sb)return;if(!confirm('Escolher '+sb.nome+'? Esta escolha é definitiva e não poderá ser trocada.'))return;SAVE.sub=v;recalcHero(true);buildBar();sfx('levelup',.9);sfx('ui_confirm',.6);chat('Você agora é '+sb.nome+'!',4);banner(sb.nome,'Nova subclasse');}
   else if(k==='pz'){G.pz=clamp((G.pz||1)+ +v,1,SAVE.zoneMax||1);sfx('ui_click');}
   else if(k==='go'){sfx('spell_cast',.8);sfx('levelup',.4);enterDungeon(G.pz||1);return;}
   badge();writeSave();renderWin();
