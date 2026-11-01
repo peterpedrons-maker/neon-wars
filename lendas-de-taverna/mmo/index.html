@@ -839,8 +839,8 @@ function heroStatsInto(h){
   h.speed=C.speed*(1+g.spd/100)*(1+.005*A.agi);h.rng=C.rng;h.aspd=C.aspd*Math.max(.55,1-.007*A.agi);h.crit=C.crit+g.crit/100+.01*A.sor;subApply(h);
 }
 /* dificuldade: o nível do monstro sobe com a profundidade na floresta (0 na entrada → 1 no fim da estrada) e +5 por zona */
-/* curvas ajustadas por modelo (tools/balance_fit.py): tempo para matar ≈ 8 s e vida perdida por abate ≈ 12–22 % em QUALQUER nível, com a mitigação por defesa estilo PoE (def/(def+5·dano), teto 85 %) */
-const BAL={hpC:1.58,hpA:.13,hpP:1.8,atkC:.77,atkA:.11,atkP:1.8,zoneLv:5};
+/* curva de dificuldade ajustada por modelo (tools/mmo/balance_fit.py): fácil no início (≈5 s por monstro, ≈7 % da vida por abate) e cada vez mais dura até o endgame (≈13 s e ≈37 %); defesa estilo PoE: def/(def+5·dano), teto 85 % */
+const BAL={hpC:1.991,hpA:.05,hpP:4.05,atkC:.74,atkA:.05,atkP:4.15,zoneLv:5};
 const mobHpMul=lv=>BAL.hpC*Math.pow(1+BAL.hpA*(lv-1),BAL.hpP),mobAtkMul=lv=>BAL.atkC*Math.pow(1+BAL.atkA*(lv-1),BAL.atkP);
 function mobLevel(y){const d=ZONE&&ZONE.h?Math.max(0,Math.min(1,1-(y||0)/ZONE.h)):0;return 1+Math.round(d*5)+rint(0,2)+(G.zoneLv-1)*BAL.zoneLv;}
 function mkMob(kind,x,y,sp){
@@ -1849,7 +1849,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
   try{await loadAll();}catch(e){$('title').insertAdjacentHTML('beforeend','<div style="color:#f88">Erro ao carregar: '+e.message+'</div>');console.error(e);return;}
   $('bNew').disabled=false;$('bCont').disabled=false;
   if(SAVE)G.zoneLv=SAVE.zone||1;
-  window.__mmo={closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
+  window.__mmo={closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
   requestAnimationFrame(frame);
 })();
 if('serviceWorker' in navigator){/* usa o sw do jogo principal (escopo ../) */}
