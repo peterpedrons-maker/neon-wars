@@ -377,7 +377,7 @@ async function loadMap(name,zf,af,gf,pf){
   const [g,at]=await Promise.all([loadImg(gf),loadImg(pf)]);MAPS[name]={zone:z,atlasJ:aj,ground:g,atlas:at,water:null,wcw:0};
 }
 async function loadAll(){
-  LOOKM=await fetch('assets/look/look.json').then(r=>r.json());
+  LOOKM=await fetch('assets/look2/look2.json').then(r=>r.json());
   await Promise.all([loadMap('zone1','assets/zone1.json','assets/atlas.json','assets/zone1_ground.png','assets/atlas.png'),loadMap('town','assets/town.json','assets/town_atlas.json','assets/town_ground.png','assets/town_atlas.png')]);
   const jobs=[];
   for(const [k,c] of Object.entries(CLASSES))jobs.push(loadSheet(k,c.atk_==='cast'?'spellcast':c.atk_));
@@ -458,17 +458,11 @@ const CLOTH=[null,{h:2,s:.62},{h:22,s:.72},{h:44,s:.72},{h:96,s:.42},{h:140,s:.4
 const CLOTH_N=['Original','Vermelho','Laranja','Dourado','Verde-musgo','Verde','Turquesa','Azul','Roxo','Rosa','Marrom','Preto','Branco'];
 const HAIRS=[null,{h:30,s:.18,l:.42},{h:28,s:.5,l:.72},{h:22,s:.78,l:.95},{h:44,s:.75,l:1.3},{h:0,s:0,l:1.55},{h:215,s:.55,l:1},{h:322,s:.55,l:1.05},{h:140,s:.45,l:.9}];
 const HAIR_N=['Original','Preto','Castanho','Ruivo','Loiro','Prata','Azul','Rosa','Verde'];
-const TORSO_N={couro:'Couro',malha:'Malha',placas:'Placas',tecido:'Tecido'};
-let LOOKM=null;const LAYERS={};let LK=null;
-function defLook(cls){const m=LOOKM[cls];return{sk:0,hr:m.hairDefault?0:-1,hc:0,tq:m.dtorso,tc:0,lc:0,pc:0};}
-function lkPath(cls,act,g){return 'assets/look/'+cls+'_'+act+'_'+g+'.png';}
-async function loadLook(cls){
-  if(LAYERS[cls])return LAYERS[cls];
-  const m=LOOKM[cls],L={},jobs=[];
-  for(const act of ['walk','hurt','act'])for(const g of m.groups[act]||[])jobs.push(loadImg(lkPath(cls,act,g)).then(im=>{L[act+'_'+g]=im;}));
-  for(const t of m.torso)for(const act of ['walk','hurt','act'])jobs.push(loadImg(lkPath(cls,act,'torso_'+t)).then(im=>{L[act+'_torso_'+t]=im;}));
-  await Promise.all(jobs);LAYERS[cls]=L;return L;
-}
+const TN={leather:'Couro',chainmail:'Malha',plate:'Placas',legion:'Legionário',longsleeve:'Camisa'},LN={pantaloons:'Bombachas',pants:'Calça',leggings:'Justa'},HN={page:'Curto',long:'Longo',messy1:'Bagunçado',bangslong:'Franja'},PN={hood:'Capuz',leather_cap:'Boné',wizard:'Chapéu de mago',bandana:'Bandana'};
+const DEFS={guerreiro:{sx:'male',tq:'plate',lg:'pantaloons',hs:'page',ht:null},ladino:{sx:'male',tq:'leather',lg:'pantaloons',hs:null,ht:'hood'},mago:{sx:'female',tq:'longsleeve',lg:'pants',hs:null,ht:'wizard',tc:7},clerigo:{sx:'male',tq:'chainmail',lg:'pantaloons',hs:null,ht:null},arqueiro:{sx:'male',tq:'leather',lg:'pantaloons',hs:'page',ht:null},bardo:{sx:'male',tq:'longsleeve',lg:'pantaloons',hs:null,ht:'leather_cap'}};
+let LOOKM=null;const IMGC={};let LK=null;
+function defLook(cls){const d=DEFS[cls];return{sx:d.sx,sk:0,hs:d.hs,hc:0,tq:d.tq,tc:d.tc||0,lg:d.lg,lc:0,ht:d.ht,pc:0};}
+function limg(path){return IMGC[path]||(IMGC[path]=loadImg('assets/look2/'+path).catch(()=>null));}
 function tintPx(cv,kind,pal){
   const x=cv.getContext('2d'),id=x.getImageData(0,0,cv.width,cv.height),d=id.data;
   for(let i=0;i<d.length;i+=4){if(d[i+3]<8)continue;
@@ -490,33 +484,30 @@ function layerCv(im,kind,pal){
   const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);
   if(pal)tintPx(c,kind,pal);return c;
 }
-const LOOK_ORD=['bg','skin','legs','torso','hair','hat','fg'];
 async function lookSheet(cls,lk,full){
-  const m=LOOKM[cls],L=await loadLook(cls),out={},acts=full?['walk','hurt','act']:['walk'];
+  const cm=LOOKM.classes[cls],acts=full?['walk','hurt','act']:['walk'],out={};
   for(const act of acts){
+    const ak=act==='act'?cm.act:act,w=(cm.w||{})[act]||[],k=(g,v)=>`${lk.sx}/${ak}_${g}_${v}.png`;
+    const L=[];
+    if(w.includes('bg'))L.push({f:`w_${cls}_${act}_bg.png`});
+    L.push({f:k('skin',0),kind:'skin',pal:SKINS[lk.sk]});
+    L.push({f:k('legs',lk.lg),pal:CLOTH[lk.lc]});
+    L.push({f:k('torso',lk.tq),pal:CLOTH[lk.tc]});
+    if(lk.hs)L.push({f:k('hair',lk.hs),pal:HAIRS[lk.hc]});
+    if(lk.ht)L.push({f:k('hat',lk.ht),pal:CLOTH[lk.pc]});
+    if(w.includes('fg'))L.push({f:`w_${cls}_${act}_fg.png`});
+    const ims=await Promise.all(L.map(l=>limg(l.f)));
     let cv=null;
-    for(const g of LOOK_ORD){
-      let key=act+'_'+g,pal=null,kind='cloth';
-      if(g==='torso'&&m.torso.length)key=act+'_torso_'+(m.torso.includes(lk.tq)?lk.tq:m.dtorso);
-      if(g==='skin'){pal=SKINS[lk.sk];kind='skin';}
-      else if(g==='legs')pal=CLOTH[lk.lc];
-      else if(g==='torso')pal=CLOTH[lk.tc];
-      else if(g==='hat')pal=CLOTH[lk.pc];
-      else if(g==='hair'){if(lk.hr<0)continue;pal=HAIRS[lk.hc];}
-      const im=L[key];if(!im)continue;
-      const lc=layerCv(im,kind,pal);
-      if(!cv){cv=document.createElement('canvas');cv.width=lc.width;cv.height=lc.height;}
-      cv.getContext('2d').drawImage(lc,0,0);
-    }
+    ims.forEach((im,i)=>{if(!im)return;const lc=layerCv(im,L[i].kind,L[i].pal);if(!cv){cv=document.createElement('canvas');cv.width=lc.width;cv.height=lc.height;}cv.getContext('2d').drawImage(lc,0,0);});
     out[act]=cv;
   }
   const C=CLASSES[cls],ak=C.atk_==='cast'?'spellcast':C.atk_;
-  const cell=m.cell,frames=ak==='slash'?6:ak==='spellcast'?7:13;
+  const frames=ak==='slash'?6:ak==='spellcast'?7:13;
   const anc=[0,1,2,3].map(r=>anchorOf(out.walk,0,r*64,64,64));
-  return{walk:out.walk,hurt:out.hurt||null,atk:out.act||null,cell,frames,anc};
+  return{walk:out.walk,hurt:out.hurt||null,atk:out.act||null,cell:cm.cell,frames,anc};
 }
 async function buildHeroSheet(){
-  if(!SAVE.look)SAVE.look=defLook(SAVE.cls);
+  if(!SAVE.look||!SAVE.look.sx)SAVE.look=defLook(SAVE.cls);
   SHEETS.hero=await lookSheet(SAVE.cls,SAVE.look,true);
 }
 async function updPreviewSheet(){
@@ -532,32 +523,41 @@ function swatches(arr,names,cur,key){
 const swRow=(l,arr,names,cur,key)=>`<div class="lr"><span>${l}</span><div class="sw">${swatches(arr,names,cur,key)}</div></div>`;
 const selRow=(l,val,key,dis)=>`<div class="lr"><span>${l}</span><div class="sel"><a data-k="${key}" data-d="-1" ${dis?'style="opacity:.25"':''}>◀</a><b>${val}</b><a data-k="${key}" data-d="1" ${dis?'style="opacity:.25"':''}>▶</a></div></div>`;
 let cstep=1,ctab='corpo';
+const cyc=(arr,cur,d)=>arr[(arr.indexOf(cur)+d+arr.length)%arr.length];
 function renderLook(){
-  const m=LOOKM[selCls];let h='';
+  let h='';
+  const HS=[null,...LOOKM.hair],HT=[null,...LOOKM.hat];
   if(ctab==='corpo'){
+    h+=selRow('Corpo',LK.sx==='male'?'Masculino':'Feminino','sx');
     h+=swRow('Pele',SKINS,SKIN_N,LK.sk,'sk');
-    if(m.hair){h+=selRow('Cabelo',LK.hr<0?'Careca':'Curto','hr');if(LK.hr>=0)h+=swRow('Cor',HAIRS,HAIR_N,LK.hc,'hc');}
+    h+=selRow('Cabelo',LK.hs?HN[LK.hs]:'Sem cabelo','hs');
   }else if(ctab==='roupa'){
-    h+=selRow('Traje',m.torso.length?TORSO_N[m.torso.includes(LK.tq)?LK.tq:m.dtorso]:'Manto','tq',m.torso.length<2);
+    h+=selRow('Traje',TN[LK.tq],'tq');
+    h+=selRow('Calça',LN[LK.lg],'lg');
+    h+=selRow('Chapéu',LK.ht?PN[LK.ht]:'Nenhum','ht');
   }else{
     h+=swRow('Traje',CLOTH,CLOTH_N,LK.tc,'tc');
-    if(m.legs)h+=swRow('Calça',CLOTH,CLOTH_N,LK.lc,'lc');
-    if(m.hat)h+=swRow('Chapéu',CLOTH,CLOTH_N,LK.pc,'pc');
+    h+=swRow('Calça',CLOTH,CLOTH_N,LK.lc,'lc');
+    if(LK.ht)h+=swRow('Chapéu',CLOTH,CLOTH_N,LK.pc,'pc');
+    if(LK.hs)h+=swRow('Cabelo',HAIRS,HAIR_N,LK.hc,'hc');
   }
   h+='<div class="tools"><button data-k="rnd">⟳ Sortear</button><button data-k="rst">Restaurar</button></div>';
   $('look').innerHTML=h;
   $('look').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{
     const k=b.dataset.k;sfx('ui_click',.7);
-    if(k==='rnd'){const R=n=>Math.floor(Math.random()*n);LK={sk:R(SKINS.length),hr:m.hair&&m.hairDefault?0:(m.hair&&Math.random()<.5?0:-1),hc:R(HAIRS.length),tq:m.torso.length?m.torso[R(m.torso.length)]:m.dtorso,tc:R(CLOTH.length),lc:R(CLOTH.length),pc:R(CLOTH.length)};}
+    if(k==='rnd'){const R=n=>Math.floor(Math.random()*n);LK={sx:['male','female'][R(2)],sk:R(SKINS.length),hs:HS[R(HS.length)],hc:R(HAIRS.length),tq:LOOKM.torso[R(LOOKM.torso.length)],tc:R(CLOTH.length),lg:LOOKM.legs[R(LOOKM.legs.length)],lc:R(CLOTH.length),ht:HT[R(HT.length)],pc:R(CLOTH.length)};}
     else if(k==='rst')LK=defLook(selCls);
     else if(b.dataset.d){const d=+b.dataset.d;
-      if(k==='tq'){if(m.torso.length<2)return;const i=m.torso.indexOf(LK.tq);LK.tq=m.torso[(i+d+m.torso.length)%m.torso.length];}
-      else if(k==='hr')LK.hr=LK.hr<0?0:-1;}
+      if(k==='sx')LK.sx=LK.sx==='male'?'female':'male';
+      else if(k==='tq')LK.tq=cyc(LOOKM.torso,LK.tq,d);
+      else if(k==='lg')LK.lg=cyc(LOOKM.legs,LK.lg,d);
+      else if(k==='hs')LK.hs=cyc(HS,LK.hs,d);
+      else if(k==='ht')LK.ht=cyc(HT,LK.ht,d);}
     else LK[k]=+b.dataset.i;
     renderLook();updPreviewSheet();cprevT=Math.min(cprevT,4);
   });
 }
-async function pickClass(){LK=defLook(selCls);await loadLook(selCls);if(cstep===2)renderLook();await updPreviewSheet();}
+async function pickClass(){LK=defLook(selCls);if(cstep===2)renderLook();await updPreviewSheet();}
 let selCls='guerreiro',cprevT=0;
 function faceCanvas(cls,cv,sheet){
   const sh=sheet||SHEETS[cls],x=cv.getContext('2d');x.imageSmoothingEnabled=false;x.clearRect(0,0,cv.width,cv.height);
@@ -565,7 +565,7 @@ function faceCanvas(cls,cv,sheet){
 }
 function buildCreate(){
   const row=$('cls');row.innerHTML='';
-  CLS_ORDER.forEach(k=>{const b=document.createElement('button');b.dataset.k=k;const c=document.createElement('canvas');c.width=c.height=32;b.appendChild(c);faceCanvas(k,c);
+  CLS_ORDER.forEach(k=>{const b=document.createElement('button');b.dataset.k=k;const c=document.createElement('canvas');c.width=c.height=32;b.appendChild(c);lookSheet(k,defLook(k),false).then(sh=>faceCanvas(k,c,sh));
     b.onclick=()=>{selCls=k;sfx('ui_click');renderCreate(true);pickClass();};row.appendChild(b);});
   ctab='corpo';document.querySelectorAll('.ctabs button').forEach(b=>b.classList.toggle('on',b.dataset.t==='corpo'));
   renderCreate(false);pickClass();setStep(1);
