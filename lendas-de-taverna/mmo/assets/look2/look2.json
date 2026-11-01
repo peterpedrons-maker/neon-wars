@@ -1,0 +1,124 @@
+{
+ "torso": [
+  "leather",
+  "chainmail",
+  "plate",
+  "legion",
+  "longsleeve"
+ ],
+ "legs": [
+  "pantaloons",
+  "pants",
+  "leggings"
+ ],
+ "hair": [
+  "page",
+  "long",
+  "messy1",
+  "bangslong"
+ ],
+ "hat": [
+  "hood",
+  "leather_cap",
+  "wizard",
+  "bandana"
+ ],
+ "classes": {
+  "guerreiro": {
+   "act": "slash192",
+   "cell": 192,
+   "w": {
+    "walk": [
+     "fg"
+    ],
+    "hurt": [
+     "fg"
+    ],
+    "act": [
+     "bg",
+     "fg"
+    ]
+   }
+  },
+  "ladino": {
+   "act": "slash",
+   "cell": 64,
+   "w": {
+    "walk": [
+     "fg"
+    ],
+    "hurt": [
+     "fg"
+    ],
+    "act": [
+     "fg"
+    ]
+   }
+  },
+  "mago": {
+   "act": "spellcast",
+   "cell": 64,
+   "w": {
+    "walk": [
+     "bg",
+     "fg"
+    ],
+    "hurt": [
+     "bg",
+     "fg"
+    ],
+    "act": []
+   }
+  },
+  "clerigo": {
+   "act": "slash192",
+   "cell": 192,
+   "w": {
+    "walk": [
+     "fg"
+    ],
+    "hurt": [
+     "fg"
+    ],
+    "act": [
+     "bg",
+     "fg"
+    ]
+   }
+  },
+  "arqueiro": {
+   "act": "shoot",
+   "cell": 64,
+   "w": {
+    "walk": [
+     "bg",
+     "fg"
+    ],
+    "hurt": [
+     "bg",
+     "fg"
+    ],
+    "act": [
+     "bg",
+     "fg"
+    ]
+   }
+  },
+  "bardo": {
+   "act": "slash192",
+   "cell": 192,
+   "w": {
+    "walk": [
+     "fg"
+    ],
+    "hurt": [
+     "fg"
+    ],
+    "act": [
+     "bg",
+     "fg"
+    ]
+   }
+  }
+ }
+}

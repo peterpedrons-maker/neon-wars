@@ -19,3 +19,6 @@ Os mesmos do jogo principal (`../../assets/skill-icons`, `../../assets/audio`).
 
 ## Interface (menus)
 - Moeda do HUD recortada do "Pixel Fantasy UI Pack" — UI art: Zanyar's Asset Store.
+
+## Aparência do herói (assets/look2)
+Peças do Universal LPC Spritesheet Character Generator (corpo, cabeça, trajes, calças, cabelos e chapéus). Autores e licenças de cada arquivo em `assets/look2/CREDITS.csv` (CC-BY-SA 3.0 / OGA-BY 3.0 / GPL 3.0).
