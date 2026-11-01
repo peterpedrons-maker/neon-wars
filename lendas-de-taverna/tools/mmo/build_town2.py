@@ -92,7 +92,14 @@ BUILD=[('fer',190,280,WALL_WOOD,ROOF_B,'anvil',(190,60,50),'Ferreiro'),('mer',41
 doors=[];META=json.load(open(os.path.join(HERE,'b3d','out','meta.json')))
 def outline(im,col=(24,14,8,255)):
     a=im.split()[3];dil=a.filter(ImageFilter.MaxFilter(3));ol=Image.new('RGBA',im.size,col);out=Image.new('RGBA',im.size,(0,0,0,0));out.paste(ol,(0,0),dil);out.alpha_composite(im);return out
+USE_3D=False   # prédios 3D renderizados (b3d/) — desligado a pedido; usa as casas montadas com o pack
 for (k,x,y,wl,rf,ic,tint,nm) in BUILD:
+    if not USE_3D:
+        im,anc,(W,H,wx,ww,base)=house(wl,rf,ic,tint)
+        half=ww//2;col=[(dx,-4,6) for dx in range(-half+4,half-2,9) if abs(dx)>13]
+        R_.addp(im,anc,x,y,col)
+        doors.append(dict(id=k,nm=nm,x=S(x),y=S(y-3),w=S(ww+14),h=S(H-4),room='int_'+k,ic=ic))
+        continue
     spr=Image.open(os.path.join(HERE,'b3d','out',k+'.png')).convert('RGBA');m=META[k]
     bb=spr.getbbox();spr=spr.crop((bb[0],bb[1],bb[2],spr.height));ax=m['ax']-bb[0];ay=m['ay']-bb[1]
     spr=outline(spr);ax+=0;ay+=0
@@ -157,7 +164,7 @@ IR=Reg()
 INFO={'mer':('Bram, o Mercador','bardo','scales','mercador'),'fer':('Brasa, o Ferreiro','guardiao','anvil','forja'),'alq':('Mirela, a Alquimista','mago','health-potion','alquimista'),
  'mes':('Mestre Aurelius','clerigo','holy-symbol','subclasse'),'cof':('Gregor, o Banqueiro','ladino','locked-chest','cofre'),'lei':('Selene, a Leiloeira','pov_f','coins','leilao')}
 for i,k in enumerate(['mer','fer','alq','mes','cof','lei']):
-    im,props,npc,door=interior(k,i+1);g=zs(im)
+    im,props,npc,band=interior(k,i+1);g=zs(im)
     g.convert('RGB').save(os.path.join(OUT,'int_%s_ground.png'%k),optimize=True)
     pl=[]
     for (spr,x,y,col) in sorted(props,key=lambda p:p[2]):
@@ -166,6 +173,7 @@ for i,k in enumerate(['mer','fer','alq','mes','cof','lei']):
         d=dict(t='p',id=sid,x=S(x),y=S(y))
         if col:d['col']=[[S(c[0]),S(c[1]),S(c[2])] for c in col]
         pl.append(d)
+    bid=IR.reg(band,(band.width//2,band.height-1));pl.append(dict(t='p',id=bid,x=S(IW_//2),y=S(IH_+1)))
     nm,sh,ic,win=INFO[k]
     ax=npc[0];ay=npc[1]
     cy_=[p for p in props if p[0] is SP['counter']];cby=cy_[0][2] if cy_ else ay+40
