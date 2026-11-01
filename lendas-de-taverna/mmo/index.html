@@ -101,7 +101,6 @@ button{font-family:var(--f);cursor:pointer;color:var(--papel)}
 #pan .top .x{width:38px;height:38px;border-radius:5px;border:2px solid var(--borda);background:#2a1c10;font-size:16px;flex:none}
 #pan .tabs{display:flex;gap:4px;flex:1}
 #pan .tabs button{flex:1;height:38px;border-radius:5px;border:2px solid var(--borda);background:#1e140c;font-size:10.5px;font-weight:700}
-#pan .tabs button.on{background:#3a2a1a;border-color:var(--ouro);color:var(--ouro)}
 #pan .body{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch}
 .sum{display:grid;grid-template-columns:repeat(4,1fr);gap:2px 6px;padding:6px 8px;font-size:9px}
 .sum b{color:var(--ouro);font-weight:700}
@@ -142,7 +141,6 @@ button{font-family:var(--f);cursor:pointer;color:var(--papel)}
 #win .sub{font-size:9.5px;color:var(--papel2);text-align:center;margin:-2px 0 2px}
 #win .tabs{display:flex;gap:6px}
 #win .tabs button{flex:1;height:36px;border:0;background:url(../assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;font-size:10.5px;font-weight:700;color:#cdb68a}
-#win .tabs button.on{background-image:url(../assets/ui/btn_ouro.png);color:#2b1812}
 .wr{display:flex;align-items:center;gap:8px;padding:8px 12px;min-height:50px;background:url(../assets/ui/faixa_normal.png) 0 0/100% 100% no-repeat;font-size:9.5px}
 .wr.sel{background-image:url(../assets/ui/faixa_destaque.png)}
 .wr.lock{opacity:.55;filter:grayscale(.6)}
@@ -220,16 +218,67 @@ button:active:not(:disabled){transform:scale(.96)}
 #pan .xb:active{color:#fff}
 #pan .tabs{display:flex;gap:6px;margin-bottom:6px}
 #pan .tabs button{flex:1;height:34px;border:0;border-radius:0;background:url(../assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;font-size:11px;font-weight:700;color:#cdb68a}
-#pan .tabs button.on{background-image:url(../assets/ui/btn_ouro.png);color:#2b1812;border:0}
 #pan .body{padding:2px;min-height:0}
 #pan .tabs{flex:none}
 #pan .panel,#pan .sum,#pan .det{background:url(../assets/ui/faixa_normal.png) 0 0/100% 100% no-repeat;border:0;box-shadow:none}
 #pan .acts button{border:0;border-radius:0;background:url(../assets/ui/btn_escuro.png) 0 0/100% 100% no-repeat;height:36px;font-size:10px;color:#f3e6c6}
-#pan .acts button.g{background-image:url(../assets/ui/btn_ouro.png);color:#2b1812}
 #pan .skc .plus{border:0;border-radius:0;background:url(../assets/ui/btn_ouro.png) 0 0/100% 100% no-repeat;color:#2b1812}
 #pan .skc .plus:disabled{filter:grayscale(1);opacity:.45}
 #pan .slot,#pan .cell{background:#120c08}
 #ko{align-items:center;justify-content:center;background:rgba(40,0,0,.45);font-size:17.5px;color:#ffd6d0;text-align:center;display:none;pointer-events:none}
+
+/* ===== skin v2: 9-slice (sem distorcer a moldura), escala de texto legível, botão de fechar ===== */
+:root{--fs-s:11.5px;--fs-b:12.5px;--fs-m:14px}
+#win .box,#pan .box{background:none;border:26px solid transparent;border-image:url(../assets/ui/painel.png) 42 fill/26px stretch;padding:2px 6px 4px;max-height:100%}
+#win .tt,#pan .tt{height:46px;margin:-4px 0 8px;padding-bottom:8px;font:700 18px var(--ft);letter-spacing:.18em;background:url(../assets/ui/divisor.png) center bottom/100% 16px no-repeat}
+#win .xb,#pan .xb{position:absolute;right:-4px;top:-2px;width:34px;height:34px;border-radius:50%;border:2px solid #c9a24f;padding:0;font-size:0;
+  background:radial-gradient(circle at 50% 35%,#5a4128,#1d130b);box-shadow:0 2px 0 #000,inset 0 0 0 1px rgba(255,225,150,.25)}
+#win .xb::before,#win .xb::after,#pan .xb::before,#pan .xb::after{content:'';position:absolute;left:50%;top:50%;width:14px;height:2.5px;margin:-1.25px 0 0 -7px;background:#f3e6c6;border-radius:2px;transform:rotate(45deg)}
+#win .xb::after,#pan .xb::after{transform:rotate(-45deg)}
+#win .xb:active,#pan .xb:active{filter:brightness(1.3)}
+#win .tabs button,#pan .tabs button,.gb,.db,#pan .acts button,#pan .skc .plus{border:11px solid transparent;border-image:url(assets/ui9/btn_escuro.png) 20 fill/11px stretch;background:none;padding:0 4px;font:600 12px var(--f);letter-spacing:.04em;color:#e9d9b4;height:40px;display:flex;align-items:center;justify-content:center}
+#win .tabs button.on,.gb,#pan .tabs button.on,#pan .acts button.g,#pan .skc .plus{border-image-source:url(assets/ui9/btn_ouro.png);color:#2b1812;text-shadow:0 1px 0 #ffe9a8}
+.gb:disabled,.db:disabled,#pan .acts button:disabled,#pan .skc .plus:disabled{opacity:.5;filter:grayscale(.8)}
+.gb.big{height:50px;font-size:14px}
+#pan .skc .plus{width:44px;height:44px;font-size:20px;border-width:12px;border-image-width:12px;flex:none}
+.wr,#pan .panel,#pan .sum,#pan .det{background:none;border:12px solid transparent;border-image:url(../assets/ui/faixa_normal.png) 28 fill/12px stretch;box-shadow:none}
+.wr{padding:2px 4px;min-height:60px;font-size:var(--fs-s);gap:8px}
+.wr.sel{border-image-source:url(../assets/ui/faixa_destaque.png)}
+.wr .tx b{font-size:var(--fs-m);font-weight:600}.wr .tx span{font-size:var(--fs-s);line-height:1.35}
+.wr .pr{font-size:var(--fs-b)}.wr .ic{width:38px;height:38px}
+#win .sub{font-size:var(--fs-s);margin:0 0 4px}
+.wgold{font-size:var(--fs-m)}.stline{font-size:var(--fs-s)}
+#win .wb,#pan .wb{gap:7px;padding:2px 0}
+.sum{font-size:var(--fs-s);padding:0 2px;gap:3px 8px}.sum b{font-weight:700}
+.det{font-size:var(--fs-s);padding:0 2px;line-height:1.5}.det h4{font-size:var(--fs-m);font-family:var(--ft);letter-spacing:.04em}
+.skc{padding:0 2px;gap:9px}.skc img{width:44px;height:44px}
+.skc .t{font-size:var(--fs-s);line-height:1.4}.skc .t b{font-size:var(--fs-m);font-family:var(--ft);letter-spacing:.03em}
+.pips i{width:14px;height:6px}
+.slot .ph{font-size:9.5px}.cell .il{font-size:9.5px;font-weight:700}.fslots .fs i{font-size:9.5px}
+.acts button,.mini{font-size:12px}
+/* HUD */
+#hero .nm{font-size:11.5px}#hpt{font-size:7.5px}#prog{font-size:9.5px}
+#chat{font-size:10.5px}#buffs div{font-size:9px}#toast{font-size:13.5px}
+#bar .tb{font-size:11px}#bar .sk .lv,#bar .tb.ic .n{font-size:9.5px}
+/* criação */
+#create .hd b{font:700 19px var(--ft);letter-spacing:.14em}#create .hd span{font-size:11px}
+#cname-tag{font-size:12.5px}
+#create .panel,#cinfo{background:none;border:16px solid transparent;border-image:url(../assets/ui/linha_normal.png) 36 fill/16px stretch;padding:0 2px}
+#cinfo h3{font:700 17px var(--ft);letter-spacing:.06em}#cinfo .papel{font-size:11.5px}#cinfo p{font-size:11.5px}
+.sbar{font-size:10.5px}.sbar span{width:52px!important}#csk{font-size:10.5px}#csk>div:first-child{font-size:10.5px!important}
+#create label{font:600 10.5px var(--ft);letter-spacing:.1em;text-transform:uppercase}
+#cname{background:none;border:12px solid transparent;border-image:url(assets/ui9/btn_escuro.png) 20 fill/12px stretch;padding:2px 4px;font:600 16px var(--f);border-radius:0}
+#cname:focus{box-shadow:none;filter:brightness(1.25)}
+.btn{background:none;border:16px solid transparent;border-image:url(assets/ui9/btn_ouro.png) 20 fill/16px stretch;height:62px;padding:0;display:flex;align-items:center;justify-content:center;font:700 15px var(--ft);letter-spacing:.14em;color:#2b1812}
+.btn.sec{border-image-source:url(assets/ui9/btn_escuro.png);color:#f3e6c6}
+.btn:disabled{border-image-source:url(assets/ui9/btn_escuro.png);background:none;color:#8a7a5a;opacity:.8}
+#look .lr>span{width:56px;font-size:10px}
+#look .sw button.txt{height:23px;font-size:11px;padding:0 9px}
+#look .sw button{width:20px;height:20px}
+#look .dice{font-size:10px;height:30px;border:9px solid transparent;border-image:url(assets/ui9/btn_escuro.png) 20 fill/9px stretch;background:none;padding:0 6px;display:flex;align-items:center}
+/* banner */
+#win .tabs button,#pan .tabs button{white-space:nowrap}.acts button{white-space:normal;line-height:1.15;font-size:11px}
+#banner b{font-size:21px}#banner span{font-size:12px}
 </style>
 </head>
 <body>
