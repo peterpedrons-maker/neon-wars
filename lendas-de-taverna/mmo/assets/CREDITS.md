@@ -12,3 +12,7 @@ de cada peça: `../../assets/lpc/CREDITS.md`.
 
 ## Ícones de habilidade, sons e músicas
 Os mesmos do jogo principal (`../../assets/skill-icons`, `../../assets/audio`).
+
+
+## Fontes
+- Cinzel / Cinzel Decorative (Natanael Gama) e Rubik (Hubert & Fischer) — SIL Open Font License 1.1, em `assets/fonts/`.
