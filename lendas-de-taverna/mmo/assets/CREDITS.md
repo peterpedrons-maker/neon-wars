@@ -16,3 +16,6 @@ Os mesmos do jogo principal (`../../assets/skill-icons`, `../../assets/audio`).
 
 ## Fontes
 - Cinzel / Cinzel Decorative (Natanael Gama) e Rubik (Hubert & Fischer) — SIL Open Font License 1.1, em `assets/fonts/`.
+
+## Interface (menus)
+- "Pixel Fantasy UI Pack" — UI art: Zanyar's Asset Store. Usadas apenas peças recortadas/redimensionadas (molduras, botões, barras, ícones) em `assets/ui2/`; o pack original não é redistribuído.
