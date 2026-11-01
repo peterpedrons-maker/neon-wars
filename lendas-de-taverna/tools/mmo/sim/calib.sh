@@ -1,0 +1,1 @@
+for cfg in "1 1" "5 1" "10 2" "20 4" "30 6" "40 8" "50 10" "60 12"; do set -- $cfg; L=$1; Z=$2; echo -n "L=$L z=$Z "; timeout 200 node sim.js guerreiro 6 $L $Z | grep "\"min\":6" | python3 -c "import sys,json;d=json.loads(sys.stdin.read());print(d['mlv'],d['lossPerKill'],d['cycle'])"; done

@@ -6,17 +6,25 @@ M=1.4
 def gear(L):
     il=max(1,round(.9*L));t=tierOf(il);m=M*tm(t);aff=2
     return (2.2+il*1.1)*m+aff*il*.35*M*tm(t)*.2,(1+il*.35)*m+(1.6+il*.6)*m+(.8+il*.25)*m+aff*il*.18*M*tm(t)*.4,(4+il*3)*m+(8+il*5)*m+(6+il*4)*m+aff*il*2.5*M*tm(t)*.4
-def hero(L,hpg=.15,atg=.12):
-    pts=3*(L-1);F,V,R=pts*.4,pts*.4,pts*.2;gf=min(1,(L-1)/10);ga,gd,gh=[x*gf for x in gear(L)]
-    return (C['hp']*(1+hpg*(L-1))+gh)*(1+.027*V),(C['atk']*(1+atg*(L-1))+ga)*(1+.02*F),(C['def_']+L*.8+gd)*(1+.02*R)
-TT=8.0;LOSS=.12;MA=1.3
+import math as _m
+TAB={1: [135, 14, 8.8], 2: [171.5, 17.7, 11.5], 3: [212.3, 20.9, 13.8], 5: [316.2, 29.3, 19.7], 8: [496.9, 45.9, 31.5], 10: [634, 55.6, 38.1], 15: [1183.9, 98.7, 66.4], 20: [1738.7, 145, 88.4], 25: [2625.1, 223, 129.3], 30: [3513.6, 301.8, 173.8], 40: [6313.2, 527.5, 307.5], 50: [9503.2, 819.1, 447.5], 60: [13863, 1184.6, 659.1]}
+_K=sorted(TAB)
+def hero(L):
+    for a,b in zip(_K,_K[1:]):
+        if a<=L<=b:
+            f=(L-a)/(b-a);return tuple(_m.exp(_m.log(x)*(1-f)+_m.log(y)*f) for x,y in zip(TAB[a],TAB[b]))
+    return tuple(TAB[_K[-1]])
+MA=1.3
+def dif(L):return min(1.0,max(0.0,(L-1)/59.0))**1.6   # curva de dificuldade: lenta no começo, íngreme no endgame
+def TTf(L):return 5.0+8.5*dif(L)            # tempo p/ matar um monstro do nível do herói (s)
+def LOSSf(L):return .07+.30*dif(L)          # fração da vida perdida por abate
 LS=list(range(1,61))
 need_hp={};need_atk={}
 for L in LS:
     hp,pw,df=hero(L)
     dps=pw*(1+C['crit']*.8)/C['aspd']
-    need_hp[L]=TT*dps
-    taken=(LOSS+.10*math.exp(-(L-1)/8))*hp/(TT/MA)
+    need_hp[L]=TTf(L)*dps
+    taken=LOSSf(L)*hp/(TTf(L)/MA)
     lo,hi=.1,1e6
     for _ in range(80):
         a=(lo+hi)/2;red=min(.85,df/(df+5*a));t=a*(1-red)
