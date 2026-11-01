@@ -454,7 +454,7 @@ const MOBS={
   rato:{nome:'Rato Gigante',sheet:'rato',hp:42,atk:4,xp:11,gold:[1,4],speed:58,aggro:110,rng:20,aspd:1.0,sw:14}
 };
 const BOSS={nome:'Ogro de Brumavale',sheet:'ogro',hp:1500,atk:16,xp:260,gold:[80,140],speed:36,aggro:260,rng:44,aspd:1.7,scale:1.5};
-const BOSS_T0=75,BOSS_KILLS=10,BOSS_P=.03;   // o chefe só pode surgir depois de BOSS_T0 s e BOSS_KILLS abates; a cada segundo há BOSS_P de chance
+const BOSS_T0=480,BOSS_KILLS=60,BOSS_P=.008;   // o chefe só pode surgir depois de BOSS_T0 s e BOSS_KILLS abates; a cada segundo há BOSS_P de chance
 const bossLv=()=>4+G.zoneLv;
 const SLOTS=['arma','elmo','armadura','botas','amuleto'],SLOT_NAME={arma:'Arma',elmo:'Elmo',armadura:'Armadura',botas:'Botas',amuleto:'Amuleto'};
 const RAR=[{n:'Comum',c:'#d0d0d0',m:1,aff:0},{n:'Incomum',c:'#6cd86c',m:1.25,aff:1},{n:'Raro',c:'#5aa8ff',m:1.55,aff:2},{n:'Épico',c:'#c070ff',m:1.95,aff:3},{n:'Lendário',c:'#ffa63a',m:2.5,aff:4}];
@@ -868,12 +868,10 @@ function buildBar(){
     d.innerHTML=(si>=0?`<img src="${skImg(C.skills[si][0])}">`:'<img src="../assets/ui-icons/magic-swirl.png">')+`<span class="key">${k+1}</span><div class="cd"></div><div class="ct"></div>`+(lk?`<div class="lv">${SAVE.lv<SLOT_UNL[k]?'Nv '+SLOT_UNL[k]:'+'}</div>`:'');
     d.style.pointerEvents='auto';d.onclick=()=>{if(!G.auto&&!lk&&G.scene==='dungeon'){G.castReq=k;return;}sfx('ui_click');openPan('sk');};ab.appendChild(d);});
   const pot=mkTb('bPot',potHtml,'slot2 sep',()=>usePotion(true));ab.appendChild(pot);
-  const a=mkTb('bAuto',G.auto?'AUTO':'MANUAL','mbtn'+(G.auto?' on':''),()=>{G.auto=!G.auto;a.classList.toggle('on',G.auto);a.textContent=G.auto?'AUTO':'MANUAL';sfx('ui_click');chat(G.auto?'Modo automático ligado':'Modo manual: use o joystick para andar e toque nas habilidades',1);G.wp=null;});
-  a.style.fontSize='8.5px';
   const sp=mkTb('sp','x'+G.speed,'mbtn',()=>{G.speed=G.speed===1?2:1;sp.textContent='x'+G.speed;sfx('ui_click');});
   const hb=mkTb('bHero','<img src="../assets/ico/v_bolsa.png"><span class="bd" id="bdHero"></span>','mbtn',()=>{sfx('ui_click');openPan('eq');});
   const tw=mkTb('bTownB','<img src="../assets/ui-icons/greek-temple.png" style="filter:sepia(1) saturate(3) hue-rotate(-8deg) brightness(1.25)">','mbtn',()=>{sfx('ui_click');if(confirm('Voltar para a cidade? O progresso desta clareira (abates) será perdido.')){enterTown(false);}});
-  [a,sp,hb,tw].forEach(e=>m.appendChild(e));updPot();badge();
+  [sp,hb,tw].forEach(e=>m.appendChild(e));updPot();badge();
 }
 function updPot(){const n=$('potn');if(n)n.textContent=SAVE.potions+(SAVE.potL?'+'+SAVE.potL:'');}
 function usePotion(manual){const h=G.hero;if(!h||h.state==='ko')return;
@@ -892,7 +890,7 @@ function updHUD(force){
   $('goldn').textContent=SAVE.gold;
   $('xp').firstChild.style.width=clamp(SAVE.xp/xpNeed(SAVE.lv)*100,0,100)+'%';$('hl').textContent='Nv '+SAVE.lv;
   const dg=G.scene==='dungeon';$('prog').style.display=dg?'block':'none';
-  if(dg&&(G.phase==='farm'||G.phase==='boss')){const ready=G.dtm>=BOSS_T0&&G.kills>=BOSS_KILLS;$('progt').textContent=G.phase==='boss'?'Zona '+G.zoneLv+' · '+G.kills+' abates':ready?'A floresta está inquieta…':'Floresta · Zona '+G.zoneLv+' · '+G.kills+' abates';$('prog').querySelector('.bar b').style.width=Math.min(100,Math.min(G.dtm/BOSS_T0,G.kills/BOSS_KILLS)*100)+'%';}
+  if(dg&&(G.phase==='farm'||G.phase==='boss')){const ready=G.dtm>=BOSS_T0&&G.kills>=BOSS_KILLS&&SAVE.lv>=bossLv();$('progt').textContent=G.phase==='boss'?'Zona '+G.zoneLv+' · '+G.kills+' abates':ready?'A floresta está inquieta…':'Floresta · Zona '+G.zoneLv+' · '+G.kills+' abates';$('prog').querySelector('.bar b').style.width=Math.min(100,Math.min(G.dtm/BOSS_T0,G.kills/BOSS_KILLS,SAVE.lv/bossLv())*100)+'%';}
   const bs=G.boss;$('boss').style.display=(dg&&G.phase==='boss'&&bs&&!bs.dead)?'block':'none';
   const E=SAVE.elix||{},bf=[['forca','fist','Força'],['vigor','heart-plus','Vigor'],['sorte','clover','Sorte']].filter(x=>E[x[0]]>0).map(x=>`<div><img src="../assets/ui-icons/${x[1]}.png">${Math.floor(E[x[0]]/60)}:${String(Math.floor(E[x[0]]%60)).padStart(2,'0')}</div>`).join('');if($('buffs').dataset.v!==bf){$('buffs').dataset.v=bf;$('buffs').innerHTML=bf;}
   if(bs){$('boss').querySelector('.bar b').style.width=clamp(bs.hp/bs.maxhp*100,0,100)+'%';$('bosst').textContent=bs.name+' Nv.'+bs.lv;}
@@ -975,7 +973,7 @@ function checkBoss(){}
 /* o chefe NÃO espera em arena: depois de um tempo e alguns abates há uma chance por segundo de ele surgir fora da tela e ir até o herói */
 function bossTick(dt){
   if(G.phase!=='farm'||G.hero.state==='ko')return;
-  G.dtm+=dt;if(G.dtm<BOSS_T0||G.kills<BOSS_KILLS)return;
+  G.dtm+=dt;if(G.dtm<BOSS_T0||G.kills<BOSS_KILLS||SAVE.lv<bossLv())return;
   G.bossRoll-=dt;if(G.bossRoll>0)return;G.bossRoll=1;if(Math.random()<BOSS_P)spawnBoss();
 }
 function spawnBoss(){
@@ -1775,7 +1773,7 @@ G.joy={x:0,y:0,m:0};G.castReq=-1;
     else if(['1','2','3'].includes(k)){G.castReq=+k-1;}});
   addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(KS[k]){KS[k]=0;kv();}});
 })();
-function joyShow(){const J=$('joy');if(!J)return;const on=G.on&&!G.winOpen&&!$('pan').classList.contains('on')&&$('hud').offsetParent!==null&&((G.scene==='dungeon'&&!G.auto&&G.phase!=='end')||G.scene==='town');if(J.classList.contains('on')!==on){J.classList.toggle('on',on);if(!on){G.joy.m=0;$('joyk').style.transform='';}}}
+function joyShow(){const J=$('joy');if(!J)return;const on=G.on&&!G.winOpen&&!$('pan').classList.contains('on')&&$('hud').offsetParent!==null&&G.scene==='town';if(J.classList.contains('on')!==on){J.classList.toggle('on',on);if(!on){G.joy.m=0;$('joyk').style.transform='';}}}
 $('cv').addEventListener('pointerdown',ev=>{
   if(!G.on||G.winOpen)return;const r=$('cv').getBoundingClientRect();const lx=(ev.clientX-r.left)/r.width*G.LW+G.cam.x,ly=(ev.clientY-r.top)/r.height*G.LH+G.cam.y;
   const fx=()=>{tapFx(ev.clientX-$('stage').getBoundingClientRect().left,ev.clientY);sfx('ui_click',.4);};
