@@ -28,8 +28,17 @@ Acesso: `https://peterpedrons-maker.github.io/neon-wars/lendas-de-taverna/mmo/`
 - Arqueiro e Mago recuam entre disparos (kiting). Chefe exige nível mínimo (zona + 4).
 - Balanceamento: zona 1 leva ~3 a 5 min no x1.
 
+## Etapa 3 — cidade (lobby)
+- O jogo começa na **cidade de Brumavale**: você controla o herói (toque para andar; toque num NPC ou no portal).
+- **Portal das Dungeons**: escolhe a dungeon e a zona; dentro dela o herói luta sozinho (AUTO). Botão do templo na barra volta à cidade (também pela tela de zona limpa). Voltar à cidade cura tudo.
+- **Mercador**: único lugar para vender itens (individual, por raridade) e comprar equipamentos (estoque renovável).
+- **Ferreiro**: melhora o equipamento usado (+1 a +10, +8% dos atributos por nível); falhas só até o +5, sem destruir o item.
+- **Alquimista**: poções de cura (45%) e maior (80%) e elixires de Força, Vigor e Sorte (5 min de dungeon).
+- Sem curandeiro (herói único e fixo).
+- Cidade e props gerados por `tools/mmo/build_town.py`; a colisão (casas, árvores, estações, lago, portal) vem do JSON do mapa.
+
 ## Próximas etapas
-3. Mais zonas e biomas, chefes finais, itens únicos/lendários, subclasses, nuvem.
+4. Novas dungeons/biomas (Floresta Gelada, Ruínas, Floresta Seca), chefes próprios, missões do quadro, itens únicos/lendários, nuvem.
 
 ## Arquitetura
 - `index.html`: tudo em um arquivo (canvas 2D + HUD em DOM). Escala inteira de pixels (`G.K`).
