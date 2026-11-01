@@ -616,7 +616,9 @@ function audioInit(){
 }
 function loadBuf(url,key){return fetch(url).then(r=>r.arrayBuffer()).then(b=>new Promise(ok=>AC.decodeAudioData(b,x=>{BUF[key]=x;ok(x);},()=>ok(null)))).catch(()=>null);}
 const lastSfx={};
-function sfx(n,vol=.7,rate=1){if(!AC||!BUF[n])return;const t=AC.currentTime;if(lastSfx[n]&&t-lastSfx[n]<0.045)return;lastSfx[n]=t;
+/* sons de interface padronizados: tudo que é clique/janela/confirmação toca o mesmo 'clique' discreto (o da seleção de itens da janela) */
+const UI_SND={ui_click:1,ui_confirm:1,tr_open:1,tr_close:1};
+function sfx(n,vol=.7,rate=1){if(UI_SND[n]){n='ui_click';vol=.45;rate=1;}else if(n==='ui_denied')vol=Math.min(vol,.4);else if(n==='tr_equip'||n==='coin')vol=Math.min(vol,.4);if(!AC||!BUF[n])return;const t=AC.currentTime;if(lastSfx[n]&&t-lastSfx[n]<0.045)return;lastSfx[n]=t;
   const s=AC.createBufferSource();s.buffer=BUF[n];s.playbackRate.value=rate*(0.96+Math.random()*.08);const g=AC.createGain();g.gain.value=vol;s.connect(g);g.connect(sfxGain);s.start();}
 function playMusic(key='m_campina'){musOn=true;if(!AC||!BUF[key])return;if(musSrc){try{musSrc.stop();}catch(e){}}
   musSrc=AC.createBufferSource();musSrc.buffer=BUF[key];musSrc.loop=true;musSrc.connect(musGain);musSrc.start();musSrc.__k=key;}
@@ -1397,6 +1399,13 @@ function updateTown(dt){
       if(G.wp){const d=Math.hypot(h.x-G.wp.x,h.y-G.wp.y);if(d<(t&&(t.kind==='portal'||t.kind==='door')?14:6)){const tt=t;G.wp=null;if(tt&&tt.kind==='door')enterRoom(tt.room,tt.id);else if(tt)interact(tt);}}}
   }
   if(G.room&&ZONE.exit&&h.y>ZONE.exit.y&&Math.abs(h.x-ZONE.exit.x)<36)exitRoom();
+  /* com o joystick: chegar na porta de um prédio (ou no portal) entra/abre direto */
+  if(!G.room&&!G.winOpen&&!G.roomBusy){
+    const P=ZONE.portal;let hit=null;
+    if(ZONE.doors)for(const d of ZONE.doors)if(Math.abs(h.x-d.x)<26&&h.y<d.y+4&&h.y>d.y-30){hit={kind:'door',id:d.id,room:d.room};break;}
+    if(!hit&&P&&Math.abs(h.x-P.x)<30&&h.y<P.stand[1]+2&&h.y>P.y-16)hit={kind:'portal'};
+    if(hit){if(G.doorArm!==false){G.doorArm=false;G.wp=null;if(hit.kind==='door')enterRoom(hit.room,hit.id);else interact(hit);}}else G.doorArm=true;
+  }
   if(moved){h.state='walk';h.animT+=dt*(h.speed/70);}else h.state='idle';
   if(h.hp<h.maxhp)h.hp=Math.min(h.maxhp,h.hp+h.maxhp*.2*dt);
   for(const n of G.npcs){const d=dist(h,n);n.row=d<150?dir4(h.x-n.x,h.y-n.y):n.row0;}
