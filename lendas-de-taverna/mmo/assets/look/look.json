@@ -1,0 +1,210 @@
+{
+ "guerreiro": {
+  "act": "slash",
+  "cell": 192,
+  "torso": [
+   "couro",
+   "malha",
+   "placas",
+   "tecido"
+  ],
+  "groups": {
+   "walk": [
+    "skin",
+    "legs",
+    "hair",
+    "fg"
+   ],
+   "hurt": [
+    "skin",
+    "legs",
+    "hair",
+    "fg"
+   ],
+   "act": [
+    "skin",
+    "legs",
+    "hair",
+    "fg",
+    "bg"
+   ]
+  },
+  "dtorso": "placas",
+  "hair": true,
+  "hairDefault": true,
+  "hat": false,
+  "legs": true
+ },
+ "ladino": {
+  "act": "slash",
+  "cell": 64,
+  "torso": [
+   "couro",
+   "malha",
+   "placas",
+   "tecido"
+  ],
+  "groups": {
+   "walk": [
+    "skin",
+    "legs",
+    "fg",
+    "hat"
+   ],
+   "hurt": [
+    "skin",
+    "legs",
+    "fg",
+    "hat"
+   ],
+   "act": [
+    "skin",
+    "legs",
+    "fg",
+    "hat"
+   ]
+  },
+  "dtorso": "couro",
+  "hair": false,
+  "hairDefault": false,
+  "hat": true,
+  "legs": true
+ },
+ "mago": {
+  "act": "spellcast",
+  "cell": 64,
+  "torso": [],
+  "groups": {
+   "walk": [
+    "skin",
+    "torso",
+    "hat",
+    "bg",
+    "fg"
+   ],
+   "hurt": [
+    "skin",
+    "torso",
+    "bg",
+    "fg"
+   ],
+   "act": [
+    "skin",
+    "torso",
+    "hat"
+   ]
+  },
+  "dtorso": "robe",
+  "hair": false,
+  "hairDefault": false,
+  "hat": true,
+  "legs": false
+ },
+ "clerigo": {
+  "act": "slash",
+  "cell": 192,
+  "torso": [
+   "couro",
+   "malha",
+   "placas",
+   "tecido"
+  ],
+  "groups": {
+   "walk": [
+    "skin",
+    "legs",
+    "fg",
+    "hair"
+   ],
+   "hurt": [
+    "skin",
+    "legs",
+    "fg",
+    "hair"
+   ],
+   "act": [
+    "skin",
+    "legs",
+    "bg",
+    "fg",
+    "hair"
+   ]
+  },
+  "dtorso": "malha",
+  "hair": true,
+  "hairDefault": false,
+  "hat": false,
+  "legs": true
+ },
+ "arqueiro": {
+  "act": "shoot",
+  "cell": 64,
+  "torso": [
+   "couro"
+  ],
+  "groups": {
+   "walk": [
+    "skin",
+    "legs",
+    "hair",
+    "bg",
+    "fg"
+   ],
+   "hurt": [
+    "skin",
+    "legs",
+    "hair",
+    "bg",
+    "fg"
+   ],
+   "act": [
+    "skin",
+    "legs",
+    "hair",
+    "bg",
+    "fg"
+   ]
+  },
+  "dtorso": "couro",
+  "hair": true,
+  "hairDefault": true,
+  "hat": false,
+  "legs": true
+ },
+ "bardo": {
+  "act": "slash",
+  "cell": 192,
+  "torso": [
+   "couro",
+   "malha",
+   "placas",
+   "tecido"
+  ],
+  "groups": {
+   "walk": [
+    "skin",
+    "legs",
+    "hat",
+    "fg"
+   ],
+   "hurt": [
+    "skin",
+    "legs",
+    "hat",
+    "fg"
+   ],
+   "act": [
+    "skin",
+    "legs",
+    "hat",
+    "bg",
+    "fg"
+   ]
+  },
+  "dtorso": "tecido",
+  "hair": false,
+  "hairDefault": false,
+  "hat": true,
+  "legs": true
+ }
+}

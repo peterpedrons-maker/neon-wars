@@ -1,0 +1,174 @@
+{
+ "guerreiro": {
+  "action": "slash",
+  "oversize": true,
+  "walk": [
+   "body/bodies/male/walk.png",
+   "head/heads/human/male/walk.png",
+   "legs/pantaloons/male/walk.png",
+   "torso/armour/plate/male/walk.png",
+   "hair/page/adult/walk.png",
+   "shield/round/walk/silver.png",
+   "weapon/sword/longsword/walk/longsword.png"
+  ],
+  "hurt": [
+   "body/bodies/male/hurt.png",
+   "head/heads/human/male/hurt.png",
+   "legs/pantaloons/male/hurt.png",
+   "torso/armour/plate/male/hurt.png",
+   "hair/page/adult/hurt.png",
+   "weapon/sword/longsword/hurt/longsword.png"
+  ],
+  "actionBody": [
+   "body/bodies/male/slash.png",
+   "head/heads/human/male/slash.png",
+   "legs/pantaloons/male/slash.png",
+   "torso/armour/plate/male/slash.png",
+   "hair/page/adult/slash.png",
+   "shield/round/slash/silver.png"
+  ],
+  "actionBehind": "weapon/sword/longsword/attack_slash/behind/longsword.png",
+  "actionFront": "weapon/sword/longsword/attack_slash/longsword.png"
+ },
+ "ladino": {
+  "action": "slash",
+  "walk": [
+   "body/bodies/male/walk.png",
+   "head/heads/human/male/walk.png",
+   "legs/pantaloons/male/walk.png",
+   "torso/armour/leather/male/walk.png",
+   "weapon/sword/dagger/walk/dagger.png",
+   "hat/cloth/hood/adult/walk.png"
+  ],
+  "slash": [
+   "body/bodies/male/slash.png",
+   "head/heads/human/male/slash.png",
+   "legs/pantaloons/male/slash.png",
+   "torso/armour/leather/male/slash.png",
+   "weapon/sword/dagger/slash/dagger.png",
+   "hat/cloth/hood/adult/slash.png"
+  ],
+  "hurt": [
+   "body/bodies/male/hurt.png",
+   "head/heads/human/male/hurt.png",
+   "legs/pantaloons/male/hurt.png",
+   "torso/armour/leather/male/hurt.png",
+   "weapon/sword/dagger/hurt/dagger.png",
+   "hat/cloth/hood/adult/hurt.png"
+  ]
+ },
+ "mago": {
+  "action": "spellcast",
+  "walk": [
+   "body/bodies/female/walk.png",
+   "head/heads/human/female/walk.png",
+   "torso/clothes/robe/female/walk/_brown.png",
+   "hat/magic/wizard/base/adult/walk/navy.png",
+   "weapon/magic/gnarled/universal/walk/background.png",
+   "weapon/magic/gnarled/universal/walk/foreground.png"
+  ],
+  "spellcast": [
+   "body/bodies/female/spellcast.png",
+   "head/heads/human/female/spellcast.png",
+   "torso/clothes/robe/female/spellcast/_brown.png",
+   "hat/magic/wizard/base/adult/spellcast/navy.png"
+  ],
+  "hurt": [
+   "body/bodies/female/hurt.png",
+   "head/heads/human/female/hurt.png",
+   "torso/clothes/robe/female/hurt/_brown.png",
+   "weapon/magic/gnarled/universal/hurt/background.png",
+   "weapon/magic/gnarled/universal/hurt/foreground.png"
+  ]
+ },
+ "clerigo": {
+  "action": "slash",
+  "oversize": true,
+  "walk": [
+   "body/bodies/male/walk.png",
+   "head/heads/human/male/walk.png",
+   "legs/pantaloons/male/walk.png",
+   "torso/chainmail/male/walk.png",
+   "weapon/blunt/mace/walk/mace.png"
+  ],
+  "hurt": [
+   "body/bodies/male/hurt.png",
+   "head/heads/human/male/hurt.png",
+   "legs/pantaloons/male/hurt.png",
+   "torso/chainmail/male/hurt.png",
+   "weapon/blunt/mace/hurt/mace.png"
+  ],
+  "actionBody": [
+   "body/bodies/male/slash.png",
+   "head/heads/human/male/slash.png",
+   "legs/pantaloons/male/slash.png",
+   "torso/chainmail/male/slash.png"
+  ],
+  "actionBehind": "weapon/blunt/mace/attack_slash/behind/mace.png",
+  "actionFront": "weapon/blunt/mace/attack_slash/mace.png"
+ },
+ "arqueiro": {
+  "action": "shoot",
+  "walk": [
+   "body/bodies/male/walk.png",
+   "head/heads/human/male/walk.png",
+   "legs/pantaloons/male/walk.png",
+   "torso/armour/leather/male/walk.png",
+   "hair/page/adult/walk.png",
+   "weapon/ranged/bow/recurve/walk/background/medium.png",
+   "weapon/ranged/bow/recurve/walk/foreground.png",
+   "quiver/walk/quiver.png"
+  ],
+  "shoot": [
+   "body/bodies/male/shoot.png",
+   "head/heads/human/male/shoot.png",
+   "legs/pantaloons/male/shoot.png",
+   "torso/armour/leather/male/shoot.png",
+   "hair/page/adult/shoot.png",
+   "weapon/ranged/bow/recurve/universal/shoot/background.png",
+   "weapon/ranged/bow/recurve/universal/shoot/foreground.png",
+   "quiver/shoot/quiver.png"
+  ],
+  "hurt": [
+   "body/bodies/male/hurt.png",
+   "head/heads/human/male/hurt.png",
+   "legs/pantaloons/male/hurt.png",
+   "torso/armour/leather/male/hurt.png",
+   "hair/page/adult/hurt.png",
+   "weapon/ranged/bow/recurve/universal/hurt/background.png",
+   "weapon/ranged/bow/recurve/universal/hurt/foreground.png"
+  ]
+ },
+ "bardo": {
+  "action": "slash",
+  "oversize": true,
+  "walk": [
+   "body/bodies/male/walk.png",
+   "head/heads/human/male/walk.png",
+   "legs/pantaloons/male/walk.png",
+   "torso/clothes/longsleeve/formal/male/walk.png",
+   "hat/cloth/leather_cap/adult/walk.png",
+   "hat/cloth/leather_cap/feather/adult/walk.png",
+   "weapon/sword/rapier/walk/rapier.png"
+  ],
+  "hurt": [
+   "body/bodies/male/hurt.png",
+   "head/heads/human/male/hurt.png",
+   "legs/pantaloons/male/hurt.png",
+   "torso/clothes/longsleeve/formal/male/hurt.png",
+   "hat/cloth/leather_cap/adult/hurt.png",
+   "hat/cloth/leather_cap/feather/adult/hurt.png",
+   "weapon/sword/rapier/hurt/rapier.png"
+  ],
+  "actionBody": [
+   "body/bodies/male/slash.png",
+   "head/heads/human/male/slash.png",
+   "legs/pantaloons/male/slash.png",
+   "torso/clothes/longsleeve/formal/male/slash.png",
+   "hat/cloth/leather_cap/adult/slash.png",
+   "hat/cloth/leather_cap/feather/adult/slash.png"
+  ],
+  "actionBehind": "weapon/sword/rapier/attack_slash/behind/rapier.png",
+  "actionFront": "weapon/sword/rapier/attack_slash/rapier.png"
+ }
+}
