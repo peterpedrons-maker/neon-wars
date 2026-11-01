@@ -487,17 +487,17 @@ async function loadMap(name,zf,af,gf,pf){
 }
 async function loadAll(){
   LOOKM=await fetch('assets/look2/look2.json').then(r=>r.json());
-  await Promise.all([loadMap('zone1','assets/zone1.json','assets/atlas.json','assets/zone1_ground.png','assets/atlas.png'),loadMap('town','assets/town.json','assets/town_atlas.json','assets/town_ground.png','assets/town_atlas.png')]);
+  await Promise.all([loadMap('zone1','assets/zone1.json','assets/atlas.json','assets/zone1_ground.png','assets/atlas.png'),loadMap('town','assets/town.json','assets/town_atlas.json','assets/town_ground.png','assets/town_atlas.png'),...['mer','fer','alq','mes','cof','lei'].map(k=>loadMap('int_'+k,'assets/int_'+k+'.json','assets/int_atlas.json','assets/int_'+k+'_ground.png','assets/int_atlas.png'))]);
   const jobs=[];
   for(const [k,c] of Object.entries(CLASSES))jobs.push(loadSheet(k,c.atk_==='cast'?'spellcast':c.atk_));
   for(const k of ['goblin','esqueleto','javali','rato','ogro'])jobs.push(loadSheet(k,'slash'));
-  for(const k of ['bardo','guardiao','mago','guarda','pov_f','ladino_b'])if(!SHEETS[k])jobs.push(loadSheet(k,null));
+  for(const k of ['bardo','guardiao','mago','guarda','pov_f','ladino_b','clerigo','ladino'])if(!SHEETS[k])jobs.push(loadSheet(k,null));
   await Promise.all(jobs);
   for(const k of new Set(CLS_ORDER.flatMap(c=>CLASSES[c].skills.map(s=>s[0]))))IMG[k]=await loadImg(skImg(k)).catch(()=>null);
   for(const n of ['i_espada','i_machado','i_martelo','i_adaga','i_cajado','i_cetro','i_arco','i_elmo','i_capuz','i_couraca','i_cota','i_colete','i_manto','i_tunica','i_botas','i_sandalias','i_colar','i_pingente','i_talisma','i_anel'])IMG_ICO[n]=await loadImg('../assets/ico/'+n+'.png').catch(()=>null);
   for(const n of ['coins','anvil','health-potion','treasure-map','clover','fist','heart-plus','shop','greek-temple'])IMG_UI[n]=await loadImg('../assets/ui-icons/'+n+'.png').catch(()=>null);
   for(const name of Object.keys(MAPS)){useMap(name);buildSolids();buildWater();MAPS[name].water=WATER;MAPS[name].wcw=WCW;
-    if(name==='zone1')fixSpawns();else{ZONE.start=freeSpot(ZONE.start[0],ZONE.start[1]);ZONE.portal.stand=freeSpot(ZONE.portal.stand[0],ZONE.portal.stand[1]);if(!ZONE.npcs.find(n=>n.id==='mes')){const f=freeSpot(450,560);ZONE.npcs.push({id:'mes',nm:'Mestre de Classe',sh:'clerigo',x:f[0],y:f[1],ic:'holy-symbol',row:2,win:'subclasse'});}}}
+    if(name==='zone1')fixSpawns();else{ZONE.start=freeSpot(ZONE.start[0],ZONE.start[1]);ZONE.portal.stand=freeSpot(ZONE.portal.stand[0],ZONE.portal.stand[1]);if(ZONE.doors)ZONE.doors.forEach(d=>{const f=freeSpot(d.x,d.y+10);d.sx=f[0];d.sy=f[1];});}}
   useMap('town');
 }
 
@@ -545,7 +545,7 @@ function playMusic(key='m_campina'){musOn=true;if(!AC||!BUF[key])return;if(musSr
 let SAVE=null;           // {name,cls,lv,xp,gold,kills,zone}
 const G={scene:'town',map:'town',npcs:[],vill:[],winOpen:null,loot:[],on:false,speed:1,auto:true,t:0,cam:{x:0,y:0},K:3,LW:270,LH:480,mobs:[],projs:[],fx:[],floats:[],hero:null,boss:null,
          kills:0,phase:'farm',zoneLv:1,koT:0,chat:[],bossWoke:false,wp:null,wpT:0};
-function migrateSave(){SAVE.potL=SAVE.potL||0;SAVE.elix=SAVE.elix||{forca:0,vigor:0,sorte:0};SAVE.zoneMax=SAVE.zoneMax||SAVE.zone||1;SAVE.inv=SAVE.inv||[];SAVE.eq=SAVE.eq||{};SAVE.potions=SAVE.potions==null?2:SAVE.potions;SAVE.sk=SAVE.sk||[1,0,0];while(SAVE.sk.length<14)SAVE.sk.push(0);if(SAVE.sub===undefined)SAVE.sub=null;SAVE.eqs=SAVE.eqs||[0,1,2];SAVE.at=SAVE.at||{for:0,vit:0,res:0,agi:0,sor:0};if(SAVE.autoEq==null)SAVE.autoEq=true;}
+function migrateSave(){SAVE.potL=SAVE.potL||0;SAVE.elix=SAVE.elix||{forca:0,vigor:0,sorte:0};SAVE.zoneMax=SAVE.zoneMax||SAVE.zone||1;SAVE.inv=SAVE.inv||[];SAVE.eq=SAVE.eq||{};SAVE.potions=SAVE.potions==null?2:SAVE.potions;SAVE.sk=SAVE.sk||[1,0,0];while(SAVE.sk.length<14)SAVE.sk.push(0);if(SAVE.sub===undefined)SAVE.sub=null;SAVE.vault=SAVE.vault||[];SAVE.eqs=SAVE.eqs||[0,1,2];SAVE.at=SAVE.at||{for:0,vit:0,res:0,agi:0,sor:0};if(SAVE.autoEq==null)SAVE.autoEq=true;}
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));return s&&s.cls&&CLASSES[s.cls]?s:null;}catch(e){return null;}}
 function writeSave(){try{SAVE.kills=SAVE.kills||0;localStorage.setItem(SAVE_KEY,JSON.stringify(SAVE));}catch(e){}}
 
@@ -782,7 +782,7 @@ function initTown(){
 function enterTown(first,instant){
   const go=()=>{
     for(const L of G.loot)addItem(L.it,true);G.loot=[];
-    G.scene='town';useMap('town');G.mobs=[];G.boss=null;G.projs=[];G.phase='town';closeWin();
+    G.scene='town';G.room=null;useMap('town');G.mobs=[];G.boss=null;G.projs=[];G.phase='town';closeWin();
     const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;h.state='idle';h.act=null;h.shield=0;h.buff=null;h.kvx=h.kvy=0;h.sk=Array(14).fill(0);
     h.x=first?ZONE.start[0]:ZONE.portal.stand[0];h.y=first?ZONE.start[1]:ZONE.portal.stand[1]+8;h.row=2;h._lx=h.x;h._ly=h.y;
     initTown();G.wp=null;G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2+34;
@@ -1230,18 +1230,29 @@ function update(dt){
   if(G.shake>0)G.shake=Math.max(0,G.shake-dt);
   // câmera
   const h=G.hero,tx=h.x-G.LW/2,ty=h.y-G.LH/2+(G.scene==='town'?10:34);G.cam.x+=(tx-G.cam.x)*Math.min(1,dt*6);G.cam.y+=(ty-G.cam.y)*Math.min(1,dt*6);
-  G.cam.x=clamp(G.cam.x,0,Math.max(0,ZONE.w-G.LW));G.cam.y=clamp(G.cam.y,0,Math.max(0,ZONE.h-G.LH));
+  G.cam.x=ZONE.w<G.LW?(ZONE.w-G.LW)/2:clamp(G.cam.x,0,ZONE.w-G.LW);G.cam.y=ZONE.h<G.LH?(ZONE.h-G.LH)/2:clamp(G.cam.y,0,ZONE.h-G.LH);
 }
 
 function tickElix(dt){const E=SAVE.elix;if(!E)return;let ch=false;for(const k of ['forca','vigor','sorte']){if(E[k]>0){E[k]-=dt;if(E[k]<=0){E[k]=0;ch=true;chat('O elixir de '+{forca:'Força',vigor:'Vigor',sorte:'Sorte'}[k]+' acabou',1);}}}if(ch)recalcHero(true);}
 /* --- cidade --- */
+function enterRoom(room,doorId){
+  if(G.roomBusy)return;G.roomBusy=1;sfx('tr_open',.6);
+  fadeTo(()=>{G.roomBusy=0;G.wp=null;closeWin();G.room=room;G.fromDoor=doorId;useMap(room);initTown();const h=G.hero;h.x=ZONE.start[0];h.y=ZONE.start[1];h.row=0;h._lx=h.x;h._ly=h.y;G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2;
+    const d=MAPS.town.zone.doors.find(x=>x.id===doorId);if(d)setTimeout(()=>banner(d.nm,'Interior'),300);buildBar();});
+}
+function exitRoom(){
+  if(G.roomBusy)return;G.roomBusy=1;sfx('tr_close',.6);const id=G.fromDoor;
+  fadeTo(()=>{G.roomBusy=0;G.wp=null;closeWin();G.room=null;useMap('town');initTown();const h=G.hero,d=ZONE.doors.find(x=>x.id===id);
+    h.x=d?d.sx:ZONE.start[0];h.y=d?d.sy+14:ZONE.start[1];h.row=2;h._lx=h.x;h._ly=h.y;G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2+10;buildBar();});
+}
 function updateTown(dt){
   const h=G.hero;h.flash=0;h.kvx=h.kvy=0;let moved=0;
   if(G.wp&&!G.winOpen){
     const t=G.wp.target;
-    if(t&&t.kind==='npc'&&dist(h,t)<40){G.wp=null;interact(t);}
+    if(t&&t.kind==='npc'&&dist(h,t)<(t.r||40)){G.wp=null;interact(t);}
     else{moved=moveTo(h,G.wp.x,G.wp.y,hSpd(h)*1.15,dt);collide(h);
-      if(G.wp){const d=Math.hypot(h.x-G.wp.x,h.y-G.wp.y);if(d<(t&&t.kind==='portal'?14:6)){const tt=t;G.wp=null;if(tt)interact(tt);}}}
+      if(G.wp){const d=Math.hypot(h.x-G.wp.x,h.y-G.wp.y);if(d<(t&&(t.kind==='portal'||t.kind==='door')?14:6)){const tt=t;G.wp=null;if(tt&&tt.kind==='door')enterRoom(tt.room,tt.id);else if(tt)interact(tt);}}}
+  if(G.room&&ZONE.exit&&h.y>ZONE.exit.y&&Math.abs(h.x-ZONE.exit.x)<36)exitRoom();
   }
   if(moved){h.state='walk';h.animT+=dt*(h.speed/70);}else h.state='idle';
   if(h.hp<h.maxhp)h.hp=Math.min(h.maxhp,h.hp+h.maxhp*.2*dt);
@@ -1297,8 +1308,8 @@ function render(){
   let shx=0,shy=0;if(G.shake>0){shx=Math.round(rnd(-1.5,1.5));shy=Math.round(rnd(-1.5,1.5));}
   ctx.translate(shx,shy);
   const cx=Math.round(G.cam.x),cy=Math.round(G.cam.y);G.cam.rx=cx;G.cam.ry=cy;
-  ctx.fillStyle='#0f1a0a';ctx.fillRect(-4,-4,G.LW+8,G.LH+8);
-  ctx.drawImage(GROUND,cx,cy,G.LW,G.LH,0,0,G.LW,G.LH);
+  ctx.fillStyle=G.room?'#0b0806':'#0f1a0a';ctx.fillRect(-4,-4,G.LW+8,G.LH+8);
+  {const sx=Math.max(0,cx),sy=Math.max(0,cy),sw=Math.min(GROUND.width,cx+G.LW)-sx,sh=Math.min(GROUND.height,cy+G.LH)-sy;if(sw>0&&sh>0)ctx.drawImage(GROUND,sx,sy,sw,sh,sx-cx,sy-cy,sw,sh);}
   // lago: brilhos
   const pd=ZONE.pond||[0,0,1,1];ctx.fillStyle='rgba(200,232,252,.85)';
   for(let i=0;ZONE.pond&&i<26;i++){const a=(i*2.399+G.t*.05)%6.283,r=((i*37)%100)/100,px=pd[0]+Math.cos(a)*pd[2]*.85*r,py=pd[1]+Math.sin(a)*pd[3]*.85*r;if(((G.t*3+i)%3)<1){const X=px-cx,Y=py-cy;if(X>0&&Y>0&&X<G.LW&&Y<G.LH)ctx.fillRect(Math.round(X),Math.round(Y),2,1);}}
@@ -1453,7 +1464,7 @@ function openWin(id){sfx('tr_open',.6);G.winOpen=id;G.wsel=null;G.wp=null;if(id=
   $('toast').style.display='none';$('win').classList.add('on');renderWin();}
 function closeWin(){G.winOpen=null;$('win').classList.remove('on');}
 $('wx').onclick=()=>{sfx('tr_close',.6);closeWin();};
-function renderWin(){const f={mercador:winMercador,forja:winForja,alquimista:winAlq,portal:winPortal,locais:winLocais,subclasse:winSub}[G.winOpen];$('wtip').classList.remove('on');if(f){f();updPot();winTip();}}
+function renderWin(){const f={cofre:winCofre,leilao:winLeilao,mercador:winMercador,forja:winForja,alquimista:winAlq,portal:winPortal,locais:winLocais,subclasse:winSub}[G.winOpen];$('wtip').classList.remove('on');if(f){f();updPot();winTip();}}
 $('wbody').addEventListener('click',ev=>{const w=ev.target.closest('[data-w]');if(w){const [t,k]=w.dataset.w.split(':');const same=G.wsel&&G.wsel.t===t&&G.wsel.k==(+k);G.wsel=same?null:{t,k:+k};sfx('ui_click',.5);renderWin();return;}
   const e=ev.target.closest('[data-a]');if(!e||e.disabled){if(G.wsel){G.wsel=null;renderWin();}return;}winAct(e.dataset.a);});
 function coin(n){return `<span class="pr"><img src="${UI}coins.png">${n}</span>`;}
@@ -1482,6 +1493,9 @@ function winTip(){
     anchorTip(t,el,root,B,RAR[it.rar].c,itemTipHTML(it,cur,extra,btn),winAct);
   }else if(w.t==='sbs'){
     const S=CLASSES[SAVE.cls].skills[w.k],o=S[4];anchorTip(t,el,root,B,'#d9b45f',`<div class="th"><div class="ti" style="border-color:#d9b45f"><img src="${skImg(S[0])}"></div><div><b style="color:#f3d98e">${S[1]}</b><span>Subclasse · liberada no nível ${o.u}</span></div></div><div class="row"><span>${o.d}</span></div><div class="vl">Recarga ${S[2]}s${S[3]?' · dano x'+S[3]:''}</div>`,winAct);
+  }else if(w.t==='vt'||w.t==='vb'){
+    const it=(w.t==='vt'?SAVE.vault:SAVE.inv)[w.k];if(!it)return;const full=w.t==='vt'?SAVE.inv.length>=24:SAVE.vault.length>=VAULT_MAX;
+    anchorTip(t,el,root,B,RAR[it.rar].c,itemTipHTML(it,SAVE.eq[it.slot]||{s:{}},'',`<button class="g" data-a="${w.t==='vt'?'vtake':'vput'}:${w.k}" ${full?'disabled':''}>${w.t==='vt'?'Retirar':'Guardar'}</button>`),winAct);
   }else if(w.t==='alq'){
     const d=ALQ[w.k];if(!d)return;
     anchorTip(t,el,root,B,'#d9b45f',`<div class="th"><div class="ti" style="border-color:#d9b45f"><img src="${UI}${d.ic}.png" style="filter:sepia(1) saturate(4) hue-rotate(-8deg) brightness(1.2)"></div><div><b style="color:#f3d98e">${d.nm}</b><span>${d.tipo}</span></div></div><div class="row"><span>${d.d}</span></div><div class="vl">${d.extra()}</div><div class="ta"><button class="g" data-a="${d.act}" ${SAVE.gold<d.price()?'disabled':''}>${d.btn} · ${d.price()}</button></div>`,winAct);
@@ -1489,9 +1503,11 @@ function winTip(){
 }
 /* Locais (atalho na barra da cidade) */
 function winLocais(){
-  $('wtt').textContent='IR PARA...';
-  let h='<div class="sub">Toque em um lugar da cidade e o herói vai sozinho até lá.</div>';
-  for(const n of G.npcs)h+=`<div class="wr"><img class="ic" src="${UI}${n.ic}.png"><div class="tx"><b>${n.nm}</b><span>${{mercador:'Vender e comprar equipamentos',forja:'Melhorar o equipamento',alquimista:'Poções e elixires',portal:'Entrar nas dungeons',subclasse:'Escolher a subclasse (nível 10)'}[n.win]}</span></div><button class="gb" data-a="goto:${n.id}">IR</button></div>`;
+  $('wtt').textContent='Atalhos';
+  let h='<div class="sub">Toque em um lugar e o herói vai sozinho até lá.</div>';
+  if(G.room){h+=`<div class="wr"><img class="ic" src="${UI}greek-temple.png"><div class="tx"><b>Sair da casa</b><span>Voltar para a cidade</span></div><button class="gb" data-a="leave">SAIR</button></div>`;$('wbody').innerHTML=h;return;}
+  const T=MAPS.town.zone,desc={fer:'Melhorar o equipamento',mer:'Comprar e vender itens',alq:'Poções e elixires',mes:'Escolher a subclasse (nível 10)',cof:'Guardar itens no cofre',lei:'Casa de leilão (em breve)'};
+  T.doors.forEach(d=>{h+=`<div class="wr"><img class="ic" src="${UI}${d.ic}.png"><div class="tx"><b>${d.nm}</b><span>${desc[d.id]}</span></div><button class="gb" data-a="goto:door:${d.id}">IR</button></div>`;});
   h+=`<div class="wr"><img class="ic" src="${UI}greek-temple.png"><div class="tx"><b>Portal das Dungeons</b><span>Entrar nas dungeons</span></div><button class="gb" data-a="goto:portal">IR</button></div>`;
   $('wbody').innerHTML=h;
 }
@@ -1574,8 +1590,23 @@ function winSub(){
   h+=`<div class="sub">${cur?'A subclasse escolhida é definitiva.':'Atenção: a escolha é definitiva e não pode ser trocada.'}</div>`;
   $('wbody').innerHTML=h;
 }
+const VAULT_MAX=40;
+function winCofre(){
+  $('wtt').textContent='Cofre';SAVE.vault=SAVE.vault||[];const tab=G.ctab||'v';
+  let h=npcHead('locked-chest','Gregor, o Banqueiro','“Seus bens, bem guardados.”');
+  const grid=(arr,pre,max)=>'<div class="bag">'+Array.from({length:max},(_,i)=>{const it=arr[i];if(!it)return '<div class="cell e"></div>';const R=RAR[it.rar],sel=G.wsel&&G.wsel.t===pre&&G.wsel.k===i;return `<div class="cell vw ${sel?'sel':''}" style="border-color:${R.c}" data-w="${pre}:${i}"><img src="../assets/ico/${it.icon}.png"><span class="il">${it.up?'+'+it.up:it.ilvl}</span></div>`;}).join('')+'</div>';
+  h+=`<div class="sec-h"><span>Cofre · toque para retirar</span><span>${SAVE.vault.length} / ${VAULT_MAX}</span></div>`+grid(SAVE.vault,'vt',VAULT_MAX);
+  h+=`<div class="sec-h"><span>Mochila · toque para guardar</span><span>${SAVE.inv.length} / 24</span></div>`+grid(SAVE.inv,'vb',24);
+  $('wbody').innerHTML=h;
+}
+function winLeilao(){
+  $('wtt').textContent='Casa de Leilão';
+  $('wbody').innerHTML=npcHead('coins','Selene, a Leiloeira','“Em breve, grandes negócios.”')+`<div class="dd" style="text-align:center;padding:22px 14px"><b style="font:700 16px var(--ft);color:var(--ouroC)">Em breve</b><br><br>A Casa de Leilão abrirá quando o jogo ganhar o modo online: aqui você poderá vender itens a outros jogadores e comprar o que eles anunciarem.</div>`;
+}
 function winAct(a){
   const [k,v]=a.split(':');
+  if(k==='leave'){closeWin();G.wp={x:ZONE.exit.x,y:ZONE.exit.y+10};return;}
+  if(k==='goto'&&v.startsWith('door')){closeWin();const id=a.split(':')[2],d=ZONE.doors.find(x=>x.id===id);if(d){G.wp={x:d.x,y:d.y-2,target:{kind:'door',id:d.id,room:d.room}};}sfx('ui_confirm',.6);return;}
   if(k==='goto'){closeWin();const t=v==='portal'?{kind:'portal'}:G.npcs.find(n=>n.id===v);G.wp=v==='portal'?{x:ZONE.portal.stand[0],y:ZONE.portal.stand[1],target:t}:{x:t.x,y:t.y+8,target:t};sfx('ui_confirm',.6);return;}
   if(k==='mt'){G.mtab=v;G.wsel=null;sfx('ui_click');}
   else if(k==='sell'){const i=+v,it=SAVE.inv[i];if(!it)return;SAVE.inv.splice(i,1);SAVE.gold+=itemVal(it);(G.bb=G.bb||[]).unshift(it);if(G.bb.length>10)G.bb.pop();G.wsel=null;sfx('coin',.7);}
@@ -1592,6 +1623,8 @@ function winAct(a){
   else if(k==='bp'){const big=v==='l',p=big?Math.round(potPrice()*2.6):potPrice();if(SAVE.gold<p){sfx('ui_denied');return;}SAVE.gold-=p;if(big)SAVE.potL++;else SAVE.potions++;sfx('coin',.7);}
   else if(k==='be'){const p=elixPrice();if(SAVE.gold<p){sfx('ui_denied');return;}SAVE.gold-=p;SAVE.elix[v]=300;recalcHero(true);sfx('heal',.8);sfx('coin',.5);}
   else if(k==='sub'){if(SAVE.lv<SUB_LV||SAVE.sub){sfx('ui_denied');return;}const sb=SUBS[SAVE.cls].find(x=>x.id===v);if(!sb)return;if(!confirm('Escolher '+sb.nome+'? Esta escolha é definitiva e não poderá ser trocada.'))return;SAVE.sub=v;recalcHero(true);buildBar();sfx('levelup',.9);sfx('ui_confirm',.6);chat('Você agora é '+sb.nome+'!',4);banner(sb.nome,'Nova subclasse');}
+  else if(k==='vput'){const i=+v,it=SAVE.inv[i];if(!it||SAVE.vault.length>=VAULT_MAX){sfx('ui_denied');return;}SAVE.inv.splice(i,1);SAVE.vault.push(it);G.wsel=null;sfx('tr_equip',.7);}
+  else if(k==='vtake'){const i=+v,it=SAVE.vault[i];if(!it||SAVE.inv.length>=24){sfx('ui_denied');return;}SAVE.vault.splice(i,1);SAVE.inv.push(it);G.wsel=null;sfx('tr_equip',.7);}
   else if(k==='pz'){G.pz=clamp((G.pz||1)+ +v,1,SAVE.zoneMax||1);sfx('ui_click');}
   else if(k==='go'){sfx('spell_cast',.8);sfx('levelup',.4);enterDungeon(G.pz||1);return;}
   badge();writeSave();renderWin();
@@ -1612,8 +1645,9 @@ $('cv').addEventListener('pointerdown',ev=>{
   const fx=()=>{tapFx(ev.clientX-$('stage').getBoundingClientRect().left,ev.clientY);sfx('ui_click',.4);};
   if(G.scene==='town'){
     let t=null;for(const n of G.npcs)if(Math.abs(lx-n.x)<24&&ly>n.y-62&&ly<n.y+10)t=n;
+    if(!t&&ZONE.doors)for(const d of ZONE.doors)if(Math.abs(lx-d.x)<d.w/2&&ly>d.y-d.h&&ly<d.y+12){t={kind:'door',id:d.id,room:d.room};G.wp={x:d.x,y:d.y-2,target:t};fx();return;}
     if(!t){const P=ZONE.portal;if(Math.abs(lx-P.x)<46&&ly>P.y-90&&ly<P.y+14)t={kind:'portal'};}
-    if(t&&t.kind==='npc')G.wp={x:t.x,y:t.y+8,target:t};else if(t)G.wp={x:ZONE.portal.stand[0],y:ZONE.portal.stand[1],target:t};else G.wp={x:lx,y:ly};
+    if(t&&t.kind==='npc')G.wp=t.ap?{x:t.ap[0],y:t.ap[1],target:t}:{x:t.x,y:t.y+8,target:t};else if(t)G.wp={x:ZONE.portal.stand[0],y:ZONE.portal.stand[1],target:t};else G.wp={x:lx,y:ly};
     fx();return;
   }
   if(G.auto)return;G.wp={x:lx,y:ly};fx();
@@ -1642,7 +1676,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
   try{await loadAll();}catch(e){$('title').insertAdjacentHTML('beforeend','<div style="color:#f88">Erro ao carregar: '+e.message+'</div>');console.error(e);return;}
   $('bNew').disabled=false;$('bCont').disabled=false;
   if(SAVE)G.zoneLv=SAVE.zone||1;
-  window.__mmo={VF,SKFX,skFx,PST,enterDungeon,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},ZONE,CLASSES,update,startGame};
+  window.__mmo={closeWin,VF,SKFX,skFx,PST,enterDungeon,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
   requestAnimationFrame(frame);
 })();
 if('serviceWorker' in navigator){/* usa o sw do jogo principal (escopo ../) */}
