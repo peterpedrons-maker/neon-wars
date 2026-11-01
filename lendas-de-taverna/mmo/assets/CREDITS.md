@@ -30,4 +30,7 @@ Glifos de game-icons.net (CC BY 3.0; autores em `lendas-de-taverna/assets/ui-ico
 Ícones das habilidades (`assets/skills/`): silhuetas do **game-icons.net** (Lorc, Delapouite e colaboradores, CC BY 3.0 — https://game-icons.net), pintadas em estilo pixel por `tools/mmo/icons3/`.
 
 ## Cidade
-A arte da cidade (`assets/town_ground.png`) foi gerada por IA a partir de um prompt do projeto (`tools/mmo/town_ai.jpg`), com camadas, colisões e portas feitas à mão (`tools/mmo/build_town3.py`).
+Cidade: terreno (chão, ruas, árvores) do pack Pixel Crawler; os 6 prédios (`tools/mmo/bld/*_key.png`) foram gerados por IA a partir de prompts do projeto, um a um, com colisões, portas e efeitos montados à mão (`tools/mmo/build_town4.py`).
+
+## Efeitos ambientes
+Fumaça, tochas, fonte, portal e vaga-lumes usam GSAP 3.12.5 (`assets/gsap.min.js`, © GreenSock, licença padrão gratuita https://gsap.com/standard-license).
