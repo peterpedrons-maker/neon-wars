@@ -997,7 +997,7 @@ function mobAttackMoment(m){
 /* ------------------------------ lógica ---------------------------------- */
 function collide(e,r=6){
   for(const s of ZONE.solids){const dx=e.x-s.x,dy=e.y-s.y;if(Math.abs(dx)>26||Math.abs(dy)>26)continue;const d=Math.hypot(dx,dy),R=s.r+r;if(d<R&&d>0.01){e.x=s.x+dx/d*R;e.y=s.y+dy/d*R;}}
-  e.x=clamp(e.x,14,ZONE.w-14);e.y=clamp(e.y,50,ZONE.h-10);
+  e.x=clamp(e.x,14,ZONE.w-14);e.y=clamp(e.y,ZONE.ymin||50,ZONE.h-(ZONE.room?4:10));
   if(isWater(e.x,e.y)||isWater(e.x,e.y+4)){
     if(e._lx!==undefined){const lx=e._lx,ly=e._ly;
       if(!isWater(e.x,ly)&&!isWater(e.x,ly+4))e.y=ly;else if(!isWater(lx,e.y)&&!isWater(lx,e.y+4))e.x=lx;else{e.x=lx;e.y=ly;}}
