@@ -28,7 +28,10 @@ jobs:
       - run: npm ci
       - run: npm run build
       - name: Add standalone static sub-sites
-        run: cp -r lendas-de-taverna dist/lendas-de-taverna
+        run: |
+          cp -r lendas-de-taverna dist/lendas-de-taverna
+          cp -r hearthblade dist/hearthblade
+          rm -rf dist/hearthblade/tools
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
