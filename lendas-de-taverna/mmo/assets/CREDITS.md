@@ -25,3 +25,4 @@ Peças do Universal LPC Spritesheet Character Generator (corpo, cabeça, trajes,
 
 ## Ícones das habilidades novas
 Glifos de game-icons.net (CC BY 3.0; autores em `lendas-de-taverna/assets/ui-icons/CREDITS.md`) sobre ladrilhos coloridos gerados em `assets/skills/`.
+Ícones das subclasses: mesmo método (glifos do game-icons.net sobre ladrilhos coloridos, em `assets/skills/`).
