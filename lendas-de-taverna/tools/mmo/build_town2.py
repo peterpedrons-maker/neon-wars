@@ -58,17 +58,25 @@ def house(wall,roof,ic,tint):
     g=glyph(ic,(70,40,20)).resize((14,14),Image.NEAREST);im.alpha_composite(g,(sx+3,sy+6))
     # chaminé + telhado
     ch=Image.new('RGBA',(14,30),(0,0,0,0));cd=ImageDraw.Draw(ch);cd.rectangle((0,4,13,29),fill=(120,100,96,255),outline=(60,50,50,255));cd.rectangle((-1,0,14,5),fill=(90,76,72,255),outline=(50,40,40,255))
-    im.alpha_composite(ch,(wx+10,2));im.alpha_composite(roof,((W-rw)//2,0))
+    rx0=(W-rw)//2;ra=roof.split()[3].load();gcol=tuple(int(c*.55) for c in roof.resize((1,1),Image.BOX).getpixel((0,0))[:3])+(255,)
+    for xx in range(rw):
+        yb=-1
+        for yy in range(rh-1,-1,-1):
+            if ra[xx,yy]>200:yb=yy;break
+        if yb>=0 and yb<wy+6:
+            d.line((rx0+xx,yb-2,rx0+xx,wy+4),fill=gcol)
+    d.rectangle((W//2-6,wy-12,W//2+6,wy-2),fill=(40,26,16,255),outline=(20,12,8,255));d.rectangle((W//2-4,wy-10,W//2+4,wy-4),fill=(120,160,190,255))
+    im.alpha_composite(ch,(wx+10,2));im.alpha_composite(roof,(rx0,0))
     return im,(W//2,base+2),(W,H,wx,ww,base)
 # ---------------- cidade ----------------
-TWN=(600,800)
+TWN=(600,740)
 def town():
     r=random.Random(7);w=Image.new('RGBA',(WW,WH),(0,0,0,255));fill(w,(0,0,WW,WH),GR,r)
-    roads=[[(300,70),(300,300),(300,520),(300,800)],[(190,306),(300,306),(410,306)],[(190,526),(300,526),(410,526)],[(190,746),(300,746),(410,746)]]
+    roads=[[(300,70),(300,280),(300,440),(300,740)],[(190,280),(300,280),(410,280)],[(190,440),(300,440),(410,440)],[(190,600),(300,600),(410,600)]]
     pts=[]
     for rd in roads:pts+=poly_pts(rd,12)
     paint_region(w,union_mask(pts,r),DR,r,edge=(112,78,48,255),rim=(40,92,24,255))
-    cx,cy,rx,ry=300,520,96,64   # praça
+    cx,cy,rx,ry=300,440,96,64   # praça
     for yy in range(0,WH,16):
         for xx in range(0,WW,16):
             if ((xx+8-cx)/rx)**2+((yy+8-cy)/ry)**2<1:w.alpha_composite(r.choice(STN),(xx,yy))
@@ -78,9 +86,9 @@ def town():
     return w.crop((0,0,TWN[0],TWN[1]))
 GT=town();ground=zs(GT)
 R_=Reg();rr=random.Random(5)
-BUILD=[('fer',190,306,WALL_WOOD,ROOF_B,'anvil',(190,60,50),'Ferreiro'),('mer',410,306,WALL_CREAM,ROOF_G,'scales',(60,120,200),'Mercador'),
- ('alq',190,526,WALL_TIMBER,ROOF_G,'health-potion',(70,170,90),'Alquimista'),('mes',410,526,WALL_CREAM,ROOF_B,'holy-symbol',(200,170,60),'Mestre de Classe'),
- ('cof',190,746,WALL_WOOD,ROOF_G,'locked-chest',(150,90,200),'Cofre'),('lei',410,746,WALL_TIMBER,ROOF_B,'coins',(220,140,50),'Leilão')]
+BUILD=[('fer',190,280,WALL_WOOD,ROOF_B,'anvil',(190,60,50),'Ferreiro'),('mer',410,280,WALL_CREAM,ROOF_G,'scales',(60,120,200),'Mercador'),
+ ('alq',190,440,WALL_TIMBER,ROOF_G,'health-potion',(70,170,90),'Alquimista'),('mes',410,440,WALL_CREAM,ROOF_B,'holy-symbol',(200,170,60),'Mestre de Classe'),
+ ('cof',190,600,WALL_WOOD,ROOF_G,'locked-chest',(150,90,200),'Cofre'),('lei',410,600,WALL_TIMBER,ROOF_B,'coins',(220,140,50),'Leilão')]
 doors=[]
 for (k,x,y,wl,rf,ic,tint,nm) in BUILD:
     im,anc,(W,H,wx,ww,base)=house(wl,rf,ic,tint)
@@ -107,14 +115,14 @@ def fountain():
     d.ellipse((2,20,77,66),fill=(70,68,80,255));d.ellipse((6,22,73,58),fill=(150,148,160,255));d.ellipse((10,26,69,54),fill=(90,170,230,255));d.ellipse((16,30,63,50),fill=(130,200,245,255))
     d.rectangle((35,6,44,40),fill=(150,148,160,255),outline=(70,68,80,255));d.ellipse((28,2,51,12),fill=(150,148,160,255),outline=(70,68,80,255));d.rectangle((38,-0,41,6),fill=(190,230,255,255))
     return im,(40,60)
-fi,fa=fountain();R_.addp(fi,fa,300,520,[(-26,-10,8),(0,-10,8),(26,-10,8)])
+fi,fa=fountain();R_.addp(fi,fa,300,440,[(-26,-10,8),(0,-10,8),(26,-10,8)])
 # postes, arbustos, barris, bancos
 lamp=Image.new('RGBA',(10,40),(0,0,0,0));ld=ImageDraw.Draw(lamp);ld.rectangle((4,12,5,39),fill=(60,44,30,255));ld.rectangle((1,3,8,13),fill=(40,30,20,255));ld.rectangle((2,4,7,11),fill=(255,214,120,255))
-for (x,y) in [(262,200),(338,200),(262,420),(338,420),(262,640),(338,640),(262,420),(214,330),(386,330),(214,550),(386,550),(214,770),(386,770)]:R_.addp(lamp,(5,39),x,y,[(0,-2,3)])
-for (x,y) in [(60,200),(540,200),(60,410),(540,410),(60,640),(540,640),(200,120),(400,120),(180,430),(420,430),(180,640),(420,640)]:
-    b=rr.choice(BUSH);R_.addp(b,(b.width//2,b.height-3),x,y,[(-6,-3,6),(6,-3,6)])
-for (x,y) in [(60,330),(540,330),(60,550),(540,550),(60,770),(540,770)]:R_.addp(BARREL,(BARREL.width//2,BARREL.height-2),x,y,[(0,-3,8)])
-for k,b in enumerate(BAN):R_.addp(b,(b.width//2,b.height-2),240+k*60,60,[(0,-2,5)])
+for (x,y) in [(262,190),(338,190),(262,360),(338,360),(262,520),(338,520),(262,670),(338,670),(214,290),(386,290),(214,450),(386,450),(214,610),(386,610)]:R_.addp(lamp,(5,39),x,y,[(0,-2,3)])
+for (x,y) in [(60,200),(540,200),(60,360),(540,360),(60,520),(540,520),(200,120),(400,120),(250,360),(350,360),(250,520),(350,520)]:
+    b=rr.choice(BUSH);R_.addp(b,(b.width//2,b.height-3),x,y,autocol(b))
+for (x,y) in [(60,280),(540,280),(60,440),(540,440),(60,600),(540,600)]:R_.addp(BARREL,(BARREL.width//2,BARREL.height-2),x,y,autocol(BARREL))
+for k,b in enumerate(BAN):R_.addp(b,(b.width//2,b.height-2),240+k*60,60,autocol(b))
 # árvores: anel de borda + alguns bosques entre as casas
 def tree():
     t=rr.random();return rr.choice(T_OAK) if t<.5 else rr.choice(T_CON) if t<.8 else rr.choice(T_PIN)
@@ -123,10 +131,10 @@ def okpos(x,y,rad):
     return all((x-a)**2+(y-b)**2>=(rad+c)**2 for (a,b,c) in placed)
 for _ in range(2200):
     x=rr.randrange(-14,TWN[0]+14);y=rr.randrange(20,TWN[1]+40)
-    if 44<x<TWN[0]-44 and 70<y<TWN[1]-8:continue
+    if 44<x<TWN[0]-44 and 70<y<TWN[1]-24:continue
     if not okpos(x,y,16):continue
     t=tree();placed.append((x,y,16));R_.addp(t,(t.width//2,t.height-2),x,y,[(0,-2,6)])
-for (x,y) in [(210,150),(390,150),(40,440),(560,440),(206,890-90),(394,800-60)]:
+for (x,y) in [(210,150),(390,150),(40,340),(560,340)]:
     if y>TWN[1]-20:continue
     t=rr.choice(T_OAKS+T_SM);R_.addp(t,(t.width//2,t.height-2),x,y,[(0,-2,6)])
 for n in range(260):
@@ -134,8 +142,8 @@ for n in range(260):
     s=rr.choice(VS[-30:]);R_.flat(s,(s.width//2,s.height),x,y)
 R_.props.sort(key=lambda p:p['y'])
 npcs=[dict(id='gua',nm='Guarda do Portal',sh='guarda',x=S(300),y=S(132),ic='treasure-map',row=2,win='portal')]
-vill=[dict(sh='pov_f',x=S(250),y=S(470)),dict(sh='ladino_b',x=S(350),y=S(590)),dict(sh='bardo',x=S(300),y=S(350))]
-town_json=dict(w=ground.width,h=ground.height,props=R_.props,start=[S(300),S(430)],portal=dict(x=S(300),y=S(86),stand=[S(300),S(86+36)]),npcs=npcs,vill=vill,doors=doors)
+vill=[dict(sh='pov_f',x=S(250),y=S(390)),dict(sh='ladino_b',x=S(350),y=S(520)),dict(sh='bardo',x=S(300),y=S(330))]
+town_json=dict(w=ground.width,h=ground.height,props=R_.props,start=[S(300),S(380)],portal=dict(x=S(300),y=S(86),stand=[S(300),S(86+36)]),npcs=npcs,vill=vill,doors=doors)
 ground.convert('RGB').save(os.path.join(OUT,'town_ground.png'),optimize=True)
 json.dump(town_json,open(os.path.join(OUT,'town.json'),'w'),separators=(',',':'))
 print('town',make_atlas(R_.sprs,'town_atlas'),len(R_.props))
@@ -153,11 +161,10 @@ for i,k in enumerate(['mer','fer','alq','mes','cof','lei']):
         d=dict(t='p',id=sid,x=S(x),y=S(y))
         if col:d['col']=[[S(c[0]),S(c[1]),S(c[2])] for c in col]
         pl.append(d)
-    did=IR.reg(door,(door.width//2,door.height-1));pl.append(dict(t='flat',id=did,x=S(IW_//2),y=S(IH_)))
     nm,sh,ic,win=INFO[k]
     ax=npc[0];ay=npc[1]
-    cy_=[p for p in props if p[0] is SP['counter']];cby=cy_[0][2] if cy_ else ay+20
-    n=dict(id=k,nm=nm,sh=sh,x=S(npc[0]),y=S(npc[1]),ic=ic,row=2,win=win,r=S(52),ap=[S(npc[0]),S(cby+16)])
-    zone=dict(w=g.width,h=g.height,props=pl,start=[S(IW_//2),S(IH_-44)],portal=dict(x=-999,y=-999,stand=[S(IW_//2),S(IH_-44)]),npcs=[n],vill=[],exit=dict(x=S(IW_//2),y=S(IH_-26)),room=k)
+    cy_=[p for p in props if p[0] is SP['counter']];cby=cy_[0][2] if cy_ else ay+40
+    n=dict(id=k,nm=nm,sh=sh,x=S(npc[0]),y=S(npc[1]),ic=ic,row=2,win=win,r=S(52),ap=[S(npc[0]),S(cby+18)])
+    zone=dict(w=g.width,h=g.height,props=pl,start=[S(IW_//2),S(IH_-46)],ymin=S(62),portal=dict(x=-999,y=-999,stand=[S(IW_//2),S(IH_-46)]),npcs=[n],vill=[],exit=dict(x=S(IW_//2),y=S(IH_-16)),room=k)
     json.dump(zone,open(os.path.join(OUT,'int_%s.json'%k),'w'),separators=(',',':'))
 print('interiores',make_atlas(IR.sprs,'int_atlas'))

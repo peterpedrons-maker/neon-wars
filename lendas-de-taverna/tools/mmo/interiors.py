@@ -11,35 +11,40 @@ SP={k:ipc(b) for k,b in BOX.items()}
 SP['barrel']=BARREL;SP['crate']=BARREL;SP['chest']=BARREL
 FLOORS=[IW.crop((0,322,80,400)),IW.crop((80,322,160,400)),IW.crop((160,322,240,400)),IW.crop((240,322,320,400))]
 WALLS=[IW.crop((200,70,284,140)),IW.crop((104,70,188,140)),IW.crop((10,70,94,140)),IW.crop((296,70,380,140))]
-IW_,IH_=288,384
+IW_,IH_=240,272
+def autocol(spr,r=5,dy=-2):
+    w=spr.width;n=max(1,int(w//8));x0=-(w/2)+r+1;st=(w-2*r-2)/max(1,n-1) if n>1 else 0
+    return [(round(x0+i*st) if n>1 else 0,dy,r) for i in range(n)]
 def interior(kind,seed=1):
-    r=random.Random(seed)
-    fi={'mer':0,'fer':1,'alq':0,'mes':2,'cof':1,'lei':3}[kind];wi={'mer':0,'fer':1,'alq':0,'mes':2,'cof':1,'lei':3}[kind]
+    wi={'mer':0,'fer':1,'alq':0,'mes':2,'cof':1,'lei':3}[kind];fi=wi
     fl=FLOORS[fi].crop((16,16,64,64));im=Image.new('RGBA',(IW_,IH_),(0,0,0,255))
     for y in range(0,IH_,48):
         for x in range(0,IW_,48):im.alpha_composite(fl,(x,y))
     wl=WALLS[wi]
     for x in range(-6,IW_,wl.width-8):im.alpha_composite(wl,(x,-12))
-    props=[]   # (spr, x, y_base, colliders)
-    def P(n,x,y,col=None):props.append((SP[n],x,y,col or []))
-    NPC=None
+    # parede da frente com a abertura da porta
+    band=wl.crop((0,30,wl.width,60))
+    bh=26;by=IH_-bh
+    for x in range(-6,IW_,band.width-4):im.alpha_composite(band.crop((0,0,band.width,bh)),(x,by))
+    d=ImageDraw.Draw(im);gx=IW_//2
+    d.rectangle((gx-17,by-2,gx+17,IH_),fill=(60,36,20,255))
+    d.rectangle((gx-14,by,gx+14,IH_),fill=(236,224,170,255));d.rectangle((gx-14,by,gx+14,by+3),fill=(190,170,110,255))
+    d.rectangle((gx-11,IH_-9,gx+11,IH_-3),fill=(120,70,60,255),outline=(70,40,30,255))   # tapete
+    d.line((gx-17,by-3,gx+17,by-3),fill=(130,92,52,255))
+    props=[]
+    def P(n,x,y,col=None,auto=False):
+        sp=SP[n];props.append((sp,x,y,(autocol(sp) if auto else (col or []))))
+    CT=[(-40,0,8),(-20,0,8),(0,0,8),(20,0,8),(40,0,8)];cx=IW_//2
     if kind=='mer':
-        P('shelf',50,66);P('rack',144,60);P('banner1',226,56);P('plants',40,350);P('crate',250,352)
-        P('counter',144,168,[(-40,0,8),(-20,0,8),(0,0,8),(20,0,8),(40,0,8)]);P('barrel',30,160,[(0,0,8)]);P('barrel',258,160,[(0,0,8)]);NPC=(144,150)
+        P('shelf',34,66,auto=True);P('rack',cx,60);P('banner1',IW_-34,56);P('plants',44,IH_-34,auto=True);P('counter',cx,128,CT);P('barrel',IW_-30,128,auto=True);NPC=(cx,112)
     elif kind=='fer':
-        P('furnace',70,86,[(0,0,14)]);P('oven',222,86,[(0,0,14)]);P('rack',146,60)
-        P('counter',144,176,[(-40,0,8),(-20,0,8),(0,0,8),(20,0,8),(40,0,8)]);P('crate',40,160,[(0,0,8)]);P('barrel',258,170,[(0,0,8)]);P('plants',250,352);NPC=(144,156)
+        P('furnace',52,80,auto=True);P('oven',IW_-46,80,auto=True);P('rack',cx,60);P('counter',cx,132,CT);P('barrel',30,150,auto=True);P('plants',IW_-44,IH_-34,auto=True);NPC=(cx,116)
     elif kind=='alq':
-        P('shelf',46,66);P('shelf',130,66);P('banner2',214,56);P('potions',250,110)
-        P('counter',144,170,[(-40,0,8),(-20,0,8),(0,0,8),(20,0,8),(40,0,8)]);P('plants',36,350);P('plants',250,350);P('barrel',262,170,[(0,0,8)]);NPC=(144,152)
+        P('shelf',32,66,auto=True);P('shelf',cx,66,auto=True);P('banner2',IW_-34,56);P('potions',IW_-30,110);P('counter',cx,132,CT);P('plants',44,IH_-34,auto=True);NPC=(cx,116)
     elif kind=='mes':
-        P('banner1',70,56);P('banner2',218,56);P('shelf',144,66);P('table',144,210,[(-20,0,10),(0,0,10),(20,0,10)]);P('plants',36,350);P('plants',250,350);NPC=(144,170)
+        P('banner1',44,56);P('banner2',IW_-44,56);P('shelf',cx,66,auto=True);P('table',cx,140,[(-18,0,9),(0,0,9),(18,0,9)]);P('plants',44,IH_-34,auto=True);P('plants',IW_-44,IH_-34,auto=True);NPC=(cx,100)
     elif kind=='cof':
-        P('shelf',52,66);P('rack',150,60);P('chest',240,76,[(0,0,8)])
-        P('counter',144,170,[(-40,0,8),(-20,0,8),(0,0,8),(20,0,8),(40,0,8)]);P('chest',36,166,[(0,0,8)]);P('chest',258,166,[(0,0,8)]);NPC=(144,152)
+        P('shelf',36,66,auto=True);P('rack',cx+16,60);P('barrel',IW_-34,76,auto=True);P('counter',cx,132,CT);P('barrel',30,150,auto=True);NPC=(cx,116)
     else:
-        P('banner1',60,56);P('banner2',228,56);P('shelf',144,66)
-        P('counter',144,170,[(-40,0,8),(-20,0,8),(0,0,8),(20,0,8),(40,0,8)]);P('crate',40,166,[(0,0,8)]);P('crate',256,166,[(0,0,8)]);NPC=(144,152)
-    # porta de saída (parte de baixo)
-    door=SP['door']
-    return im,props,NPC,door
+        P('banner1',44,56);P('banner2',IW_-44,56);P('shelf',cx,66,auto=True);P('counter',cx,132,CT);P('barrel',30,146,auto=True);P('barrel',IW_-30,146,auto=True);NPC=(cx,116)
+    return im,props,NPC,None
