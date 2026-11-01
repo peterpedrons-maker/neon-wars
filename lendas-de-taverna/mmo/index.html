@@ -286,9 +286,32 @@ async function loadAll(){
   for(const k of new Set(CLS_ORDER.flatMap(c=>CLASSES[c].skills.map(s=>s[0]))))IMG[k]=await loadImg('../assets/skill-icons/'+k+'.png').catch(()=>null);
   for(const n of ['i_espada','i_machado','i_martelo','i_adaga','i_cajado','i_cetro','i_arco','i_elmo','i_capuz','i_couraca','i_cota','i_colete','i_manto','i_tunica','i_botas','i_sandalias','i_colar','i_pingente','i_talisma','i_anel'])IMG_ICO[n]=await loadImg('../assets/ico/'+n+'.png').catch(()=>null);
   // props com colisão (troncos de árvore)
-  ZONE.solids=ZONE.props.filter(p=>p.t==='p'&&ATLAS_J[p.id]&&ATLAS_J[p.id][3]>=96).map(p=>({x:p.x,y:p.y-2,r:8}));
+  buildSolids();buildWater();fixSpawns();
 }
 
+/* ------------------------------ colisão do cenário ---------------------- */
+function buildSolids(){
+  const S=[];
+  for(const p of ZONE.props){
+    if(p.t==='fire'){S.push({x:p.x,y:p.y-4,r:13});continue;}
+    if(p.t!=='p')continue;const a=ATLAS_J[p.id];if(!a)continue;const w=a[2],h=a[3];
+    if(h>=96)S.push({x:p.x,y:p.y-2,r:8});                       // tronco de árvore
+    else if(h>=22){const fw=Math.max(8,w*.72),n=Math.max(1,Math.round(fw/10)),r=Math.max(5,Math.min(9,h*.16));   // pedras, arbustos, cercas, barris, tocos
+      for(let i=0;i<n;i++)S.push({x:n===1?p.x:p.x+(i/(n-1)-.5)*(fw-10),y:p.y-3,r});}
+  }
+  ZONE.solids=S;
+}
+let WATER=null,WCW=0;
+function buildWater(){
+  const c=document.createElement('canvas');c.width=GROUND.width;c.height=GROUND.height;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(GROUND,0,0);
+  const d=x.getImageData(0,0,c.width,c.height).data;WCW=Math.ceil(c.width/4);const H=Math.ceil(c.height/4);WATER=new Uint8Array(WCW*H);
+  for(let cy=0;cy<H;cy++)for(let cx=0;cx<WCW;cx++){const px=Math.min(c.width-1,cx*4+2),py=Math.min(c.height-1,cy*4+2),i=(py*c.width+px)*4,r=d[i],g=d[i+1],b=d[i+2];
+    if(b>140&&b>r+50&&b>g+15)WATER[cy*WCW+cx]=1;}
+}
+function isWater(x,y){return WATER&&WATER[(y>>2)*WCW+(x>>2)]===1;}
+function blockedAt(x,y,r=6){if(isWater(x,y)||isWater(x,y+4))return true;for(const s of ZONE.solids){const dx=x-s.x,dy=y-s.y;if(Math.abs(dx)>24||Math.abs(dy)>24)continue;if(Math.hypot(dx,dy)<s.r+r-1)return true;}return false;}
+function freeSpot(x,y){if(!blockedAt(x,y))return [x,y];for(let R=10;R<220;R+=10)for(let a=0;a<6.28;a+=.52){const nx=x+Math.cos(a)*R,ny=y+Math.sin(a)*R;if(nx>20&&ny>60&&nx<ZONE.w-20&&ny<ZONE.h-20&&!blockedAt(nx,ny))return [nx,ny];}return [x,y];}
+function fixSpawns(){ZONE.spawns=ZONE.spawns.map(s=>freeSpot(s[0],s[1]));ZONE.start=freeSpot(ZONE.start[0],ZONE.start[1]);const b=freeSpot(ZONE.boss[0],ZONE.boss[1]+20);ZONE.boss=[b[0],b[1]-20];}
 /* ------------------------------ áudio ----------------------------------- */
 let AC=null,sfxGain=null,musGain=null;const BUF={};let musSrc=null,musOn=false;
 function audioInit(){
@@ -551,10 +574,24 @@ function mobAttackMoment(m){
 
 /* ------------------------------ lógica ---------------------------------- */
 function collide(e,r=6){
-  for(const s of ZONE.solids){const dx=e.x-s.x,dy=e.y-s.y;if(Math.abs(dx)>24||Math.abs(dy)>24)continue;const d=Math.hypot(dx,dy),R=s.r+r;if(d<R&&d>0.01){e.x=s.x+dx/d*R;e.y=s.y+dy/d*R;}}
+  for(const s of ZONE.solids){const dx=e.x-s.x,dy=e.y-s.y;if(Math.abs(dx)>26||Math.abs(dy)>26)continue;const d=Math.hypot(dx,dy),R=s.r+r;if(d<R&&d>0.01){e.x=s.x+dx/d*R;e.y=s.y+dy/d*R;}}
   e.x=clamp(e.x,14,ZONE.w-14);e.y=clamp(e.y,50,ZONE.h-10);
+  if(isWater(e.x,e.y)||isWater(e.x,e.y+4)){
+    if(e._lx!==undefined){const lx=e._lx,ly=e._ly;
+      if(!isWater(e.x,ly)&&!isWater(e.x,ly+4))e.y=ly;else if(!isWater(lx,e.y)&&!isWater(lx,e.y+4))e.x=lx;else{e.x=lx;e.y=ly;}}
+  }
+  if(!isWater(e.x,e.y)&&!isWater(e.x,e.y+4)){e._lx=e.x;e._ly=e.y;}
 }
-function moveTo(e,tx,ty,sp,dt){const dx=tx-e.x,dy=ty-e.y,d=Math.hypot(dx,dy);if(d<1)return 0;const s=Math.min(d,sp*dt);e.x+=dx/d*s;e.y+=dy/d*s;e.row=dir4(dx,dy);return s;}
+function moveTo(e,tx,ty,sp,dt){
+  if(e.detour){e.detour.t-=dt;if(e.detour.t>0&&Math.hypot(e.x-e.detour.x,e.y-e.detour.y)>6){tx=e.detour.x;ty=e.detour.y;}else e.detour=null;}
+  const dx=tx-e.x,dy=ty-e.y,d=Math.hypot(dx,dy);if(d<1)return 0;
+  if(G.t-(e._lt||-9)>.3){e._sx=e.x;e._sy=e.y;e._sc=0;}   // voltou a andar depois de uma pausa
+  e._lt=G.t;e._sc=(e._sc||0)+dt;
+  if(e._sc>=.5){const mv=Math.hypot(e.x-e._sx,e.y-e._sy);
+    if(mv<sp*.5*.3&&!e.detour&&d>16){const px=-dy/d,py=dx/d,sd=Math.random()<.5?1:-1;e.detour={x:e.x+px*sd*80+dx/d*30,y:e.y+py*sd*80+dy/d*30,t:1.3};}
+    e._sx=e.x;e._sy=e.y;e._sc=0;}
+  const s=Math.min(d,sp*dt);e.x+=dx/d*s;e.y+=dy/d*s;e.row=dir4(dx,dy);return s;
+}
 function nearestMob(from,maxD){let b=null,bd=maxD;for(const m of G.mobs){if(m.dead)continue;const d=dist(from,m);if(d<bd){bd=d;b=m;}}return b;}
 function hSpd(h){return h.speed*(h.buff&&h.buff.t>0?1+h.buff.spd:1);}
 function updateHero(dt){
@@ -835,7 +872,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
   try{await loadAll();}catch(e){$('title').insertAdjacentHTML('beforeend','<div style="color:#f88">Erro ao carregar: '+e.message+'</div>');console.error(e);return;}
   $('bNew').disabled=false;$('bCont').disabled=false;
   if(SAVE)G.zoneLv=SAVE.zone||1;
-  window.__mmo={genItem,addItem,openPan,G,get SAVE(){return SAVE;},ZONE,CLASSES,update,startGame};
+  window.__mmo={isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},ZONE,CLASSES,update,startGame};
   requestAnimationFrame(frame);
 })();
 if('serviceWorker' in navigator){/* usa o sw do jogo principal (escopo ../) */}
