@@ -279,6 +279,122 @@ button:active:not(:disabled){transform:scale(.96)}
 /* banner */
 #win .tabs button,#pan .tabs button{white-space:nowrap}.acts button{white-space:normal;line-height:1.15;font-size:11px}
 #banner b{font-size:21px}#banner span{font-size:12px}
+
+/* ===== skin v3: pack "Pixel Fantasy UI" (pergaminho + madeira/ouro) ===== */
+:root{--tinta:#3b2412;--tinta2:#6a4a28;--ouro-esc:#8a5208}
+#win,#pan,#cpanel{--papel:#3b2412;--papel2:#6a4a28;--ouro:#8a5208}
+#win .box,#pan .box,#cpanel{background:none;border:26px solid transparent;border-image:url(assets/ui2/panel.png) 78 fill/26px stretch;padding:0 6px 2px;color:var(--tinta)}
+#win .tt,#pan .tt{height:42px;margin:-6px 0 6px;padding:0;font:800 19px var(--ft);letter-spacing:.2em;color:#4a2a10;text-shadow:0 1px 0 rgba(255,244,214,.7);background:none;position:relative}
+#win .tt::after,#pan .tt::after{content:'';position:absolute;left:8%;right:8%;bottom:0;height:3px;border-top:1px solid #8a5a26;border-bottom:1px solid #8a5a26;opacity:.75}
+#win .xb,#pan .xb{right:-10px;top:-8px;width:36px;height:36px;border:10px solid transparent;border-image:url(assets/ui2/btn.png) 36 fill/10px stretch;border-radius:0;background:none;box-shadow:none}
+#win .xb::before,#win .xb::after,#pan .xb::before,#pan .xb::after{background:#f0c866;width:12px;height:2.5px;margin:-1.25px 0 0 -6px;box-shadow:0 1px 0 #000}
+/* botões */
+#win .tabs button,#pan .tabs button,.db,#pan .acts button,.acts button{border:12px solid transparent;border-image:url(assets/ui2/btn.png) 36 fill/12px stretch;background:none;color:#f0dfb4;text-shadow:0 1px 0 #000;height:44px;font:700 12px var(--f);letter-spacing:.05em}
+#win .tabs button.on,#pan .tabs button.on,.gb,#pan .acts button.g,#pan .skc .plus{border-image-source:url(assets/ui2/btn_gold.png);color:#3a1d08;text-shadow:0 1px 0 rgba(255,225,150,.7)}
+.db{border-image-source:url(assets/ui2/btn.png)}
+.gb,.db{border-width:12px;border-style:solid;border-color:transparent;border-image-slice:36 fill;border-image-width:12px;height:44px;font:700 12.5px var(--f);letter-spacing:.05em}
+.gb{border-image-source:url(assets/ui2/btn_gold.png)}
+.gb:active,.db:active,#win .tabs button:active,#pan .tabs button:active{border-image-source:url(assets/ui2/btn_press.png)}
+.gb.big{height:54px;font-size:14px}
+#pan .skc .plus{width:46px;height:46px;border-width:12px;border-image-width:12px;font-size:20px;font-weight:800}
+/* linhas / blocos sobre o pergaminho */
+.wr,#pan .panel,#pan .sum,#pan .det{background:rgba(110,70,30,.13);border:2px solid rgba(100,62,26,.5);border-image:none;border-radius:5px;box-shadow:inset 0 1px 0 rgba(255,244,214,.5);padding:6px 8px;min-height:0}
+.wr.sel{background:rgba(214,160,60,.28);border-color:#a8721e}
+.wr .tx b{filter:brightness(.62) saturate(1.5);color:inherit;font-family:var(--ft);font-weight:800;letter-spacing:.02em}
+.wr .tx span{color:var(--tinta2)}
+.wr .pr{color:#7a4606}
+.wr .ic,.skc img{background:#2a1a0e;border-color:#6a4a28}
+.wgold,.wgold img{color:#7a4606}
+.wgold{font-family:var(--ft);font-weight:800}
+.wgold img,.wr .pr img,.stline .pr img,#win .wgold img{filter:none;content:url(assets/ui2/i_coin.png);width:20px;height:20px}
+#win .sub,.sum,.det,.stline{color:var(--tinta)}
+.sum b,.det h4,.skc .t b{color:#7a4606}.det h4{font-family:var(--ft)}
+.up{color:#1f7a2a}.dn{color:#a82a20}
+.skc .t{color:var(--tinta)}.skc .t b{font-family:var(--ft);font-weight:800}
+.pips i{background:rgba(60,36,18,.25);border-color:#6a4a28}.pips i.on{background:#d89018;border-color:#7a4606}
+.slot,.cell,.fslots .fs,.fbig .fi{background:#2a1a0e;border-color:#6a4a28}
+.slot .ph{color:#9a7a52}.cell .il,.fslots .fs i{color:#fff}
+.fbar{background:#2a1a0e;border-color:#3b2412}
+.wdiv{filter:sepia(1) saturate(2) brightness(.6)}
+#win .tabs,#pan .tabs{gap:8px}
+#pan .tabs button,#win .tabs button{flex:1}
+/* HUD */
+#hero.panel{background:none;border:14px solid transparent;border-image:url(assets/ui2/btn.png) 36 fill/14px stretch;width:178px;min-height:0;padding:0 0 0 46px}
+#hero canvas{left:-2px;top:-2px;width:40px;height:40px;border:2px solid #8a6a3c;border-radius:3px}
+#hero .nm{font-size:11.5px;margin:-1px 0 0;line-height:1.1}
+#hpw.pb{position:relative;width:100%;aspect-ratio:380/102;margin-top:1px}
+#hpw.pb::after{content:'';position:absolute;inset:0;background:url(assets/ui2/bar_hp.png) 0 0/100% 100% no-repeat;pointer-events:none}
+#hpw #hp{position:absolute;left:6.7%;top:27.6%;width:86.5%;height:47%;margin:0;background:#2a0a0a;border:0}
+#hpw #hp b{background:linear-gradient(#ff7a6a,#d6302a 55%,#a01c18)}
+#hpw #hpt{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font:700 8.5px var(--f);color:#fff;text-shadow:0 1px 1px #000,0 0 2px #000}
+#hero #xp{height:5px;margin:2px 3px 0 2px;border:1px solid #000;background:#14233a}#xp b{background:linear-gradient(#8fc2ff,#3a7be0)}
+#gold{left:6px;top:calc(76px + env(safe-area-inset-top));width:104px;height:36px;padding:0 10px 0 38px;background:url(assets/ui2/coin.png) 0 0/100% 100% no-repeat;display:flex;align-items:center;justify-content:center;color:#4a2a10;text-shadow:none;font:800 13px var(--ft)}
+#buffs{top:calc(118px + env(safe-area-inset-top))}
+#prog.panel{background:none;border:12px solid transparent;border-image:url(assets/ui2/btn.png) 36 fill/12px stretch;width:96px;padding:0;color:#f0dfb4;font:700 10px var(--f)}
+#prog .bar{height:5px;margin-top:2px}
+#bar.panel{background:none;border:16px solid transparent;border-image:url(assets/ui2/btn.png) 36 fill/16px stretch;height:66px;padding:0 2px;left:3px;right:3px}
+/* criação */
+#create{background:radial-gradient(ellipse at 50% 25%,#2a2318,#0b0906 72%);padding:10px 10px 8px;gap:6px}
+#create .hd{background:none;border:0;box-shadow:none;padding:2px 0 0;text-align:center}
+#create .hd b{font:700 24px var(--fd);letter-spacing:.12em;text-transform:uppercase;background:linear-gradient(#fff3c4,#ffd65a 55%,#c98a22);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 #2a160a)}
+#create .hd span{font:600 10.5px var(--ft);letter-spacing:.28em;text-transform:uppercase;color:#cdb68a}
+#cpanel{display:flex;flex-direction:column;gap:7px;padding:0 4px 4px;flex:none}
+#cinfo{background:none;border:0;border-image:none;padding:0;display:grid;grid-template-columns:1fr auto;column-gap:10px}
+#cinfo h3{font:800 20px var(--ft);letter-spacing:.06em;color:#4a2a10;text-shadow:0 1px 0 rgba(255,244,214,.7)}
+#cinfo .papel{font:700 11px var(--f);color:#2c6a2c;text-align:right}
+#cinfo p{font-size:11.5px;color:var(--tinta2);margin:0 0 4px}
+.sbar{color:var(--tinta);font-size:10.5px}.sbar i{background:#2a1a0e;height:8px;border:1px solid #3b2412}
+#csk,#csk>div:first-child{color:var(--tinta2)!important}
+#csk img{border-color:#6a4a28}
+.sect{display:flex;align-items:center;gap:8px;margin:2px 0 -2px}
+.sect b{font:800 10.5px var(--ft);letter-spacing:.24em;text-transform:uppercase;color:#6a4a28}
+.sect i{flex:1;height:1px;background:linear-gradient(90deg,transparent,#8a5a26 60%,#8a5a26)}.sect i:last-child{background:linear-gradient(90deg,#8a5a26,#8a5a26 40%,transparent)}
+#look{padding:0}
+#look .lr>span{color:var(--tinta2);font-family:var(--ft);font-weight:800}
+#look .sw button{border-color:#3b2412;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+#look .sw button.on{border-color:#fff;box-shadow:0 0 0 2px #3b2412}
+#look .sw button.txt{background:rgba(60,36,18,.14);color:var(--tinta);border-color:rgba(60,36,18,.45)}
+#look .sw button.txt.on{background:#3b2412;color:#f6e3b0;border-color:#3b2412;box-shadow:none}
+#look .dice{border:9px solid transparent;border-image:url(assets/ui2/btn.png) 36 fill/9px stretch;color:#f0dfb4}
+#cname{border:14px solid transparent;border-image:url(assets/ui2/dialog.png) 50 fill/14px stretch;background:none;height:50px;padding:0 4px;color:#3b2412;font:700 17px var(--ft);text-align:center;letter-spacing:.06em}
+#cname::placeholder{color:#9a7a52;font-weight:600}
+#cname:focus{filter:brightness(1.06)}
+.btn{background:none;border:14px solid transparent;border-image:url(assets/ui2/btn_gold.png) 36 fill/14px stretch;height:58px;font:800 15px var(--ft);letter-spacing:.16em;text-transform:uppercase;color:#3a1d08;text-shadow:0 1px 0 rgba(255,225,150,.7)}
+.btn:disabled{border-image-source:url(assets/ui2/btn.png);color:#8a7a5a;text-shadow:none;opacity:.9}
+.btn:active:not(:disabled){border-image-source:url(assets/ui2/btn_press.png)}
+#cls button{border-color:#6a4a28;background:#1a120a}#cls button.on{border-color:#ffd65a;box-shadow:0 0 12px rgba(255,214,90,.45)}
+
+/* ajustes v3.1 */
+#create .hd b{font:800 24px var(--ft);letter-spacing:.14em}
+#cpanel{padding:2px 12px 4px}
+#win .tabs button.on,#pan .tabs button.on,.gb,#pan .acts button.g,#pan .skc .plus,.btn{color:#fff6dc;text-shadow:0 2px 0 #3a1d08,0 0 5px rgba(40,18,4,.9)}
+.btn:disabled{color:#a89870;text-shadow:0 1px 0 #000}
+#look .lr>span{width:46px;font-size:9.5px}
+#look .sw{gap:3px}#look .sw button{width:17px;height:17px;border-width:2px}
+#look .sw button.txt{width:auto;height:22px}
+.il,.cell .il{color:#fff!important;text-shadow:0 1px 0 #000,0 0 3px #000}
+#pan .cell,#pan .slot{background:#2a1a0e}
+.cell:empty,.bag>div:empty{background:rgba(60,36,18,.3)!important;border-color:rgba(60,36,18,.4)!important}
+#win .xb,#pan .xb{right:-4px;top:-6px}
+#win .tt,#pan .tt{margin-top:-2px}
+
+/* ajustes v3.2 */
+#create .hd b{background:none;-webkit-background-clip:initial;background-clip:initial;color:#ffd65a;filter:none;text-shadow:0 2px 0 #2a160a,0 0 14px rgba(255,190,70,.45)}
+#look .sw{gap:2px}#look .sw button{width:16px;height:16px}
+.fbig b{filter:brightness(.6) saturate(1.5)}
+.fbig span{color:var(--tinta2)!important}
+.stline span[style*="color"]{filter:brightness(.55) saturate(1.6)}
+#win .sub[style*="color"]{color:#7a4606!important}
+
+/* ajustes v3.3 */
+.wr .tx b{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.15;font-size:13px}
+.wr .gb,.wr .db{padding:0 1px;min-width:78px;font-size:11px;letter-spacing:.02em;height:40px}
+.wr .pr{flex-direction:column;gap:0;align-items:center;font-size:12px}
+.skc .t span[style*="color"]{filter:brightness(.55) saturate(1.5)}
+
+/* ajustes v3.4 */
+#bar{gap:3px}#bar .sk{width:38px;height:38px}#bar .tb{padding:0 6px}#bar .tb.ic{width:38px}
+#bar .tb{height:38px}
 </style>
 </head>
 <body>
@@ -298,27 +414,30 @@ button:active:not(:disabled){transform:scale(.96)}
 
   <!-- criação -->
   <div class="scr" id="create">
-    <div class="hd panel"><b class="txt-o">CRIE SEU HERÓI</b><span>Escolha sua classe. Um único personagem.</span></div>
+    <div class="hd"><b>Crie seu herói</b><span>Escolha a classe e a aparência</span></div>
     <div id="cstage"><canvas id="cprev"></canvas><div id="cname-tag" class="txt-o"></div></div>
     <div id="cls"></div>
-    <div id="look"></div>
-    <div id="cinfo" class="panel">
-      <h3 id="cn"></h3><div class="papel" id="cp"></div>
-      <p id="cd"></p>
-      <div id="cbars"></div><div id="csk"></div>
+    <div id="cpanel">
+      <div id="cinfo">
+        <h3 id="cn"></h3><div class="papel" id="cp"></div>
+        <p id="cd"></p>
+        <div id="cbars"></div><div id="csk"></div>
+      </div>
+      <div class="sect"><i></i><b>Aparência</b><i></i></div>
+      <div id="look"></div>
+      <div class="sect"><i></i><b>Nome</b><i></i></div>
+      <input id="cname" maxlength="14" placeholder="Digite o nome do herói" autocomplete="off" autocapitalize="words">
+      <button class="btn" id="bCreate" disabled>Criar personagem</button>
     </div>
-    <label for="cname">Nome do herói</label>
-    <input id="cname" maxlength="14" placeholder="Toque para digitar" autocomplete="off" autocapitalize="words">
-    <button class="btn" id="bCreate" disabled>CRIAR PERSONAGEM</button>
   </div>
 
   <!-- HUD -->
   <div class="scr" id="hud">
     <div id="hero" class="panel"><canvas id="hface" width="32" height="32"></canvas>
       <div class="nm txt-o"><span id="hn">—</span><span id="hl">Nv 1</span></div>
-      <div class="bar" id="hp"><b style="width:100%"></b><span id="hpt"></span></div>
+      <div class="pb" id="hpw"><div class="bar" id="hp"><b style="width:100%"></b></div><span id="hpt"></span></div>
       <div class="bar" id="xp"><b style="width:0"></b></div></div>
-    <div id="zone" class="txt-o" style="display:none">·</div><div id="gold"><img src="../assets/ui-icons/coins.png"><span id="goldn">0</span></div><div id="banner"><i class="o"></i><b id="bnT"></b><u></u><span id="bnS"></span></div>
+    <div id="zone" class="txt-o" style="display:none">·</div><div id="gold"><span id="goldn">0</span></div><div id="banner"><i class="o"></i><b id="bnT"></b><u></u><span id="bnS"></span></div>
     <div id="prog" class="panel txt-o"><div id="progt">Clareira 0/10</div><div class="bar"><b style="width:0"></b></div></div>
     <div id="boss" class="panel"><div class="t txt-o" id="bosst">Ogro de Brumavale</div><div class="bar"><b style="width:100%"></b></div></div>
     <div id="buffs"></div>
@@ -586,8 +705,8 @@ function renderLook(){
   let h='<div class="lr"><span>Pele</span><div class="sw">'+swatches(SKINS,SKIN_N,LK.sk,'sk')+'</div><button class="dice" data-k="rnd">SORTEAR</button></div>';
   if(m.hair)h+='<div class="lr"><span>Cabelo</span><div class="sw"><button class="txt'+(LK.hr<0?' on':'')+'" data-k="hr" data-i="-1">Sem</button>'+(LK.hr<0?'':swatches(HAIRS,HAIR_N,LK.hc,'hc'))+(LK.hr<0?'<button class="txt" data-k="hr" data-i="0">Com cabelo</button>':'')+'</div></div>';
   if(m.torso.length>1)h+='<div class="lr"><span>Traje</span><div class="sw">'+m.torso.map(t=>`<button class="txt${LK.tq===t?' on':''}" data-k="tq" data-i="${t}">${TORSO_N[t]}</button>`).join('')+'</div></div>';
-  h+='<div class="lr"><span>Cor traje</span><div class="sw">'+swatches(CLOTH,CLOTH_N,LK.tc,'tc')+'</div></div>';
-  if(m.legs)h+='<div class="lr"><span>Cor calça</span><div class="sw">'+swatches(CLOTH,CLOTH_N,LK.lc,'lc')+'</div></div>';
+  h+='<div class="lr"><span>Roupa</span><div class="sw">'+swatches(CLOTH,CLOTH_N,LK.tc,'tc')+'</div></div>';
+  if(m.legs)h+='<div class="lr"><span>Calça</span><div class="sw">'+swatches(CLOTH,CLOTH_N,LK.lc,'lc')+'</div></div>';
   if(m.hat)h+='<div class="lr"><span>Chapéu</span><div class="sw">'+swatches(CLOTH,CLOTH_N,LK.pc,'pc')+'</div></div>';
   el.innerHTML=h;
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{
