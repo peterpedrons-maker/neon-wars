@@ -89,12 +89,17 @@ R_=Reg();rr=random.Random(5)
 BUILD=[('fer',190,280,WALL_WOOD,ROOF_B,'anvil',(190,60,50),'Ferreiro'),('mer',410,280,WALL_CREAM,ROOF_G,'scales',(60,120,200),'Mercador'),
  ('alq',190,440,WALL_TIMBER,ROOF_G,'health-potion',(70,170,90),'Alquimista'),('mes',410,440,WALL_CREAM,ROOF_B,'holy-symbol',(200,170,60),'Mestre de Classe'),
  ('cof',190,600,WALL_WOOD,ROOF_G,'locked-chest',(150,90,200),'Cofre'),('lei',410,600,WALL_TIMBER,ROOF_B,'coins',(220,140,50),'Leilão')]
-doors=[]
+doors=[];META=json.load(open(os.path.join(HERE,'b3d','out','meta.json')))
+def outline(im,col=(24,14,8,255)):
+    a=im.split()[3];dil=a.filter(ImageFilter.MaxFilter(3));ol=Image.new('RGBA',im.size,col);out=Image.new('RGBA',im.size,(0,0,0,0));out.paste(ol,(0,0),dil);out.alpha_composite(im);return out
 for (k,x,y,wl,rf,ic,tint,nm) in BUILD:
-    im,anc,(W,H,wx,ww,base)=house(wl,rf,ic,tint)
-    half=ww//2;col=[(dx,-4,6) for dx in range(-half+4,half-2,9) if abs(dx)>13]
-    R_.addp(im,anc,x,y,col)
-    doors.append(dict(id=k,nm=nm,x=S(x),y=S(y-3),w=S(ww+14),h=S(H-4),room='int_'+k,ic=ic))
+    spr=Image.open(os.path.join(HERE,'b3d','out',k+'.png')).convert('RGBA');m=META[k]
+    bb=spr.getbbox();spr=spr.crop((bb[0],bb[1],bb[2],spr.height));ax=m['ax']-bb[0];ay=m['ay']-bb[1]
+    spr=outline(spr);ax+=0;ay+=0
+    al=spr.split()[3].load();ry=int(min(spr.height-1,ay-5));xs=[xx for xx in range(spr.width) if al[xx,ry]>10];x0,x1=(min(xs),max(xs)) if xs else (0,spr.width)
+    col=[(dx-ax,-4,6) for dx in range(x0+4,x1-2,9) if abs(dx-ax)>13]
+    R_.addp(spr,(ax,ay+2),x,y,col)
+    doors.append(dict(id=k,nm=nm,x=S(x),y=S(y-3),w=S(x1-x0+10),h=S(spr.height-4),room='int_'+k,ic=ic))
 # portal
 def portal_frame(f):
     Wd,Hh=96,110;im=Image.new('RGBA',(Wd,Hh),(0,0,0,0));d=ImageDraw.Draw(im);cx,cy=48,60
@@ -165,6 +170,6 @@ for i,k in enumerate(['mer','fer','alq','mes','cof','lei']):
     ax=npc[0];ay=npc[1]
     cy_=[p for p in props if p[0] is SP['counter']];cby=cy_[0][2] if cy_ else ay+40
     n=dict(id=k,nm=nm,sh=sh,x=S(npc[0]),y=S(npc[1]),ic=ic,row=2,win=win,r=S(52),ap=[S(npc[0]),S(cby+18)])
-    zone=dict(w=g.width,h=g.height,props=pl,start=[S(IW_//2),S(IH_-46)],ymin=S(62),portal=dict(x=-999,y=-999,stand=[S(IW_//2),S(IH_-46)]),npcs=[n],vill=[],exit=dict(x=S(IW_//2),y=S(IH_-16)),room=k)
+    zone=dict(w=g.width,h=g.height,props=pl,start=[S(IW_//2),S(IH_-46)],ymin=S(64),portal=dict(x=-999,y=-999,stand=[S(IW_//2),S(IH_-46)]),npcs=[n],vill=[],exit=dict(x=S(IW_//2),y=S(IH_-16)),room=k)
     json.dump(zone,open(os.path.join(OUT,'int_%s.json'%k),'w'),separators=(',',':'))
 print('interiores',make_atlas(IR.sprs,'int_atlas'))

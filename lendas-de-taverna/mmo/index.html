@@ -1252,8 +1252,8 @@ function updateTown(dt){
     if(t&&t.kind==='npc'&&dist(h,t)<(t.r||40)){G.wp=null;interact(t);}
     else{moved=moveTo(h,G.wp.x,G.wp.y,hSpd(h)*1.15,dt);collide(h);
       if(G.wp){const d=Math.hypot(h.x-G.wp.x,h.y-G.wp.y);if(d<(t&&(t.kind==='portal'||t.kind==='door')?14:6)){const tt=t;G.wp=null;if(tt&&tt.kind==='door')enterRoom(tt.room,tt.id);else if(tt)interact(tt);}}}
-  if(G.room&&ZONE.exit&&h.y>ZONE.exit.y&&Math.abs(h.x-ZONE.exit.x)<36)exitRoom();
   }
+  if(G.room&&ZONE.exit&&h.y>ZONE.exit.y&&Math.abs(h.x-ZONE.exit.x)<36)exitRoom();
   if(moved){h.state='walk';h.animT+=dt*(h.speed/70);}else h.state='idle';
   if(h.hp<h.maxhp)h.hp=Math.min(h.maxhp,h.hp+h.maxhp*.2*dt);
   for(const n of G.npcs){const d=dist(h,n);n.row=d<150?dir4(h.x-n.x,h.y-n.y):n.row0;}

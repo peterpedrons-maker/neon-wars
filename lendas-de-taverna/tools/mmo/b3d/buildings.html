@@ -1,0 +1,109 @@
+<!doctype html><meta charset=utf-8><body style="margin:0;background:#0000">
+<script src="three.min.js"></script>
+<script>
+const NT=t=>{t.magFilter=t.minFilter=THREE.NearestFilter;t.generateMipmaps=false;return t;};
+const cv=(w,h,f)=>{const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');g.imageSmoothingEnabled=false;f(g);return NT(new THREE.CanvasTexture(c));};
+const winTex=(glow)=>cv(16,16,g=>{g.fillStyle='#3b2616';g.fillRect(0,0,16,16);g.fillStyle=glow||'#8fc8ee';g.fillRect(2,2,12,12);g.fillStyle='#3b2616';g.fillRect(7,2,2,12);g.fillRect(2,7,12,2);g.fillStyle='rgba(255,255,255,.55)';g.fillRect(3,3,3,3);});
+const doorTex=(col)=>cv(16,24,g=>{g.fillStyle='#2e1c0e';g.fillRect(0,0,16,24);g.fillStyle=col||'#7a4e2a';g.fillRect(1,1,14,23);g.fillStyle='rgba(0,0,0,.25)';for(let x=4;x<16;x+=4)g.fillRect(x,1,1,23);g.fillStyle='#2e1c0e';g.fillRect(1,12,14,1);g.fillStyle='#e9b949';g.fillRect(11,13,2,2);g.fillStyle='#2e1c0e';g.fillRect(0,0,16,2);});
+const stripeTex=(a,b)=>cv(16,16,g=>{g.fillStyle=a;g.fillRect(0,0,16,16);g.fillStyle=b;for(let x=0;x<16;x+=4)g.fillRect(x,0,2,16);});
+const plankTex=(base,dark,n=4)=>cv(16,16,g=>{g.fillStyle=base;g.fillRect(0,0,16,16);g.fillStyle=dark;for(let y=0;y<16;y+=16/n)g.fillRect(0,y,16,1);for(let i=0;i<5;i++)g.fillRect((i*7)%16,(i*5)%16,1,3);});
+const stoneTex=(base,dark)=>cv(16,16,g=>{g.fillStyle=base;g.fillRect(0,0,16,16);g.fillStyle=dark;for(let y=0;y<16;y+=4){g.fillRect(0,y,16,1);for(let x=(y/4%2)*4;x<16;x+=8)g.fillRect(x,y,1,4);}});
+const tileTex=(base,dark)=>cv(16,16,g=>{g.fillStyle=base;g.fillRect(0,0,16,16);g.fillStyle=dark;for(let y=0;y<16;y+=4){g.fillRect(0,y+3,16,1);for(let x=(y/4%2)*3;x<16;x+=6)g.fillRect(x,y,1,3);}});
+const MAT=(c,tex,basic)=>basic?new THREE.MeshBasicMaterial({color:c}):new THREE.MeshLambertMaterial(tex?{map:tex}:{color:c});
+function box(w,h,d,col,x,y,z,P,o={}){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),MAT(col,o.tex,o.basic));m.position.set(x,y,z);if(o.rep&&o.tex){o.tex.wrapS=o.tex.wrapT=THREE.RepeatWrapping;o.tex.repeat.set(o.rep[0],o.rep[1]);}P.add(m);return m;}
+function cyl(r,h,col,x,y,z,P,seg=10,o={}){const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r*(o.r2||1),h,seg),MAT(col,null,o.basic));m.position.set(x,y,z);if(o.rz)m.rotation.z=o.rz;P.add(m);return m;}
+function gable(w,d,h,col,y0,ov,P,tex){const sh=new THREE.Shape();sh.moveTo(-w/2-ov,0);sh.lineTo(w/2+ov,0);sh.lineTo(0,h);sh.lineTo(-w/2-ov,0);
+  const g=new THREE.ExtrudeGeometry(sh,{depth:d+0.5,bevelEnabled:false});g.translate(0,y0,-(d+0.5)/2);
+  if(tex){tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.repeat.set(.45,.45);const uv=g.attributes.uv;}
+  const m=new THREE.Mesh(g,MAT(col,tex));P.add(m);return m;}
+function pane(tex,w,h,x,y,z,P){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:tex,transparent:true}));m.position.set(x,y,z);P.add(m);return m;}
+function win(x,y,z,P,s=.5,glow,shut='#5a3a22'){pane(winTex(glow),s,s,x,y,z,P);box(.1,s,.06,shut,x-s/2-.06,y,z,P);box(.1,s,.06,shut,x+s/2+.06,y,z,P);box(s+.22,.07,.1,'#4a3220',x,y-s/2-.04,z+.02,P);}
+function door(x,y,z,w,h,P,col){pane(doorTex(col),w,h,x,y,z,P);box(.12,h+.1,.12,'#3a2616',x-w/2-.05,y,z,P);box(.12,h+.1,.12,'#3a2616',x+w/2+.05,y,z,P);box(w+.3,.14,.14,'#3a2616',x,y+h/2+.05,z,P);}
+function awning(x,y,z,w,a,b,P){const m=new THREE.Mesh(new THREE.BoxGeometry(w,.07,.7),new THREE.MeshLambertMaterial({map:stripeTex(a,b)}));m.position.set(x,y,z);m.rotation.x=.4;P.add(m);}
+function barrel(x,z,P){cyl(.22,.5,'#7a4e2a',x,.25,z,P);cyl(.235,.05,'#3b2616',x,.14,z,P);cyl(.235,.05,'#3b2616',x,.38,z,P);}
+function crate(x,z,P,s=.42){box(s,s,s,'#9a7040',x,s/2,z,P);box(s+.02,.05,s+.02,'#6a4a28',x,s/2,z,P);}
+function lamp(x,z,P){box(.06,.9,.06,'#2b2b2b',x,.45,z,P);box(.18,.22,.18,'#ffd27a',x,1.0,z,P,{basic:true});}
+const B={};
+// base comum
+function shell(P,o){const w=o.w||4.2,d=o.d||2.8,h=o.h||1.7;
+  box(w+.3,.3,d+.3,o.found||'#7b7770',0,.15,0,P,{tex:stoneTex(o.found||'#8a867e','#6a665e'),rep:[(w+.3)/1.5,1]});
+  box(w,h,d,o.wall,0,.3+h/2,0,P,{tex:o.wtex,rep:[w/1.6,h/1.6]});return {w,d,h};}
+B.fer=P=>{ // FERREIRO: pedra + madeira escura, forja em brasa, chaminé alta, bigorna
+  const s=shell(P,{w:4.4,d:2.8,h:1.9,wall:'#5a4636',wtex:plankTex('#5a4636','#3a2a1e',5),found:'#7a7468'});box(4.5,.9,2.9,'#7a7468',0,.75,0,P,{tex:stoneTex('#8a847a','#5e5950'),rep:[3,1]});
+  [-2,-1,0,1,2].forEach(x=>box(.13,1.1,.13,'#2e2016',x,1.75,1.43,P));box(4.6,.14,.16,'#2e2016',0,2.25,1.43,P);
+  box(1.4,1.2,.2,'#6a655b',-1.1,1.0,1.4,P,{tex:stoneTex('#7a766c','#4e4a42'),rep:[1,1]});box(.95,.85,.1,'#14100c',-1.1,.9,1.52,P);box(.8,.5,.05,'#ff8a3a',-1.1,.75,1.58,P,{basic:true});
+  door(1.35,.85,1.44,.62,1.1,P,'#4a3426');win(1.1,2.0,1.44,P,.4,'#ff9a50','#2e2016');win(-1.6,2.0,1.44,P,.4,'#ff9a50','#2e2016');
+  box(1.0,3.2,1.0,'#6a655b',-1.35,2.2,-.5,P,{tex:stoneTex('#7a766c','#4e4a42'),rep:[1,3]});box(1.25,.3,1.25,'#2a2623',-1.35,3.95,-.5,P);box(.9,.2,.9,'#2a2623',-1.35,4.2,-.5,P);
+  gable(4.4,2.8,.95,'#4a4f58',2.25,.35,P,tileTex('#5a606a','#2f3238'));box(4.6,.09,.09,'#2f3238',0,3.2,0,P);
+  box(3.9,.1,1.2,'#3a3d42',0,2.45,2.05,P).rotation.x=.2;[-1.9,1.9].forEach(x=>box(.14,2.2,.14,'#2e2016',x,1.1,2.4,P));
+  box(.32,.3,.3,'#5a3a22',.9,.15,2.15,P);box(.6,.14,.24,'#3a3d42',.9,.37,2.15,P);box(.26,.1,.2,'#3a3d42',1.25,.38,2.15,P);
+  box(.7,.4,.4,'#7a4a2a',-1.4,.3,2.1,P);barrel(1.9,2.0,P);for(let i=0;i<4;i++)box(.1,.7,.04,'#a8aeb6',-.3+i*.22,1.55,1.5,P);
+  box(.9,.1,.7,'#3a3d42',-2.6,.05,1.8,P);lamp(-2.2,2.3,P);};
+B.mer=P=>{ // MERCADOR: casa de madeira clara, toldo listrado, barraca, caixas, balança
+  shell(P,{w:4.4,d:2.8,h:1.8,wall:'#d9c39a',wtex:plankTex('#d6bf92','#a88a5a',3),found:'#8a867e'});box(4.55,1.0,3.0,'#9a7040',0,.8,0,P,{tex:plankTex('#9a7040','#6a4a28',4),rep:[3,1]});
+  [-2.1,-1,0,1,2.1].forEach(x=>box(.13,1.4,.13,'#4a3220',x,1.55,1.43,P));box(4.5,.14,.16,'#4a3220',0,2.15,1.43,P);
+  door(0,.85,1.44,.9,1.15,P,'#8a5a32');win(-1.5,1.5,1.44,P,.55,'#f0d890');win(1.5,1.5,1.44,P,.55,'#f0d890');win(-1.5,.9,1.46,P,.0001);
+  awning(0,1.9,1.9,1.9,'#efe2c4','#b8342a',P);awning(-1.5,1.55,1.9,1.1,'#efe2c4','#3f6fb0',P);awning(1.5,1.55,1.9,1.1,'#efe2c4','#3f6fb0',P);
+  gable(4.4,2.8,1.5,'#7a3a2a',2.1,.35,P,tileTex('#8a4a38','#5a2a1e'));box(4.7,.09,.09,'#4a1e14',0,3.6,0,P);
+  box(.5,1.5,.5,'#8a857b',1.5,3.4,-.8,P,{tex:stoneTex('#8a867e','#5a564e')});box(.62,.12,.62,'#6a655b',1.5,4.2,-.8,P);
+  box(1.4,.5,.7,'#8a5a32',-1.9,.25,2.2,P,{tex:plankTex('#8a5a32','#5a3a22',3)});[['#c8463c',-2.3],['#e9b949',-2.0],['#6cc35e',-1.75],['#d9a273',-1.5]].forEach(([c,x])=>box(.22,.14,.22,c,x,.57,2.2,P));
+  crate(1.9,2.2,P);crate(2.3,2.0,P,.34);barrel(2.0,1.8,P);
+  box(.06,.55,.06,'#2b2b2b',2.35,2.3,1.6,P);box(.8,.05,.05,'#2b2b2b',2.7,2.55,1.6,P);box(.3,.06,.12,'#e9b949',2.45,2.4,1.6,P,{basic:true});box(.3,.06,.12,'#e9b949',2.95,2.4,1.6,P,{basic:true});lamp(-2.5,2.4,P);};
+B.alq=P=>{ // ALQUIMISTA: casa verde-azulada, janelas brilhantes de poção, caldeirão, ervas
+  shell(P,{w:4.0,d:2.8,h:1.8,wall:'#6a8a78',wtex:plankTex('#6a8a78','#46665a',4),found:'#6a665e'});
+  [-1.9,-.95,0,.95,1.9].forEach(x=>box(.13,1.4,.13,'#2e4a3e',x,1.55,1.43,P));box(4.1,.14,.16,'#2e4a3e',0,2.15,1.43,P);
+  door(0,.85,1.44,.9,1.15,P,'#5a3a6a');win(-1.4,1.4,1.44,P,.6,'#a0ff9a','#2e4a3e');win(1.4,1.4,1.44,P,.6,'#d89aff','#2e4a3e');
+  awning(0,1.9,1.9,1.9,'#efe2c4','#6a3a9a',P);
+  gable(4.0,2.8,1.9,'#2f7a68',2.1,.4,P,tileTex('#3a8a76','#1f5a4a'));box(4.4,.09,.09,'#1f4a3e',0,4.0,0,P);
+  const dorm=new THREE.Group();dorm.position.set(0,3.0,.9);P.add(dorm);box(1.1,.7,.8,'#6a8a78',0,.35,0,dorm,{tex:plankTex('#6a8a78','#46665a',3)});win(0,.35,.42,dorm,.36,'#d89aff');gable(1.1,.8,.5,'#2f7a68',.7,.1,dorm,tileTex('#3a8a76','#1f5a4a'));
+  box(.5,1.5,.5,'#8a857b',1.4,3.6,-.8,P,{tex:stoneTex('#8a867e','#5a564e')});box(.6,.12,.6,'#6a655b',1.4,4.4,-.8,P);
+  cyl(.42,.45,'#2a2a30',-1.9,.45,2.2,P,12,{r2:1.1});cyl(.36,.05,'#7aff7a',-1.9,.7,2.2,P,12,{basic:true});box(.5,.05,.05,'#3b2616',-1.9,.15,2.2,P);
+  cyl(.12,.5,'#8a6aff',1.9,.5,2.1,P,8);cyl(.1,.3,'#ff6a8a',2.2,.4,2.2,P,8);cyl(.12,.45,'#6aff9a',1.65,.45,2.3,P,8);
+  for(let i=0;i<5;i++)box(.04,.4,.04,'#5a8a3a',-1.0+i*.5,2.1,1.5,P);box(.06,.5,.06,'#2b2b2b',-2.35,2.3,1.6,P);cyl(.15,.3,'#7aff9a',-2.35,2.0,1.6,P,8,{basic:true});lamp(2.5,2.4,P);};
+B.mes=P=>{ // TEMPLO: pedra clara, colunas, frontão com sol, torre do sino
+  box(4.0,.3,3.2,'#b9b6ae',0,.15,0,P,{tex:stoneTex('#c4c1b8','#9a978e'),rep:[3,1]});box(3.4,2.1,2.7,'#e8e5dc',0,1.35,0,P,{tex:stoneTex('#ece9e0','#cfcbc1'),rep:[2.5,1.5]});
+  box(1.9,.14,.55,'#cfcbc1',0,.37,1.8,P);box(1.5,.14,.4,'#dad6cc',0,.5,1.9,P);
+  [-1.0,1.0].forEach(x=>{cyl(.17,1.9,'#f6f3ea',x,1.3,1.55,P,12);box(.5,.12,.5,'#e1ddd2',x,.43,1.55,P);box(.5,.12,.5,'#e1ddd2',x,2.3,1.55,P);});
+  box(2.8,.16,.45,'#e1ddd2',0,2.55,1.5,P);gable(3.4,.4,1.0,'#f2efe6',2.62,.2,P);
+  const sun=cyl(.22,.05,'#f2c14a',0,3.0,1.8,P,18,{basic:true});sun.rotation.x=Math.PI/2;
+  door(0,.95,1.38,.7,1.2,P,'#7a5a3a');box(.9,.1,.1,'#d9b24a',0,1.6,1.4,P,{basic:true});
+  const st=cyl(.34,.05,'#5f9fe0',0,1.95,1.38,P,16,{basic:true});st.rotation.x=Math.PI/2;
+  gable(3.4,2.7,1.2,'#4a6ea8',2.4,.3,P,tileTex('#5a80c0','#34528a'));
+  box(1.1,1.4,1.1,'#e8e5dc',0,4.1,-.6,P,{tex:stoneTex('#ece9e0','#cfcbc1')});box(1.2,.1,1.2,'#d9d5cb',0,4.85,-.6,P);
+  const cone=new THREE.Mesh(new THREE.ConeGeometry(.85,1.2,4),new THREE.MeshLambertMaterial({color:'#4a6ea8'}));cone.position.set(0,5.5,-.6);cone.rotation.y=Math.PI/4;P.add(cone);
+  box(.4,.55,.08,'#14100c',0,4.2,-.03,P);box(.22,.26,.08,'#f2c14a',0,4.18,0,P,{basic:true});box(.06,.6,.06,'#f2c14a',0,6.3,-.6,P,{basic:true});box(.28,.06,.06,'#f2c14a',0,6.2,-.6,P,{basic:true});
+  [-.5,.5].forEach(x=>{box(.06,.4,.06,'#f4f0e0',x,.6,1.95,P);box(.1,.14,.1,'#ffd27a',x,.88,1.95,P,{basic:true});});lamp(-2.3,2.2,P);lamp(2.3,2.2,P);};
+B.cof=P=>{ // COFRE: pedra cinza com faixas de ferro, porta de cofre, baú dourado no telhado
+  box(3.6,.3,3.0,'#6f737c',0,.15,0,P,{tex:stoneTex('#7a7e86','#5a5e66'),rep:[2.5,1]});box(3.3,1.9,2.7,'#8d929b',0,1.25,0,P,{tex:stoneTex('#9aa0a8','#6a6e76'),rep:[2.5,1.5]});
+  [.6,1.3,2.0].forEach(y=>box(3.36,.12,2.76,'#3a3d42',0,y,0,P));[-1.65,1.65].forEach(x=>[-1.35,1.35].forEach(z=>box(.16,2.0,.16,'#3a3d42',x,1.25,z,P)));
+  box(1.5,1.5,.14,'#5a4a3a',0,1.05,1.4,P,{tex:plankTex('#6a5240','#3a2a1e',4)});[.5,1.0,1.5].forEach(y=>box(1.6,.1,.18,'#2f3238',0,y,1.46,P));box(.08,1.5,.18,'#2f3238',0,1.05,1.46,P);
+  box(.34,.3,.12,'#e9b949',0,.85,1.58,P,{basic:true});[-.55,.55].forEach(x=>box(.12,.12,.12,'#e9b949',x,1.05,1.55,P,{basic:true}));
+  [-1.1,1.1].forEach(x=>{box(.4,.45,.08,'#14100c',x,1.7,1.4,P);[-.09,.09].forEach(dx=>box(.04,.45,.1,'#6a6e76',x+dx,1.7,1.42,P));});
+  gable(3.3,2.7,.8,'#3f444e',2.2,.3,P,tileTex('#4a505a','#2a2e36'));
+  const ch=new THREE.Group();ch.position.set(0,3.0,.4);P.add(ch);box(1.1,.5,.7,'#8a5a32',0,.25,0,ch,{tex:plankTex('#8a5a32','#5a3a22',3)});
+  const lid=cyl(.35,1.1,'#8a5a32',0,.5,0,ch,12);lid.rotation.z=Math.PI/2;lid.scale.set(1,1,.9);[-.38,0,.38].forEach(x=>box(.09,.52,.76,'#e9b949',x,.27,0,ch,{basic:true}));box(.16,.18,.08,'#ffe08a',0,.48,.4,ch,{basic:true});
+  barrel(2.0,1.7,P);crate(2.0,2.2,P);crate(-2.0,2.0,P,.5);box(.9,.1,.7,'#3a3d42',-2.2,.05,2.8,P);lamp(2.4,2.6,P);lamp(-2.4,1.2,P);};
+B.lei=P=>{ // LEILÃO: sobrado de dois andares, varanda, faixa vermelha e dourada, martelo na placa
+  shell(P,{w:4.6,d:3.0,h:1.9,wall:'#e0cfa8',wtex:plankTex('#e0cfa8','#b89a68',3),found:'#8a867e'});
+  box(4.8,1.5,3.2,'#d0b890',0,2.85,0,P,{tex:plankTex('#d0b890','#9a7a4a',3),rep:[3,1]});
+  [-2.2,-1.1,0,1.1,2.2].forEach(x=>box(.13,1.9,.13,'#4a3220',x,1.25,1.53,P));[-2.4,-1.2,0,1.2,2.4].forEach(x=>box(.13,1.5,.13,'#4a3220',x,2.85,1.7,P));
+  box(4.7,.16,.16,'#4a3220',0,2.15,1.53,P);box(4.9,.16,.16,'#4a3220',0,3.62,1.7,P);
+  door(0,.95,1.54,1.0,1.2,P,'#7a3a2a');win(-1.7,1.35,1.54,P,.55);win(1.7,1.35,1.54,P,.55);[-1.8,0,1.8].forEach(x=>win(x,2.85,1.72,P,.55,'#f0d890'));
+  box(4.2,.12,.9,'#7a5230',0,2.2,2.0,P);[-2,2].forEach(x=>box(.1,.8,.1,'#4a3220',x,1.8,2.4,P));box(4.2,.08,.08,'#4a3220',0,2.65,2.42,P);
+  box(1.0,1.6,.05,'#b8342a',-1.7,2.9,1.78,P);box(1.0,.12,.07,'#e9b949',-1.7,3.65,1.78,P,{basic:true});box(1.0,1.6,.05,'#b8342a',1.7,2.9,1.78,P);box(1.0,.12,.07,'#e9b949',1.7,3.65,1.78,P,{basic:true});
+  gable(4.8,3.2,1.5,'#9a3326',3.6,.35,P,tileTex('#aa4030','#6a2018'));box(5.1,.09,.09,'#5a1810',0,5.1,0,P);
+  box(.5,1.4,.5,'#8a857b',1.9,4.7,-.8,P,{tex:stoneTex('#8a867e','#5a564e')});box(.62,.12,.62,'#6a655b',1.9,5.45,-.8,P);
+  box(.06,.9,.06,'#2b2b2b',2.5,2.1,2.5,P);box(.9,.06,.06,'#2b2b2b',2.1,2.5,2.5,P);box(.5,.4,.06,'#e9b949',2.1,2.2,2.5,P,{basic:true});
+  const gh=box(.18,.14,.4,'#5a3a22',0,.55,2.6,P);box(.5,.18,.3,'#8a5a32',0,.3,2.6,P);crate(-2.4,2.2,P);barrel(2.5,2.0,P);lamp(-2.6,2.6,P);};
+function render(id){
+  const W=176,H=176;const r=new THREE.WebGLRenderer({antialias:false,alpha:true,preserveDrawingBuffer:true});r.setSize(W,H);r.setPixelRatio(1);r.setClearColor(0,0);
+  const sc=new THREE.Scene();const G=new THREE.Group();sc.add(G);B[id](G);
+  sc.add(new THREE.AmbientLight('#fff4e0',.85));const dl=new THREE.DirectionalLight('#fff0d0',.8);dl.position.set(-4,8,6);sc.add(dl);
+  const half=3.9,cam=new THREE.OrthographicCamera(-half*W/H*1.0,half*W/H*1.0,half*1.0,-half*1.0,.1,60);
+  const el=40*Math.PI/180,R=20;cam.position.set(0,2.2+R*Math.sin(el),R*Math.cos(el));cam.lookAt(0,2.2,0);
+  r.render(sc,cam);
+  const base=new THREE.Vector3(0,0,1.5).project(cam);const ax=(base.x*.5+.5)*W,ay=(1-(base.y*.5+.5))*H;
+  const url=r.domElement.toDataURL('image/png');r.dispose();return {url,ax,ay};
+}
+window.renderAll=()=>{const out={};for(const id of Object.keys(B))out[id]=render(id);return out;};
+</script>
