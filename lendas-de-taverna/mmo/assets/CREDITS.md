@@ -22,3 +22,6 @@ Os mesmos do jogo principal (`../../assets/skill-icons`, `../../assets/audio`).
 
 ## Aparência do herói (assets/look2)
 Peças do Universal LPC Spritesheet Character Generator (corpo, cabeça, trajes, calças, cabelos e chapéus). Autores e licenças de cada arquivo em `assets/look2/CREDITS.csv` (CC-BY-SA 3.0 / OGA-BY 3.0 / GPL 3.0).
+
+## Ícones das habilidades novas
+Glifos de game-icons.net (CC BY 3.0; autores em `lendas-de-taverna/assets/ui-icons/CREDITS.md`) sobre ladrilhos coloridos gerados em `assets/skills/`.
