@@ -527,7 +527,7 @@ const BASES={
  escudo:{guerreiro:[['Escudo','i_escudo'],['Escudo Grande','i_escudog']],clerigo:[['Escudo Sagrado','i_escudo']],ladino:[['Adaga Reserva','i_adaga'],['Garra','i_garra']],mago:[['Tomo','i_livro'],['Orbe','i_gema']],arqueiro:[['Braçadeira','i_bracelete']],bardo:[['Livro de Canções','i_livro'],['Cristal','i_gema']]},
  anel:{_:[['Anel','i_anel'],['Bracelete','i_bracelete']]}
 };
-const STAT_LBL={atk:'Ataque',def:'Defesa',hp:'Vida',crit:'Crítico %',spd:'Velocidade %'};
+const STAT_LBL={atk:'Ataque',def:'Defesa',hp:'Vida',crit:'Crítico %',spd:'Velocidade %',kb:'Empurrão %'};
 const PASS=[['vigor','Vigor','+8% de vida por nível'],['forca','Força','+6% de ataque por nível'],['arm','Armadura','+6% de defesa por nível'],['sorte','Sorte','+3% de crítico por nível']];
 const IMG_ICO={};
 const xpNeed=L=>Math.round(38*Math.pow(L,1.6)+30);
@@ -682,7 +682,7 @@ const G={scene:'town',map:'town',npcs:[],vill:[],winOpen:null,loot:[],on:false,s
          kills:0,phase:'farm',zoneLv:1,koT:0,chat:[],bossWoke:false,wp:null,wpT:0};
 function migrateSave(){SAVE.potL=SAVE.potL||0;SAVE.elix=SAVE.elix||{forca:0,vigor:0,sorte:0};SAVE.zoneMax=SAVE.zoneMax||SAVE.zone||1;SAVE.inv=SAVE.inv||[];SAVE.eq=SAVE.eq||{};SAVE.potions=SAVE.potions==null?2:SAVE.potions;SAVE.sk=SAVE.sk||[1,0,0];while(SAVE.sk.length<14)SAVE.sk.push(0);if(SAVE.sub===undefined)SAVE.sub=null;SAVE.vault=SAVE.vault||[];SAVE.eqs=SAVE.eqs||[0,1,2];if(!SAVE.at||SAVE.at.int===undefined||SAVE.at.res!==undefined||SAVE.at.agi!==undefined)SAVE.at=ATT_NEW();if(SAVE.autoEq==null)SAVE.autoEq=true;
   const mig=it=>{if(!it)return;if(!it.tier){it.tier=tierOf(it.ilvl);let bn=it.name;for(const sx of SUFIX)if(bn.endsWith(' '+sx)){bn=bn.slice(0,-sx.length-1);break;}it.bn=bn;it.name=bn+' '+tierAdj(bn,it.tier);}
-    if(it.tv!==2){const mu=tierMul(it.tier);if(mu>1)for(const k in it.s)it.s[k]=k==='crit'||k==='spd'?Math.round(it.s[k]*mu*10)/10:Math.round(it.s[k]*mu);it.tv=2;}};
+    if(it.tv!==2){const mu=tierMul(it.tier);if(mu>1)for(const k in it.s)it.s[k]=k==='crit'||k==='spd'||k==='kb'?Math.round(it.s[k]*mu*10)/10:Math.round(it.s[k]*mu);it.tv=2;}};
   SAVE.inv.forEach(mig);SAVE.vault.forEach(mig);Object.values(SAVE.eq).forEach(mig);}
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));return s&&s.cls&&CLASSES[s.cls]?s:null;}catch(e){return null;}}
 function writeSave(){try{SAVE.kills=SAVE.kills||0;localStorage.setItem(SAVE_KEY,JSON.stringify(SAVE));}catch(e){}}
@@ -899,7 +899,7 @@ function heroStatsInto(h){
   const E=SAVE.elix||{};
   h.maxhp=Math.round((C.hp*(1+.15*(L-1))+g.hp+ATV.vit*A.vit)*(E.vigor>0?1.2:1));
   h.pow=(C.atk*(1+.12*(L-1))+g.atk+atkFromAttrs(A))*(E.forca>0?1.2:1);
-  h.def=C.def+L*.8+g.def;
+  h.def=C.def+L*.8+g.def;h.kbG=g.kb||0;
   h.speed=C.speed*(1+g.spd/100);h.rng=C.rng;h.aspd=C.aspd;h.crit=C.crit+g.crit/100+Math.floor((A.sor||0)/ATV.sorN)*.01;subApply(h);
 }
 /* dificuldade: o nível do monstro sobe com a profundidade na floresta (0 na entrada → 1 no fim da estrada) e +5 por zona */
@@ -975,7 +975,7 @@ function buildBar(){
   const pot=mkTb('bPot',potHtml,'slot2 sep',()=>usePotion(true));ab.appendChild(pot);
   {const D=DODGE[SAVE.cls];const dd=mkTb('bDodge','<img src="../assets/ui-icons/'+(D.t==='blink'?'magic-swirl':'running-shoe')+'.png" style="padding:6px"><span class="key">E</span><div class="cd"></div><div class="ct"></div>','slot2',()=>{const h=G.hero;if(!h||h.state==='ko')return;const f=nearestMob(h,300);if(f)heroDodge(h,h.x-f.x,h.y-f.y,'melee');else heroDodge(h,-Math.cos(0),0,'melee');});ab.appendChild(dd);}
   const hb=mkTb('bHero','<img src="../assets/ico/v_bolsa.png"><span class="bd" id="bdHero"></span>','mbtn',()=>{sfx('ui_click');openPan('eq');});
-  const tw=mkTb('bTownB','<img src="../assets/ico/v_cidade.png?v=2" style="padding:0">','mbtn',()=>{sfx('ui_click');gConfirm('O progresso desta floresta (abates) será perdido.',{title:'Voltar para a cidade?',ok:'Voltar',no:'Ficar'}).then(ok=>{if(ok)enterTown(false);});});
+  const tw=mkTb('bTownB','<img src="../assets/ico/v_cidade.png?v=3" style="width:38px;height:38px">','mbtn',()=>{sfx('ui_click');gConfirm('O progresso desta floresta (abates) será perdido.',{title:'Voltar para a cidade?',ok:'Voltar',no:'Ficar'}).then(ok=>{if(ok)enterTown(false);});});
   [hb,tw].forEach(e=>m.appendChild(e));updPot();badge();
 }
 function updPot(){const n=$('potn');if(n)n.textContent=SAVE.potions+(SAVE.potL?'+'+SAVE.potL:'');}
@@ -1018,15 +1018,16 @@ function genItem(ilvl,minR=0,boost=0,U){
   else if(slot==='anel'){s.hp=(4+L*2.8)*m;s.crit=1.2*m;s.atk=(.5+L*.15)*m;}
   else if(slot==='escudo'){if(shieldCls){s.def=(.9+L*.34)*m;s.hp=(5+L*2.8)*m;}else{s.atk=(.8+L*.42)*m;s.crit=1.1*m;}}
   const aff=[['atk',L*.35],['def',L*.18],['hp',L*2.5],['crit',1.2],['spd',1.6]];
+  if(['arma','luvas','armadura','escudo','anel'].includes(slot))aff.push(['kb',1.8],['kb',1.8]);
   for(let i=0;i<R.aff;i++){const [k,v]=pick(aff);s[k]=(s[k]||0)+v*R.m*tierMul(tier)*rnd(.8,1.2);}
-  for(const k in s)s[k]=k==='crit'||k==='spd'?Math.round(s[k]*10)/10:Math.round(s[k]);
+  for(const k in s)s[k]=k==='crit'||k==='spd'||k==='kb'?Math.round(s[k]*10)/10:Math.round(s[k]);
   return {id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),slot,rar,tier,tv:2,ilvl:L,bn,name:U?U.nm:bn+' '+tierAdj(bn,tier),icon:ic,s,u:U?{id:U.id,fx:U.fx,desc:U.desc}:undefined};
 }
-function effS(it,k){const v=(it.s[k]||0)*(1+.08*(it.up||0));return k==='crit'||k==='spd'?Math.round(v*10)/10:Math.round(v);}
+function effS(it,k){const v=(it.s[k]||0)*(1+.08*(it.up||0));return k==='crit'||k==='spd'||k==='kb'?Math.round(v*10)/10:Math.round(v);}
 function itemName(it){return it.name+(it.up?' +'+it.up:'');}
-function itemScore(it){if(!it)return 0;const s={};for(const k in it.s)s[k]=effS(it,k);return (s.atk||0)*3+(s.def||0)*2+(s.hp||0)*.35+(s.crit||0)*4+(s.spd||0)*1.5;}
+function itemScore(it){if(!it)return 0;const s={};for(const k in it.s)s[k]=effS(it,k);return (s.atk||0)*3+(s.def||0)*2+(s.hp||0)*.35+(s.crit||0)*4+(s.spd||0)*1.5+(s.kb||0)*1.2;}
 function itemVal(it){return Math.round((3+it.ilvl*2)*Math.pow(it.rar+1,1.5)*(1+.35*(it.up||0))*(1+.12*((it.tier||1)-1)));}
-function gearTotals(){const t={atk:0,def:0,hp:0,crit:0,spd:0};for(const k of SLOTS){const it=SAVE.eq[k];if(it)for(const st in it.s)t[st]+=effS(it,st);}return t;}
+function gearTotals(){const t={atk:0,def:0,hp:0,crit:0,spd:0,kb:0};for(const k of SLOTS){const it=SAVE.eq[k];if(it)for(const st in it.s)t[st]+=effS(it,st);}return t;}
 function skPoints(){return (SAVE.lv-1)-(SAVE.sk.reduce((a,b)=>a+b,0)-1);}
 /* atributos em valores fixos: o principal da classe dá +1 de ataque por ponto, os outros +1 a cada 2 pontos */
 const ATTR=[['for','Força'],['des','Destreza'],['int','Inteligência'],['vit','Vitalidade'],['sor','Sorte']];
@@ -1082,7 +1083,7 @@ function knock(e,fx,fy,force){const d=Math.hypot(fx,fy)||1;e.kvx+=fx/d*force;e.k
 /* EMPURRÃO é um atributo secundário: chance por golpe (base da classe + Força), com intervalo mínimo por alvo; chefes resistem.
    Habilidades com empurrão próprio (> 1,2) continuam garantidas. */
 const KNOCK_CLS={guerreiro:.30,ladino:.10,clerigo:.12,arqueiro:.07,mago:.05,bardo:.07},KNOCK_SUB={barbaro:.20,cavaleiro:.10};
-function knockChance(){const A=SAVE.at||{};return Math.min(.75,(KNOCK_CLS[SAVE.cls]||.1)+(KNOCK_SUB[SAVE.sub]||0)+Math.floor((A.for||0)/3)*.01);}
+function knockChance(){const A=SAVE.at||{},g=(G.hero&&G.hero.kbG)||0;return Math.min(.75,(KNOCK_CLS[SAVE.cls]||.1)+(KNOCK_SUB[SAVE.sub]||0)+Math.floor((A.for||0)/3)*.01+g/100);}
 function hitMob(m,dmg,crit,fromX,fromY,kf=1){
   if(m.dead)return;if(m.vuln>0)dmg=Math.round(dmg*1.15);{const tk=stMul(m,'taken');if(tk!==1)dmg=Math.max(1,Math.round(dmg*tk));}m.hp-=dmg;{const ls=uf('ls');if(ls>0&&G.hero&&G.hero.state!=='ko')G.hero.hp=Math.min(G.hero.maxhp,G.hero.hp+dmg*ls);}m.flash=.14;m.stun=m.kind==='boss'?(crit?.2:.08):(crit?.35:.16);m.act=null;
   floatText(m.x+rnd(-12,12),m.y-(m.kind==='boss'?70:30),(crit?dmg+'!':''+dmg),crit?'#ffbe3c':'#fff0d0',crit?13:10);
@@ -2251,11 +2252,11 @@ function render(){
 let panTab='eq',panSel=null,skSlot=0;   // panSel: {src:'bag'|'eq', k}
 function openPan(t){sfx('tr_open',.6);panTab=t||panTab;panSel=null;$('pan').classList.add('on');renderPan();}
 function closePan(){$('pan').classList.remove('on');}
-function statLine(it,cmp){const keys=['atk','def','hp','crit','spd'];return keys.filter(k=>(it.s[k]||0)||(cmp&&(cmp.s[k]||0))).map(k=>{const v=effS(it,k),o=cmp?effS(cmp,k):null;let d='';if(cmp!=null&&o!==null){const df=Math.round((v-o)*10)/10;if(df)d=` <span class="${df>0?'up':'dn'}">${df>0?'▲+':'▼'}${df}</span>`;}
+function statLine(it,cmp){const keys=['atk','def','hp','crit','spd','kb'];return keys.filter(k=>(it.s[k]||0)||(cmp&&(cmp.s[k]||0))).map(k=>{const v=effS(it,k),o=cmp?effS(cmp,k):null;let d='';if(cmp!=null&&o!==null){const df=Math.round((v-o)*10)/10;if(df)d=` <span class="${df>0?'up':'dn'}">${df>0?'▲+':'▼'}${df}</span>`;}
   return `<div class="row"><span>${STAT_LBL[k]}</span><span>+${v}${d}</span></div>`;}).join('');}
 /* comparação com o equipado: colunas Este / Equipado / Δ, veredito de poder e cartão do item equipado */
 function cmpHTML(it,cur,plain){
-  const keys=['atk','def','hp','crit','spd'],has=!plain&&cur&&cur.s&&Object.keys(cur.s).some(k=>cur.s[k]);
+  const keys=['atk','def','hp','crit','spd','kb'],has=!plain&&cur&&cur.s&&Object.keys(cur.s).some(k=>cur.s[k]);
   const rows=keys.filter(k=>(it.s[k]||0)||(has&&(cur.s[k]||0))).map(k=>{const v=effS(it,k),o=has?effS(cur,k):0,df=Math.round((v-o)*10)/10;
     return `<div class="cr${has?'':' p'}"><span class="cl">${STAT_LBL[k]}</span><span class="cn">${v?'+'+v:'—'}</span>${has?`<span class="co">${o?'+'+o:'—'}</span><span class="cd2 ${df>0?'up':df<0?'dn':'eq'}">${df>0?'▲ +'+df:df<0?'▼ '+df:'='}</span>`:''}</div>`;}).join('');
   if(plain)return rows;
@@ -2448,7 +2449,7 @@ function winForja(){
   if(!it)h+='<div class="sub" style="padding:18px 0">Nenhum item equipado neste espaço.<br>Equipe um item na mochila.</div>';
   else{const R=RAR[it.rar],up=it.up||0,nx={...it,up:up+1},max=up>=10,ch=upChance(it),cost=upCost(it);
     h+=`<div class="fcard"><div class="fi" id="fitem" style="--rc:${R.c};border-color:${R.c}"><img src="../assets/ico/${it.icon}.png"></div><b style="color:${R.c}">${itemName(it)}</b><span>${R.n} · ${SLOT_NAME[it.slot]} · Nv ${it.ilvl}</span></div>`;
-    ['atk','def','hp','crit','spd'].filter(k=>it.s[k]).forEach(k=>{h+=`<div class="stline"><span>${STAT_LBL[k]}</span><span>${effS(it,k)} ${max?'':`<span class="up">▶ ${effS(nx,k)}</span>`}</span></div>`;});
+    ['atk','def','hp','crit','spd','kb'].filter(k=>it.s[k]).forEach(k=>{h+=`<div class="stline"><span>${STAT_LBL[k]}</span><span>${effS(it,k)} ${max?'':`<span class="up">▶ ${effS(nx,k)}</span>`}</span></div>`;});
     if(max)h+='<div class="sub" style="padding:8px 0;color:#ffd65a">Nível máximo (+10)</div>';
     else{const n=10;h+=`<div class="stline" style="border:0"><span>Chance de sucesso</span><span style="color:${ch<1?'#ffd678':'#96e08a'}">${Math.round(ch*100)}%</span></div><div class="seg">${Array.from({length:n},(_,i)=>`<i class="${i<Math.round(ch*n)?(ch<1?'mid':'on'):''}"></i>`).join('')}</div><div class="stline"><span>Custo</span>${coin(cost)}</div>`;}
     if(G.fmsg)h+=`<div style="text-align:center;font:700 15px var(--ft);letter-spacing:.06em;color:${G.fmsg.ok?'#ffe08a':'#ff9a8a'}">${G.fmsg.t}</div>`;

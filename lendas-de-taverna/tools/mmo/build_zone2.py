@@ -4,6 +4,7 @@ Uso (na pasta lendas-de-taverna/tools/mmo):  PACK_DIR=<pack> /usr/bin/python3 bu
 import os,sys,json,hashlib,math,random
 HERE=os.path.dirname(os.path.abspath(__file__))
 exec(open(os.path.join(HERE,'town_world.py')).read())
+BUSH=[b.resize((max(8,round(b.width*.62)),max(8,round(b.height*.62))),Image.NEAREST) for b in BUSH]   # arbustos menores
 OUT=os.path.join(HERE,'..','..','mmo','assets')
 Z=1.5
 WW,WH=960,1500                      # px do pack (mundo = ×1.5)
@@ -109,7 +110,7 @@ for n in range(150):
         if not lake_in(x,y,8) and free(x,y,10):break
     else:continue
     k=n%6
-    if k in(0,1,2):add(rr.choice(BUSH),x,y,10)
+    if k in(0,1,2):add(rr.choice(BUSH),x,y,7)
     elif k==3:add(rr.choice(ROCK_BIG),x,y,12)
     else:add(rr.choice(ROCK_SM),x,y,6)
 for (gx,gy,k) in GLADES:                     # tufos de mato ao redor de cada clareira
