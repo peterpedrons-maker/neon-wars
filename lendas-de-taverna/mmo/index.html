@@ -661,6 +661,13 @@ const lastSfx={};
 /* sons de interface padronizados: tudo que é clique/janela/confirmação toca o mesmo 'clique' discreto (o da seleção de itens da janela) */
 const UI_SND={ui_click:1,ui_confirm:1,tr_open:1,tr_close:1};
 /* moeda: um "plim" curto e simples (duas notas), sintetizado — sem o brilho mágico do arquivo antigo */
+/* som grave e macio do ataque básico dos magos (substitui o 'spell_cast' agudo) */
+function softMagic(kind,v=1){if(!AC||!sfxGain)return;const t=AC.currentTime,k='sm_'+kind;if(lastSfx[k]&&t-lastSfx[k]<.09)return;lastSfx[k]=t;
+  const o=AC.createOscillator(),g=AC.createGain(),f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=520;o.type='sine';
+  const f0=kind==='hit'?120:190,f1=kind==='hit'?70:120,d=kind==='hit'?.16:.22;o.frequency.setValueAtTime(f0*(.96+Math.random()*.08),t);o.frequency.exponentialRampToValueAtTime(f1,t+d);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.2*v,t+.012);g.gain.exponentialRampToValueAtTime(.0004,t+d);o.connect(f);f.connect(g);g.connect(sfxGain);o.start(t);o.stop(t+d+.03);
+  const n=AC.createBufferSource(),nb=AC.createBuffer(1,Math.floor(AC.sampleRate*.12),AC.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=(Math.random()*2-1)*(1-i/nd.length);n.buffer=nb;
+  const nf=AC.createBiquadFilter();nf.type='lowpass';nf.frequency.value=700;const ng=AC.createGain();ng.gain.value=.05*v;n.connect(nf);nf.connect(ng);ng.connect(sfxGain);n.start(t);}
 function coinSynth(v){if(!AC||!sfxGain)return;const t=AC.currentTime;if(lastSfx.coin&&t-lastSfx.coin<.08)return;lastSfx.coin=t;
   const mk=(f,t0,d,g0)=>{const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.setValueAtTime(f,t0);g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(g0,t0+.004);g.gain.exponentialRampToValueAtTime(.0004,t0+d);o.connect(g);g.connect(sfxGain);o.start(t0);o.stop(t0+d+.03);};
   mk(1318,t,.06,.07*v);mk(1976,t+.055,.15,.07*v);}
@@ -1138,7 +1145,7 @@ function startHeroAttack(h,t,force){
   h.act=castA&&!bowA?{t:0,dur:chn+.6,hit:(chn+.32)/(chn+.6),done:false,tgt:t,sk,ch:chn,cast:true}:bowA?{t:0,dur:chn+.6,hit:(chn+.32)/(chn+.6),done:false,tgt:t,sk,ch:chn,cast:false,bow:true,up:so.t==='meteor'}:{t:0,dur:atkDur(h),hit:atkHitAt(h),done:false,tgt:t,sk};h.cd=h.aspd;h.row=dir4(t.x-h.x,t.y-h.y);
   if(bowA)gxBowCh(h,t,C.skills[sk][0],chn,so.t==='meteor');
   if(castA&&!bowA&&chn>0){VF.rune(h.x,h.y,20+chn*7,CHCOL[h.cls],chn+.4,2.4);VF.glow(h.x,h.y-14,30,CHCOL[h.cls],chn+.2,4);}
-  sfx(C.atk_==='cast'?'spell_cast':C.atk_==='shoot'?'bow':'swing',.6);
+  if(C.atk_==='cast')softMagic('cast');else sfx(C.atk_==='shoot'?'bow':'swing',.6);
   if(sk>=0){h.sk[sk]=skCd(sk);floatText(h.x,h.y-66,C.skills[sk][1],'#ffe08a',8,1.1);}
 }
 /* modo manual: tocar no slot lança a habilidade (curas/reforços em você, as outras no alvo mais próximo) */
@@ -1913,7 +1920,7 @@ function updateProjs(dt){
   for(let i=G.projs.length-1;i>=0;i--){const p=G.projs[i];if(p.delay>0){p.delay-=dt;continue;}
     const t=p.tgt;if(!t||t.dead){G.projs.splice(i,1);continue;}
     const dx=t.x-p.x,dy=(t.y-(t.kind==='boss'?40:16))-p.y,d=Math.hypot(dx,dy),s=p.sp*dt;
-    if(d<=s+4){if(t.demo){t.flash=.15;}else hitMob(t,p.d,p.crit,p.x-dx*4,p.y-dy*4);G.projs.splice(i,1);sfx(p.kind==='orb'?'spell_hit':'arrow_hit',.32);const hc={fire:['#ff7a2a','#ffd070'],ice:['#8ae0ff','#fff'],orb:['#8ac8ff','#fff'],dagger:['#dfe6f0','#fff']}[p.style];if(hc){VF.burst(t.x,t.y-16,10,hc,{s0:40,s1:110});VF.glow(t.x,t.y-16,22,hc[0],.25);}continue;}
+    if(d<=s+4){if(t.demo){t.flash=.15;}else hitMob(t,p.d,p.crit,p.x-dx*4,p.y-dy*4);G.projs.splice(i,1);if(p.kind==='orb')softMagic('hit',.9);else sfx('arrow_hit',.32);const hc={fire:['#ff7a2a','#ffd070'],ice:['#8ae0ff','#fff'],orb:['#8ac8ff','#fff'],dagger:['#dfe6f0','#fff']}[p.style];if(hc){VF.burst(t.x,t.y-16,10,hc,{s0:40,s1:110});VF.glow(t.x,t.y-16,22,hc[0],.25);}continue;}
     p.x+=dx/d*s;p.y+=dy/d*s;p.ang=Math.atan2(dy,dx);
     const st=p.style;if(st==='orb'&&Math.random()<.9)VF.pt(p.x+rnd(-2,2),p.y+rnd(-2,2),{life:.3,col:'#8ac8ff',sz:2.4});else if(st==='fire'){VF.pt(p.x+rnd(-2,2),p.y+rnd(-2,2),{vy:-14,life:.35,col:Math.random()<.5?'#ffb050':'#ff5a1a',sz:2.6});}else if(st==='ice'&&Math.random()<.8)VF.pt(p.x,p.y,{life:.3,col:'#bfe8ff',sz:2});else if(st==='dagger'&&Math.random()<.6)VF.pt(p.x,p.y,{life:.2,col:'#fff',sz:1.6});else if(st==='arrow'&&Math.random()<.5)VF.pt(p.x,p.y,{life:.18,col:'#fff6d8',sz:1.4,add:false});}
 }
