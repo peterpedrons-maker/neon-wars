@@ -131,3 +131,134 @@ for i in range(6):
     sh.paste(dust(50 + i * 5, base=(170, 255, 110), shade=(40, 110, 40)), (i * 32, 56))
 sh.save(os.path.join(OUT, 'bits.png'), optimize=True)
 print('ok', os.listdir(OUT))
+
+
+# ======================================================================
+# tex.png: texturas BRANCAS (tingidas em tempo real pelo jogo) feitas com numpy + scipy + PIL
+#   fumaça/névoa 6x64 | cortes em meia-lua 4x96x48 | anéis de choque 4x96x48 | explosões 4x64 | círculos mágicos 2x128x64
+# ======================================================================
+from scipy.ndimage import gaussian_filter, map_coordinates
+
+
+def fbm(S, seed, oct=5):
+    rs = np.random.RandomState(seed)
+    out = np.zeros((S, S), 'float32')
+    amp = 1.0
+    tot = 0
+    for o in range(oct):
+        n = gaussian_filter(rs.rand(S, S).astype('float32'), sigma=S / (4 * 2 ** o), mode='wrap')
+        n = (n - n.min()) / (n.max() - n.min() + 1e-6)
+        out += n * amp
+        tot += amp
+        amp *= .55
+    return out / tot
+
+
+def to_rgba(alpha, shade=None):
+    a = np.clip(alpha, 0, 1)
+    v = np.ones_like(a) if shade is None else np.clip(shade, 0, 1)
+    return Image.fromarray((np.dstack([v, v, v, a]) * 255).astype('uint8'), 'RGBA')
+
+
+def wisp(seed, S=64):
+    yy, xx = np.mgrid[0:S, 0:S].astype('float32')
+    d = np.hypot(xx - S / 2, yy - S / 2) / (S / 2)
+    n = fbm(S, seed)
+    # domain warp p/ aspecto de fumaça enrolada
+    w = fbm(S, seed + 40) * 6
+    n2 = map_coordinates(n, [np.clip(yy + (w - 3) * 3, 0, S - 1), np.clip(xx + (w - 3) * 3, 0, S - 1)], order=1)
+    a = np.clip((1 - d ** 1.6) * (.35 + n2 * 1.3) - .12, 0, 1)
+    a = gaussian_filter(a, .7)
+    a = np.clip(a * 1.5, 0, 1)
+    sh = .55 + .45 * n2
+    return to_rgba(a * .9, sh)
+
+
+def slash(seed, W=96, H=48):
+    r = np.random.RandomState(seed)
+    yy, xx = np.mgrid[0:H, 0:W].astype('float32')
+    cx, cy = W * .5, H * 1.35
+    R = np.hypot((xx - cx) / 1.0, (yy - cy) * 1.0)
+    ang = np.arctan2(cy - yy, xx - cx)  # 0..pi na parte de cima
+    mid = 44 + 2 * r.rand()
+    th = 7 * np.sin(np.clip((ang - .25) / (np.pi - .5), 0, 1) * np.pi) ** .8
+    a = np.clip(1 - np.abs(R - mid) / np.maximum(th, .5), 0, 1)
+    a *= ((ang > .25) & (ang < np.pi - .25)).astype('float32')
+    streak = .6 + .4 * np.sin(R * 1.7 + r.rand() * 6) * np.sin(ang * 23 + r.rand() * 6)
+    a = a * np.clip(streak + .25, 0, 1)
+    a = gaussian_filter(a, .6) * 1.25
+    core = np.clip(1 - np.abs(R - mid) / np.maximum(th * .35, .4), 0, 1)
+    sh = np.clip(.65 + core * .5, 0, 1)
+    return to_rgba(a, sh)
+
+
+def shock(seed, W=96, H=48):
+    r = np.random.RandomState(seed)
+    yy, xx = np.mgrid[0:H, 0:W].astype('float32')
+    d = np.hypot((xx - W / 2) / (W / 2), (yy - H / 2) / (H / 2))
+    ang = np.arctan2(yy - H / 2, xx - W / 2)
+    wob = .03 * np.sin(ang * (5 + seed % 4) + seed) + .02 * np.sin(ang * 13 + seed * 2)
+    ring = np.exp(-((d - .86 - wob) / .06) ** 2)
+    inner = .35 * np.exp(-((d - .72 - wob) / .1) ** 2) * (.6 + .4 * np.sin(ang * 17 + seed))
+    fade = np.clip(1 - np.maximum(d - .92, 0) * 8, 0, 1)
+    a = np.clip(ring + inner, 0, 1) * fade
+    a = gaussian_filter(a, .6)
+    return to_rgba(np.clip(a * 1.2, 0, 1), np.clip(.6 + ring * .6, 0, 1))
+
+
+def burst(seed, S=64):
+    r = np.random.RandomState(seed)
+    yy, xx = np.mgrid[0:S, 0:S].astype('float32')
+    dx, dy = xx - S / 2, yy - S / 2
+    d = np.hypot(dx, dy) / (S / 2)
+    ang = np.arctan2(dy, dx)
+    n = 7 + seed % 5
+    rays = np.abs(np.sin(ang * n / 2 + seed)) ** 6 + .35 * np.abs(np.sin(ang * n * 1.5 + seed * 2)) ** 10
+    a = np.clip(rays * np.clip(1 - d, 0, 1) ** 1.1 * 1.5 + np.exp(-(d / .22) ** 2) * 1.3, 0, 1) * (d < 1)
+    a = gaussian_filter(a, .5)
+    return to_rgba(np.clip(a * 1.1, 0, 1), np.clip(.6 + np.exp(-(d / .3) ** 2), 0, 1))
+
+
+def circle(seed, W=128, H=64):
+    r = np.random.RandomState(seed)
+    big = Image.new('L', (W * 4, H * 4), 0)
+    dr = ImageDraw.Draw(big)
+    cx, cy = W * 2, H * 2
+    rx, ry = W * 2 - 8, H * 2 - 8
+    for k, f in enumerate([1, .86, .5]):
+        dr.ellipse([cx - rx * f, cy - ry * f, cx + rx * f, cy + ry * f], outline=255, width=7 if k == 0 else 4)
+    n = 12 + seed * 4
+    for i in range(n):
+        a = i / n * 6.283
+        r0, r1 = (.86, 1.0) if i % 2 == 0 else (.9, .97)
+        dr.line([(cx + math.cos(a) * rx * r0, cy + math.sin(a) * ry * r0), (cx + math.cos(a) * rx * r1, cy + math.sin(a) * ry * r1)], fill=255, width=5)
+    # glifos: pequenos arcos/pontos entre os anéis
+    for i in range(n):
+        a = (i + .5) / n * 6.283
+        rr = .93
+        x, y = cx + math.cos(a) * rx * rr, cy + math.sin(a) * ry * rr
+        if i % 3 == 0:
+            dr.ellipse([x - 5, y - 4, x + 5, y + 4], fill=255)
+        else:
+            dr.line([(x - 6, y), (x + 6, y + 3), (x + 2, y - 6)], fill=255, width=3)
+    # estrela/triângulo interno
+    m = 3 + seed
+    pts = [(cx + math.cos(i * 6.283 * (2 if m == 5 else 1) / m - 1.57) * rx * .62, cy + math.sin(i * 6.283 * (2 if m == 5 else 1) / m - 1.57) * ry * .62) for i in range(m + 1)]
+    dr.line(pts, fill=255, width=5)
+    im = big.resize((W, H), Image.LANCZOS)
+    a = np.asarray(im).astype('float32') / 255
+    return to_rgba(a * 1.15, np.clip(.7 + a * .4, 0, 1))
+
+
+TW, TH = 384, 64 + 48 + 48 + 64 + 64
+tx = Image.new('RGBA', (TW, TH), (0, 0, 0, 0))
+for i in range(6):
+    tx.paste(wisp(5 + i * 11), (i * 64, 0))
+for i in range(4):
+    tx.paste(slash(3 + i * 7), (i * 96, 64))
+    tx.paste(shock(2 + i * 5), (i * 96, 112))
+    tx.paste(burst(4 + i * 3), (i * 64, 160))
+for i in range(2):
+    tx.paste(circle(i), (i * 128, 224))
+tx.save(os.path.join(OUT, 'tex.png'), optimize=True)
+print('tex ok')
