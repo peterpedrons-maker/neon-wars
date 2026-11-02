@@ -90,8 +90,8 @@ def dens_gap(x,y):
     edge=min(x,WW-x,y,WH-y)
     if edge<70:return 30                      # parede de árvores só na borda do mapa
     v=NZ[min(WH-1,int(y)),min(WW-1,int(x))]
-    if v>.72:return 64                        # pequeno bosque fechado
-    if v>.63:return 150                       # bosque ralo
+    if v>.75:return 70                        # pequeno bosque fechado
+    if v>.67:return 190                       # bosque ralo
     return 420                                # campo aberto: uma árvore isolada aqui e ali
 for _ in range(9000):
     x=rr.randrange(-10,WW+10);y=rr.randrange(30,WH+40)
@@ -100,10 +100,10 @@ for _ in range(9000):
     if y>ENTR[1]-8 and abs(x-ENTR[0])<40:continue
     if math.hypot(x-START[0],y-START[1])<170 and min(x,WW-x,y,WH-y)>80:continue
     g=dens_gap(x,y)
-    if g>=420 and rr.random()<.8:continue
+    if g>=420 and rr.random()<.9:continue
     if free(x,y,g/2):add(tree(),x,y,g/2)
 # ---- ambientação: arbustos, pedras, mato e flores
-for n in range(240):
+for n in range(150):
     for _ in range(30):
         x=rr.randrange(60,WW-60);y=rr.randrange(100,WH-140)
         if not lake_in(x,y,8) and free(x,y,10):break
