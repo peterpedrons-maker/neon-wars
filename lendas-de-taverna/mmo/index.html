@@ -680,7 +680,7 @@ function playMusic(key='m_campina'){musOn=true;if(!AC||!BUF[key])return;if(musSr
 let SAVE=null;           // {name,cls,lv,xp,gold,kills,zone}
 const G={scene:'town',map:'town',npcs:[],vill:[],winOpen:null,loot:[],on:false,speed:1,auto:true,t:0,cam:{x:0,y:0},K:3,LW:270,LH:480,mobs:[],projs:[],fx:[],floats:[],hero:null,boss:null,
          kills:0,phase:'farm',zoneLv:1,koT:0,chat:[],bossWoke:false,wp:null,wpT:0};
-function migrateSave(){SAVE.potL=SAVE.potL||0;SAVE.elix=SAVE.elix||{forca:0,vigor:0,sorte:0};SAVE.zoneMax=SAVE.zoneMax||SAVE.zone||1;SAVE.inv=SAVE.inv||[];SAVE.eq=SAVE.eq||{};SAVE.potions=SAVE.potions==null?2:SAVE.potions;SAVE.sk=SAVE.sk||[1,0,0];while(SAVE.sk.length<14)SAVE.sk.push(0);if(SAVE.sub===undefined)SAVE.sub=null;SAVE.vault=SAVE.vault||[];SAVE.eqs=SAVE.eqs||[0,1,2];SAVE.at=SAVE.at||{for:0,vit:0,res:0,agi:0,sor:0};if(SAVE.autoEq==null)SAVE.autoEq=true;
+function migrateSave(){SAVE.potL=SAVE.potL||0;SAVE.elix=SAVE.elix||{forca:0,vigor:0,sorte:0};SAVE.zoneMax=SAVE.zoneMax||SAVE.zone||1;SAVE.inv=SAVE.inv||[];SAVE.eq=SAVE.eq||{};SAVE.potions=SAVE.potions==null?2:SAVE.potions;SAVE.sk=SAVE.sk||[1,0,0];while(SAVE.sk.length<14)SAVE.sk.push(0);if(SAVE.sub===undefined)SAVE.sub=null;SAVE.vault=SAVE.vault||[];SAVE.eqs=SAVE.eqs||[0,1,2];if(!SAVE.at||SAVE.at.int===undefined||SAVE.at.res!==undefined||SAVE.at.agi!==undefined)SAVE.at=ATT_NEW();if(SAVE.autoEq==null)SAVE.autoEq=true;
   const mig=it=>{if(!it)return;if(!it.tier){it.tier=tierOf(it.ilvl);let bn=it.name;for(const sx of SUFIX)if(bn.endsWith(' '+sx)){bn=bn.slice(0,-sx.length-1);break;}it.bn=bn;it.name=bn+' '+tierAdj(bn,it.tier);}
     if(it.tv!==2){const mu=tierMul(it.tier);if(mu>1)for(const k in it.s)it.s[k]=k==='crit'||k==='spd'?Math.round(it.s[k]*mu*10)/10:Math.round(it.s[k]*mu);it.tv=2;}};
   SAVE.inv.forEach(mig);SAVE.vault.forEach(mig);Object.values(SAVE.eq).forEach(mig);}
@@ -897,14 +897,14 @@ function mkHero(){
 function heroStatsInto(h){
   const C=CLASSES[SAVE.cls],L=SAVE.lv,g=gearTotals(),A=SAVE.at;
   const E=SAVE.elix||{};
-  h.maxhp=Math.round((C.hp*(1+.15*(L-1))+g.hp)*(1+.027*A.vit)*(E.vigor>0?1.2:1));
-  h.pow=(C.atk*(1+.12*(L-1))+g.atk)*(1+.02*A.for)*(E.forca>0?1.2:1);
-  h.def=(C.def+L*.8+g.def)*(1+.02*A.res);
-  h.speed=C.speed*(1+g.spd/100)*(1+.005*A.agi);h.rng=C.rng;h.aspd=C.aspd*Math.max(.55,1-.007*A.agi);h.crit=C.crit+g.crit/100+.01*A.sor;subApply(h);
+  h.maxhp=Math.round((C.hp*(1+.15*(L-1))+g.hp+ATV.vit*A.vit)*(E.vigor>0?1.2:1));
+  h.pow=(C.atk*(1+.12*(L-1))+g.atk+atkFromAttrs(A))*(E.forca>0?1.2:1);
+  h.def=C.def+L*.8+g.def;
+  h.speed=C.speed*(1+g.spd/100);h.rng=C.rng;h.aspd=C.aspd;h.crit=C.crit+g.crit/100+Math.floor((A.sor||0)/ATV.sorN)*.01;subApply(h);
 }
 /* dificuldade: o nível do monstro sobe com a profundidade na floresta (0 na entrada → 1 no fim da estrada) e +5 por zona */
 /* curva de dificuldade ajustada por modelo (tools/mmo/balance_fit.py): fácil no início (≈5 s por monstro, ≈7 % da vida por abate) e cada vez mais dura até o endgame (≈13 s e ≈37 %); defesa estilo PoE: def/(def+5·dano), teto 85 % */
-const BAL={zoneLv:5,K:{"1":[2.28,0.853],"5":[4.769,1.817],"10":[8.954,6.742],"20":[28.768,17.526],"30":[102.3,40.177],"40":[362.659,193.3],"50":[709.574,372.7],"60":[911.672,400]}};   // multiplicadores [vida, ataque] por nível, calibrados com heróis de equipamento mediano (início) até quase perfeito (endgame)
+const BAL={zoneLv:5,K:{"1":[2.062,1.027],"5":[4.313,2.189],"10":[7.318,7.383],"20":[16.721,17.523],"30":[48.683,38.871],"40":[180.473,113.071],"50":[293.679,193.7],"60":[273.303,306]}};   // multiplicadores [vida, ataque] por nível, calibrados com heróis de equipamento mediano (início) até quase perfeito (endgame)
 function balMul(lv,j){const ks=Object.keys(BAL.K).map(Number).sort((a,b)=>a-b);if(lv<=ks[0])return BAL.K[ks[0]][j];if(lv>=ks[ks.length-1]){const e=ks[ks.length-1],q=ks[ks.length-2];return BAL.K[e][j]*Math.pow(BAL.K[e][j]/BAL.K[q][j],(lv-e)/(e-q));}for(let i=0;i<ks.length-1;i++)if(lv<=ks[i+1]){const f=(lv-ks[i])/(ks[i+1]-ks[i]);return Math.exp(Math.log(BAL.K[ks[i]][j])*(1-f)+Math.log(BAL.K[ks[i+1]][j])*f);}}
 const mobHpMul=lv=>balMul(lv,0),mobAtkMul=lv=>balMul(lv,1);
 function mobLevel(y){const d=ZONE&&ZONE.h?Math.max(0,Math.min(1,1-(y||0)/ZONE.h)):0;return 1+Math.round(d*5)+rint(0,2)+(G.zoneLv-1)*BAL.zoneLv;}
@@ -1026,7 +1026,12 @@ function itemScore(it){if(!it)return 0;const s={};for(const k in it.s)s[k]=effS(
 function itemVal(it){return Math.round((3+it.ilvl*2)*Math.pow(it.rar+1,1.5)*(1+.35*(it.up||0))*(1+.12*((it.tier||1)-1)));}
 function gearTotals(){const t={atk:0,def:0,hp:0,crit:0,spd:0};for(const k of SLOTS){const it=SAVE.eq[k];if(it)for(const st in it.s)t[st]+=effS(it,st);}return t;}
 function skPoints(){return (SAVE.lv-1)-(SAVE.sk.reduce((a,b)=>a+b,0)-1);}
-const ATTR=[['for','Força','+2% de ataque por ponto'],['vit','Vitalidade','+2,7% de vida por ponto'],['res','Resistência','+2% de defesa por ponto'],['agi','Agilidade','+0,7% de vel. de ataque e +0,5% de movimento'],['sor','Sorte','+1% de chance de crítico por ponto']];
+/* atributos em valores fixos: o principal da classe dá +1 de ataque por ponto, os outros +1 a cada 2 pontos */
+const ATTR=[['for','Força'],['des','Destreza'],['int','Inteligência'],['vit','Vitalidade'],['sor','Sorte']];
+const MAIN_ATTR={guerreiro:'for',clerigo:'for',ladino:'des',arqueiro:'des',mago:'int',bardo:'int'},ATV={vit:6,sorN:5};
+const ATT_NEW=()=>({for:0,des:0,int:0,vit:0,sor:0});
+function atkFromAttrs(A){const m=MAIN_ATTR[SAVE.cls];let t=0;for(const k of ['for','des','int']){const v=A[k]||0;t+=k===m?v:Math.floor(v/2);}return t;}
+function attrDesc(k){const m=MAIN_ATTR[SAVE.cls];if(k==='vit')return '+'+ATV.vit+' de vida por ponto';if(k==='sor')return '+1% de crítico a cada '+ATV.sorN+' pontos';return k===m?'Principal da sua classe: +1 de ataque por ponto':'+1 de ataque a cada 2 pontos';}
 const AT_LV=3;
 function atPoints(){return AT_LV*(SAVE.lv-1)-Object.values(SAVE.at).reduce((a,b)=>a+b,0);}
 function addItem(it,quiet){
@@ -2173,7 +2178,7 @@ function renderPan(){
   }else{
     const pts=atPoints();
     let html=`<div class="avl"><span>Pontos de atributo · ${AT_LV} por nível</span><b>${pts}</b></div>`;
-    ATTR.forEach(([k,n,d])=>{html+=`<div class="atr"><div class="an"><b>${n}</b><span>${d}</span></div><div class="av">${SAVE.at[k]}</div><button class="pl" data-at="${k}" ${pts>0?'':'disabled'}>+</button></div>`;});
+    ATTR.forEach(([k,n])=>{const d=attrDesc(k),pm=MAIN_ATTR[SAVE.cls]===k;html+=`<div class="atr"><div class="an"><b>${n}${pm?' ★':''}</b><span>${d}</span></div><div class="av">${SAVE.at[k]}</div><button class="pl" data-at="${k}" ${pts>0?'':'disabled'}>+</button></div>`;});
     html+=`<div class="sec-h"><span>Resumo</span></div><div class="stg"><div><span>Vida</span><b>${h.maxhp}</b></div><div><span>Ataque</span><b>${Math.round(h.pow)}</b></div><div><span>Defesa</span><b>${Math.round(h.def)}</b></div><div><span>Crítico</span><b>${Math.round(h.crit*100)}%</b></div><div><span>Velocidade</span><b>${Math.round(h.speed)}</b></div><div><span>Atq/s</span><b>${(1/h.aspd).toFixed(2)}</b></div></div>`;
     html+=`<div class="acts"><button data-a="resetat" ${SAVE.gold<resetCost()?'disabled':''}>Redistribuir atributos (${resetCost()} ouro)</button></div>`;
     B.innerHTML=html;
@@ -2198,7 +2203,7 @@ function panAct(a){
   else if(a.startsWith('sellb:')){const n=+a.slice(6);let g=0,c=0;const keep=[];for(const x of SAVE.inv){if(x.rar<=n){g+=itemVal(x);c++;}else keep.push(x);}if(!c){sfx('ui_denied');return;}gConfirm(c+' itens ('+(n?'até ':'só ')+RAR[n].n+') serão vendidos por '+g+' ouro. Itens equipados não são vendidos.',{title:'Vender em lote?',ok:'Vender ('+g+')',no:'Cancelar'}).then(ok=>{if(!ok)return;SAVE.inv=keep.filter(x=>SAVE.inv.includes(x));SAVE.gold+=g;sfx('coin',.7);panSel=null;toast('+'+g+' ouro',1100);updPot();badge();writeSave();renderPan();});return;}
   else if(a==='pot'){if(SAVE.gold<potPrice()){sfx('ui_denied');return;}SAVE.gold-=potPrice();SAVE.potions++;sfx('coin',.7);updPot();}
   else if(a==='reset'){if(SAVE.gold<resetCost()){sfx('ui_denied');return;}SAVE.gold-=resetCost();SAVE.sk=[1,0,0,0,0,0,0,0,0,0,0,0,0,0];SAVE.eqs=[0,-1,-1];sfx('ui_confirm');afterPts();return;}
-  else if(a==='resetat'){if(SAVE.gold<resetCost()){sfx('ui_denied');return;}SAVE.gold-=resetCost();SAVE.at={for:0,vit:0,res:0,agi:0,sor:0};sfx('ui_confirm');afterPts();return;}
+  else if(a==='resetat'){if(SAVE.gold<resetCost()){sfx('ui_denied');return;}SAVE.gold-=resetCost();SAVE.at=ATT_NEW();sfx('ui_confirm');afterPts();return;}
   updPot();badge();writeSave();renderPan();
 }
 $('tEq').onclick=()=>{panTab='eq';panSel=null;sfx('ui_click');renderPan();};
@@ -2416,7 +2421,7 @@ $('cv').addEventListener('pointerdown',ev=>{
   }
   /* na dungeon o modo manual usa o joystick */
 });
-const newHero=()=>{audioInit();sfx('ui_confirm');SAVE={name:'',cls:'guerreiro',lv:1,xp:0,gold:0,zone:1,inv:[],eq:{},potions:2,potL:0,elix:{forca:0,vigor:0,sorte:0},zoneMax:1,sk:[1,0,0,0,0,0,0,0,0,0,0,0,0,0],eqs:[0,-1,-1],sub:null,at:{for:0,vit:0,res:0,agi:0,sor:0},autoEq:true};selCls='guerreiro';$('cname').value='';show('create');buildCreate();playMusic('m_campina');};
+const newHero=()=>{audioInit();sfx('ui_confirm');SAVE={name:'',cls:'guerreiro',lv:1,xp:0,gold:0,zone:1,inv:[],eq:{},potions:2,potL:0,elix:{forca:0,vigor:0,sorte:0},zoneMax:1,sk:[1,0,0,0,0,0,0,0,0,0,0,0,0,0],eqs:[0,-1,-1],sub:null,at:{for:0,des:0,int:0,vit:0,sor:0},autoEq:true};selCls='guerreiro';$('cname').value='';show('create');buildCreate();playMusic('m_campina');};
 $('bNew').onclick=()=>{if(SAVE){audioInit();gConfirm('Criar um novo herói apaga '+SAVE.name+' (Nv.'+SAVE.lv+') para sempre.',{title:'Apagar o herói atual?',ok:'Criar novo',no:'Manter',danger:true}).then(ok=>{if(ok)newHero();});}else newHero();};
 $('bCont').onclick=()=>{audioInit();sfx('ui_confirm');G.zoneLv=SAVE.zoneMax||SAVE.zone||1;startGame();};
 $('cname').addEventListener('input',()=>{updCreateBtn();});
@@ -2426,7 +2431,7 @@ $('cdx').onclick=()=>{sfx('tr_close',.5);stopDemo();};
 $('cBack').onclick=()=>{stopDemo();sfx('tr_close',.6);if(cstep>1)setStep(cstep-1);else show('title');};
 $('cNext').onclick=()=>{stopDemo();if(cstep<3){sfx('ui_confirm',.7);setStep(cstep+1);return;}createHero();};
 function createHero(){const n=$('cname').value.trim();if(n.length<2){sfx('ui_denied');return;}
-  SAVE={name:n,cls:selCls,lv:1,xp:0,gold:0,zone:1,totalKills:0,inv:[],eq:{},potions:2,potL:0,elix:{forca:0,vigor:0,sorte:0},zoneMax:1,sk:[1,0,0,0,0,0,0,0,0,0,0,0,0,0],eqs:[0,-1,-1],sub:null,at:{for:0,vit:0,res:0,agi:0,sor:0},autoEq:true,look:{...LK}};writeSave();sfx('ui_confirm');sfx('levelup',.5);G.zoneLv=1;startGame();}
+  SAVE={name:n,cls:selCls,lv:1,xp:0,gold:0,zone:1,totalKills:0,inv:[],eq:{},potions:2,potL:0,elix:{forca:0,vigor:0,sorte:0},zoneMax:1,sk:[1,0,0,0,0,0,0,0,0,0,0,0,0,0],eqs:[0,-1,-1],sub:null,at:{for:0,des:0,int:0,vit:0,sor:0},autoEq:true,look:{...LK}};writeSave();sfx('ui_confirm');sfx('levelup',.5);G.zoneLv=1;startGame();}
 $('bNext').onclick=()=>{sfx('ui_confirm');nextZone();};
 $('bTown').onclick=()=>{sfx('ui_confirm');show('hud');enterTown(false);};
 document.addEventListener('pointerdown',()=>{audioInit();if(AC&&AC.state==='suspended')AC.resume();},{passive:true});
@@ -2441,7 +2446,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
   try{await loadAll();}catch(e){$('title').insertAdjacentHTML('beforeend','<div style="color:#f88">Erro ao carregar: '+e.message+'</div>');console.error(e);return;}
   $('bNew').disabled=false;$('bCont').disabled=false;
   if(SAVE)G.zoneLv=SAVE.zone||1;
-  window.__mmo={startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
+  window.__mmo={MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
   requestAnimationFrame(frame);
 })();
 

@@ -10,7 +10,7 @@ const CLS=process.argv[2]||'guerreiro',MIN=+(process.argv[3]||20),LV0=+(process.
  await p.click('#cNext');await p.click('#cNext');await p.fill('#cname','Sim');await p.click('#cNext');await p.waitForTimeout(3500);
  const out=await p.evaluate(([MIN,LV0,ZN,KIND])=>{
   const M=__mmo,G=M.G,S=M.SAVE;
-  if(LV0){S.lv=LV0;const pts=3*(LV0-1);S.at={for:Math.round(pts*.4),vit:Math.round(pts*.4),res:Math.round(pts*.2),agi:0,sor:0};for(let i=0;i<8;i++)S.sk[i]=Math.min(5,1+Math.floor(LV0/8));S.eqs=[0,1,2];const kind=KIND,il=Math.round(LV0*(kind==='bis'?1.05:kind==='good'?1.0:.9));for(const sl of ['arma','elmo','armadura','botas','amuleto']){let it,k=0;const mr=kind==='bis'?3:kind==='good'?1:0;do{it=M.genItem(il,mr,kind==='bis'?60:kind==='good'?20:LV0*2);k++;}while(it.slot!==sl&&k<300);if(kind==='bis')it.up=10;else if(kind==='good')it.up=4;S.eq[sl]=it;}S.potions=5;}
+  if(LV0){S.lv=LV0;const pts=3*(LV0-1);S.at={for:0,des:0,int:0,vit:Math.round(pts*.3),sor:0};S.at[M.MAIN_ATTR[S.cls]]=pts-S.at.vit;for(let i=0;i<8;i++)S.sk[i]=Math.min(5,1+Math.floor(LV0/8));S.eqs=[0,1,2];const kind=KIND,il=Math.round(LV0*(kind==='bis'?1.05:kind==='good'?1.0:.9));for(const sl of ['arma','elmo','armadura','botas','amuleto']){let it,k=0;const mr=kind==='bis'?3:kind==='good'?1:0;do{it=M.genItem(il,mr,kind==='bis'?60:kind==='good'?20:LV0*2);k++;}while(it.slot!==sl&&k<300);if(kind==='bis')it.up=10;else if(kind==='good')it.up=4;S.eq[sl]=it;}S.potions=5;}
   M.enterDungeon(ZN);
   return new Promise(res=>{
     // espera o fade
@@ -26,7 +26,7 @@ const CLS=process.argv[2]||'guerreiro',MIN=+(process.argv[3]||20),LV0=+(process.
           hpSum+=h.hp/h.maxhp;hpN++;if(h.hp<prevHp)dmgSum+=prevHp-h.hp;prevHp=h.hp;
           if(Math.floor(t)%1===0&&i%30===0){
             const pts=3*(S.lv-1)-Object.values(S.at).reduce((a,b)=>a+b,0);
-            if(pts>0){const k=['for','vit','res','for','vit','agi'][(S.at.for+S.at.vit+S.at.res+S.at.agi)%6];S.at[k]++;}
+            if(pts>0){const mk=M.MAIN_ATTR[S.cls];const k=(S.at.vit<(S.at[mk]||0)*.45)?'vit':mk;S.at[k]++;}
             if(M.skPoints()>0){for(const i2 of [0,1,2,3,4,5,6,7]){if(M.skAvail(i2)&&S.sk[i2]<5){S.sk[i2]++;break;}}}
           }
         }
