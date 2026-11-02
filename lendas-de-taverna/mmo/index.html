@@ -1072,7 +1072,11 @@ function floatText(x,y,t,col,size=9,life=.9){G.floats.push({x,y,t,col,size,life,
 function spark(x,y,n=6){for(let i=0;i<n;i++){const a=Math.random()*6.28,s=rnd(40,90);G.fx.push({k:'sp',x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.22,max:.22});}}
 function dmgCalc(att,def,mult=1,critCh=.1){let d=att*rnd(.85,1.15)*mult*(1-Math.min(.85,def/(def+5*att)));let crit=Math.random()<critCh;if(crit)d*=1.8;return {d:Math.max(1,Math.round(d)),crit};}
 function knock(e,fx,fy,force){const d=Math.hypot(fx,fy)||1;e.kvx+=fx/d*force;e.kvy+=fy/d*force;}
+/* empurrão proporcional à classe: corpo a corpo empurra muito, à distância quase nada (habilidades com empurrão próprio > 1,2 não são reduzidas) */
+const KNOCK_CLS={guerreiro:1,ladino:.5,clerigo:.55,arqueiro:.35,mago:.2,bardo:.3},KNOCK_SUB={barbaro:1.5,cavaleiro:1.2,assassino:.9};
+function knockClass(){return (KNOCK_CLS[SAVE.cls]||.5)*(KNOCK_SUB[SAVE.sub]||1);}
 function hitMob(m,dmg,crit,fromX,fromY,kf=1){
+  if(kf<=1.2)kf*=knockClass();
   if(m.dead)return;if(m.vuln>0)dmg=Math.round(dmg*1.15);m.hp-=dmg;{const ls=uf('ls');if(ls>0&&G.hero&&G.hero.state!=='ko')G.hero.hp=Math.min(G.hero.maxhp,G.hero.hp+dmg*ls);}m.flash=.14;m.stun=crit?.45:.3;m.act=null;
   floatText(m.x,m.y-(m.kind==='boss'?86:46),(crit?dmg+'!':''+dmg),crit?'#ffbe3c':'#fff0d0',crit?13:10);
   spark(m.x,m.y-(m.kind==='boss'?40:16),crit?9:5);
