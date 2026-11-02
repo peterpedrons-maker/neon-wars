@@ -966,10 +966,9 @@ function buildBar(){
     d.innerHTML=(si>=0?`<img src="${skImg(C.skills[si][0])}">`:'<img src="../assets/ui-icons/magic-swirl.png">')+`<span class="key">${k+1}</span><div class="cd"></div><div class="ct"></div>`+(lk?`<div class="lv">${SAVE.lv<SLOT_UNL[k]?'Nv '+SLOT_UNL[k]:'+'}</div>`:'');
     d.style.pointerEvents='auto';d.onclick=()=>{if(!G.auto&&!lk&&G.scene==='dungeon'){G.castReq=k;return;}sfx('ui_click');openPan('sk');};ab.appendChild(d);});
   const pot=mkTb('bPot',potHtml,'slot2 sep',()=>usePotion(true));ab.appendChild(pot);
-  const sp=mkTb('sp','x'+G.speed,'mbtn',()=>{G.speed=G.speed===1?2:1;sp.textContent='x'+G.speed;sfx('ui_click');});
   const hb=mkTb('bHero','<img src="../assets/ico/v_bolsa.png"><span class="bd" id="bdHero"></span>','mbtn',()=>{sfx('ui_click');openPan('eq');});
   const tw=mkTb('bTownB','<img src="../assets/ui-icons/greek-temple.png" style="filter:sepia(1) saturate(3) hue-rotate(-8deg) brightness(1.25)">','mbtn',()=>{sfx('ui_click');gConfirm('O progresso desta floresta (abates) será perdido.',{title:'Voltar para a cidade?',ok:'Voltar',no:'Ficar'}).then(ok=>{if(ok)enterTown(false);});});
-  [sp,hb,tw].forEach(e=>m.appendChild(e));updPot();badge();
+  [hb,tw].forEach(e=>m.appendChild(e));updPot();badge();
 }
 function updPot(){const n=$('potn');if(n)n.textContent=SAVE.potions+(SAVE.potL?'+'+SAVE.potL:'');}
 function usePotion(manual){const h=G.hero;if(!h||h.state==='ko')return;
