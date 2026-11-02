@@ -904,7 +904,7 @@ function heroStatsInto(h){
 }
 /* dificuldade: o nível do monstro sobe com a profundidade na floresta (0 na entrada → 1 no fim da estrada) e +5 por zona */
 /* curva de dificuldade ajustada por modelo (tools/mmo/balance_fit.py): fácil no início (≈5 s por monstro, ≈7 % da vida por abate) e cada vez mais dura até o endgame (≈13 s e ≈37 %); defesa estilo PoE: def/(def+5·dano), teto 85 % */
-const BAL={zoneLv:5,K:{"1":[2.062,1.027],"5":[4.313,2.189],"10":[7.318,7.7],"20":[16.721,18.4],"30":[48.683,41],"40":[180.473,120],"50":[293.679,205],"60":[273.303,325]}};   // multiplicadores [vida, ataque] por nível, calibrados com heróis de equipamento mediano (início) até quase perfeito (endgame)
+const BAL={zoneLv:5,K:{"1":[2.062,1.027],"5":[4.313,2.189],"10":[7.318,6.7],"20":[16.721,15.2],"30":[48.683,37],"40":[180.473,120],"50":[293.679,205],"60":[273.303,325]}};   // multiplicadores [vida, ataque] por nível, calibrados com heróis de equipamento mediano (início) até quase perfeito (endgame)
 function balMul(lv,j){const ks=Object.keys(BAL.K).map(Number).sort((a,b)=>a-b);if(lv<=ks[0])return BAL.K[ks[0]][j];if(lv>=ks[ks.length-1]){const e=ks[ks.length-1],q=ks[ks.length-2];return BAL.K[e][j]*Math.pow(BAL.K[e][j]/BAL.K[q][j],(lv-e)/(e-q));}for(let i=0;i<ks.length-1;i++)if(lv<=ks[i+1]){const f=(lv-ks[i])/(ks[i+1]-ks[i]);return Math.exp(Math.log(BAL.K[ks[i]][j])*(1-f)+Math.log(BAL.K[ks[i+1]][j])*f);}}
 const mobHpMul=lv=>balMul(lv,0),mobAtkMul=lv=>balMul(lv,1);
 function mobLevel(y){const d=ZONE&&ZONE.h?Math.max(0,Math.min(1,1-(y||0)/ZONE.h)):0;return 1+Math.round(d*5)+rint(0,2)+(G.zoneLv-1)*BAL.zoneLv;}
@@ -1033,7 +1033,7 @@ const ATTR=[['for','Força'],['des','Destreza'],['int','Inteligência'],['vit','
 const MAIN_ATTR={guerreiro:'for',clerigo:'for',ladino:'des',arqueiro:'des',mago:'int',bardo:'int'},ATV={vit:6,sorN:5};
 const ATT_NEW=()=>({for:0,des:0,int:0,vit:0,sor:0});
 function atkFromAttrs(A){const m=MAIN_ATTR[SAVE.cls];let t=0;for(const k of ['for','des','int']){const v=A[k]||0;t+=k===m?v:Math.floor(v/2);}return t;}
-function attrDesc(k){const m=MAIN_ATTR[SAVE.cls];if(k==='vit')return '+'+ATV.vit+' de vida por ponto';if(k==='sor')return '+1% de crítico a cada '+ATV.sorN+' pontos';return k===m?'Principal da sua classe: +1 de ataque por ponto':'+1 de ataque a cada 2 pontos';}
+function attrDesc(k){const m=MAIN_ATTR[SAVE.cls];if(k==='vit')return '+'+ATV.vit+' de vida por ponto';if(k==='for')return (k===m?'Principal da sua classe: +1 de ataque por ponto':'+1 de ataque a cada 2 pontos')+' · +1% de empurrão a cada 3';if(k==='sor')return '+1% de crítico a cada '+ATV.sorN+' pontos';return k===m?'Principal da sua classe: +1 de ataque por ponto':'+1 de ataque a cada 2 pontos';}
 const AT_LV=3;
 function atPoints(){return AT_LV*(SAVE.lv-1)-Object.values(SAVE.at).reduce((a,b)=>a+b,0);}
 function addItem(it,quiet){
@@ -1079,15 +1079,18 @@ function floatText(x,y,t,col,size=9,life=.9){G.floats.push({x,y,t,col,size,life,
 function spark(x,y,n=6){for(let i=0;i<n;i++){const a=Math.random()*6.28,s=rnd(40,90);G.fx.push({k:'sp',x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.22,max:.22});}}
 function dmgCalc(att,def,mult=1,critCh=.1){let d=att*rnd(.85,1.15)*mult*(1-Math.min(.85,def/(def+5*att)));let crit=Math.random()<critCh;if(crit)d*=1.8;return {d:Math.max(1,Math.round(d)),crit};}
 function knock(e,fx,fy,force){const d=Math.hypot(fx,fy)||1;e.kvx+=fx/d*force;e.kvy+=fy/d*force;}
-/* empurrão proporcional à classe: corpo a corpo empurra muito, à distância quase nada (habilidades com empurrão próprio > 1,2 não são reduzidas) */
-const KNOCK_CLS={guerreiro:1,ladino:.5,clerigo:.55,arqueiro:.35,mago:.2,bardo:.3},KNOCK_SUB={barbaro:1.5,cavaleiro:1.2,assassino:.9};
-function knockClass(){return (KNOCK_CLS[SAVE.cls]||.5)*(KNOCK_SUB[SAVE.sub]||1);}
+/* EMPURRÃO é um atributo secundário: chance por golpe (base da classe + Força), com intervalo mínimo por alvo; chefes resistem.
+   Habilidades com empurrão próprio (> 1,2) continuam garantidas. */
+const KNOCK_CLS={guerreiro:.30,ladino:.10,clerigo:.12,arqueiro:.07,mago:.05,bardo:.07},KNOCK_SUB={barbaro:.20,cavaleiro:.10};
+function knockChance(){const A=SAVE.at||{};return Math.min(.75,(KNOCK_CLS[SAVE.cls]||.1)+(KNOCK_SUB[SAVE.sub]||0)+Math.floor((A.for||0)/3)*.01);}
 function hitMob(m,dmg,crit,fromX,fromY,kf=1){
-  if(kf<=1.2)kf*=knockClass();
-  if(m.dead)return;if(m.vuln>0)dmg=Math.round(dmg*1.15);{const tk=stMul(m,'taken');if(tk!==1)dmg=Math.max(1,Math.round(dmg*tk));}m.hp-=dmg;{const ls=uf('ls');if(ls>0&&G.hero&&G.hero.state!=='ko')G.hero.hp=Math.min(G.hero.maxhp,G.hero.hp+dmg*ls);}m.flash=.14;m.stun=crit?.45:.3;m.act=null;
+  if(m.dead)return;if(m.vuln>0)dmg=Math.round(dmg*1.15);{const tk=stMul(m,'taken');if(tk!==1)dmg=Math.max(1,Math.round(dmg*tk));}m.hp-=dmg;{const ls=uf('ls');if(ls>0&&G.hero&&G.hero.state!=='ko')G.hero.hp=Math.min(G.hero.maxhp,G.hero.hp+dmg*ls);}m.flash=.14;m.stun=m.kind==='boss'?(crit?.2:.08):(crit?.35:.16);m.act=null;
   floatText(m.x,m.y-(m.kind==='boss'?86:46),(crit?dmg+'!':''+dmg),crit?'#ffbe3c':'#fff0d0',crit?13:10);
   spark(m.x,m.y-(m.kind==='boss'?40:16),crit?9:5);
-  const die=m.hp<=0;knock(m,m.x-fromX,m.y-fromY,(die?260:crit?170:120)*(m.kind==='boss'?.25:1)*kf);
+  const die=m.hp<=0;
+  if(die)knock(m,m.x-fromX,m.y-fromY,200*(m.kind==='boss'?.25:1)*Math.min(kf,1.2));
+  else if(kf>1.2)knock(m,m.x-fromX,m.y-fromY,(crit?170:120)*(m.kind==='boss'?.25:1)*kf);
+  else if(!(m.kbT>0)&&Math.random()<knockChance()*(m.kind==='boss'?.2:1)){knock(m,m.x-fromX,m.y-fromY,(crit?175:135)*(m.kind==='boss'?.25:1)*kf);m.kbT=2.4;m.stun=Math.max(m.stun,.3);floatText(m.x,m.y-(m.kind==='boss'?100:58),'Empurrão','#e0d8c0',7,.7);}
   sfx(crit?'crit':(Math.random()<.5?'hit_0':'hit_1'),.7);
   if(die)killMob(m);
 }
@@ -1396,7 +1399,7 @@ function updateMob(m,dt){
   if(m.dead){m.deadT+=dt;if(m.kvx||m.kvy){m.x+=m.kvx*dt;m.y+=m.kvy*dt;const f=Math.exp(-11*dt);m.kvx*=f;m.kvy*=f;}
     if(m.kind==='mob'){m.respawn-=dt;if(m.respawn<=0&&(G.phase==='farm'||G.phase==='boss')){const n=mkMob(m.type,m.sx,m.sy,m.sp);Object.assign(m,n);}}return;}
   m.flash=Math.max(0,m.flash-dt);
-  if(m.vuln>0)m.vuln-=dt;if(m.sts){stUpdate(m,dt);if(m.dead)return;}
+  if(m.kbT>0)m.kbT-=dt;if(m.vuln>0)m.vuln-=dt;if(m.sts){stUpdate(m,dt);if(m.dead)return;}
   if(m.kvx||m.kvy){m.x+=m.kvx*dt;m.y+=m.kvy*dt;const f=Math.exp(-11*dt);m.kvx*=f;m.kvy*=f;if(Math.abs(m.kvx)+Math.abs(m.kvy)<4)m.kvx=m.kvy=0;collide(m);m.wx=m.x;m.wy=m.y;}
   if(m.dash){const k=m.dash,dp=Math.min(dt/k.dur,1-k.p);m.x+=k.dx*dp;m.y+=k.dy*dp;k.p+=dp;collide(m,6);m.wx=m.x;m.wy=m.y;m.state='walk';m.animT+=dt*10;if(Math.random()<dt*40)VF.pt(m.x+rnd(-8,8),m.y-rnd(0,4),{vy:-rnd(6,14),life:.4,col:'#a89878',sz:2.4,add:false});if(k.p>=1)m.dash=null;return;}
   if(m.stun>0){m.stun-=dt;m.state='hurt';return;}
@@ -2280,7 +2283,7 @@ function renderPan(){
   if(panTab==='eq'){
     const sl=k=>{const it=SAVE.eq[k],sel=panSel&&panSel.src==='eq'&&panSel.k===k;return it?itemCell(it,sel,'eq:'+k,'slot'):`<div class="slot" data-c="none"><div class="ph">${SLOT_NAME[k]}</div></div>`;};
     let html=`<div class="pd"><div class="pcol">${['elmo','armadura','luvas','botas'].map(sl).join('')}</div><div class="pc"><canvas id="pdoll"></canvas></div><div class="pcol">${['arma','escudo','amuleto','anel'].map(sl).join('')}</div></div>`;
-    html+=`<div class="stg"><div><span>Nível</span><b>${SAVE.lv}</b></div><div><span>Subclasse</span><b>${subOf()?subOf().nome:'—'}</b></div><div><span>Vida</span><b>${h.maxhp}</b></div><div><span>Ataque</span><b>${Math.round(h.pow)}</b></div><div><span>Defesa</span><b>${Math.round(h.def)}</b></div><div><span>Crítico</span><b>${Math.round(h.crit*100)}%</b></div><div><span>Velocidade</span><b>${Math.round(h.speed)}</b></div></div>`;
+    html+=`<div class="stg"><div><span>Nível</span><b>${SAVE.lv}</b></div><div><span>Subclasse</span><b>${subOf()?subOf().nome:'—'}</b></div><div><span>Vida</span><b>${h.maxhp}</b></div><div><span>Ataque</span><b>${Math.round(h.pow)}</b></div><div><span>Defesa</span><b>${Math.round(h.def)}</b></div><div><span>Crítico</span><b>${Math.round(h.crit*100)}%</b></div><div><span>Empurrão</span><b>${Math.round(knockChance()*100)}%</b></div><div><span>Velocidade</span><b>${Math.round(h.speed)}</b></div></div>`;
     html+=`<div class="sec-h"><span>Mochila</span><span>${SAVE.inv.length} / 24</span></div><div class="bag">`+Array.from({length:24},(_,i)=>{const it=SAVE.inv[i];return it?itemCell(it,panSel&&panSel.src==='bag'&&panSel.k===i,'bag:'+i,'cell'):'<div class="cell e"></div>';}).join('')+'</div>';
     html+=`<div class="acts"><button data-a="best">Equipar melhores</button><button data-a="auto" class="${SAVE.autoEq?'g':''}">Auto-equipar: ${SAVE.autoEq?'sim':'não'}</button></div><div class="acts"><button data-a="apot" class="${(SAVE.apot==null?.35:SAVE.apot)>0?'g':''}">Poção automática: ${(SAVE.apot==null?.35:SAVE.apot)>0?'abaixo de '+Math.round((SAVE.apot==null?.35:SAVE.apot)*100)+'% da vida':'desligada'}</button></div>`;
     const cnt=n=>SAVE.inv.filter(x=>x.rar<=n).length;
@@ -2317,7 +2320,7 @@ function renderPan(){
     const pts=atPoints();
     let html=`<div class="avl"><span>Pontos de atributo · ${AT_LV} por nível</span><b>${pts}</b></div>`;
     ATTR.forEach(([k,n])=>{const d=attrDesc(k),pm=MAIN_ATTR[SAVE.cls]===k;html+=`<div class="atr"><div class="an"><b>${n}${pm?' ★':''}</b><span>${d}</span></div><div class="av">${SAVE.at[k]}</div><button class="pl" data-at="${k}" ${pts>0?'':'disabled'}>+</button></div>`;});
-    html+=`<div class="sec-h"><span>Resumo</span></div><div class="stg"><div><span>Vida</span><b>${h.maxhp}</b></div><div><span>Ataque</span><b>${Math.round(h.pow)}</b></div><div><span>Defesa</span><b>${Math.round(h.def)}</b></div><div><span>Crítico</span><b>${Math.round(h.crit*100)}%</b></div><div><span>Velocidade</span><b>${Math.round(h.speed)}</b></div><div><span>Atq/s</span><b>${(1/h.aspd).toFixed(2)}</b></div></div>`;
+    html+=`<div class="sec-h"><span>Resumo</span></div><div class="stg"><div><span>Vida</span><b>${h.maxhp}</b></div><div><span>Ataque</span><b>${Math.round(h.pow)}</b></div><div><span>Defesa</span><b>${Math.round(h.def)}</b></div><div><span>Crítico</span><b>${Math.round(h.crit*100)}%</b></div><div><span>Empurrão</span><b>${Math.round(knockChance()*100)}%</b></div><div><span>Velocidade</span><b>${Math.round(h.speed)}</b></div><div><span>Atq/s</span><b>${(1/h.aspd).toFixed(2)}</b></div></div>`;
     html+=`<div class="acts"><button data-a="resetat" ${SAVE.gold<resetCost()?'disabled':''}>Redistribuir atributos (${resetCost()} ouro)</button></div>`;
     B.innerHTML=html;
     B.querySelectorAll('[data-at]').forEach(e=>e.onclick=()=>{const k=e.dataset.at;if(atPoints()<=0)return;SAVE.at[k]++;sfx('tr_equip',.7);G.fx.push({k:'ring',x:G.hero.x,y:G.hero.y,life:.5,max:.5,col:'#ffe08a'});afterPts();});
