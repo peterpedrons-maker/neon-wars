@@ -351,6 +351,7 @@ i.upg{position:absolute;right:1px;top:0;font-size:9px;color:#7de06d;font-style:n
       <button class="btn" id="bCont" style="display:none">CONTINUAR</button>
       <button class="btn" id="bNew">NOVO HERÓI</button>
       <a href="../tatico.html" style="margin-top:6px">Jogo tático clássico →</a>
+      <a href="#" id="bInst" style="margin-top:2px;display:none">Instalar o app →</a>
     </div>
   </div>
 
@@ -2687,6 +2688,12 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
 })();
 
 </script>
-<script>if('serviceWorker' in navigator)window.addEventListener('load',()=>{navigator.serviceWorker.register('../sw.js').catch(()=>{});});</script>
+<script>if('serviceWorker' in navigator)window.addEventListener('load',()=>{navigator.serviceWorker.register('../sw.js').catch(()=>{});});
+/* instalar como app: usa o convite do Chrome quando existe; senão explica por que o Chrome diz que já está instalado */
+(()=>{const b=document.getElementById('bInst');if(!b)return;const standalone=matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone;if(standalone)return;b.style.display='';let ev=null;
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();ev=e;});window.addEventListener('appinstalled',()=>{b.style.display='none';});
+  b.addEventListener('click',async e=>{e.preventDefault();if(ev){ev.prompt();try{await ev.userChoice;}catch(_){}ev=null;return;}
+    await gConfirm('O Chrome não ofereceu a instalação. Se ele diz que já está instalado, existe um app antigo (Neon Wars ou Hearthblade) cobrindo este endereço, mesmo sem ícone na tela inicial. Para resolver: 1) abra chrome://webapks no Chrome e veja a lista; 2) em Configurações do celular > Apps, procure Neon Wars e Hearthblade e toque em Desinstalar; 3) volte aqui e toque em Instalar o app. Depois você pode reinstalar o outro.',{title:'Instalar o app',ok:'Entendi',no:'Fechar'});});})();
+</script>
 </body>
 </html>
