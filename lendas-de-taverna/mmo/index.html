@@ -106,7 +106,7 @@ button:active:not(:disabled){transform:scale(.97);filter:brightness(1.15)}
 #hp b{background:linear-gradient(#ff7a6a,#d6302a 55%,#a01c18)}#xp b{background:linear-gradient(#8fc2ff,#3a7be0)}
 #hpt{position:absolute;left:0;right:0;top:4px;height:13px;line-height:13px;text-align:center;font:600 9px var(--f);color:#fff;text-shadow:0 1px 1px #000,0 0 2px #000}
 #hero #xp{height:4px;margin-top:3px}
-#gold{position:absolute;left:6px;top:calc(66px + env(safe-area-inset-top));display:flex;align-items:center;gap:6px;height:26px;padding:0 12px 0 8px;font:700 13px var(--f);color:var(--ouroC)}
+#gold{position:absolute;left:6px;top:calc(66px + var(--sth,0px) + env(safe-area-inset-top));display:flex;align-items:center;gap:6px;height:26px;padding:0 12px 0 8px;font:700 13px var(--f);color:var(--ouroC)}
 #gold::before{content:'';width:16px;height:16px;background:url(assets/ui2/i_coin.png) center/contain no-repeat;image-rendering:pixelated}
 #zone{display:none}
 #prog{position:absolute;right:6px;top:calc(6px + env(safe-area-inset-top));width:100px;padding:5px 8px 6px;text-align:center;font:600 10.5px var(--f)}
@@ -116,7 +116,17 @@ button:active:not(:disabled){transform:scale(.97);filter:brightness(1.15)}
 #boss{position:absolute;left:50%;top:calc(56px + env(safe-area-inset-top));transform:translateX(-50%);width:62%;padding:4px 8px 6px;border-color:#b0442e;background:rgba(36,12,10,.94);display:none}
 #boss .t{font:700 11px var(--ft);letter-spacing:.1em;text-align:center;color:#ffd6a0}
 #boss .bar b{background:linear-gradient(#f26a5a,#b02a24)}
-#buffs{position:absolute;left:6px;top:calc(98px + env(safe-area-inset-top));display:flex;gap:3px}
+#sts{position:absolute;left:6px;top:calc(64px + env(safe-area-inset-top));display:flex;flex-wrap:wrap;gap:3px 3px;width:176px}
+#hud #sts .si{pointer-events:auto;position:relative;width:26px;height:35px}
+#sts .ib{width:26px;height:26px;box-sizing:border-box;background:rgba(10,8,14,.82);border:1px solid #4f9a5a;display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+#sts .si.bad .ib{border-color:#d0483c;background:rgba(44,10,10,.84)}
+#sts img{width:20px;height:20px;image-rendering:pixelated}
+#sts .tm{position:absolute;left:-2px;right:-2px;bottom:0;text-align:center;font:700 9.5px var(--f);color:#fff;text-shadow:0 1px 2px #000,0 0 3px #000,0 0 3px #000}
+#sts .si.bad .tm{color:#ffd0c8}
+#sts .n{position:absolute;right:-3px;top:-4px;background:#000c;border:1px solid #888;color:#fff;font:700 8px var(--f);line-height:1;padding:1px 3px;border-radius:7px}
+#sts .si.low .ib{animation:stblink .45s infinite alternate}
+@keyframes stblink{from{opacity:1}to{opacity:.35}}
+#buffs{position:absolute;left:6px;top:calc(98px + var(--sth,0px) + env(safe-area-inset-top));display:flex;gap:3px}
 #buffs div{display:flex;align-items:center;gap:2px;background:var(--gl);border:1px solid var(--lin);padding:1px 4px 1px 2px;font-size:9px}
 #buffs img{width:14px;height:14px;image-rendering:pixelated}
 #chat{position:absolute;left:6px;bottom:calc(88px + env(safe-area-inset-bottom));width:60%;font-size:10.5px;line-height:1.35;background:linear-gradient(90deg,rgba(8,8,12,.55),rgba(8,8,12,0));padding:2px 6px;display:none}
@@ -379,7 +389,7 @@ i.upg{position:absolute;right:1px;top:0;font-size:9px;color:#7de06d;font-style:n
       <div class="pb" id="hpw"><div class="bar" id="hp"><b style="width:100%"></b></div><span id="hpt"></span></div>
       <div class="bar" id="xp"><b style="width:0"></b></div></div>
     <div id="zone" class="txt-o" style="display:none">·</div><div id="gold"><span id="goldn">0</span></div><div id="banner"><i class="o"></i><b id="bnT"></b><u></u><span id="bnS"></span></div>
-    <canvas id="mm"></canvas><div id="prog" class="panel txt-o"><div id="progt">Clareira 0/10</div><div class="bar"><b style="width:0"></b></div></div>
+    <div id="sts"></div><canvas id="mm"></canvas><div id="prog" class="panel txt-o"><div id="progt">Clareira 0/10</div><div class="bar"><b style="width:0"></b></div></div>
     <div id="boss" class="panel"><div class="t txt-o" id="bosst">Ogro de Brumavale</div><div class="bar"><b style="width:100%"></b></div></div>
     <div id="buffs"></div>
     <div id="chat"></div>
@@ -992,9 +1002,23 @@ function chat(t,type){G.chat.push({t,type});if(G.chat.length>4)G.chat.shift();
   $('chat').innerHTML=G.chat.map(c=>`<div style="color:${c.type===2?'#ff8a70':c.type===3?'#d6a0ff':c.type===4?'#96f090':'#ffd678'}">${c.type===2?'[Aviso]':'[Sistema]'} ${c.t}</div>`).join('');}
 function banner(t,sub){$('bnT').textContent=t;$('bnS').textContent=sub||'';const b=$('banner');b.classList.remove('show');void b.offsetWidth;b.classList.add('show');}
 function toast(t,ms=1800){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',ms);}
+/* ============ faixa de buffs e debuffs do jogador (abaixo da barra de vida), com temporizador ============ */
+const ST_BAD=new Set(['veneno','queimadura','sangramento','maldicao','atordoado','preso','lento','gelado','medo','abalado','enfraquecido','marcado']);
+const ST_DESC={veneno:'Dano de veneno a cada segundo (acumula).',queimadura:'Dano de fogo a cada segundo.',sangramento:'Dano de sangramento a cada segundo.',maldicao:'Dano de maldição a cada segundo.',atordoado:'Não consegue agir.',preso:'Não consegue andar.',lento:'Velocidade reduzida.',gelado:'Velocidade e dano reduzidos.',medo:'Foge dos inimigos.',abalado:'Defesa reduzida em 30%.',enfraquecido:'Dano causado reduzido em 25%.',marcado:'Recebe 20% a mais de dano.',fortalecido:'Dano aumentado em 20%.',protegido:'Defesa aumentada em 30%.',regeneracao:'Recupera vida a cada segundo.',veloz:'Velocidade aumentada.',foco:'Chance de crítico aumentada.',inabalavel:'Imune a controle e recebe 30% menos dano.',furtivo:'O próximo golpe é crítico.'};
+let stSig='',stRows=0;
+function stItems(h){const L=[];if(h.sts)for(const id in h.sts){const d=STDEF[id],s=h.sts[id];L.push({k:id,ic:d.ic,n:d.n,t:s.t,c:s.n,bad:ST_BAD.has(id),desc:ST_DESC[id]||''});}
+  if(h.buff&&h.buff.t>0){const b=h.buff;if(b.atk>0)L.push({k:'b_atk',ic:'fortalecido',n:'Poder',t:b.t,c:1,bad:false,desc:'Ataque aumentado.'});if(b.def>0)L.push({k:'b_def',ic:'protegido',n:'Guarda',t:b.t,c:1,bad:false,desc:'Defesa aumentada.'});if(b.spd>0)L.push({k:'b_spd',ic:'veloz',n:'Pressa',t:b.t,c:1,bad:false,desc:'Velocidade aumentada.'});if(b.crit>0)L.push({k:'b_crit',ic:'foco',n:'Mira',t:b.t,c:1,bad:false,desc:'Chance de crítico aumentada.'});}
+  if(h.shield>0&&h.shieldT>0)L.push({k:'shield',ic:'escudo',n:'Escudo',t:h.shieldT,c:1,bad:false,desc:'Absorve '+Math.round(h.shield)+' de dano.'});
+  L.sort((a,b)=>(a.bad-b.bad)||(b.t-a.t));return L;}
+function stFmt(t){return t>=60?Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0'):Math.ceil(t)+'s';}
+function updStatusHud(){const el=$('sts');if(!el)return;const h=G.hero,L=(G.on&&h&&h.state!=='ko'&&G.scene!=='town')?stItems(h):[];
+  const sig=L.map(i=>i.k+stFmt(i.t)+i.c).join('|');if(sig===stSig)return;stSig=sig;
+  el.innerHTML=L.map(i=>`<div class="si ${i.bad?'bad':''} ${i.t<2.5?'low':''}" data-t="${i.n}" data-d="${i.desc.replace(/"/g,'')}"><div class="ib"><img src="../assets/status/${i.ic}.png"></div>${i.c>1?`<span class="n">${i.c}</span>`:''}<span class="tm">${stFmt(i.t)}</span></div>`).join('');
+  const rows=Math.ceil(L.length/6);if(rows!==stRows){stRows=rows;document.documentElement.style.setProperty('--sth',(rows?rows*38+2:0)+'px');}}
+(()=>{const el=$('sts');if(el)el.addEventListener('pointerdown',e=>{const si=e.target.closest('.si');if(si){e.stopPropagation();toast(si.dataset.t+' — '+si.dataset.d,2200);}});})();
 function updHUD(force){
   const h=G.hero;if(!h)return;
-  $('hp').firstChild.style.width=clamp(h.hp/h.maxhp*100,0,100)+'%';$('hpt').textContent=Math.ceil(h.hp)+'/'+h.maxhp;
+  updStatusHud();$('hp').firstChild.style.width=clamp(h.hp/h.maxhp*100,0,100)+'%';$('hpt').textContent=Math.ceil(h.hp)+'/'+h.maxhp;
   $('goldn').textContent=SAVE.gold;
   $('xp').firstChild.style.width=clamp(SAVE.xp/xpNeed(SAVE.lv)*100,0,100)+'%';$('hl').textContent='Nv '+SAVE.lv;
   const dg=G.scene==='dungeon';$('prog').style.display=dg?'block':'none';
