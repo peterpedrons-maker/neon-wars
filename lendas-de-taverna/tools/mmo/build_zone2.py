@@ -6,6 +6,15 @@ HERE=os.path.dirname(os.path.abspath(__file__))
 exec(open(os.path.join(HERE,'town_world.py')).read())
 BUSH=[b.resize((max(8,round(b.width*.62)),max(8,round(b.height*.62))),Image.NEAREST) for b in BUSH]   # arbustos menores
 OUT=os.path.join(HERE,'..','..','mmo','assets')
+THEME=os.environ.get('THEME','');SUF={'goblin':'_gob'}.get(THEME,'')     # THEME=goblin gera zone1_gob.* (toca de goblins)
+GOB=THEME=='goblin'
+if GOB:
+    exec(open(os.path.join(HERE,'goblin_props.py')).read())
+    def dk(im,m=(.64,.8,.66)):
+        a=np.array(im).astype(float);a[:,:,0]*=m[0];a[:,:,1]*=m[1];a[:,:,2]*=m[2];return Image.fromarray(a.astype('uint8'),'RGBA')
+    T_CON=[dk(t) for t in T_CON];T_OAK=[dk(t,(.58,.74,.6)) for t in T_OAK];BUSH=[dk(b) for b in BUSH];ROCK_BIG=[dk(b,(.7,.78,.72)) for b in ROCK_BIG];ROCK_SM=[dk(b,(.7,.78,.72)) for b in ROCK_SM]
+    TENTS=[tent(i) for i in range(4)];TOTEMS=[totem(i) for i in range(2)];STAKES=[skull_stake(i) for i in range(5)];BONES=[bones(i) for i in range(5)];PAL=[palisade(i) for i in range(3)];CAULD=cauldron();MUSH=[mushrooms(i,i%2==1) for i in range(4)]
+    FENCE=PAL[0]
 Z=1.5
 WW,WH=960,1500                      # px do pack (mundo = ×1.5)
 def zs(im):return im.resize((max(1,int(im.width*Z)),max(1,int(im.height*Z))),Image.NEAREST)
@@ -34,7 +43,7 @@ def ground():
     patches=[]
     for (gx,gy,k) in GLADES:
         for _ in range(5 if k!='ruin' else 3):patches.append((gx+rr.randrange(-34,34),gy+rr.randrange(-26,26)))
-    for _ in range(14):patches.append((rr.randrange(80,WW-80),rr.randrange(120,WH-160)))
+    for _ in range(34 if GOB else 14):patches.append((rr.randrange(80,WW-80),rr.randrange(120,WH-160)))
     paint_region(w,union_mask(patches,r),DR,r,edge=(112,78,48,255),rim=(40,92,24,255))
     lake=[]
     for (lx,ly,a,b) in LAKES:lake+=[(lx+dx,ly+dy) for dx,dy in [(0,0),(a*.5,b*.4),(-a*.5,b*.5),(a*.4,-b*.5),(-a*.7,-b*.1),(a*.8,-b*.1),(0,b*.7),(-a*.2,-b*.6)]]
@@ -49,7 +58,9 @@ def ground():
                 if ((xx-gx)/42)**2+((yy-gy)/28)**2<1:w.alpha_composite(r.choice(STN),(xx,yy))
     return w
 G_=ground()
-gimg=zs(G_);gimg.convert('RGB').save(os.path.join(OUT,'zone1_ground.png'),optimize=True)
+if GOB:
+    a=np.array(G_).astype(float);a[:,:,0]*=.58;a[:,:,1]*=.72;a[:,:,2]*=.6;G_=Image.fromarray(a.astype('uint8'),'RGBA')
+gimg=zs(G_);gimg.convert('RGB').save(os.path.join(OUT,'zone1'+SUF+'_ground.png'),optimize=True)
 sprs={}
 def reg(img,anc):
     img=zs(img);h=hashlib.md5(img.tobytes()+bytes(str(img.size),'ascii')).hexdigest()[:10]
@@ -70,16 +81,26 @@ def _icy(im):
 T_OAK=[t for t in T_OAK if not _icy(t)] or T_OAK;T_CON=[t for t in T_CON if not _icy(t)] or T_CON
 def entr_clear(x,y):return abs(x-ENTR[0])<130 and y>ENTR[1]-260   # corredor livre da entrada
 def tree():
-    t=rr.random();return rr.choice(T_OAK) if t<.6 else rr.choice(T_CON)
+    t=rr.random();return rr.choice(T_OAK) if t<(.12 if GOB else .6) else rr.choice(T_CON)
 # ---- portão da floresta
 for sx in (-1,1):
     t=max(T_OAK,key=lambda s:s.height);add(t,ENTR[0]+sx*52,ENTR[1]+4,20)
     fire(ENTR[0]+sx*30,ENTR[1]-2,True)
-    add(BAN[1] if sx<0 else BAN[2],ENTR[0]+sx*38,ENTR[1]-14,6)
+    add(TOTEMS[0 if sx<0 else 1],ENTR[0]+sx*38,ENTR[1]-14,6) if GOB else add(BAN[1] if sx<0 else BAN[2],ENTR[0]+sx*38,ENTR[1]-14,6)
     for k in range(1,4):add(FENCE,ENTR[0]+sx*(60+k*34),ENTR[1]+10,16)
 # ---- clareiras: acampamentos e ruínas (reservam o espaço antes das árvores)
 for (gx,gy,k) in GLADES:
-    if k=='camp':
+    if GOB and k=='camp':
+        fire(gx,gy);add(rr.choice(TENTS),gx-52,gy-16,16);add(rr.choice(TENTS),gx+46,gy-22,16);add(CAULD,gx+16,gy+12,10);add(BARREL,gx-26,gy+16,8)
+        for _ in range(3):add(rr.choice(STAKES),gx+rr.randrange(-70,70),gy+rr.randrange(24,44),5)
+        for _ in range(2):add(rr.choice(BONES),gx+rr.randrange(-60,60),gy+rr.randrange(-4,30),5)
+        if rr.random()<.6:add(rr.choice(TOTEMS),gx+rr.choice((-1,1))*82,gy+8,7)
+        add(FENCE,gx-70,gy+34,36)
+    elif GOB and k=='ruin':
+        add(TOTEMS[rr.randrange(2)],gx,gy-6,8);fire(gx,gy+16,True)
+        for a in range(0,360,45):add(rr.choice(STAKES),gx+math.cos(math.radians(a))*50,gy+math.sin(math.radians(a))*32,5)
+        for _ in range(3):add(rr.choice(BONES),gx+rr.randrange(-40,40),gy+rr.randrange(-20,30),5)
+    elif k=='camp':
         fire(gx,gy);add(BARREL,gx+28,gy-4,8);add(BARREL,gx+42,gy+6,8);add(FENCE,gx-70,gy+34,36);add(rr.choice(ROCK_BIG),gx-34,gy-20,12)
     elif k=='ruin':
         for a in range(0,360,45):
@@ -111,7 +132,9 @@ for n in range(150):
         if not lake_in(x,y,8) and free(x,y,10) and not entr_clear(x,y):break
     else:continue
     k=n%6
-    if k in(0,1,2):add(rr.choice(BUSH),x,y,7)
+    if GOB and k in(1,2) and rr.random()<.55:add(rr.choice(MUSH),x,y,7)
+    elif GOB and k==4 and rr.random()<.5:add(rr.choice(BONES+STAKES),x,y,6)
+    elif k in(0,1,2):add(rr.choice(BUSH),x,y,7)
     elif k==3:add(rr.choice(ROCK_BIG),x,y,12)
     else:add(rr.choice(ROCK_SM),x,y,6)
 for (gx,gy,k) in GLADES:                     # tufos de mato ao redor de cada clareira
@@ -131,7 +154,7 @@ for k,(im,anc) in items:
     pos[k]=(x,y,im.width,im.height,anc[0],anc[1]);x+=im.width+1;sh=max(sh,im.height)
 atlas=Image.new('RGBA',(Wd,y+sh+1),(0,0,0,0))
 for k,(im,anc) in items:atlas.alpha_composite(im,pos[k][:2])
-atlas.save(os.path.join(OUT,'atlas.png'),optimize=True);json.dump({k:list(v) for k,v in pos.items()},open(os.path.join(OUT,'atlas.json'),'w'))
+atlas.save(os.path.join(OUT,'atlas'+SUF+'.png'),optimize=True);json.dump({k:list(v) for k,v in pos.items()},open(os.path.join(OUT,'atlas'+SUF+'.json'),'w'))
 # ---- pontos de nascimento: espalhados pelo campo aberto, longe da entrada
 solid=[(p['x']/Z,p['y']/Z) for p in P if p['t']=='p']
 spawns=[]
@@ -144,7 +167,7 @@ for _ in range(40000):
 spawns=[[round(a*Z),round(b*Z)] for a,b in spawns]
 zone=dict(w=gimg.width,h=gimg.height,props=P,spawns=spawns,plaza=[0,0,1,1],pond=[round(LAKES[1][0]*Z),round(LAKES[1][1]*Z),round(LAKES[1][2]*Z),round(LAKES[1][3]*Z)],
   road=[],start=[round(START[0]*Z),round(START[1]*Z)],boss=[round(480*Z),round(300*Z)],gate=[round(ENTR[0]*Z),round(ENTR[1]*Z)])
-json.dump(zone,open(os.path.join(OUT,'zone1.json'),'w'),separators=(',',':'))
+json.dump(zone,open(os.path.join(OUT,'zone1'+SUF+'.json'),'w'),separators=(',',':'))
 print('zona',gimg.size,'props',len(P),'árvores',sum(1 for p in P if p['t']=='p' and False),'sprites',len(sprs),'spawns',len(spawns),'atlas',atlas.size)
 dbg=gimg.copy().convert('RGBA');d=ImageDraw.Draw(dbg)
 for s in spawns:d.ellipse((s[0]-5,s[1]-5,s[0]+5,s[1]+5),fill=(255,0,0,255))

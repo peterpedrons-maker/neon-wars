@@ -573,6 +573,7 @@ async function loadSheet(name,atkKind){
   const anc=[0,1,2,3].map(r=>anchorOf(walk,0,r*64,64,64));
   SHEETS[name]={walk,hurt,atk,cell,frames,anc};
 }
+const zoneMap=z=>famOf(z)==='goblin'?'zone1_gob':'zone1';
 function useMap(n,quiet){const m=MAPS[n];ZONE=m.zone;ATLAS=m.atlas;ATLAS_J=m.atlasJ;GROUND=m.ground;WATER=m.water;WCW=m.wcw;G.map=n;MM.key='';if(!quiet&&typeof AMB!=="undefined")AMB.setup(m.zone.fx||[]);}
 async function loadMap(name,zf,af,gf,pf){
   const [z,aj]=await Promise.all([fetch(zf).then(r=>r.json()),fetch(af).then(r=>r.json())]);
@@ -581,7 +582,7 @@ async function loadMap(name,zf,af,gf,pf){
 let STAGE2=null,STAGE2_OK=false;
 /* carregamento em 2 estágios: o essencial (cidade, classes, NPCs) libera os botões do título; floresta, interiores, monstros e ícones chegam em segundo plano */
 function prepMap(name){useMap(name,true);buildSolids();buildWater();MAPS[name].water=WATER;MAPS[name].wcw=WCW;
-  if(name==='zone1')fixSpawns();else{ZONE.start=freeSpot(ZONE.start[0],ZONE.start[1]);if(ZONE.portal)ZONE.portal.stand=freeSpot(ZONE.portal.stand[0],ZONE.portal.stand[1]);if(ZONE.doors)ZONE.doors.forEach(d=>{const f=freeSpot(d.x,d.y+10);d.sx=f[0];d.sy=f[1];});}}
+  if(name==='zone1'||name==='zone1_gob')fixSpawns();else{ZONE.start=freeSpot(ZONE.start[0],ZONE.start[1]);if(ZONE.portal)ZONE.portal.stand=freeSpot(ZONE.portal.stand[0],ZONE.portal.stand[1]);if(ZONE.doors)ZONE.doors.forEach(d=>{const f=freeSpot(d.x,d.y+10);d.sx=f[0];d.sy=f[1];});}}
 async function loadAll(){
   const core=[fetch('assets/look2/look2.json').then(r=>r.json()).then(j=>{LOOKM=j;}),
     loadMap('town','assets/town.json','assets/town_atlas.json','assets/town_ground.png','assets/town_atlas.png')];
@@ -590,7 +591,7 @@ async function loadAll(){
   await Promise.all(core);
   prepMap('town');useMap('town');
   STAGE2=(async()=>{
-    const jobs=[loadMap('zone1','assets/zone1.json','assets/atlas.json','assets/zone1_ground.png','assets/atlas.png'),...['mer','fer','alq','mes','cof','lei'].map(k=>loadMap('int_'+k,'assets/int_'+k+'.json','assets/int_atlas.json','assets/int_'+k+'_ground.png','assets/int_atlas.png'))];
+    const jobs=[loadMap('zone1','assets/zone1.json','assets/atlas.json','assets/zone1_ground.png','assets/atlas.png'),loadMap('zone1_gob','assets/zone1_gob.json','assets/atlas_gob.json','assets/zone1_gob_ground.png','assets/atlas_gob.png'),...['mer','fer','alq','mes','cof','lei'].map(k=>loadMap('int_'+k,'assets/int_'+k+'.json','assets/int_atlas.json','assets/int_'+k+'_ground.png','assets/int_atlas.png'))];
     for(const k of ['goblin','esqueleto','javali','rato','ogro','xama','esqfogo','esqgelo'])jobs.push(loadSheet(k,'slash'));jobs.push(loadSheet('gobarq','shoot'));jobs.push(loadSheet('esqmago','spellcast'));
     for(const k of new Set(CLS_ORDER.flatMap(c=>CLASSES[c].skills.map(s=>s[0]))))jobs.push(loadImg(skImg(k)).then(im=>{IMG[k]=im;}).catch(()=>{IMG[k]=null;}));
     for(const n of ['i_espada','i_machado','i_martelo','i_adaga','i_cajado','i_cetro','i_arco','i_elmo','i_capuz','i_couraca','i_cota','i_colete','i_manto','i_tunica','i_botas','i_sandalias','i_colar','i_pingente','i_talisma','i_anel','i_luvas','i_manoplas','i_escudo','i_escudog','i_garra','i_livro','i_gema','i_bracelete','i_coroa'])jobs.push(loadImg('../assets/ico/'+n+'.png').then(im=>{IMG_ICO[n]=im;}).catch(()=>{IMG_ICO[n]=null;}));
@@ -1005,7 +1006,7 @@ function enterDungeon(zlv){
   if(whenReady(()=>enterDungeon(zlv)))return;
   closeWin();
   fadeTo(()=>{
-    G.scene='dungeon';useMap('zone1');G.zoneLv=zlv;SAVE.zone=zlv;SAVE.entered=true;G.auto=true;
+    G.scene='dungeon';useMap(zoneMap(zlv));G.zoneLv=zlv;SAVE.zone=zlv;SAVE.entered=true;G.auto=true;
     const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;h.state='idle';h.act=null;h.kvx=h.kvy=0;h.sk=Array(14).fill(0);h.potCd=0;h.x=ZONE.start[0];h.y=ZONE.start[1];h._lx=h.x;h._ly=h.y;
     GX.clear();G.zones=[];G.floats=[];G.fx=[];G.loot=[];resetZone();MM.key='';G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2+34;G.wp=null;
     show('hud');buildBar();updHUD(true);$('toast').style.display='none';setTimeout(()=>banner('Floresta de Brumavale','Entrada · Zona '+G.zoneLv+' · '+MOBS[famOf(G.zoneLv)].nome+'s'),500);
@@ -1241,7 +1242,7 @@ function showResult(){
   show('res');$('cv').style.display='block';const xp=BOSS.xp;
   $('rl').innerHTML=`${SAVE.name} · ${CLASSES[SAVE.cls].nome} Nv.${SAVE.lv}<br>Chefe derrotado!<br>Ouro total: ${SAVE.gold}<br><span style="color:#96e08a">Próxima zona: monstros mais fortes</span>`;
 }
-function nextZone(){G.zoneLv++;SAVE.zone=G.zoneLv;SAVE.zoneMax=Math.max(SAVE.zoneMax||1,G.zoneLv);writeSave();show('hud');banner('Floresta de Brumavale','Zona '+G.zoneLv+' · '+MOBS[famOf(G.zoneLv)].nome+'s');const h=G.hero;h.hp=h.maxhp;h.x=ZONE.start[0];h.y=ZONE.start[1];resetZone();updHUD();chat('Zona '+G.zoneLv+' — '+MOBS[famOf(G.zoneLv)].nome+'s, mais fortes!',2);playMusic('m_campina');}
+function nextZone(){G.zoneLv++;if(zoneMap(G.zoneLv)!==G.map)useMap(zoneMap(G.zoneLv));SAVE.zone=G.zoneLv;SAVE.zoneMax=Math.max(SAVE.zoneMax||1,G.zoneLv);writeSave();show('hud');banner('Floresta de Brumavale','Zona '+G.zoneLv+' · '+MOBS[famOf(G.zoneLv)].nome+'s');const h=G.hero;h.hp=h.maxhp;h.x=ZONE.start[0];h.y=ZONE.start[1];resetZone();updHUD();chat('Zona '+G.zoneLv+' — '+MOBS[famOf(G.zoneLv)].nome+'s, mais fortes!',2);playMusic('m_campina');}
 
 /* --- ataque do herói --- */
 function atkDur(h){const k=CLASSES[h.cls].atk_;return k==='cast'?.75:k==='shoot'?.95:.5;}
@@ -2186,7 +2187,7 @@ function updateMProjs(dt){
 function drawMProjs(ctx,cx,cy){for(const p of G.mp){const x=p.x-cx,y=p.y-cy;
   if(p.kind==='arrow'){const a=Math.atan2(p.vy,p.vx);ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.fillStyle='#6a4a2a';ctx.fillRect(-8,-.5,12,1.2);ctx.fillStyle='#e8e0d0';ctx.fillRect(4,-1.2,3,2.4);ctx.fillStyle='#cfd8e0';ctx.fillRect(-9,-1.5,3,3);ctx.restore();}
   else{const pu=.6+.4*Math.sin(G.t*20);ctx.save();ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(x,y,0,x,y,9);g.addColorStop(0,'#ffffffcc');g.addColorStop(.35,p.col+'cc');g.addColorStop(1,p.col+'00');ctx.fillStyle=g;ctx.globalAlpha=.7+.3*pu;ctx.fillRect(x-9,y-9,18,18);ctx.restore();}}}
-const ZTHEME={goblin:{mul:'#8aa880',vig:'rgba(6,16,6,',va:.5},esq:{mul:'#98a2c4',vig:'rgba(6,10,26,',va:.46},javali:{mul:'#dcbc90',vig:'rgba(30,14,4,',va:.3},rato:{mul:'#aaa27e',vig:'rgba(18,14,6,',va:.4}};
+const ZTHEME={goblin:{mul:'#c4d4bc',vig:'rgba(6,16,6,',va:.5},esq:{mul:'#98a2c4',vig:'rgba(6,10,26,',va:.46},javali:{mul:'#dcbc90',vig:'rgba(30,14,4,',va:.3},rato:{mul:'#aaa27e',vig:'rgba(18,14,6,',va:.4}};
 function drawZoneTheme(ctx){const T=ZTHEME[famOf(G.zoneLv)];if(!T)return;ctx.save();ctx.globalCompositeOperation='multiply';ctx.fillStyle=T.mul;ctx.fillRect(-4,-4,G.LW+8,G.LH+8);ctx.globalCompositeOperation='source-over';
   const g=ctx.createRadialGradient(G.LW/2,G.LH/2,G.LH*.28,G.LW/2,G.LH/2,G.LH*.78);g.addColorStop(0,T.vig+'0)');g.addColorStop(1,T.vig+T.va+')');ctx.fillStyle=g;ctx.fillRect(-4,-4,G.LW+8,G.LH+8);ctx.restore();}
 function updateProjs(dt){
