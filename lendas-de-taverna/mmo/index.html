@@ -960,7 +960,7 @@ function mkTb(id,html,cls,fn){const e=document.createElement('button');e.classNa
 function buildBar(){
   const C=CLASSES[SAVE.cls],b=$('bar'),m=$('mmenu');b.innerHTML='';m.innerHTML='';
   const ab=document.createElement('div');ab.className='abar';b.appendChild(ab);
-  const potHtml='<img src="../assets/ico/v_pocao.png"><span class="key">P</span><div class="cd"></div><div class="ct"></div><span class="n" id="potn"></span>';
+  const potHtml='<img src="../assets/ico/v_pocao.png?v=2"><span class="key">P</span><div class="cd"></div><div class="ct"></div><span class="n" id="potn"></span>';
   if(G.scene==='town'){
     const sk0=SAVE.eqs[0]>=0?SAVE.eqs[0]:0;
     ab.appendChild(mkTb('bGo','<img src="../assets/ico/v_mapa.png" style="padding:6px 6px 12px"><span class="lbl">Atalhos</span>','slot2',()=>{if(G.winOpen)return;sfx('ui_click');openWin('locais');}));
@@ -975,7 +975,7 @@ function buildBar(){
   const pot=mkTb('bPot',potHtml,'slot2 sep',()=>usePotion(true));ab.appendChild(pot);
   {const D=DODGE[SAVE.cls];const dd=mkTb('bDodge','<img src="../assets/ui-icons/'+(D.t==='blink'?'magic-swirl':'running-shoe')+'.png" style="padding:6px"><span class="key">E</span><div class="cd"></div><div class="ct"></div>','slot2',()=>{const h=G.hero;if(!h||h.state==='ko')return;const f=nearestMob(h,300);if(f)heroDodge(h,h.x-f.x,h.y-f.y,'melee');else heroDodge(h,-Math.cos(0),0,'melee');});ab.appendChild(dd);}
   const hb=mkTb('bHero','<img src="../assets/ico/v_bolsa.png"><span class="bd" id="bdHero"></span>','mbtn',()=>{sfx('ui_click');openPan('eq');});
-  const tw=mkTb('bTownB','<img src="../assets/ui-icons/greek-temple.png" style="filter:sepia(1) saturate(3) hue-rotate(-8deg) brightness(1.25)">','mbtn',()=>{sfx('ui_click');gConfirm('O progresso desta floresta (abates) será perdido.',{title:'Voltar para a cidade?',ok:'Voltar',no:'Ficar'}).then(ok=>{if(ok)enterTown(false);});});
+  const tw=mkTb('bTownB','<img src="../assets/ico/v_cidade.png?v=2" style="padding:0">','mbtn',()=>{sfx('ui_click');gConfirm('O progresso desta floresta (abates) será perdido.',{title:'Voltar para a cidade?',ok:'Voltar',no:'Ficar'}).then(ok=>{if(ok)enterTown(false);});});
   [hb,tw].forEach(e=>m.appendChild(e));updPot();badge();
 }
 function updPot(){const n=$('potn');if(n)n.textContent=SAVE.potions+(SAVE.potL?'+'+SAVE.potL:'');}
@@ -1085,7 +1085,7 @@ const KNOCK_CLS={guerreiro:.30,ladino:.10,clerigo:.12,arqueiro:.07,mago:.05,bard
 function knockChance(){const A=SAVE.at||{};return Math.min(.75,(KNOCK_CLS[SAVE.cls]||.1)+(KNOCK_SUB[SAVE.sub]||0)+Math.floor((A.for||0)/3)*.01);}
 function hitMob(m,dmg,crit,fromX,fromY,kf=1){
   if(m.dead)return;if(m.vuln>0)dmg=Math.round(dmg*1.15);{const tk=stMul(m,'taken');if(tk!==1)dmg=Math.max(1,Math.round(dmg*tk));}m.hp-=dmg;{const ls=uf('ls');if(ls>0&&G.hero&&G.hero.state!=='ko')G.hero.hp=Math.min(G.hero.maxhp,G.hero.hp+dmg*ls);}m.flash=.14;m.stun=m.kind==='boss'?(crit?.2:.08):(crit?.35:.16);m.act=null;
-  floatText(m.x,m.y-(m.kind==='boss'?86:46),(crit?dmg+'!':''+dmg),crit?'#ffbe3c':'#fff0d0',crit?13:10);
+  floatText(m.x+rnd(-12,12),m.y-(m.kind==='boss'?70:30),(crit?dmg+'!':''+dmg),crit?'#ffbe3c':'#fff0d0',crit?13:10);
   spark(m.x,m.y-(m.kind==='boss'?40:16),crit?9:5);
   const die=m.hp<=0;
   if(die)knock(m,m.x-fromX,m.y-fromY,200*(m.kind==='boss'?.25:1)*Math.min(kf,1.2));
@@ -2071,10 +2071,14 @@ function updateProjs(dt){
     p.x+=dx/d*s;p.y+=dy/d*s;p.ang=Math.atan2(dy,dx);
     const st=p.style;if(st==='orb'&&Math.random()<.9)VF.pt(p.x+rnd(-2,2),p.y+rnd(-2,2),{life:.3,col:'#8ac8ff',sz:2.4});else if(st==='fire'){VF.pt(p.x+rnd(-2,2),p.y+rnd(-2,2),{vy:-14,life:.35,col:Math.random()<.5?'#ffb050':'#ff5a1a',sz:2.6});}else if(st==='ice'&&Math.random()<.8)VF.pt(p.x,p.y,{life:.3,col:'#bfe8ff',sz:2});else if(st==='dagger'&&Math.random()<.6)VF.pt(p.x,p.y,{life:.2,col:'#fff',sz:1.6});else if(st==='arrow'&&Math.random()<.5)VF.pt(p.x,p.y,{life:.18,col:'#fff6d8',sz:1.4,add:false});}
 }
+/* separação: personagens não ficam um em cima do outro */
+function separateEnts(){const h=G.hero;if(!h||h.state==='ko')return;const near=[];for(const m of allFoes()){if(Math.abs(m.x-h.x)<90&&Math.abs(m.y-h.y)<90)near.push(m);}
+  for(const m of near){const dx=m.x-h.x,dy=m.y-h.y,d=Math.hypot(dx,dy)||.01,mn=m.kind==='boss'?30:17;if(d<mn){const k=(mn-d),ux=dx/d||1,uy=dy/d;m.x+=ux*k*.65;m.y+=uy*k*.65;h.x-=ux*k*.35;h.y-=uy*k*.35;collide(m,6);collide(h);}}
+  for(let i=0;i<near.length;i++)for(let j=i+1;j<near.length;j++){const a=near[i],b=near[j],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||.01;if(d<13){const k=(13-d)*.5,ux=dx/d,uy=dy/d;a.x-=ux*k;a.y-=uy*k;b.x+=ux*k;b.y+=uy*k;}}}
 function update(dt){
   G.t+=dt;joyShow();if(G.castReq>=0){G.castT=(G.castT||0)+dt;if(G.castT>.7){G.castReq=-1;G.castT=0;}}else G.castT=0;
   if(G.scene==='town')updateTown(dt);
-  else{updateHero(dt);updateZones(dt);for(const m of G.mobs)updateMob(m,dt);if(G.boss)updateMob(G.boss,dt);updateProjs(dt);tickElix(dt);bossTick(dt);}
+  else{updateHero(dt);updateZones(dt);for(const m of G.mobs)updateMob(m,dt);if(G.boss)updateMob(G.boss,dt);separateEnts();updateProjs(dt);tickElix(dt);bossTick(dt);}
   for(let i=G.floats.length-1;i>=0;i--){const f=G.floats[i];f.life-=dt;f.y-=14*dt;if(f.life<=0)G.floats.splice(i,1);}
   updateFxList(dt);
   if(G.shake>0)G.shake=Math.max(0,G.shake-dt);
@@ -2161,10 +2165,19 @@ function drawNpcTag(e){
   ctx.font='700 8.5px Rubik,sans-serif';ctx.textAlign='center';ctx.lineWidth=2.6;ctx.strokeStyle='rgba(20,10,6,.95)';if(sx<-30||sx>G.LW+30)return;sx=clamp(sx,36,G.LW-36);ctx.strokeText(e.nm,sx,sy);ctx.fillStyle='#ffe69a';ctx.fillText(e.nm,sx,sy);
   const bob=Math.sin(G.t*4+e.x)*1.5,im=IMG_UI[e.ic];ctx.fillStyle='rgba(30,20,12,.92)';ctx.fillRect(sx-8,sy-22+bob,16,16);ctx.strokeStyle='#dcaa50';ctx.lineWidth=1;ctx.strokeRect(sx-8.5,sy-22.5+bob,17,17);if(im)ctx.drawImage(im,sx-6,sy-20+bob,12,12);
 }
+function plateTag(e){if(e.kind==='hero')return e.name+'  Nv.'+SAVE.lv;if(e.kind==='boss'||e.hp<e.maxhp||dist(e,G.hero)<110)return e.name+'  Nv.'+e.lv;return 'Nv.'+e.lv;}
+/* posiciona os nomes sem sobreposição: herói e chefe têm prioridade, os demais sobem até achar espaço */
+function plateLayout(list){const P=[];for(const it of list){const e=it.e;if(!e||e.dead||e.kind==='vill'||e.kind==='npc')continue;const sx0=e.x-G.cam.x,sy0=e.y-G.cam.y-(e.kind==='boss'?98:(e.kind==='hero'?56:44));if(sx0<-30||sx0>G.LW+30||sy0<-20||sy0>G.LH+40)continue;
+    ctx.font='700 8px Rubik,sans-serif';const tag=plateTag(e),w=ctx.measureText(tag).width+6;P.push({e,tag,w,sx:clamp(sx0,w/2+3,G.LW-w/2-3),sy:sy0,pri:e.kind==='hero'?0:e.kind==='boss'?1:2,bar:e.kind!=='hero'&&e.hp>0&&e.hp<e.maxhp});}
+  P.sort((a,b)=>a.pri-b.pri||b.e.y-a.e.y);const placed=[];
+  for(const p of P){let tries=0;const r=()=>({x:p.sx-p.w/2,y:p.sy-9,w:p.w,h:p.bar?20:12});let q=r();
+    while(tries<6&&placed.some(o=>q.x<o.x+o.w&&q.x+q.w>o.x&&q.y<o.y+o.h&&q.y+q.h>o.y)){p.sy-=11;q=r();tries++;}
+    placed.push(q);p.e._pl={sx:p.sx,sy:p.sy,tag:p.tag};}}
 function drawNameplate(e,col){
   let sx=e.x-G.cam.x,sy=e.y-G.cam.y-(e.kind==='boss'?98:(e.kind==='hero'?56:44));
-  const tag=e.kind==='hero'?(e.name+'  Nv.'+SAVE.lv):(e.name+'  Nv.'+e.lv);
-  ctx.font='700 8.5px Rubik,sans-serif';ctx.textAlign='center';ctx.lineWidth=2.6;ctx.strokeStyle='rgba(20,10,6,.95)';if(sx<-24||sx>G.LW+24)return;const tw_=ctx.measureText(tag).width/2;sx=clamp(sx,tw_+4,G.LW-tw_-4);ctx.strokeText(tag,sx,sy);ctx.fillStyle=col;ctx.fillText(tag,sx,sy);
+  let tag=e.kind==='hero'?(e.name+'  Nv.'+SAVE.lv):(e.name+'  Nv.'+e.lv);
+  if(e._pl){sx=e._pl.sx;sy=e._pl.sy;tag=e._pl.tag;}
+  ctx.font='700 8px Rubik,sans-serif';ctx.textAlign='center';ctx.lineWidth=2.6;ctx.strokeStyle='rgba(20,10,6,.95)';if(sx<-24||sx>G.LW+24)return;const tw_=ctx.measureText(tag).width/2;sx=clamp(sx,tw_+4,G.LW-tw_-4);ctx.strokeText(tag,sx,sy);ctx.fillStyle=col;ctx.fillText(tag,sx,sy);
   if(e.kind!=='hero'&&e.hp>0&&e.hp<e.maxhp){const bw=e.kind==='boss'?38:24;ctx.fillStyle='rgba(20,10,10,.9)';ctx.fillRect(sx-bw/2-1,sy+3,bw+2,5);ctx.fillStyle='#d6403a';ctx.fillRect(sx-bw/2,sy+4,bw*e.hp/e.maxhp,3);}
   drawStRow(e,sx,sy+(e.kind!=='hero'&&e.hp<e.maxhp?9:3));
 }
@@ -2227,6 +2240,7 @@ function render(){
   if(h.act&&(h.act.cast||h.act.bow)&&h.act.ch>0&&!h.act.done&&h.state!=='ko'){const p=Math.min(1,h.act.t/(h.act.ch+.32)),X=Math.round(h.x-cx),Y=Math.round(h.y-cy-60);ctx.fillStyle='rgba(8,6,12,.88)';ctx.fillRect(X-16,Y,32,6);ctx.fillStyle=CHCOL[h.cls];ctx.fillRect(X-15,Y+1,30*p,4);ctx.strokeStyle='#000';ctx.lineWidth=1;ctx.strokeRect(X-16.5,Y-.5,33,7);}
   // nameplates
   if(G.scene==='town'&&!SAVE.entered){const P=ZONE.portal,bob=Math.sin(G.t*5)*3;ctx.font='700 14px Rubik,sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#1a0a2a';ctx.strokeText('▼',P.x-cx,P.y-cy-86+bob);ctx.fillStyle='#e6d2ff';ctx.fillText('▼',P.x-cx,P.y-cy-86+bob);}
+  plateLayout(list);
   for(const it of list){const e=it.e;if(!e||e.dead)continue;if(e.kind==='vill')continue;if(e.kind==='npc'){drawNpcTag(e);continue;}if(e.kind==='hero')drawNameplate(e,'#bfe8ff');else if(e.kind==='boss')drawNameplate(e,'#ffa680');else drawNameplate(e,'#ffecd6');}
   // números
   for(const f of G.floats){const a=Math.min(1,f.life/(f.max*.35));ctx.globalAlpha=a;ctx.font='700 '+f.size+'px Rubik,sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='rgba(30,12,4,.95)';ctx.strokeText(f.t,f.x-cx,f.y-cy);ctx.fillStyle=f.col;ctx.fillText(f.t,f.x-cx,f.y-cy);ctx.globalAlpha=1;}
