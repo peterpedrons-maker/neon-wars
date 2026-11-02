@@ -904,7 +904,7 @@ function heroStatsInto(h){
 }
 /* dificuldade: o nível do monstro sobe com a profundidade na floresta (0 na entrada → 1 no fim da estrada) e +5 por zona */
 /* curva de dificuldade ajustada por modelo (tools/mmo/balance_fit.py): fácil no início (≈5 s por monstro, ≈7 % da vida por abate) e cada vez mais dura até o endgame (≈13 s e ≈37 %); defesa estilo PoE: def/(def+5·dano), teto 85 % */
-const BAL={zoneLv:5,K:{"1":[2.062,1.027],"5":[4.313,2.189],"10":[7.318,7.383],"20":[16.721,17.523],"30":[48.683,38.871],"40":[180.473,113.071],"50":[293.679,148.976],"60":[273.303,191.216]}};   // multiplicadores [vida, ataque] por nível, calibrados com heróis de equipamento mediano (início) até quase perfeito (endgame)
+const BAL={zoneLv:5,K:{"1":[2.062,1.027],"5":[4.313,2.189],"10":[7.318,7.383],"20":[16.721,17.523],"30":[48.683,38.871],"40":[180.473,113.071],"50":[293.679,193.7],"60":[273.303,306]}};   // multiplicadores [vida, ataque] por nível, calibrados com heróis de equipamento mediano (início) até quase perfeito (endgame)
 function balMul(lv,j){const ks=Object.keys(BAL.K).map(Number).sort((a,b)=>a-b);if(lv<=ks[0])return BAL.K[ks[0]][j];if(lv>=ks[ks.length-1]){const e=ks[ks.length-1],q=ks[ks.length-2];return BAL.K[e][j]*Math.pow(BAL.K[e][j]/BAL.K[q][j],(lv-e)/(e-q));}for(let i=0;i<ks.length-1;i++)if(lv<=ks[i+1]){const f=(lv-ks[i])/(ks[i+1]-ks[i]);return Math.exp(Math.log(BAL.K[ks[i]][j])*(1-f)+Math.log(BAL.K[ks[i+1]][j])*f);}}
 const mobHpMul=lv=>balMul(lv,0),mobAtkMul=lv=>balMul(lv,1);
 function mobLevel(y){const d=ZONE&&ZONE.h?Math.max(0,Math.min(1,1-(y||0)/ZONE.h)):0;return 1+Math.round(d*5)+rint(0,2)+(G.zoneLv-1)*BAL.zoneLv;}
