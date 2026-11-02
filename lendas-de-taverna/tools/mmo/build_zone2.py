@@ -68,6 +68,7 @@ def _icy(im):
     a=np.array(im.convert('RGBA'));m=a[:,:,3]>0;b=(a[:,:,2].astype(int)>a[:,:,0].astype(int)+25)&(a[:,:,2]>150)&m
     return m.sum()>0 and b.sum()/m.sum()>.04
 T_OAK=[t for t in T_OAK if not _icy(t)] or T_OAK;T_CON=[t for t in T_CON if not _icy(t)] or T_CON
+def entr_clear(x,y):return abs(x-ENTR[0])<130 and y>ENTR[1]-260   # corredor livre da entrada
 def tree():
     t=rr.random();return rr.choice(T_OAK) if t<.6 else rr.choice(T_CON)
 # ---- portão da floresta
@@ -98,7 +99,7 @@ for _ in range(9000):
     x=rr.randrange(-10,WW+10);y=rr.randrange(30,WH+40)
     if lake_in(x,y,12):continue
     if glade_d(x,y)<(150 if min(x,WW-x,y,WH-y)>70 else 0):continue
-    if y>ENTR[1]-8 and abs(x-ENTR[0])<40:continue
+    if entr_clear(x,y):continue
     if math.hypot(x-START[0],y-START[1])<170 and min(x,WW-x,y,WH-y)>80:continue
     g=dens_gap(x,y)
     if g>=420 and rr.random()<.9:continue
@@ -107,7 +108,7 @@ for _ in range(9000):
 for n in range(150):
     for _ in range(30):
         x=rr.randrange(60,WW-60);y=rr.randrange(100,WH-140)
-        if not lake_in(x,y,8) and free(x,y,10):break
+        if not lake_in(x,y,8) and free(x,y,10) and not entr_clear(x,y):break
     else:continue
     k=n%6
     if k in(0,1,2):add(rr.choice(BUSH),x,y,7)
