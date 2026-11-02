@@ -57,6 +57,11 @@ for cls,rec in R.items():
         for p in paths:
             if p.startswith(('body/','head/','legs/','torso/','hair/','hat/')): continue
             gg='bg' if ('background' in p or 'behind' in p) else 'fg';im=ld(p,LPC)
+            if im and im.size==(1664,512) and (W,H)==(576,256):   # arco 'walk' vem em células de 128 px: reagrupa o centro 64x64 de cada quadro
+                t=Image.new('RGBA',(W,H),(0,0,0,0))
+                for rr_ in range(4):
+                    for cc in range(9):t.alpha_composite(im.crop((cc*128+32,rr_*128+32,cc*128+96,rr_*128+96)),(cc*64,rr_*64))
+                im=t
             if im: g[gg].alpha_composite(im.crop((0,0,W,H)));used[gg]=1
         if name=='act' and over:
             for p,gg in ((rec['actionBehind'],'bg'),(rec['actionFront'],'fg')):
