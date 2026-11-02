@@ -935,30 +935,35 @@ const ELMOD={
   explosivo:{n:'Explosivo',col:'#ffb030',d:'explode ao morrer'},
   teleporte:{n:'Teleportador',col:'#c08aff',d:'surge ao seu lado'}
 };
-const EL_P=.09;
-function eliteChance(){return EL_P+Math.min(.06,.01*(G.zoneLv-1));}
-function makeElite(m){
-  const ids=Object.keys(ELMOD),nm=G.zoneLv<3?1:G.zoneLv<6?2:3,got=[];
+const EL_BLUE=['veloz','blindado','fogo','gelo','vampiro','espinho','teleporte'];   /* elite azul: 1 afixo, só os mais fracos */
+const EL_P=.07;
+function eliteChance(){return EL_P+Math.min(.04,.007*(G.zoneLv-1));}           /* chance de azul */
+function eliteGoldChance(){return .03+Math.min(.05,.008*(G.zoneLv-1));}        /* chance de amarelo (mais forte) */
+function makeElite(m,tier){
+  tier=tier||'blue';const gold=tier==='gold',ids=gold?Object.keys(ELMOD):EL_BLUE,nm=gold?(G.zoneLv<4?2:3):1,got=[];
   while(got.length<nm){const k=pick(ids);if(got.includes(k))continue;if((k==='fogo'&&got.includes('gelo'))||(k==='gelo'&&got.includes('fogo')))continue;got.push(k);}
-  m.el=got;m.elite=true;m.maxhp=Math.round(m.maxhp*2.6);m.pow*=1.15;m.spdMul=1;m.aspdMul=1;m.take=1;m.imm={};
+  m.el=got;m.elite=true;m.tier=tier;m.maxhp=Math.round(m.maxhp*(gold?3.2:1.9));m.pow*=gold?1.25:1.05;m.spdMul=1;m.aspdMul=1;m.take=1;m.imm={};
   for(const k of got){
     if(k==='veloz'){m.spdMul*=1.35;m.aspdMul*=.6;}else if(k==='brutal')m.pow*=1.5;else if(k==='blindado'){m.take*=.65;m.maxhp=Math.round(m.maxhp*1.2);}
     else if(k==='fogo')m.imm.queimadura=1;else if(k==='gelo'){m.imm.gelado=1;m.imm.lento=1;}else if(k==='ctrl'){m.imm.ctrl=1;}
     else if(k==='vampiro')m.vamp=.6;else if(k==='espinho')m.thorn=.14;else if(k==='explosivo')m.boom=1;else if(k==='teleporte')m.tpT=rnd(2,5);
   }
-  m.hp=m.maxhp;m.elCol=ELMOD[got[0]].col;m.baseName=m.name;m.name=m.name+' '+got.map(k=>ELMOD[k].n.replace('Imune a ','')).join(' · ');
+  m.hp=m.maxhp;m.elCol=gold?'#ffd24a':'#6aa8ff';m.baseName=m.name;m.name=m.name+' '+got.map(k=>ELMOD[k].n.replace('Imune a ','')).join(' · ');
   return m;
 }
+/* FAMÍLIA por zona: cada zona tem um único tipo de inimigo (muda a cada zona); multiplicadores mantêm a força média de antes */
+const FAMS=['goblin','esq','javali','rato'],FAMM={goblin:[1.13,1.1,1.24],esq:[.85,.86,.83],javali:[.71,.77,.68],rato:[2.1,1.9,2]};
+const famOf=z=>FAMS[(Math.max(1,z)-1)%FAMS.length];
 function mkMob(kind,x,y,sp){
   const T=MOBS[kind],lv=mobLevel(y),m={kind:'mob',type:kind,T,x,y,sx:x,sy:y,lv,row:1,state:'idle',animT:rnd(0,5),act:null,cd:rnd(.5,1.2),kvx:0,kvy:0,stun:0,sts:null,flash:0,dead:false,deadT:0,respawn:0,sp,wx:x,wy:y,wt:rnd(0,3)};
-  m.maxhp=Math.round(T.hp*mobHpMul(lv));m.hp=m.maxhp;m.pow=T.atk*mobAtkMul(lv);m.def=lv*1.3;m.name=T.nome;if(Math.random()<eliteChance())makeElite(m);return m;
+  const FM=FAMM[kind]||[1,1,1];m.maxhp=Math.round(T.hp*FM[0]*mobHpMul(lv));m.hp=m.maxhp;m.pow=T.atk*FM[1]*mobAtkMul(lv);m.def=lv*1.3;m.name=T.nome;{const q=Math.random();if(q<eliteGoldChance())makeElite(m,'gold');else if(q<eliteGoldChance()+eliteChance())makeElite(m,'blue');}return m;
 }
 function mkBoss(bx,by){
   bx=bx===undefined?ZONE.boss[0]:bx;by=by===undefined?ZONE.boss[1]:by;const lv=8+(G.zoneLv-1)*BAL.zoneLv,m={kind:'boss',type:'boss',T:BOSS,x:bx,y:by,lv,row:2,state:'idle',animT:0,act:null,cd:1,kvx:0,kvy:0,stun:0,sts:null,flash:0,dead:false,deadT:0,hp:0,sx:bx,sy:by};
   m.maxhp=Math.round(BOSS.hp*mobHpMul(lv));m.hp=m.maxhp;m.pow=BOSS.atk*mobAtkMul(lv);m.def=lv*1.3;m.name=BOSS.nome;return m;
 }
 function resetZone(){
-  G.mobs=[];ZONE.spawns.forEach((s,i)=>{const kinds=['goblin','goblin','esq','javali','rato','esq'];G.mobs.push(mkMob(kinds[i%kinds.length],s[0],s[1],i));});
+  G.mobs=[];ZONE.spawns.forEach((s,i)=>{G.mobs.push(mkMob(famOf(G.zoneLv),s[0],s[1],i));});
   G.boss=null;G.kills=0;G.phase='farm';G.bossWoke=false;G.dtm=0;G.bossRoll=1;G.projs=[];
 }
 function fadeTo(cb){const f=$('fade');f.classList.add('on');setTimeout(()=>{cb();setTimeout(()=>f.classList.remove('on'),220);},380);}
@@ -993,7 +998,7 @@ function enterDungeon(zlv){
     G.scene='dungeon';useMap('zone1');G.zoneLv=zlv;SAVE.zone=zlv;SAVE.entered=true;G.auto=true;
     const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;h.state='idle';h.act=null;h.kvx=h.kvy=0;h.sk=Array(14).fill(0);h.potCd=0;h.x=ZONE.start[0];h.y=ZONE.start[1];h._lx=h.x;h._ly=h.y;
     GX.clear();G.zones=[];G.floats=[];G.fx=[];G.loot=[];resetZone();MM.key='';G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2+34;G.wp=null;
-    show('hud');buildBar();updHUD(true);$('toast').style.display='none';setTimeout(()=>banner('Floresta de Brumavale','Entrada · Zona '+G.zoneLv),500);
+    show('hud');buildBar();updHUD(true);$('toast').style.display='none';setTimeout(()=>banner('Floresta de Brumavale','Entrada · Zona '+G.zoneLv+' · '+MOBS[famOf(G.zoneLv)].nome+'s'),500);
     chat('Você entrou na Floresta de Brumavale (Zona '+G.zoneLv+'). Cuidado: algo grande pode surgir…',1);playMusic('m_campina');writeSave();
   });
 }
@@ -1107,12 +1112,12 @@ function addItem(it,quiet){
 function sellItem(it,silent){SAVE.gold+=itemVal(it);if(!silent)sfx('coin',.6);}
 function recalcHero(keepRatio){const h=G.hero;const r=h.hp/h.maxhp;heroStatsInto(h);h.hp=keepRatio?Math.min(h.maxhp,Math.max(1,h.maxhp*r)):h.maxhp;}
 function dropLoot(m){
-  const boss=m.kind==='boss',luck=(SAVE.elix&&SAVE.elix.sorte>0)?1:0;let n=boss?2:(m.elite?2:(Math.random()<(.2+.12*luck)?1:0));
+  const boss=m.kind==='boss',luck=(SAVE.elix&&SAVE.elix.sorte>0)?1:0;let n=boss?2:(m.elite?(m.tier==='gold'?2:1):(Math.random()<(.2+.12*luck)?1:0));
   const il=Math.max(1,Math.round(SAVE.lv*.5+m.lv*.5+(boss?2:0))),mk=it=>{const a=Math.random()*6.283,d=rnd(16,34);
     G.loot.push({x:m.x,y:m.y,ox:m.x,oy:m.y,tx:m.x+Math.cos(a)*d,ty:m.y+Math.sin(a)*d*.6,it,t:0,fly:.5,rest:.9+.3*it.rar,h:0,v:70});};
-  for(let i=0;i<n;i++)mk(genItem(il,boss?(i===0?2:1):(m.elite?(i===0?2:1):0),(boss?12:G.zoneLv*2)+luck*10));
+  for(let i=0;i<n;i++)mk(genItem(il,boss?(i===0?2:1):(m.elite?(m.tier==='gold'&&i===0?2:1):0),(boss?12:G.zoneLv*2)+luck*10));
   const pool=UNIQUES.filter(u=>(boss?u.src==='boss':u.src===m.type)&&(!u.cls||u.cls.includes(SAVE.cls)));
-  if(pool.length&&Math.random()<(boss?.45:.004*(m.elite?8:1)*(1+luck)))mk(genItem(il+1,4,0,pick(pool)));
+  if(pool.length&&Math.random()<(boss?.45:.004*(m.elite?(m.tier==='gold'?8:3):1)*(1+luck)))mk(genItem(il+1,4,0,pick(pool)));
 }
 /* itens no chão: caem em arco, brilham pela raridade, descansam um instante e então são puxados até o herói */
 function updateLoot(dt){
@@ -1156,12 +1161,12 @@ function hitMob(m,dmg,crit,fromX,fromY,kf=1){
 }
 function killMob(m){
   m.dead=true;m.deadT=0;m.hp=0;const T=m.T;
-  const over=Math.max(0,SAVE.lv-(m.lv+2)),xp=Math.max(1,Math.round((m.elite?3:1)*T.xp*(1+.25*(m.lv-1))*Math.max(.12,1-.2*over)*(1+uf('xp'))));let g=rint(T.gold[0],T.gold[1])*(1+.2*(m.lv-1))*(1+uf('gold'));if(SAVE.cls==='bardo')g*=1.4;g=Math.round(g*(m.elite?2:1));
+  const over=Math.max(0,SAVE.lv-(m.lv+2)),xp=Math.max(1,Math.round((m.elite?(m.tier==='gold'?3.5:2):1)*T.xp*((FAMM[m.type]||[1,1,1])[2])*(1+.25*(m.lv-1))*Math.max(.12,1-.2*over)*(1+uf('xp'))));let g=rint(T.gold[0],T.gold[1])*(1+.2*(m.lv-1))*(1+uf('gold'));if(SAVE.cls==='bardo')g*=1.4;g=Math.round(g*(m.elite?(m.tier==='gold'?2.2:1.5):1));
   SAVE.gold+=g;gainXP(xp,m);floatText(m.x+12,m.y-30,'+'+g+' ouro','#ffd65a',8,1.1);sfx('coin',.5);
   SAVE.totalKills=(SAVE.totalKills||0)+1;
   dropLoot(m);
   if(m.boom){addZone({shape:'circle',x:m.x,y:m.y,r:58,warn:1,mult:1.8,pow:m.pow,shake:.3});chat(m.name+' vai explodir!',2);}
-  if(m.elite){chat('Elite derrotado!',4);}
+  if(m.elite){chat((m.tier==='gold'?'Elite dourado':'Elite azul')+' derrotado!',4);}
   if(m.kind==='boss'){chat(m.name+' foi derrotado!',3);G.phase='end';sfx('victory',.9);G.shake=.4;setTimeout(showResult,1600);G.endT=0;if(musSrc)playMusic('m_campina');}
   else{m.respawn=14;G.kills++;chat(m.name+' derrotado',1);
     checkBoss();}
@@ -1200,7 +1205,7 @@ function showResult(){
   show('res');$('cv').style.display='block';const xp=BOSS.xp;
   $('rl').innerHTML=`${SAVE.name} · ${CLASSES[SAVE.cls].nome} Nv.${SAVE.lv}<br>Chefe derrotado!<br>Ouro total: ${SAVE.gold}<br><span style="color:#96e08a">Próxima zona: monstros mais fortes</span>`;
 }
-function nextZone(){G.zoneLv++;SAVE.zone=G.zoneLv;SAVE.zoneMax=Math.max(SAVE.zoneMax||1,G.zoneLv);writeSave();show('hud');banner('Floresta de Brumavale','Zona '+G.zoneLv);const h=G.hero;h.hp=h.maxhp;h.x=ZONE.start[0];h.y=ZONE.start[1];resetZone();updHUD();chat('Zona '+G.zoneLv+' — monstros mais fortes!',2);playMusic('m_campina');}
+function nextZone(){G.zoneLv++;SAVE.zone=G.zoneLv;SAVE.zoneMax=Math.max(SAVE.zoneMax||1,G.zoneLv);writeSave();show('hud');banner('Floresta de Brumavale','Zona '+G.zoneLv+' · '+MOBS[famOf(G.zoneLv)].nome+'s');const h=G.hero;h.hp=h.maxhp;h.x=ZONE.start[0];h.y=ZONE.start[1];resetZone();updHUD();chat('Zona '+G.zoneLv+' — '+MOBS[famOf(G.zoneLv)].nome+'s, mais fortes!',2);playMusic('m_campina');}
 
 /* --- ataque do herói --- */
 function atkDur(h){const k=CLASSES[h.cls].atk_;return k==='cast'?.75:k==='shoot'?.95:.5;}
@@ -2270,7 +2275,7 @@ function mmDraw(){const c=$('mm');if(!c)return;const Z=ZONE;
 function mmToggle(){MM.big=!MM.big;sfx('ui_click',.5);const c=$('mm');if(c)c._w='';}
 function plateTag(e){if(e.kind==='hero')return G.scene==='town'?e.name+'  Nv.'+SAVE.lv:'';if(e.kind==='boss')return '';const h=G.hero;return (h&&(h.tg===e||(h.act&&h.act.tgt===e)))?e.name+'  Nv.'+e.lv:'';}
 /* posiciona os nomes sem sobreposição: herói e chefe têm prioridade, os demais sobem até achar espaço */
-function plateLayout(list){const P=[];for(const it of list){if(it.e)it.e._pl=null;}for(const it of list){const e=it.e;if(!e||e.dead||e.kind==='vill'||e.kind==='npc')continue;const sx0=e.x-G.cam.x,sy0=e.y-G.cam.y-(e.kind==='boss'?98:(e.kind==='hero'?56:44));if(sx0<-30||sx0>G.LW+30||sy0<-20||sy0>G.LH+40)continue;
+function plateLayout(list){const P=[];for(const it of list){if(it.e)it.e._pl=null;}for(const it of list){const e=it.e;if(!e||e.dead||e.kind==='vill'||e.kind==='npc')continue;const sx0=e.x-G.cam.x,sy0=e.y-G.cam.y-(e.kind==='boss'?98:(e.kind==='hero'?56:55));if(sx0<-30||sx0>G.LW+30||sy0<-20||sy0>G.LH+40)continue;
     ctx.font='700 8px Rubik,sans-serif';const tag=plateTag(e),hbar=e.kind==='hero'?G.scene!=='town':e.hp>0;if(!tag&&!hbar&&!(e.sts&&Object.keys(e.sts).length))continue;const w=tag?ctx.measureText(tag).width+6:30;P.push({e,tag,w,sx:clamp(sx0,w/2+3,G.LW-w/2-3),sy:sy0,pri:e.kind==='hero'?0:e.kind==='boss'?1:2,bar:hbar});}
   P.sort((a,b)=>a.pri-b.pri||b.e.y-a.e.y);const placed=[];
   for(const p of P){let tries=0;const r=()=>({x:p.sx-p.w/2,y:p.sy-9,w:p.w,h:p.bar?20:12});let q=r();
@@ -2355,7 +2360,7 @@ function render(){
   if(G.scene==='town'&&!SAVE.entered){const P=ZONE.portal,bob=Math.sin(G.t*5)*3;ctx.font='700 14px Rubik,sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#1a0a2a';ctx.strokeText('▼',P.x-cx,P.y-cy-86+bob);ctx.fillStyle='#e6d2ff';ctx.fillText('▼',P.x-cx,P.y-cy-86+bob);}
   mmDraw();
   plateLayout(list);
-  for(const it of list){const e=it.e;if(!e||e.dead)continue;if(e.kind==='vill')continue;if(e.kind==='npc'){drawNpcTag(e);continue;}if(e.kind==='hero')drawNameplate(e,'#bfe8ff');else if(e.kind==='boss')drawNameplate(e,'#ffa680');else drawNameplate(e,e.elite?'#ffd24a':'#ffecd6');}
+  for(const it of list){const e=it.e;if(!e||e.dead)continue;if(e.kind==='vill')continue;if(e.kind==='npc'){drawNpcTag(e);continue;}if(e.kind==='hero')drawNameplate(e,'#bfe8ff');else if(e.kind==='boss')drawNameplate(e,'#ffa680');else drawNameplate(e,e.elite?(e.tier==='gold'?'#ffd24a':'#8ec2ff'):'#ffecd6');}
   // números
   for(const f of G.floats){const a=Math.min(1,f.life/(f.max*.35)),age=f.max-f.life,sc=f.pop&&age<.16?1+(1-age/.16)*.6:1;ctx.globalAlpha=a;ctx.font=(f.bold?'800 ':'700 ')+(f.size*sc)+'px Rubik,sans-serif';ctx.textAlign='center';ctx.lineJoin='round';ctx.lineWidth=f.bold?3.6:3;ctx.strokeStyle=f.bold?'rgba(20,4,4,.98)':'rgba(30,12,4,.95)';ctx.strokeText(f.t,f.x-cx,f.y-cy);ctx.fillStyle=f.col;ctx.fillText(f.t,f.x-cx,f.y-cy);ctx.globalAlpha=1;}
   // vinheta
