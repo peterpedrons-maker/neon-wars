@@ -1,5 +1,5 @@
-const CACHE = 'hearthblade-v5';
-const CORE = ['./', './index.html', './manifest.json'];
+const CACHE = 'hearthblade-v6';
+const CORE = ['./', './index.html', './mmo/', './manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
@@ -22,7 +22,7 @@ self.addEventListener('fetch', e => {
   // tinha instalado continuava vendo a versão de antes). Por isso o
   // documento principal é sempre buscado da rede primeiro; só cai pro
   // cache se estiver offline de verdade.
-  const isCore = req.mode === 'navigate' || CORE.some(p => req.url.endsWith(p.replace('./', '')));
+  const isCore = req.mode === 'navigate' || new URL(req.url).pathname.includes('/mmo/') || CORE.some(p => req.url.endsWith(p.replace('./', '')));
   if (isCore) {
     e.respondWith(
       fetch(req, { cache: 'no-store' })

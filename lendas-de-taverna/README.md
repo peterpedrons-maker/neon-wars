@@ -1,3 +1,6 @@
+> **Hearthblade agora é o jogo de ação.** Esta pasta é o app instalável: `index.html` leva ao jogo de ação em `mmo/` (mesmo escopo, mesma identidade `./?app=hearthblade`), e `manifest.json`/`sw.js` descrevem esse app.
+> O jogo tático original foi preservado em `tatico.html` (e os ícones antigos em `assets/icons/tatico-*.png`); todos os packs, imagens e documentos continuam aqui.
+
 # Hearthblade
 
 RPG tático de grupo (estilo auto-battler) em um único arquivo HTML
