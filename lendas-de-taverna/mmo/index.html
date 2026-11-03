@@ -651,7 +651,7 @@ async function loadAll(){
     for(const k of ['goblin','esqueleto','javali','rato','ogro','xama','esqfogo','esqgelo'])jobs.push(loadSheet(k,'slash'));jobs.push(loadSheet('gobarq','shoot'));jobs.push(loadSheet('esqmago','spellcast'));
     for(const k of new Set(CLS_ORDER.flatMap(c=>CLASSES[c].skills.map(s=>s[0]))))jobs.push(loadImg(skImg(k)).then(im=>{IMG[k]=im;}).catch(()=>{IMG[k]=null;}));
     for(const n of ['i_espada','i_machado','i_martelo','i_adaga','i_cajado','i_cetro','i_arco','i_elmo','i_capuz','i_couraca','i_cota','i_colete','i_manto','i_tunica','i_botas','i_sandalias','i_colar','i_pingente','i_talisma','i_anel','i_luvas','i_manoplas','i_escudo','i_escudog','i_garra','i_livro','i_gema','i_bracelete','i_coroa'])jobs.push(loadImg('../assets/ico/'+n+'.png').then(im=>{IMG_ICO[n]=im;}).catch(()=>{IMG_ICO[n]=null;}));
-    for(const n of ['coins','anvil','health-potion','treasure-map','clover','fist','heart-plus','shop','greek-temple'])jobs.push(loadImg('../assets/ui-icons/'+n+'.png').then(im=>{IMG_UI[n]=im;}).catch(()=>{IMG_UI[n]=null;}));
+    for(const n of ['coins','anvil','health-potion','treasure-map','clover','fist','heart-plus','shop','greek-temple','scroll-unfurled'])jobs.push(loadImg('../assets/ui-icons/'+n+'.png').then(im=>{IMG_UI[n]=im;}).catch(()=>{IMG_UI[n]=null;}));
     await Promise.all(jobs);
     const cur=G.map||'town';
     for(const name of Object.keys(MAPS))if(name!=='town')prepMap(name);
@@ -3033,10 +3033,18 @@ function socMenu(m,dun){
   m.appendChild(mk('bQ',UI+'scroll-unfurled.png','Diário',()=>openWin('diario'),'bdQ'));
   m.appendChild(mk('bGp',UI+'team-idea.png','Social',()=>openWin('grupo')));
 }
-const SOCW={diario:()=>winDiario(),grupo:()=>winGrupo()};
+const SOCW={missoes:()=>winMissoes(),diario:()=>winDiario(),grupo:()=>winGrupo()};
+function qCard(q,main,k,i){const v=qVal(q),ok=v>=q.n,cl=q.c,r=qRew(q,main);return `<div class="wr${cl?' lock':''}"><img class="ic" src="${UI}${ok&&!cl?'coins':'scroll-unfurled'}.png"><div class="tx"><b>${q.nm}</b><span>${q.ds}${main?'':' ('+q.n+')'}</span><span style="color:var(--ouroC)">${qRewTxt(r)}</span><div class="bar" style="margin-top:4px"><b style="width:${v/q.n*100}%"></b></div></div>${cl?'<span class="pr">✓</span>':`<button class="gb" data-a="qc:${k}:${i}" ${ok?'':'disabled'}>${ok?'Receber':v+'/'+q.n}</button>`}</div>`;}
+function winMissoes(){$('wtt').textContent='Capitão Ruvel';
+  const c=qMain(),ok=c&&qOk(c),dn=SAVE.q.d.l.filter(d=>!d.c&&qOk(d)).length;
+  let h=npcHead('scroll-unfurled','Capitão Ruvel',ok?'“Bom trabalho! Venha pegar sua recompensa.”':c?'“Brumavale precisa de heróis. Tenho uma tarefa para você.”':'“Você limpou a floresta, herói. Respeito.”',false);
+  h+='<div class="sec-h"><span>Missão principal</span></div>'+(c?qCard(c,1,'m',0):'<div class="dd" style="text-align:center">Trilha principal concluída.</div>');
+  h+='<div class="sec-h"><span>Encomendas do dia'+(dn?' · '+dn+' pronta'+(dn>1?'s':''):'')+'</span></div>'+SAVE.q.d.l.map((q,i)=>qCard(q,0,'d',i)).join('');
+  h+='<div class="acts"><button data-a="op:diario">Abrir o Diário</button></div>';
+  $('wbody').innerHTML=h;}
 function winDiario(){$('wtt').textContent='Diário';const tab=G.qtab||'m';
   let h=`<div class="tabs" style="margin:0 -12px">${[['m','Principal'],['d','Diárias'],['b','Bestiário'],['c','Títulos']].map(([k,l])=>`<button data-a="qt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
-  const card=(q,main,k,i)=>{const v=qVal(q),ok=v>=q.n,cl=q.c,r=qRew(q,main);return `<div class="wr${cl?' lock':''}"><img class="ic" src="${UI}${ok&&!cl?'coins':'scroll-unfurled'}.png"><div class="tx"><b>${q.nm}</b><span>${q.ds}${main?'':' ('+q.n+')'}</span><span style="color:var(--ouroC)">${qRewTxt(r)}</span><div class="bar" style="margin-top:4px"><b style="width:${v/q.n*100}%"></b></div></div>${cl?'<span class="pr">✓</span>':`<button class="gb" data-a="qc:${k}:${i}" ${ok?'':'disabled'}>${ok?'Receber':v+'/'+q.n}</button>`}</div>`;};
+  const card=qCard;
   if(tab==='m'){const c=qMain();h+='<div class="sub">Trilha de progressão: cada missão libera a próxima.</div>';
     if(c)h+=card(c,1,'m',0);else h+='<div class="dd" style="text-align:center">Você concluiu toda a trilha principal.</div>';
     h+=`<div class="sec-h"><span>Próximas</span></div>`+QMAIN.slice(SAVE.q.m+1,SAVE.q.m+4).map(q=>`<div class="wr lock"><img class="ic" src="${UI}padlock.png"><div class="tx"><b>${q.nm}</b><span>${q.ds}</span></div></div>`).join('')+`<div class="sub">${SAVE.q.m}/${QMAIN.length} concluídas</div>`;}
@@ -3066,7 +3074,7 @@ function winGrupo(){$('wtt').textContent='Grupo';const tab=G.gtab||'g',P=G.party
     h+=ch==='s'?'':inp('cmsg','Mensagem…','cs')+'<div class="sub">Sem conexão: só você vê estas mensagens.</div>';}
   $('wbody').innerHTML=h;}
 function socAct(a){const [k,v,w]=a.split(':');
-  if(k==='ti'){setTitle(SAVE.title===v?null:v);sfx('ui_confirm',.6);}else if(k==='qt'){G.qtab=v;sfx('ui_click');}else if(k==='qc'){qClaim(v,+w);}
+  if(k==='op'){G.winOpen=v;sfx('ui_click');renderWin();return true;}if(k==='ti'){setTitle(SAVE.title===v?null:v);sfx('ui_confirm',.6);}else if(k==='qt'){G.qtab=v;sfx('ui_click');}else if(k==='qc'){qClaim(v,+w);}
   else if(k==='gt'){G.gtab=v;sfx('ui_click');}else if(k==='gi'){G.ginv=+v;sfx('ui_click');}
   else if(k==='gs'){const n=($('gname').value||'').trim();if(n){SAVE.pend.push(n);G.ginv=null;toast('Convite guardado — o online chega em breve',1600);sfx('ui_confirm',.6);}}
   else if(k==='gp'){SAVE.pend.splice(+v,1);}
@@ -3124,6 +3132,7 @@ function winLocais(){
   let h='<div class="sub">Toque em um lugar e o herói vai sozinho até lá.</div>';
   if(G.room){h+=`<div class="wr"><img class="ic" src="${UI}greek-temple.png"><div class="tx"><b>Sair da casa</b><span>Voltar para a cidade</span></div><button class="gb" data-a="leave">SAIR</button></div>`;$('wbody').innerHTML=h;return;}
   const T=MAPS.town.zone,desc={fer:'Melhorar o equipamento',mer:'Comprar e vender itens',alq:'Poções e elixires',mes:'Escolher a subclasse (nível 10)',cof:'Guardar itens no cofre',lei:'Casa de leilão (em breve)'};
+  h+=`<div class="wr"><img class="ic" src="${UI}scroll-unfurled.png"><div class="tx"><b>Capitão Ruvel</b><span>Missões e encomendas do dia</span></div><button class="gb" data-a="goto:cap">IR</button></div>`;
   T.doors.forEach(d=>{h+=`<div class="wr"><img class="ic" src="${UI}${d.ic}.png"><div class="tx"><b>${d.nm}</b><span>${desc[d.id]}</span></div><button class="gb" data-a="goto:door:${d.id}">IR</button></div>`;});
   h+=`<div class="wr"><img class="ic" src="${UI}greek-temple.png"><div class="tx"><b>Portal das Dungeons</b><span>Entrar nas dungeons</span></div><button class="gb" data-a="goto:portal">IR</button></div>`;
   $('wbody').innerHTML=h;
