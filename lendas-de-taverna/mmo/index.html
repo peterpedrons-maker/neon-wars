@@ -149,6 +149,7 @@ button:active:not(:disabled){transform:scale(.97);filter:brightness(1.15)}
 .pm{padding:3px 6px;background:rgba(14,11,20,.7);border:1px solid #4a4458;font:600 10px var(--f)}.pm em{font-style:normal;color:var(--papel2);margin-left:6px}.pm .bar{height:5px;margin-top:2px}
 .wr .bar{height:6px;background:#0d0b11;border:1px solid #3a3446}.wr .bar b{display:block;height:100%;background:linear-gradient(#f0cf7c,#b98a2f)}
 .clog{height:170px;overflow-y:auto;background:#0d0b11;border:1px solid #3a3446;padding:6px 8px;font:500 11.5px/1.45 var(--f);margin-bottom:6px}
+.tokb{display:flex;align-items:center;gap:7px;margin:8px 0 0;padding:6px 10px;background:#0d0b11;border:1px solid #4a4458;font:600 11.5px var(--f);color:var(--papel2)}.tokb img{width:18px;height:18px;image-rendering:pixelated;filter:sepia(1) saturate(5) hue-rotate(150deg) brightness(1.3)}.tokb b{margin-left:auto;color:#9fe8ff;font-size:14px}
 .chp{display:flex;align-items:center;gap:10px;margin:8px 0 2px;font:700 11px var(--f);color:var(--papel2);letter-spacing:.06em;text-transform:uppercase}.chp b{white-space:nowrap}.chp .qp{flex:1}
 .qc{border:1px solid #3a3446;border-left:3px solid #6a5a8a;background:linear-gradient(180deg,#1d1825,#13101a);padding:9px 10px;margin:0 0 8px}.qc.mn{border-left-color:var(--ouroC)}
 .qc.rd{border-color:#e8c24a;box-shadow:0 0 14px rgba(232,194,74,.22);animation:qpl 1.8s ease-in-out infinite}@keyframes qpl{50%{box-shadow:0 0 22px rgba(232,194,74,.45)}}.qc.dn{opacity:.5}
@@ -3005,7 +3006,7 @@ const ACH=[
  {id:'g1',nm:'Bolso cheio',ds:'Tenha 10.000 de ouro.',v:()=>SAVE.gold,n:10000,ti:'o Abastado'}
 ];
 const cnt=k=>(SAVE.cnt&&SAVE.cnt[k])||(k==='kill'?SAVE.totalKills:0)||0;
-function achCheck(){if(!SAVE.q)return;SAVE.ach=SAVE.ach||{};for(const a of ACH){if(SAVE.ach[a.id])continue;if(a.v()>=a.n){SAVE.ach[a.id]=1;chat('Conquista: '+a.nm+' — título "'+a.ti+'"',4);sfx('levelup',.5);if(G.hero)floatText(G.hero.x,G.hero.y-90,'Conquista!','#ffe08a',9,1.4);if(!SAVE.title)setTitle(a.id);}}}
+function achCheck(){if(!SAVE.q)return;SAVE.ach=SAVE.ach||{};for(const a of ACH){if(SAVE.ach[a.id])continue;if(a.v()>=a.n){SAVE.ach[a.id]=1;SAVE.tok=(SAVE.tok||0)+5;chat('Conquista: '+a.nm+' — título "'+a.ti+'"',4);sfx('levelup',.5);if(G.hero)floatText(G.hero.x,G.hero.y-90,'Conquista!','#ffe08a',9,1.4);if(!SAVE.title)setTitle(a.id);}}}
 function setTitle(id){SAVE.title=id||null;const a=ACH.find(x=>x.id===id),c=$('hcl');if(c)c.innerHTML=clsIc(SAVE.cls,16,SAVE.sub)+(a?' '+a.ti:'');}
 function fmtT(s){s=Math.floor(s||0);const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+'h '+m+'min':m+'min';}
 function winConq(){let h='';const n=ACH.filter(a=>SAVE.ach&&SAVE.ach[a.id]).length;
@@ -3058,10 +3059,10 @@ function qInit(){const q=SAVE.q=SAVE.q||{};q.m=q.m||0;q.p=q.p||{};SAVE.bst=SAVE.
 const qMain=()=>QMAIN[SAVE.q.m]||null;
 function qVal(q){return q.t==='lv'?Math.min(q.n,SAVE.lv):q.t==='zone'?Math.min(q.n,SAVE.zoneMax||1):Math.min(q.n,q.p!==undefined?q.p:(SAVE.q.p[q.id]||0));}
 const qOk=q=>qVal(q)>=q.n;
-function qRew(q,main){const L=SAVE.lv;if(main){const i=+q.id.slice(1);return {gold:Math.round(40*Math.pow(i+1,1.3)),xp:Math.round(xpNeed(L)*(.15+.01*i)),pot:i%3===2?2:0,mat:i>=10?(i>=18?['cristal',2+(i>>3)]:['runa',3+(i>>2)]):(i>=4?['ferro',4+i]:null)};}
-  return {gold:60+L*12,xp:Math.round(xpNeed(L)*.12),pot:1,mat:L>=20?['runa',3]:['ferro',5]};}
-function qRewTxt(r){const a=[];if(r.gold)a.push(r.gold+' ouro');if(r.xp)a.push(r.xp+' exp');if(r.pot)a.push(r.pot+' poção');if(r.mat)a.push(r.mat[1]+' '+(MATS.find(m=>m.id===r.mat[0])||{nm:r.mat[0]}).nm.split(' ')[0]);return a.join(' · ');}
-function qGive(r){SAVE.gold+=r.gold||0;if(r.pot)SAVE.potions+=r.pot;if(r.mat){SAVE.mats=SAVE.mats||{};SAVE.mats[r.mat[0]]=(SAVE.mats[r.mat[0]]||0)+r.mat[1];}if(r.xp&&G.hero)gainXP(r.xp,{x:G.hero.x,y:G.hero.y});updPot();}
+function qRew(q,main){const L=SAVE.lv;if(main){const i=+q.id.slice(1);return {gold:Math.round(40*Math.pow(i+1,1.3)),xp:Math.round(xpNeed(L)*(.15+.01*i)),pot:i%3===2?2:0,tok:1+((i+1)%5===0?2:0),mat:i>=10?(i>=18?['cristal',2+(i>>3)]:['runa',3+(i>>2)]):(i>=4?['ferro',4+i]:null)};}
+  return {gold:60+L*12,xp:Math.round(xpNeed(L)*.12),pot:1,tok:3,mat:L>=20?['runa',3]:['ferro',5]};}
+function qRewTxt(r){const a=[];if(r.gold)a.push(r.gold+' ouro');if(r.xp)a.push(r.xp+' exp');if(r.pot)a.push(r.pot+' poção');if(r.tok)a.push(r.tok+' fichas');if(r.mat)a.push(r.mat[1]+' '+(MATS.find(m=>m.id===r.mat[0])||{nm:r.mat[0]}).nm.split(' ')[0]);return a.join(' · ');}
+function qGive(r){SAVE.gold+=r.gold||0;if(r.tok)SAVE.tok=(SAVE.tok||0)+r.tok;if(r.pot)SAVE.potions+=r.pot;if(r.mat){SAVE.mats=SAVE.mats||{};SAVE.mats[r.mat[0]]=(SAVE.mats[r.mat[0]]||0)+r.mat[1];}if(r.xp&&G.hero)gainXP(r.xp,{x:G.hero.x,y:G.hero.y});updPot();}
 const _qn=new Set();
 function qNote(q){if(_qn.has(q.id+(q.date||'')+SAVE.q.d.date))return;if(qOk(q)){_qn.add(q.id+(q.date||'')+SAVE.q.d.date);chat('Missão concluída: '+q.nm,4);sfx('levelup',.4);if(G.hero)floatText(G.hero.x,G.hero.y-80,'Missão concluída!','#ffe08a',9,1.4);}}
 function qEv(t,f){if(!SAVE.q)return;SAVE.cnt=SAVE.cnt||{};SAVE.cnt[t]=(SAVE.cnt[t]||0)+1;const c=qMain();
@@ -3070,7 +3071,7 @@ function qEv(t,f){if(!SAVE.q)return;SAVE.cnt=SAVE.cnt||{};SAVE.cnt[t]=(SAVE.cnt[
   achCheck();socRefresh();}
 function qCheck(){if(!SAVE.q)return;const c=qMain();if(c)qNote(c);achCheck();socRefresh();}
 function qClaim(k,i){if(k==='m'){const c=qMain();if(!c||!qOk(c))return;const r=qRew(c,1);SAVE.q.m++;chat('Recompensa: '+qRewTxt(r),4);qGive(r);}
-  else{const d=SAVE.q.d.l[i];if(!d||d.c||!qOk(d))return;d.c=1;const r=qRew(d,0);chat('Recompensa: '+qRewTxt(r),4);qGive(r);}
+  else{const d=SAVE.q.d.l[i];if(!d||d.c||!qOk(d))return;d.c=1;const r=qRew(d,0);chat('Recompensa: '+qRewTxt(r),4);qGive(r);if(SAVE.q.d.l.every(x=>x.c)&&!SAVE.q.d.b){SAVE.q.d.b=1;SAVE.tok=(SAVE.tok||0)+5;chat('Todas as encomendas do dia! +5 fichas',4);}}
   sfx('coin',.8);writeSave();socRefresh();}
 function bstAdd(fam,elite){if(!MOBS[fam])return;const b=SAVE.bst[fam]=SAVE.bst[fam]||{k:0,e:0};const old=BST_MS.filter(n=>b.k>=n).length;b.k++;if(elite)b.e++;
   const nw=BST_MS.filter(n=>b.k>=n).length;if(nw>old){const g=BST_MS[nw-1]*4;SAVE.gold+=g;chat('Bestiário: '+MOBS[fam].nome+' '+'★'.repeat(nw)+' · +'+g+' ouro',4);}}
@@ -3100,7 +3101,7 @@ function socMenu(m,dun){
   m.appendChild(mk('bGp',UI+'team-idea.png','Social',()=>openWin('grupo')));
 }
 const SOCW={missoes:()=>winMissoes(),diario:()=>winDiario(),grupo:()=>winGrupo()};
-function rwChips(r){const c=[];if(r.gold)c.push(['coins',r.gold]);if(r.xp)c.push(['xp',r.xp]);if(r.pot)c.push(['health-potion',r.pot]);if(r.mat){const M=MATS.find(m=>m.id===r.mat[0]);c.push([M?M.ic:'ni_ferro',r.mat[1]]);}
+function rwChips(r){const c=[];if(r.gold)c.push(['coins',r.gold]);if(r.xp)c.push(['xp',r.xp]);if(r.pot)c.push(['health-potion',r.pot]);if(r.tok)c.push(['gems',r.tok]);if(r.mat){const M=MATS.find(m=>m.id===r.mat[0]);c.push([M?M.ic:'ni_ferro',r.mat[1]]);}
   return '<div class="rws">'+c.map(([ic,v])=>ic==='xp'?`<span class="rw"><b class="xpt">EXP</b>${v}</span>`:`<span class="rw"><img src="${UI}${ic}.png">${v}</span>`).join('')+'</div>';}
 function qCard(q,main,k,i){const v=qVal(q),ok=v>=q.n,cl=q.c,r=qRew(q,main),pct=Math.round(v/q.n*100);
   return `<div class="qc${ok&&!cl?' rd':''}${cl?' dn':''}${main?' mn':''}"><div class="qh"><img src="${UI}${cl?'check-mark':'scroll-unfurled'}.png"><div><b>${q.nm}</b><span>${q.ds}${main?'':' ('+q.n+')'}</span></div></div><div class="qp"><i style="width:${pct}%"></i><em>${cl?'Concluída':v+' / '+q.n}</em></div><div class="qf">${rwChips(r)}${cl?'':`<button class="gb" data-a="qc:${k}:${i}" ${ok?'':'disabled'}>${ok?'Receber':'Em andamento'}</button>`}</div></div>`;}
@@ -3112,8 +3113,31 @@ function missionsBody(){const c=qMain(),L=SAVE.q.d.l,rdy=(c&&qOk(c)?1:0)+L.filte
   h+=`<div class="sec-h"><span>Encomendas do dia</span><span>renova em ${qLeft()}h</span></div>`+L.map((q,i)=>qCard(q,0,'d',i)).join('');
   if(rdy>1)h+=`<div class="acts"><button class="g" data-a="qall">Receber tudo (${rdy})</button></div>`;
   return h;}
-function winMissoes(){$('wtt').textContent='Capitão Ruvel';const c=qMain(),ok=c&&qOk(c);
-  $('wbody').innerHTML=npcHead('scroll-unfurled','Capitão Ruvel',ok?'“Bom trabalho! Venha pegar sua recompensa.”':c?'“Brumavale precisa de heróis. Tenho uma tarefa para você.”':'“Você limpou a floresta, herói. Respeito.”',false)+missionsBody()+'<div class="acts"><button data-a="op:diario">Abrir o Diário</button></div>';}
+/* ===== LOJA DE FICHAS (Capitão Ruvel): moeda das missões, conquistas e encomendas ===== */
+const SHOPT=[
+ {id:'pot',nm:'Poções maiores (3)',ds:'Recuperam 80% da vida.',ic:'health-potion',p:4,lim:3},
+ {id:'mat',nm:'Pacote de materiais',ds:'Materiais de forja do seu tier.',ic:'ni_ferro',p:6,lim:4},
+ {id:'bau',nm:'Baú de equipamento',ds:'Um item Mágico ou melhor para o seu nível.',ic:'locked-chest',p:10,lim:2},
+ {id:'set',nm:'Caixa de conjunto',ds:'Uma peça de conjunto da sua zona mais alta.',ic:'chest-armor',p:40,lim:1}
+];
+function shopLeft(it){const sh=SAVE.shop;const d=SAVE.q.d.date;if(!sh||sh.d!==d)SAVE.shop={d,c:{}};return it.lim-(SAVE.shop.c[it.id]||0);}
+function shopBuy(id){const it=SHOPT.find(x=>x.id===id);if(!it)return;const bagFull=(id==='bau'||id==='set')&&SAVE.inv.length>=24;
+  if((SAVE.tok||0)<it.p||shopLeft(it)<=0||bagFull){sfx('ui_denied');if(bagFull)toast('Mochila cheia',1200);return;}
+  SAVE.tok-=it.p;SAVE.shop.c[id]=(SAVE.shop.c[id]||0)+1;
+  const il=Math.max(1,Math.round(SAVE.lv*.55+(SAVE.zoneMax||1)*1.5));
+  if(id==='pot'){SAVE.potL=(SAVE.potL||0)+3;updPot();chat('Comprou 3 poções maiores',4);}
+  else if(id==='mat'){const M=matOf(tierOf(il)),n=8+Math.round(SAVE.lv/6);SAVE.mats=SAVE.mats||{};SAVE.mats[M.id]=(SAVE.mats[M.id]||0)+n;chat('Comprou '+n+' '+M.nm,4);}
+  else if(id==='bau'){const x=genItem(il,2,14);SAVE.inv.push(x);chat('Baú: '+itemName(x),4);}
+  else{const ST=SETS.find(q=>q.fam===famOf(SAVE.zoneMax||1))||SETS[0],x=genItem(il,3,0,null,ST);SAVE.inv.push(x);SAVE.cnt=SAVE.cnt||{};SAVE.cnt.set=(SAVE.cnt.set||0)+1;chat('Caixa: '+itemName(x),4);}
+  sfx('coin',.8);writeSave();achCheck();}
+function shopBody(){let h=`<div class="sub">Ganhe fichas completando encomendas diárias (+3 cada, +5 se fizer as três), missões da trilha e conquistas. Os limites renovam todo dia.</div>`;
+  h+=SHOPT.map(it=>{const left=shopLeft(it),ok=(SAVE.tok||0)>=it.p&&left>0;return `<div class="wr"><img class="ic" src="${UI}${it.ic}.png"><div class="tx"><b>${it.nm}</b><span>${it.ds}</span><span style="color:var(--ouroC)">Restam hoje: ${left}/${it.lim}</span></div><button class="gb" data-a="sb:${it.id}" ${ok?'':'disabled'}><img src="${UI}gems.png" style="width:14px;height:14px;margin-right:4px;image-rendering:pixelated">${it.p}</button></div>`;}).join('');
+  return h;}
+function winMissoes(){$('wtt').textContent='Capitão Ruvel';const c=qMain(),ok=c&&qOk(c),tab=G.rtab==='s'?'s':'m';
+  const hd=npcHead('scroll-unfurled','Capitão Ruvel',tab==='s'?'“Fichas bem ganhas merecem bons prêmios.”':ok?'“Bom trabalho! Venha pegar sua recompensa.”':c?'“Brumavale precisa de heróis. Tenho uma tarefa para você.”':'“Você limpou a floresta, herói. Respeito.”',false);
+  const tk=`<div class="tokb"><img src="${UI}gems.png"><span>Fichas de Brumavale</span><b>${SAVE.tok||0}</b></div>`;
+  const tb=`<div class="tabs" style="margin:0 -12px">${[['m','Missões'],['s','Loja de fichas']].map(([k,l])=>`<button data-a="rt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
+  $('wbody').innerHTML=hd+tk+tb+(tab==='s'?shopBody():missionsBody()+'<div class="acts"><button data-a="op:diario">Abrir o Diário</button></div>');}
 function winDiario(){$('wtt').textContent='Diário';let tab=G.qtab;if(!['m','b','c','p'].includes(tab))tab='m';
   let h=`<div class="tabs" style="margin:0 -12px">${[['m','Missões'],['b','Bestiário'],['c','Títulos'],['p','Pets']].map(([k,l])=>`<button data-a="qt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
   if(tab==='m')h+=missionsBody();
@@ -3143,7 +3167,7 @@ function winGrupo(){$('wtt').textContent='Grupo';const tab=G.gtab||'g',P=G.party
     h+=ch==='s'?'':inp('cmsg','Mensagem…','cs')+'<div class="sub">Sem conexão: só você vê estas mensagens.</div>';}
   $('wbody').innerHTML=h;}
 function socAct(a){const [k,v,w]=a.split(':');
-  if(k==='pet'){if(petOwn(v)){SAVE.pet=SAVE.pet===v?null:v;G.petE=null;sfx('ui_confirm',.6);}}else if(k==='qall'){const c=qMain();if(c&&qOk(c))qClaim('m',0);SAVE.q.d.l.forEach((d,i)=>{if(!d.c&&qOk(d))qClaim('d',i);});}else if(k==='op'){G.winOpen=v;sfx('ui_click');renderWin();return true;}else if(k==='ti'){setTitle(SAVE.title===v?null:v);sfx('ui_confirm',.6);}else if(k==='qt'){G.qtab=v;sfx('ui_click');}else if(k==='qc'){qClaim(v,+w);}
+  if(k==='rt'){G.rtab=v;sfx('ui_click');}else if(k==='sb'){shopBuy(v);}else if(k==='pet'){if(petOwn(v)){SAVE.pet=SAVE.pet===v?null:v;G.petE=null;sfx('ui_confirm',.6);}}else if(k==='qall'){const c=qMain();if(c&&qOk(c))qClaim('m',0);SAVE.q.d.l.forEach((d,i)=>{if(!d.c&&qOk(d))qClaim('d',i);});}else if(k==='op'){G.winOpen=v;sfx('ui_click');renderWin();return true;}else if(k==='ti'){setTitle(SAVE.title===v?null:v);sfx('ui_confirm',.6);}else if(k==='qt'){G.qtab=v;sfx('ui_click');}else if(k==='qc'){qClaim(v,+w);}
   else if(k==='gt'){G.gtab=v;sfx('ui_click');}else if(k==='gi'){G.ginv=+v;sfx('ui_click');}
   else if(k==='gs'){const n=($('gname').value||'').trim();if(n){SAVE.pend.push(n);G.ginv=null;toast('Convite guardado — o online chega em breve',1600);sfx('ui_confirm',.6);}}
   else if(k==='gp'){SAVE.pend.splice(+v,1);}
