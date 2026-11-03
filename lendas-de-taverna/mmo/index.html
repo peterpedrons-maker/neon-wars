@@ -272,7 +272,7 @@ i.upg{position:absolute;right:1px;top:0;font-size:9px;color:#7de06d;font-style:n
 
 /* ===== janelas de NPC (estilo vendedor de MMO) ===== */
 .nh{display:flex;align-items:center;gap:10px;padding:8px 10px;background:linear-gradient(90deg,rgba(217,180,95,.12),rgba(217,180,95,0));border:1px solid var(--lin)}
-.nh .np{width:46px;height:46px;flex:none;background:#0d0b11;border:1px solid var(--lin);display:grid;place-items:center}.nh .np img{width:30px;height:30px;image-rendering:pixelated;filter:sepia(1) saturate(4) hue-rotate(-8deg) brightness(1.2)}
+.nh .np{width:46px;height:46px;flex:none;background:#0d0b11;border:1px solid var(--lin);display:grid;place-items:center}.nh .np img{width:30px;height:30px;image-rendering:pixelated}
 .nh b{display:block;font:700 14px var(--ft);letter-spacing:.06em;color:var(--ouroC)}.nh span{font-size:11.5px;color:var(--papel2);font-style:italic}
 .nh .gd{margin-left:auto;display:flex;align-items:center;gap:5px;font:700 13px var(--f);color:var(--ouroC);background:#0d0b11;border:1px solid var(--lin);padding:5px 9px}
 .nh .gd img{width:15px;height:15px;image-rendering:pixelated;filter:sepia(1) saturate(7) hue-rotate(-8deg) brightness(1.25)}
@@ -360,6 +360,7 @@ i.upg{position:absolute;right:1px;top:0;font-size:9px;color:#7de06d;font-style:n
 .fmode{display:flex;gap:4px;margin-top:2px}.fmode button{flex:1;height:32px;border:1px solid var(--lin);background:linear-gradient(#26202d,#15111b);color:var(--papel2);font:700 10px var(--f);letter-spacing:.05em;text-transform:uppercase}.fmode button.on{color:#2a1a06;background:linear-gradient(#f0cf7c,#b98a2f);border-color:var(--ouroC)}
 .dsl{display:flex;flex-direction:column;gap:6px}.dsl .gb{width:100%;text-align:left;padding:10px 12px;font-size:11px;letter-spacing:.03em}
 .bmr{display:flex;gap:6px;margin-top:5px}.bmr .gb{flex:1;padding:6px 4px;font-size:10px}
+.fmode button img{width:16px;height:16px;image-rendering:pixelated;display:block;margin:0 auto 1px}.fmode button span{display:block;font-size:9px}.fmode button{height:40px}
 </style>
 </head>
 <body>
@@ -637,7 +638,7 @@ function whenReady(fn){if(STAGE2_OK)return false;toast('Carregando…',1200);STA
 const PFX={boost:0};
 /* ===== PORTAL: vórtice espiral procedural sobre o arco de pedra ===== */
 function drawPortalFx(p,cx,cy){
-  const X=p.x-cx,Y=p.y-cy-71.5,rx=34,ry=52,t=G.t,h=G.hero;if(X<-120||X>G.LW+120||Y<-120||Y>G.LH+120)return;
+  const PF_=(ZONE.portal&&ZONE.portal.fx)||{dx:0,dy:-71.5,rx:34,ry:52},X=p.x-cx+PF_.dx,Y=p.y-cy+PF_.dy,rx=PF_.rx,ry=PF_.ry,t=G.t,h=G.hero;if(X<-120||X>G.LW+120||Y<-120||Y>G.LH+120)return;
   const near=h?Math.max(0,1-Math.hypot(h.x-p.x,h.y-p.y)/140):0,k=1+near*.9+PFX.boost*2.5;
   ctx.save();
   ctx.globalCompositeOperation='lighter';ctx.globalAlpha=(.25+.15*Math.sin(t*2))*k*.6;ctx.drawImage(AMB.glowSpr('#a070ff',70),Math.round(X-70),Math.round(Y-70));
@@ -656,7 +657,7 @@ function drawPortalFx(p,cx,cy){
   ctx.globalAlpha=(.55+.25*Math.sin(t*3.2))*Math.min(1,k*.8);ctx.drawImage(AMB.glowSpr('#ffffff',30),Math.round(X-30),Math.round(Y-30));
   ctx.globalAlpha=1;ctx.restore();
   ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=(.5+.25*Math.sin(t*2.4))*Math.min(1.4,k*.7);ctx.strokeStyle='#c8a0ff';ctx.lineWidth=1.6;ctx.beginPath();ctx.ellipse(X,Y,rx+1.5,ry+1.5,0,0,7);ctx.stroke();
-  for(const sg of(-1,1)===0?[]:[-1,1])for(let i=0;i<4;i++){const ph=Math.sin(t*2.2+i*1.3+(sg>0?1:0));if(ph<.1)continue;ctx.globalAlpha=ph*.9;ctx.fillStyle='#d8c0ff';const rx0=p.x-cx+sg*45,ry0=p.y-cy-26-i*20;ctx.fillRect(Math.round(rx0-1),Math.round(ry0-3),2,6);ctx.fillRect(Math.round(rx0-3),Math.round(ry0-1),6,2);}
+  if(!(ZONE.portal&&ZONE.portal.fx))for(const sg of[-1,1])for(let i=0;i<4;i++){const ph=Math.sin(t*2.2+i*1.3+(sg>0?1:0));if(ph<.1)continue;ctx.globalAlpha=ph*.9;ctx.fillStyle='#d8c0ff';const rx0=p.x-cx+sg*45,ry0=p.y-cy-26-i*20;ctx.fillRect(Math.round(rx0-1),Math.round(ry0-3),2,6);ctx.fillRect(Math.round(rx0-3),Math.round(ry0-1),6,2);}
   if(PFX.boost>0){ctx.globalAlpha=Math.min(1,PFX.boost)*.8;ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(X,Y,rx+4,ry+4,0,0,7);ctx.fill();}
   ctx.restore();
 }
@@ -1282,16 +1283,16 @@ function buildBar(){
     ab.appendChild(mkTb('bGo','<img src="../assets/ico/v_mapa.png" style="padding:6px 6px 12px"><span class="lbl">Atalhos</span>','slot2',()=>{if(G.winOpen)return;sfx('ui_click');openWin('locais');}));
     ab.appendChild(mkTb('bPot',potHtml,'slot2',()=>usePotion(true)));
     {const MB=(id,img,lab,tab,bd)=>mkTb(id,'<img src="'+img+'"><small>'+lab+'</small>'+(bd?'<span class="bd" id="'+bd+'"></span>':''),'mbtn',()=>{sfx('ui_click');openPan(tab);});
-      [MB('bInv','../assets/ico/v_bolsa.png','Mochila','eq'),MB('bAt','../assets/ico/c_'+SAVE.cls+'.png','Herói','at','bdAt'),MB('bSkB','../assets/ui-icons/crossed-swords.png','Habil.','sk','bdSk'),MB('bTlB','../assets/ui-icons/sparkles.png','Talent.','tl','bdTl')].forEach(e=>m.appendChild(e));}
+      [MB('bInv','../assets/ico/v_bolsa.png','Mochila','eq'),MB('bAt','../assets/ui-icons/ni_heroi.png','Herói','at','bdAt'),MB('bSkB','../assets/ui-icons/ni_livro.png','Habil.','sk','bdSk'),MB('bTlB','../assets/ui-icons/ni_talentos.png','Talent.','tl','bdTl')].forEach(e=>m.appendChild(e));}
     updPot();badge();return;
   }
   [0,1,2].forEach(k=>{const si=SAVE.eqs[k],lk=SAVE.lv<SLOT_UNL[k]||si<0||SAVE.sk[si]<1||!skAvail(si);const d=document.createElement('div');d.className='slot2'+(lk?' lock':'')+(si<0?' empty':'');d.id='sk'+k;
     d.innerHTML=(si>=0?`<img src="${skImg(C.skills[si][0])}">`:'<img src="../assets/ui-icons/magic-swirl.png">')+`<span class="key">${k+1}</span><div class="cd"></div><div class="ct"></div>`+(lk?`<div class="lv">${SAVE.lv<SLOT_UNL[k]?'Nv '+SLOT_UNL[k]:'+'}</div>`:'');
     d.style.pointerEvents='auto';d.onclick=()=>{if(!G.auto&&!lk&&G.scene==='dungeon'){G.castReq=k;return;}sfx('ui_click');openPan('sk');};ab.appendChild(d);});
   const pot=mkTb('bPot',potHtml,'slot2 sep',()=>usePotion(true));ab.appendChild(pot);
-  {const D=DODGE[SAVE.cls];const dd=mkTb('bDodge','<img src="../assets/ui-icons/'+(D.t==='blink'?'magic-swirl':'running-shoe')+'.png" style="padding:6px"><span class="key">E</span><div class="cd"></div><div class="ct"></div>','slot2',()=>{const h=G.hero;if(!h||h.state==='ko')return;const f=nearestMob(h,300);if(f)heroDodge(h,h.x-f.x,h.y-f.y,'melee');else heroDodge(h,-Math.cos(0),0,'melee');});ab.appendChild(dd);}
+  {const D=DODGE[SAVE.cls];const dd=mkTb('bDodge','<img src="../assets/ui-icons/'+(D.t==='blink'?'ni_tp':'ni_botas')+'.png" style="padding:4px"><span class="key">E</span><div class="cd"></div><div class="ct"></div>','slot2',()=>{const h=G.hero;if(!h||h.state==='ko')return;const f=nearestMob(h,300);if(f)heroDodge(h,h.x-f.x,h.y-f.y,'melee');else heroDodge(h,-Math.cos(0),0,'melee');});ab.appendChild(dd);}
   const MB=(id,img,lab,tab,bd)=>mkTb(id,'<img src="'+img+'"><small>'+lab+'</small>'+(bd?'<span class="bd" id="'+bd+'"></span>':''),'mbtn',()=>{sfx('ui_click');openPan(tab);});
-  const menu=[MB('bInv','../assets/ico/v_bolsa.png','Mochila','eq'),MB('bAt','../assets/ico/c_'+SAVE.cls+'.png','Herói','at','bdAt'),MB('bSkB','../assets/ui-icons/crossed-swords.png','Habil.','sk','bdSk'),MB('bTlB','../assets/ui-icons/sparkles.png','Talent.','tl','bdTl')];
+  const menu=[MB('bInv','../assets/ico/v_bolsa.png','Mochila','eq'),MB('bAt','../assets/ui-icons/ni_heroi.png','Herói','at','bdAt'),MB('bSkB','../assets/ui-icons/ni_livro.png','Habil.','sk','bdSk'),MB('bTlB','../assets/ui-icons/ni_talentos.png','Talent.','tl','bdTl')];
   const tw=mkTb('bTownB','<img src="../assets/ico/v_cidade.png?v=3" style="width:38px;height:38px">','mbtn',()=>{sfx('ui_click');gConfirm('O progresso desta floresta (abates) será perdido.',{title:'Voltar para a cidade?',ok:'Voltar',no:'Ficar'}).then(ok=>{if(ok)enterTown(false);});});
   [...menu,tw].forEach(e=>m.appendChild(e));updPot();badge();
 }
@@ -2862,7 +2863,7 @@ function winTip(){
     anchorTip(t,el,root,B,RAR[it.rar].c,itemTipHTML(it,SAVE.eq[it.slot]||{s:{}},'',`<button class="g" data-a="${w.t==='vt'?'vtake':'vput'}:${w.k}" ${full?'disabled':''}>${w.t==='vt'?'Retirar':'Guardar'}</button>`),winAct);
   }else if(w.t==='alq'){
     const d=ALQ[w.k];if(!d)return;
-    anchorTip(t,el,root,B,'#d9b45f',`<div class="th"><div class="ti" style="border-color:#d9b45f"><img src="${UI}${d.ic}.png" style="filter:sepia(1) saturate(4) hue-rotate(-8deg) brightness(1.2)"></div><div><b style="color:#f3d98e">${d.nm}</b><span>${d.tipo}</span></div></div><div class="row"><span>${d.d}</span></div><div class="vl">${d.extra()}</div><div class="ta"><button class="g" data-a="${d.act}" ${SAVE.gold<d.price()?'disabled':''}>${d.btn} · ${d.price()}</button></div>`,winAct);
+    anchorTip(t,el,root,B,'#d9b45f',`<div class="th"><div class="ti" style="border-color:#d9b45f"><img src="${UI}${d.ic}.png"></div><div><b style="color:#f3d98e">${d.nm}</b><span>${d.tipo}</span></div></div><div class="row"><span>${d.d}</span></div><div class="vl">${d.extra()}</div><div class="ta"><button class="g" data-a="${d.act}" ${SAVE.gold<d.price()?'disabled':''}>${d.btn} · ${d.price()}</button></div>`,winAct);
   }
 }
 /* Locais (atalho na barra da cidade) */
@@ -2895,7 +2896,7 @@ function winMercador(){
   $('wbody').innerHTML=h;
 }
 /* ===== MATERIAIS DE FORJA: um tipo por faixa de tier; vêm de monstros/elites/chefes, de desmontar itens ou do ferreiro (ouro) ===== */
-const MATS=[{id:'ferro',nm:'Fragmento de Ferro',ic:'anvil',col:'#c0c8d8',t:'Tiers 1–4',price:35},{id:'runa',nm:'Essência Rúnica',ic:'scroll-unfurled',col:'#8ad8ff',t:'Tiers 5–8',price:140},{id:'cristal',nm:'Cristal Arcano',ic:'crystal-cluster',col:'#d89aff',t:'Tiers 9–12',price:520}];
+const MATS=[{id:'ferro',nm:'Fragmento de Ferro',ic:'ni_ferro',col:'#c0c8d8',t:'Tiers 1–4',price:35},{id:'runa',nm:'Essência Rúnica',ic:'ni_runa',col:'#8ad8ff',t:'Tiers 5–8',price:140},{id:'cristal',nm:'Cristal Arcano',ic:'ni_cristal',col:'#d89aff',t:'Tiers 9–12',price:520}];
 const matOf=tier=>MATS[tier<=4?0:tier<=8?1:2];
 const matN=id=>(SAVE.mats&&SAVE.mats[id])||0;
 function upMats(it){return Math.ceil(((it.up||0)+1)*1.2);}
@@ -2929,8 +2930,8 @@ function upCost(it){return Math.round((18+it.ilvl*5)*((it.up||0)+1)*(1+it.rar*.4
 function upChance(it){const n=(it.up||0)+1;return n<=2?1:n===3?.9:n===4?.8:n===5?.7:1;}
 function winForja(){
   $('wtt').textContent='Ferreiro';const it=SAVE.eq[G.fslot],mode=G.fmode||'up';
-  let h=npcHead('anvil','Brasa, o Ferreiro','“Traga o aço, eu trago a glória.”')+`<div class="mats">${MATS.map(M=>`<div style="--mc:${M.col}"><img src="${UI}${M.ic}.png"><b>${matN(M.id)}</b><em>${M.nm.split(' ')[0]}</em></div>`).join('')}</div>`;
-  h+=`<div class="fmode">${[['up','Aprimorar'],['rf','Reforjar'],['ds','Desmontar'],['bm','Materiais']].map(([k,l])=>`<button class="${mode===k?'on':''}" data-a="fm:${k}">${l}</button>`).join('')}</div>`;
+  let h=npcHead('ni_bigorna','Brasa, o Ferreiro','“Traga o aço, eu trago a glória.”')+`<div class="mats">${MATS.map(M=>`<div style="--mc:${M.col}"><img src="${UI}${M.ic}.png"><b>${matN(M.id)}</b><em>${M.nm.split(' ')[0]}</em></div>`).join('')}</div>`;
+  h+=`<div class="fmode">${[['up','Aprimorar','ni_bigorna'],['rf','Reforjar','ni_reforja'],['ds','Desmontar','ni_desmontar'],['bm','Materiais','ni_cristal']].map(([k,l,ic])=>`<button class="${mode===k?'on':''}" data-a="fm:${k}"><img src="${UI}${ic}.png"><span>${l}</span></button>`).join('')}</div>`;
   if(mode==='ds'||mode==='bm'){
     if(mode==='ds'){
       h+=`<div class="sec-h"><span>Desmontar itens da mochila</span><span>${SAVE.inv.length} itens</span></div><div class="sub" style="padding:4px 0">Itens viram materiais conforme raridade e tier. Os equipados e os únicos ficam a salvo.</div><div class="dsl">`;
@@ -2971,24 +2972,24 @@ function winForja(){
 }
 /* Alquimista */
 const ALQ=[
- {nm:'Poção de Cura',ic:'health-potion',tipo:'Consumível',d:'Cura 45% da vida. Usada sozinha em combate.',price:()=>potPrice(),act:'bp:s',btn:'Comprar',extra:()=>`Você tem ${SAVE.potions}`},
- {nm:'Poção Maior',ic:'healing',tipo:'Consumível',d:'Cura 80% da vida. Usada em emergências.',price:()=>Math.round(potPrice()*2.6),act:'bp:l',btn:'Comprar',extra:()=>`Você tem ${SAVE.potL}`},
- {nm:'Elixir de Força',ic:'fist',tipo:'Elixir · 5 min',d:'+20% de ataque dentro da dungeon.',price:()=>elixPrice(),act:'be:forca',btn:'Beber',extra:()=>elixLeft('forca')},
- {nm:'Elixir de Vigor',ic:'heart-plus',tipo:'Elixir · 5 min',d:'+20% de vida máxima dentro da dungeon.',price:()=>elixPrice(),act:'be:vigor',btn:'Beber',extra:()=>elixLeft('vigor')},
- {nm:'Elixir da Sorte',ic:'clover',tipo:'Elixir · 5 min',d:'Melhora os drops e a qualidade dos itens.',price:()=>elixPrice(),act:'be:sorte',btn:'Beber',extra:()=>elixLeft('sorte')}];
+ {nm:'Poção de Cura',ic:'ni_pocao',tipo:'Consumível',d:'Cura 45% da vida. Usada sozinha em combate.',price:()=>potPrice(),act:'bp:s',btn:'Comprar',extra:()=>`Você tem ${SAVE.potions}`},
+ {nm:'Poção Maior',ic:'ni_pmaior',tipo:'Consumível',d:'Cura 80% da vida. Usada em emergências.',price:()=>Math.round(potPrice()*2.6),act:'bp:l',btn:'Comprar',extra:()=>`Você tem ${SAVE.potL}`},
+ {nm:'Elixir de Força',ic:'ni_eforca',tipo:'Elixir · 5 min',d:'+20% de ataque dentro da dungeon.',price:()=>elixPrice(),act:'be:forca',btn:'Beber',extra:()=>elixLeft('forca')},
+ {nm:'Elixir de Vigor',ic:'ni_evigor',tipo:'Elixir · 5 min',d:'+20% de vida máxima dentro da dungeon.',price:()=>elixPrice(),act:'be:vigor',btn:'Beber',extra:()=>elixLeft('vigor')},
+ {nm:'Elixir da Sorte',ic:'ni_esorte',tipo:'Elixir · 5 min',d:'Melhora os drops e a qualidade dos itens.',price:()=>elixPrice(),act:'be:sorte',btn:'Beber',extra:()=>elixLeft('sorte')}];
 function elixLeft(k){const l=SAVE.elix[k]||0;return l>0?`Ativo: ${Math.floor(l/60)}:${String(Math.floor(l%60)).padStart(2,'0')}`:'Inativo';}
-const ELIX={forca:['Elixir de Força','fist','+20% de ataque'],vigor:['Elixir de Vigor','heart-plus','+20% de vida'],sorte:['Elixir da Sorte','clover','+drops e itens melhores']};
+const ELIX={forca:['Elixir de Força','ni_eforca','+20% de ataque'],vigor:['Elixir de Vigor','ni_evigor','+20% de vida'],sorte:['Elixir da Sorte','ni_esorte','+drops e itens melhores']};
 function elixPrice(){return 60+SAVE.lv*12;}
 function winAlq(){
   $('wtt').textContent='Alquimista';
-  let h=npcHead('health-potion','Mirela, a Alquimista','“Uma gota certa salva uma vida.”')+'<div class="sec-h"><span>Poções e elixires · toque para ver</span></div><div class="vg">';
+  let h=npcHead('ni_pocao','Mirela, a Alquimista','“Uma gota certa salva uma vida.”')+'<div class="sec-h"><span>Poções e elixires · toque para ver</span></div><div class="vg">';
   ALQ.forEach((d,i)=>{const p=d.price(),sel=G.wsel&&G.wsel.t==='alq'&&G.wsel.k===i;
-    h+=`<div class="vi ${sel?'sel':''} ${SAVE.gold<p?'no':''}" data-w="alq:${i}"><div class="ic2" style="border-color:#d9b45f"><img src="${UI}${d.ic}.png" style="filter:sepia(1) saturate(4) hue-rotate(-8deg) brightness(1.2)"></div><div class="tx2"><b style="color:#f3d98e">${d.nm}</b><div class="pr2 ${SAVE.gold<p?'bad':''}"><img src="${UI}coins.png">${p}</div></div></div>`;});
+    h+=`<div class="vi ${sel?'sel':''} ${SAVE.gold<p?'no':''}" data-w="alq:${i}"><div class="ic2" style="border-color:#d9b45f"><img src="${UI}${d.ic}.png" style=""></div><div class="tx2"><b style="color:#f3d98e">${d.nm}</b><div class="pr2 ${SAVE.gold<p?'bad':''}"><img src="${UI}coins.png">${p}</div></div></div>`;});
   h+='</div><div class="sub">Poções curam sozinhas na dungeon. Elixires duram 5 min dentro dela.</div>';
   $('wbody').innerHTML=h;
 }
 /* Portal */
-const DUNGS=[{nm:'Clareira de Brumavale',sub:'Nv 1+ · Chefe: Ogro de Brumavale',ic:'crossed-swords',ok:true},{nm:'Floresta Gelada',sub:'Nv 8+ · em breve',ic:'snowflake-1'},{nm:'Ruínas de Pedra',sub:'Nv 15+ · em breve',ic:'greek-temple'},{nm:'Floresta Seca',sub:'Nv 22+ · em breve',ic:'tornado-discs'}];
+const DUNGS=[{nm:'Clareira de Brumavale',sub:'Nv 1+ · Chefe: Ogro de Brumavale',ic:'ni_d1',ok:true},{nm:'Floresta Gelada',sub:'Nv 8+ · em breve',ic:'ni_d2'},{nm:'Ruínas de Pedra',sub:'Nv 15+ · em breve',ic:'ni_d3'},{nm:'Floresta Seca',sub:'Nv 22+ · em breve',ic:'ni_d4'}];
 function winPortal(){
   $('wtt').textContent='Portal das Dungeons';const zs=G.pz||Math.min(SAVE.zoneMax||1,SAVE.zone||1)||1;G.pz=clamp(zs,1,SAVE.zoneMax||1);
   let h='<div class="sec-h"><span>Dungeons</span><span>O herói luta sozinho lá dentro</span></div>';

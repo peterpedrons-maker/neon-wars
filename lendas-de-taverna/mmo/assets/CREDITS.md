@@ -37,3 +37,6 @@ Fumaça, tochas, fonte, portal e vaga-lumes usam GSAP 3.12.5 (`assets/gsap.min.j
 
 ## Floresta dos Goblins (zonas de goblin)
 Props (árvores, tendas, totens, estacas, paliçadas, ossos, cogumelos etc.) gerados por IA a partir do estilo do jogo, recortados e reduzidos por `tools/mmo/goblin_ia.py` (folhas originais em `tools/mmo/ia_src/`). Chão e fogueiras vêm do Pixel Crawler (Anokolisa).
+
+## Ícones e cidade (arte por IA)
+Ícones da interface (ni_*.png), fonte, portal, lampiões, tochas, estandartes, bancos, canteiros, barraca, poço e demais enfeites da cidade foram gerados por IA a partir do estilo do jogo e processados por `tools/mmo/city_ia.py` (folhas originais em `tools/mmo/ia_src/city/`).
