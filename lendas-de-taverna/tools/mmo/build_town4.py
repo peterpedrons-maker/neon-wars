@@ -94,6 +94,7 @@ for (k,nm,ic,side,row) in BUILD:
         for ix in (357,660):E('fire',ix,672,r=40)
         E('sparkle',510,170,col='#ffe27a');E('glow',512,440,col='#ffd070',r=64,lo=.25,hi=.5)
     if k=='lei':E('sparkle',505,170,col='#ffe27a')
+exec(open(os.path.join(HERE,'city_ia.py')).read())
 # portal
 def portal_frame(f):
     Wd,Hh=96,110;im=Image.new('RGBA',(Wd,Hh),(0,0,0,0));d=ImageDraw.Draw(im);cx,cy=48,60
@@ -106,27 +107,42 @@ def portal_frame(f):
     for xx in range(cx-34,cx+36,8):d.rectangle((xx,8,xx+7,17),fill=(140,140,152,255),outline=(60,58,68,255))
     for xx in range(cx-24,cx+26,8):d.rectangle((xx,16,xx+7,23),fill=(122,122,132,255),outline=(60,58,68,255))
     return im
-PF=[R_.reg(portal_frame(i),(48,108),'pf%d'%i) for i in range(8)]
-R_.props.append(dict(t='portal',fr=PF,fps=6,x=S(300),y=S(86),col=[[S(-30),S(-4),S(7)],[S(30),S(-4),S(7)]]))
-FX.append(dict(k='portal',x=S(300),y=S(86)-44))
+_pa=CI['portal'];_ph=CI['portal_hole'];_anc=(_pa.width//2,_pa.height-6)
+PF=[R_.reg(_pa,_anc,'pf0')]
+_hx0,_hx1,_hy0,_hy1=_ph;_hcx=(_hx0+_hx1)/2-_anc[0];_hcy=(_hy0+_hy1)/2-_anc[1];_hrx=(_hx1-_hx0)/2;_hry=(_hy1-_hy0)/2
+_pil=_hrx+13
+R_.props.append(dict(t='portal',fr=PF,fps=1,x=S(300),y=S(86),col=[[S(-_pil),S(-4),S(9)],[S(_pil),S(-4),S(9)]]))
+FX.append(dict(k='portal',x=S(300)+S(_hcx),y=S(86)+S(_hcy)))
+PORTAL_FX=dict(dx=S(_hcx),dy=S(_hcy),rx=S(_hrx)-1,ry=S(_hry)-1)
 # fonte (praça)
-def fountain():
-    im=Image.new('RGBA',(80,70),(0,0,0,0));d=ImageDraw.Draw(im)
-    d.ellipse((2,20,77,66),fill=(70,68,80,255));d.ellipse((6,22,73,58),fill=(150,148,160,255));d.ellipse((10,26,69,54),fill=(90,170,230,255));d.ellipse((16,30,63,50),fill=(130,200,245,255))
-    d.rectangle((35,6,44,40),fill=(150,148,160,255),outline=(70,68,80,255));d.ellipse((28,2,51,12),fill=(150,148,160,255),outline=(70,68,80,255))
-    return im,(40,60)
-fi,fa=fountain();FXY=(300,ROW[1]+8)
-R_.addp(fi,fa,FXY[0],FXY[1],[(-26,-10,8),(0,-10,8),(26,-10,8)])
-FX.append(dict(k='fountain',x=S(FXY[0]),y=S(FXY[1])-66))
+_fn=CI['fountain'];fi,fa=_fn,(_fn.width//2,_fn.height-3);FXY=(300,ROW[1]+8)
+_fc=[(-(_fn.width//2-16)+k*((_fn.width-32)/3),-10,10) for k in range(4)]
+R_.addp(fi,fa,FXY[0],FXY[1],_fc)
+FX.append(dict(k='fountain',x=S(FXY[0]),y=S(FXY[1])-S(_fn.height*.38)-34))
 # postes ao longo da rua central
-lamp=Image.new('RGBA',(10,40),(0,0,0,0));ld=ImageDraw.Draw(lamp);ld.rectangle((4,12,5,39),fill=(60,44,30,255));ld.rectangle((1,3,8,13),fill=(40,30,20,255));ld.rectangle((2,4,7,11),fill=(255,214,120,255))
-for (x,y) in [(268,200),(332,200),(268,390),(332,390),(268,570),(332,570),(268,730),(332,730)]:
-    R_.addp(lamp,(5,39),x,y,[(0,-2,3)]);FX.append(dict(k='lamp',x=S(x),y=S(y)-30,col='#ffd278',r=42))
+LAMPS=CI['lamp']
+for k,(x,y) in enumerate([(268,200),(332,200),(268,390),(332,390),(268,570),(332,570),(268,730),(332,730)]):
+    L_=LAMPS[k%2];R_.addp(L_,(L_.width//2,L_.height-2),x,y,[(0,-2,3)]);FX.append(dict(k='lamp',x=S(x),y=S(y)-S(L_.height*.86),col='#ffd278',r=42))
+def _cols(im,r=None):
+    n=max(1,round(im.width*.78/9));fw=im.width*.78;rr_=r or max(4,min(8,im.height*.18))
+    return [((i/(n-1)-.5)*(fw-8) if n>1 else 0,-3,rr_) for i in range(n)]
+def deco(im,x,y,col='auto'):R_.addp(im,(im.width//2,im.height-2),x,y,_cols(im) if col=='auto' else col)
+# tochas em pé: ladeiam o portal e a praça (fogo é desenhado por código)
+for (x,y) in [(244,108),(356,108),(236,512),(364,512)]:
+    t_=CI['torch'][(x+y)%3];R_.addp(t_,(t_.width//2,t_.height-2),x,y,[(0,-2,3)]);FX.append(dict(k='torch',x=S(x),y=S(y)-S(t_.height*.92)))
+# estandartes ao lado do portal
+for (x,y,k) in [(216,112,0),(384,112,2)]:
+    b_=CI['banner'][k];R_.addp(b_,(b_.width//2,b_.height-2),x,y,[(0,-2,3)])
+# bancos, canteiros, barraca, placas, feno e sacos
+for (x,y,k) in [(246,340,0),(354,340,1),(246,555,1),(354,555,0)]:deco(CI['bench'][k],x,y)
+for (x,y,k) in [(246,238,0),(354,238,1)]:deco(CI['flowerbox'][k],x,y)
+deco(CI['stall'][0],388,400);deco(CI['sign'][0],338,262,[(0,-2,3)]);deco(CI['sign'][1],262,662,[(0,-2,3)])
+deco(CI['well'][0],360,595)
+for (x,y,k) in [(84,262,0),(516,262,1),(84,442,1),(516,442,0),(84,622,0),(516,622,1)]:deco(CI['barrels'][k],x,y)
+deco(CI['crates'][0],520,760);deco(CI['hay'][0],86,700);deco(CI['hay'][1],514,700);deco(CI['sack'][0],112,708);deco(CI['sack'][1],488,708)
 # arbustos e barris nas bordas
 for (x,y) in [(90,170),(510,170),(90,330),(510,330),(90,520),(510,520),(90,700),(510,700),(200,130),(400,130)]:
     b=rr.choice(BUSH);R_.addp(b,(b.width//2,b.height-3),x,y,autocol(b))
-for (x,y) in [(96,250),(504,250),(96,430),(504,430),(96,610),(504,610)]:R_.addp(BARREL,(BARREL.width//2,BARREL.height-2),x,y,autocol(BARREL))
-for k,b in enumerate(BAN):R_.addp(b,(b.width//2,b.height-2),240+k*60,60,autocol(b))
 # árvores: anel de borda
 def tree():
     t=rr.random();return rr.choice(T_OAK)
@@ -146,7 +162,7 @@ R_.props.sort(key=lambda p:p['y'])
 Wd,Hd=ground.width,ground.height
 npcs=[dict(id='gua',nm='Guarda do Portal',sh='guarda',x=S(300),y=S(132),ic='treasure-map',row=2,win='portal')]
 vill=[dict(sh='pov_f',x=S(262),y=S(ROW[1]+40)),dict(sh='ladino_b',x=S(345),y=S(ROW[2]+30)),dict(sh='bardo',x=S(300),y=S(ROW[0]-40))]
-town_json=dict(w=Wd,h=Hd,props=R_.props,start=[S(300),S(ROW[1]-60)],portal=dict(x=S(300),y=S(86),stand=[S(300),S(86+36)]),npcs=npcs,vill=vill,doors=doors,fx=FX)
+town_json=dict(w=Wd,h=Hd,props=R_.props,start=[S(300),S(ROW[1]-60)],portal=dict(x=S(300),y=S(86),stand=[S(300),S(86+36)],fx=PORTAL_FX),npcs=npcs,vill=vill,doors=doors,fx=FX)
 ground.convert('RGB').save(os.path.join(OUT,'town_ground.png'),optimize=True)
 json.dump(town_json,open(os.path.join(OUT,'town.json'),'w'),separators=(',',':'))
 print('town',Wd,Hd,make_atlas(R_.sprs,'town_atlas'),len(R_.props),'fx',len(FX))
