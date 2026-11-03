@@ -337,7 +337,7 @@ i.upg{position:absolute;right:1px;top:0;font-size:9px;color:#7de06d;font-style:n
 .slot2 .bd{position:absolute;right:-5px;top:-6px;background:#d6403a;color:#fff;font:700 10px var(--f);border-radius:9px;min-width:17px;padding:0 4px;display:none;text-align:center;z-index:3}
 #mmenu{position:absolute;right:6px;bottom:calc(88px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:5px;pointer-events:none}
 .mbtn{position:relative;width:46px;height:46px;pointer-events:auto;background:var(--gl);border:1px solid var(--lin);box-shadow:0 4px 12px rgba(0,0,0,.5);font:700 10px var(--ft);letter-spacing:.06em;color:var(--ouroC);padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
-.mbtn img{width:24px;height:24px;image-rendering:pixelated}
+.mbtn img{width:34px;height:34px;image-rendering:pixelated}
 .mbtn small{display:block;font:700 8px var(--f);color:var(--papel2);letter-spacing:.03em;line-height:1;text-transform:uppercase}
 #bAuto.on{border-color:#96e08a;background:linear-gradient(#26502e,#183a20);color:#c8ffd0;box-shadow:0 0 10px rgba(120,230,140,.35)}
 .mbtn .bd{position:absolute;right:-5px;top:-6px;background:#d6403a;color:#fff;font:700 10px var(--f);border-radius:9px;min-width:17px;padding:0 4px;display:none;text-align:center}
@@ -1285,23 +1285,23 @@ function mkTb(id,html,cls,fn){const e=document.createElement('button');e.classNa
 function buildBar(){
   const C=CLASSES[SAVE.cls],b=$('bar'),m=$('mmenu');b.innerHTML='';m.innerHTML='';
   const ab=document.createElement('div');ab.className='abar';b.appendChild(ab);
-  const potHtml='<img src="../assets/ico/v_pocao.png?v=2"><span class="key">P</span><div class="cd"></div><div class="ct"></div><span class="n" id="potn"></span>';
+  const potHtml='<img src="assets/hud/pocao.png"><span class="key">P</span><div class="cd"></div><div class="ct"></div><span class="n" id="potn"></span>';
   if(G.scene==='town'){
     const sk0=SAVE.eqs[0]>=0?SAVE.eqs[0]:0;
-    ab.appendChild(mkTb('bGo','<img src="../assets/ico/v_mapa.png" style="padding:6px 6px 12px"><span class="lbl">Atalhos</span>','slot2',()=>{if(G.winOpen)return;sfx('ui_click');openWin('locais');}));
+    ab.appendChild(mkTb('bGo','<img src="assets/hud/mapa.png" style="padding:4px 4px 12px"><span class="lbl">Atalhos</span>','slot2',()=>{if(G.winOpen)return;sfx('ui_click');openWin('locais');}));
     ab.appendChild(mkTb('bPot',potHtml,'slot2',()=>usePotion(true)));
     {const MB=(id,img,lab,tab,bd)=>mkTb(id,'<img src="'+img+'"><small>'+lab+'</small>'+(bd?'<span class="bd" id="'+bd+'"></span>':''),'mbtn',()=>{sfx('ui_click');openPan(tab);});
-      [MB('bInv','../assets/ico/v_bolsa.png','Mochila','eq'),MB('bAt','../assets/ui-icons/ni_heroi.png','Herói','at','bdAt'),MB('bSkB','../assets/ui-icons/ni_livro.png','Habil.','sk','bdSk'),MB('bTlB','../assets/ui-icons/ni_talentos.png','Talent.','tl','bdTl')].forEach(e=>m.appendChild(e));}
+      [MB('bInv','assets/hud/inv.png','Mochila','eq'),MB('bAt','assets/hud/heroi.png','Herói','at','bdAt'),MB('bSkB','assets/hud/hab.png','Habil.','sk','bdSk'),MB('bTlB','assets/hud/tal.png','Talent.','tl','bdTl')].forEach(e=>m.appendChild(e));}
     updPot();badge();return;
   }
   [0,1,2].forEach(k=>{const si=SAVE.eqs[k],lk=SAVE.lv<SLOT_UNL[k]||si<0||SAVE.sk[si]<1||!skAvail(si);const d=document.createElement('div');d.className='slot2'+(lk?' lock':'')+(si<0?' empty':'');d.id='sk'+k;
     d.innerHTML=(si>=0?`<img src="${skImg(C.skills[si][0])}">`:'<img src="../assets/ui-icons/magic-swirl.png">')+`<span class="key">${k+1}</span><div class="cd"></div><div class="ct"></div>`+(lk?`<div class="lv">${SAVE.lv<SLOT_UNL[k]?'Nv '+SLOT_UNL[k]:'+'}</div>`:'');
     d.style.pointerEvents='auto';d.onclick=()=>{if(!G.auto&&!lk&&G.scene==='dungeon'){G.castReq=k;return;}sfx('ui_click');openPan('sk');};ab.appendChild(d);});
   const pot=mkTb('bPot',potHtml,'slot2 sep',()=>usePotion(true));ab.appendChild(pot);
-  {const D=DODGE[SAVE.cls];const dd=mkTb('bDodge','<img src="../assets/ui-icons/'+(D.t==='blink'?'ni_tp':'ni_botas')+'.png" style="padding:4px"><span class="key">E</span><div class="cd"></div><div class="ct"></div>','slot2',()=>{const h=G.hero;if(!h||h.state==='ko')return;const f=nearestMob(h,300);if(f)heroDodge(h,h.x-f.x,h.y-f.y,'melee');else heroDodge(h,-Math.cos(0),0,'melee');});ab.appendChild(dd);}
+  {const D=DODGE[SAVE.cls];const dd=mkTb('bDodge','<img src="assets/hud/'+(D.t==='blink'?'esq_blink':'esq_roll')+'.png" style="padding:0"><span class="key">E</span><div class="cd"></div><div class="ct"></div>','slot2',()=>{const h=G.hero;if(!h||h.state==='ko')return;const f=nearestMob(h,300);if(f)heroDodge(h,h.x-f.x,h.y-f.y,'melee');else heroDodge(h,-Math.cos(0),0,'melee');});ab.appendChild(dd);}
   const MB=(id,img,lab,tab,bd)=>mkTb(id,'<img src="'+img+'"><small>'+lab+'</small>'+(bd?'<span class="bd" id="'+bd+'"></span>':''),'mbtn',()=>{sfx('ui_click');openPan(tab);});
-  const menu=[MB('bInv','../assets/ico/v_bolsa.png','Mochila','eq'),MB('bAt','../assets/ui-icons/ni_heroi.png','Herói','at','bdAt'),MB('bSkB','../assets/ui-icons/ni_livro.png','Habil.','sk','bdSk'),MB('bTlB','../assets/ui-icons/ni_talentos.png','Talent.','tl','bdTl')];
-  const tw=mkTb('bTownB','<img src="../assets/ico/v_cidade.png?v=3" style="width:38px;height:38px">','mbtn',()=>{sfx('ui_click');gConfirm('O progresso desta floresta (abates) será perdido.',{title:'Voltar para a cidade?',ok:'Voltar',no:'Ficar'}).then(ok=>{if(ok)enterTown(false);});});
+  const menu=[MB('bInv','assets/hud/inv.png','Mochila','eq'),MB('bAt','assets/hud/heroi.png','Herói','at','bdAt'),MB('bSkB','assets/hud/hab.png','Habil.','sk','bdSk'),MB('bTlB','assets/hud/tal.png','Talent.','tl','bdTl')];
+  const tw=mkTb('bTownB','<img src="assets/hud/cidade.png" style="width:40px;height:40px">','mbtn',()=>{sfx('ui_click');gConfirm('O progresso desta floresta (abates) será perdido.',{title:'Voltar para a cidade?',ok:'Voltar',no:'Ficar'}).then(ok=>{if(ok)enterTown(false);});});
   [...menu,tw].forEach(e=>m.appendChild(e));updPot();badge();
 }
 function updPot(){const n=$('potn');if(n)n.textContent=SAVE.potions+(SAVE.potL?'+'+SAVE.potL:'');}
