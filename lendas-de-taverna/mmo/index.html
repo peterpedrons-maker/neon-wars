@@ -245,6 +245,8 @@ button:active:not(:disabled){transform:scale(.97);filter:brightness(1.15)}
 #tip,#wtip{position:absolute;display:none;width:208px;z-index:30;background:rgba(10,9,14,.97);border:1px solid;padding:9px 10px 8px;font-size:11.5px;box-shadow:0 8px 24px rgba(0,0,0,.7);animation:pop .12s ease-out}
 #tip.on,#wtip.on{display:block}
 #tip,#wtip{width:232px}
+.stp{margin:0 0 6px;padding:4px 7px;border:1px solid var(--sc);background:rgba(255,255,255,.04);font-size:10.5px;line-height:1.35}.stp b{display:block;color:var(--sc)}.stp span{display:inline-block;margin-right:7px;color:#7a7488}.stp span.on{color:var(--sc)}.stp em{display:block;font-style:normal;color:#7a7488}.stp em.on{color:#d8f0c8}
+.setb{position:absolute;left:1px;top:1px;font:700 8px var(--f);color:#9ef09a;font-style:normal;text-shadow:0 1px 0 #000}
 .uq{margin:0 0 6px;padding:4px 7px;border:1px solid rgba(255,166,58,.55);background:rgba(255,166,58,.1);color:#ffb860;font-size:10.5px;line-height:1.3}
 .cr{display:grid;grid-template-columns:1fr 40px 46px 56px;gap:2px;padding:2px 0;font-size:11.5px;align-items:center;border-bottom:1px solid rgba(255,255,255,.05)}.cr.p{grid-template-columns:1fr auto}.cr .cl{color:var(--papel);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px}.cr .cn{text-align:right;color:#f4ecd8;font-weight:700}.cr .co{text-align:right;color:#8e8a98}.cr .cd2{text-align:right;font-weight:700}.cr .cd2.eq{color:#8e8a98}.cr.ch{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#8e8a98;border-bottom:1px solid rgba(217,180,95,.25)}.cr.ch span{font-weight:400!important;color:#8e8a98!important}
 .cv{display:flex;justify-content:space-between;align-items:center;padding:4px 7px;margin:0 0 6px;font-size:10.5px;letter-spacing:.05em;border:1px solid;background:rgba(0,0,0,.35)}.cv b{font-size:13px}.cv.up{color:#7de06d;border-color:rgba(125,224,109,.5)}.cv.dn{color:#ff7a6a;border-color:rgba(255,122,106,.5)}.cv.eq{color:#d9b45f;border-color:rgba(217,180,95,.5)}
@@ -557,7 +559,23 @@ const UNIQUES=[
  {id:'botas_javali',nm:'Botas de Presa de Javali',slot:'botas',ic:'i_botas',src:'javali',mul:1.4,fx:{xp:.2,kb:.08,kd:.3},desc:'+20% de experiência, +8% de chance de empurrão e +30% de duração da queda.'},
  {id:'amuleto_vigia',nm:'Amuleto do Vigia Ósseo',slot:'amuleto',ic:'i_talisma',src:'esq',mul:1.4,fx:{ls:.03,xp:.1},desc:'Recupera 3% do dano em vida e +10% de experiência.'},
  {id:'anel_rato',nm:'Anel do Rei dos Ratos',slot:'anel',ic:'i_anel',src:'rato',mul:1.4,fx:{gold:.15,thorns:.1},desc:'+15% de ouro e reflete 10% do dano recebido.'}];
-const uf=k=>{let t=0;for(const sl of SLOTS){const it=SAVE.eq[sl];if(it&&it.u&&it.u.fx&&it.u.fx[k])t+=it.u.fx[k];}return t+tf(k);};
+/* ===== CONJUNTOS: 6 peças por família de monstro; bônus com 2, 4 e 6 peças equipadas ===== */
+const SETS=[
+ {id:'goblin',nm:'Saque do Rei Goblin',fam:'goblin',col:'#8ee05a',pcs:{elmo:'Elmo do Saqueador',armadura:'Colete do Saqueador',luvas:'Luvas do Saqueador',botas:'Botas do Saqueador',amuleto:'Amuleto do Saqueador',anel:'Anel do Saqueador'},
+  b:{2:{gold:.15},4:{atk:.10,crit:.04},6:{gold:.25,atk:.12,crit:.04}},d:{2:'+15% de ouro',4:'+10% de ataque, +4% de crítico',6:'+25% de ouro, +12% de ataque, +4% de crítico'}},
+ {id:'esq',nm:'Mortalha Sepulcral',fam:'esq',col:'#9ad6ff',pcs:{elmo:'Elmo Sepulcral',armadura:'Mortalha Sepulcral',luvas:'Manoplas Sepulcrais',botas:'Botas Sepulcrais',amuleto:'Amuleto Sepulcral',anel:'Anel Sepulcral'},
+  b:{2:{hp:.10},4:{ls:.03,hp:.06},6:{hp:.14,ls:.04,thorns:.12}},d:{2:'+10% de vida',4:'+3% de roubo de vida, +6% de vida',6:'+14% de vida, +4% de roubo de vida, reflete 12% do dano'}},
+ {id:'javali',nm:'Couro Selvagem',fam:'javali',col:'#e0a050',pcs:{elmo:'Elmo de Presas',armadura:'Couraça de Presas',luvas:'Luvas de Presas',botas:'Botas de Presas',amuleto:'Amuleto de Presas',anel:'Anel de Presas'},
+  b:{2:{def:.08},4:{xp:.12,dmgred:.04},6:{def:.10,xp:.18,dmgred:.07,kb:.08}},d:{2:'+8% de defesa',4:'+12% de experiência, -4% de dano recebido',6:'+10% de defesa, +18% de experiência, -7% de dano recebido, +8% de empurrão'}},
+ {id:'rato',nm:'Ralé do Esgoto',fam:'rato',col:'#c8e060',pcs:{elmo:'Capuz do Esgoto',armadura:'Trapos do Esgoto',luvas:'Luvas do Esgoto',botas:'Botas do Esgoto',amuleto:'Amuleto do Esgoto',anel:'Anel do Esgoto'},
+  b:{2:{spd:.08},4:{aspd:.08,atk:.06},6:{spd:.10,aspd:.12,atk:.10}},d:{2:'+8% de velocidade',4:'+8% de vel. de ataque, +6% de ataque',6:'+10% de velocidade, +12% de vel. de ataque, +10% de ataque'}}
+];
+const SETSLOTS=['elmo','armadura','luvas','botas','amuleto','anel'];
+function setCount(id){let n=0;for(const k of SLOTS){const it=SAVE.eq&&SAVE.eq[k];if(it&&it.set===id)n++;}return n;}
+function sb(k){let t=0;for(const S of SETS){const n=setCount(S.id);if(!n)continue;for(const q of [2,4,6])if(n>=q&&S.b[q][k])t+=S.b[q][k];}return t;}
+function setTipHTML(it){const S=SETS.find(x=>x.id===it.set);if(!S)return '';const n=setCount(S.id);
+  return `<div class="stp" style="--sc:${S.col}"><b>${S.nm} (${n}/6)</b>${SETSLOTS.map(sl=>{const eq=SAVE.eq[sl],on=eq&&eq.set===S.id;return `<span class="${on?'on':''}">${S.pcs[sl]}</span>`;}).join('')}${[2,4,6].map(q=>`<em class="${n>=q?'on':''}">(${q}) ${S.d[q]}</em>`).join('')}</div>`;}
+const uf=k=>{let t=0;for(const sl of SLOTS){const it=SAVE.eq[sl];if(it&&it.u&&it.u.fx&&it.u.fx[k])t+=it.u.fx[k];}return t+tf(k)+sb(k);};
 const BOSS_T0=480,BOSS_KILLS=60,BOSS_P=.008;   // o chefe só pode surgir depois de BOSS_T0 s e BOSS_KILLS abates; a cada segundo há BOSS_P de chance
 const bossLv=()=>6+(G.zoneLv-1)*BAL.zoneLv;
 const SLOTS=['arma','escudo','elmo','armadura','luvas','botas','amuleto','anel'],SLOT_NAME={arma:'Arma',escudo:'Mão sec.',elmo:'Elmo',armadura:'Armadura',luvas:'Luvas',botas:'Botas',amuleto:'Amuleto',anel:'Anel'};
@@ -1239,7 +1257,7 @@ function heroStatsInto(h){
   h.pow=C.atk*(1+.12*(L-1))+g.atk+atkFromAttrs(A)+(E.forca>0?elixPow():0);
   h.def=C.def+L*.8+g.def+(E.defesa>0?elixDef():0);h.kbG=g.kb||0;h.kdG=g.kd||0;
   h.speed=C.speed*(1+g.spd/100);h.rng=C.rng;h.aspd=C.aspd;h.crit=C.crit+g.crit/100+Math.floor((A.sor||0)/ATV.sorN)*.01;subApply(h);
-  h.maxhp=Math.round(h.maxhp*(1+tf('hp')));h.pow*=1+tf('atk');h.def*=1+tf('def');h.speed*=1+tf('spd');h.aspd=h.aspd/(1+tf('aspd'));h.crit+=tf('crit');
+  h.maxhp=Math.round(h.maxhp*(1+tf('hp')+sb('hp')));h.pow*=1+tf('atk')+sb('atk');h.def*=1+tf('def')+sb('def');h.speed*=1+tf('spd')+sb('spd');h.aspd=h.aspd/(1+tf('aspd')+sb('aspd'));h.crit+=tf('crit')+sb('crit');
 }
 /* dificuldade: o nível do monstro sobe com a profundidade na floresta (0 na entrada → 1 no fim da estrada) e +5 por zona */
 /* curva de dificuldade ajustada por modelo (tools/mmo/balance_fit.py): fácil no início (≈5 s por monstro, ≈7 % da vida por abate) e cada vez mais dura até o endgame (≈13 s e ≈37 %); defesa estilo PoE: def/(def+5·dano), teto 85 % */
@@ -1390,10 +1408,10 @@ function updHUD(force){
   $('hud').dataset.k=G.K;
 }
 /* ------------------------------ itens ----------------------------------- */
-function genItem(ilvl,minR=0,boost=0,U){
-  const tier=tierOf(ilvl),slot=U?U.slot:pick(SLOTS),rar=U?4:Math.max(minR,rollRarT(tier,boost)),R=RAR[rar],cls=SAVE.cls;
-  const pool=(BASES[slot][cls]||BASES[slot]._),[bn,ic]=U?[U.nm,U.ic]:pick(pool),shieldCls=cls==='guerreiro'||cls==='clerigo';
-  const m=R.m*rnd(.92,1.08)*tierMul(tier)*GS*(U?U.mul:1),L=ilvl,s={};
+function genItem(ilvl,minR=0,boost=0,U,ST){
+  const tier=tierOf(ilvl),slot=U?U.slot:ST?pick(SETSLOTS):pick(SLOTS),rar=U?4:ST?3:Math.max(minR,rollRarT(tier,boost)),R=RAR[rar],cls=SAVE.cls;
+  const pool=(BASES[slot][cls]||BASES[slot]._),[bn0,ic]=U?[U.nm,U.ic]:pick(pool),bn=ST?ST.pcs[slot]:bn0,shieldCls=cls==='guerreiro'||cls==='clerigo';
+  const m=R.m*rnd(.92,1.08)*tierMul(tier)*GS*(U?U.mul:1)*(ST?1.08:1),L=ilvl,s={};
   if(slot==='arma')s.atk=(2.2+L*1.1)*m;
   else if(slot==='elmo'){s.def=(1+L*.35)*m;s.hp=(4+L*3)*m;}
   else if(slot==='armadura'){s.def=(1.6+L*.6)*m;s.hp=(8+L*5)*m;}
@@ -1406,12 +1424,12 @@ function genItem(ilvl,minR=0,boost=0,U){
   if(['arma','luvas','armadura','escudo','anel'].includes(slot))aff.push(['kb',1.8],['kb',1.8],['kd',3.5]);
   for(let i=0;i<R.aff;i++){const [k,v]=pick(aff);s[k]=(s[k]||0)+v*R.m*tierMul(tier)*rnd(.8,1.2);}
   for(const k in s)s[k]=k==='crit'||k==='spd'||k==='kb'||k==='kd'?Math.round(s[k]*10)/10:Math.round(s[k]);
-  return {id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),slot,rar,tier,tv:2,ilvl:L,bn,name:U?U.nm:bn+' '+tierAdj(bn,tier),icon:ic,s,u:U?{id:U.id,fx:U.fx,desc:U.desc}:undefined};
+  return {id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),slot,rar,tier,tv:2,ilvl:L,bn,name:U?U.nm:ST?bn:bn+' '+tierAdj(bn,tier),icon:ic,set:ST?ST.id:undefined,s,u:U?{id:U.id,fx:U.fx,desc:U.desc}:undefined};
 }
 const UPB=[0,.02,.04,.06,.09,.12,.16,.21,.27,.34,.45];   // bônus acumulado por nível de aprimoramento (cresce devagar no começo e mais no fim)
 function effS(it,k){const v=(it.s[k]||0)*(1+UPB[Math.min(10,it.up||0)]);return k==='crit'||k==='spd'||k==='kb'||k==='kd'?Math.round(v*10)/10:Math.round(v);}
 function itemName(it){return it.name+(it.up?' +'+it.up:'');}
-function itemScore(it){if(!it)return 0;const s={};for(const k in it.s)s[k]=effS(it,k);return (s.atk||0)*3+(s.def||0)*2+(s.hp||0)*.35+(s.crit||0)*4+(s.spd||0)*1.5+(s.kb||0)*1.2+(s.kd||0)*.4;}
+function itemScore(it){if(!it)return 0;const s={};for(const k in it.s)s[k]=effS(it,k);return ((s.atk||0)*3+(s.def||0)*2+(s.hp||0)*.35+(s.crit||0)*4+(s.spd||0)*1.5+(s.kb||0)*1.2+(s.kd||0)*.4)*(it.set?1.15:1);}
 function itemVal(it){return Math.round((3+it.ilvl*2)*Math.pow(it.rar+1,1.5)*(1+.35*(it.up||0))*(1+.12*((it.tier||1)-1)));}
 function gearTotals(){const t={atk:0,def:0,hp:0,crit:0,spd:0,kb:0,kd:0};for(const k of SLOTS){const it=SAVE.eq[k];if(it)for(const st in it.s)t[st]+=effS(it,st);}return t;}
 function skPoints(){return (SAVE.lv-1)-(SAVE.sk.reduce((a,b)=>a+b,0)-1);}
@@ -1443,6 +1461,7 @@ function dropLoot(m){
     G.loot.push({x:m.x,y:m.y,ox:m.x,oy:m.y,tx:m.x+Math.cos(a)*d,ty:m.y+Math.sin(a)*d*.6,it,t:0,fly:.5,rest:.9+.3*it.rar,h:0,v:70});};
   for(let i=0;i<n;i++)mk(genItem(il,boss?(i===0?2:1):(m.elite?(m.tier==='gold'&&i===0?2:1):0),(boss?12:G.zoneLv*2)+luck*10));
   const pool=UNIQUES.filter(u=>(boss?u.src==='boss':u.src===(m.T.fam||m.type))&&(!u.cls||u.cls.includes(SAVE.cls)));
+  {const fam=boss?famOf(G.zoneLv):(m.T.fam||m.type),ST=SETS.find(x=>x.fam===fam);if(ST&&Math.random()<(boss?.35:.006*(m.elite?(m.tier==='gold'?10:4):1)*(1+luck)))mk(genItem(il,3,0,null,ST));}
   if(pool.length&&Math.random()<(boss?.45:.004*(m.elite?(m.tier==='gold'?8:3):1)*(1+luck)))mk(genItem(il+1,4,0,pick(pool)));
 }
 /* itens no chão: caem em arco, brilham pela raridade, descansam um instante e então são puxados até o herói */
@@ -1561,7 +1580,7 @@ function gainXP(x,at){
   if(lvled){const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;sfx('levelup',.9);G.fx.push({k:'lv',x:h.x,y:h.y,life:1.2,max:1.2});floatText(h.x,h.y-70,'NÍVEL '+SAVE.lv+'!','#ffe08a',14,1.4);banner('Nível '+SAVE.lv,'Você ficou mais forte');chat('Você alcançou o Nv.'+SAVE.lv+'!',4);qCheck();buildBar();chat('+1 ponto de habilidade',4);checkBoss();}
 }
 function hurtHero(dmg,fromX,fromY,kf=1){
-  const h=G.hero;if(h.state==='ko')return;if(h.inv>0){floatText(h.x,h.y-58,'Esquivou!','#cfe9ff',9,1);return;}{const tk=stMul(h,'taken');if(tk!==1)dmg=Math.max(1,Math.round(dmg*tk));}if(SAVE.sub==='cavaleiro')dmg=Math.round(dmg*.92);{const dr=tf('dmgred');if(dr)dmg=Math.max(1,Math.round(dmg*(1-Math.min(.6,dr))));}if(h.shield>0){const ab=Math.min(h.shield,dmg);h.shield-=ab;dmg-=ab;floatText(h.x+(Math.random()<.5?-15:15),h.y-34,'-'+ab,'#7ab8ff',10,.9,{pop:1,vy:20});if(dmg<=0){sfx('hit_1',.4,1.3);return;}}h.hp-=dmg;h.flash=.14;h.combat=4;
+  const h=G.hero;if(h.state==='ko')return;if(h.inv>0){floatText(h.x,h.y-58,'Esquivou!','#cfe9ff',9,1);return;}{const tk=stMul(h,'taken');if(tk!==1)dmg=Math.max(1,Math.round(dmg*tk));}if(SAVE.sub==='cavaleiro')dmg=Math.round(dmg*.92);{const dr=tf('dmgred')+sb('dmgred');if(dr)dmg=Math.max(1,Math.round(dmg*(1-Math.min(.6,dr))));}if(h.shield>0){const ab=Math.min(h.shield,dmg);h.shield-=ab;dmg-=ab;floatText(h.x+(Math.random()<.5?-15:15),h.y-34,'-'+ab,'#7ab8ff',10,.9,{pop:1,vy:20});if(dmg<=0){sfx('hit_1',.4,1.3);return;}}h.hp-=dmg;h.flash=.14;h.combat=4;
   if(h.act&&h.act.ch>0&&!h.act.done&&dmg>=h.maxhp*.12){h.act=null;h.state='idle';h.cd=.6;floatText(h.x,h.y-64,'Interrompido!','#ff8a78',9,1);sfx('ui_denied',.3);}
   floatText(h.x+(Math.random()<.5?-15:15),h.y-34,'-'+dmg,'#ff5448',12,1,{pop:1,vy:22,bold:1});spark(h.x,h.y-16,4);knock(h,h.x-fromX,h.y-fromY,70*kf);sfx(Math.random()<.5?'hit_0':'hit_1',.55,.9);
   if(h.hp<=0){h.hp=0;h.state='ko';h.koT=3;h.act=null;sfx('death',.8);chat('Você caiu em batalha…',2);$('ko').classList.add('on');$('ko').style.display='flex';SAVE.gold=Math.round(SAVE.gold*.9);}
@@ -2797,7 +2816,7 @@ function cmpHTML(it,cur,plain){
   return ver+head+rows+eqc;
 }
 function tierLine(it){const R=RAR[it.rar],t=it.tier||tierOf(it.ilvl);return `<span class="st">${starsT(it)} <b style="color:${R.c}">${R.n}</b></span><span>Tier ${t} · ${TIER_ZONE[t-1]} · ${SLOT_NAME[it.slot]} · Nv ${it.ilvl}</span>`;}
-function itemCell(it,sel,onclk,cls){const R=RAR[it.rar];return `<div class="${cls} ${sel?'sel':''} ${(it.tier||1)>=12?'tc12':(it.tier||1)>=10?'tc10':''}" style="--rc:${R.c};border-color:${R.c}" data-c="${onclk}"><img src="../assets/ico/${it.icon}.png"><span class="il">${it.up?'+'+it.up:it.ilvl}</span><i class="ts">${starsT(it)}</i>${SAVE.eq[it.slot]!==it&&itemScore(it)>itemScore(SAVE.eq[it.slot])+.01?'<i class="upg">▲</i>':''}</div>`;}
+function itemCell(it,sel,onclk,cls){const R=RAR[it.rar];return `<div class="${cls} ${sel?'sel':''} ${(it.tier||1)>=12?'tc12':(it.tier||1)>=10?'tc10':''}" style="--rc:${R.c};border-color:${R.c}" data-c="${onclk}"><img src="../assets/ico/${it.icon}.png"><span class="il">${it.up?'+'+it.up:it.ilvl}</span><i class="ts">${starsT(it)}</i>${it.set?'<i class="setb">SET</i>':''}${SAVE.eq[it.slot]!==it&&itemScore(it)>itemScore(SAVE.eq[it.slot])+.01?'<i class="upg">▲</i>':''}</div>`;}
 function drawDoll(){
   const cv=$('pdoll'),sh=SHEETS.hero;if(!cv||!sh)return;
   const dpr=Math.min(devicePixelRatio||1,3),W=128,H=160;cv.width=W*dpr;cv.height=H*dpr;
@@ -2812,7 +2831,7 @@ function showTip(){
   const it=panSel.src==='bag'?SAVE.inv[panSel.k]:SAVE.eq[panSel.k];if(!it){hideTip();return;}
   const R=RAR[it.rar],cur=panSel.src==='bag'?SAVE.eq[it.slot]:null,el=$('pBody').querySelector('.sel');if(!el){hideTip();return;}
   t.style.borderColor=R.c;
-  t.innerHTML=`<div class="th"><div class="ti" style="--rc:${R.c};border-color:${R.c}"><img src="../assets/ico/${it.icon}.png"></div><div><b style="color:${R.c}">${itemName(it)}</b>${tierLine(it)}</div></div>${it.u?'<div class="uq">★ '+it.u.desc+'</div>':''}${cmpHTML(it,cur,panSel.src!=='bag')}${panSel.src==='bag'?`<div class="vl">Valor: ${itemVal(it)} ouro</div>`:''}<div class="ta">${panSel.src==='bag'?'<button class="g" data-a="equip">Equipar</button>':'<button data-a="unequip">Desequipar</button>'}</div>`;
+  t.innerHTML=`<div class="th"><div class="ti" style="--rc:${R.c};border-color:${R.c}"><img src="../assets/ico/${it.icon}.png"></div><div><b style="color:${R.c}">${itemName(it)}</b>${tierLine(it)}</div></div>${it.u?'<div class="uq">★ '+it.u.desc+'</div>':''}${setTipHTML(it)}${cmpHTML(it,cur,panSel.src!=='bag')}${panSel.src==='bag'?`<div class="vl">Valor: ${itemVal(it)} ouro</div>`:''}<div class="ta">${panSel.src==='bag'?'<button class="g" data-a="equip">Equipar</button>':'<button data-a="unequip">Desequipar</button>'}</div>`;
   t.querySelectorAll('[data-a]').forEach(e=>e.onclick=ev=>{ev.stopPropagation();panAct(e.dataset.a);});
   t.classList.add('on');
   const pr=$('pan').getBoundingClientRect(),r=el.getBoundingClientRect(),w=t.offsetWidth,hh=t.offsetHeight;
@@ -3033,7 +3052,7 @@ $('wbody').addEventListener('click',ev=>{const w=ev.target.closest('[data-w]');i
   const e=ev.target.closest('[data-a]');if(!e||e.disabled){if(G.wsel){G.wsel=null;renderWin();}return;}winAct(e.dataset.a);});
 function coin(n){return `<span class="pr"><img src="${UI}coins.png">${n}</span>`;}
 function itemTipHTML(it,cmp,extra,btns){const R=RAR[it.rar];
-  return `<div class="th"><div class="ti" style="--rc:${R.c};border-color:${R.c}"><img src="../assets/ico/${it.icon}.png"></div><div><b style="color:${R.c}">${itemName(it)}</b>${tierLine(it)}</div></div>${it.u?'<div class="uq">★ '+it.u.desc+'</div>':''}${cmpHTML(it,cmp)}${extra||''}<div class="ta">${btns||''}</div>`;}
+  return `<div class="th"><div class="ti" style="--rc:${R.c};border-color:${R.c}"><img src="../assets/ico/${it.icon}.png"></div><div><b style="color:${R.c}">${itemName(it)}</b>${tierLine(it)}</div></div>${it.u?'<div class="uq">★ '+it.u.desc+'</div>':''}${setTipHTML(it)}${cmpHTML(it,cmp)}${extra||''}<div class="ta">${btns||''}</div>`;}
 function anchorTip(t,anchor,root,bodyEl,color,html,onAct){
   t.style.borderColor=color;t.innerHTML=html;t.querySelectorAll('[data-a]').forEach(e=>e.onclick=ev=>{ev.stopPropagation();onAct(e.dataset.a);});
   t.classList.add('on');const pr=root.getBoundingClientRect(),r=anchor.getBoundingClientRect(),w=t.offsetWidth,hh=t.offsetHeight;
@@ -3328,7 +3347,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
   try{await loadAll();}catch(e){$('title').insertAdjacentHTML('beforeend','<div style="color:#f88">Erro ao carregar: '+e.message+'</div>');console.error(e);return;}
   $('bNew').disabled=false;$('bCont').disabled=false;
   if(SAVE)G.zoneLv=SAVE.zone||1;
-  window.__mmo={qEv,qCheck,partyAdd,partyClear,QMAIN,qInit,socRefresh,TALENTS,tfCalc,tlTotal,TL_REQ,TL_TIER,potPrice,SLOTS,recalcHero,AMBEV,ambStart,ambStop,AMBS,zoneMusic,TOD,LIFE,evStart,makeElite,ELMOD,addZone,heroDodge,spawnBossNow:spawnBoss,stAdd,STDEF,applySkillStatus,MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
+  window.__mmo={SETS,setCount,sb,genItem,qEv,qCheck,partyAdd,partyClear,QMAIN,qInit,socRefresh,TALENTS,tfCalc,tlTotal,TL_REQ,TL_TIER,potPrice,SLOTS,recalcHero,AMBEV,ambStart,ambStop,AMBS,zoneMusic,TOD,LIFE,evStart,makeElite,ELMOD,addZone,heroDodge,spawnBossNow:spawnBoss,stAdd,STDEF,applySkillStatus,MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
   requestAnimationFrame(frame);
 })();
 
