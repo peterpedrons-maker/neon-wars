@@ -142,7 +142,10 @@ button:active:not(:disabled){transform:scale(.97);filter:brightness(1.15)}
 #qtr .qth{display:flex;align-items:center;gap:6px;height:22px;padding:0 6px;color:var(--ouroC);font:700 10px var(--ft);letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid rgba(138,116,64,.4);cursor:pointer}
 #qtr.cl .qth{border-bottom:0}#qtr .qth i{margin-left:auto;font-style:normal;font-size:11px;color:#e6dcc2}#qtr .qth u{display:none;width:8px;height:8px;border-radius:50%;background:#e8402a;text-decoration:none}#qtr.rdy .qth u{display:block}
 #qtr .qrs{padding:3px 6px 5px}#qtr.cl .qrs{display:none}#qtr .qr{padding:3px 0;line-height:1.25;cursor:pointer;color:#e6dcc2;font-weight:500}#qtr .qr b{display:flex;justify-content:space-between;gap:6px;color:#f3d98e;font-size:10.5px;font-weight:600}#qtr .qr b em{font-style:normal;color:#e6dcc2}#qtr .qr.ok b{color:#9ef09a}#qtr .qr.dn{opacity:.5}#qtr .qr span{display:block;font-size:9.5px;color:#a9a2b8}#qtr .qr i{display:block;height:3px;margin-top:2px;background:#0d0b11}#qtr .qr i s{display:block;height:100%;background:linear-gradient(#f0cf7c,#b98a2f)}#qtr .qr.ok i s{background:#6ed26a}
-#pty{display:flex;flex-direction:column;gap:3px}.pm{padding:3px 6px;background:rgba(14,11,20,.7);border:1px solid #4a4458;font:600 10px var(--f)}.pm em{font-style:normal;color:var(--papel2);margin-left:6px}.pm .bar{height:5px;margin-top:2px}
+#pty{display:flex;flex-direction:column;gap:3px}.ci{width:16px;height:16px;image-rendering:pixelated;vertical-align:-3px;flex:none}.wr .ic.cic{padding:0;border:0;background:none;width:40px;height:40px;display:flex}.wr .ic.cic .ci{width:40px;height:40px}
+#hcl{display:inline-flex;align-items:center;gap:4px}
+.pm b{display:flex;align-items:center;gap:5px}.pm b span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pm em{margin-left:0!important}
+.pm{padding:3px 6px;background:rgba(14,11,20,.7);border:1px solid #4a4458;font:600 10px var(--f)}.pm em{font-style:normal;color:var(--papel2);margin-left:6px}.pm .bar{height:5px;margin-top:2px}
 .wr .bar{height:6px;background:#0d0b11;border:1px solid #3a3446}.wr .bar b{display:block;height:100%;background:linear-gradient(#f0cf7c,#b98a2f)}
 .clog{height:170px;overflow-y:auto;background:#0d0b11;border:1px solid #3a3446;padding:6px 8px;font:500 11.5px/1.45 var(--f);margin-bottom:6px}
 .chp{display:flex;align-items:center;gap:10px;margin:8px 0 2px;font:700 11px var(--f);color:var(--papel2);letter-spacing:.06em;text-transform:uppercase}.chp b{white-space:nowrap}.chp .qp{flex:1}
@@ -1044,7 +1047,7 @@ function buildCreate(){
 function renderCreate(pop){
   const C=CLASSES[selCls];
   document.querySelectorAll('#cls button').forEach(b=>b.classList.toggle('on',b.dataset.k===selCls));
-  $('cn').textContent=C.nome;$('cp').textContent=C.papel;$('cd').textContent=C.desc;
+  $('cn').innerHTML=clsIc(selCls,22)+' '+C.nome;$('cp').textContent=C.papel;$('cd').textContent=C.desc;
   $('cbars').innerHTML=STAT_NAMES.map((n,i)=>`<div class="sbar"><span>${n}</span><i><b style="width:${C.bars[i]*100}%;background:${STAT_COL[i]}"></b></i></div>`).join('');
   $('csk').innerHTML='<div class="h">Habilidades · toque para ver</div><div class="r">'+C.skills.slice(0,8).map((s,i)=>`<img src="${skImg(s[0])}" data-d="${i}" title="${s[1]}">`).join('')+'</div>';
   $('csub').innerHTML=`<div class="hd2"><span>Subclasses</span><span>Nível ${SUB_LV}</span></div><div class="cols">`+SUBS[selCls].map((sb,j)=>`<div class="sc"><b>${sb.nome}</b><i>${sb.papel}</i><p>${sb.desc}</p><div class="sk3">${[0,1,2].map(n=>{const i=8+j*3+n;return `<img src="${skImg(C.skills[i][0])}" data-d="${i}" title="${C.skills[i][1]}">`;}).join('')}</div></div>`).join('')+'</div>';
@@ -1411,7 +1414,7 @@ function updHUD(force){
   const h=G.hero;if(!h)return;
   updStatusHud();$('hp').firstChild.style.width=clamp(h.hp/h.maxhp*100,0,100)+'%';$('hpt').textContent=Math.ceil(h.hp)+'/'+h.maxhp;
   $('goldn').textContent=SAVE.gold;
-  $('xp').firstChild.style.width=clamp(SAVE.xp/xpNeed(SAVE.lv)*100,0,100)+'%';$('hl').textContent=SAVE.lv;{const c=$('hcl');if(c&&!c.textContent)c.textContent=CLASSES[SAVE.cls].nome;const xt=$('xpt');if(xt)xt.textContent=Math.floor(SAVE.xp/xpNeed(SAVE.lv)*100)+'%';}
+  $('xp').firstChild.style.width=clamp(SAVE.xp/xpNeed(SAVE.lv)*100,0,100)+'%';$('hl').textContent=SAVE.lv;{const c=$('hcl');if(c&&!c.innerHTML)c.innerHTML=clsIc(SAVE.cls,16);const xt=$('xpt');if(xt)xt.textContent=Math.floor(SAVE.xp/xpNeed(SAVE.lv)*100)+'%';}
   const dg=G.scene==='dungeon';$('prog').style.display=dg?'block':'none';
   if(dg&&(G.phase==='farm'||G.phase==='boss')){const ready=G.dtm>=BOSS_T0&&G.kills>=BOSS_KILLS&&SAVE.lv>=bossLv();$('progt').textContent=G.phase==='boss'?'Zona '+G.zoneLv+' · '+G.kills+' abates':ready?'A floresta está inquieta…':'Floresta · Zona '+G.zoneLv+' · '+G.kills+' abates';$('prog').querySelector('.bar b').style.width=Math.min(100,Math.min(G.dtm/BOSS_T0,G.kills/BOSS_KILLS,SAVE.lv/bossLv())*100)+'%';}
   const bs=G.boss;$('boss').style.display=(dg&&G.phase==='boss'&&bs&&!bs.dead)?'block':'none';
@@ -1604,7 +1607,7 @@ function heroRevive(){const h=G.hero;h.sts=null;h.state='idle';h.hp=Math.round(h
   if(G.phase==='boss'){G.boss=null;G.phase='farm';G.dtm=0;G.bossRoll=1;zoneMusic();}G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2;}
 function showResult(){
   show('res');$('cv').style.display='block';const xp=BOSS.xp;
-  $('rl').innerHTML=`${SAVE.name} · ${CLASSES[SAVE.cls].nome} Nv.${SAVE.lv}<br>Chefe derrotado!<br>Ouro total: ${SAVE.gold}<br><span style="color:#96e08a">Próxima zona: monstros mais fortes</span>`;
+  $('rl').innerHTML=`${SAVE.name} ${clsIc(SAVE.cls,18)} Nv.${SAVE.lv}<br>Chefe derrotado!<br>Ouro total: ${SAVE.gold}<br><span style="color:#96e08a">Próxima zona: monstros mais fortes</span>`;
 }
 function nextZone(){G.zoneLv++;if(zoneMap(G.zoneLv)!==G.map)useMap(zoneMap(G.zoneLv));SAVE.zone=G.zoneLv;SAVE.zoneMax=Math.max(SAVE.zoneMax||1,G.zoneLv);qCheck();writeSave();show('hud');banner('Floresta de Brumavale','Zona '+G.zoneLv+' · '+MOBS[famOf(G.zoneLv)].nome+'s');const h=G.hero;h.hp=h.maxhp;h.x=ZONE.start[0];h.y=ZONE.start[1];resetZone();updHUD();chat('Zona '+G.zoneLv+' — '+MOBS[famOf(G.zoneLv)].nome+'s, mais fortes!',2);zoneMusic();ambStart();}
 
@@ -2942,6 +2945,7 @@ $('pClose').onclick=()=>{sfx('tr_close',.6);closePan();};
 /* ------------------------------ janelas dos NPCs ------------------------ */
 const UI='../assets/ui-icons/';
 /* ===== MMO: diário de missões, bestiário, grupo, amigos e chat (offline, pronto para o online) ===== */
+const clsIc=(c,z)=>CLASSES[c]?`<img class="ci" title="${CLASSES[c].nome}" src="assets/class/${c}.png"${z?` style="width:${z}px;height:${z}px"`:''}>`:'';
 const escH=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const QMAIN=[
  {t:'kill',n:8,nm:'Primeiros passos',ds:'Derrote 8 monstros na floresta.'},
@@ -3000,7 +3004,7 @@ const ACH=[
 ];
 const cnt=k=>(SAVE.cnt&&SAVE.cnt[k])||(k==='kill'?SAVE.totalKills:0)||0;
 function achCheck(){if(!SAVE.q)return;SAVE.ach=SAVE.ach||{};for(const a of ACH){if(SAVE.ach[a.id])continue;if(a.v()>=a.n){SAVE.ach[a.id]=1;chat('Conquista: '+a.nm+' — título "'+a.ti+'"',4);sfx('levelup',.5);if(G.hero)floatText(G.hero.x,G.hero.y-90,'Conquista!','#ffe08a',9,1.4);if(!SAVE.title)setTitle(a.id);}}}
-function setTitle(id){SAVE.title=id||null;const a=ACH.find(x=>x.id===id),c=$('hcl');if(c)c.textContent=CLASSES[SAVE.cls].nome+(a?' · '+a.ti:'');}
+function setTitle(id){SAVE.title=id||null;const a=ACH.find(x=>x.id===id),c=$('hcl');if(c)c.innerHTML=clsIc(SAVE.cls,16)+(a?' '+a.ti:'');}
 function fmtT(s){s=Math.floor(s||0);const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+'h '+m+'min':m+'min';}
 function winConq(){let h='';const n=ACH.filter(a=>SAVE.ach&&SAVE.ach[a.id]).length;
   h+=`<div class="sub">${n}/${ACH.length} conquistas · cada uma dá um título para usar ao lado do nome.</div>`;
@@ -3084,7 +3088,7 @@ function socRefresh(){if(!SAVE.q)return;socUI();
     const rd=rows.some(r=>r[4]&&!r[5]);t.classList.toggle('cl',!!SAVE.qcol);t.classList.toggle('rdy',rd);
     t.innerHTML=`<div class="qth">Missões<u></u><i>${SAVE.qcol?'▸':'▾'}</i></div><div class="qrs">`+rows.map((r,i)=>`<div class="qr${r[4]?' ok':''}${r[5]?' dn':''}"><b>${r[0]}<em>${r[5]?'✓':r[1]+'/'+r[2]}</em></b>${i===0?`<span>${r[4]?'Concluída — toque para receber':r[3]}</span>`:''}<i><s style="width:${r[2]?Math.min(100,r[1]/r[2]*100):100}%"></s></i></div>`).join('')+'</div>';qPlace();}
   const claim=(c&&qOk(c))||SAVE.q.d.l.some(d=>!d.c&&qOk(d)),b=$('bdQ');if(b)b.style.display=claim?'block':'none';
-  const p=$('pty');if(p)p.innerHTML=G.party.members.map(m=>`<div class="pm"><b>${escH(m.name)}<em>Nv.${m.lv||1}</em></b><div class="bar"><b style="width:${clamp((m.hp||0)/(m.maxhp||1)*100,0,100)}%"></b></div></div>`).join('');}
+  const p=$('pty');if(p)p.innerHTML=G.party.members.map(m=>`<div class="pm"><b>${clsIc(m.cls,14)}<span>${escH(m.name)}</span><em>${m.lv||1}</em></b><div class="bar"><b style="width:${clamp((m.hp||0)/(m.maxhp||1)*100,0,100)}%"></b></div></div>`).join('');}
 function socMenu(m,dun){
   const mk=(id,ic,lab,fn,bd,hud)=>mkTb(id,'<img src="'+ic+'"'+(hud?'':' class="ui"')+'><small>'+lab+'</small>'+(bd?'<span class="bd" id="'+bd+'"></span>':''),'mbtn grp',()=>{if(G.winOpen)return;sfx('ui_click');fn();});
   const tg=mkTb('bMt','<span>'+(SAVE.mcol?'☰':'‹')+'</span>','mbtn tgl',()=>{SAVE.mcol=!SAVE.mcol;m.classList.toggle('col',!!SAVE.mcol);tg.firstChild.textContent=SAVE.mcol?'☰':'‹';sfx('ui_click',.5);writeSave();});
@@ -3123,8 +3127,8 @@ function winGrupo(){$('wtt').textContent='Grupo';const tab=G.gtab||'g',P=G.party
   let h=`<div class="tabs" style="margin:0 -12px">${[['g','Grupo'],['f','Amigos'],['c','Chat']].map(([k,l])=>`<button data-a="gt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
   const hero=G.hero,inp=(id,ph,act)=>`<div class="wr" style="padding:6px 8px"><input id="${id}" maxlength="${id==='cmsg'?80:16}" placeholder="${ph}" style="flex:1;min-width:0;height:34px;background:#0d0b11;border:1px solid #4a4458;color:var(--papel);padding:0 8px;font:500 12px var(--f)"><button class="gb" data-a="${act}">${act==='cs'?'Enviar':'Adicionar'}</button></div>`;
   if(tab==='g'){h+=`<div class="sub">Grupos de até ${P.max} heróis. O modo online chega em breve — a estrutura já está pronta.</div>`;
-    h+=`<div class="wr"><img class="ic" src="${UI}imperial-crown.png"><div class="tx"><b>${escH(SAVE.name)} <span style="display:inline;color:var(--ouroC)">(líder)</span></b><span>${CLASSES[SAVE.cls].nome} · Nv.${SAVE.lv}</span><div class="bar" style="margin-top:4px"><b style="width:${hero?clamp(hero.hp/hero.maxhp*100,0,100):100}%"></b></div></div></div>`;
-    P.members.forEach(m=>{h+=`<div class="wr"><img class="ic" src="${UI}helmet.png"><div class="tx"><b>${escH(m.name)}</b><span>${escH(m.cls||'')} · Nv.${m.lv||1}</span></div></div>`;});
+    h+=`<div class="wr"><div class="ic cic">${clsIc(SAVE.cls,34)}</div><div class="tx"><b>${escH(SAVE.name)} <span style="display:inline;color:var(--ouroC)">(líder)</span></b><span>Nv.${SAVE.lv}</span><div class="bar" style="margin-top:4px"><b style="width:${hero?clamp(hero.hp/hero.maxhp*100,0,100):100}%"></b></div></div></div>`;
+    P.members.forEach(m=>{h+=`<div class="wr"><div class="ic cic">${CLASSES[m.cls]?clsIc(m.cls,34):`<img src="${UI}helmet.png">`}</div><div class="tx"><b>${escH(m.name)}</b><span>Nv.${m.lv||1}</span></div></div>`;});
     for(let i=P.members.length+1;i<P.max;i++)h+=`<div class="wr lock"><img class="ic" src="${UI}padlock.png"><div class="tx"><b>Vaga livre</b><span>Convide um amigo (online em breve)</span></div><button class="gb" data-a="gi:${i}">Convidar</button></div>`;
     h+=`<div class="sec-h"><span>Regras</span></div><div class="wr"><div class="tx"><b>Divisão de loot</b><span>${['Todos podem pegar tudo.','Itens raros passam a vez entre os membros.','Cada jogador vê só o seu loot.'][SAVE.party.loot]}</span></div><button class="gb" data-a="gl">${LOOTR[SAVE.party.loot]}</button></div>`;
     if(G.ginv!=null)h+=inp('gname','Nome do herói','gs');
@@ -3332,7 +3336,7 @@ function winSub(){
   $('wtt').textContent='Mestre de Classe';const C=CLASSES[SAVE.cls],cur=SAVE.sub,ok=SAVE.lv>=SUB_LV;
   const list=SUBS[SAVE.cls].map((sb,j)=>({sb,j})).filter(x=>!cur||x.sb.id===cur);
   let h=npcHead('holy-symbol','Mestre Aurelius',cur?'“Que o seu caminho seja longo e glorioso.”':'“Todo herói chega a uma encruzilhada.”');
-  h+=`<div class="sec-h"><span>${cur?'Sua subclasse':'Subclasses de '+C.nome}</span><span>${cur?'Definitiva':ok?'Escolha uma':'Nível '+SUB_LV}</span></div>`;
+  h+=`<div class="sec-h"><span>${clsIc(SAVE.cls,16)} ${cur?'Sua subclasse':'Subclasses de '+C.nome}</span><span>${cur?'Definitiva':ok?'Escolha uma':'Nível '+SUB_LV}</span></div>`;
   list.forEach(({sb,j})=>{const own=cur===sb.id;
     h+=`<div class="sbc ${own?'sel':''}"><div class="sbh"><div class="np"><img src="${UI}${sb.ic}.png"></div><div><b>${sb.nome}</b><span>${sb.papel}</span></div></div><p>${sb.desc}</p><div class="sbs">${[0,1,2].map(n=>{const i=8+j*3+n,S=C.skills[i],sel=G.wsel&&G.wsel.t==='sbs'&&G.wsel.k===i;return `<div class="sbk ${sel?'sel':''}" data-w="sbs:${i}"><img src="${skImg(S[0])}"><em>${S[1]}</em></div>`;}).join('')}</div>
     ${own?'':`<button class="gb" data-a="sub:${sb.id}" ${ok?'':'disabled'}>${ok?'Escolher '+sb.nome:'Disponível no nível '+SUB_LV}</button>`}</div>`;});
