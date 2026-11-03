@@ -34,3 +34,6 @@ Cidade: terreno (chão, ruas, árvores) do pack Pixel Crawler; os 6 prédios (`t
 
 ## Efeitos ambientes
 Fumaça, tochas, fonte, portal e vaga-lumes usam GSAP 3.12.5 (`assets/gsap.min.js`, © GreenSock, licença padrão gratuita https://gsap.com/standard-license).
+
+## Floresta dos Goblins (zonas de goblin)
+Props (árvores, tendas, totens, estacas, paliçadas, ossos, cogumelos etc.) gerados por IA a partir do estilo do jogo, recortados e reduzidos por `tools/mmo/goblin_ia.py` (folhas originais em `tools/mmo/ia_src/`). Chão e fogueiras vêm do Pixel Crawler (Anokolisa).

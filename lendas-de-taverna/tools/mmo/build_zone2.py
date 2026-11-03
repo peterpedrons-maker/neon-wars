@@ -9,12 +9,11 @@ OUT=os.path.join(HERE,'..','..','mmo','assets')
 THEME=os.environ.get('THEME','');SUF={'goblin':'_gob'}.get(THEME,'')     # THEME=goblin gera zone1_gob.* (toca de goblins)
 GOB=THEME=='goblin'
 if GOB:
-    exec(open(os.path.join(HERE,'goblin_props.py')).read())
+    exec(open(os.path.join(HERE,'goblin_ia.py')).read())      # sprites gerados por IA (ia_src/) já na escala do jogo + colisões
     def dk(im,m=(.64,.8,.66)):
         a=np.array(im).astype(float);a[:,:,0]*=m[0];a[:,:,1]*=m[1];a[:,:,2]*=m[2];return Image.fromarray(a.astype('uint8'),'RGBA')
-    T_CON=[dk(t) for t in T_CON];T_OAK=[dk(t,(.58,.74,.6)) for t in T_OAK];BUSH=[dk(b) for b in BUSH];ROCK_BIG=[dk(b,(.7,.78,.72)) for b in ROCK_BIG];ROCK_SM=[dk(b,(.7,.78,.72)) for b in ROCK_SM]
-    TENTS=[tent(i) for i in range(4)];TOTEMS=[totem(i) for i in range(2)];STAKES=[skull_stake(i) for i in range(5)];BONES=[bones(i) for i in range(5)];PAL=[palisade(i) for i in range(3)];CAULD=cauldron();MUSH=[mushrooms(i,i%2==1) for i in range(4)]
-    FENCE=PAL[0]
+    VS=[dk(v,(.55,.7,.55)) for v in VS]                       # mato do chão mais escuro
+    FENCE=GI['fence'][0]
 Z=1.5
 WW,WH=960,1500                      # px do pack (mundo = ×1.5)
 def zs(im):return im.resize((max(1,int(im.width*Z)),max(1,int(im.height*Z))),Image.NEAREST)
@@ -72,7 +71,12 @@ def free(x,y,r):
         if (x-ax)**2+(y-ay)**2<(ar+r)**2:return False
     return True
 def add(spr,x,y,r,**kw):
-    ex.append((x,y,r));P.append(dict(t='p',id=reg(spr,(spr.width//2,spr.height-2)),x=round(x*Z),y=round(y*Z)))
+    ex.append((x,y,r));d=dict(t='p',id=reg(spr,(spr.width//2,spr.height-2)),x=round(x*Z),y=round(y*Z))
+    c=getattr(spr,'col',None)
+    if c:d['col']=[[round(a*Z),round(b*Z),round(rad*Z)] for a,b,rad in c]       # colisão própria (relativa ao pé do sprite)
+    P.append(d)
+def addflat(spr,x,y):P.append(dict(t='flat',id=reg(spr,(spr.width//2,spr.height)),x=round(x*Z),y=round(y*Z)))
+def er(spr):return max(5,spr.width*.38)
 def fire(x,y,small=False):
     P.append(dict(t='fire',x=round(x*Z),y=round(y*Z),small=small));ex.append((x,y,10))
 def _icy(im):
@@ -81,25 +85,32 @@ def _icy(im):
 T_OAK=[t for t in T_OAK if not _icy(t)] or T_OAK;T_CON=[t for t in T_CON if not _icy(t)] or T_CON
 def entr_clear(x,y):return abs(x-ENTR[0])<130 and y>ENTR[1]-260   # corredor livre da entrada
 def tree():
-    t=rr.random();return rr.choice(T_OAK) if t<(.12 if GOB else .6) else rr.choice(T_CON)
+    t=rr.random()
+    if GOB:return rr.choice(GI['pine']) if t<.72 else rr.choice(GI['twisted']) if t<.84 else rr.choice(GI['bigtree']) if t<.93 else rr.choice(GI['deadskull'])
+    return rr.choice(T_OAK) if t<.6 else rr.choice(T_CON)
 # ---- portão da floresta
 for sx in (-1,1):
-    t=max(T_OAK,key=lambda s:s.height);add(t,ENTR[0]+sx*52,ENTR[1]+4,20)
+    t=max(GI['pine'],key=lambda s:s.height) if GOB else max(T_OAK,key=lambda s:s.height);add(t,ENTR[0]+sx*(58 if GOB else 52),ENTR[1]+4,20)
     fire(ENTR[0]+sx*30,ENTR[1]-2,True)
-    add(TOTEMS[0 if sx<0 else 1],ENTR[0]+sx*38,ENTR[1]-14,6) if GOB else add(BAN[1] if sx<0 else BAN[2],ENTR[0]+sx*38,ENTR[1]-14,6)
-    for k in range(1,4):add(FENCE,ENTR[0]+sx*(60+k*34),ENTR[1]+10,16)
+    add(GI['totem'][0 if sx<0 else 1],ENTR[0]+sx*38,ENTR[1]-14,6) if GOB else add(BAN[1] if sx<0 else BAN[2],ENTR[0]+sx*38,ENTR[1]-14,6)
+    for k in range(1,4 if not GOB else 5):add(rr.choice(GI['fence']) if GOB else FENCE,ENTR[0]+sx*(70+k*26 if GOB else 60+k*34),ENTR[1]+10,16)
 # ---- clareiras: acampamentos e ruínas (reservam o espaço antes das árvores)
 for (gx,gy,k) in GLADES:
     if GOB and k=='camp':
-        fire(gx,gy);add(rr.choice(TENTS),gx-52,gy-16,16);add(rr.choice(TENTS),gx+46,gy-22,16);add(CAULD,gx+16,gy+12,10);add(BARREL,gx-26,gy+16,8)
-        for _ in range(3):add(rr.choice(STAKES),gx+rr.randrange(-70,70),gy+rr.randrange(24,44),5)
-        for _ in range(2):add(rr.choice(BONES),gx+rr.randrange(-60,60),gy+rr.randrange(-4,30),5)
-        if rr.random()<.6:add(rr.choice(TOTEMS),gx+rr.choice((-1,1))*82,gy+8,7)
-        add(FENCE,gx-70,gy+34,36)
+        fire(gx,gy);T1,T2=rr.sample(GI['tent'],2);add(T1,gx-58,gy-14,24);add(T2,gx+54,gy-22,24);add(GI['cauldron'][0],gx+18,gy+14,10)
+        if rr.random()<.7:add(GI['drums'][0],gx-8,gy+34,20)
+        for _ in range(3):add(rr.choice(GI['stake']),gx+rr.randrange(-80,80),gy+rr.randrange(30,52),5)
+        for _ in range(3):addflat(rr.choice(GI['bonepile']),gx+rr.randrange(-60,60),gy+rr.randrange(-6,34))
+        add(GI['torch'][0],gx-30,gy+4,5);add(GI['torch'][1],gx+34,gy+8,5)
+        if rr.random()<.65:add(rr.choice(GI['totem']),gx+rr.choice((-1,1))*96,gy+12,7)
+        if rr.random()<.5:add(rr.choice(GI['banner']),gx+rr.choice((-1,1))*76,gy-34,6)
+        add(rr.choice(GI['palisade']),gx-86,gy+44,26)
     elif GOB and k=='ruin':
-        add(TOTEMS[rr.randrange(2)],gx,gy-6,8);fire(gx,gy+16,True)
-        for a in range(0,360,45):add(rr.choice(STAKES),gx+math.cos(math.radians(a))*50,gy+math.sin(math.radians(a))*32,5)
-        for _ in range(3):add(rr.choice(BONES),gx+rr.randrange(-40,40),gy+rr.randrange(-20,30),5)
+        add(rr.choice(GI['totem']),gx,gy-6,8);fire(gx,gy+16,True)
+        for a in range(0,360,45):add(rr.choice(GI['stake']),gx+math.cos(math.radians(a))*54,gy+math.sin(math.radians(a))*34,5)
+        for _ in range(3):addflat(rr.choice(GI['bonepile']),gx+rr.randrange(-44,44),gy+rr.randrange(-22,32))
+        add(GI['torch'][0],gx-30,gy-18,5);add(GI['torch'][1],gx+30,gy-18,5)
+        add(rr.choice(GI['barricade']),gx+rr.choice((-1,1))*80,gy+22,26)
     elif k=='camp':
         fire(gx,gy);add(BARREL,gx+28,gy-4,8);add(BARREL,gx+42,gy+6,8);add(FENCE,gx-70,gy+34,36);add(rr.choice(ROCK_BIG),gx-34,gy-20,12)
     elif k=='ruin':
@@ -132,11 +143,28 @@ for n in range(150):
         if not lake_in(x,y,8) and free(x,y,10) and not entr_clear(x,y):break
     else:continue
     k=n%6
-    if GOB and k in(1,2) and rr.random()<.55:add(rr.choice(MUSH),x,y,7)
-    elif GOB and k==4 and rr.random()<.5:add(rr.choice(BONES+STAKES),x,y,6)
-    elif k in(0,1,2):add(rr.choice(BUSH),x,y,7)
+    if GOB:
+        t=rr.random()
+        if k in(0,1):
+            sp=rr.choice(GI['mush']) if t<.28 else rr.choice(GI['thorn']) if t<.5 else rr.choice(GI['bush'])
+        elif k==2:sp=rr.choice(GI['stump']+GI['log']) if t<.45 else rr.choice(GI['bush'])
+        elif k==3:sp=rr.choice(GI['rockbig'])
+        elif k==4:sp=rr.choice(GI['stake']) if t<.25 else rr.choice(GI['rocksm'])
+        else:sp=rr.choice(GI['rocksm'])
+        if getattr(sp,'kind','')=='flat':addflat(sp,x,y)
+        else:add(sp,x,y,er(sp))
+        continue
+    if k in(0,1,2):add(rr.choice(BUSH),x,y,7)
     elif k==3:add(rr.choice(ROCK_BIG),x,y,12)
     else:add(rr.choice(ROCK_SM),x,y,6)
+if GOB:                                      # decoração rasteira: poças, galhos, ossos e flores roxas
+    for n in range(260):
+        x=rr.randrange(30,WW-30);y=rr.randrange(60,WH-90)
+        if entr_clear(x,y):continue
+        t=rr.random()
+        if lake_in(x,y,6):continue
+        sp=rr.choice(GI['puddle']) if t<.12 else rr.choice(GI['twig']) if t<.45 else rr.choice(GI['bone']) if t<.62 else rr.choice(GI['flower'])
+        addflat(sp,x,y)
 for (gx,gy,k) in GLADES:                     # tufos de mato ao redor de cada clareira
     for _ in range(26):
         x=gx+rr.randrange(-90,90);y=gy+rr.randrange(-60,60)
