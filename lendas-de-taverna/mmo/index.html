@@ -2959,8 +2959,8 @@ function rollStats(slot,L,rar,tier){
 /* Ferreiro */
 G.fmode='up';
 function upCost(it){return Math.round((18+it.ilvl*5)*((it.up||0)+1)*(1+it.rar*.4));}
-/* +1 a +3 sempre dão certo; depois a chance cai bastante (o item nunca perde nível nem quebra) */
-const UPCH=[1,1,1,.85,.75,.65,.55,.45,.35,.25];
+/* +1 a +3 sempre dão certo; depois a chance cai muito (+10 = 1%) (o item nunca perde nível nem quebra) */
+const UPCH=[1,1,1,.95,.85,.60,.38,.20,.08,.01];   // chance de chegar a +1…+10 (o +10 é raríssimo, como nos MMOs: item de endgame)
 function upChance(it){return UPCH[Math.min(9,it.up||0)];}
 function winForja(){
   $('wtt').textContent='Ferreiro';const it=SAVE.eq[G.fslot],mode=G.fmode||'up';
