@@ -52,6 +52,10 @@ def drop_floating(a,cols,rows):
     for r,c,(y0,y1,x0,x1) in frames(a,cols,rows):
         fr=a[y0:y1,x0:x1];al=fr[:,:,3]>0
         if not al.any():continue
+        l8,n8=ndimage.label(al,structure=np.ones((3,3)))
+        for k in range(1,n8+1):
+            if (l8==k).sum()<=6:fr[l8==k]=(0,0,0,0)           # pontinhos soltos
+        al=fr[:,:,3]>0
         lab,n=ndimage.label(ndimage.binary_dilation(al,iterations=2))
         if n>=2:
             sz=ndimage.sum(al,lab,range(1,n+1));keep=1+int(np.argmax(sz))
@@ -62,6 +66,15 @@ def drop_floating(a,cols,rows):
         rows_=np.where(hm.sum(axis=1)>=5)[0]
         if len(rows_)==0:continue
         ht=rows_[0];top=np.where(al.any(axis=1))[0].min()
+        # pontinhos de madeira do arco acima da cabeça e riscos claros (corda/flecha) perto dos pés
+        rmx=np.zeros(64,bool);rmx[:max(0,ht-1)]=True;fr[al&~hm&rmx[:,None]]=(0,0,0,0)
+        al=fr[:,:,3]>0
+        for wc in ((195,151,83),(143,80,48),(174,118,75)):          # madeira do arco ao lado/acima da cabeça
+            wm=(fr[:,:,0]==wc[0])&(fr[:,:,1]==wc[1])&(fr[:,:,2]==wc[2])&al;wm[ht+8:,:]=False;fr[wm]=(0,0,0,0)
+        al=fr[:,:,3]>0;bot=np.where(al.any(axis=1))[0].max()
+        greenn=ndimage.binary_dilation((fr[:,:,1]>fr[:,:,0]+40)&al&(fr[:,:,2]<140),iterations=1)
+        ol=(fr[:,:,0]==160)&(fr[:,:,1]==170)&(fr[:,:,2]==100)&al;ol[:bot-5,:]=False;fr[ol&~greenn]=(0,0,0,0);al=fr[:,:,3]>0
+        lt=(fr[:,:,:3].min(axis=2)>=170)&al;lt[:bot-6,:]=False;fr[lt]=(0,0,0,0);al=fr[:,:,3]>0
         if ht-top>4:
             hl=np.where(hm[ht:ht+8].any(axis=0))[0].min()
             kill=al&~hm;rm=np.zeros(64,bool);rm[:ht]=True;kill_a=kill&rm[:,None]
