@@ -571,7 +571,7 @@ async function loadSheet(name,atkKind){
     if(atkKind==='slash'){cell=atk.height/4>=190?192:64;frames=6;}
     else if(atkKind==='spellcast'){cell=64;frames=7;} else if(atkKind==='shoot'){cell=64;frames=13;}}
   const anc=[0,1,2,3].map(r=>anchorOf(walk,0,r*64,64,64));
-  SHEETS[name]={walk,hurt,atk,cell,frames,anc};
+  SHEETS[name]={walk,hurt,atk,cell,frames,anc,stunF:(name==='goblin2'||(name==='goblin'&&location.search.indexOf('gob2')>=0))?1:3};
 }
 const zoneMap=z=>famOf(z)==='goblin'?'zone1_gob':'zone1';
 function zoneAutoFx(z){if(z._afx)return z._afx;const L=(z.fx||[]).slice();if(!(z.fx||[]).some(e=>e.k==='fire'))for(const p of z.props)if(p.t==='fire')L.push({k:'fire',x:p.x,y:p.y-8,spr:1,r:50});return z._afx=L;}
@@ -2375,7 +2375,7 @@ function entFrame(e){
   const nm=e.kind==='hero'?'hero':(e.kind==='boss'?'ogro':e.T.sheet),sh=SHEETS[nm];
   if(e.kind==='hero'&&e.state==='ko'){return sheetFrame(sh,'hurt',0,Math.min(5,Math.floor((3-e.koT)*4)));}
   if(e.dead){return sheetFrame(sh,'hurt',0,Math.min(5,Math.floor(e.deadT*7)));}
-  if(e.state==='hurt'||(e.stun>0))return sheetFrame(sh,'hurt',0,3);
+  if(e.state==='hurt'||(e.stun>0))return sheetFrame(sh,'hurt',0,sh.stunF||3);
   if(e.kind==='hero'&&e.state==='atk'&&e.act&&e.act.bow&&sh.atk)return sheetFrame(sh,'atk',e.act.up?0:e.row,bowFrame(e.act));
   if(e.kind==='hero'&&e.state==='atk'&&e.act&&e.act.cast&&sh.cast)return sheetFrame(sh,'cast',e.row,castFrame(e.act));
   if(e.state==='atk'&&e.act&&sh.atk){const n=e.kind==='hero'?atkFrames(e):(e.T&&e.T.nfr)||6,dur=e.act.dur,f=Math.min(n-1,Math.floor(e.act.t/dur*n));return sheetFrame(sh,'atk',e.row,f);}
