@@ -131,3 +131,9 @@ _pn=_pad(_pine);_pn.save(os.path.join(UIO,'ni_d1.png'))
 _pad(_tint(_pine,(1.0,1.25,1.5))).save(os.path.join(UIO,'ni_d2.png'))
 _pad(_rock).save(os.path.join(UIO,'ni_d3.png'))
 _pad(_dead).save(os.path.join(UIO,'ni_d4.png'))
+# ---- portal de frente gerado por IA (variação da esquerda: pedra limpa); mantém o desenhado em código se o recorte falhar
+try:
+    _PF=_seg(os.path.join(_C,'portal_front.jpg'),dil=3,minarea=3000)
+    _pf=_scale(_PF[0],w=124);_hh=_hole(_pf)
+    if _hh is not None:CI['portal_front'],CI['portal_front_hole']=_pf,_hh;print('portal IA',_pf.size,_hh)
+except Exception as e:print('portal IA falhou',e)

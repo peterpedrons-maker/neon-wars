@@ -120,7 +120,7 @@ button:active:not(:disabled){transform:scale(.97);filter:brightness(1.15)}
 #boss{position:absolute;left:50%;top:calc(56px + env(safe-area-inset-top));transform:translateX(-50%);width:62%;padding:4px 8px 6px;border-color:#b0442e;background:rgba(36,12,10,.94);display:none}
 #boss .t{font:700 11px var(--ft);letter-spacing:.1em;text-align:center;color:#ffd6a0}
 #boss .bar b{background:linear-gradient(#f26a5a,#b02a24)}
-#sts{position:absolute;left:6px;top:calc(74px + env(safe-area-inset-top));display:flex;flex-wrap:wrap;gap:3px 3px;width:186px}
+#sts{position:absolute;left:6px;top:calc(68px + env(safe-area-inset-top));display:flex;flex-wrap:wrap;gap:3px 3px;width:224px}
 #hud #sts .si{pointer-events:auto;position:relative;width:26px;height:35px}
 #sts .ib{width:26px;height:26px;box-sizing:border-box;background:rgba(10,8,14,.82);border:1px solid #4f9a5a;display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.5)}
 #sts .si.bad .ib{border-color:#d0483c;background:rgba(44,10,10,.84)}
@@ -361,6 +361,23 @@ i.upg{position:absolute;right:1px;top:0;font-size:9px;color:#7de06d;font-style:n
 .dsl{display:flex;flex-direction:column;gap:6px}.dsl .gb{width:100%;text-align:left;padding:10px 12px;font-size:11px;letter-spacing:.03em}
 .bmr{display:flex;gap:6px;margin-top:5px}.bmr .gb{flex:1;padding:6px 4px;font-size:10px}
 .fmode button img{width:16px;height:16px;image-rendering:pixelated;display:block;margin:0 auto 1px}.fmode button span{display:block;font-size:9px}.fmode button{height:40px}
+
+/* HUD do herói: moldura de IA (assets/ui2/hud_frame.png) com vãos para retrato, vida e experiência */
+#hero{position:absolute;left:4px;top:calc(4px + env(safe-area-inset-top));width:224px;height:60px;padding:0;min-height:0;background:none;border:0;box-shadow:none}
+#hero::before,#hero::after{display:none}
+#hero #hfr{position:absolute;left:0;top:0;width:100%;height:100%;image-rendering:pixelated;z-index:2;pointer-events:none}
+#hero #hport{position:absolute;left:7.29%;top:22.19%;width:14.88%;height:54.76%;background:#0d0b11;border:0;box-shadow:none;z-index:1;overflow:hidden}
+#hero #hport canvas{position:absolute;left:0;top:0;width:100%!important;height:100%!important;border:0!important;background:radial-gradient(circle at 50% 35%,#3a3050,#14101c)}
+#hero #hl{position:absolute;left:18.00%;top:61.50%;width:9.00%;height:26.00%;right:auto;bottom:auto;min-width:0;border-radius:50%;background:none;border:0;box-shadow:none;color:#2a1a06;font:800 10px/15px var(--f);text-align:center;padding:0;z-index:3}
+#hero .nm{position:absolute;left:29%;top:15%;width:45%;height:23%;display:flex;justify-content:center;align-items:center;padding:0 3%;z-index:3}
+#hero .nm span:first-child{font:700 11px/1 var(--f);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#fff4d6}
+#hero .nm span:last-child{display:none}
+#hero #hpw{position:absolute;left:28.99%;top:46.69%;width:63.72%;height:12.68%;z-index:1;margin:0}
+#hero #hpw #hp{position:absolute;inset:0;height:auto;margin:0;border:0;background:#190e10;box-shadow:inset 0 1px 3px rgba(0,0,0,.8)}
+#hero #hpw #hp::after{content:'';position:absolute;left:0;right:0;top:0;height:35%;background:linear-gradient(rgba(255,255,255,.3),rgba(255,255,255,0));pointer-events:none}
+#hero #hpt{position:absolute;left:0;right:0;top:0;height:100%;line-height:8px;font:700 9px/1 var(--f);display:flex;align-items:center;justify-content:center;z-index:3}
+#hero #xp{position:absolute;left:32.64%;top:72.91%;width:40.47%;height:5.76%;height:auto;margin:0;border:0;background:#0b1224;z-index:1}
+#hero #xp b{box-shadow:0 0 6px rgba(120,180,255,.6)}
 </style>
 </head>
 <body>
@@ -409,10 +426,10 @@ i.upg{position:absolute;right:1px;top:0;font-size:9px;color:#7de06d;font-style:n
 
   <!-- HUD -->
   <div class="scr" id="hud">
-    <div id="hero" class="panel"><div id="hport"><canvas id="hface" width="32" height="32"></canvas><span id="hl">1</span></div>
+    <div id="hero"><div id="hport"><canvas id="hface" width="32" height="32"></canvas></div><span id="hl">1</span>
       <div class="nm txt-o"><span id="hn">—</span><span id="hcl"></span></div>
       <div class="pb" id="hpw"><div class="bar" id="hp"><b style="width:100%"></b></div><span id="hpt"></span></div>
-      <div class="bar" id="xp"><b style="width:0"></b></div><span id="xpt"></span></div>
+      <div class="bar" id="xp"><b style="width:0"></b></div><span id="xpt"></span><img id="hfr" src="assets/ui2/hud_frame.png" alt=""></div>
     <div id="zone" class="txt-o" style="display:none">·</div><div id="gold"><span id="goldn">0</span></div><div id="banner"><i class="o"></i><b id="bnT"></b><u></u><span id="bnS"></span></div>
     <div id="sts"></div><canvas id="mm"></canvas><div id="prog" class="panel txt-o"><div id="progt">Clareira 0/10</div><div class="bar"><b style="width:0"></b></div></div>
     <div id="boss" class="panel"><div class="t txt-o" id="bosst">Ogro de Brumavale</div><div class="bar"><b style="width:100%"></b></div></div>
