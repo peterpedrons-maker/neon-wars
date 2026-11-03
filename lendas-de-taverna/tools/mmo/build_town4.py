@@ -35,7 +35,7 @@ def town():
     roads=[[(300,70),(300,300),(300,480),(300,830)]]+[[(168,y),(300,y),(432,y)] for y in ROW]
     pts=[]
     for rd in roads:pts+=poly_pts(rd,12)
-    paint_region(w,union_mask(pts,r),DR,r,edge=(112,78,48,255),rim=(40,92,24,255))
+    paint_region(w,union_mask(pts,r),STN,r,edge=(84,82,96,255),rim=(40,92,24,255))   # ruas de pedra
     cx,cy,rx,ry=300,ROW[1]+8,52,36   # praça
     for yy in range(0,WH,16):
         for xx in range(0,WW,16):
@@ -107,18 +107,17 @@ def portal_frame(f):
     for xx in range(cx-34,cx+36,8):d.rectangle((xx,8,xx+7,17),fill=(140,140,152,255),outline=(60,58,68,255))
     for xx in range(cx-24,cx+26,8):d.rectangle((xx,16,xx+7,23),fill=(122,122,132,255),outline=(60,58,68,255))
     return im
-_pa=CI['portal'];_ph=CI['portal_hole'];_anc=(_pa.width//2,_pa.height-6)
+_pa=CI['portal_front'];_hx0,_hx1,_hy0,_hy1=CI['portal_front_hole'];_anc=(_pa.width//2,_pa.height-4)
 PF=[R_.reg(_pa,_anc,'pf0')]
-_hx0,_hx1,_hy0,_hy1=_ph;_hcx=(_hx0+_hx1)/2-_anc[0];_hcy=(_hy0+_hy1)/2-_anc[1];_hrx=(_hx1-_hx0)/2;_hry=(_hy1-_hy0)/2
-_pil=_hrx+13
+_hcx=(_hx0+_hx1)/2-_anc[0];_hcy=(_hy0+_hy1)/2-_anc[1];_hrx=(_hx1-_hx0)/2;_hry=(_hy1-_hy0)/2
+_pil=_hrx+12
 R_.props.append(dict(t='portal',fr=PF,fps=1,x=S(300),y=S(86),col=[[S(-_pil),S(-4),S(9)],[S(_pil),S(-4),S(9)]]))
 FX.append(dict(k='portal',x=S(300)+S(_hcx),y=S(86)+S(_hcy)))
 PORTAL_FX=dict(dx=S(_hcx),dy=S(_hcy),rx=S(_hrx)-1,ry=S(_hry)-1)
 # fonte (praça)
-_fn=CI['fountain'];fi,fa=_fn,(_fn.width//2,_fn.height-3);FXY=(300,ROW[1]+8)
-_fc=[(-(_fn.width//2-16)+k*((_fn.width-32)/3),-10,10) for k in range(4)]
-R_.addp(fi,fa,FXY[0],FXY[1],_fc)
-FX.append(dict(k='fountain',x=S(FXY[0]),y=S(FXY[1])-S(_fn.height*.38)-34))
+_wl=CI['well_big'];fi,fa=_wl,(_wl.width//2,_wl.height-3);FXY=(300,ROW[1]+8)
+R_.addp(fi,fa,FXY[0],FXY[1],[(-14,-8,9),(0,-8,9),(14,-8,9)])
+FX.append(dict(k='plaza',x=S(FXY[0]),y=S(FXY[1])))
 # postes ao longo da rua central
 LAMPS=CI['lamp']
 for k,(x,y) in enumerate([(268,200),(332,200),(268,390),(332,390),(268,570),(332,570),(268,730),(332,730)]):
@@ -137,7 +136,6 @@ for (x,y,k) in [(216,112,0),(384,112,2)]:
 for (x,y,k) in [(246,340,0),(354,340,1),(246,555,1),(354,555,0)]:deco(CI['bench'][k],x,y)
 for (x,y,k) in [(246,238,0),(354,238,1)]:deco(CI['flowerbox'][k],x,y)
 deco(CI['stall'][0],388,400);deco(CI['sign'][0],338,262,[(0,-2,3)]);deco(CI['sign'][1],262,662,[(0,-2,3)])
-deco(CI['well'][0],360,595)
 for (x,y,k) in [(84,262,0),(516,262,1),(84,442,1),(516,442,0),(84,622,0),(516,622,1)]:deco(CI['barrels'][k],x,y)
 deco(CI['crates'][0],520,760);deco(CI['hay'][0],86,700);deco(CI['hay'][1],514,700);deco(CI['sack'][0],112,708);deco(CI['sack'][1],488,708)
 # arbustos e barris nas bordas
