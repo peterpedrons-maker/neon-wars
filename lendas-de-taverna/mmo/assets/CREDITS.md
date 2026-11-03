@@ -43,3 +43,6 @@ Props (árvores, tendas, totens, estacas, paliçadas, ossos, cogumelos etc.) ger
 
 ## Ícones de talentos
 126 glifos do game-icons.net (Lorc, Delapouite e colaboradores, CC BY 3.0 — https://game-icons.net) pintados em estilo pixel por `tools/mmo/icons3/talentos.py`, no mesmo padrão dos ícones de habilidade.
+
+## Trilhas da floresta e efeitos de combate
+Músicas `floresta_*` compostas para o jogo e renderizadas com instrumentos reais amostrados do **GeneralUser GS** (S. Christian Collins, licença própria que permite uso em projetos comerciais). Efeitos de combate refeitos em `tools/mmo/music/sfx2.py` (camadas sintetizadas e instrumentos do mesmo banco de sons).
