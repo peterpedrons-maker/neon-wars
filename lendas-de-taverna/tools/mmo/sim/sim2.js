@@ -30,11 +30,11 @@ const CLS=process.argv[2]||'guerreiro',MIN=+(process.argv[3]||4),LV0=+(process.a
         const h=G.hero;
         for(let i=0;i<30*10;i++){
           M.update(dt);t+=dt;
-          if(h.state==='ko'&&!lastKo){deaths++;lastKo=true;h.state='idle';h.hp=h.maxhp*.5;}
+          if(h.state==='ko'&&!lastKo){deaths++;lastKo=true;}
           if(h.state!=='ko')lastKo=false;
           if(G.phase==='end'||G.phase==='boss'){G.boss=null;G.phase='farm';G.bossRoll=1;G.dtm=0;}
           if(h.hp<prevHp)dmgSum+=prevHp-h.hp;prevHp=h.hp;
-          if(i%30===0){att();if(M.skPoints()>0){for(const i2 of [0,1,2,3,4,5,6,7]){if(M.skAvail(i2)&&S.sk[i2]<5){S.sk[i2]++;break;}}}
+          if(i%30===0){if(!G.ev)G.evT=1e9;att();if(M.skPoints()>0){for(const i2 of [0,1,2,3,4,5,6,7]){if(M.skAvail(i2)&&S.sk[i2]<5){S.sk[i2]++;break;}}}
             // economia: recompra poções com o ouro (preço do alquimista), até 6
             while(S.potions<6&&S.gold>=M.potPrice()){S.gold-=M.potPrice();S.potions++;potUsed--;}}
         }
