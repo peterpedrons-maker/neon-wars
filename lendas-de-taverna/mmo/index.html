@@ -133,6 +133,15 @@ button:active:not(:disabled){transform:scale(.97);filter:brightness(1.15)}
 #buffs{position:absolute;left:6px;top:calc(98px + var(--sth,0px) + env(safe-area-inset-top));display:flex;gap:3px}
 #buffs div{display:flex;align-items:center;gap:2px;background:var(--gl);border:1px solid var(--lin);padding:1px 4px 1px 2px;font-size:9px}
 #buffs img{width:14px;height:14px;image-rendering:pixelated}
+#soc{position:absolute;left:6px;top:calc(70px + env(safe-area-inset-top));width:186px;display:flex;flex-direction:column;gap:5px;pointer-events:none}
+#sbt{display:flex;gap:5px}#sbt button{position:relative;width:34px;height:34px;pointer-events:auto;background:var(--gl);border:1px solid var(--lin);padding:0;display:flex;align-items:center;justify-content:center}
+#sbt img{width:22px;height:22px;image-rendering:pixelated;filter:sepia(1) saturate(5) hue-rotate(-12deg) brightness(1.15)}
+#bdQ{display:none;position:absolute;right:-3px;top:-3px;width:10px;height:10px;border-radius:50%;background:#e8402a;border:1px solid #fff}
+#qtr{pointer-events:auto;padding:4px 7px 5px;font:600 10px var(--f);line-height:1.3;background:rgba(14,11,20,.7)}
+#qtr b{display:block;color:var(--ouroC);font-size:10.5px}#qtr span{display:block;color:#e6dcc2;font-weight:500}#qtr .bar{height:4px;margin-top:3px}#qtr.ok{border-color:#e8c24a}#qtr.ok span{color:#9ef09a}
+#pty{display:flex;flex-direction:column;gap:3px}.pm{padding:3px 6px;background:rgba(14,11,20,.7);border:1px solid #4a4458;font:600 10px var(--f)}.pm em{font-style:normal;color:var(--papel2);margin-left:6px}.pm .bar{height:5px;margin-top:2px}
+.wr .bar{height:6px;background:#0d0b11;border:1px solid #3a3446}.wr .bar b{display:block;height:100%;background:linear-gradient(#f0cf7c,#b98a2f)}
+.clog{height:170px;overflow-y:auto;background:#0d0b11;border:1px solid #3a3446;padding:6px 8px;font:500 11.5px/1.45 var(--f);margin-bottom:6px}
 #chat{position:absolute;left:6px;bottom:calc(88px + env(safe-area-inset-bottom));width:60%;font-size:10.5px;line-height:1.35;background:linear-gradient(90deg,rgba(8,8,12,.55),rgba(8,8,12,0));padding:2px 6px;display:none}
 #chat div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #toast{position:absolute;left:50%;top:32%;transform:translate(-50%,-50%);padding:9px 18px;font:600 13.5px var(--f);color:var(--ouroC);display:none;text-align:center;white-space:nowrap}
@@ -338,6 +347,8 @@ i.upg{position:absolute;right:1px;top:0;font-size:9px;color:#7de06d;font-style:n
 #mmenu{position:absolute;right:6px;bottom:calc(88px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:5px;pointer-events:none}
 .mbtn{position:relative;width:46px;height:46px;pointer-events:auto;background:var(--gl);border:1px solid var(--lin);box-shadow:0 4px 12px rgba(0,0,0,.5);font:700 10px var(--ft);letter-spacing:.06em;color:var(--ouroC);padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
 .mbtn img{width:34px;height:34px;image-rendering:pixelated}
+.mbtn img.ui{width:26px;height:26px;margin-top:3px;filter:sepia(1) saturate(5) hue-rotate(-12deg) brightness(1.15)}
+#mmenu.col .grp{display:none}.mbtn.tgl{height:22px;font-size:14px;align-self:flex-end;width:30px}
 .mbtn small{display:block;font:700 8px var(--f);color:var(--papel2);letter-spacing:.03em;line-height:1;text-transform:uppercase}
 #bAuto.on{border-color:#96e08a;background:linear-gradient(#26502e,#183a20);color:#c8ffd0;box-shadow:0 0 10px rgba(120,230,140,.35)}
 .mbtn .bd{position:absolute;right:-5px;top:-6px;background:#d6403a;color:#fff;font:700 10px var(--f);border-radius:9px;min-width:17px;padding:0 4px;display:none;text-align:center}
@@ -418,6 +429,7 @@ i.upg{position:absolute;right:1px;top:0;font-size:9px;color:#7de06d;font-style:n
     <div id="sts"></div><canvas id="mm"></canvas><div id="prog" class="panel txt-o"><div id="progt">Clareira 0/10</div><div class="bar"><b style="width:0"></b></div></div>
     <div id="boss" class="panel"><div class="t txt-o" id="bosst">Ogro de Brumavale</div><div class="bar"><b style="width:100%"></b></div></div>
     <div id="buffs"></div>
+    <div id="soc"></div>
     <div id="chat"></div>
     <div id="joy"><div id="joyk"></div></div>
     <div id="bar"></div><div id="mmenu"></div>
@@ -428,7 +440,7 @@ i.upg{position:absolute;right:1px;top:0;font-size:9px;color:#7de06d;font-style:n
   <div class="scr" id="win"><div class="box"><div class="tt"><span id="wtt">—</span><button class="xb" id="wx"></button></div><div class="wb" id="wbody"></div></div><div id="wtip" class="tipbox"></div></div>
   <div id="gc"><div class="gcb"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><h3 id="gct"></h3><p id="gcm"></p><div class="gcbt"><button id="gcn" class="sec"></button><button id="gcy" class="ok"></button></div></div></div>
   <div id="fade"></div>
-  <div class="scr" id="pan"><div class="box"><div class="tt"><span>Herói</span><button class="xb" id="pClose"></button></div>
+  <div class="scr" id="pan"><div class="box"><div class="tt"><span>Personagem</span><button class="xb" id="pClose"></button></div>
     <div class="tabs"><button id="tEq" class="on">Mochila</button><button id="tAt">Herói</button><button id="tSk">Habilid.</button><button id="tTl">Talentos</button></div>
     <div class="wb body" id="pBody"></div></div><div id="tip"></div></div>
   <!-- resultado -->
@@ -1283,9 +1295,9 @@ function resetZone(){
 }
 function fadeTo(cb){const f=$('fade');f.classList.add('on');setTimeout(()=>{cb();setTimeout(()=>f.classList.remove('on'),220);},380);}
 async function startGame(){
-  migrateSave();await buildHeroSheet();G.on=true;G.hero=mkHero();G.floats=[];G.fx=[];G.chat=[];G.loot=[];G.auto=true;
+  migrateSave();qInit();await buildHeroSheet();G.on=true;G.hero=mkHero();G.floats=[];G.fx=[];G.chat=[];G.loot=[];G.auto=true;
   faceCanvas(SAVE.cls,$('hface'),SHEETS.hero);$('hn').textContent=SAVE.name;$('chat').style.display='block';
-  audioInit();enterTown(true,true);
+  audioInit();enterTown(true,true);socRefresh();
 }
 function initTown(){
   G.npcs=ZONE.npcs.filter(n=>n.id!=='gua').map(n=>({...n,kind:'npc',name:n.nm,row0:n.row,animT:0,moving:false}));
@@ -1326,8 +1338,7 @@ function buildBar(){
     const sk0=SAVE.eqs[0]>=0?SAVE.eqs[0]:0;
     ab.appendChild(mkTb('bGo','<img src="assets/hud/mapa.png" style="padding:4px 4px 12px"><span class="lbl">Atalhos</span>','slot2',()=>{if(G.winOpen)return;sfx('ui_click');openWin('locais');}));
     ab.appendChild(mkTb('bPot',potHtml,'slot2',()=>usePotion(true)));
-    {const MB=(id,img,lab,tab,bd)=>mkTb(id,'<img src="'+img+'"><small>'+lab+'</small>'+(bd?'<span class="bd" id="'+bd+'"></span>':''),'mbtn',()=>{sfx('ui_click');openPan(tab);});
-      [MB('bInv','assets/hud/inv.png','Mochila','eq'),MB('bAt','assets/hud/heroi.png','Herói','at','bdAt'),MB('bSkB','assets/hud/hab.png','Habil.','sk','bdSk'),MB('bTlB','assets/hud/tal.png','Talent.','tl','bdTl')].forEach(e=>m.appendChild(e));}
+    socMenu(m,false);
     updPot();badge();return;
   }
   [0,1,2].forEach(k=>{const si=SAVE.eqs[k],lk=SAVE.lv<SLOT_UNL[k]||si<0||SAVE.sk[si]<1||!skAvail(si);const d=document.createElement('div');d.className='slot2'+(lk?' lock':'')+(si<0?' empty':'');d.id='sk'+k;
@@ -1335,10 +1346,8 @@ function buildBar(){
     d.style.pointerEvents='auto';d.onclick=()=>{if(!G.auto&&!lk&&G.scene==='dungeon'){G.castReq=k;return;}sfx('ui_click');openPan('sk');};ab.appendChild(d);});
   const pot=mkTb('bPot',potHtml,'slot2 sep',()=>usePotion(true));ab.appendChild(pot);
   {const D=DODGE[SAVE.cls];const dd=mkTb('bDodge','<img src="assets/hud/'+(D.t==='blink'?'esq_blink':'esq_roll')+'.png" style="padding:0"><span class="key">E</span><div class="cd"></div><div class="ct"></div>','slot2',()=>{const h=G.hero;if(!h||h.state==='ko')return;const f=nearestMob(h,300);if(f)heroDodge(h,h.x-f.x,h.y-f.y,'melee');else heroDodge(h,-Math.cos(0),0,'melee');});ab.appendChild(dd);}
-  const MB=(id,img,lab,tab,bd)=>mkTb(id,'<img src="'+img+'"><small>'+lab+'</small>'+(bd?'<span class="bd" id="'+bd+'"></span>':''),'mbtn',()=>{sfx('ui_click');openPan(tab);});
-  const menu=[MB('bInv','assets/hud/inv.png','Mochila','eq'),MB('bAt','assets/hud/heroi.png','Herói','at','bdAt'),MB('bSkB','assets/hud/hab.png','Habil.','sk','bdSk'),MB('bTlB','assets/hud/tal.png','Talent.','tl','bdTl')];
   const tw=mkTb('bTownB','<img src="assets/hud/cidade.png" style="width:40px;height:40px">','mbtn',()=>{sfx('ui_click');gConfirm('O progresso desta floresta (abates) será perdido.',{title:'Voltar para a cidade?',ok:'Voltar',no:'Ficar'}).then(ok=>{if(ok)enterTown(false);});});
-  [...menu,tw].forEach(e=>m.appendChild(e));updPot();badge();
+  socMenu(m,true);m.appendChild(tw);updPot();badge();
 }
 function updPot(){const n=$('potn');if(n)n.textContent=SAVE.potions+(SAVE.potL?'+'+SAVE.potL:'');}
 function usePotion(manual){const h=G.hero;if(!h||h.state==='ko')return;
@@ -1347,7 +1356,7 @@ function usePotion(manual){const h=G.hero;if(!h||h.state==='ko')return;
   const big=SAVE.potL>0&&(SAVE.potions<=0||h.hp<h.maxhp*.3);let v;
   if(big){SAVE.potL--;v=Math.round(h.maxhp*.8);}else{SAVE.potions--;v=Math.round(h.maxhp*.45);}
   v=Math.round(v*(1+tf('pot')));h.hp=Math.min(h.maxhp,h.hp+v);h.potCd=8;floatText(h.x,h.y-52,'+'+v,'#8ef08a',10);potionSynth();G.fx.push({k:'ring',x:h.x,y:h.y,life:.5,max:.5,col:'#8ef08a'});updPot();chat('Usou '+(big?'uma poção maior':'uma poção'),1);}
-function chat(t,type){G.chat.push({t,type});if(G.chat.length>4)G.chat.shift();
+function chat(t,type){G.chat.push({t,type});(G.clog=G.clog||[]).push({c:'s',t,col:type===2?'#ff8a70':type===3?'#d6a0ff':type===4?'#96f090':'#ffd678'});if(G.clog.length>120)G.clog.shift();if(G.chat.length>4)G.chat.shift();
   $('chat').innerHTML=G.chat.map(c=>`<div style="color:${c.type===2?'#ff8a70':c.type===3?'#d6a0ff':c.type===4?'#96f090':'#ffd678'}">${c.type===2?'[Aviso]':'[Sistema]'} ${c.t}</div>`).join('');}
 function banner(t,sub){$('bnT').textContent=t;$('bnS').textContent=sub||'';const b=$('banner');b.classList.remove('show');void b.offsetWidth;b.classList.add('show');}
 function toast(t,ms=1800){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',ms);}
@@ -1448,7 +1457,7 @@ function updateLoot(dt){
     if(Math.random()<dt*30)VF.pt(L.x+rnd(-3,3),L.y+rnd(-3,3),{life:.3,col:RAR[L.it.rar].c,sz:2});
     if(d<9){G.loot.splice(i,1);addItem(L.it);}}
 }
-function badge(){for(const [id,p] of [['bdAt',atPoints()],['bdSk',skPoints()],['bdTl',tlPoints()]]){const b=$(id);if(!b)continue;b.style.display=p>0?'block':'none';b.textContent=p;}}
+function badge(){const p=atPoints()+skPoints()+tlPoints(),b=$('bdPs');if(b){b.style.display=p>0?'block':'none';b.textContent=p;}}
 
 /* ------------------------------ combate --------------------------------- */
 /* NÍVEL DE HABILIDADE (1–5): curvas por classe, nada linear. dmg = dano; ef = potência de cura/escudo/buff; du = duração dos efeitos (debuffs, buffs, escudo); cd = recarga.
@@ -1495,7 +1504,7 @@ function killMob(m){
   m.dead=true;m.deadT=0;m.hp=0;if(m.onDie&&!G.ev){const f=m.onDie;m.onDie=null;f();}const T=m.T;
   const over=Math.max(0,SAVE.lv-(m.lv+2)),xp=Math.max(1,Math.round((m.elite?(m.tier==='gold'?3.5:2):1)*T.xp*((FAMM[m.T.fam||m.type]||[1,1,1])[2])*(1+.25*(m.lv-1))*Math.max(.12,1-.2*over)*(1+uf('xp'))));let g=rint(T.gold[0],T.gold[1])*(1+.2*(m.lv-1))*(1+uf('gold'));if(SAVE.cls==='bardo')g*=1.4;g=Math.round(g*(m.elite?(m.tier==='gold'?2.2:1.5):1));
   SAVE.gold+=g;gainXP(xp,m);floatText(m.x+12,m.y-30,'+'+g+' ouro','#ffd65a',8,1.1);sfx('coin',.5);
-  SAVE.totalKills=(SAVE.totalKills||0)+1;
+  SAVE.totalKills=(SAVE.totalKills||0)+1;{const fm=m.T.fam||m.type;bstAdd(fm,m.elite);qEv('kill');qEv('fam',fm);if(m.elite)qEv('elite');if(m.kind==='boss'){SAVE.bosses=(SAVE.bosses||0)+1;qEv('boss');}}
   dropLoot(m);dropMats(m);
   if(m.boom){addZone({shape:'circle',x:m.x,y:m.y,r:58,warn:1,mult:1.8,pow:m.pow,shake:.3});chat(m.name+' vai explodir!',2);}
   if(m.elite){chat((m.tier==='gold'?'Elite dourado':'Elite azul')+' derrotado!',4);}
@@ -1549,7 +1558,7 @@ function spawnBoss(){
 function gainXP(x,at){
   SAVE.xp+=x;floatText(at.x,at.y-58,'+'+x+' Exp','#9fe0ff',8,1);
   let lvled=false;while(SAVE.xp>=xpNeed(SAVE.lv)){SAVE.xp-=xpNeed(SAVE.lv);SAVE.lv++;lvled=true;}
-  if(lvled){const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;sfx('levelup',.9);G.fx.push({k:'lv',x:h.x,y:h.y,life:1.2,max:1.2});floatText(h.x,h.y-70,'NÍVEL '+SAVE.lv+'!','#ffe08a',14,1.4);banner('Nível '+SAVE.lv,'Você ficou mais forte');chat('Você alcançou o Nv.'+SAVE.lv+'!',4);buildBar();chat('+1 ponto de habilidade',4);checkBoss();}
+  if(lvled){const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;sfx('levelup',.9);G.fx.push({k:'lv',x:h.x,y:h.y,life:1.2,max:1.2});floatText(h.x,h.y-70,'NÍVEL '+SAVE.lv+'!','#ffe08a',14,1.4);banner('Nível '+SAVE.lv,'Você ficou mais forte');chat('Você alcançou o Nv.'+SAVE.lv+'!',4);qCheck();buildBar();chat('+1 ponto de habilidade',4);checkBoss();}
 }
 function hurtHero(dmg,fromX,fromY,kf=1){
   const h=G.hero;if(h.state==='ko')return;if(h.inv>0){floatText(h.x,h.y-58,'Esquivou!','#cfe9ff',9,1);return;}{const tk=stMul(h,'taken');if(tk!==1)dmg=Math.max(1,Math.round(dmg*tk));}if(SAVE.sub==='cavaleiro')dmg=Math.round(dmg*.92);{const dr=tf('dmgred');if(dr)dmg=Math.max(1,Math.round(dmg*(1-Math.min(.6,dr))));}if(h.shield>0){const ab=Math.min(h.shield,dmg);h.shield-=ab;dmg-=ab;floatText(h.x+(Math.random()<.5?-15:15),h.y-34,'-'+ab,'#7ab8ff',10,.9,{pop:1,vy:20});if(dmg<=0){sfx('hit_1',.4,1.3);return;}}h.hp-=dmg;h.flash=.14;h.combat=4;
@@ -1563,7 +1572,7 @@ function showResult(){
   show('res');$('cv').style.display='block';const xp=BOSS.xp;
   $('rl').innerHTML=`${SAVE.name} · ${CLASSES[SAVE.cls].nome} Nv.${SAVE.lv}<br>Chefe derrotado!<br>Ouro total: ${SAVE.gold}<br><span style="color:#96e08a">Próxima zona: monstros mais fortes</span>`;
 }
-function nextZone(){G.zoneLv++;if(zoneMap(G.zoneLv)!==G.map)useMap(zoneMap(G.zoneLv));SAVE.zone=G.zoneLv;SAVE.zoneMax=Math.max(SAVE.zoneMax||1,G.zoneLv);writeSave();show('hud');banner('Floresta de Brumavale','Zona '+G.zoneLv+' · '+MOBS[famOf(G.zoneLv)].nome+'s');const h=G.hero;h.hp=h.maxhp;h.x=ZONE.start[0];h.y=ZONE.start[1];resetZone();updHUD();chat('Zona '+G.zoneLv+' — '+MOBS[famOf(G.zoneLv)].nome+'s, mais fortes!',2);zoneMusic();ambStart();}
+function nextZone(){G.zoneLv++;if(zoneMap(G.zoneLv)!==G.map)useMap(zoneMap(G.zoneLv));SAVE.zone=G.zoneLv;SAVE.zoneMax=Math.max(SAVE.zoneMax||1,G.zoneLv);qCheck();writeSave();show('hud');banner('Floresta de Brumavale','Zona '+G.zoneLv+' · '+MOBS[famOf(G.zoneLv)].nome+'s');const h=G.hero;h.hp=h.maxhp;h.x=ZONE.start[0];h.y=ZONE.start[1];resetZone();updHUD();chat('Zona '+G.zoneLv+' — '+MOBS[famOf(G.zoneLv)].nome+'s, mais fortes!',2);zoneMusic();ambStart();}
 
 /* --- ataque do herói --- */
 function atkDur(h){const k=CLASSES[h.cls].atk_;return k==='cast'?.75:k==='shoot'?.95:.5;}
@@ -2893,11 +2902,133 @@ $('tTl').onclick=()=>{panTab='tl';panSel=null;sfx('ui_click');renderPan();};
 $('pClose').onclick=()=>{sfx('tr_close',.6);closePan();};
 /* ------------------------------ janelas dos NPCs ------------------------ */
 const UI='../assets/ui-icons/';
+/* ===== MMO: diário de missões, bestiário, grupo, amigos e chat (offline, pronto para o online) ===== */
+const escH=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const QMAIN=[
+ {t:'kill',n:8,nm:'Primeiros passos',ds:'Derrote 8 monstros na floresta.'},
+ {t:'lv',n:3,nm:'Ganhando força',ds:'Alcance o nível 3.'},
+ {t:'kill',n:25,nm:'Limpando a trilha',ds:'Derrote 25 monstros.'},
+ {t:'fam',f:'goblin',n:20,nm:'Praga verde',ds:'Derrote 20 goblins.'},
+ {t:'lv',n:6,nm:'Um caminho próprio',ds:'Alcance o nível 6 e ganhe seu primeiro ponto de talento.'},
+ {t:'elite',n:3,nm:'Alvos marcados',ds:'Derrote 3 elites (azuis ou dourados).'},
+ {t:'boss',n:1,nm:'O Ogro de Brumavale',ds:'Derrote o chefe de uma zona.'},
+ {t:'zone',n:3,nm:'Mais fundo na floresta',ds:'Alcance a zona 3.'},
+ {t:'up',n:3,nm:'Faíscas na bigorna',ds:'Melhore equipamentos 3 vezes com sucesso na forja.'},
+ {t:'fam',f:'esq',n:40,nm:'Ossos inquietos',ds:'Derrote 40 esqueletos.'},
+ {t:'lv',n:12,nm:'Veterano',ds:'Alcance o nível 12.'},
+ {t:'zone',n:5,nm:'Além da clareira',ds:'Alcance a zona 5.'},
+ {t:'fam',f:'javali',n:50,nm:'Caça grossa',ds:'Derrote 50 javalis.'},
+ {t:'boss',n:5,nm:'Matador de chefes',ds:'Derrote 5 chefes.'},
+ {t:'lv',n:20,nm:'Herói de Brumavale',ds:'Alcance o nível 20.'},
+ {t:'fam',f:'rato',n:80,nm:'Dedetização',ds:'Derrote 80 ratos gigantes.'},
+ {t:'elite',n:25,nm:'Caçador de elites',ds:'Derrote 25 elites.'},
+ {t:'zone',n:8,nm:'Terras bravas',ds:'Alcance a zona 8.'},
+ {t:'up',n:15,nm:'Mestre da forja',ds:'Melhore equipamentos 15 vezes com sucesso.'},
+ {t:'lv',n:30,nm:'Lenda em ascensão',ds:'Alcance o nível 30.'},
+ {t:'zone',n:10,nm:'O coração sombrio',ds:'Alcance a zona 10.'},
+ {t:'boss',n:20,nm:'Flagelo dos chefes',ds:'Derrote 20 chefes.'},
+ {t:'lv',n:45,nm:'Campeão',ds:'Alcance o nível 45.'},
+ {t:'zone',n:12,nm:'Fim da trilha',ds:'Alcance a zona 12.'},
+ {t:'lv',n:60,nm:'Lenda de Brumavale',ds:'Alcance o nível 60.'}
+].map((q,i)=>(q.id='m'+i,q));
+const QDAY=[
+ lv=>({t:'kill',n:30+lv*2,nm:'Caçada do dia',ds:'Derrote monstros.'}),
+ lv=>({t:'elite',n:2+(lv>25?2:0),nm:'Elites à vista',ds:'Derrote elites.'}),
+ lv=>({t:'boss',n:1+(lv>30?1:0),nm:'Cabeça a prêmio',ds:'Derrote chefes.'}),
+ lv=>({t:'up',n:2,nm:'Dia de forja',ds:'Melhore equipamentos com sucesso.'}),
+ lv=>({t:'kill',n:60+lv*3,nm:'Grande expedição',ds:'Derrote muitos monstros.'})
+];
+const BST_MS=[10,50,200,500];
+function qInit(){const q=SAVE.q=SAVE.q||{};q.m=q.m||0;q.p=q.p||{};SAVE.bst=SAVE.bst||{};SAVE.friends=SAVE.friends||[];SAVE.pend=SAVE.pend||[];SAVE.party=SAVE.party||{loot:0};
+  const today=new Date().toISOString().slice(0,10);
+  if(!q.d||q.d.date!==today){let s=0;for(const c of today)s=(s*31+c.charCodeAt(0))>>>0;const pool=[0,1,2,3,4],pick=[];while(pick.length<3){s=(s*1103515245+12345)>>>0;pick.push(pool.splice(s%pool.length,1)[0]);}
+    q.d={date:today,l:pick.map((k,i)=>({...QDAY[k](SAVE.lv),id:'d'+i,p:0,c:0}))};}}
+const qMain=()=>QMAIN[SAVE.q.m]||null;
+function qVal(q){return q.t==='lv'?Math.min(q.n,SAVE.lv):q.t==='zone'?Math.min(q.n,SAVE.zoneMax||1):Math.min(q.n,q.p!==undefined?q.p:(SAVE.q.p[q.id]||0));}
+const qOk=q=>qVal(q)>=q.n;
+function qRew(q,main){const L=SAVE.lv;if(main){const i=+q.id.slice(1);return {gold:Math.round(40*Math.pow(i+1,1.3)),xp:Math.round(xpNeed(L)*(.15+.01*i)),pot:i%3===2?2:0,mat:i>=10?(i>=18?['cristal',2+(i>>3)]:['runa',3+(i>>2)]):(i>=4?['ferro',4+i]:null)};}
+  return {gold:60+L*12,xp:Math.round(xpNeed(L)*.12),pot:1,mat:L>=20?['runa',3]:['ferro',5]};}
+function qRewTxt(r){const a=[];if(r.gold)a.push(r.gold+' ouro');if(r.xp)a.push(r.xp+' exp');if(r.pot)a.push(r.pot+' poção');if(r.mat)a.push(r.mat[1]+' '+(MATS.find(m=>m.id===r.mat[0])||{nm:r.mat[0]}).nm.split(' ')[0]);return a.join(' · ');}
+function qGive(r){SAVE.gold+=r.gold||0;if(r.pot)SAVE.potions+=r.pot;if(r.mat){SAVE.mats=SAVE.mats||{};SAVE.mats[r.mat[0]]=(SAVE.mats[r.mat[0]]||0)+r.mat[1];}if(r.xp&&G.hero)gainXP(r.xp,{x:G.hero.x,y:G.hero.y});updPot();}
+const _qn=new Set();
+function qNote(q){if(_qn.has(q.id+(q.date||'')+SAVE.q.d.date))return;if(qOk(q)){_qn.add(q.id+(q.date||'')+SAVE.q.d.date);chat('Missão concluída: '+q.nm,4);sfx('levelup',.4);if(G.hero)floatText(G.hero.x,G.hero.y-80,'Missão concluída!','#ffe08a',9,1.4);}}
+function qEv(t,f){if(!SAVE.q)return;const c=qMain();
+  if(c&&c.t===t&&(!c.f||c.f===f)){SAVE.q.p[c.id]=(SAVE.q.p[c.id]||0)+1;qNote(c);}
+  for(const d of SAVE.q.d.l)if(!d.c&&d.t===t&&(!d.f||d.f===f)&&d.p<d.n){d.p++;qNote(d);}
+  socRefresh();}
+function qCheck(){if(!SAVE.q)return;const c=qMain();if(c)qNote(c);socRefresh();}
+function qClaim(k,i){if(k==='m'){const c=qMain();if(!c||!qOk(c))return;const r=qRew(c,1);SAVE.q.m++;chat('Recompensa: '+qRewTxt(r),4);qGive(r);}
+  else{const d=SAVE.q.d.l[i];if(!d||d.c||!qOk(d))return;d.c=1;const r=qRew(d,0);chat('Recompensa: '+qRewTxt(r),4);qGive(r);}
+  sfx('coin',.8);writeSave();socRefresh();}
+function bstAdd(fam,elite){if(!MOBS[fam])return;const b=SAVE.bst[fam]=SAVE.bst[fam]||{k:0,e:0};const old=BST_MS.filter(n=>b.k>=n).length;b.k++;if(elite)b.e++;
+  const nw=BST_MS.filter(n=>b.k>=n).length;if(nw>old){const g=BST_MS[nw-1]*4;SAVE.gold+=g;chat('Bestiário: '+MOBS[fam].nome+' '+'★'.repeat(nw)+' · +'+g+' ouro',4);}}
+/* grupo: estrutura pronta; o servidor online só precisa preencher G.party.members */
+G.party={max:4,members:[]};
+function partyAdd(m){if(G.party.members.length<G.party.max-1){G.party.members.push(m);socRefresh();}}
+function partyClear(){G.party.members=[];socRefresh();}
+function socUI(){const s=$('soc');if(!s||s.dataset.b)return;s.dataset.b=1;
+  s.innerHTML=`<div id="pty"></div><div id="qtr" class="panel txt-o"></div>`;
+  $('qtr').onclick=()=>{if(G.winOpen)return;sfx('ui_click');openWin('diario');};}
+function socRefresh(){if(!SAVE.q)return;socUI();
+  const c=qMain(),t=$('qtr');if(t){if(!c){t.innerHTML='<b>Missões</b><span>Trilha principal concluída</span>';}else{const v=qVal(c),ok=v>=c.n;t.classList.toggle('ok',ok);t.innerHTML=`<b>${c.nm}</b><span>${ok?'Concluída — toque para receber':c.ds.replace(/\.$/,'')+' '+v+'/'+c.n}</span><div class="bar"><b style="width:${v/c.n*100}%"></b></div>`;}}
+  const claim=(c&&qOk(c))||SAVE.q.d.l.some(d=>!d.c&&qOk(d)),b=$('bdQ');if(b)b.style.display=claim?'block':'none';
+  const p=$('pty');if(p)p.innerHTML=G.party.members.map(m=>`<div class="pm"><b>${escH(m.name)}<em>Nv.${m.lv||1}</em></b><div class="bar"><b style="width:${clamp((m.hp||0)/(m.maxhp||1)*100,0,100)}%"></b></div></div>`).join('');}
+function socMenu(m,dun){
+  const mk=(id,ic,lab,fn,bd,hud)=>mkTb(id,'<img src="'+ic+'"'+(hud?'':' class="ui"')+'><small>'+lab+'</small>'+(bd?'<span class="bd" id="'+bd+'"></span>':''),'mbtn grp',()=>{if(G.winOpen)return;sfx('ui_click');fn();});
+  const tg=mkTb('bMt','<span>'+(SAVE.mcol?'☰':'‹')+'</span>','mbtn tgl',()=>{SAVE.mcol=!SAVE.mcol;m.classList.toggle('col',!!SAVE.mcol);tg.firstChild.textContent=SAVE.mcol?'☰':'‹';sfx('ui_click',.5);writeSave();});
+  m.classList.toggle('col',!!SAVE.mcol);m.appendChild(tg);
+  m.appendChild(mk('bPs','assets/hud/heroi.png','Pers.',()=>openPan(panTab||'eq'),'bdPs',1));
+  m.appendChild(mk('bQ',UI+'scroll-unfurled.png','Diário',()=>openWin('diario'),'bdQ'));
+  m.appendChild(mk('bGp',UI+'team-idea.png','Social',()=>openWin('grupo')));
+}
+const SOCW={diario:()=>winDiario(),grupo:()=>winGrupo()};
+function winDiario(){$('wtt').textContent='Diário';const tab=G.qtab||'m';
+  let h=`<div class="tabs" style="margin:0 -12px">${[['m','Principal'],['d','Diárias'],['b','Bestiário']].map(([k,l])=>`<button data-a="qt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
+  const card=(q,main,k,i)=>{const v=qVal(q),ok=v>=q.n,cl=q.c,r=qRew(q,main);return `<div class="wr${cl?' lock':''}"><img class="ic" src="${UI}${ok&&!cl?'coins':'scroll-unfurled'}.png"><div class="tx"><b>${q.nm}</b><span>${q.ds}${main?'':' ('+q.n+')'}</span><span style="color:var(--ouroC)">${qRewTxt(r)}</span><div class="bar" style="margin-top:4px"><b style="width:${v/q.n*100}%"></b></div></div>${cl?'<span class="pr">✓</span>':`<button class="gb" data-a="qc:${k}:${i}" ${ok?'':'disabled'}>${ok?'Receber':v+'/'+q.n}</button>`}</div>`;};
+  if(tab==='m'){const c=qMain();h+='<div class="sub">Trilha de progressão: cada missão libera a próxima.</div>';
+    if(c)h+=card(c,1,'m',0);else h+='<div class="dd" style="text-align:center">Você concluiu toda a trilha principal.</div>';
+    h+=`<div class="sec-h"><span>Próximas</span></div>`+QMAIN.slice(SAVE.q.m+1,SAVE.q.m+4).map(q=>`<div class="wr lock"><img class="ic" src="${UI}padlock.png"><div class="tx"><b>${q.nm}</b><span>${q.ds}</span></div></div>`).join('')+`<div class="sub">${SAVE.q.m}/${QMAIN.length} concluídas</div>`;}
+  else if(tab==='d'){h+='<div class="sub">Três missões novas por dia. Renovam à meia-noite.</div>'+SAVE.q.d.l.map((q,i)=>card(q,0,'d',i)).join('');}
+  else{h+='<div class="sub">Derrote criaturas para completar o bestiário e ganhar ouro a cada marco (10 · 50 · 200 · 500).</div>';
+    for(const f in MOBS){const b=SAVE.bst[f]||{k:0,e:0},st=BST_MS.filter(n=>b.k>=n).length,nx=BST_MS[st]||b.k;
+      h+=`<div class="wr"><img class="ic" src="${UI}skull-staff.png"><div class="tx"><b>${MOBS[f].nome} <span style="display:inline;color:var(--ouroC)">${'★'.repeat(st)}${'☆'.repeat(4-st)}</span></b><span>Abatidos ${b.k}${b.e?' · elites '+b.e:''} · causa ${MOBS[f].st[0]}</span><div class="bar" style="margin-top:4px"><b style="width:${st>=4?100:b.k/nx*100}%"></b></div></div><span class="pr">${st>=4?'MÁX':b.k+'/'+nx}</span></div>`;}
+    h+=`<div class="sub">Chefes derrotados: ${SAVE.bosses||0} · total de abates: ${SAVE.totalKills||0}</div>`;}
+  $('wbody').innerHTML=h;}
+const LOOTR=['Livre','Alternado','Individual'];
+function winGrupo(){$('wtt').textContent='Grupo';const tab=G.gtab||'g',P=G.party;
+  let h=`<div class="tabs" style="margin:0 -12px">${[['g','Grupo'],['f','Amigos'],['c','Chat']].map(([k,l])=>`<button data-a="gt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
+  const hero=G.hero,inp=(id,ph,act)=>`<div class="wr" style="padding:6px 8px"><input id="${id}" maxlength="${id==='cmsg'?80:16}" placeholder="${ph}" style="flex:1;min-width:0;height:34px;background:#0d0b11;border:1px solid #4a4458;color:var(--papel);padding:0 8px;font:500 12px var(--f)"><button class="gb" data-a="${act}">${act==='cs'?'Enviar':'Adicionar'}</button></div>`;
+  if(tab==='g'){h+=`<div class="sub">Grupos de até ${P.max} heróis. O modo online chega em breve — a estrutura já está pronta.</div>`;
+    h+=`<div class="wr"><img class="ic" src="${UI}imperial-crown.png"><div class="tx"><b>${escH(SAVE.name)} <span style="display:inline;color:var(--ouroC)">(líder)</span></b><span>${CLASSES[SAVE.cls].nome} · Nv.${SAVE.lv}</span><div class="bar" style="margin-top:4px"><b style="width:${hero?clamp(hero.hp/hero.maxhp*100,0,100):100}%"></b></div></div></div>`;
+    P.members.forEach(m=>{h+=`<div class="wr"><img class="ic" src="${UI}helmet.png"><div class="tx"><b>${escH(m.name)}</b><span>${escH(m.cls||'')} · Nv.${m.lv||1}</span></div></div>`;});
+    for(let i=P.members.length+1;i<P.max;i++)h+=`<div class="wr lock"><img class="ic" src="${UI}padlock.png"><div class="tx"><b>Vaga livre</b><span>Convide um amigo (online em breve)</span></div><button class="gb" data-a="gi:${i}">Convidar</button></div>`;
+    h+=`<div class="sec-h"><span>Regras</span></div><div class="wr"><div class="tx"><b>Divisão de loot</b><span>${['Todos podem pegar tudo.','Itens raros passam a vez entre os membros.','Cada jogador vê só o seu loot.'][SAVE.party.loot]}</span></div><button class="gb" data-a="gl">${LOOTR[SAVE.party.loot]}</button></div>`;
+    if(G.ginv!=null)h+=inp('gname','Nome do herói','gs');
+    if(SAVE.pend.length)h+=`<div class="sec-h"><span>Convites pendentes</span></div>`+SAVE.pend.map((n,i)=>`<div class="wr"><div class="tx"><b>${escH(n)}</b><span>Será enviado quando o online abrir</span></div><button class="db" data-a="gp:${i}">Cancelar</button></div>`).join('');}
+  else if(tab==='f'){h+='<div class="sub">Sua lista de amigos. O status aparece quando o online abrir.</div>'+inp('fname','Nome do amigo','fa');
+    h+=SAVE.friends.length?SAVE.friends.map((n,i)=>`<div class="wr"><img class="ic" src="${UI}helmet.png"><div class="tx"><b>${escH(n)}</b><span>Offline</span></div><button class="db" data-a="fr:${i}">Remover</button></div>`).join(''):'<div class="dd" style="text-align:center">Nenhum amigo ainda.</div>';}
+  else{const ch=G.cch||'s';h+=`<div class="acts">${[['s','Sistema'],['p','Grupo'],['w','Geral']].map(([k,l])=>`<button data-a="cc:${k}" class="${ch===k?'g':''}">${l}</button>`).join('')}</div>`;
+    const L=(G.clog||[]).filter(c=>c.c===ch).slice(-40);
+    h+=`<div class="clog">${L.length?L.map(c=>`<div style="color:${c.col||'#e6dcc2'}">${c.who?'<b>'+escH(c.who)+':</b> ':''}${escH(c.t)}</div>`).join(''):'<i>Sem mensagens.</i>'}</div>`;
+    h+=ch==='s'?'':inp('cmsg','Mensagem…','cs')+'<div class="sub">Sem conexão: só você vê estas mensagens.</div>';}
+  $('wbody').innerHTML=h;}
+function socAct(a){const [k,v,w]=a.split(':');
+  if(k==='qt'){G.qtab=v;sfx('ui_click');}else if(k==='qc'){qClaim(v,+w);}
+  else if(k==='gt'){G.gtab=v;sfx('ui_click');}else if(k==='gi'){G.ginv=+v;sfx('ui_click');}
+  else if(k==='gs'){const n=($('gname').value||'').trim();if(n){SAVE.pend.push(n);G.ginv=null;toast('Convite guardado — o online chega em breve',1600);sfx('ui_confirm',.6);}}
+  else if(k==='gp'){SAVE.pend.splice(+v,1);}
+  else if(k==='gl'){SAVE.party.loot=(SAVE.party.loot+1)%3;sfx('ui_click');}
+  else if(k==='fa'){const n=($('fname').value||'').trim();if(n&&SAVE.friends.length<30&&!SAVE.friends.includes(n)){SAVE.friends.push(n);sfx('ui_confirm',.6);}}
+  else if(k==='fr'){SAVE.friends.splice(+v,1);}
+  else if(k==='cc'){G.cch=v;sfx('ui_click');}
+  else if(k==='cs'){const t=($('cmsg').value||'').trim();if(t){(G.clog=G.clog||[]).push({c:G.cch,who:SAVE.name,t,col:G.cch==='p'?'#8ec2ff':'#e6dcc2'});sfx('ui_click',.4);}}
+  else return false;
+  writeSave();renderWin();return true;}
 function openWin(id){sfx('tr_open',.6);G.winOpen=id;G.wsel=null;G.wp=null;if(id==='forja'&&!G.fslot)G.fslot=SLOTS.find(k=>SAVE.eq[k])||'arma';if(id==='mercador'&&!G.shop)restock(true);
   $('toast').style.display='none';$('win').classList.add('on');renderWin();}
 function closeWin(){G.winOpen=null;$('win').classList.remove('on');}
 $('wx').onclick=()=>{sfx('tr_close',.6);closeWin();};
-function renderWin(){const f={cofre:winCofre,leilao:winLeilao,mercador:winMercador,forja:winForja,alquimista:winAlq,portal:winPortal,locais:winLocais,subclasse:winSub}[G.winOpen];$('wtip').classList.remove('on');if(f){f();updPot();winTip();}}
+function renderWin(){const f={cofre:winCofre,leilao:winLeilao,mercador:winMercador,forja:winForja,alquimista:winAlq,portal:winPortal,locais:winLocais,subclasse:winSub,...SOCW}[G.winOpen];$('wtip').classList.remove('on');if(f){f();updPot();winTip();}}
 $('wbody').addEventListener('click',ev=>{const w=ev.target.closest('[data-w]');if(w){const [t,k]=w.dataset.w.split(':');const same=G.wsel&&G.wsel.t===t&&G.wsel.k==(+k);G.wsel=same?null:{t,k:+k};sfx('ui_click',.5);renderWin();return;}
   const e=ev.target.closest('[data-a]');if(!e||e.disabled){if(G.wsel){G.wsel=null;renderWin();}return;}winAct(e.dataset.a);});
 function coin(n){return `<span class="pr"><img src="${UI}coins.png">${n}</span>`;}
@@ -3097,6 +3228,7 @@ function winLeilao(){
   $('wbody').innerHTML=npcHead('coins','Selene, a Leiloeira','“Em breve, grandes negócios.”')+`<div class="dd" style="text-align:center;padding:22px 14px"><b style="font:700 16px var(--ft);color:var(--ouroC)">Em breve</b><br><br>A Casa de Leilão abrirá quando o jogo ganhar o modo online: aqui você poderá vender itens a outros jogadores e comprar o que eles anunciarem.</div>`;
 }
 function winAct(a){
+  if(socAct(a))return;
   const [k,v]=a.split(':');
   if(k==='leave'){closeWin();G.wp={x:ZONE.exit.x,y:ZONE.exit.y+10};return;}
   if(k==='goto'&&v.startsWith('door')){closeWin();const id=a.split(':')[2],d=ZONE.doors.find(x=>x.id===id);if(d){G.wp={x:d.x,y:d.y-2,target:{kind:'door',id:d.id,room:d.room}};}sfx('ui_confirm',.6);return;}
@@ -3118,7 +3250,7 @@ function winAct(a){
   else if(k==='fs'){G.fslot=v;G.fmsg=null;sfx('ui_click');}
   else if(k==='up'){const it=SAVE.eq[G.fslot];if(!it)return;const cost=upCost(it),M=matOf(it.tier||1),mn=upMats(it);if(SAVE.gold<cost||(it.up||0)>=10||matN(M.id)<mn){sfx('ui_denied');return;}
     SAVE.gold-=cost;SAVE.mats[M.id]-=mn;sfx('hit_0',.8);setTimeout(()=>sfx('hit_1',.8),180);
-    if(Math.random()<upChance(it)){it.up=(it.up||0)+1;recalcHero(true);G.fmsg={ok:true,t:'SUCESSO! '+itemName(it)};setTimeout(()=>sfx(it.up>=5?'levelup':'tr_equip',.9),380);}
+    if(Math.random()<upChance(it)){it.up=(it.up||0)+1;qEv('up');recalcHero(true);G.fmsg={ok:true,t:'SUCESSO! '+itemName(it)};setTimeout(()=>sfx(it.up>=5?'levelup':'tr_equip',.9),380);}
     else{G.fmsg={ok:false,t:'FALHOU! O item continua +'+(it.up||0)};setTimeout(()=>sfx('ui_denied',.8),380);}
     renderWin();const f=$('fitem');if(f)f.animate([{transform:'scale(1)'},{transform:'scale(1.18)'},{transform:'scale(1)'}],{duration:320});writeSave();return;}
   else if(k==='bp'){const big=v==='l',p=big?Math.round(potPrice()*2.6):potPrice();if(SAVE.gold<p){sfx('ui_denied');return;}SAVE.gold-=p;if(big)SAVE.potL++;else SAVE.potions++;sfx('coin',.7);}
@@ -3196,7 +3328,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
   try{await loadAll();}catch(e){$('title').insertAdjacentHTML('beforeend','<div style="color:#f88">Erro ao carregar: '+e.message+'</div>');console.error(e);return;}
   $('bNew').disabled=false;$('bCont').disabled=false;
   if(SAVE)G.zoneLv=SAVE.zone||1;
-  window.__mmo={TALENTS,tfCalc,tlTotal,TL_REQ,TL_TIER,potPrice,SLOTS,recalcHero,AMBEV,ambStart,ambStop,AMBS,zoneMusic,TOD,LIFE,evStart,makeElite,ELMOD,addZone,heroDodge,spawnBossNow:spawnBoss,stAdd,STDEF,applySkillStatus,MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
+  window.__mmo={qEv,qCheck,partyAdd,partyClear,QMAIN,qInit,socRefresh,TALENTS,tfCalc,tlTotal,TL_REQ,TL_TIER,potPrice,SLOTS,recalcHero,AMBEV,ambStart,ambStop,AMBS,zoneMusic,TOD,LIFE,evStart,makeElite,ELMOD,addZone,heroDodge,spawnBossNow:spawnBoss,stAdd,STDEF,applySkillStatus,MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
   requestAnimationFrame(frame);
 })();
 
