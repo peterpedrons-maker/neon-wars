@@ -75,6 +75,9 @@ def add(spr,x,y,r,**kw):
     c=getattr(spr,'col',None)
     if c:d['col']=[[round(a*Z),round(b*Z),round(rad*Z)] for a,b,rad in c]       # colisão própria (relativa ao pé do sprite)
     P.append(d)
+FX=[]
+def add_torch(spr,x,y):
+    add(spr,x,y,5);FX.append(dict(k='torch',x=round(x*Z),y=round((y-spr.height*.88)*Z)))
 def addflat(spr,x,y):P.append(dict(t='flat',id=reg(spr,(spr.width//2,spr.height)),x=round(x*Z),y=round(y*Z)))
 def er(spr):return max(5,spr.width*.38)
 def fire(x,y,small=False):
@@ -101,7 +104,7 @@ for (gx,gy,k) in GLADES:
         if rr.random()<.7:add(GI['drums'][0],gx-8,gy+34,20)
         for _ in range(3):add(rr.choice(GI['stake']),gx+rr.randrange(-80,80),gy+rr.randrange(30,52),5)
         for _ in range(3):addflat(rr.choice(GI['bonepile']),gx+rr.randrange(-60,60),gy+rr.randrange(-6,34))
-        add(GI['torch'][0],gx-30,gy+4,5);add(GI['torch'][1],gx+34,gy+8,5)
+        add_torch(GI['torch'][0],gx-30,gy+4);add_torch(GI['torch'][1],gx+34,gy+8)
         if rr.random()<.65:add(rr.choice(GI['totem']),gx+rr.choice((-1,1))*96,gy+12,7)
         if rr.random()<.5:add(rr.choice(GI['banner']),gx+rr.choice((-1,1))*76,gy-34,6)
         add(rr.choice(GI['palisade']),gx-86,gy+44,26)
@@ -109,7 +112,7 @@ for (gx,gy,k) in GLADES:
         add(rr.choice(GI['totem']),gx,gy-6,8);fire(gx,gy+16,True)
         for a in range(0,360,45):add(rr.choice(GI['stake']),gx+math.cos(math.radians(a))*54,gy+math.sin(math.radians(a))*34,5)
         for _ in range(3):addflat(rr.choice(GI['bonepile']),gx+rr.randrange(-44,44),gy+rr.randrange(-22,32))
-        add(GI['torch'][0],gx-30,gy-18,5);add(GI['torch'][1],gx+30,gy-18,5)
+        add_torch(GI['torch'][0],gx-30,gy-18);add_torch(GI['torch'][1],gx+30,gy-18)
         add(rr.choice(GI['barricade']),gx+rr.choice((-1,1))*80,gy+22,26)
     elif k=='camp':
         fire(gx,gy);add(BARREL,gx+28,gy-4,8);add(BARREL,gx+42,gy+6,8);add(FENCE,gx-70,gy+34,36);add(rr.choice(ROCK_BIG),gx-34,gy-20,12)
@@ -195,6 +198,7 @@ for _ in range(40000):
 spawns=[[round(a*Z),round(b*Z)] for a,b in spawns]
 zone=dict(w=gimg.width,h=gimg.height,props=P,spawns=spawns,plaza=[0,0,1,1],pond=[round(LAKES[1][0]*Z),round(LAKES[1][1]*Z),round(LAKES[1][2]*Z),round(LAKES[1][3]*Z)],
   road=[],start=[round(START[0]*Z),round(START[1]*Z)],boss=[round(480*Z),round(300*Z)],gate=[round(ENTR[0]*Z),round(ENTR[1]*Z)])
+if FX:zone['fx']=FX
 json.dump(zone,open(os.path.join(OUT,'zone1'+SUF+'.json'),'w'),separators=(',',':'))
 print('zona',gimg.size,'props',len(P),'árvores',sum(1 for p in P if p['t']=='p' and False),'sprites',len(sprs),'spawns',len(spawns),'atlas',atlas.size)
 dbg=gimg.copy().convert('RGBA');d=ImageDraw.Draw(dbg)
