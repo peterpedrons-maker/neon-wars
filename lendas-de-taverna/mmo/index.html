@@ -819,6 +819,42 @@ function coinSynth(v){if(!AC||!sfxGain)return;const t=AC.currentTime;if(lastSfx.
   mk(1318,t,.06,.07*v);mk(1976,t+.055,.15,.07*v);}
 function sfx(n,vol=.7,rate=1){if(n==='coin'){coinSynth(Math.min(1,vol*1.4));return;}if(UI_SND[n]){n='ui_click';vol=.45;rate=1;}else if(n==='ui_denied')vol=Math.min(vol,.4);else if(n==='tr_equip'||n==='coin')vol=Math.min(vol,.4);if(!AC||!BUF[n])return;const t=AC.currentTime;if(lastSfx[n]&&t-lastSfx[n]<0.045)return;lastSfx[n]=t;
   const s=AC.createBufferSource();s.buffer=BUF[n];s.playbackRate.value=rate*(0.96+Math.random()*.08);const g=AC.createGain();g.gain.value=vol;s.connect(g);g.connect(sfxGain);s.start();}
+/* ===== SOM DA FLORESTA: trilha e ambiente por família da zona (goblin, esqueleto, javali, rato) ===== */
+const ZMUS={goblin:'caverna',esq:'cripta',javali:'arvore',rato:'ruinas'};
+function zoneMusic(){const nm=ZMUS[famOf(G.zoneLv)]||'campina',key='m_z_'+nm;
+  if(BUF[key]){playMusic(key);return;}musOn=true;if(!AC)return;loadBuf('../assets/audio/music/'+nm+'.ogg',key).then(()=>{if(G.scene==='dungeon'&&G.phase!=='boss'&&BUF[key])playMusic(key);});}
+const FAMB={ // ambiente: vento (freq,vol), eventos (peso) por família
+  goblin:{wind:[420,.07],ev:{crow:3,twig:3,owl:2,drip:0,bones:0,bird:1,boar:0,scuttle:0,howl:1}},
+  esq:{wind:[260,.09],ev:{bones:4,drip:2,owl:1,howl:2,crow:1,twig:1,bird:0,boar:0,scuttle:0}},
+  javali:{wind:[560,.06],ev:{bird:4,boar:2,twig:2,crow:1,owl:1,drip:0,bones:0,scuttle:1,howl:0}},
+  rato:{wind:[300,.05],ev:{drip:4,scuttle:4,squeak:3,bones:1,owl:0,crow:0,twig:1,bird:0,boar:0,howl:0}}};
+const AMBS={on:false,g:null,wind:null,t:null,fam:null};
+function ambStop(){AMBS.on=false;if(AMBS.t){clearInterval(AMBS.t);AMBS.t=null;}if(AMBS.g&&AC){try{AMBS.g.gain.cancelScheduledValues(AC.currentTime);AMBS.g.gain.setTargetAtTime(0,AC.currentTime,.4);}catch(e){}const w=AMBS.wind;setTimeout(()=>{try{w&&w.stop();}catch(e){}},1500);}AMBS.wind=null;}
+function ambNoise(sec){const b=AC.createBuffer(1,Math.floor(AC.sampleRate*sec),AC.sampleRate),d=b.getChannelData(0);let p=0;for(let i=0;i<d.length;i++){p=p*.96+(Math.random()*2-1)*.04;d[i]=(Math.random()*2-1)*.5+p*6;}return b;}
+function ambTone(f0,f1,dur,type,vol,lp,delay=0){const t=AC.currentTime+delay,o=AC.createOscillator(),g=AC.createGain(),f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=lp||6000;o.type=type||'sine';o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(Math.max(20,f1),t+dur);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+Math.min(.04,dur*.3));g.gain.exponentialRampToValueAtTime(.0003,t+dur);o.connect(f);f.connect(g);g.connect(AMBS.g);o.start(t);o.stop(t+dur+.05);}
+function ambBurst(dur,ftype,freq,vol,delay=0){const t=AC.currentTime+delay,n=AC.createBufferSource(),b=AC.createBuffer(1,Math.floor(AC.sampleRate*dur),AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);n.buffer=b;
+  const f=AC.createBiquadFilter();f.type=ftype;f.frequency.value=freq;const g=AC.createGain();g.gain.value=vol;n.connect(f);f.connect(g);g.connect(AMBS.g);n.start(t);}
+const AMBEV={
+  bird(){const f=2600+Math.random()*1800,n=2+Math.floor(Math.random()*3);for(let i=0;i<n;i++)ambTone(f*(1+i*.04),f*(1.25+i*.05),.09,'sine',.05,5000,i*.13);},
+  crow(){ambTone(520,300,.32,'sawtooth',.05,900);ambTone(500,290,.3,'sawtooth',.04,900,.38);},
+  owl(){ambTone(330,300,.45,'sine',.07,700);ambTone(270,240,.6,'sine',.07,700,.6);},
+  twig(){ambBurst(.05,'bandpass',2400,.12);ambBurst(.03,'highpass',3000,.08,.07);},
+  drip(){const f=900+Math.random()*700;ambTone(f,f*.55,.18,'sine',.07,3000);ambTone(f*1.5,f*.8,.2,'sine',.03,3000,.09);},
+  bones(){for(let i=0;i<4+Math.floor(Math.random()*3);i++)ambBurst(.04,'bandpass',1800+Math.random()*1500,.1,i*(.05+Math.random()*.06));},
+  boar(){ambTone(120,70,.35,'sawtooth',.08,420);ambTone(140,80,.25,'sawtooth',.06,420,.3);},
+  scuttle(){for(let i=0;i<8;i++)ambBurst(.025,'highpass',3500,.07,i*.045);},
+  squeak(){const f=2800+Math.random()*900;ambTone(f,f*1.4,.08,'sine',.05,6000);ambTone(f*1.1,f*1.5,.07,'sine',.04,6000,.11);},
+  howl(){ambTone(260,420,1.2,'sine',.05,800);ambTone(420,300,1.6,'sine',.05,800,1.2);}};
+function ambStart(){if(!AC)return;ambStop();const fam=famOf(G.zoneLv),F=FAMB[fam];if(!F)return;AMBS.fam=fam;AMBS.on=true;
+  const g=AC.createGain();g.gain.value=0;g.connect(AC.destination);g.gain.setTargetAtTime(.9,AC.currentTime,1.2);AMBS.g=g;
+  const w=AC.createBufferSource();w.buffer=ambNoise(5);w.loop=true;const bp=AC.createBiquadFilter();bp.type='bandpass';bp.frequency.value=F.wind[0];bp.Q.value=.7;const wg=AC.createGain();wg.gain.value=F.wind[1];
+  const lfo=AC.createOscillator(),lg=AC.createGain();lfo.frequency.value=.13;lg.gain.value=F.wind[1]*.7;lfo.connect(lg);lg.connect(wg.gain);lfo.start();w.connect(bp);bp.connect(wg);wg.connect(g);w.start();AMBS.wind=w;
+  let next=AC.currentTime+2,cr=0;
+  AMBS.t=setInterval(()=>{if(!AMBS.on||!AC||G.scene!=='dungeon'||document.hidden)return;const n=TOD.n||0,T=AC.currentTime;
+    if(T>=next){const E=Object.entries(F.ev).filter(([k,w])=>w>0&&!(k==='bird'&&n>.45)&&!((k==='owl'||k==='howl')&&n<.3));let tot=E.reduce((a,[,w])=>a+w,0),r=Math.random()*tot,pick=E[0];for(const e of E){r-=e[1];if(r<=0){pick=e;break;}}
+      if(pick&&AMBEV[pick[0]])AMBEV[pick[0]]();next=T+3+Math.random()*7;}
+    if(n>.5&&(fam==='javali'||fam==='goblin')&&T>cr){cr=T+.55;for(let i=0;i<3;i++)ambTone(4300,4500,.04,'square',.012,6000,i*.07);}},500);}
 function playMusic(key='m_campina'){musOn=true;if(!AC||!BUF[key])return;if(musSrc){try{musSrc.stop();}catch(e){}}
   musSrc=AC.createBufferSource();musSrc.buffer=BUF[key];musSrc.loop=true;musSrc.connect(musGain);musSrc.start();musSrc.__k=key;}
 
@@ -1259,7 +1295,7 @@ function initTown(){
 function enterTown(first,instant){
   const go=()=>{
     for(const L of G.loot)addItem(L.it,true);G.loot=[];
-    G.scene='town';G.room=null;useMap('town');G.mobs=[];G.boss=null;G.projs=[];G.phase='town';closeWin();
+    ambStop();G.scene='town';G.room=null;useMap('town');G.mobs=[];G.boss=null;G.projs=[];G.phase='town';closeWin();
     const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;h.state='idle';h.act=null;h.shield=0;h.buff=null;h.sts=null;h.kvx=h.kvy=0;h.sk=Array(14).fill(0);
     h.x=first?ZONE.start[0]:ZONE.portal.stand[0];h.y=first?ZONE.start[1]:ZONE.portal.stand[1]+8;h.row=2;h._lx=h.x;h._ly=h.y;
     initTown();G.wp=null;G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2+34;
@@ -1278,7 +1314,7 @@ function enterDungeon(zlv){
     const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;h.state='idle';h.act=null;h.kvx=h.kvy=0;h.sk=Array(14).fill(0);h.potCd=0;h.x=ZONE.start[0];h.y=ZONE.start[1];h._lx=h.x;h._ly=h.y;
     GX.clear();G.zones=[];G.floats=[];G.fx=[];G.loot=[];resetZone();MM.key='';G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2+34;G.wp=null;
     show('hud');buildBar();updHUD(true);$('toast').style.display='none';setTimeout(()=>banner('Floresta de Brumavale','Entrada · Zona '+G.zoneLv+' · '+MOBS[famOf(G.zoneLv)].nome+'s'),500);
-    chat('Você entrou na Floresta de Brumavale (Zona '+G.zoneLv+'). Cuidado: algo grande pode surgir…',1);playMusic('m_campina');writeSave();
+    chat('Você entrou na Floresta de Brumavale (Zona '+G.zoneLv+'). Cuidado: algo grande pode surgir…',1);zoneMusic();ambStart();writeSave();
   });
 }
 function mkTb(id,html,cls,fn){const e=document.createElement('button');e.className=cls;e.id=id;e.style.pointerEvents='auto';e.innerHTML=html;e.onclick=fn;return e;}
@@ -1463,7 +1499,7 @@ function killMob(m){
   dropLoot(m);dropMats(m);
   if(m.boom){addZone({shape:'circle',x:m.x,y:m.y,r:58,warn:1,mult:1.8,pow:m.pow,shake:.3});chat(m.name+' vai explodir!',2);}
   if(m.elite){chat((m.tier==='gold'?'Elite dourado':'Elite azul')+' derrotado!',4);}
-  if(m.kind==='boss'){chat(m.name+' foi derrotado!',3);G.phase='end';sfx('victory',.9);G.shake=.4;setTimeout(showResult,1600);G.endT=0;if(musSrc)playMusic('m_campina');}
+  if(m.kind==='boss'){chat(m.name+' foi derrotado!',3);G.phase='end';sfx('victory',.9);G.shake=.4;setTimeout(showResult,1600);G.endT=0;if(musSrc)zoneMusic();}
   else{m.respawn=14;G.kills++;chat(m.name+' derrotado',1);
     checkBoss();}
   updHUD();writeSave();
@@ -1522,12 +1558,12 @@ function hurtHero(dmg,fromX,fromY,kf=1){
   if(h.hp<=0){h.hp=0;h.state='ko';h.koT=3;h.act=null;sfx('death',.8);chat('Você caiu em batalha…',2);$('ko').classList.add('on');$('ko').style.display='flex';SAVE.gold=Math.round(SAVE.gold*.9);}
 }
 function heroRevive(){const h=G.hero;h.sts=null;h.state='idle';h.hp=Math.round(h.maxhp*.6);h.x=ZONE.start[0];h.y=ZONE.start[1];h.kvx=h.kvy=0;$('ko').classList.remove('on');$('ko').style.display='none';
-  if(G.phase==='boss'){G.boss=null;G.phase='farm';G.dtm=0;G.bossRoll=1;playMusic('m_campina');}G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2;}
+  if(G.phase==='boss'){G.boss=null;G.phase='farm';G.dtm=0;G.bossRoll=1;zoneMusic();}G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2;}
 function showResult(){
   show('res');$('cv').style.display='block';const xp=BOSS.xp;
   $('rl').innerHTML=`${SAVE.name} · ${CLASSES[SAVE.cls].nome} Nv.${SAVE.lv}<br>Chefe derrotado!<br>Ouro total: ${SAVE.gold}<br><span style="color:#96e08a">Próxima zona: monstros mais fortes</span>`;
 }
-function nextZone(){G.zoneLv++;if(zoneMap(G.zoneLv)!==G.map)useMap(zoneMap(G.zoneLv));SAVE.zone=G.zoneLv;SAVE.zoneMax=Math.max(SAVE.zoneMax||1,G.zoneLv);writeSave();show('hud');banner('Floresta de Brumavale','Zona '+G.zoneLv+' · '+MOBS[famOf(G.zoneLv)].nome+'s');const h=G.hero;h.hp=h.maxhp;h.x=ZONE.start[0];h.y=ZONE.start[1];resetZone();updHUD();chat('Zona '+G.zoneLv+' — '+MOBS[famOf(G.zoneLv)].nome+'s, mais fortes!',2);playMusic('m_campina');}
+function nextZone(){G.zoneLv++;if(zoneMap(G.zoneLv)!==G.map)useMap(zoneMap(G.zoneLv));SAVE.zone=G.zoneLv;SAVE.zoneMax=Math.max(SAVE.zoneMax||1,G.zoneLv);writeSave();show('hud');banner('Floresta de Brumavale','Zona '+G.zoneLv+' · '+MOBS[famOf(G.zoneLv)].nome+'s');const h=G.hero;h.hp=h.maxhp;h.x=ZONE.start[0];h.y=ZONE.start[1];resetZone();updHUD();chat('Zona '+G.zoneLv+' — '+MOBS[famOf(G.zoneLv)].nome+'s, mais fortes!',2);zoneMusic();ambStart();}
 
 /* --- ataque do herói --- */
 function atkDur(h){const k=CLASSES[h.cls].atk_;return k==='cast'?.75:k==='shoot'?.95:.5;}
@@ -3160,7 +3196,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
   try{await loadAll();}catch(e){$('title').insertAdjacentHTML('beforeend','<div style="color:#f88">Erro ao carregar: '+e.message+'</div>');console.error(e);return;}
   $('bNew').disabled=false;$('bCont').disabled=false;
   if(SAVE)G.zoneLv=SAVE.zone||1;
-  window.__mmo={TOD,LIFE,evStart,makeElite,ELMOD,addZone,heroDodge,spawnBossNow:spawnBoss,stAdd,STDEF,applySkillStatus,MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
+  window.__mmo={AMBEV,ambStart,ambStop,AMBS,zoneMusic,TOD,LIFE,evStart,makeElite,ELMOD,addZone,heroDodge,spawnBossNow:spawnBoss,stAdd,STDEF,applySkillStatus,MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
   requestAnimationFrame(frame);
 })();
 
