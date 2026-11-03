@@ -40,3 +40,6 @@ Props (árvores, tendas, totens, estacas, paliçadas, ossos, cogumelos etc.) ger
 
 ## Ícones e cidade (arte por IA)
 Ícones da interface (ni_*.png), fonte, portal, lampiões, tochas, estandartes, bancos, canteiros, barraca, poço e demais enfeites da cidade foram gerados por IA a partir do estilo do jogo e processados por `tools/mmo/city_ia.py` (folhas originais em `tools/mmo/ia_src/city/`).
+
+## Ícones de talentos
+126 glifos do game-icons.net (Lorc, Delapouite e colaboradores, CC BY 3.0 — https://game-icons.net) pintados em estilo pixel por `tools/mmo/icons3/talentos.py`, no mesmo padrão dos ícones de habilidade.

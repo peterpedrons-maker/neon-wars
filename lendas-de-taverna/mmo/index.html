@@ -350,7 +350,7 @@ i.upg{position:absolute;right:1px;top:0;font-size:9px;color:#7de06d;font-style:n
 .tlt{display:flex;justify-content:space-between;font:600 9.5px var(--ft);letter-spacing:.14em;text-transform:uppercase;color:var(--papel2);margin:8px 2px 0}.tlt.lk{opacity:.55}
 .tln{display:flex;align-items:center;gap:10px;margin-top:5px;padding:8px 10px;border:1px solid var(--lin);background:linear-gradient(#211b29,#15111b)}
 .tln.has{border-color:var(--bc);box-shadow:inset 3px 0 0 var(--bc)}.tln.lk{opacity:.45}.tln.key{background:linear-gradient(#2e2436,#1a1422);border-color:var(--bc)}
-.tli{width:34px;height:34px;flex:none;display:grid;place-items:center;border:1px solid var(--bc);background:#0d0a12}.tli img{width:22px;height:22px;image-rendering:pixelated}
+.tli{width:40px;height:40px;flex:none;display:grid;place-items:center;background:#0d0a12}.tli img{width:40px;height:40px;image-rendering:pixelated;display:block}
 .tlx{flex:1;min-width:0}.tlx b{display:block;font:700 12px var(--f);color:var(--papel)}.tlx span{display:block;font:500 10.5px/1.25 var(--f);color:var(--papel2);margin-top:1px}
 .pips{display:flex;gap:4px;margin-top:4px}.pips i{width:12px;height:5px;background:#0d0a12;border:1px solid var(--lin)}.pips i.on{background:var(--bc);border-color:var(--bc)}
 .tla{width:34px;height:34px;flex:none;border:1px solid var(--ouroC);background:linear-gradient(#f0cf7c,#b98a2f);color:#2a1a06;font:700 18px var(--f)}.tla:disabled{opacity:.3;filter:grayscale(.6)}
@@ -1176,7 +1176,7 @@ function renderTalents(B){
   let lastT=-1;
   br.nodes.forEach((n,i)=>{const t=TL_TIER[i],r=SAVE.tl[n[0]]||0,open=sp>=TL_REQ[t],can=open&&r<n[2]&&pts>0,key=i===6;
     if(t!==lastT){lastT=t;h+=`<div class="tlt ${open?'':'lk'}"><span>${key?'Pedra angular':'Camada '+(t+1)}</span><span>${open?'liberada':'requer '+TL_REQ[t]+' pontos neste ramo'}</span></div>`;}
-    h+=`<div class="tln ${open?'':'lk'} ${r?'has':''} ${key?'key':''}" style="--bc:${br.col}"><div class="tli"><img src="${UI}${br.ic}.png"></div><div class="tlx"><b>${n[1]}</b><span>${n[4]}</span><div class="pips">${Array.from({length:n[2]},(_,k)=>`<i class="${k<r?'on':''}"></i>`).join('')}</div></div><button class="tla" data-tl="${n[0]}" ${can?'':'disabled'}>+</button></div>`;});
+    h+=`<div class="tln ${open?'':'lk'} ${r?'has':''} ${key?'key':''}" style="--bc:${br.col}"><div class="tli"><img src="assets/talents/${n[0]}.png"></div><div class="tlx"><b>${n[1]}</b><span>${n[4]}</span><div class="pips">${Array.from({length:n[2]},(_,k)=>`<i class="${k<r?'on':''}"></i>`).join('')}</div></div><button class="tla" data-tl="${n[0]}" ${can?'':'disabled'}>+</button></div>`;});
   h+=`<div class="acts"><button data-tlr="1" ${tlSpentAll()?'':'disabled'}>Redefinir talentos (${50*SAVE.lv} ouro)</button></div>`;
   B.innerHTML=h;
   B.querySelectorAll('[data-tlb]').forEach(e=>e.onclick=()=>{tlBr=+e.dataset.tlb;sfx('ui_click',.5);renderPan();});
