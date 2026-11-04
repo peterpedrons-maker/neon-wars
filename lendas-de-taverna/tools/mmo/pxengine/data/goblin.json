@@ -1,0 +1,320 @@
+{
+ "name": "goblin",
+ "canvas": [
+  88,
+  64
+ ],
+ "ground": 60,
+ "limbs": {
+  "thigh": 7.0,
+  "shin": 6.5,
+  "upper": 5.5,
+  "fore": 5.0,
+  "r": {
+   "thigh": [
+    2.9,
+    2.3
+   ],
+   "shin": [
+    2.3,
+    1.8
+   ],
+   "upper": [
+    2.0,
+    1.7
+   ],
+   "fore": [
+    1.7,
+    1.5
+   ],
+   "knee": 2.5,
+   "elbow": 2.0,
+   "hand": 2.3
+  },
+  "mat": {
+   "leg": "cloth",
+   "arm": "skin",
+   "far_tone": -1
+  }
+ },
+ "parts": {
+  "head_side": {
+   "anchor": [
+    9,
+    17
+   ],
+   "rows": [
+    "...........ks.........",
+    "..........kqrk........",
+    ".....kkkkkkqrk........",
+    "....kmmnnnnnmkk.......",
+    "...kmnnoooOonnmk......",
+    "..kmnooOOOOoonmk......",
+    "..kmmnnnnnnnnnmmk.....",
+    "kkpkbbccccccddbbbk....",
+    "kppkbcccccwwwyzcdbk...",
+    ".kpkbcccdcwwyyzccdbk..",
+    ".kPkbbcccdcwyyzcccdbk.",
+    "..kkbbccccccwwcccdddbk",
+    "...kabbbcccccccccdddbk",
+    "...kaabbbccccccccbbbbk",
+    "....kaabbbbbbbbbbbbbk.",
+    ".....kaabzzzzzzbbbbk..",
+    "......kkawkkkkkwkkk...",
+    ".......kkkaaaaakk....."
+   ]
+  },
+  "head_front": {
+   "anchor": [
+    8,
+    16
+   ],
+   "mirror": true,
+   "rows": [
+    "..s......",
+    "..kqrk...",
+    "...kqrkkk",
+    "....kmmnn",
+    "...kmnnoo",
+    "..kmnooOO",
+    "..kmmmmnn",
+    "kkpkbbccc",
+    "kppkbcccc",
+    ".kpkbwwyc",
+    ".kPkbwyzc",
+    "...kbbccc",
+    "...kabbcc",
+    "....kabbd",
+    "....kzzzz",
+    "....kwkzz",
+    ".....kkkk"
+   ]
+  },
+  "head_back": {
+   "anchor": [
+    8,
+    16
+   ],
+   "mirror": true,
+   "rows": [
+    "..s......",
+    "..kqrk...",
+    "...kqrkkk",
+    "....kmmnn",
+    "...kmnnoo",
+    "..kmnooOO",
+    "..kmmmmnn",
+    "kkpkmnnnn",
+    "kppkmmmmm",
+    ".kpkmnnoo",
+    ".kPkmmmmm",
+    "...kmnnnn",
+    "...kaabbb",
+    "....kaabb",
+    "....kkaaa",
+    ".....kkkk"
+   ]
+  },
+  "torso_side": {
+   "anchor": [
+    7,
+    4
+   ],
+   "rows": [
+    "..kkkkkkkkkk..",
+    ".kbbccccccbbk.",
+    "kbbcccccddcbbk",
+    "kbbccffcccbbbk",
+    "kbbcfffgcccbbk",
+    "kbbbffggcccbak",
+    "kabbbfgccbbbak",
+    ".kabbbbbbbbak.",
+    ".kkaaaaaaakk.."
+   ]
+  },
+  "torso_front": {
+   "anchor": [
+    7,
+    4
+   ],
+   "mirror": true,
+   "rows": [
+    "..kkkkkk",
+    ".kbbcccd",
+    "kbbcfffg",
+    "kbbcfffg",
+    "kbbbfgcc",
+    "kabbbfgc",
+    "kabbbbbd",
+    ".kaabbbb",
+    "..kkaaaa"
+   ]
+  },
+  "torso_back": {
+   "anchor": [
+    7,
+    4
+   ],
+   "mirror": true,
+   "rows": [
+    "..kkkkkk",
+    ".kabbbbb",
+    "kabbbcbb",
+    "kabbbbcb",
+    "kaabbbbb",
+    "kaaabbbb",
+    "kaaabbbb",
+    ".kaaabbb",
+    "..kkaaaa"
+   ]
+  },
+  "belt_side": {
+   "anchor": [
+    7,
+    1
+   ],
+   "rows": [
+    "kfffffffffffgk",
+    "kfggqqgggggffk",
+    ".kkkkkkkkkkkk."
+   ]
+  },
+  "belt_front": {
+   "anchor": [
+    8,
+    1
+   ],
+   "mirror": true,
+   "rows": [
+    "kfffffffg",
+    "kfgggqrqq",
+    ".kkkkkkkk"
+   ]
+  },
+  "cloth_side": {
+   "anchor": [
+    5,
+    0
+   ],
+   "rows": [
+    ".kffffffffk.",
+    ".kfgggggfek.",
+    "..kfffffek..",
+    "..kfeeeeek..",
+    "...kfeeek...",
+    "....kkkk...."
+   ]
+  },
+  "cloth_front": {
+   "anchor": [
+    6,
+    0
+   ],
+   "mirror": true,
+   "rows": [
+    ".kfffffff",
+    "kfgggggg.",
+    "kfgggggf.",
+    "kfffeeef.",
+    ".kfeeeee.",
+    "..kfeeee.",
+    "...kkfee.",
+    "....kkkk."
+   ]
+  },
+  "boot_side": {
+   "anchor": [
+    3,
+    4
+   ],
+   "rows": [
+    ".kkkk...",
+    "kffffk..",
+    "kgffffkk",
+    "kffeeffk",
+    "kkkkkkkk"
+   ]
+  },
+  "boot_front": {
+   "anchor": [
+    4,
+    4
+   ],
+   "rows": [
+    ".kkkkkk.",
+    "kgffffgk",
+    "kgffffek",
+    "kffeeeek",
+    "kkkkkkkk"
+   ]
+  },
+  "pauld_side": {
+   "anchor": [
+    3,
+    3
+   ],
+   "rows": [
+    ".kkkk.",
+    "knnoOk",
+    "kmnnnk",
+    "kmmmmk",
+    ".kkkk."
+   ]
+  },
+  "pauld_front": {
+   "anchor": [
+    3,
+    3
+   ],
+   "rows": [
+    ".kkkk.",
+    "knooOk",
+    "kmnnnk",
+    "kmmmmk",
+    ".kkkk."
+   ]
+  },
+  "kneepad": {
+   "anchor": [
+    2,
+    2
+   ],
+   "rows": [
+    ".kkk.",
+    "knook",
+    "kmnnk",
+    ".kkk."
+   ]
+  },
+  "bracer": {
+   "anchor": [
+    2,
+    1
+   ],
+   "rows": [
+    "kfffk",
+    "kegek",
+    "kkkkk"
+   ]
+  },
+  "cleaver": {
+   "anchor": [
+    2,
+    3
+   ],
+   "rows": [
+    "..................kkkkkkk",
+    "kk.kkkkkkk...kkkknnnnoooOk",
+    "kfkfffgfffkkknnnnnnnooooOk",
+    "kfkfeeeeeekmmmmnnnnnnnnooo",
+    "kkkkkkkkkkkmmmmmmmnnnnnnok",
+    "..........kkkkkkmmmmmmmmk.",
+    "..................kkkkkk.."
+   ]
+  }
+ },
+ "equipment": {
+  "pauldron": true,
+  "kneepad": true
+ }
+}
