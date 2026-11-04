@@ -1904,6 +1904,7 @@ function updateMob(m,dt){
   if(m.tpT!==undefined&&!ko&&d<T.aggro&&G.phase!=='end'){m.tpT-=dt;if(m.tpT<=0&&d>70&&!m.act){m.tpT=rnd(5,8);const a=Math.random()*6.283,f=freeSpot(h.x+Math.cos(a)*34,h.y+Math.sin(a)*24);VF.glow(m.x,m.y-14,30,'#c08aff',.4);VF.burst(m.x,m.y-10,12,['#c08aff','#fff'],{s0:30,s1:90});m.x=f[0];m.y=f[1];m.wx=m.x;m.wy=m.y;VF.glow(m.x,m.y-14,34,'#c08aff',.45);VF.wave(m.x,m.y,40,'#c08aff',.4,3);m.cd=Math.min(m.cd,.35);}}
   if(m.act){m.act.t+=dt;m.state='atk';
     if(!m.act.done&&m.act.t>=m.act.dur*(m.T.fire||.5)){m.act.done=true;mobAttackMoment(m);}
+    if(!m.act)return;
     if(m.act.t>=m.act.dur){m.act=null;m.state='idle';}return;}
   if(m.kind==='boss'){
     if(G.phase!=='boss'){m.state='idle';return;}
