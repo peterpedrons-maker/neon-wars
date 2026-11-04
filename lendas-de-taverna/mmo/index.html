@@ -649,8 +649,8 @@ async function loadSheet(name,atkKind){
   const anc=[0,1,2,3].map(r=>anchorOf(walk,0,r*64,64,64));
   SHEETS[name]={walk,hurt,atk,cell,frames,anc,stunF:(name==='goblin2'||(name==='goblin'&&location.search.indexOf('gob2')>=0))?1:3};
 }
-const areaName=m=>(m||G.map)==='zone_cripta'?'Catacumbas de Brumavale':(m||G.map)==='zone1_gob'?'Floresta dos Goblins':'Floresta de Brumavale';
-const zoneMap=z=>{const f=famOf(z);return f==='goblin'?'zone1_gob':f==='esq'?'zone_cripta':'zone1';};
+const areaName=m=>(m||G.map)==='zone_esgoto'?'Esgotos de Brumavale':(m||G.map)==='zone_cripta'?'Catacumbas de Brumavale':(m||G.map)==='zone1_gob'?'Floresta dos Goblins':'Floresta de Brumavale';
+const zoneMap=z=>{const f=famOf(z);return f==='goblin'?'zone1_gob':f==='esq'?'zone_cripta':f==='rato'?'zone_esgoto':'zone1';};
 function zoneAutoFx(z){if(z._afx)return z._afx;const L=(z.fx||[]).slice();if(!(z.fx||[]).some(e=>e.k==='fire'))for(const p of z.props)if(p.t==='fire')L.push({k:'fire',x:p.x,y:p.y-8,spr:1,r:50});return z._afx=L;}
 function useMap(n,quiet){const m=MAPS[n];ZONE=m.zone;ATLAS=m.atlas;ATLAS_J=m.atlasJ;GROUND=m.ground;WATER=m.water;WCW=m.wcw;WL=m.wl||null;WSP=m.wsp||[];WRX=m.wrx||null;GCTX=m.gx||null;G.prints=[];buildLights(zoneAutoFx(m.zone));G.map=n;MM.key='';if(!quiet&&typeof AMB!=="undefined")AMB.setup(zoneAutoFx(m.zone),n==='zone1_gob'?'gob':n==='zone1'?'forest':null);}
 async function loadMap(name,zf,af,gf,pf){
@@ -660,7 +660,7 @@ async function loadMap(name,zf,af,gf,pf){
 let STAGE2=null,STAGE2_OK=false;
 /* carregamento em 2 estágios: o essencial (cidade, classes, NPCs) libera os botões do título; floresta, interiores, monstros e ícones chegam em segundo plano */
 function prepMap(name){useMap(name,true);buildSolids();buildWater();MAPS[name].water=WATER;MAPS[name].wcw=WCW;MAPS[name].wl=WL;MAPS[name].wsp=WSP;MAPS[name].wrx=WRX;MAPS[name].gx=GCTXB;
-  if(name==='zone1'||name==='zone1_gob'||name==='zone_cripta')fixSpawns();else{ZONE.start=freeSpot(ZONE.start[0],ZONE.start[1]);if(ZONE.portal)ZONE.portal.stand=freeSpot(ZONE.portal.stand[0],ZONE.portal.stand[1]);if(ZONE.doors)ZONE.doors.forEach(d=>{const f=freeSpot(d.x,d.y+10);d.sx=f[0];d.sy=f[1];});}}
+  if(name==='zone1'||name==='zone1_gob'||name==='zone_cripta'||name==='zone_esgoto')fixSpawns();else{ZONE.start=freeSpot(ZONE.start[0],ZONE.start[1]);if(ZONE.portal)ZONE.portal.stand=freeSpot(ZONE.portal.stand[0],ZONE.portal.stand[1]);if(ZONE.doors)ZONE.doors.forEach(d=>{const f=freeSpot(d.x,d.y+10);d.sx=f[0];d.sy=f[1];});}}
 async function loadAll(){
   const core=[fetch('assets/look2/look2.json').then(r=>r.json()).then(j=>{LOOKM=j;}),
     loadMap('town','assets/town.json','assets/town_atlas.json','assets/town_ground.png','assets/town_atlas.png')];
@@ -669,7 +669,7 @@ async function loadAll(){
   await Promise.all(core);
   prepMap('town');useMap('town');
   STAGE2=(async()=>{
-    const jobs=[loadMap('zone1','assets/zone1.json','assets/atlas.json','assets/zone1_ground.png','assets/atlas.png'),loadMap('zone1_gob','assets/zone1_gob.json','assets/atlas_gob.json','assets/zone1_gob_ground.png','assets/atlas_gob.png'),loadMap('zone_cripta','assets/zone_cripta.json','assets/atlas_cripta.json','assets/zone_cripta_ground.png','assets/atlas_cripta.png'),...['mer','fer','alq','mes','cof','lei'].map(k=>loadMap('int_'+k,'assets/int_'+k+'.json','assets/int_atlas.json','assets/int_'+k+'_ground.png','assets/int_atlas.png'))];
+    const jobs=[loadMap('zone1','assets/zone1.json','assets/atlas.json','assets/zone1_ground.png','assets/atlas.png'),loadMap('zone1_gob','assets/zone1_gob.json','assets/atlas_gob.json','assets/zone1_gob_ground.png','assets/atlas_gob.png'),loadMap('zone_cripta','assets/zone_cripta.json','assets/atlas_cripta.json','assets/zone_cripta_ground.png','assets/atlas_cripta.png'),loadMap('zone_esgoto','assets/zone_esgoto.json','assets/atlas_esgoto.json','assets/zone_esgoto_ground.png','assets/atlas_esgoto.png'),...['mer','fer','alq','mes','cof','lei'].map(k=>loadMap('int_'+k,'assets/int_'+k+'.json','assets/int_atlas.json','assets/int_'+k+'_ground.png','assets/int_atlas.png'))];
     for(const k of ['goblin','esqueleto','javali','rato','ogro','xama','esqfogo','esqgelo'])jobs.push(loadSheet(k,'slash'));jobs.push(loadSheet('gobarq','shoot'));jobs.push(loadSheet('esqmago','spellcast'));
     for(const k of new Set(CLS_ORDER.flatMap(c=>CLASSES[c].skills.map(s=>s[0]))))jobs.push(loadImg(skImg(k)).then(im=>{IMG[k]=im;}).catch(()=>{IMG[k]=null;}));
     for(const n of ['i_espada','i_machado','i_martelo','i_adaga','i_cajado','i_cetro','i_arco','i_elmo','i_capuz','i_couraca','i_cota','i_colete','i_manto','i_tunica','i_botas','i_sandalias','i_colar','i_pingente','i_talisma','i_anel','i_luvas','i_manoplas','i_escudo','i_escudog','i_garra','i_livro','i_gema','i_bracelete','i_coroa'])jobs.push(loadImg('../assets/ico/'+n+'.png').then(im=>{IMG_ICO[n]=im;}).catch(()=>{IMG_ICO[n]=null;}));
@@ -873,14 +873,14 @@ function coinSynth(v){if(!AC||!sfxGain)return;const t=AC.currentTime;if(lastSfx.
 function sfx(n,vol=.7,rate=1){if(n==='coin'){coinSynth(Math.min(1,vol*1.4));return;}if(UI_SND[n]){n='ui_click';vol=.45;rate=1;}else if(n==='ui_denied')vol=Math.min(vol,.4);else if(n==='tr_equip'||n==='coin')vol=Math.min(vol,.4);if(!AC||!BUF[n])return;const t=AC.currentTime;if(lastSfx[n]&&t-lastSfx[n]<0.045)return;lastSfx[n]=t;
   const s=AC.createBufferSource();s.buffer=BUF[n];s.playbackRate.value=rate*(0.96+Math.random()*.08);const g=AC.createGain();g.gain.value=vol;s.connect(g);g.connect(sfxGain);s.start();}
 /* ===== SOM DA FLORESTA: trilha e ambiente por família da zona (goblin, esqueleto, javali, rato) ===== */
-const ZMUS={goblin:'floresta_goblin',esq:'cripta_esq',javali:'floresta_javali',rato:'floresta_rato'};
+const ZMUS={goblin:'floresta_goblin',esq:'cripta_esq',javali:'floresta_javali',rato:'esgoto_rato'};
 function zoneMusic(){const nm=ZMUS[famOf(G.zoneLv)]||'campina',key='m_z_'+nm;
   if(BUF[key]){playMusic(key);return;}musOn=true;if(!AC)return;loadBuf('../assets/audio/music/'+nm+'.ogg',key).then(()=>{if(G.scene==='dungeon'&&G.phase!=='boss'&&BUF[key])playMusic(key);});}
 const FAMB={ // ambiente: vento (freq,vol), eventos (peso) por família
   goblin:{wind:[420,.07],ev:{crow:3,twig:3,owl:2,drip:0,bones:0,bird:1,boar:0,scuttle:0,howl:1}},
   esq:{wind:[190,.07],ev:{drip:4,bones:3,chain:2,whisper:2,stone:1,echo:2,owl:0,howl:0,crow:0,twig:0,bird:0,boar:0,scuttle:0}},
   javali:{wind:[560,.06],ev:{bird:4,boar:2,twig:2,crow:1,owl:1,drip:0,bones:0,scuttle:1,howl:0}},
-  rato:{wind:[300,.05],ev:{drip:4,scuttle:4,squeak:3,bones:1,owl:0,crow:0,twig:1,bird:0,boar:0,howl:0}}};
+  rato:{wind:[170,.06],ev:{drip:4,scuttle:4,squeak:3,echo:2,bubble:3,chain:1,whisper:0,bones:1,owl:0,crow:0,twig:0,bird:0,boar:0,howl:0}}};
 const AMBS={on:false,g:null,wind:null,t:null,fam:null};
 function ambStop(){AMBS.on=false;if(AMBS.t){clearInterval(AMBS.t);AMBS.t=null;}if(AMBS.g&&AC){try{AMBS.g.gain.cancelScheduledValues(AC.currentTime);AMBS.g.gain.setTargetAtTime(0,AC.currentTime,.4);}catch(e){}const w=AMBS.wind;setTimeout(()=>{try{w&&w.stop();}catch(e){}},1500);}AMBS.wind=null;}
 function ambNoise(sec){const b=AC.createBuffer(1,Math.floor(AC.sampleRate*sec),AC.sampleRate),d=b.getChannelData(0);let p=0;for(let i=0;i<d.length;i++){p=p*.96+(Math.random()*2-1)*.04;d[i]=(Math.random()*2-1)*.5+p*6;}return b;}
@@ -902,6 +902,7 @@ const AMBEV={
   whisper(){const t=AC.currentTime,n=AC.createBufferSource(),b=AC.createBuffer(1,Math.floor(AC.sampleRate*2.4),AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++){const e=Math.sin(Math.PI*i/d.length);d[i]=(Math.random()*2-1)*e*e;}n.buffer=b;
     const f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=1500+Math.random()*900;f.Q.value=5;const g=AC.createGain();g.gain.value=.09;n.connect(f);f.connect(g);g.connect(AMBS.g);n.start(t);},
   stone(){ambTone(70,42,1.4,'sawtooth',.06,260);ambBurst(.5,'lowpass',420,.1);},
+  bubble(){for(let i=0;i<3+Math.floor(Math.random()*4);i++){const f=180+Math.random()*160;ambTone(f,f*1.9,.09,'sine',.07,900,i*(.1+Math.random()*.12));}},
   echo(){const f=800+Math.random()*500;for(let i=0;i<4;i++)ambTone(f*(1-i*.02),f*.55,.16,'sine',.07*Math.pow(.45,i),2800,i*.34);},
   howl(){ambTone(260,420,1.2,'sine',.05,800);ambTone(420,300,1.6,'sine',.05,800,1.2);}};
 function ambStart(){if(!AC)return;ambStop();const fam=famOf(G.zoneLv),F=FAMB[fam];if(!F)return;AMBS.fam=fam;AMBS.on=true;
@@ -3386,7 +3387,7 @@ function winAlq(){
   $('wbody').innerHTML=h;
 }
 /* Portal */
-const AREAS=[{fam:['goblin'],nm:'Floresta dos Goblins',ic:'ni_d1',mon:'Goblins'},{fam:['esq'],nm:'Catacumbas de Brumavale',ic:'skull-staff',mon:'Esqueletos'},{fam:['javali','rato'],nm:'Floresta de Brumavale',ic:'ni_d3',mon:'Javalis e Ratos'}];
+const AREAS=[{fam:['goblin'],nm:'Floresta dos Goblins',ic:'ni_d1',mon:'Goblins'},{fam:['esq'],nm:'Catacumbas de Brumavale',ic:'skull-staff',mon:'Esqueletos'},{fam:['javali'],nm:'Floresta de Brumavale',ic:'ni_d3',mon:'Javalis'},{fam:['rato'],nm:'Esgotos de Brumavale',ic:'ni_d4',mon:'Ratos Gigantes'}];
 function winPortal(){
   $('wtt').textContent='Portal das Dungeons';const zs=G.pz||Math.min(SAVE.zoneMax||1,SAVE.zone||1)||1;G.pz=clamp(zs,1,SAVE.zoneMax||1);
   let h='<div class="sec-h"><span>Dungeons</span><span>O herói luta sozinho lá dentro</span></div>';
