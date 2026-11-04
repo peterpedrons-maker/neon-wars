@@ -185,3 +185,9 @@ Gerado por `tools/mmo/goblin_chefe.py` a partir das peças abaixo do mesmo gerad
 - `shoulders/legion/male/` — Nila122  — OGA-BY 3.0,CC-BY-SA 3.0,GPL 2.0,GPL 3.0  — https://opengameart.org/content/lpc-roman-armor 
 - `hat/helmet/nasal/adult/` — bluecarrot16  — CC-BY 3.0,CC-BY 4.0,OGA-BY 3.0,GPL 2.0,GPL 3.0  — https://opengameart.org/content/lpc-helmets,https://opengameart.org/content/lpc-expanded-hats-facial-helmets 
 - `weapon/blunt/waraxe/` — Benjamin K. Smith (BenCreating),bluecarrot16,Sander Frenken (castelonia)  — CC-BY-SA 3.0,GPL 3.0  — https://opengameart.org/content/lpc-medieval-weapons 
+- `body/bodies/skeleton/`, `head/heads/skeleton/adult/` — bluecarrot16, Napsio, JaidynReiman, Johannes Sjölund (wulax), Stephen Challener (Redshrike) — OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0 — https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles (Rei Esqueleto)
+- `legs/armour/plate/male/`, `torso/armour/plate/male/`, `feet/armour/plate/thin/` — bluecarrot16, JaidynReiman, Michael Whitlock (bigbeargames), Matthew Krohn (makrohn), Johannes Sjölund (wulax), Napsio — OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0 — https://opengameart.org/content/lpc-medieval-fantasy-character-sprites
+- `shoulders/pauldrons/male/` — Matthew Krohn (makrohn), Johannes Sjölund (wulax), bluecarrot16, JaidynReiman — OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0 — https://opengameart.org/content/lpc-medieval-fantasy-character-sprites
+- `hat/formal/crown/adult/` — DarkwallLKE, Charles Sanchez (CharlesGabriel) — CC-BY-SA 3.0, GPL 3.0 — https://opengameart.org/content/lpc-crown
+- `cape/solid/` — bluecarrot16, Nila122, JaidynReiman — OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0 — https://opengameart.org/content/lpc-roman-armor
+- `weapon/sword/glowsword/` — bluecarrot16, tskaufma, Johannes Sjölund (wulax) — OGA-BY 3.0, CC-BY-SA 3.0 — https://opengameart.org/content/lpc-glow-sword
