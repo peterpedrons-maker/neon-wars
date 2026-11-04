@@ -396,6 +396,32 @@ i.upg{position:absolute;right:1px;top:0;font-size:9px;color:#7de06d;font-style:n
 .bmr{display:flex;gap:6px;margin-top:5px}.bmr .gb{flex:1;padding:6px 4px;font-size:10px}
 .fmode button img{width:16px;height:16px;image-rendering:pixelated;display:block;margin:0 auto 1px}.fmode button span{display:block;font-size:9px}.fmode button{height:40px}
 
+/* ===== UI v2: contraste, tamanhos de toque, cartões e títulos uniformes ===== */
+:root{--papel2:#bdb59e;--card:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02))}
+#win .box,#pan .box{background:linear-gradient(180deg,#1b1724,#0f0c15);border:1px solid var(--ouroE);box-shadow:0 14px 44px rgba(0,0,0,.75),inset 0 0 0 1px rgba(0,0,0,.6)}
+.tt{height:50px;padding:0 8px 0 16px;font-size:14.5px;letter-spacing:.18em;background:linear-gradient(#352d44,#18141f);box-shadow:inset 0 -1px 0 rgba(243,217,142,.28)}
+.xb{width:38px;height:38px}.xb::before,.xb::after{width:16px}
+.tabs{background:#120f18}.tabs button{height:46px;font-size:12px;letter-spacing:.08em}
+.tabs button.on{color:var(--ouro);background:linear-gradient(#372f47,#19141f);box-shadow:inset 0 -3px 0 var(--ouroE)}
+.wb{padding:14px;gap:10px}
+.sec-h{font-size:11.5px;letter-spacing:.14em;color:var(--ouroE);padding-bottom:5px;border-bottom:1px solid rgba(217,180,95,.28);margin:10px 0 2px}
+.sub{font-size:12.5px;line-height:1.5;color:#bdb59e}
+.wr,.skc,.vi,.dd{background:var(--card);border-color:rgba(217,180,95,.22)}
+.wr{min-height:64px;padding:10px 12px}.wr .tx b{font-size:14.5px}.wr .tx span{font-size:12.5px;line-height:1.4}
+.skc{padding:12px}.skc .t{font-size:12.5px;line-height:1.5;color:#cfc7b0}.skc .t b{font-size:14.5px}
+.gb,.db{height:42px;font-size:12px;min-width:86px}.gb:active,.db:active{transform:translateY(1px);filter:brightness(1.12)}
+.stline{font-size:13.5px;padding:6px 2px}.avl{font-size:13px}.dd{font-size:12.5px}
+.nh b{font-size:15.5px}.nh span{font-size:12.5px}
+#hero .nm{font-size:13.5px}#hero .nm span:last-child{font-size:10px}
+#qtr.cl .qrs{display:block}#qtr.cl .qr:not(:first-child){display:none}#qtr .qth{height:26px;font-size:11px}#qtr .qr b{font-size:11.5px}#qtr .qr span{font-size:10.5px}
+.skc .t .sh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.skc .t .sh em{font-style:normal;font-size:11px;color:var(--ouroE);white-space:nowrap;font-weight:600}.skc .t .sh .warn{color:#ff9a8a}
+.skc .t p{margin:3px 0 5px;font-size:12px;line-height:1.4;color:#cfc7b0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.skc .chs{display:flex;flex-wrap:wrap;gap:4px}.skc .chs span{font:600 10.5px var(--f);padding:2px 7px;background:#0d0b11;border:1px solid rgba(217,180,95,.28);color:#e9dcb4}
+.skc.eqd{border-color:var(--ouroE);box-shadow:inset 3px 0 0 var(--ouroE)}.skc .sbt{display:flex;flex-direction:column;gap:6px}
+#pan .box{height:86%}
+.qc:not(.mn){padding:8px 10px}.qc:not(.mn) .qh img{width:28px;height:28px;padding:3px}.qc:not(.mn) .qh b{font-size:13px}.qc:not(.mn) .qh span{font-size:10.5px}.qc:not(.mn) .qp{margin:5px 0 5px;height:13px}
+.fmode button span{font-size:10px}
+.fmode{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}.fmode button{min-width:0;padding:0 1px;font-size:9.5px;letter-spacing:.02em;overflow:hidden}
 </style>
 </head>
 <body>
@@ -464,7 +490,7 @@ i.upg{position:absolute;right:1px;top:0;font-size:9px;color:#7de06d;font-style:n
   <div id="gc"><div class="gcb"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><h3 id="gct"></h3><p id="gcm"></p><div class="gcbt"><button id="gcn" class="sec"></button><button id="gcy" class="ok"></button></div></div></div>
   <div id="fade"></div>
   <div class="scr" id="pan"><div class="box"><div class="tt"><span>Personagem</span><button class="xb" id="pClose"></button></div>
-    <div class="tabs"><button id="tEq" class="on">Mochila</button><button id="tAt">Herói</button><button id="tSk">Habilid.</button><button id="tTl">Talentos</button></div>
+    <div class="tabs"><button id="tEq" class="on">Equip.</button><button id="tBg">Mochila</button><button id="tAt">Atrib.</button><button id="tSk">Habil.</button><button id="tTl">Talent.</button></div>
     <div class="wb body" id="pBody"></div></div><div id="tip"></div></div>
   <!-- resultado -->
   <div class="scr" id="res">
@@ -2879,7 +2905,7 @@ function drawDoll(){
 }
 function hideTip(){const t=$('tip');if(t)t.classList.remove('on');}
 function showTip(){
-  const t=$('tip');if(!panSel||panTab!=='eq'){hideTip();return;}
+  const t=$('tip');if(!panSel||(panTab!=='eq'&&panTab!=='bg')){hideTip();return;}
   const it=panSel.src==='bag'?SAVE.inv[panSel.k]:SAVE.eq[panSel.k];if(!it){hideTip();return;}
   const R=RAR[it.rar],cur=panSel.src==='bag'?SAVE.eq[it.slot]:null,el=$('pBody').querySelector('.sel');if(!el){hideTip();return;}
   t.style.borderColor=R.c;
@@ -2893,20 +2919,23 @@ function showTip(){
   t.style.setProperty('--ax',(r.left+r.width/2-pr.left-x)+'px');
 }
 function renderPan(){
-  ['Eq','Sk','At','Tl'].forEach(x=>$('t'+x).classList.toggle('on',panTab===x.toLowerCase()));
+  ['Eq','Bg','Sk','At','Tl'].forEach(x=>$('t'+x).classList.toggle('on',panTab===x.toLowerCase()));
   hideTip();
   const B=$('pBody'),C=CLASSES[SAVE.cls],h=G.hero;B.onclick=null;
-  if(panTab==='eq'){
+  if(panTab==='eq'||panTab==='bg'){
+    const isEq=panTab==='eq';
     const sl=k=>{const it=SAVE.eq[k],sel=panSel&&panSel.src==='eq'&&panSel.k===k;return it?itemCell(it,sel,'eq:'+k,'slot'):`<div class="slot" data-c="none"><div class="ph">${SLOT_NAME[k]}</div></div>`;};
-    let html=`<div class="pd"><div class="pcol">${['elmo','armadura','luvas','botas'].map(sl).join('')}</div><div class="pc"><canvas id="pdoll"></canvas></div><div class="pcol">${['arma','escudo','amuleto','anel'].map(sl).join('')}</div></div>`;
+    let html='';
+    if(isEq){html+=`<div class="pd"><div class="pcol">${['elmo','armadura','luvas','botas'].map(sl).join('')}</div><div class="pc"><canvas id="pdoll"></canvas></div><div class="pcol">${['arma','escudo','amuleto','anel'].map(sl).join('')}</div></div>`;
     html+=`<div class="stg"><div><span>Nível</span><b>${SAVE.lv}</b></div><div><span>Subclasse</span><b>${subOf()?subOf().nome:'—'}</b></div><div><span>Vida</span><b>${h.maxhp}</b></div><div><span>Ataque</span><b>${Math.round(h.pow)}</b></div><div><span>Defesa</span><b>${Math.round(h.def)}</b></div><div><span>Crítico</span><b>${Math.round(h.crit*100)}%</b></div><div><span>Empurrão</span><b>${Math.round(knockChance()*100)}%</b></div><div><span>Velocidade</span><b>${Math.round(h.speed)}</b></div></div>`;
-    html+=`<div class="mats" style="margin-top:2px">${MATS.map(M=>`<div style="--mc:${M.col}"><img src="${UI}${M.ic}.png"><b>${matN(M.id)}</b></div>`).join('')}</div>`;
+    html+=`<div class="acts"><button data-a="best">Equipar melhores</button><button data-a="auto" class="${SAVE.autoEq?'g':''}">Auto-equipar: ${SAVE.autoEq?'sim':'não'}</button></div>`;}
+    else{html+=`<div class="mats" style="margin-top:2px">${MATS.map(M=>`<div style="--mc:${M.col}"><img src="${UI}${M.ic}.png"><b>${matN(M.id)}</b></div>`).join('')}</div>`;
     html+=`<div class="sec-h"><span>Mochila</span><span>${SAVE.inv.length} / 24</span></div><div class="bag">`+Array.from({length:24},(_,i)=>{const it=SAVE.inv[i];return it?itemCell(it,panSel&&panSel.src==='bag'&&panSel.k===i,'bag:'+i,'cell'):'<div class="cell e"></div>';}).join('')+'</div>';
-    html+=`<div class="acts"><button data-a="best">Equipar melhores</button><button data-a="auto" class="${SAVE.autoEq?'g':''}">Auto-equipar: ${SAVE.autoEq?'sim':'não'}</button></div><div class="acts"><button data-a="apot" class="${(SAVE.apot==null?.35:SAVE.apot)>0?'g':''}">Poção automática: ${(SAVE.apot==null?.35:SAVE.apot)>0?'abaixo de '+Math.round((SAVE.apot==null?.35:SAVE.apot)*100)+'% da vida':'desligada'}</button></div>`;
+    html+=`<div class="sec-h"><span>Poção automática</span></div><div class="acts"><button data-a="apot" class="${(SAVE.apot==null?.35:SAVE.apot)>0?'g':''}">Poção automática: ${(SAVE.apot==null?.35:SAVE.apot)>0?'abaixo de '+Math.round((SAVE.apot==null?.35:SAVE.apot)*100)+'% da vida':'desligada'}</button></div>`;
     const cnt=n=>SAVE.inv.filter(x=>x.rar<=n).length;
     html+=`<div class="sec-h"><span>Filtro de loot</span></div><div class="acts"><button data-a="lf">${(SAVE.lf||0)?'Vende abaixo de '+RAR[SAVE.lf].n:'Guardar tudo'}</button></div>`;
-    html+=`<div class="sec-h"><span>Vender em lote</span></div><div class="acts">${[0,1,2].map(n=>`<button data-a="sellb:${n}" style="color:${RAR[n].c}" ${cnt(n)?'':'disabled'}>${n?'Até ':'Só '}${RAR[n].n}s (${cnt(n)})</button>`).join('')}</div>`;
-    B.innerHTML=html;drawDoll();
+    html+=`<div class="sec-h"><span>Vender em lote</span></div><div class="acts">${[0,1,2].map(n=>`<button data-a="sellb:${n}" style="color:${RAR[n].c}" ${cnt(n)?'':'disabled'}>${n?'Até ':'Só '}${RAR[n].n}s (${cnt(n)})</button>`).join('')}</div>`;}
+    B.innerHTML=html;if(isEq)drawDoll();
     B.querySelectorAll('[data-c]').forEach(e=>e.onclick=ev=>{ev.stopPropagation();const c=e.dataset.c;if(c==='none')return;const [src,k]=c.split(':');const nk=src==='bag'?+k:k;if(panSel&&panSel.src===src&&panSel.k===nk)panSel=null;else panSel={src,k:nk};sfx('ui_click',.5);renderPan();});
     B.querySelectorAll('[data-a]').forEach(e=>e.onclick=()=>panAct(e.dataset.a));
     B.onclick=e=>{if(panSel){panSel=null;renderPan();}};
@@ -2921,7 +2950,8 @@ function renderPan(){
     C.skills.forEach((S,i)=>{if(i>=8&&!skAvail(i))return;if(i===8+3*SUBS[SAVE.cls].findIndex(x=>x.id===SAVE.sub)&&i>=8)html+=`<div class="sec-h"><span>${clsIc(SAVE.cls,16,SAVE.sub)} Subclasse · ${subOf().nome}</span></div>`;const o=S[4],u=o.u||1,lockLv=SAVE.lv<u,rq=o.rq,lockRq=rq&&SAVE.sk[rq[0]]<rq[1],L=SAVE.sk[i],max=5;
       const can=!lockLv&&!lockRq&&pts>0&&L<max,isEq=SAVE.eqs.includes(i);
       const wkLock=!lockLv&&!lockRq&&L>=1&&!skOk(i);const note=wkLock?`<span class="warn">Requer arma ${WREQ[skWc(i)]}</span>`:lockLv?`<span class="warn">Requer nível ${u}</span>`:lockRq?`<span class="warn">Requer ${C.skills[rq[0]][1]} nv ${rq[1]}</span>`:L<1?'<span>Não aprendida</span>':`Nv ${L}/${max}`;
-      html+=`<div class="skc ${lockLv||lockRq||wkLock?'lock':''} ${i>=8?'sub':''}"><img src="${skImg(S[0])}"><div class="t"><b>${i>=8?clsIc(SAVE.cls,14,SAVE.sub):''}${S[1]}</b> ${note}<br>${o.d}<br>${o.t==='buff'||o.t==='shield'||o.t==='heal'?(skCurve('ef',L)>1?'Potência x'+skCurve('ef',L).toFixed(2)+' · ':''):'Dano x'+(S[3]*skScFor(Math.max(1,L))).toFixed(2)+' · '}${((SKST[S[0]]||o.t==='buff'||o.t==='shield')&&skCurve('du',L)>1)?'Duração +'+Math.round((skCurve('du',L)-1)*100)+'% · ':''}Recarga ${skCdFor(i,Math.max(1,L)).toFixed(1)}s<div class="pips">${Array.from({length:max},(_,k)=>`<i class="${k<L?'on':''}"></i>`).join('')}</div></div><div class="sbt"><button class="pl" data-sk="${i}" ${can?'':'disabled'}>+</button><button class="eqb ${isEq?'on':''}" data-eq="${i}" ${L<1?'disabled':''}>${isEq?'✓':'Equipar'}</button></div></div>`;});
+      const stat=[o.t==='buff'||o.t==='shield'||o.t==='heal'?(skCurve('ef',L)>1?'Potência ×'+skCurve('ef',L).toFixed(2):''):'Dano ×'+(S[3]*skScFor(Math.max(1,L))).toFixed(2),((SKST[S[0]]||o.t==='buff'||o.t==='shield')&&skCurve('du',L)>1)?'Duração +'+Math.round((skCurve('du',L)-1)*100)+'%':'','Recarga '+skCdFor(i,Math.max(1,L)).toFixed(1)+'s'].filter(Boolean);
+      html+=`<div class="skc ${lockLv||lockRq||wkLock?'lock':''} ${i>=8?'sub':''} ${isEq?'eqd':''}"><img src="${skImg(S[0])}"><div class="t"><div class="sh"><b>${i>=8?clsIc(SAVE.cls,14,SAVE.sub):''}${S[1]}</b><em>${note}</em></div><p>${o.d}</p><div class="chs">${stat.map(x=>`<span>${x}</span>`).join('')}</div><div class="pips">${Array.from({length:max},(_,k)=>`<i class="${k<L?'on':''}"></i>`).join('')}</div></div><div class="sbt"><button class="pl" data-sk="${i}" ${can?'':'disabled'}>+</button><button class="eqb ${isEq?'on':''}" data-eq="${i}" ${L<1?'disabled':''}>${isEq?'✓ Equipada':'Equipar'}</button></div></div>`;});
     if(!SAVE.sub)html+=`<div class="skc sub lock" style="opacity:1"><img src="${UI}${SUBS[SAVE.cls][0].ic}.png" style="filter:sepia(1) saturate(4) hue-rotate(-8deg) brightness(1.2);padding:6px"><div class="t"><b>Subclasse</b><br>${SAVE.lv<SUB_LV?`Desbloqueia no nível ${SUB_LV}. Veja as opções na criação do herói ou com o Mestre de Classe na cidade.`:'Disponível! Fale com o Mestre de Classe na cidade e escolha uma (definitiva): '+SUBS[SAVE.cls].map(x=>x.nome).join(' ou ')+'.'}</div></div>`;
     html+=`<div class="acts"><button data-a="reset" ${SAVE.gold<resetCost()?'disabled':''}>Redistribuir habilidades (${resetCost()} ouro)</button></div>`;
     B.innerHTML=html;
@@ -2967,6 +2997,7 @@ function panAct(a){
   updPot();badge();writeSave();renderPan();
 }
 $('tEq').onclick=()=>{panTab='eq';panSel=null;sfx('ui_click');renderPan();};
+$('tBg').onclick=()=>{panTab='bg';panSel=null;sfx('ui_click');renderPan();};
 $('tSk').onclick=()=>{panTab='sk';panSel=null;sfx('ui_click');renderPan();};
 $('tAt').onclick=()=>{panTab='at';panSel=null;sfx('ui_click');renderPan();};
 $('tTl').onclick=()=>{panTab='tl';panSel=null;sfx('ui_click');renderPan();};
@@ -3109,14 +3140,14 @@ function partyClear(){G.party.members=[];socRefresh();}
 function socUI(){const s=$('soc');if(!s||s.dataset.b)return;s.dataset.b=1;petLoad();setInterval(()=>{if(G.on&&!document.hidden)SAVE.playT=(SAVE.playT||0)+1;},1000);
   s.innerHTML=`<div id="pty"></div>`;
   const q=document.createElement('div');q.id='qtr';s.parentNode.appendChild(q);
-  q.onclick=ev=>{if(ev.target.closest('.qth')){SAVE.qcol=!SAVE.qcol;sfx('ui_click',.5);writeSave();socRefresh();return;}if(G.winOpen)return;sfx('ui_click');G.qtab='m';openWin('diario');};
+  q.onclick=ev=>{if(ev.target.closest('.qth')){SAVE.qcol=(SAVE.qcol===false);sfx('ui_click',.5);writeSave();socRefresh();return;}if(G.winOpen)return;sfx('ui_click');G.qtab='m';openWin('diario');};
   setInterval(qPlace,400);}
 function qPlace(){const q=$('qtr'),m=$('mm'),h=$('hud');if(!q||!m||!h)return;if(MM.big){q.style.display='none';return;}q.style.display='';const r=m.getBoundingClientRect(),hr=h.getBoundingClientRect();if(r.height>0)q.style.top=Math.round(r.bottom-hr.top+6)+'px';}
 function socRefresh(){if(!SAVE.q)return;socUI();
   const c=qMain(),t=$('qtr');if(t){const L=SAVE.q.d.l,rows=[];if(c){const v=qVal(c);rows.push([c.nm,v,c.n,c.ds.replace(/\.$/,''),v>=c.n,0]);}else rows.push(['Trilha concluída',1,1,'',1,0]);
     for(const d of L){const v=qVal(d);rows.push([d.nm,v,d.n,d.ds.replace(/\.$/,''),v>=d.n,d.c]);}
-    const rd=rows.some(r=>r[4]&&!r[5]);t.classList.toggle('cl',!!SAVE.qcol);t.classList.toggle('rdy',rd);
-    t.innerHTML=`<div class="qth">Missões<u></u><i>${SAVE.qcol?'▸':'▾'}</i></div><div class="qrs">`+rows.map((r,i)=>`<div class="qr${r[4]?' ok':''}${r[5]?' dn':''}"><b>${r[0]}<em>${r[5]?'✓':r[1]+'/'+r[2]}</em></b>${i===0?`<span>${r[4]?'Concluída — toque para receber':r[3]}</span>`:''}<i><s style="width:${r[2]?Math.min(100,r[1]/r[2]*100):100}%"></s></i></div>`).join('')+'</div>';qPlace();}
+    const rd=rows.some(r=>r[4]&&!r[5]);t.classList.toggle('cl',SAVE.qcol!==false);t.classList.toggle('rdy',rd);
+    t.innerHTML=`<div class="qth">Missões<u></u><i>${SAVE.qcol!==false?'▸ +'+Math.max(0,rows.length-1):'▾'}</i></div><div class="qrs">`+rows.map((r,i)=>`<div class="qr${r[4]?' ok':''}${r[5]?' dn':''}"><b>${r[0]}<em>${r[5]?'✓':r[1]+'/'+r[2]}</em></b>${i===0?`<span>${r[4]?'Concluída — toque para receber':r[3]}</span>`:''}<i><s style="width:${r[2]?Math.min(100,r[1]/r[2]*100):100}%"></s></i></div>`).join('')+'</div>';qPlace();}
   const claim=(c&&qOk(c))||SAVE.q.d.l.some(d=>!d.c&&qOk(d)),b=$('bdQ');if(b)b.style.display=claim?'block':'none';
   const p=$('pty');if(p)p.innerHTML=G.party.members.map(m=>`<div class="pm"><b>${clsIc(m.cls,14,m.sub)}<span>${escH(m.name)}</span><em>${m.lv||1}</em></b><div class="bar"><b style="width:${clamp((m.hp||0)/(m.maxhp||1)*100,0,100)}%"></b></div></div>`).join('');}
 function socMenu(m,dun){
@@ -3321,7 +3352,7 @@ function upChance(it){return UPCH[Math.min(9,it.up||0)];}
 function winForja(){
   $('wtt').textContent='Ferreiro';const it=SAVE.eq[G.fslot],mode=G.fmode||'up';
   let h=npcHead('ni_bigorna','Brasa, o Ferreiro','“Traga o aço, eu trago a glória.”')+`<div class="mats">${MATS.map(M=>`<div style="--mc:${M.col}"><img src="${UI}${M.ic}.png"><b>${matN(M.id)}</b><em>${M.nm.split(' ')[0]}</em></div>`).join('')}</div>`;
-  h+=`<div class="fmode">${[['up','Aprimorar','ni_bigorna'],['rf','Reforjar','ni_reforja'],['rm','Remodelar','ni_reforja'],['ds','Desmontar','ni_desmontar'],['bm','Materiais','ni_cristal']].map(([k,l,ic])=>`<button class="${mode===k?'on':''}" data-a="fm:${k}"><img src="${UI}${ic}.png"><span>${l}</span></button>`).join('')}</div>`;
+  h+=`<div class="fmode">${[['up','Aprimor.','ni_bigorna'],['rf','Reforjar','ni_reforja'],['rm','Remodel.','ni_reforja'],['ds','Desmont.','ni_desmontar'],['bm','Materiais','ni_cristal']].map(([k,l,ic])=>`<button class="${mode===k?'on':''}" data-a="fm:${k}"><img src="${UI}${ic}.png"><span>${l}</span></button>`).join('')}</div>`;
   if(mode==='ds'||mode==='bm'){
     if(mode==='ds'){
       h+=`<div class="sec-h"><span>Desmontar itens da mochila</span><span>${SAVE.inv.length} itens</span></div><div class="sub" style="padding:4px 0">Itens viram materiais conforme raridade e tier. Os equipados e os únicos ficam a salvo.</div><div class="dsl">`;
