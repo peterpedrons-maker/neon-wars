@@ -5,9 +5,10 @@ from PIL import Image
 import numpy as np
 _H=globals().get('HERE') or os.getcwd()
 sys.path.insert(0,os.path.join(_H,'ia_src','cripta'))
-from segm import segment
+from segm import segment,defringe_img
 _D=os.path.join(_H,'ia_src','cripta')
-_SH={n:segment(os.path.join(_D,n+'.jpg'),dil=d,minarea=120) for n,d in (('c1',4),('c2',1),('c3',3),('c4',4))}
+_SH={n:segment(os.path.join(_D,n+'.jpg'),dil=d,minarea=120,fringe=(n!='c2')) for n,d in (('c1',4),('c2',1),('c3',3),('c4',4))}
+_SH['c2']=[im if i in (37,38) else defringe_img(im) for i,im in enumerate(_SH['c2'])]      # runas roxas/ciano ficam sem o filtro (a cor delas já é arroxeada)
 def _split(im,axis):                                   # separa dois objetos colados pelo vão de menor alfa (axis 0 = corta por linhas, 1 = por colunas)
     a=np.array(im)[:,:,3]>0;prof=a.sum(axis=1 if axis==0 else 0);n=len(prof);lo,hi=int(n*.25),int(n*.8)
     cut=lo+int(np.argmin(prof[lo:hi]));parts=[]
@@ -22,6 +23,12 @@ def _scale(im,f):
     w,h=max(1,round(im.width*f)),max(1,round(im.height*f))
     p=im.convert('RGBa').resize((w,h),Image.BOX).convert('RGBA')
     a=np.array(p);a[:,:,3]=np.where(a[:,:,3]>110,255,0);return Image.fromarray(a,'RGBA')
+def _clean(im):
+    from scipy import ndimage
+    a=np.array(im);m=a[:,:,3]>0;edge=m&~ndimage.binary_erosion(m,iterations=1,border_value=1)
+    r,g,b=a[:,:,0].astype(int),a[:,:,1].astype(int),a[:,:,2].astype(int)
+    pur=edge&((np.minimum(r,b)-g)>10)&(r>g+4)&(b>g+4)
+    a[pur,:3]=(24,28,40);return Image.fromarray(a,'RGBA')
 # kind: wide (colisão ao longo da largura), post (poste fino), tree, flat (sem colisão, no chão), none (em pé sem colisão), wall (parede densa)
 CAT={
  'sarc':[('c1',i,.24,'wide') for i in (0,1,2,3)],
@@ -70,7 +77,7 @@ def _col(kind,w,h):
         n=max(1,round(w/8));return [(((i/(n-1))-.5)*(w-8) if n>1 else 0,-3,4.6) for i in range(n)]
     r=max(4.5,min(8,h*.17));fw=max(8,w*.78);n=max(1,round(fw/9))
     return [(((i/(n-1))-.5)*(fw-8) if n>1 else 0,-max(3,h*.12),r) for i in range(n)]
-_raw={k:[(_scale(_get(s,i),f),kd) for (s,i,f,kd) in v] for k,v in CAT.items()}
+_raw={k:[(_clean(_scale(_get(s,i),f)),kd) for (s,i,f,kd) in v] for k,v in CAT.items()}
 _all=[im for v in _raw.values() for im,_ in v]
 _px=np.concatenate([np.array(im)[np.array(im)[:,:,3]>0][:,:3] for im in _all])
 _pal=Image.fromarray(_px[:80000].reshape(-1,1,3).astype('uint8'),'RGB').quantize(colors=96,method=Image.MEDIANCUT,dither=Image.NONE)
@@ -102,7 +109,7 @@ if os.environ.get('IA_PREVIEW'):
         t=s.resize((s.width*2,s.height*2),Image.NEAREST)
         if x+t.width>W:x=0;y+=rh+8;rh=0
         pos.append((x,y,t));x+=t.width+8;rh=max(rh,t.height)
-    pv=Image.new('RGBA',(W,y+rh+140),(52,44,66,255))
+    pv=Image.new('RGBA',(W,y+rh+140),(210,205,190,255))
     for x,y,t in pos:pv.alpha_composite(t,(x,y))
     xx=0
     for k,v in TL.items():
