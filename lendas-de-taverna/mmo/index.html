@@ -390,6 +390,7 @@ i.upg{position:absolute;right:1px;top:0;font-size:9px;color:#7de06d;font-style:n
 
 .mats{display:flex;gap:6px}.mats div{flex:1;display:flex;align-items:center;gap:6px;padding:5px 7px;border:1px solid var(--lin);background:linear-gradient(#26202d,#15111b);position:relative}
 .mats img{width:20px;height:20px;image-rendering:pixelated}.mats b{font:700 14px var(--f);color:var(--mc)}.mats em{font:600 9px var(--f);font-style:normal;color:var(--papel2);margin-left:auto}
+.rmg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0}.rmg button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;background:#1a1620;border:1px solid #4a4458;color:var(--papel)}.rmg button img{width:30px;height:30px;image-rendering:pixelated}.rmg button b{font:600 11.5px var(--f)}.rmg button em{font:500 9.5px var(--f);font-style:normal;color:var(--papel2)}.rmg button.on{border-color:var(--ouroC)}.rmg button:disabled{opacity:.45}
 .fmode{display:flex;gap:4px;margin-top:2px}.fmode button{flex:1;height:32px;border:1px solid var(--lin);background:linear-gradient(#26202d,#15111b);color:var(--papel2);font:700 10px var(--f);letter-spacing:.05em;text-transform:uppercase}.fmode button.on{color:#2a1a06;background:linear-gradient(#f0cf7c,#b98a2f);border-color:var(--ouroC)}
 .dsl{display:flex;flex-direction:column;gap:6px}.dsl .gb{width:100%;text-align:left;padding:10px 12px;font-size:11px;letter-spacing:.03em}
 .bmr{display:flex;gap:6px;margin-top:5px}.bmr .gb{flex:1;padding:6px 4px;font-size:10px}
@@ -3277,8 +3278,10 @@ const matOf=tier=>MATS[tier<=4?0:tier<=8?1:2];
 const matN=id=>(SAVE.mats&&SAVE.mats[id])||0;
 function upMats(it){return Math.ceil(((it.up||0)+1)*1.2);}
 function rfCost(it){return Math.round(itemVal(it)*1.1*(1+.5*(it.rf||0)));}
+const RMT=[['Espada','guerreiro','i_espada'],['Maça','clerigo','i_martelo'],['Adaga','ladino','i_adaga'],['Florete','bardo','i_espada'],['Cajado','mago','i_cajado'],['Arco','arqueiro','i_arco']];
+function rmCost(it){return Math.round(itemVal(it)*.6);}
 function rfMats(it){return 2+2*it.rar+(it.rf||0);}
-function dsYield(it){return Math.max(1,Math.round((1+it.rar)*(1+((it.tier||1)-1)%4*.3)));}
+function dsYield(it){return Math.max(1,Math.round((1+it.rar)*(1+((it.tier||1)-1)%4*.3)*(it.slot==='arma'&&wCatOf(it)!==wCat()?1.5:1)));}
 function dropMats(m){
   const boss=m.kind==='boss',tg=m.tier==='gold',bl=m.tier==='blue',il=Math.max(1,Math.round(SAVE.lv*.5+m.lv*.5)),M=matOf(tierOf(il));
   let q=0;if(boss)q=rint(4,7);else if(tg)q=rint(2,3);else if(bl)q=Math.random()<.9?rint(1,2):0;else q=Math.random()<.22?1:0;
@@ -3309,7 +3312,7 @@ function upChance(it){return UPCH[Math.min(9,it.up||0)];}
 function winForja(){
   $('wtt').textContent='Ferreiro';const it=SAVE.eq[G.fslot],mode=G.fmode||'up';
   let h=npcHead('ni_bigorna','Brasa, o Ferreiro','“Traga o aço, eu trago a glória.”')+`<div class="mats">${MATS.map(M=>`<div style="--mc:${M.col}"><img src="${UI}${M.ic}.png"><b>${matN(M.id)}</b><em>${M.nm.split(' ')[0]}</em></div>`).join('')}</div>`;
-  h+=`<div class="fmode">${[['up','Aprimorar','ni_bigorna'],['rf','Reforjar','ni_reforja'],['ds','Desmontar','ni_desmontar'],['bm','Materiais','ni_cristal']].map(([k,l,ic])=>`<button class="${mode===k?'on':''}" data-a="fm:${k}"><img src="${UI}${ic}.png"><span>${l}</span></button>`).join('')}</div>`;
+  h+=`<div class="fmode">${[['up','Aprimorar','ni_bigorna'],['rf','Reforjar','ni_reforja'],['rm','Remodelar','ni_reforja'],['ds','Desmontar','ni_desmontar'],['bm','Materiais','ni_cristal']].map(([k,l,ic])=>`<button class="${mode===k?'on':''}" data-a="fm:${k}"><img src="${UI}${ic}.png"><span>${l}</span></button>`).join('')}</div>`;
   if(mode==='ds'||mode==='bm'){
     if(mode==='ds'){
       h+=`<div class="sec-h"><span>Desmontar itens da mochila</span><span>${SAVE.inv.length} itens</span></div><div class="sub" style="padding:4px 0">Itens viram materiais conforme raridade e tier. Os equipados e os únicos ficam a salvo.</div><div class="dsl">`;
@@ -3327,7 +3330,15 @@ function winForja(){
   if(!it){h+='<div class="sub" style="padding:18px 0">Nenhum item equipado neste espaço.<br>Equipe um item na mochila.</div>';$('wbody').innerHTML=h;return;}
   const R=RAR[it.rar],up=it.up||0,M=matOf(it.tier||1);
   h+=`<div class="fcard"><div class="fi" id="fitem" style="--rc:${R.c};border-color:${R.c}"><img src="../assets/ico/${it.icon}.png"></div><b style="color:${R.c}">${itemName(it)}</b><span>${R.n} · ${SLOT_NAME[it.slot]} · Nv ${it.ilvl} · Tier ${it.tier||1}${it.rf?' · reforjado '+it.rf+'×':''}</span></div>`;
-  if(mode==='up'){
+  if(mode==='rm'){
+    if(it.slot!=='arma')h+='<div class="sub" style="padding:14px 0">Só armas podem ser remodeladas. Escolha a arma equipada acima.</div>';
+    else if(it.u)h+='<div class="sub" style="padding:14px 0">Armas únicas têm forma fixa e não podem ser remodeladas.</div>';
+    else{const cost=rmCost(it),mn=rfMats(it)-(it.rf||0),okM=matN(M.id)>=mn,okT=(SAVE.tok||0)>=2;
+      h+=`<div class="sub" style="padding:6px 0">Troca o tipo da arma mantendo atributos, raridade e aprimoramento +${up}. Muda o ataque básico, o visual e as habilidades que você pode usar.</div><div class="rmg">`+RMT.map(([bn,wl,ic],i)=>{const cur=it.wl===wl&&it.bn===bn;return `<button class="${cur?'on':''}" data-a="rm:${i}" ${cur||SAVE.gold<cost||!okM||!okT?'disabled':''}><img src="../assets/ico/${ic}.png"><b>${bn}</b><em>${WCLBL[WCAT[CLASSES[wl].atk_]]}</em></button>`;}).join('')+'</div>';
+      h+=`<div class="stline"><span>Custo</span><span style="display:flex;gap:10px;align-items:center">${coin(cost)}<span class="pr" style="color:${M.col}"><img src="${UI}${M.ic}.png">${mn}</span><span class="pr" style="color:#9fe8ff"><img src="${UI}gems.png">2</span></span></div>`;
+      if(G.fmsg)h+=`<div style="text-align:center;font:700 14px var(--ft);color:#ffe08a">${G.fmsg.t}</div>`;
+      h+=`<div class="sub">${okT?(okM?'Cada remodelagem custa 2 fichas.':'Faltam '+(mn-matN(M.id))+' '+M.nm):'Faltam fichas (ganhe nas encomendas diárias).'}</div>`;}
+  }else if(mode==='up'){
     const nx={...it,up:up+1},max=up>=10,ch=upChance(it),cost=upCost(it),mn=upMats(it),okM=matN(M.id)>=mn;
     ['atk','def','hp','crit','spd','kb','kd'].filter(k=>it.s[k]).forEach(k=>{h+=`<div class="stline"><span>${STAT_LBL[k]}</span><span>${effS(it,k)} ${max?'':`<span class="up">▶ ${effS(nx,k)}</span>`}</span></div>`;});
     if(max)h+='<div class="sub" style="padding:8px 0;color:#ffd65a">Nível máximo (+10)</div>';
@@ -3416,6 +3427,8 @@ function winAct(a){
   else if(k==='sellr'){let g=0,n=0;SAVE.inv=SAVE.inv.filter(x=>{if(x.rar===+v){g+=itemVal(x);n++;return false;}return true;});SAVE.gold+=g;sfx(n?'coin':'ui_denied',.8);}
   else if(k==='buy'){const i=+v,it=G.shop[i];if(!it)return;const p=itemVal(it)*4;if(SAVE.gold<p){sfx('ui_denied');return;}SAVE.gold-=p;G.shop[i]=null;G.wsel=null;sfx('coin',.7);addItem(it);}
   else if(k==='restock'){const rc=40+SAVE.lv*6;if(SAVE.gold<rc){sfx('ui_denied');return;}SAVE.gold-=rc;restock();sfx('coin',.7);}
+  else if(k==='rm'){const it=SAVE.eq[G.fslot],T=RMT[+v];if(!it||it.slot!=='arma'||it.u||!T)return;const M=matOf(it.tier||1),cost=rmCost(it),mn=rfMats(it)-(it.rf||0);if(SAVE.gold<cost||matN(M.id)<mn||(SAVE.tok||0)<2){sfx('ui_denied');return;}
+    SAVE.gold-=cost;SAVE.mats[M.id]-=mn;SAVE.tok-=2;it.wl=T[1];it.bn=T[0];it.icon=T[2];it.name=T[0]+' '+tierAdj(T[0],it.tier||1);G.fmsg={ok:true,t:'REMODELADA! '+itemName(it)};sfx('hit_0',.8);setTimeout(()=>sfx('tr_equip',.9),200);recalcHero(true);}
   else if(k==='fm'){G.fmode=v;G.fmsg=null;sfx('ui_click');}
   else if(k==='ds'){const n=+v;let q={},c=0;SAVE.inv=SAVE.inv.filter(x=>{if(x.rar<=n&&!x.u){const M=matOf(x.tier||1);q[M.id]=(q[M.id]||0)+dsYield(x);c++;return false;}return true;});if(!c){sfx('ui_denied');return;}SAVE.mats=SAVE.mats||{};for(const id in q)SAVE.mats[id]=(SAVE.mats[id]||0)+q[id];sfx('hit_0',.7);setTimeout(()=>sfx('coin',.6),150);toast('Desmontou '+c+' itens',1300);badge();}
   else if(k==='bm'){const id=a.split(':')[1],qn=+a.split(':')[2],M=MATS.find(x=>x.id===id),p=M.price*qn;if(SAVE.gold<p){sfx('ui_denied');return;}SAVE.gold-=p;SAVE.mats=SAVE.mats||{};SAVE.mats[id]=(SAVE.mats[id]||0)+qn;sfx('coin',.8);}
