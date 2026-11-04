@@ -1,0 +1,19 @@
+{
+ "cell": 128,
+ "walk": {
+  "frames": 9,
+  "rows": [
+   "costas(arte mostra frente)",
+   "esquerda",
+   "frente",
+   "direita"
+  ]
+ },
+ "slash": {
+  "frames": 6
+ },
+ "hurt": {
+  "frames": 6,
+  "nota": "os 2 últimos quadros são a morte"
+ }
+}
