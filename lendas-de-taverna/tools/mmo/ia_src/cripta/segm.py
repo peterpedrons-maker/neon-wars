@@ -2,7 +2,18 @@
 from PIL import Image,ImageDraw
 import numpy as np
 from scipy import ndimage
-def segment(path,dil=4,minarea=300):
+def _defringe(rgb,al):
+    # borda do sprite contaminada pelo fundo magenta: remove 1 px do contorno e pinta de escuro o que sobrar arroxeado (3 px de faixa)
+    al=ndimage.binary_erosion(al,iterations=1,border_value=0)
+    edge=al&~ndimage.binary_erosion(al,iterations=3,border_value=1)
+    r,g,b=rgb[:,:,0].astype(int),rgb[:,:,1].astype(int),rgb[:,:,2].astype(int)
+    pur=edge&((np.minimum(r,b)-g)>14)&(r>g+8)&(b>g+8)
+    rgb[pur]=(24,28,40)
+    return al
+def defringe_img(im):
+    a=np.array(im);rgb=a[:,:,:3].copy();al=_defringe(rgb,a[:,:,3]>0)
+    return Image.fromarray(np.dstack([rgb,(al*255)]).astype('uint8'),'RGBA')
+def segment(path,dil=4,minarea=300,fringe=True):
     im=Image.open(path).convert('RGB');a=np.array(im).astype(int);r,g,b=a[:,:,0],a[:,:,1],a[:,:,2]
     bg=(r>150)&(b>150)&(g<0.62*np.minimum(r,b))&(np.abs(r-b)<75)
     fg=~bg
@@ -19,6 +30,7 @@ def segment(path,dil=4,minarea=300):
             if (hl==k).sum()<260:al|=(hl==k)
         sub_=a[sl];mg=(sub_[:,:,0]>140)&(sub_[:,:,2]>140)&(sub_[:,:,1]<0.62*np.minimum(sub_[:,:,0],sub_[:,:,2]))&(np.abs(sub_[:,:,0]-sub_[:,:,2])<75)
         al=al&~mg
+        if fringe:al=_defringe(a[sl],al)
         rgba=np.dstack([a[sl],(al*255)]).astype('uint8');img=Image.fromarray(rgba,'RGBA');bb=img.getbbox()
         if bb:img=img.crop(bb)
         out.append((sl[0].start,sl[1].start,img))
