@@ -745,6 +745,8 @@ Object.assign(MOBS,{
   esqgelo:{nome:'Esqueleto Gélido',sheet:'esqgelo',hp:112,atk:9,xp:29,gold:[4,10],speed:38,aggro:120,rng:24,aspd:1.5,sw:18,st:['gelado',.3,3,0],fam:'esq'}
 });
 const BOSS={nome:'Ogro de Brumavale',sheet:'ogro',hp:700,atk:14,xp:260,gold:[80,140],speed:36,aggro:260,rng:44,aspd:1.7,scale:1.5,st:['abalado',.4,6,0]};
+const BOSS_GOB={nome:'Grunk, o Chefe Goblin',sheet:'gobchefe',hp:640,atk:13,xp:250,gold:[75,130],speed:40,aggro:260,rng:44,aspd:1.6,scale:1.4,st:['sangramento',.4,6,.02]};
+const bossDef=z=>famOf(z===undefined?G.zoneLv:z)==='goblin'?BOSS_GOB:BOSS;
 /* ===== itens ÚNICOS (nomeados, com efeito próprio): por área; hoje só a Floresta de Brumavale ===== */
 const UNIQUES=[
  {id:'clava_ogro',nm:'Clava do Ogro de Brumavale',slot:'arma',wl:'clerigo',ic:'i_martelo',src:'boss',cls:['guerreiro','clerigo'],mul:1.5,fx:{ls:.05,kb:.10,kd:.5},desc:'Cada golpe devolve 5% do dano causado em vida. +10% de chance de empurrão e +50% de duração da queda.'},
@@ -843,7 +845,7 @@ async function loadAll(){
   prepMap('town');useMap('town');
   STAGE2=(async()=>{
     const jobs=[loadMap('zone1','assets/zone1.json','assets/atlas.json','assets/zone1_ground.png','assets/atlas.png'),loadMap('zone1_gob','assets/zone1_gob.json','assets/atlas_gob.json','assets/zone1_gob_ground.png','assets/atlas_gob.png'),loadMap('zone_cripta','assets/zone_cripta.json','assets/atlas_cripta.json','assets/zone_cripta_ground.png','assets/atlas_cripta.png'),loadMap('zone_esgoto','assets/zone_esgoto.json','assets/atlas_esgoto.json','assets/zone_esgoto_ground.png','assets/atlas_esgoto.png'),...['mer','fer','alq','mes','cof','lei'].map(k=>loadMap('int_'+k,'assets/int_'+k+'.json','assets/int_atlas.json','assets/int_'+k+'_ground.png','assets/int_atlas.png'))];
-    for(const k of ['goblin','esqueleto','javali','rato','ogro','xama','esqfogo','esqgelo'])jobs.push(loadSheet(k,'slash'));jobs.push(loadSheet('gobarq','shoot'));jobs.push(loadSheet('esqmago','spellcast'));
+    for(const k of ['goblin','esqueleto','javali','rato','ogro','gobchefe','xama','esqfogo','esqgelo'])jobs.push(loadSheet(k,'slash'));jobs.push(loadSheet('gobarq','shoot'));jobs.push(loadSheet('esqmago','spellcast'));
     for(const k of new Set(CLS_ORDER.flatMap(c=>CLASSES[c].skills.map(s=>s[0]))))jobs.push(loadImg(skImg(k)).then(im=>{IMG[k]=im;}).catch(()=>{IMG[k]=null;}));
     for(const n of ['i_espada','i_machado','i_martelo','i_adaga','i_cajado','i_cetro','i_arco','i_elmo','i_capuz','i_couraca','i_cota','i_colete','i_manto','i_tunica','i_botas','i_sandalias','i_colar','i_pingente','i_talisma','i_anel','i_luvas','i_manoplas','i_escudo','i_escudog','i_garra','i_livro','i_gema','i_bracelete','i_coroa'])jobs.push(loadImg('../assets/ico/'+n+'.png').then(im=>{IMG_ICO[n]=im;}).catch(()=>{IMG_ICO[n]=null;}));
     for(const n of ['coins','anvil','health-potion','treasure-map','clover','fist','heart-plus','shop','greek-temple','scroll-unfurled'])jobs.push(loadImg('../assets/ui-icons/'+n+'.png').then(im=>{IMG_UI[n]=im;}).catch(()=>{IMG_UI[n]=null;}));
@@ -1525,8 +1527,8 @@ function mkMob(kind,x,y,sp){
   const FM=FAMM[T.fam||kind]||[1,1,1];m.maxhp=Math.round(T.hp*FM[0]*mobHpMul(lv));m.hp=m.maxhp;m.pow=T.atk*FM[1]*mobAtkMul(lv);m.def=lv*1.3;m.name=T.nome;{const q=Math.random();if(q<eliteGoldChance())makeElite(m,'gold');else if(q<eliteGoldChance()+eliteChance())makeElite(m,'blue');}return m;
 }
 function mkBoss(bx,by){
-  bx=bx===undefined?ZONE.boss[0]:bx;by=by===undefined?ZONE.boss[1]:by;const lv=8+(G.zoneLv-1)*BAL.zoneLv,m={kind:'boss',type:'boss',T:BOSS,x:bx,y:by,lv,row:2,state:'idle',animT:0,act:null,cd:1,kvx:0,kvy:0,stun:0,sts:null,flash:0,dead:false,deadT:0,hp:0,sx:bx,sy:by};
-  m.maxhp=Math.round(BOSS.hp*mobHpMul(lv));m.hp=m.maxhp;m.pow=BOSS.atk*mobAtkMul(lv);m.def=lv*1.3;m.name=BOSS.nome;return m;
+  bx=bx===undefined?ZONE.boss[0]:bx;by=by===undefined?ZONE.boss[1]:by;const lv=8+(G.zoneLv-1)*BAL.zoneLv,m={kind:'boss',type:'boss',T:bossDef(),x:bx,y:by,lv,row:2,state:'idle',animT:0,act:null,cd:1,kvx:0,kvy:0,stun:0,sts:null,flash:0,dead:false,deadT:0,hp:0,sx:bx,sy:by};
+  m.maxhp=Math.round(m.T.hp*mobHpMul(lv));m.hp=m.maxhp;m.pow=m.T.atk*mobAtkMul(lv);m.def=lv*1.3;m.name=m.T.nome;return m;
 }
 function resetZone(){
   G.mobs=[];ZONE.spawns.forEach((s,i)=>{G.mobs.push(mkMob(varOf(G.zoneLv,i),s[0],s[1],i));});
@@ -1813,7 +1815,7 @@ function hurtHero(dmg,fromX,fromY,kf=1){
 function heroRevive(){const h=G.hero;h.sts=null;h.state='idle';h.hp=Math.round(h.maxhp*.6);h.x=ZONE.start[0];h.y=ZONE.start[1];h.kvx=h.kvy=0;$('ko').classList.remove('on');$('ko').style.display='none';
   if(G.phase==='boss'){G.boss=null;G.phase='farm';G.dtm=0;G.bossRoll=1;zoneMusic();}G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2;}
 function showResult(){
-  show('res');$('cv').style.display='block';const xp=BOSS.xp;
+  show('res');$('cv').style.display='block';const xp=bossDef().xp;
   $('rl').innerHTML=`${SAVE.name} ${clsIc(SAVE.cls,18)} Nv.${SAVE.lv}<br>Chefe derrotado!<br>Ouro total: ${SAVE.gold}<br><span style="color:#96e08a">Próxima zona: monstros mais fortes</span>`;
 }
 function nextZone(){G.zoneLv++;if(zoneMap(G.zoneLv)!==G.map)useMap(zoneMap(G.zoneLv));SAVE.zone=G.zoneLv;SAVE.zoneMax=Math.max(SAVE.zoneMax||1,G.zoneLv);qCheck();writeSave();show('hud');banner(areaName(),'Zona '+G.zoneLv+' · '+MOBS[famOf(G.zoneLv)].nome+'s');const h=G.hero;h.hp=h.maxhp;h.x=ZONE.start[0];h.y=ZONE.start[1];resetZone();updHUD();chat('Zona '+G.zoneLv+' — '+MOBS[famOf(G.zoneLv)].nome+'s, mais fortes!',2);zoneMusic();ambStart();}
@@ -2874,7 +2876,7 @@ function castFrame(a){const ch=a.ch||0,t=a.t;if(ch<=0)return Math.min(6,Math.flo
 const CHCOL={guerreiro:'#ff9a5a',ladino:'#a98aff',mago:'#8ac8ff',clerigo:'#ffe28a',arqueiro:'#ffb050',bardo:'#ffc060'};
 function entFrame(e){
   if(e.kind==='npc'||e.kind==='vill'){const sh=SHEETS[e.sh];return sheetFrame(sh,'walk',e.row,e.moving?Math.floor(e.animT*11)%9:0);}
-  const nm=e.kind==='hero'?'hero':(e.kind==='boss'?'ogro':e.T.sheet),sh=SHEETS[nm];
+  const nm=e.kind==='hero'?'hero':(e.kind==='boss'?e.T.sheet:e.T.sheet),sh=SHEETS[nm];
   if(e.kind==='hero'&&e.state==='ko'){return sheetFrame(sh,'hurt',0,Math.min(5,Math.floor((3-e.koT)*4)));}
   if(e.dead){return sheetFrame(sh,'hurt',0,Math.min(5,Math.floor(e.deadT*7)));}
   if(e.state==='hurt'||(e.stun>0))return sheetFrame(sh,'hurt',0,sh.stunF||3);
@@ -2978,7 +2980,7 @@ function render(){
       if(a[3]>=60&&a[2]>=24){castShadow(ATLAS,a[0],a[1],a[2],a[3],a[4],a[5],1,X,Y,.26*nA,a[3]>=100?.9:.75);contactShadow(X,Y-1,Math.min(26,a[2]*.3),.28*nA);}
       else contactShadow(X,Y-1,Math.min(20,a[2]*.45+3),.3*nA);}
     for(const it of list){const e=it.e;if(!e||e.dead||e.kind==='vill'&&false)continue;if(!e||e.kind===undefined)continue;const X=e.x-cx,Y=e.y-cy;if(X<-60||X>G.LW+60||Y<-30||Y>G.LH+120)continue;
-      const fr=entFrame(e),sc=e.kind==='boss'?BOSS.scale:1,sw=e.kind==='hero'?22:e.kind==='boss'?40:(e.T?e.T.sw:22),al=e.dead?Math.max(0,1-Math.max(0,e.deadT-.5)/.6):1;
+      const fr=entFrame(e),sc=e.kind==='boss'?e.T.scale:1,sw=e.kind==='hero'?22:e.kind==='boss'?40:(e.T?e.T.sw:22),al=e.dead?Math.max(0,1-Math.max(0,e.deadT-.5)/.6):1;
       contactShadow(X,Y,sw*.62,.36*nA*al);castShadow(fr[0],fr[1],fr[2],fr[3],fr[4],fr[5],fr[6],sc,X,Y,.3*nA*al,1);}}
   let heroDrawn=false;
   for(const it of list){
@@ -2993,7 +2995,7 @@ function render(){
       if(heroDrawn&&p.t==='p'&&a[3]>=60&&p.y>h.y&&px<hb[2]&&px+a[2]>hb[0]&&py<hb[3]&&py+a[3]>hb[1])occl=true;
       if(p.t==='p'&&a[3]>=60)for(const q of ents)if(!q.o&&p.y>q.e.y&&px<q.b[2]&&px+a[2]>q.b[0]&&py<q.b[3]&&py+a[3]>q.b[1])q.o=true;
     }else{const e=it.e;if(e.pet){drawPet(e,e.x-cx,e.y-cy);continue;}
-      const sc=e.kind==='boss'?BOSS.scale:(e.sc||1),sw=e.kind==='hero'?22:e.kind==='boss'?40:(e.T?e.T.sw:22);
+      const sc=e.kind==='boss'?e.T.scale:(e.sc||1),sw=e.kind==='hero'?22:e.kind==='boss'?40:(e.T?e.T.sw:22);
       const sxx=e.x-cx,syy=e.y-cy;
       if(e.elite&&!e.dead){const p=.5+.5*Math.sin(G.t*4+e.x);ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.28+.14*p;ctx.fillStyle=e.elCol;ctx.beginPath();ctx.ellipse(sxx,syy,sw*.8+3*p,7+1.5*p,0,0,7);ctx.fill();ctx.globalAlpha=.5;ctx.strokeStyle=e.elCol;ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(sxx,syy,sw*.8+3*p,7+1.5*p,0,0,7);ctx.stroke();const gd=e.tier==='gold',R0=gd?30:24,gr=ctx.createRadialGradient(sxx,syy-16,2,sxx,syy-16,R0+3*p);gr.addColorStop(0,e.elCol+(gd?'aa':'88'));gr.addColorStop(.55,e.elCol+'44');gr.addColorStop(1,e.elCol+'00');ctx.globalAlpha=.55+.35*p;ctx.fillStyle=gr;ctx.fillRect(sxx-R0-6,syy-16-R0-6,2*R0+12,2*R0+12);
         ctx.globalAlpha=.9;ctx.fillStyle=gd?'#fff2b0':'#d8ecff';for(let i=0;i<(gd?3:2);i++){const a=G.t*2.2+i*6.283/(gd?3:2)+e.x;ctx.fillRect(Math.round(sxx+Math.cos(a)*(R0*.62)-1),Math.round(syy-16+Math.sin(a)*(R0*.38)-1),2,2);}

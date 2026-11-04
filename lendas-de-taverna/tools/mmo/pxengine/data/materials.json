@@ -1,0 +1,26 @@
+{
+ "ink": [30, 20, 40],
+ "light": [-0.55, -0.62, 0.56],
+ "materials": {
+  "skin":  {"ramp": ["#22472a", "#3a7634", "#62ac44", "#9cdc72"], "outline": 0.55},
+  "leat":  {"ramp": ["#3a2216", "#7a4e28", "#b88040"], "outline": 0.5, "texture": "stitch"},
+  "metal": {"ramp": ["#3c4260", "#6c7494", "#a8b2cc", "#e0e8f8"], "outline": 0.45, "spec": true},
+  "cloth": {"ramp": ["#241e38", "#3c3458", "#5a5080"], "outline": 0.5, "texture": "hatch"},
+  "bone":  {"ramp": ["#a89870", "#d8c898", "#f4ecc8"], "outline": 0.55},
+  "white": {"ramp": ["#f4f4ea"], "outline": 0.0},
+  "yell":  {"ramp": ["#c89010", "#ffe040"], "outline": 0.0},
+  "pink":  {"ramp": ["#b86a70", "#e88a8a"], "outline": 0.5},
+  "red":   {"ramp": ["#7a1c28", "#c8383c"], "outline": 0.5},
+  "dark":  {"ramp": ["#1c1424"], "outline": 0.0}
+ },
+ "glyphs": {
+  "k": ["ink", 0],
+  "a": ["skin", 0], "b": ["skin", 1], "c": ["skin", 2], "d": ["skin", 3],
+  "e": ["leat", 0], "f": ["leat", 1], "g": ["leat", 2],
+  "m": ["metal", 0], "n": ["metal", 1], "o": ["metal", 2], "O": ["metal", 3],
+  "u": ["cloth", 0], "v": ["cloth", 1], "x": ["cloth", 2],
+  "s": ["bone", 0], "q": ["bone", 1], "r": ["bone", 2],
+  "w": ["white", 0], "y": ["yell", 1], "Y": ["yell", 0], "z": ["dark", 0], "p": ["pink", 1], "P": ["pink", 0],
+  "R": ["red", 1], "S": ["red", 0]
+ }
+}
