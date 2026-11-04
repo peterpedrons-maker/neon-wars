@@ -7,6 +7,7 @@ exec(open(os.path.join(HERE,'town_world.py')).read())
 OUT=os.path.join(HERE,'..','..','mmo','assets')
 Z=1.5;WW,WH=960,1500;C=16;CW,CH=WW//C,WH//C
 rr=random.Random(77)
+exec(open(os.path.join(HERE,'cripta_ia.py')).read())      # sprites e tiles feitos por IA (ia_src/cripta)
 # ---------- planta: retângulos abertos (px do pack); o resto é parede
 R=[(336,1296,624,1488),            # átrio de entrada
    (384,224,576,1312),             # nave central
@@ -19,7 +20,13 @@ def is_open(cx,cy):return 0<=cx<CW and 0<=cy<CH and op[cy,cx]
 def tint(im,m=(.56,.64,.80),b=-6):
     a=np.array(im.convert('RGBA')).astype(float);a[:,:,0]=a[:,:,0]*m[0]+b;a[:,:,1]=a[:,:,1]*m[1]+b;a[:,:,2]=a[:,:,2]*m[2]+b
     return Image.fromarray(np.clip(a,0,255).astype('uint8'),'RGBA')
-FL=[tint(tile(FLT,tx,ty)) for tx in (16,17,18) for ty in (0,1,2)]
+def dim(im,k):
+    a=np.array(im.convert('RGBA')).astype(float);a[:,:,:3]*=k;return Image.fromarray(np.clip(a,0,255).astype('uint8'),'RGBA')
+FLP=[dim(t,.84) for t in TL['plain']];FLC=[dim(t,.84) for t in TL['crack']];FLB=[dim(t,.84) for t in TL['bone']];FLR=[dim(t,.84) for t in TL['blood']+TL['rune']];FLD=[dim(t,.9) for t in TL['dirt']]
+BRK=[dim(t,.62) for t in TL['brick']]
+def pickfloor(r):
+    v=r.random()
+    return r.choice(FLP) if v<.78 else r.choice(FLC) if v<.91 else r.choice(FLB) if v<.965 else r.choice(FLR)
 def face_cell(r):
     im=Image.new('RGBA',(C,C),(22,26,36,255));d=im.load()
     pal=[(48,57,76),(56,66,88),(42,50,67),(52,61,82)]
@@ -39,18 +46,15 @@ def top_cell(r):
     for _ in range(10):d[r.randrange(C),r.randrange(C)]=(33,38,52,255)
     for _ in range(4):d[r.randrange(C),r.randrange(C)]=(21,24,34,255)
     return im
-FACE=[face_cell(rr) for _ in range(6)];TOP=[top_cell(rr) for _ in range(6)]
+FACE=BRK*2;TOP=[top_cell(rr) for _ in range(6)]
 # ---------- chão
 W_=Image.new('RGBA',(WW,WH),(14,16,24,255))
 for cy in range(CH):
     for cx in range(CW):
         if is_open(cx,cy):
-            t=rr.choice(FL).copy()
-            if rr.random()<.12:                      # rachadura
-                d=ImageDraw.Draw(t);x=rr.randrange(3,12);y=rr.randrange(3,12);d.line([(x,y),(x+rr.randrange(-6,7),y+rr.randrange(2,6))],fill=(30,36,50,255))
-            W_.alpha_composite(t,(cx*C,cy*C))
+            W_.alpha_composite(pickfloor(rr),(cx*C,cy*C))
         else:
-            W_.alpha_composite((FACE if is_open(cx,cy+1) else TOP)[rr.randrange(6)],(cx*C,cy*C))
+            W_.alpha_composite((FACE[rr.randrange(len(FACE))] if is_open(cx,cy+1) else TOP[rr.randrange(6)]),(cx*C,cy*C))
 # beiras: borda clara no topo da parede (junto ao chão aberto vizinho) e sombra no chão encostado na parede
 d=ImageDraw.Draw(W_)
 sh=Image.new('RGBA',(WW,WH),(0,0,0,0));sd=ImageDraw.Draw(sh)
@@ -78,49 +82,12 @@ def stain(col,n,rad,al):
 stain((18,20,30),220,14,60);stain((70,22,22),26,9,70)
 gimg=W_.resize((int(WW*Z),int(WH*Z)),Image.NEAREST)
 gimg.convert('RGB').save(os.path.join(OUT,'zone_cripta_ground.png'),optimize=True)
-# ---------- sprites procedurais
-def zs(im):return im.resize((max(1,int(im.width*Z)),max(1,int(im.height*Z))),Image.NEAREST)
-def poly(d,pts,fill,out=(16,19,28,255)):d.polygon(pts,fill=fill,outline=out)
-def sarcofago(v):
-    w,h=36,24;im=Image.new('RGBA',(w,h),(0,0,0,0));d=ImageDraw.Draw(im)
-    top=(118,130,152,255);mid=(92,103,126,255);dk=(66,75,96,255)
-    poly(d,[(2,9),(w-3,9),(w-1,13),(w-1,h-3),(1,h-3),(1,13)],dk)               # corpo
-    poly(d,[(3,4),(w-4,4),(w-2,10),(2,10)],top)                                  # tampa
-    d.line([(5,6),(w-6,6)],fill=(150,163,186,255))
-    if v%3==0:d.rectangle([w//2-1,5,w//2,9],fill=(70,80,102,255));d.rectangle([w//2-3,6,w//2+2,6],fill=(70,80,102,255))
-    if v%3==1:d.ellipse([w//2-3,5,w//2+2,9],fill=(160,172,194,255));d.point((w//2-1,7),fill=(40,46,62,255));d.point((w//2+1,7),fill=(40,46,62,255))
-    if v%3==2:d.line([(w//2-5,5),(w//2+5,9)],fill=(30,34,46,255));d.line([(w//2,5),(w//2-2,9)],fill=(30,34,46,255))
-    d.line([(2,11),(w-3,11)],fill=mid)
-    im.col=[(-10,-5,8),(0,-5,8),(10,-5,8)]
-    return im
-def lapide(v):
-    im=Image.new('RGBA',(12,18),(0,0,0,0));d=ImageDraw.Draw(im)
-    poly(d,[(2,17),(2,6),(4,2),(7,2),(9,6),(9,17)],(104,116,138,255))
-    d.line([(5,4),(5,9)],fill=(40,46,62,255));d.line([(3,6),(7,6)],fill=(40,46,62,255))
-    d.line([(3,16),(8,16)],fill=(76,86,108,255));im.col=[(0,-3,5)];return im
-def pilar(h=44):
-    im=Image.new('RGBA',(16,h),(0,0,0,0));d=ImageDraw.Draw(im)
-    poly(d,[(1,h-2),(1,h-7),(15,h-7),(15,h-2)],(84,95,118,255))
-    poly(d,[(3,h-7),(3,5),(13,5),(13,h-7)],(104,116,140,255))
-    d.rectangle([4,6,6,h-8],fill=(132,146,172,255));d.rectangle([10,6,12,h-8],fill=(76,86,108,255))
-    poly(d,[(1,5),(1,1),(15,1),(15,5)],(122,135,160,255));im.col=[(0,-3,7)];return im
-def caixao():
-    im=Image.new('RGBA',(18,28),(0,0,0,0));d=ImageDraw.Draw(im)
-    poly(d,[(5,2),(13,2),(16,9),(14,26),(4,26),(2,9)],(88,64,48,255),(24,16,12,255))
-    d.line([(9,4),(9,22)],fill=(60,42,32,255));d.line([(6,8),(12,8)],fill=(60,42,32,255));im.col=[(0,-4,7),(0,-12,6)];return im
 def teia(flip):
     im=Image.new('RGBA',(24,24),(0,0,0,0));d=ImageDraw.Draw(im)
     for k in range(6):d.line([(0,0),(24,k*5)],fill=(200,210,225,70));d.line([(0,0),(k*5,24)],fill=(200,210,225,70))
     for r_ in (7,13,19):d.arc([-r_,-r_,r_,r_],0,90,fill=(200,210,225,90))
     return im.transpose(Image.FLIP_LEFT_RIGHT) if flip else im
-SARC=[sarcofago(i) for i in range(3)];TOMB=[lapide(i) for i in range(2)];PIL=pilar();PILS=pilar(30);COF=caixao()
-# ossos (dos goblins, mesma escala do jogo) e outros reaproveitados
-try:
-    HERE_=HERE
-    exec(open(os.path.join(HERE,'goblin_ia.py')).read())
-    BONES=GI['bonepile']+GI['bone'];STAKE=GI['stake']
-except Exception as e:
-    print('sem arte de ossos:',e);BONES=[];STAKE=[]
+def zs(im):return im.resize((max(1,int(im.width*Z)),max(1,int(im.height*Z))),Image.NEAREST)
 # ---------- registro de sprites e props
 sprs={};P=[];FX=[];ex=[]
 def reg(img,anc):
@@ -139,66 +106,113 @@ def torch_at(x,y):FX.append(dict(k='torch',x=round(x*Z),y=round(y*Z)))
 def cell_free(x,y,m=2):                              # ponto aberto com folga de m células
     cx,cy=int(x//C),int(y//C)
     return all(is_open(cx+i,cy+j) for i in range(-m,m+1) for j in range(-m,m+1))
-# ---------- tochas nas paredes (suportes pintados no chão + chama)
-d=ImageDraw.Draw(W_)
+# ---------- tochas nas paredes (sprite da IA + luz)
+def lamp_at(x,y):FX.append(dict(k='lamp',x=round(x*Z),y=round(y*Z)))
 tcount=0
 for cy in range(CH):
     run=0
     for cx in range(CW):
-        if (not is_open(cx,cy)) and is_open(cx,cy+1) and is_open(cx,cy+2):
+        if (not is_open(cx,cy)) and is_open(cx,cy+1) and is_open(cx,cy+2) and cx>1:
             run+=1
-            if run%6==3 and cx>1:
-                x=cx*C+8;y=cy*C+8
-                d.rectangle([x-1,y-2,x+1,y+5],fill=(80,56,34,255));d.rectangle([x-3,y-4,x+3,y-2],fill=(60,64,76,255))
-                torch_at(x,y-6);tcount+=1
+            if run%6==3:
+                x=cx*C+8;y=cy*C+16
+                add(rr.choice(CI['torchw']),x,y+6,0,True);FX.append(dict(k='lamp',x=round(x*Z),y=round((y-14)*Z),col='#ffb050',r=48));tcount+=1
         else:run=0
-gimg=W_.resize((int(WW*Z),int(WH*Z)),Image.NEAREST);gimg.convert('RGB').save(os.path.join(OUT,'zone_cripta_ground.png'),optimize=True)
-# ---------- colunas, sarcófagos, lápides, caixões, ossos, estandartes
-for x0,y0,x1,y1 in R[2:8]:
-    for sx in (x0+40,x1-40):                          # colunas nos cantos das câmaras
-        for sy in (y0+44,y1-18):
-            if cell_free(sx,sy-10,1):add(PIL,sx,sy,8)
+def nocol(sp):
+    q=sp.copy();q.col=None;return q
+def solid_ok(x,y,m=1):return cell_free(x,y-8,m)
+# ---------- câmaras
+for ci,(x0,y0,x1,y1) in enumerate(R[2:8]):
     cx=(x0+x1)//2;cy=(y0+y1)//2
-    fire(cx,cy+6)
-    for k in range(rr.randrange(3,5)):
-        sx=rr.randrange(x0+60,x1-60);sy=rr.choice((y0+34,y1-10))
-        if cell_free(sx,sy-6,2) and free(sx,sy,22):add(rr.choice(SARC),sx,sy,22)
+    for sx in (x0+36,x1-36):                                   # colunas nos cantos
+        for sy in (y0+60,y1-14):
+            if solid_ok(sx,sy,1) and free(sx,sy,10):add(CI['pillar'][0],sx,sy,9)
+    fire(cx,cy+8)
+    if ci in(2,5):add(CI['altar'][0],cx,y0+54,30)              # altares sacrificiais
+    for k in range(rr.randrange(2,4)):                         # sarcófagos junto à parede norte e sul
+        sx=rr.randrange(x0+70,x1-70);sy=rr.choice((y0+46,y1-12))
+        if solid_ok(sx,sy,2) and free(sx,sy,26):add(rr.choice(CI['sarc']),sx,sy,26)
     for _ in range(rr.randrange(3,6)):
-        sx=rr.randrange(x0+40,x1-40);sy=rr.randrange(y0+40,y1-20)
-        if cell_free(sx,sy-6,1) and free(sx,sy,10):add(rr.choice(TOMB),sx,sy,8)
-    for _ in range(rr.randrange(4,8)):
-        sx=rr.randrange(x0+30,x1-30);sy=rr.randrange(y0+30,y1-14)
-        if BONES and cell_free(sx,sy,0):add(rr.choice(BONES),sx,sy,0,True)
-    if rr.random()<.6 and cell_free((x0+x1)//2+50,y0+40,2):add(COF,(x0+x1)//2+50,y0+34,8)
-# nave e átrio: fogueiras e restos
+        sx=rr.randrange(x0+40,x1-40);sy=rr.randrange(y0+50,y1-14)
+        if solid_ok(sx,sy,1) and free(sx,sy,12):add(rr.choice(CI['tomb']),sx,sy,9)
+    for _ in range(rr.randrange(1,3)):
+        sx=rr.randrange(x0+50,x1-50);sy=rr.randrange(y0+54,y1-14)
+        if solid_ok(sx,sy,1) and free(sx,sy,16):add(rr.choice(CI['coffin']),sx,sy,14)
+    for _ in range(2):
+        sx=rr.randrange(x0+36,x1-36);sy=rr.randrange(y0+46,y1-12)
+        if solid_ok(sx,sy,1) and free(sx,sy,10):add(rr.choice(CI['urn']),sx,sy,8)
+    if rr.random()<.55:
+        sx=rr.choice((x0+60,x1-60));sy=rr.randrange(y0+54,y1-14)
+        if solid_ok(sx,sy,1) and free(sx,sy,16):add(rr.choice(CI['statue']),sx,sy,12)
+    if rr.random()<.5:
+        sx=rr.randrange(x0+50,x1-50);sy=rr.randrange(y0+60,y1-14)
+        if solid_ok(sx,sy,1) and free(sx,sy,14):add(rr.choice(CI['cage']),sx,sy,12)
+    if rr.random()<.45:
+        sx=rr.randrange(x0+50,x1-50);sy=rr.randrange(y0+60,y1-14)
+        if solid_ok(sx,sy,1) and free(sx,sy,12):add(rr.choice(CI['armor']),sx,sy,10)
+    for _ in range(rr.randrange(3,5)):
+        sx=rr.randrange(x0+36,x1-36);sy=rr.randrange(y0+36,y1-10)
+        if cell_free(sx,sy,0):add(rr.choice(CI['bonepile']),sx,sy,0,True)
+    for _ in range(rr.randrange(1,3)):
+        sx=rr.randrange(x0+36,x1-36);sy=rr.randrange(y0+50,y1-14)
+        if solid_ok(sx,sy,1) and free(sx,sy,8):add(rr.choice(CI['candel'][:1]),sx,sy,5)
+    if rr.random()<.6:
+        sx=rr.randrange(x0+50,x1-50);sy=rr.randrange(y0+54,y1-14)
+        if solid_ok(sx,sy,1) and free(sx,sy,12):add(rr.choice(CI['crate']+CI['barrel']),sx,sy,10)
+    for sx in (x0+80,x1-80):                                   # estandartes na parede norte
+        add(CI['banner'][rr.randrange(3)],sx,y0+14,3,False)
+    if rr.random()<.7:
+        sx=rr.randrange(x0+60,x1-60);sy=rr.randrange(y0+46,y1-14)
+        if cell_free(sx,sy,1):add(rr.choice(CI['puddle']+CI['moss']),sx,sy,0,True)
+    if rr.random()<.5:
+        sx=rr.randrange(x0+60,x1-60);sy=rr.randrange(y0+46,y1-14)
+        if cell_free(sx,sy,1):add(rr.choice([CI['rune'][0],CI['runeb'][0]]),sx,sy,0,True)
+    if rr.random()<.5 and solid_ok(x0+30,y1-12,1):add(rr.choice(CI['stalag']),rr.choice((x0+30,x1-30)),y1-12,14)
+# ---------- nave e átrio
 for y in range(1180,300,-190):
-    fire(480-60,y,True);fire(480+60,y,True)
+    fire(480-62,y,True);fire(480+62,y,True)
 for _ in range(34):
     sx=rr.randrange(396,564);sy=rr.randrange(260,1290)
-    if BONES and free(sx,sy,6):add(rr.choice(BONES),sx,sy,0,True)
+    if free(sx,sy,8):add(rr.choice(CI['bonepile']),sx,sy,0,True)
 for _ in range(10):
     sx=rr.randrange(400,560);sy=rr.randrange(300,1280)
     if free(sx,sy,10):add(rr.choice(ROCK_SM),sx,sy,6)
-# portão: colunas, braseiros e entrada
-ENTR=(480,1470);START=(480,1380)
+for _ in range(6):
+    sx=rr.randrange(410,550);sy=rr.randrange(320,1280)
+    if free(sx,sy,10):add(rr.choice(CI['stake']),sx,sy,4)
+for sy in (1000,700,440):
+    add(rr.choice([CI['rune'][0],CI['runeb'][0]]),480,sy,0,True)
 for sx in (-1,1):
-    add(PIL,ENTR[0]+sx*84,ENTR[1]+6,8);add(PILS,ENTR[0]+sx*84,ENTR[1]-52,8)
-    fire(ENTR[0]+sx*50,ENTR[1]-16,True)
-    add(BAN[1 if sx<0 else 2],ENTR[0]+sx*118,ENTR[1]-30,6)
-# estandartes encostados nas paredes dos fundos das câmaras
-for x0,y0,x1,y1 in R[2:8]:
-    for sx in (x0+80,x1-80):
-        add(BAN[rr.randrange(3)],sx,y0+16,4)
-# teias nos cantos das câmaras (decoração, sem colisão)
+    for sy in (1230,880,520):
+        sp=rr.choice(CI['candel'][:1])
+        if free(480+sx*92,sy,8):add(sp,480+sx*92,sy,5)
+# ---------- portão da entrada
+ENTR=(480,1478);START=(480,1380)
+add(nocol(CI['gate'][0]),ENTR[0],ENTR[1]+8,0)
+for sx in (-1,1):
+    add(CI['skullpil'][0],ENTR[0]+sx*88,ENTR[1]+8,10)
+    fire(ENTR[0]+sx*60,ENTR[1]-14,True)
+    add(CI['banner'][1 if sx<0 else 2],ENTR[0]+sx*118,ENTR[1]-28,3)
+for sx,sy in ((372,1350),(588,1350)):
+    add(rr.choice(CI['crate']+CI['barrel']+CI['sack']),sx,sy,10)
+# ---------- sala do chefe: trono, estátuas, runas, baús, estalagmites
+bx,by=480,176
+add(CI['throne'][0],bx,by-30,26)
+for sx in (-1,1):
+    add(CI['statue'][1 if sx<0 else 2],bx+sx*104,by-36,12)
+    add(CI['pillar'][0],bx+sx*170,by-30,9);add(CI['pillar'][0],bx+sx*170,by+66,9)
+    add(rr.choice(CI['chest2']),bx+sx*210,by+28,12)
+    add(rr.choice(CI['stalag']),bx+sx*236,by+88,14)
+    fire(bx+sx*120,by+64)
+add(CI['rune'][0],bx-60,by+40,0,True);add(CI['runeb'][0],bx+60,by+40,0,True)
+add(CI['book'][0],bx+92,by+6,6)
+for _ in range(5):
+    sx=rr.randrange(240,720);sy=rr.randrange(110,270)
+    if cell_free(sx,sy,0):add(rr.choice(CI['bonepile']),sx,sy,0,True)
+# cobwebs nos cantos das câmaras (processual, sem colisão)
 for x0,y0,x1,y1 in R[2:9]:
     P.append(dict(t='flat',id=reg(teia(False),(0,0)),x=round((x0+2)*Z),y=round((y0+4+24)*Z)))
     P.append(dict(t='flat',id=reg(teia(True),(24,0)),x=round((x1-2)*Z),y=round((y0+4+24)*Z)))
-# sala do chefe: círculo de colunas e tochas
-bx,by=480,168
-for a in range(0,360,60):
-    px_=bx+math.cos(math.radians(a))*150;py_=by+math.sin(math.radians(a))*58+24
-    if cell_free(px_,py_-10,1):add(PIL,px_,py_,8)
-fire(bx-110,by+60);fire(bx+110,by+60)
 P.sort(key=lambda p:p['y'])
 # ---------- paredes: círculos de colisão nas células de parede coladas no espaço aberto
 wallc=[]
