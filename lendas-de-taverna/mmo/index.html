@@ -3117,18 +3117,23 @@ function missionsBody(){const c=qMain(),L=SAVE.q.d.l,rdy=(c&&qOk(c)?1:0)+L.filte
 const SHOPT=[
  {id:'pot',nm:'Poções maiores (3)',ds:'Recuperam 80% da vida.',ic:'health-potion',p:4,lim:3},
  {id:'mat',nm:'Pacote de materiais',ds:'Materiais de forja do seu tier.',ic:'ni_ferro',p:6,lim:4},
- {id:'bau',nm:'Baú de equipamento',ds:'Um item Mágico ou melhor para o seu nível.',ic:'locked-chest',p:10,lim:2},
- {id:'set',nm:'Caixa de conjunto',ds:'Uma peça de conjunto da sua zona mais alta.',ic:'chest-armor',p:40,lim:1}
+ {id:'bau',nm:'Baú de equipamento',ds:'Um item do seu nível: 80% Mágico, 20% Épico.',ic:'locked-chest',p:10,lim:2},
+ {id:'set',nm:'Caixa de conjunto',ds:'12% de chance de uma peça de conjunto; senão, um item Mágico e materiais.',ic:'chest-armor',p:25,lim:1},
+ {id:'pet',nm:'Filhote misterioso',ds:'Um lobo que você ainda não tem. Os raros quase nunca saem.',ic:'claws',p:80,lim:1}
 ];
 function shopLeft(it){const sh=SAVE.shop;const d=SAVE.q.d.date;if(!sh||sh.d!==d)SAVE.shop={d,c:{}};return it.lim-(SAVE.shop.c[it.id]||0);}
-function shopBuy(id){const it=SHOPT.find(x=>x.id===id);if(!it)return;const bagFull=(id==='bau'||id==='set')&&SAVE.inv.length>=24;
-  if((SAVE.tok||0)<it.p||shopLeft(it)<=0||bagFull){sfx('ui_denied');if(bagFull)toast('Mochila cheia',1200);return;}
+function shopBuy(id){const it=SHOPT.find(x=>x.id===id);if(!it)return;const bagFull=(id==='bau'||id==='set')&&SAVE.inv.length>=24,petOut=id==='pet'&&Object.keys(PETS).every(k=>petOwn(k));
+  if((SAVE.tok||0)<it.p||shopLeft(it)<=0||bagFull||petOut){sfx('ui_denied');if(bagFull)toast('Mochila cheia',1200);return;}
   SAVE.tok-=it.p;SAVE.shop.c[id]=(SAVE.shop.c[id]||0)+1;
-  const il=Math.max(1,Math.round(SAVE.lv*.55+(SAVE.zoneMax||1)*1.5));
+  const il=Math.max(1,Math.round(SAVE.lv*.7));   // sempre pelo nível do herói: fichas não dão item de zona alta
+  const matPack=n=>{const M=matOf(tierOf(il));SAVE.mats=SAVE.mats||{};SAVE.mats[M.id]=(SAVE.mats[M.id]||0)+n;chat('+'+n+' '+M.nm,4);};
   if(id==='pot'){SAVE.potL=(SAVE.potL||0)+3;updPot();chat('Comprou 3 poções maiores',4);}
-  else if(id==='mat'){const M=matOf(tierOf(il)),n=8+Math.round(SAVE.lv/6);SAVE.mats=SAVE.mats||{};SAVE.mats[M.id]=(SAVE.mats[M.id]||0)+n;chat('Comprou '+n+' '+M.nm,4);}
-  else if(id==='bau'){const x=genItem(il,2,14);SAVE.inv.push(x);chat('Baú: '+itemName(x),4);}
-  else{const ST=SETS.find(q=>q.fam===famOf(SAVE.zoneMax||1))||SETS[0],x=genItem(il,3,0,null,ST);SAVE.inv.push(x);SAVE.cnt=SAVE.cnt||{};SAVE.cnt.set=(SAVE.cnt.set||0)+1;chat('Caixa: '+itemName(x),4);}
+  else if(id==='mat')matPack(8+Math.round(SAVE.lv/6));
+  else if(id==='bau'){const x=genItem(il,Math.random()<.2?3:2,0);SAVE.inv.push(x);chat('Baú: '+itemName(x),4);}
+  else if(id==='set'){if(Math.random()<.12){const ST=pick(SETS),x=genItem(il,3,0,null,ST);SAVE.inv.push(x);SAVE.cnt=SAVE.cnt||{};SAVE.cnt.set=(SAVE.cnt.set||0)+1;chat('Caixa: '+itemName(x)+' (conjunto!)',4);banner('Peça de conjunto!',ST.nm);sfx('levelup',.7);}
+    else{const x=genItem(il,2,0);SAVE.inv.push(x);matPack(4+Math.round(SAVE.lv/10));chat('Caixa: '+itemName(x),4);}}
+  else{const left=Object.keys(PETS).filter(k=>!petOwn(k));let t=0;for(const k of left)t+=PETS[k].w;let r=Math.random()*t,pk=left[0];for(const k of left){r-=PETS[k].w;if(r<=0){pk=k;break;}}
+    SAVE.pets=SAVE.pets||{};SAVE.pets[pk]=1;if(!SAVE.pet)SAVE.pet=pk;G.petE=null;chat('Novo pet: '+PETS[pk].nm+'!',4);banner('Novo pet!',PETS[pk].nm);sfx('levelup',.8);}
   sfx('coin',.8);writeSave();achCheck();}
 function shopBody(){let h=`<div class="sub">Ganhe fichas completando encomendas diárias (+3 cada, +5 se fizer as três), missões da trilha e conquistas. Os limites renovam todo dia.</div>`;
   h+=SHOPT.map(it=>{const left=shopLeft(it),ok=(SAVE.tok||0)>=it.p&&left>0;return `<div class="wr"><img class="ic" src="${UI}${it.ic}.png"><div class="tx"><b>${it.nm}</b><span>${it.ds}</span><span style="color:var(--ouroC)">Restam hoje: ${left}/${it.lim}</span></div><button class="gb" data-a="sb:${it.id}" ${ok?'':'disabled'}><img src="${UI}gems.png" style="width:14px;height:14px;margin-right:4px;image-rendering:pixelated">${it.p}</button></div>`;}).join('');
