@@ -172,3 +172,16 @@ https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generat
 Lista completa e oficial de créditos do projeto (todas as peças, não só
 as usadas aqui):
 https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/blob/master/CREDITS.csv
+
+## Goblin Chefe (boss da Floresta) — camadas usadas em `mmo/assets/chars/gobchefe__*.png`
+
+Gerado por `tools/mmo/goblin_chefe.py` a partir das peças abaixo do mesmo gerador LPC (autores e licenças conforme o CREDITS.csv do projeto):
+
+- `body/bodies/male/` — bluecarrot16,JaidynReiman,Benjamin K. Smith (BenCreating),Evert,Eliza Wyatt (ElizaWy),TheraHedwig,MuffinElZangano,Durrani,Johannes Sjölund (wulax),Stephen Challener (Redshrike)  — OGA-BY 3.0,CC-BY-SA 3.0,GPL 3.0  — https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles,https://opengameart.org/content/lpc-medieval-fantasy-character-sprites,https://opengameart.org/content/lpc-male-jumping-animation-by-durrani,https://opengameart.org/content/lpc-runcycle-and-diagonal-walkcycle,https://opengameart.org/content/lpc-revised-character-basics,https://opengameart.org/content/lpc-be-seated,https://opengameart.org/content/lpc-runcycle-for-male-muscular-and-pregnant-character-bases-with-modular-heads,https://opengameart.org/content/lpc-jump-expanded,https://opengameart.org/content/lpc-character-bases 
+- `head/heads/goblin/adult/` — bluecarrot16,Stephen Challener (Redshrike),William.Thomsponj  — OGA-BY 3.0,CC-BY 4.0,GPL 2.0,GPL 3.0  — https://opengameart.org/content/lpc-goblin,https://opengameart.org/content/lpc-folk 
+- `legs/armour/plate/male/` — bluecarrot16,JaidynReiman,Michael Whitlock (bigbeargames),Matthew Krohn (makrohn),Johannes Sjölund (wulax)  — OGA-BY 3.0,CC-BY-SA 3.0,GPL 3.0  — https://opengameart.org/content/lpc-medieval-fantasy-character-sprites 
+- `feet/armour/plate/thin/` — Matthew Krohn (makrohn),Johannes Sjölund (wulax)  — OGA-BY 3.0,CC-BY-SA 3.0,GPL 3.0  — https://opengameart.org/content/lpc-medieval-fantasy-character-sprites 
+- `torso/armour/leather/male/` — Johannes Sjölund (wulax),bluecarrot16,JaidynReiman  — OGA-BY 3.0,CC-BY-SA 3.0,GPL 3.0  — https://opengameart.org/content/lpc-medieval-fantasy-character-sprites,https://opengameart.org/content/lpc-clothing-updates,https://opengameart.org/content/lpc-expanded-armor 
+- `shoulders/legion/male/` — Nila122  — OGA-BY 3.0,CC-BY-SA 3.0,GPL 2.0,GPL 3.0  — https://opengameart.org/content/lpc-roman-armor 
+- `hat/helmet/nasal/adult/` — bluecarrot16  — CC-BY 3.0,CC-BY 4.0,OGA-BY 3.0,GPL 2.0,GPL 3.0  — https://opengameart.org/content/lpc-helmets,https://opengameart.org/content/lpc-expanded-hats-facial-helmets 
+- `weapon/blunt/waraxe/` — Benjamin K. Smith (BenCreating),bluecarrot16,Sander Frenken (castelonia)  — CC-BY-SA 3.0,GPL 3.0  — https://opengameart.org/content/lpc-medieval-weapons 
