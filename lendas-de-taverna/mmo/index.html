@@ -3386,16 +3386,16 @@ function winAlq(){
   $('wbody').innerHTML=h;
 }
 /* Portal */
-const DUNGS=[{nm:'Clareira de Brumavale',sub:'Nv 1+ · Chefe: Ogro de Brumavale',ic:'ni_d1',ok:true},{nm:'Floresta Gelada',sub:'Nv 8+ · em breve',ic:'ni_d2'},{nm:'Ruínas de Pedra',sub:'Nv 15+ · em breve',ic:'ni_d3'},{nm:'Floresta Seca',sub:'Nv 22+ · em breve',ic:'ni_d4'}];
+const AREAS=[{fam:['goblin'],nm:'Floresta dos Goblins',ic:'ni_d1',mon:'Goblins'},{fam:['esq'],nm:'Catacumbas de Brumavale',ic:'skull-staff',mon:'Esqueletos'},{fam:['javali','rato'],nm:'Floresta de Brumavale',ic:'ni_d3',mon:'Javalis e Ratos'}];
 function winPortal(){
   $('wtt').textContent='Portal das Dungeons';const zs=G.pz||Math.min(SAVE.zoneMax||1,SAVE.zone||1)||1;G.pz=clamp(zs,1,SAVE.zoneMax||1);
   let h='<div class="sec-h"><span>Dungeons</span><span>O herói luta sozinho lá dentro</span></div>';
-  DUNGS.forEach(d=>{
-    if(d.ok)h+=`<div class="dg sel"><img class="ic" src="${UI}${d.ic}.png"><div><b>${d.nm}</b><span>${d.sub}</span></div></div>`;
-    else h+=`<div class="dg lock"><img class="ic" src="${UI}${d.ic}.png"><div><b>${d.nm}</b><span>${d.sub}</span></div><img src="${UI}padlock.png" style="width:20px;height:20px;image-rendering:pixelated;margin-left:auto"></div>`;});
+  {const zc=G.pz,cur=AREAS.find(a=>a.fam.includes(famOf(zc)));
+   AREAS.forEach(d=>{const zs2=[];for(let q=1;q<=Math.max(SAVE.zoneMax||1,12)&&zs2.length<4;q++)if(d.fam.includes(famOf(q)))zs2.push(q);const reached=zs2.some(q=>q<=(SAVE.zoneMax||1));
+    h+=`<div class="dg ${d===cur?'sel':reached?'':'lock'}"><img class="ic" src="${UI}${d.ic}.png"><div><b>${d.nm}</b><span>${d.mon} · zonas ${zs2.join(', ')}…</span></div>${reached?'':`<img src="${UI}padlock.png" style="width:20px;height:20px;image-rendering:pixelated;margin-left:auto">`}</div>`;});}
   const z=G.pz;
   h+=`<div class="dd"><div class="zs"><button class="db" data-a="pz:-1" ${z<=1?'disabled':''} style="min-width:44px">◀</button><b>Zona ${z}</b><button class="db" data-a="pz:1" ${z>=(SAVE.zoneMax||1)?'disabled':''} style="min-width:44px">▶</button></div>
-   <div class="row2"><span>Monstros</span><span>Nv ${1+(z-1)*2}–${3+(z-1)*2}</span></div><div class="row2"><span>Chefe</span><span>Ogro de Brumavale · Nv ${6+(z-1)*2}</span></div><div class="row2"><span>Recompensa</span><span>${z>1?'Itens melhores':'Itens, ouro e XP'}</span></div></div>
+   <div class="row2"><span>Área</span><span>${areaName(zoneMap(z))}</span></div><div class="row2"><span>Monstros</span><span>${MOBS[famOf(z)].nome}s · Nv ${1+(z-1)*BAL.zoneLv}–${8+(z-1)*BAL.zoneLv}</span></div><div class="row2"><span>Chefe</span><span>Ogro de Brumavale · Nv ${8+(z-1)*BAL.zoneLv}</span></div><div class="row2"><span>Recompensa</span><span>${z>1?'Itens melhores':'Itens, ouro e XP'}</span></div></div>
    <button class="gb big" data-a="go">Entrar na dungeon</button>`;
   $('wbody').innerHTML=h;
 }

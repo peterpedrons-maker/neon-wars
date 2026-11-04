@@ -209,6 +209,25 @@ add(CI['book'][0],bx+92,by+6,6)
 for _ in range(5):
     sx=rr.randrange(240,720);sy=rr.randrange(110,270)
     if cell_free(sx,sy,0):add(rr.choice(CI['bonepile']),sx,sy,0,True)
+# correntes penduradas nas paredes, cristais arcanos e o portal selado
+for cy in range(CH):
+    run=0
+    for cx in range(CW):
+        if (not is_open(cx,cy)) and is_open(cx,cy+1) and is_open(cx,cy+2) and cx>1:
+            run+=1
+            if run%9==6:add(nocol(rr.choice(CI['chainh'])),cx*C+8,cy*C+26,0,True)
+        else:run=0
+def glow_at(x,y,col,r=44):FX.append(dict(k='lamp',x=round(x*Z),y=round(y*Z),col=col,r=r))
+for ci in (1,3,4):
+    x0,y0,x1,y1=R[2+ci]
+    for _ in range(12):
+        sx=rr.randrange(x0+60,x1-60);sy=rr.randrange(y0+60,y1-14)
+        if solid_ok(sx,sy,1) and free(sx,sy,12):add(CI['crystal'][0],sx,sy,9);glow_at(sx,sy-16,'#6ad0ff');break
+    for _ in range(12):
+        sx=rr.randrange(x0+40,x1-40);sy=rr.randrange(y0+50,y1-14)
+        if cell_free(sx,sy,1):add(CI['chainfloor'][0],sx,sy,0,True);break
+add(nocol(CI['portal'][0]),480-224,176-10,0);glow_at(480-224,176-34,'#5aaaff',60)
+add(CI['crystal'][0],480+224,176+10,9);glow_at(480+224,176-6,'#6ad0ff')
 # cobwebs nos cantos das câmaras (processual, sem colisão)
 for x0,y0,x1,y1 in R[2:9]:
     P.append(dict(t='flat',id=reg(teia(False),(0,0)),x=round((x0+2)*Z),y=round((y0+4+24)*Z)))
