@@ -481,6 +481,48 @@ i.upg{position:absolute;right:1px;top:0;font-size:9px;color:#7de06d;font-style:n
 .bc .bar{width:100%;height:7px;background:#0d0b11;border:1px solid #3a3446}.bc .bar b{display:block;height:100%;background:linear-gradient(#f0cf7c,#b98a2f)}
 .bc .bk{font:600 12px var(--f);color:#e6dcc2}.bc .bt{font:500 11px var(--f);color:#9a93a8}
 .dd.bg2{display:grid;grid-template-columns:1fr auto;gap:4px 12px}.dd.bg2 b{color:var(--ouroC);text-align:right}
+
+/* ===== UI v2 (parte 3): Personagem, talentos e árvore de habilidades ===== */
+.tt>span,#wtt{font-family:var(--fd);font-weight:700;letter-spacing:.14em;background:linear-gradient(#fff3bd,#e6a92c);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000)}
+.sec-h{font-family:var(--fd);font-size:13px;color:#f0c24f}
+.avl{padding:10px 14px;border:1px solid var(--ouroE);background:radial-gradient(120% 200% at 0 0,rgba(240,194,79,.2),transparent 60%),#17121e;font:600 11px var(--ft);letter-spacing:.14em;text-transform:uppercase;color:#d8c8a0}
+.avl b{font:700 26px var(--fd);color:#ffe08a;text-shadow:0 0 12px rgba(255,190,70,.7)}
+.stg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.stg div{border:1px solid rgba(255,255,255,.1);border-left:3px solid var(--sc,#8a8498);background:linear-gradient(180deg,#201a28,#14101a);padding:7px 10px;align-items:baseline}
+.stg div span{font:600 10px var(--ft);letter-spacing:.16em;text-transform:uppercase;color:#a79f8c}.stg div b{font:700 17px var(--fd);color:var(--sc,#ffe08a)}
+.s-hp{--sc:#ff6a6a}.s-atk{--sc:#ff9a4a}.s-def{--sc:#6fb7ff}.s-crit{--sc:#ffd84a}.s-kb{--sc:#c59aff}.s-spd{--sc:#6fe0b0}
+.atr{border-left:3px solid #4a4458;background:linear-gradient(180deg,#201a28,#14101a);padding:10px 12px}
+.atr .an b{font:700 14px var(--fd);letter-spacing:.08em;color:#f3dc9a}.atr .an span{font-size:12px;color:#bdb59e}
+.atr .av{font:700 24px var(--fd);color:#ffe08a;min-width:46px;text-shadow:0 0 10px rgba(255,190,70,.4)}
+.pl,.tla{width:42px;height:42px;font:700 22px var(--f);border:1px solid #ffe08a;background:linear-gradient(#ffe38a,#c88a1f);color:#2a1a06;box-shadow:0 0 10px rgba(255,190,70,.35)}.pl:disabled,.tla:disabled{opacity:.28;box-shadow:none;filter:grayscale(.7)}
+.tlb button{padding:8px 2px}.tlb button b{font-family:var(--fd);font-size:11px;letter-spacing:.08em}
+.tlsub{font:italic 600 12px var(--f);padding:6px 0 2px}
+.det{position:sticky;top:-14px;z-index:5;display:flex;gap:10px;align-items:center;padding:10px 12px;margin:8px 0 4px;border:1px solid var(--bc,#f0c24f);background:radial-gradient(120% 140% at 0 0,rgba(255,255,255,.07),transparent 60%),#17121e;box-shadow:0 8px 16px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.5)}
+.det .tli{width:52px;height:52px;flex:none;border:2px solid var(--bc);border-radius:50%;overflow:hidden;background:#0d0a12;display:grid;place-items:center}.det .tli img{width:44px;height:44px;image-rendering:pixelated}
+.det .dt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.det .dt b,.det .sh b{font:700 15px var(--fd);letter-spacing:.04em;color:#ffe9a8}.det .dt b u{text-decoration:none;font:700 9px var(--ft);letter-spacing:.14em;color:#1a1208;background:var(--bc);padding:2px 6px;margin-left:6px;text-transform:uppercase;vertical-align:2px}
+.det .dt>span{font-size:12px;line-height:1.4;color:#cfc7b0}.det .warn{color:#ff9a8a!important;font-size:11px!important}
+.det .sh{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.det .sh em{font-style:normal;font-size:11px;color:#f0c24f;white-space:nowrap;font-weight:600}
+.det .chs{display:flex;flex-wrap:wrap;gap:4px}.det .chs span{font:600 10.5px var(--f);padding:2px 7px;background:#0d0b11;border:1px solid rgba(217,180,95,.3);color:#e9dcb4}
+.det .sbt{display:flex;flex-direction:column;gap:6px}.det .eqb{height:34px;min-width:84px;font-size:11px}
+.tree,.det,.avl,.qs,.tlb,.eqs,.stg{flex:none}.tree{position:relative;margin:6px 0 10px;background:radial-gradient(ellipse at 50% 0,rgba(240,194,79,.06),transparent 70%)}
+.tree svg{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+.tree line{stroke:#2e2938;stroke-width:4;vector-effect:non-scaling-stroke;stroke-linecap:round}.tree line.on{stroke-width:4;filter:drop-shadow(0 0 4px currentColor)}
+.tgl{position:absolute;left:0;right:0;text-align:center;font:600 9.5px var(--ft);letter-spacing:.18em;text-transform:uppercase;color:#6c667a;pointer-events:none}
+.nd{position:absolute;width:92px;margin-left:-46px;padding:0;border:0;background:none;color:inherit;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.nd .ci{position:relative;width:60px;height:60px;border-radius:50%;border:3px solid #3a3446;background:radial-gradient(circle,#26202d,#0d0a12);display:grid;place-items:center;transition:transform .12s}
+.nd .ci img{width:100%;height:100%;border-radius:50%;object-fit:cover;transform:scale(1.18);image-rendering:pixelated}
+.nd.key .ci{width:70px;height:70px;border-radius:14px;transform:rotate(45deg)}.nd.key .ci i,.nd.key .ci u{transform:rotate(-45deg)}.nd.key .ci img{transform:rotate(-45deg) scale(1.1)}
+.nd.lock .ci{filter:grayscale(1) brightness(.55)}.nd.open .ci{border-color:#7a6a48}
+.nd.can .ci{border-color:var(--bc);animation:ndp 1.6s ease-in-out infinite}
+.nd.has .ci{border-color:var(--bc);box-shadow:0 0 12px var(--bc)}.nd.max .ci{border-color:#ffe08a;box-shadow:0 0 16px #ffcf6a,inset 0 0 10px rgba(255,214,110,.4);background:radial-gradient(circle,#4a3a1c,#14100a)}
+.nd.sel .ci{transform:scale(1.14)}.nd.key.sel .ci{transform:rotate(45deg) scale(1.14)}.nd.sel .nl{color:#fff}
+@keyframes ndp{50%{box-shadow:0 0 16px var(--bc),0 0 4px var(--bc) inset}}
+.nd .rk{position:absolute;right:-6px;bottom:-4px;font:700 10px var(--f);font-style:normal;padding:1px 5px;border-radius:8px;background:#0d0a12;border:1px solid #4a4458;color:#e6dcc2}.nd.has .rk,.nd.max .rk{border-color:var(--bc);color:#ffe08a}
+.nd u{position:absolute;left:-4px;top:-4px;width:18px;height:18px;border-radius:50%;background:#3fae5a;color:#fff;font:700 11px/18px var(--f);text-decoration:none;text-align:center;border:1px solid #0d0a12}
+.nd s{position:absolute;inset:0;margin:auto;width:16px;height:16px;background:#0d0a12 url(../assets/ui-icons/padlock.png) center/12px no-repeat;border-radius:50%;image-rendering:pixelated}
+.nd .nl{font:600 10.5px/1.15 var(--f);font-style:normal;color:#bdb59e;text-align:center;max-width:92px}
+.nd.lock .nl{color:#6c667a}
+.qs.sb b{color:#d2b4ff;background:none;-webkit-text-fill-color:#d2b4ff}.qs.sb{--qa:#b58cff;border-image:linear-gradient(90deg,#b58cff,transparent) 1}
 </style>
 </head>
 <body>
@@ -1159,7 +1201,7 @@ function setStep(n){
   if(n===2)renderLook();if(n===3)renderSum();
   updCreateBtn();cprevT=0;
 }
-function renderSum(){const C=CLASSES[selCls];$('csum').innerHTML=`<div><span>Classe</span><b>${C.nome}</b></div><div><span>Nível</span><b>1</b></div><div><span>Vida</span><b>${C.hp}</b></div><div><span>Ataque</span><b>${C.atk}</b></div><div><span>Defesa</span><b>${C.def}</b></div><div><span>Alcance</span><b>${C.rng>60?'Distância':'Corpo a corpo'}</b></div>`;}
+function renderSum(){const C=CLASSES[selCls];$('csum').innerHTML=`<div><span>Classe</span><b>${C.nome}</b></div><div class="s-gen"><span>Nível</span><b>1</b></div><div class="s-hp"><span>Vida</span><b>${C.hp}</b></div><div class="s-atk"><span>Ataque</span><b>${C.atk}</b></div><div class="s-def"><span>Defesa</span><b>${C.def}</b></div><div><span>Alcance</span><b>${C.rng>60?'Distância':'Corpo a corpo'}</b></div>`;}
 function updCreateBtn(){const n=$('cname').value.trim();$('cNext').disabled=(cstep===3&&n.length<2);$('cname-tag').textContent=(cstep===3&&n?n+' · ':'')+CLASSES[selCls].nome;}
 const NOMES=['Aldric','Brenna','Cassian','Dorian','Elara','Fenrir','Gwen','Hadrian','Isolde','Joren','Kaelen','Lyra','Marek','Nyx','Orin','Petra','Rowan','Selene','Torin','Vesper'];
 
@@ -1343,6 +1385,19 @@ const tlSpentAll=()=>Object.values(SAVE.tl||{}).reduce((a,b)=>a+b,0);
 const tlPoints=()=>tlTotal()-tlSpentAll();
 const tlSpentIn=b=>b.nodes.reduce((a,n)=>a+((SAVE.tl||{})[n[0]]||0),0);
 let tlBr=0;
+/* ===== árvore estilo MMO: nós ligados por linhas, liberados de cima para baixo ===== */
+let tlSel=null,skSel=null;
+function treeHTML(N,hint){const RH=108,rows=Math.max(...N.map(n=>n.row))+1,H=rows*RH,pos={};
+  N.forEach(n=>{pos[n.k]={x:(n.j+.5)/n.n*100,y:n.row*RH+36};});
+  let ln='';N.forEach(n=>(n.par||[]).forEach(q=>{const a=pos[q.k],b=pos[n.k];if(!a)return;ln+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="${q.on?'on':''}" style="${q.on?'stroke:'+n.c:''}"/>`;}));
+  let h=`<div class="tree" style="height:${H}px"><svg viewBox="0 0 100 ${H}" preserveAspectRatio="none">${ln}</svg>`;
+  (hint||[]).forEach((t,r)=>{if(t)h+=`<div class="tgl" style="top:${r*RH+RH-14}px">${t}</div>`;});
+  N.forEach(n=>{const q=pos[n.k];h+=`<button class="nd ${n.st}${n.key?' key':''}${n.sel?' sel':''}${n.eq?' eqd':''}" data-nd="${n.k}" style="left:${q.x}%;top:${n.row*RH}px;--bc:${n.c}"><b class="ci"><img src="${n.img}"><i class="rk">${n.r}/${n.max}</i>${n.eq?'<u>✓</u>':''}${n.st==='lock'?'<s></s>':''}</b><em class="nl">${n.nm}</em></button>`;});
+  return h+'</div>';}
+function treeRows(items){   // distribui em linhas de até 3 nós, pai sempre numa linha acima
+  const rows=[];let cur=[];items.forEach(it=>{if(cur.length>=3||(it.pk!=null&&cur.some(c=>c.k===it.pk))){rows.push(cur);cur=[];}cur.push(it);});if(cur.length)rows.push(cur);
+  rows.forEach((r,ri)=>r.forEach((it,j)=>{it.row=ri;it.j=j;it.n=r.length;}));return items;}
+
 function tlInvest(id){const T=TALENTS[SAVE.cls];for(const b of T){const i=b.nodes.findIndex(n=>n[0]===id);if(i<0)continue;const n=b.nodes[i],r=SAVE.tl[id]||0;
   if(r>=n[2]||tlPoints()<=0||tlSpentIn(b)<TL_REQ[TL_TIER[i]]){sfx('ui_denied',.5);return;}
   SAVE.tl[id]=r+1;tfCalc();if(G.hero)recalcHero(true);sfx('ui_confirm',.7);writeSave();badge();renderPan();return;}}
@@ -1354,13 +1409,18 @@ function renderTalents(B){
   h+=`<div class="tlb">`+T.map((b,i)=>`<button class="${i===tlBr?'on':''}" data-tlb="${i}" style="--bc:${b.col}"><img src="${UI}${b.ic}.png"><b>${b.nm}</b><em>${tlSpentIn(b)} pts</em></button>`).join('')+`</div>`;
   const br=T[tlBr],sp=tlSpentIn(br);
   h+=`<div class="tlsub" style="color:${br.col}">${br.sub}</div>`;
-  let lastT=-1;
-  br.nodes.forEach((n,i)=>{const t=TL_TIER[i],r=SAVE.tl[n[0]]||0,open=sp>=TL_REQ[t],can=open&&r<n[2]&&pts>0,key=i===6;
-    if(t!==lastT){lastT=t;h+=`<div class="tlt ${open?'':'lk'}"><span>${key?'Pedra angular':'Camada '+(t+1)}</span><span>${open?'liberada':'requer '+TL_REQ[t]+' pontos neste ramo'}</span></div>`;}
-    h+=`<div class="tln ${open?'':'lk'} ${r?'has':''} ${key?'key':''}" style="--bc:${br.col}"><div class="tli"><img src="assets/talents/${n[0]}.png"></div><div class="tlx"><b>${n[1]}</b><span>${n[4]}</span><div class="pips">${Array.from({length:n[2]},(_,k)=>`<i class="${k<r?'on':''}"></i>`).join('')}</div></div><button class="tla" data-tl="${n[0]}" ${can?'':'disabled'}>+</button></div>`;});
+  const PAR=[[],[],[0],[1],[2,3],[4],[5]],ROWS=[0,0,1,1,2,3,4],COLS=[[0,2],[1,2],[0,2],[1,2],[0,1],[0,1],[0,1]];
+  if(!tlSel||!br.nodes.some(n=>n[0]===tlSel))tlSel=(br.nodes.find((n,i)=>sp>=TL_REQ[TL_TIER[i]]&&(SAVE.tl[n[0]]||0)<n[2])||br.nodes[0])[0];
+  const N=br.nodes.map((n,i)=>{const t=TL_TIER[i],r=SAVE.tl[n[0]]||0,open=sp>=TL_REQ[t],can=open&&r<n[2]&&pts>0;
+    return {k:n[0],nm:n[1],img:'assets/talents/'+n[0]+'.png',r,max:n[2],row:ROWS[i],j:COLS[i][0],n:COLS[i][1],c:br.col,key:i===6,sel:n[0]===tlSel,st:!open?'lock':r>=n[2]?'max':r>0?'has':can?'can':'open',par:PAR[i].map(q=>({k:br.nodes[q][0],on:(SAVE.tl[br.nodes[q][0]]||0)>0&&open}))};});
+  h+=`<div class="det" style="--bc:${br.col}">`+(()=>{const i=br.nodes.findIndex(n=>n[0]===tlSel),n=br.nodes[i],t=TL_TIER[i],r=SAVE.tl[n[0]]||0,open=sp>=TL_REQ[t],can=open&&r<n[2]&&pts>0;
+    const why=!open?'Requer '+TL_REQ[t]+' pontos neste ramo ('+sp+'/'+TL_REQ[t]+')':r>=n[2]?'Nível máximo':pts<=0?'Sem pontos de talento':'';
+    return `<div class="tli"><img src="assets/talents/${n[0]}.png"></div><div class="dt"><b>${n[1]}${i===6?' <u>Pedra angular</u>':''}</b><span>${n[4]}</span><div class="pips">${Array.from({length:n[2]},(_,k)=>`<i class="${k<r?'on':''}"></i>`).join('')}</div>${why?`<span class="warn">${why}</span>`:''}</div><button class="tla" data-tl="${n[0]}" ${can?'':'disabled'}>+</button>`;})()+`</div>`;
+  h+=treeHTML(N,[0,1,2,3,4].map(r=>sp<TL_REQ[[0,1,2,3,4][r]]?'🔒 requer '+TL_REQ[r]+' pontos':''));
   h+=`<div class="acts"><button data-tlr="1" ${tlSpentAll()?'':'disabled'}>Redefinir talentos (${50*SAVE.lv} ouro)</button></div>`;
   B.innerHTML=h;
-  B.querySelectorAll('[data-tlb]').forEach(e=>e.onclick=()=>{tlBr=+e.dataset.tlb;sfx('ui_click',.5);renderPan();});
+  B.querySelectorAll('[data-tlb]').forEach(e=>e.onclick=()=>{tlBr=+e.dataset.tlb;tlSel=null;sfx('ui_click',.5);renderPan();});
+  B.querySelectorAll('[data-nd]').forEach(e=>e.onclick=()=>{tlSel=e.dataset.nd;sfx('ui_click',.5);renderPan();});
   B.querySelectorAll('[data-tl]').forEach(e=>e.onclick=()=>tlInvest(e.dataset.tl));
   const rb=B.querySelector('[data-tlr]');if(rb)rb.onclick=tlReset;
 }
@@ -2990,14 +3050,14 @@ function renderPan(){
     const sl=k=>{const it=SAVE.eq[k],sel=panSel&&panSel.src==='eq'&&panSel.k===k;return it?itemCell(it,sel,'eq:'+k,'slot'):`<div class="slot" data-c="none"><div class="ph">${SLOT_NAME[k]}</div></div>`;};
     let html='';
     if(isEq){html+=`<div class="pd"><div class="pcol">${['elmo','armadura','luvas','botas'].map(sl).join('')}</div><div class="pc"><canvas id="pdoll"></canvas></div><div class="pcol">${['arma','escudo','amuleto','anel'].map(sl).join('')}</div></div>`;
-    html+=`<div class="stg"><div><span>Nível</span><b>${SAVE.lv}</b></div><div><span>Subclasse</span><b>${subOf()?subOf().nome:'—'}</b></div><div><span>Vida</span><b>${h.maxhp}</b></div><div><span>Ataque</span><b>${Math.round(h.pow)}</b></div><div><span>Defesa</span><b>${Math.round(h.def)}</b></div><div><span>Crítico</span><b>${Math.round(h.crit*100)}%</b></div><div><span>Empurrão</span><b>${Math.round(knockChance()*100)}%</b></div><div><span>Velocidade</span><b>${Math.round(h.speed)}</b></div></div>`;
+    html+=`<div class="stg"><div class="s-gen"><span>Nível</span><b>${SAVE.lv}</b></div><div class="s-gen"><span>Subclasse</span><b>${subOf()?subOf().nome:'—'}</b></div><div class="s-hp"><span>Vida</span><b>${h.maxhp}</b></div><div class="s-atk"><span>Ataque</span><b>${Math.round(h.pow)}</b></div><div class="s-def"><span>Defesa</span><b>${Math.round(h.def)}</b></div><div class="s-crit"><span>Crítico</span><b>${Math.round(h.crit*100)}%</b></div><div class="s-kb"><span>Empurrão</span><b>${Math.round(knockChance()*100)}%</b></div><div class="s-spd"><span>Velocidade</span><b>${Math.round(h.speed)}</b></div></div>`;
     html+=`<div class="acts"><button data-a="best">Equipar melhores</button><button data-a="auto" class="${SAVE.autoEq?'g':''}">Auto-equipar: ${SAVE.autoEq?'sim':'não'}</button></div>`;}
     else{html+=`<div class="mats" style="margin-top:2px">${MATS.map(M=>`<div style="--mc:${M.col}"><img src="${UI}${M.ic}.png"><b>${matN(M.id)}</b></div>`).join('')}</div>`;
-    html+=`<div class="sec-h"><span>Mochila</span><span>${SAVE.inv.length} / 24</span></div><div class="bag">`+Array.from({length:24},(_,i)=>{const it=SAVE.inv[i];return it?itemCell(it,panSel&&panSel.src==='bag'&&panSel.k===i,'bag:'+i,'cell'):'<div class="cell e"></div>';}).join('')+'</div>';
-    html+=`<div class="sec-h"><span>Poção automática</span></div><div class="acts"><button data-a="apot" class="${(SAVE.apot==null?.35:SAVE.apot)>0?'g':''}">Poção automática: ${(SAVE.apot==null?.35:SAVE.apot)>0?'abaixo de '+Math.round((SAVE.apot==null?.35:SAVE.apot)*100)+'% da vida':'desligada'}</button></div>`;
+    html+=`<div class="qs p"><b>Mochila</b><span>${SAVE.inv.length} / 24</span></div><div class="bag">`+Array.from({length:24},(_,i)=>{const it=SAVE.inv[i];return it?itemCell(it,panSel&&panSel.src==='bag'&&panSel.k===i,'bag:'+i,'cell'):'<div class="cell e"></div>';}).join('')+'</div>';
+    html+=`<div class="qs d"><b>Poção automática</b></div><div class="acts"><button data-a="apot" class="${(SAVE.apot==null?.35:SAVE.apot)>0?'g':''}">Poção automática: ${(SAVE.apot==null?.35:SAVE.apot)>0?'abaixo de '+Math.round((SAVE.apot==null?.35:SAVE.apot)*100)+'% da vida':'desligada'}</button></div>`;
     const cnt=n=>SAVE.inv.filter(x=>x.rar<=n).length;
-    html+=`<div class="sec-h"><span>Filtro de loot</span></div><div class="acts"><button data-a="lf">${(SAVE.lf||0)?'Vende abaixo de '+RAR[SAVE.lf].n:'Guardar tudo'}</button></div>`;
-    html+=`<div class="sec-h"><span>Vender em lote</span></div><div class="acts">${[0,1,2].map(n=>`<button data-a="sellb:${n}" style="color:${RAR[n].c}" ${cnt(n)?'':'disabled'}>${n?'Até ':'Só '}${RAR[n].n}s (${cnt(n)})</button>`).join('')}</div>`;}
+    html+=`<div class="qs d"><b>Filtro de loot</b></div><div class="acts"><button data-a="lf">${(SAVE.lf||0)?'Vende abaixo de '+RAR[SAVE.lf].n:'Guardar tudo'}</button></div>`;
+    html+=`<div class="qs n"><b>Vender em lote</b></div><div class="acts">${[0,1,2].map(n=>`<button data-a="sellb:${n}" style="color:${RAR[n].c}" ${cnt(n)?'':'disabled'}>${n?'Até ':'Só '}${RAR[n].n}s (${cnt(n)})</button>`).join('')}</div>`;}
     B.innerHTML=html;if(isEq)drawDoll();
     B.querySelectorAll('[data-c]').forEach(e=>e.onclick=ev=>{ev.stopPropagation();const c=e.dataset.c;if(c==='none')return;const [src,k]=c.split(':');const nk=src==='bag'?+k:k;if(panSel&&panSel.src===src&&panSel.k===nk)panSel=null;else panSel={src,k:nk};sfx('ui_click',.5);renderPan();});
     B.querySelectorAll('[data-a]').forEach(e=>e.onclick=()=>panAct(e.dataset.a));
@@ -3007,17 +3067,23 @@ function renderPan(){
   }else if(panTab==='sk'){
     const pts=skPoints();
     let html=`<div class="avl"><span>Pontos de habilidade · 1 por nível</span><b>${pts}</b></div>`;
-    html+=`<div class="sec-h"><span>Equipadas (usadas no combate)</span></div><div class="eqs">`+[0,1,2].map(k=>{const si=SAVE.eqs[k],lk=SAVE.lv<SLOT_UNL[k];
+    html+=`<div class="qs p"><b>Equipadas</b><span>usadas no combate</span></div><div class="eqs">`+[0,1,2].map(k=>{const si=SAVE.eqs[k],lk=SAVE.lv<SLOT_UNL[k];
       return `<div class="eqk ${lk?'lk':''} ${skSlot===k&&!lk?'on':''}" data-slot="${k}">${lk?`<span>Nv ${SLOT_UNL[k]}</span>`:si>=0?`<img src="${skImg(C.skills[si][0])}"><em>${C.skills[si][1]}</em>`:'<span>Vazio</span>'}</div>`;}).join('')+`</div>`;
-    html+=`<div class="sec-h"><span>Árvore de habilidades</span></div>`;
-    C.skills.forEach((S,i)=>{if(i>=8&&!skAvail(i))return;if(i===8+3*SUBS[SAVE.cls].findIndex(x=>x.id===SAVE.sub)&&i>=8)html+=`<div class="sec-h"><span>${clsIc(SAVE.cls,16,SAVE.sub)} Subclasse · ${subOf().nome}</span></div>`;const o=S[4],u=o.u||1,lockLv=SAVE.lv<u,rq=o.rq,lockRq=rq&&SAVE.sk[rq[0]]<rq[1],L=SAVE.sk[i],max=5;
-      const can=!lockLv&&!lockRq&&pts>0&&L<max,isEq=SAVE.eqs.includes(i);
-      const wkLock=!lockLv&&!lockRq&&L>=1&&!skOk(i);const note=wkLock?`<span class="warn">Requer arma ${WREQ[skWc(i)]}</span>`:lockLv?`<span class="warn">Requer nível ${u}</span>`:lockRq?`<span class="warn">Requer ${C.skills[rq[0]][1]} nv ${rq[1]}</span>`:L<1?'<span>Não aprendida</span>':`Nv ${L}/${max}`;
+    html+=`<div class="qs d"><b>Árvore de habilidades</b><span>toque num ícone</span></div>`;
+    const skInfo=i=>{const S=C.skills[i],o=S[4],u=o.u||1,lockLv=SAVE.lv<u,rq=o.rq,lockRq=rq&&SAVE.sk[rq[0]]<rq[1],L=SAVE.sk[i],max=5,can=!lockLv&&!lockRq&&pts>0&&L<max,isEq=SAVE.eqs.includes(i),wkLock=!lockLv&&!lockRq&&L>=1&&!skOk(i);return {S,o,u,lockLv,rq,lockRq,L,max,can,isEq,wkLock};};
+    const vis=[];C.skills.forEach((S,i)=>{if(i>=8&&!skAvail(i))return;vis.push(i);});
+    if(skSel==null||!vis.includes(skSel))skSel=vis.find(i=>SAVE.eqs.includes(i))??0;
+    const mk=ids=>treeRows(ids.sort((a,b)=>(C.skills[a][4].u||1)-(C.skills[b][4].u||1)||a-b).map(i=>{const d=skInfo(i),sb=i>=8;return {k:i,pk:d.rq?d.rq[0]:null,nm:d.S[1],img:skImg(d.S[0]),r:d.L,max:d.max,c:sb?'#b58cff':'#f0c24f',sel:i===skSel,eq:d.isEq,st:d.lockLv||d.lockRq?'lock':d.L>=d.max?'max':d.L>0?'has':d.can?'can':'open',par:d.rq&&!d.lockLv?[{k:d.rq[0],on:SAVE.sk[d.rq[0]]>=d.rq[1]}]:[]};}));
+    {const d=skInfo(skSel),S=d.S,o=d.o,L=d.L,i=skSel,max=d.max;
+      const note=d.wkLock?`<span class="warn">Requer arma ${WREQ[skWc(i)]}</span>`:d.lockLv?`<span class="warn">Requer nível ${d.u}</span>`:d.lockRq?`<span class="warn">Requer ${C.skills[d.rq[0]][1]} nv ${d.rq[1]}</span>`:L<1?'<span>Não aprendida</span>':`Nv ${L}/${max}`;
       const stat=[o.t==='buff'||o.t==='shield'||o.t==='heal'?(skCurve('ef',L)>1?'Potência ×'+skCurve('ef',L).toFixed(2):''):'Dano ×'+(S[3]*skScFor(Math.max(1,L))).toFixed(2),((SKST[S[0]]||o.t==='buff'||o.t==='shield')&&skCurve('du',L)>1)?'Duração +'+Math.round((skCurve('du',L)-1)*100)+'%':'','Recarga '+skCdFor(i,Math.max(1,L)).toFixed(1)+'s'].filter(Boolean);
-      html+=`<div class="skc ${lockLv||lockRq||wkLock?'lock':''} ${i>=8?'sub':''} ${isEq?'eqd':''}"><img src="${skImg(S[0])}"><div class="t"><div class="sh"><b>${i>=8?clsIc(SAVE.cls,14,SAVE.sub):''}${S[1]}</b><em>${note}</em></div><p>${o.d}</p><div class="chs">${stat.map(x=>`<span>${x}</span>`).join('')}</div><div class="pips">${Array.from({length:max},(_,k)=>`<i class="${k<L?'on':''}"></i>`).join('')}</div></div><div class="sbt"><button class="pl" data-sk="${i}" ${can?'':'disabled'}>+</button><button class="eqb ${isEq?'on':''}" data-eq="${i}" ${L<1?'disabled':''}>${isEq?'✓ Equipada':'Equipar'}</button></div></div>`;});
+      html+=`<div class="det" style="--bc:${i>=8?'#b58cff':'#f0c24f'}"><div class="tli"><img src="${skImg(S[0])}"></div><div class="dt"><div class="sh"><b>${S[1]}</b><em>${note}</em></div><span>${o.d}</span><div class="chs">${stat.map(x=>`<span>${x}</span>`).join('')}</div><div class="pips">${Array.from({length:max},(_,k)=>`<i class="${k<L?'on':''}"></i>`).join('')}</div></div><div class="sbt"><button class="pl" data-sk="${i}" ${d.can?'':'disabled'}>+</button><button class="eqb ${d.isEq?'on':''}" data-eq="${i}" ${L<1?'disabled':''}>${d.isEq?'✓ Equipada':'Equipar'}</button></div></div>`;}
+    html+=treeHTML(mk(vis.filter(i=>i<8)));
+    if(vis.some(i=>i>=8)){html+=`<div class="qs p sb"><b>${clsIc(SAVE.cls,16,SAVE.sub)} Subclasse · ${subOf().nome}</b></div>`+treeHTML(mk(vis.filter(i=>i>=8)));}
     if(!SAVE.sub)html+=`<div class="skc sub lock" style="opacity:1"><img src="${UI}${SUBS[SAVE.cls][0].ic}.png" style="filter:sepia(1) saturate(4) hue-rotate(-8deg) brightness(1.2);padding:6px"><div class="t"><b>Subclasse</b><br>${SAVE.lv<SUB_LV?`Desbloqueia no nível ${SUB_LV}. Veja as opções na criação do herói ou com o Mestre de Classe na cidade.`:'Disponível! Fale com o Mestre de Classe na cidade e escolha uma (definitiva): '+SUBS[SAVE.cls].map(x=>x.nome).join(' ou ')+'.'}</div></div>`;
     html+=`<div class="acts"><button data-a="reset" ${SAVE.gold<resetCost()?'disabled':''}>Redistribuir habilidades (${resetCost()} ouro)</button></div>`;
     B.innerHTML=html;
+    B.querySelectorAll('[data-nd]').forEach(e=>e.onclick=()=>{skSel=+e.dataset.nd;sfx('ui_click',.5);renderPan();});
     B.querySelectorAll('[data-slot]').forEach(e=>e.onclick=()=>{const k=+e.dataset.slot;if(SAVE.lv<SLOT_UNL[k]){sfx('ui_denied');toast('Slot libera no nível '+SLOT_UNL[k],1100);return;}skSlot=k;sfx('ui_click',.6);renderPan();});
     B.querySelectorAll('[data-eq]').forEach(e=>e.onclick=()=>{const i=+e.dataset.eq;if(SAVE.sk[i]<1)return;
       const cur=SAVE.eqs.indexOf(i);
@@ -3031,7 +3097,7 @@ function renderPan(){
     const pts=atPoints();
     let html=`<div class="avl"><span>Pontos de atributo · ${AT_LV} por nível</span><b>${pts}</b></div>`;
     ATTR.forEach(([k,n])=>{const d=attrDesc(k),pm=MAIN_ATTR[SAVE.cls]===k;html+=`<div class="atr"><div class="an"><b>${n}${pm?' ★':''}</b><span>${d}</span></div><div class="av">${SAVE.at[k]}</div><button class="pl" data-at="${k}" ${pts>0?'':'disabled'}>+</button></div>`;});
-    html+=`<div class="sec-h"><span>Resumo</span></div><div class="stg"><div><span>Vida</span><b>${h.maxhp}</b></div><div><span>Ataque</span><b>${Math.round(h.pow)}</b></div><div><span>Defesa</span><b>${Math.round(h.def)}</b></div><div><span>Crítico</span><b>${Math.round(h.crit*100)}%</b></div><div><span>Empurrão</span><b>${Math.round(knockChance()*100)}%</b></div><div><span>Queda</span><b>+${Math.round((knockDownMul()-1)*100)}%</b></div><div><span>Velocidade</span><b>${Math.round(h.speed)}</b></div><div><span>Atq/s</span><b>${(1/h.aspd).toFixed(2)}</b></div></div>`;
+    html+=`<div class="qs p"><b>Resumo</b></div><div class="stg"><div class="s-hp"><span>Vida</span><b>${h.maxhp}</b></div><div class="s-atk"><span>Ataque</span><b>${Math.round(h.pow)}</b></div><div class="s-def"><span>Defesa</span><b>${Math.round(h.def)}</b></div><div class="s-crit"><span>Crítico</span><b>${Math.round(h.crit*100)}%</b></div><div class="s-kb"><span>Empurrão</span><b>${Math.round(knockChance()*100)}%</b></div><div class="s-kb"><span>Queda</span><b>+${Math.round((knockDownMul()-1)*100)}%</b></div><div class="s-spd"><span>Velocidade</span><b>${Math.round(h.speed)}</b></div><div class="s-spd"><span>Atq/s</span><b>${(1/h.aspd).toFixed(2)}</b></div></div>`;
     html+=`<div class="acts"><button data-a="resetat" ${SAVE.gold<resetCost()?'disabled':''}>Redistribuir atributos (${resetCost()} ouro)</button></div>`;
     B.innerHTML=html;
     B.querySelectorAll('[data-at]').forEach(e=>e.onclick=()=>{const k=e.dataset.at;if(atPoints()<=0)return;SAVE.at[k]++;sfx('tr_equip',.7);G.fx.push({k:'ring',x:G.hero.x,y:G.hero.y,life:.5,max:.5,col:'#ffe08a'});afterPts();});
