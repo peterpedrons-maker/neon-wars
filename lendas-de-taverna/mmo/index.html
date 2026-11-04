@@ -523,6 +523,52 @@ i.upg{position:absolute;right:1px;top:0;font-size:9px;color:#7de06d;font-style:n
 .nd .nl{font:600 10.5px/1.15 var(--f);font-style:normal;color:#bdb59e;text-align:center;max-width:92px}
 .nd.lock .nl{color:#6c667a}
 .qs.sb b{color:#d2b4ff;background:none;-webkit-text-fill-color:#d2b4ff}.qs.sb{--qa:#b58cff;border-image:linear-gradient(90deg,#b58cff,transparent) 1}
+
+/* ===== UI v2 (parte 4): HUD de combate e janelas de NPC ===== */
+#hero{width:196px;border-color:#b8923c;background:radial-gradient(140% 120% at 0 0,rgba(240,194,79,.14),transparent 55%),linear-gradient(180deg,rgba(40,32,52,.95),rgba(16,12,22,.95))}
+#hero .nm span:first-child{font:700 13.5px var(--fd);letter-spacing:.06em;background:linear-gradient(#fff3bd,#e6a92c);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000)}
+#hero #hp{height:16px;border-color:#7a5a24}#hp b{background:linear-gradient(#ff8a78,#e0372f 50%,#9a1a16);box-shadow:0 0 8px rgba(255,70,60,.45)}
+#hpt{font:700 10px var(--f);letter-spacing:.04em}
+#hero #xp{height:5px;border-color:#6a5420;background:#0a0810}#hero #xp b{background:linear-gradient(#ffe38a,#d49a22);box-shadow:0 0 6px rgba(240,194,79,.7)}
+#hl{background:radial-gradient(circle at 35% 30%,#fff1b8,#e0a82e 60%,#8a6418);font:700 11px/16px var(--fd);min-width:22px;height:22px;right:-10px;bottom:-10px;box-shadow:0 0 8px rgba(240,194,79,.6),0 1px 4px #000}
+#prog{width:124px;padding:6px 8px 7px;border-color:#b8923c;background:linear-gradient(180deg,rgba(40,32,52,.95),rgba(16,12,22,.95))}
+#prog b{display:block;position:static;font:700 13px var(--fd);letter-spacing:.1em;text-transform:uppercase;color:#f3d98e;text-shadow:0 1px 0 #000}
+#prog small{display:block;font:600 10px var(--f);color:#bdb59e;margin-top:1px}
+#prog .bar{height:5px;margin-top:5px;border-color:#6a5420}#prog .bar b{position:absolute;background:linear-gradient(#ffd070,#d08a1c);box-shadow:0 0 6px rgba(240,170,60,.6)}
+#qtr{border-color:#b8923c;background:linear-gradient(180deg,rgba(30,24,40,.92),rgba(14,11,20,.92))}
+#qtr .qth{font:700 11px var(--fd);letter-spacing:.14em;background:linear-gradient(90deg,rgba(240,194,79,.18),transparent)}#qtr .qth::before{content:'◆';font-size:8px;color:#f0c24f}
+#qtr .qr.mn b{font:700 11.5px var(--fd);letter-spacing:.03em;color:#ffe08a}
+#qtr .qr.dy b{font:600 11px var(--f);color:#a9e6f0}
+#qtr .qr.dy{border-left:2px solid #4fb7cc;padding-left:6px;margin-left:-2px}
+#qtr .qr.mn{border-left:2px solid #f0c24f;padding-left:6px;margin-left:-2px}
+#qtr .qr.ok b{color:#9ef09a}
+.abar{padding:8px;border-color:#b8923c;background:linear-gradient(180deg,rgba(38,30,50,.96),rgba(14,11,20,.96))}
+.slot2{border:2px solid #6a5424;background:radial-gradient(circle at 50% 35%,#2a2336,#0d0b11);box-shadow:inset 0 0 0 1px rgba(0,0,0,.7),inset 0 0 10px rgba(0,0,0,.6)}
+.slot2.ready{border-color:#ffe08a}
+.slot2 .key{font:700 10px var(--fd);color:#ffe9a8}
+.mbtn{background:linear-gradient(180deg,rgba(44,35,58,.96),rgba(16,12,22,.96));border:2px solid #8a7440;box-shadow:inset 0 0 0 1px rgba(255,226,150,.12),0 4px 12px rgba(0,0,0,.6)}
+.mbtn:active{transform:translateY(1px);filter:brightness(1.15)}
+#boss{border-color:#c2503a;background:linear-gradient(180deg,rgba(54,16,14,.95),rgba(26,8,8,.95));padding:6px 10px 8px}
+#boss .t{font:700 14px var(--fd);letter-spacing:.14em;text-transform:uppercase;background:linear-gradient(#ffe3d8,#ff6a52);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 #000)}
+#boss .bar{height:10px;border-color:#7a2a20}#boss .bar b{background:linear-gradient(#ff8a6a,#d4301e 55%,#7a1010);box-shadow:0 0 10px rgba(255,60,40,.6)}
+/* janelas de NPC */
+.nh{padding:10px 12px;border:1px solid var(--ouroE);background:radial-gradient(120% 200% at 0 0,rgba(240,194,79,.2),transparent 60%),#17121e}
+.nh .np{width:54px;height:54px;border-radius:50%;border:2px solid #e0b34a;box-shadow:0 0 12px rgba(240,194,79,.35);background:radial-gradient(circle,#2e2638,#0d0a12)}.nh .np img{width:34px;height:34px}
+.nh b{font:700 17px var(--fd);letter-spacing:.06em;background:linear-gradient(#fff3bd,#e6a92c);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.nh span{font-size:12.5px;color:#cfc7b0}
+.nh .gd{border-color:var(--ouroE);background:#0d0a12;font:700 14px var(--fd);color:#ffe08a;text-shadow:0 0 8px rgba(255,190,70,.5)}
+.vi{min-height:64px;border-left:3px solid var(--rc,#4a4458);background:linear-gradient(180deg,#201a28,#14101a)}
+.vi:has(.ic2){border-left-color:currentColor}
+.vi .tx2 b{font:700 12.5px var(--f)}.vi .pr2{font:700 14px var(--fd);color:#ffe08a;letter-spacing:.04em}.vi.sel{border-color:#ffe08a;box-shadow:0 0 12px rgba(240,194,79,.3)}
+.vi .ic2{width:44px;height:44px;box-shadow:0 0 10px color-mix(in srgb,var(--rc) 45%,transparent)}
+.fmode button,.tabs button{font-family:var(--fd)}.fmode button{letter-spacing:.04em}
+.fmode button.on{background:linear-gradient(#ffe38a,#c88a1f);color:#2a1a06;border-color:#ffe08a}
+.wgold{font:700 14px var(--fd);color:#ffe08a}
+.tokb{border-color:var(--ouroE);background:linear-gradient(90deg,rgba(240,194,79,.14),transparent),#0d0b11}.tokb b{font:700 18px var(--fd);color:#ffe08a;margin-left:auto}
+#hero .nm span:first-child,#boss .t,#prog b,.nh b,.tt>span,#wtt{text-shadow:none!important}
+#hud #mm{top:calc(86px + env(safe-area-inset-top))}
+.nh b{font-size:15px;letter-spacing:.03em}.nh .gd{font-size:13px;padding:5px 8px}
+.fmode button{font-family:var(--ft);font-size:9px;letter-spacing:0}
 </style>
 </head>
 <body>
@@ -1577,7 +1623,7 @@ function updHUD(force){
   $('goldn').textContent=SAVE.gold;
   $('xp').firstChild.style.width=clamp(SAVE.xp/xpNeed(SAVE.lv)*100,0,100)+'%';$('hl').textContent=SAVE.lv;{const c=$('hcl');if(c&&!c.innerHTML)c.innerHTML=clsIc(SAVE.cls,16,SAVE.sub);const xt=$('xpt');if(xt)xt.textContent=Math.floor(SAVE.xp/xpNeed(SAVE.lv)*100)+'%';}
   const dg=G.scene==='dungeon';$('prog').style.display=dg?'block':'none';
-  if(dg&&(G.phase==='farm'||G.phase==='boss')){const ready=G.dtm>=BOSS_T0&&G.kills>=BOSS_KILLS&&SAVE.lv>=bossLv();$('progt').textContent=G.phase==='boss'?'Zona '+G.zoneLv+' · '+G.kills+' abates':ready?'A área está inquieta…':areaName().split(' ')[0]+' · Zona '+G.zoneLv+' · '+G.kills+' abates';$('prog').querySelector('.bar b').style.width=Math.min(100,Math.min(G.dtm/BOSS_T0,G.kills/BOSS_KILLS,SAVE.lv/bossLv())*100)+'%';}
+  if(dg&&(G.phase==='farm'||G.phase==='boss')){const ready=G.dtm>=BOSS_T0&&G.kills>=BOSS_KILLS&&SAVE.lv>=bossLv();{const nm=areaName().split(' ')[0],sb=G.phase==='boss'?'Zona '+G.zoneLv+' · '+G.kills+' abates':ready?'A área está inquieta…':'Zona '+G.zoneLv+' · '+G.kills+' abates',hv=nm+'|'+sb;if($('progt').dataset.v!==hv){$('progt').dataset.v=hv;$('progt').innerHTML='<b>'+(G.phase==='boss'?'Chefe':nm)+'</b><small>'+sb+'</small>';}}$('prog').querySelector('.bar b').style.width=Math.min(100,Math.min(G.dtm/BOSS_T0,G.kills/BOSS_KILLS,SAVE.lv/bossLv())*100)+'%';}
   const bs=G.boss;$('boss').style.display=(dg&&G.phase==='boss'&&bs&&!bs.dead)?'block':'none';
   const E=SAVE.elix||{},bf=[['forca','ni_eforca','Poder'],['defesa','ni_edefesa','Defesa']].filter(x=>E[x[0]]>0).map(x=>`<div><img src="../assets/ui-icons/${x[1]}.png">${Math.floor(E[x[0]]/60)}:${String(Math.floor(E[x[0]]%60)).padStart(2,'0')}</div>`).join('');if($('buffs').dataset.v!==bf){$('buffs').dataset.v=bf;$('buffs').innerHTML=bf;}
   if(bs){$('boss').querySelector('.bar b').style.width=clamp(bs.hp/bs.maxhp*100,0,100)+'%';$('bosst').textContent=bs.name+' Nv.'+bs.lv;}
@@ -3282,7 +3328,7 @@ function socRefresh(){if(!SAVE.q)return;socUI();
   const c=qMain(),t=$('qtr');if(t){const L=SAVE.q.d.l,rows=[];if(c){const v=qVal(c);rows.push([c.nm,v,c.n,c.ds.replace(/\.$/,''),v>=c.n,0]);}else rows.push(['Trilha concluída',1,1,'',1,0]);
     for(const d of L){const v=qVal(d);rows.push([d.nm,v,d.n,d.ds.replace(/\.$/,''),v>=d.n,d.c]);}
     const rd=rows.some(r=>r[4]&&!r[5]);t.classList.toggle('cl',SAVE.qcol!==false);t.classList.toggle('rdy',rd);
-    t.innerHTML=`<div class="qth">Missões<u></u><i>${SAVE.qcol!==false?'▸ +'+Math.max(0,rows.length-1):'▾'}</i></div><div class="qrs">`+rows.map((r,i)=>`<div class="qr${r[4]?' ok':''}${r[5]?' dn':''}"><b>${r[0]}<em>${r[5]?'✓':r[1]+'/'+r[2]}</em></b>${i===0?`<span>${r[4]?'Concluída — toque para receber':r[3]}</span>`:''}<i><s style="width:${r[2]?Math.min(100,r[1]/r[2]*100):100}%"></s></i></div>`).join('')+'</div>';qPlace();}
+    t.innerHTML=`<div class="qth">Missões<u></u><i>${SAVE.qcol!==false?'▸ +'+Math.max(0,rows.length-1):'▾'}</i></div><div class="qrs">`+rows.map((r,i)=>`<div class="qr${i===0?' mn':' dy'}${r[4]?' ok':''}${r[5]?' dn':''}"><b>${r[0]}<em>${r[5]?'✓':r[1]+'/'+r[2]}</em></b>${i===0?`<span>${r[4]?'Concluída — toque para receber':r[3]}</span>`:''}<i><s style="width:${r[2]?Math.min(100,r[1]/r[2]*100):100}%"></s></i></div>`).join('')+'</div>';qPlace();}
   const claim=(c&&qOk(c))||SAVE.q.d.l.some(d=>!d.c&&qOk(d)),b=$('bdQ');if(b)b.style.display=claim?'block':'none';
   const p=$('pty');if(p)p.innerHTML=G.party.members.map(m=>`<div class="pm"><b>${clsIc(m.cls,14,m.sub)}<span>${escH(m.name)}</span><em>${m.lv||1}</em></b><div class="bar"><b style="width:${clamp((m.hp||0)/(m.maxhp||1)*100,0,100)}%"></b></div></div>`).join('');}
 function socMenu(m,dun){
@@ -3693,7 +3739,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
   try{await loadAll();}catch(e){$('title').insertAdjacentHTML('beforeend','<div style="color:#f88">Erro ao carregar: '+e.message+'</div>');console.error(e);return;}
   $('bNew').disabled=false;$('bCont').disabled=false;
   if(SAVE)G.zoneLv=SAVE.zone||1;
-  window.__mmo={levelUpFx,gainXP,banner,hStyle,wCat,skOk,UNIQUES,getZone:()=>ZONE,petTick,PETS,pb,SETS,setCount,sb,genItem,qEv,qCheck,partyAdd,partyClear,QMAIN,qInit,socRefresh,TALENTS,tfCalc,tlTotal,TL_REQ,TL_TIER,potPrice,SLOTS,recalcHero,AMBEV,ambStart,ambStop,AMBS,zoneMusic,TOD,LIFE,evStart,makeElite,ELMOD,addZone,heroDodge,spawnBossNow:spawnBoss,stAdd,STDEF,applySkillStatus,MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
+  window.__mmo={openWin,levelUpFx,gainXP,banner,hStyle,wCat,skOk,UNIQUES,getZone:()=>ZONE,petTick,PETS,pb,SETS,setCount,sb,genItem,qEv,qCheck,partyAdd,partyClear,QMAIN,qInit,socRefresh,TALENTS,tfCalc,tlTotal,TL_REQ,TL_TIER,potPrice,SLOTS,recalcHero,AMBEV,ambStart,ambStop,AMBS,zoneMusic,TOD,LIFE,evStart,makeElite,ELMOD,addZone,heroDodge,spawnBossNow:spawnBoss,stAdd,STDEF,applySkillStatus,MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
   requestAnimationFrame(frame);
 })();
 
