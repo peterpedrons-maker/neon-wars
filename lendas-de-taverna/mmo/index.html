@@ -1601,7 +1601,7 @@ const varOf=(z,i)=>{const a=FAMV[famOf(z)];return a[((i%a.length)+a.length)%a.le
 const DUN=[{id:1,nm:'Floresta dos Goblins',unlock:1},{id:2,nm:'Catacumbas de Brumavale',unlock:8},{id:3,nm:'Floresta de Brumavale',unlock:13},{id:4,nm:'Esgotos de Brumavale',unlock:18}];
 const dgLv=z=>[1+(z-1)*BAL.zoneLv,8+(z-1)*BAL.zoneLv];   // faixa de nível dos monstros da dungeon z
 function dgUnlocked(z){if(z<=1)return true;const d=DUN[z-1];return !!(d&&SAVE.dgDone&&SAVE.dgDone[z-1]&&SAVE.lv>=d.unlock);}
-function dgRefresh(){let m=1;for(let z=2;z<=DUN.length;z++)if(dgUnlocked(z))m=z;if(m>(SAVE.zoneMax||1)){SAVE.zoneMax=m;chat('Nova dungeon liberada: '+DUN[m-1].nm+'!',4);try{banner('Nova dungeon',DUN[m-1].nm,'good');}catch(e){}}SAVE.zoneMax=Math.max(1,Math.min(DUN.length,SAVE.zoneMax||1));}
+function dgRefresh(){let m=1;for(let z=2;z<=DUN.length;z++)if(dgUnlocked(z))m=z;if(m>(SAVE.zoneMax||1)){SAVE.zoneMax=m;chat('Nova dungeon liberada: '+DUN[m-1].nm+'!',4);sfx('levelup',.4);if(G.hero)floatText(G.hero.x,G.hero.y-80,'Nova dungeon!','#8ef08a',9,1.4);}SAVE.zoneMax=Math.max(1,Math.min(DUN.length,SAVE.zoneMax||1));}
 // experiência estilo Cabal: monstro muito abaixo do seu nível rende 1 de XP (chefes mantêm um mínimo)
 const xpGapMul=g=>g<=2?1:g===3?.85:g===4?.7:g===5?.5:g===6?.3:g===7?.15:g===8?.07:0;
 const FAMS=['goblin','esq','javali','rato'],FAMM={goblin:[1.13,1.1,1.24],esq:[.85,.86,.83],javali:[.71,.77,.68],rato:[2.1,1.9,2]};
@@ -1697,14 +1697,16 @@ let stSig='',stRows=0;
 function stItems(h){const L=[];if(h.sts)for(const id in h.sts){const d=STDEF[id],s=h.sts[id];L.push({k:id,ic:d.ic,n:d.n,t:s.t,c:s.n,bad:ST_BAD.has(id),desc:ST_DESC[id]||''});}
   if(h.buff&&h.buff.t>0){const b=h.buff;if(b.atk>0)L.push({k:'b_atk',ic:'fortalecido',n:'Poder',t:b.t,c:1,bad:false,desc:'Ataque aumentado.'});if(b.def>0)L.push({k:'b_def',ic:'protegido',n:'Guarda',t:b.t,c:1,bad:false,desc:'Defesa aumentada.'});if(b.spd>0)L.push({k:'b_spd',ic:'veloz',n:'Pressa',t:b.t,c:1,bad:false,desc:'Velocidade aumentada.'});if(b.crit>0)L.push({k:'b_crit',ic:'foco',n:'Mira',t:b.t,c:1,bad:false,desc:'Chance de crítico aumentada.'});}
   if(h.shield>0&&h.shieldT>0)L.push({k:'shield',ic:'escudo',n:'Escudo',t:h.shieldT,c:1,bad:false,desc:'Absorve '+Math.round(h.shield)+' de dano.'});
+  if(h===G.hero&&G.scene==='dungeon'){const m=dgXpMul();if(m<1)L.push({k:'xpnv',ic:'enfraquecido',n:'Acima do nível da área',t:9999,tx:m<=0.01?'1 XP':Math.round(m*100)+'%',c:1,bad:true,desc:'Seu nível está acima dos monstros desta dungeon: a experiência cai para '+(m<=0.01?'1 por monstro':Math.round(m*100)+'%')+'. Avance para a próxima dungeon.'});}
   L.sort((a,b)=>(a.bad-b.bad)||(b.t-a.t));return L;}
 function stFmt(t){return t>=60?Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0'):Math.ceil(t)+'s';}
-function stHtml(L){return L.map(i=>`<div class="si ${i.bad?'bad':''} ${i.t<2.5?'low':''}" data-t="${i.n}" data-d="${i.desc.replace(/"/g,'')}"><div class="ib"><img src="../assets/status/${i.ic}.png"></div>${i.c>1?`<span class="n">${i.c}</span>`:''}<span class="tm">${stFmt(i.t)}</span></div>`).join('');}
+function dgXpMul(){const L=dgLv(G.zoneLv),mid=Math.round((L[0]+L[1])/2);const g=SAVE.lv-mid;return g<=2?1:xpGapMul(g)||.01;}
+function stHtml(L){return L.map(i=>`<div class="si ${i.bad?'bad':''} ${i.t<2.5?'low':''}" data-t="${i.n}" data-d="${i.desc.replace(/"/g,'')}"><div class="ib"><img src="../assets/status/${i.ic}.png"></div>${i.c>1?`<span class="n">${i.c}</span>`:''}<span class="tm">${i.tx||stFmt(i.t)}</span></div>`).join('');}
 let bstSig='';
 function updBossSts(){const el=$('bsts');if(!el)return;const b=G.boss,L=(G.on&&b&&!b.dead&&G.phase==='boss'&&b.sts)?stItems(b).filter(i=>!i.k.startsWith('b_')):[];
   const sig=L.map(i=>i.k+stFmt(i.t)+i.c).join('|');if(sig===bstSig)return;bstSig=sig;el.innerHTML=stHtml(L);}
 function updStatusHud(){updBossSts();const el=$('sts');if(!el)return;const h=G.hero,L=(G.on&&h&&h.state!=='ko'&&G.scene!=='town')?stItems(h):[];
-  const sig=L.map(i=>i.k+stFmt(i.t)+i.c).join('|');if(sig===stSig)return;stSig=sig;el.innerHTML=stHtml(L);
+  const sig=L.map(i=>i.k+(i.tx||stFmt(i.t))+i.c).join('|');if(sig===stSig)return;stSig=sig;el.innerHTML=stHtml(L);
   const rows=Math.ceil(L.length/3);if(rows!==stRows){stRows=rows;document.documentElement.style.setProperty('--sth',(rows?rows*38+2:0)+'px');}}
 (()=>{const el=$('sts');if(el)el.addEventListener('pointerdown',e=>{const si=e.target.closest('.si');if(si){e.stopPropagation();toast(si.dataset.t+' — '+si.dataset.d,2200);}});})();
 function updHUD(force){
@@ -1842,7 +1844,7 @@ function killMob(m){
   dropLoot(m);dropMats(m);petDrop(m.kind==='boss',!!m.elite,m.tier==='gold');
   if(m.boom){addZone({shape:'circle',x:m.x,y:m.y,r:58,warn:1,mult:1.8,pow:m.pow,shake:.3});chat(m.name+' vai explodir!',2);}
   if(m.elite){chat((m.tier==='gold'?'Elite dourado':'Elite azul')+' derrotado!',4);}
-  if(m.kind==='boss'){SAVE.dgDone=SAVE.dgDone||{};SAVE.dgDone[G.zoneLv]=true;dgRefresh();chat(m.name+' foi derrotado!',3);G.phase='end';sfx('victory',.9);G.shake=.4;setTimeout(showResult,1600);G.endT=0;if(musSrc)zoneMusic();}
+  if(m.kind==='boss'){SAVE.dgDone=SAVE.dgDone||{};SAVE.dgDone[G.zoneLv]=true;dgRefresh();chat(m.name+' foi derrotado!',3);G.phase='end';sfx('victory',.9);G.shake=.4;G.endT=0;qCheck();setTimeout(()=>{if(G.phase==='end'&&G.scene==='dungeon'){G.phase='farm';G.boss=null;G.dtm=0;G.kills=0;G.bossRoll=1;updHUD(true);}},2800);if(musSrc)zoneMusic();}
   else{m.respawn=14;G.kills++;chat(m.name+' derrotado',1);
     checkBoss();}
   updHUD();writeSave();
@@ -3311,24 +3313,24 @@ const QMAIN=[
  {t:'fam',f:'goblin',n:20,nm:'Praga verde',ds:'Derrote 20 goblins.'},
  {t:'lv',n:6,nm:'Um caminho próprio',ds:'Alcance o nível 6 e ganhe seu primeiro ponto de talento.'},
  {t:'elite',n:3,nm:'Alvos marcados',ds:'Derrote 3 elites (azuis ou dourados).'},
- {t:'boss',n:1,nm:'O Ogro de Brumavale',ds:'Derrote o chefe de uma dungeon.'},
+ {t:'dgboss',z:1,n:1,nm:'Grunk, o Chefe Goblin',ds:'Conclua a Floresta dos Goblins: derrote Grunk.'},
  {t:'zone',n:2,nm:'Mais fundo na floresta',ds:'Libere a 2ª dungeon.'},
  {t:'up',n:3,nm:'Faíscas na bigorna',ds:'Melhore equipamentos 3 vezes com sucesso na forja.'},
  {t:'fam',f:'esq',n:40,nm:'Ossos inquietos',ds:'Derrote 40 esqueletos.'},
  {t:'lv',n:12,nm:'Veterano',ds:'Alcance o nível 12.'},
- {t:'zone',n:3,nm:'Além da clareira',ds:'Libere a 3ª dungeon.'},
+ {t:'dgboss',z:2,n:1,nm:'O Rei das Catacumbas',ds:'Conclua as Catacumbas: derrote Morvath.'},
  {t:'fam',f:'javali',n:50,nm:'Caça grossa',ds:'Derrote 50 javalis.'},
  {t:'boss',n:5,nm:'Matador de chefes',ds:'Derrote 5 chefes.'},
  {t:'lv',n:20,nm:'Herói de Brumavale',ds:'Alcance o nível 20.'},
  {t:'fam',f:'rato',n:80,nm:'Dedetização',ds:'Derrote 80 ratos gigantes.'},
  {t:'elite',n:25,nm:'Caçador de elites',ds:'Derrote 25 elites.'},
- {t:'zone',n:4,nm:'Terras bravas',ds:'Libere a 4ª dungeon.'},
+ {t:'dgboss',z:3,n:1,nm:'Terras bravas',ds:'Conclua a Floresta de Brumavale: derrote Gorgash.'},
  {t:'up',n:15,nm:'Mestre da forja',ds:'Melhore equipamentos 15 vezes com sucesso.'},
  {t:'lv',n:30,nm:'Lenda em ascensão',ds:'Alcance o nível 30.'},
  {t:'boss',n:10,nm:'O coração sombrio',ds:'Derrote 10 chefes.'},
  {t:'boss',n:20,nm:'Flagelo dos chefes',ds:'Derrote 20 chefes.'},
  {t:'lv',n:45,nm:'Campeão',ds:'Alcance o nível 45.'},
- {t:'boss',n:30,nm:'Fim da trilha',ds:'Derrote 30 chefes.'},
+ {t:'dgboss',z:4,n:1,nm:'Fim da trilha',ds:'Conclua os Esgotos de Brumavale: derrote o chefe.'},
  {t:'lv',n:60,nm:'Lenda de Brumavale',ds:'Alcance o nível 60.'}
 ].map((q,i)=>(q.id='m'+i,q));
 const QDAY=[
@@ -3417,7 +3419,7 @@ function qInit(){const q=SAVE.q=SAVE.q||{};q.m=q.m||0;q.p=q.p||{};SAVE.bst=SAVE.
   if(!q.d||q.d.date!==today){let s=0;for(const c of today)s=(s*31+c.charCodeAt(0))>>>0;const pool=[0,1,2,3,4],pick=[];while(pick.length<3){s=(s*1103515245+12345)>>>0;pick.push(pool.splice(s%pool.length,1)[0]);}
     q.d={date:today,l:pick.map((k,i)=>({...QDAY[k](SAVE.lv),id:'d'+i,p:0,c:0}))};}}
 const qMain=()=>QMAIN[SAVE.q.m]||null;
-function qVal(q){return q.t==='lv'?Math.min(q.n,SAVE.lv):q.t==='zone'?Math.min(q.n,SAVE.zoneMax||1):Math.min(q.n,q.p!==undefined?q.p:(SAVE.q.p[q.id]||0));}
+function qVal(q){return q.t==='dgboss'?((SAVE.dgDone&&SAVE.dgDone[q.z])?q.n:0):q.t==='lv'?Math.min(q.n,SAVE.lv):q.t==='zone'?Math.min(q.n,SAVE.zoneMax||1):Math.min(q.n,q.p!==undefined?q.p:(SAVE.q.p[q.id]||0));}
 const qOk=q=>qVal(q)>=q.n;
 function qRew(q,main){const L=SAVE.lv;if(main){const i=+q.id.slice(1);return {gold:Math.round(40*Math.pow(i+1,1.3)),xp:Math.round(xpNeed(L)*(.15+.01*i)),pot:i%3===2?2:0,tok:1+((i+1)%5===0?2:0),mat:i>=10?(i>=18?['cristal',2+(i>>3)]:['runa',3+(i>>2)]):(i>=4?['ferro',4+i]:null)};}
   return {gold:60+L*12,xp:Math.round(xpNeed(L)*.12),pot:1,tok:3,mat:L>=20?['runa',3]:['ferro',5]};}
