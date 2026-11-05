@@ -196,7 +196,7 @@ for sx,n in((1,'L'),(-1,'R')):
             if sx<0:
                 ob.data.transform(Matrix.Scale(-1,4,(1,0,0)));ob.data.flip_normals()
 # ---------------- cena ----------------
-sc.render.engine='CYCLES';sc.cycles.device='CPU';sc.cycles.samples=SM;sc.cycles.use_denoising=True;sc.render.film_transparent=bool(os.environ.get('LAYERS'))
+sc.render.engine='CYCLES';sc.cycles.device='CPU';sc.cycles.samples=SM;sc.cycles.use_denoising=True;sc.render.film_transparent=bool(os.environ.get('LAYERS') or os.environ.get('TRANSP'))
 sc.render.resolution_x=W;sc.render.resolution_y=H;sc.render.image_settings.file_format='PNG';sc.view_settings.view_transform='Standard'
 cam=bpy.data.cameras.new('c');cam.lens=70;co=bpy.data.objects.new('c',cam);sc.collection.objects.link(co);sc.camera=co
 tgt=Vector((-0.25,-.05,1.45));pos=Vector((-5.0,-7.4,3.0))
@@ -207,6 +207,7 @@ def area(loc,e,size,col):
 area((-3.5,-4.5,5.5),520,3.2,(1,.95,.88));area((4.5,3.5,3.5),380,4,(.65,.75,1));area((4.5,-4,1.2),60,4,(1,.9,.8))
 # chão (sombra suave) para dar apoio nos pés
 bpy.ops.mesh.primitive_circle_add(vertices=48,radius=1.6,fill_type='NGON',location=(0,-.1,0));gd=bpy.context.object
+if os.environ.get('NOGROUND'):gd.hide_render=True
 gm=bpy.data.materials.new('gd');gm.use_nodes=True;b=gm.node_tree.nodes['Principled BSDF'];b.inputs['Base Color'].default_value=(*lin((40,44,52)),1);b.inputs['Roughness'].default_value=.9;gd.data.materials.append(gm)
 w=bpy.data.worlds.new('w');sc.world=w;w.use_nodes=True;nt=w.node_tree;N=nt.nodes;Lk=nt.links
 tc=N.new('ShaderNodeTexCoord');sp=N.new('ShaderNodeSeparateXYZ');cr=N.new('ShaderNodeValToRGB');bg=N['Background']
