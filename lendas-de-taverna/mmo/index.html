@@ -592,6 +592,7 @@ i.upg{position:absolute;right:1px;top:0;font-size:9px;color:#7de06d;font-style:n
 @keyframes bbb{0%{letter-spacing:.1em;transform:scale(.9);opacity:0}30%{opacity:1}100%{letter-spacing:.36em;transform:scale(1.08)}}
 #boss{animation:bossin .6s ease-out}
 @keyframes bossin{from{opacity:0;transform:translateX(-50%) scaleX(.2)}to{opacity:1;transform:translateX(-50%) scaleX(1)}}
+body.bossfight #qtr{display:none!important}
 </style>
 </head>
 <body>
@@ -1074,6 +1075,17 @@ function sfx(n,vol=.7,rate=1){if(n==='coin'){coinSynth(Math.min(1,vol*1.4));retu
   const s=AC.createBufferSource();s.buffer=BUF[n];s.playbackRate.value=rate*(0.96+Math.random()*.08);const g=AC.createGain();g.gain.value=vol;s.connect(g);g.connect(sfxGain);s.start();}
 /* ===== SOM DA FLORESTA: trilha e ambiente por família da zona (goblin, esqueleto, javali, rato) ===== */
 const ZMUS={goblin:'floresta_goblin',esq:'cripta_esq',javali:'floresta_javali',rato:'esgoto_rato'};
+// chefe: em vez de outra faixa, a música da área fica mais tensa (um pouco mais rápida/aguda + zumbido grave dissonante + batida de coração)
+let tense=null;
+function stopTense(){if(!tense)return;const t=tense;tense=null;clearInterval(t.iv);try{const n=AC.currentTime;t.g.gain.cancelScheduledValues(n);t.g.gain.setValueAtTime(t.g.gain.value,n);t.g.gain.linearRampToValueAtTime(0,n+.4);t.os.forEach(o=>{try{o.stop(n+.5);}catch(e){}});}catch(e){}}
+function tenseMusic(){if(!AC||!musSrc||tense)return;const t0=AC.currentTime;
+  try{musSrc.playbackRate.cancelScheduledValues(t0);musSrc.playbackRate.setValueAtTime(1,t0);musSrc.playbackRate.linearRampToValueAtTime(1.07,t0+2.5);}catch(e){}
+  const g=AC.createGain();g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(.2,t0+3);g.connect(musGain);
+  const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=240;lp.connect(g);const os=[];
+  for(const f of [55,58.4,82.5]){const o=AC.createOscillator();o.type='sawtooth';o.frequency.value=f;o.connect(lp);o.start();os.push(o);}
+  const lf=AC.createOscillator(),ld=AC.createGain();lf.frequency.value=.35;ld.gain.value=.07;lf.connect(ld);ld.connect(g.gain);lf.start();os.push(lf);
+  const beat=()=>{if(!tense||!AC)return;const n=AC.currentTime;for(const [d,v] of [[0,.5],[.2,.35]]){const o=AC.createOscillator(),e=AC.createGain();o.frequency.setValueAtTime(70,n+d);o.frequency.exponentialRampToValueAtTime(38,n+d+.16);e.gain.setValueAtTime(0,n+d);e.gain.linearRampToValueAtTime(v,n+d+.012);e.gain.exponentialRampToValueAtTime(.001,n+d+.22);o.connect(e);e.connect(musGain);o.start(n+d);o.stop(n+d+.25);}};
+  tense={g,os,iv:setInterval(beat,1050)};beat();}
 function zoneMusic(){const nm=ZMUS[famOf(G.zoneLv)]||'campina',key='m_z_'+nm;
   if(BUF[key]){playMusic(key);return;}musOn=true;if(!AC)return;loadBuf('../assets/audio/music/'+nm+'.ogg',key).then(()=>{if(G.scene==='dungeon'&&G.phase!=='boss'&&BUF[key])playMusic(key);});}
 const FAMB={ // ambiente: vento (freq,vol), eventos (peso) por família
@@ -1114,7 +1126,7 @@ function ambStart(){if(!AC)return;ambStop();const fam=famOf(G.zoneLv),F=FAMB[fam
     if(T>=next){const E=Object.entries(F.ev).filter(([k,w])=>w>0&&!(k==='bird'&&n>.45)&&!((k==='owl'||k==='howl')&&n<.3));let tot=E.reduce((a,[,w])=>a+w,0),r=Math.random()*tot,pick=E[0];for(const e of E){r-=e[1];if(r<=0){pick=e;break;}}
       if(pick&&AMBEV[pick[0]])AMBEV[pick[0]]();next=T+3+Math.random()*7;}
     if(n>.5&&(fam==='javali'||fam==='goblin')&&T>cr){cr=T+.55;for(let i=0;i<3;i++)ambTone(4300,4500,.04,'square',.012,6000,i*.07);}},500);}
-function playMusic(key='m_campina'){musOn=true;if(!AC||!BUF[key])return;if(musSrc){try{musSrc.stop();}catch(e){}}
+function playMusic(key='m_campina'){musOn=true;if(!AC||!BUF[key])return;stopTense();if(musSrc){try{musSrc.stop();}catch(e){}}
   musSrc=AC.createBufferSource();musSrc.buffer=BUF[key];musSrc.loop=true;musSrc.connect(musGain);musSrc.start();musSrc.__k=key;}
 
 /* ------------------------------ estado ---------------------------------- */
@@ -1651,7 +1663,7 @@ function updHUD(force){
   $('xp').firstChild.style.width=clamp(SAVE.xp/xpNeed(SAVE.lv)*100,0,100)+'%';$('hl').textContent=SAVE.lv;{const c=$('hcl');if(c&&!c.innerHTML)c.innerHTML=clsIc(SAVE.cls,16,SAVE.sub);const xt=$('xpt');if(xt)xt.textContent=Math.floor(SAVE.xp/xpNeed(SAVE.lv)*100)+'%';}
   const dg=G.scene==='dungeon';$('prog').style.display=dg?'block':'none';
   if(dg&&(G.phase==='farm'||G.phase==='boss')){const ready=G.dtm>=BOSS_T0&&G.kills>=BOSS_KILLS&&SAVE.lv>=bossLv();{const nm=areaName().split(' ')[0],sb=G.phase==='boss'?'Zona '+G.zoneLv+' · '+G.kills+' abates':ready?'A área está inquieta…':'Zona '+G.zoneLv+' · '+G.kills+' abates',hv=nm+'|'+sb;if($('progt').dataset.v!==hv){$('progt').dataset.v=hv;$('progt').innerHTML='<b>'+(G.phase==='boss'?'Chefe':nm)+'</b><small>'+sb+'</small>';}}$('prog').querySelector('.bar b').style.width=Math.min(100,Math.min(G.dtm/BOSS_T0,G.kills/BOSS_KILLS,SAVE.lv/bossLv())*100)+'%';}
-  const bs=G.boss;$('boss').style.display=(dg&&G.phase==='boss'&&bs&&!bs.dead&&!(bs.ent&&bs.ent.k!=='phase'&&bs.ent.k!=='roar'))?'block':'none';
+  const bs=G.boss,bsv=!!(dg&&G.phase==='boss'&&bs&&!bs.dead&&!(bs.ent&&bs.ent.k!=='phase'&&bs.ent.k!=='roar'));$('boss').style.display=bsv?'block':'none';document.body.classList.toggle('bossfight',dg&&G.phase==='boss'&&!!bs&&!bs.dead);
   const E=SAVE.elix||{},bf=[['forca','ni_eforca','Poder'],['defesa','ni_edefesa','Defesa']].filter(x=>E[x[0]]>0).map(x=>`<div><img src="../assets/ui-icons/${x[1]}.png">${Math.floor(E[x[0]]/60)}:${String(Math.floor(E[x[0]]%60)).padStart(2,'0')}</div>`).join('');if($('buffs').dataset.v!==bf){$('buffs').dataset.v=bf;$('buffs').innerHTML=bf;}
   if(bs){$('boss').querySelector('.bar b').style.width=clamp(bs.hp/bs.maxhp*100,0,100)+'%';$('bosst').textContent=bs.name;}
   [0,1,2].forEach(k=>{const i=SAVE.eqs[k],e=$('sk'+k);if(!e||i<0)return;const cd=h.sk[i],tot=skCd(i);e.querySelector('.cd').style.setProperty('--p',(cd>0?cd/tot*360:0)+'deg');e.querySelector('.ct').textContent=cd>0?(cd>=1?Math.ceil(cd):cd.toFixed(1)):'';const rd=cd<=0&&SAVE.sk[i]>0&&SAVE.lv>=SLOT_UNL[k];if(rd&&e._cd&&window.gsap){gsap.fromTo(e,{boxShadow:'0 0 22px 6px rgba(255,236,160,.95)'},{boxShadow:'0 0 10px rgba(243,217,142,.55)',duration:.5,clearProps:'boxShadow'});}e._cd=!rd;e.classList.toggle('ready',rd);});
@@ -1819,12 +1831,14 @@ function bossTick(dt){
 }
 function spawnBoss(){
   const h=G.hero,T0=bossDef(),run=T0.ent==='run';let sp=null;
-  for(let n=0;n<60&&!sp;n++){const a=Math.random()*6.283,d=run?rnd(380,470):rnd(150,210),x=h.x+Math.cos(a)*d,y=h.y+Math.sin(a)*d*.8;
-    if(x<40||y<60||x>ZONE.w-40||y>ZONE.h-40)continue;const f=freeSpot(x,y);if(dist(f,h)>(run?300:120)&&!blockedAt(f[0],f[1],14))sp=f;}
+  for(let n=0;n<80&&!sp;n++){let x,y;   // a queda acontece dentro da tela, abaixo do herói (longe dos painéis do topo); a corrida começa fora da tela, na vertical
+    if(run){const a=(Math.random()<.5?-1:1)*Math.PI/2+rnd(-.6,.6),d=rnd(300,420);x=h.x+Math.cos(a)*d;y=h.y+Math.sin(a)*d;}
+    else{const a=Math.random()<.7?rnd(.25,2.9):rnd(3.4,6.1),d=rnd(85,125);x=h.x+Math.cos(a)*d*.8;y=h.y+Math.sin(a)*d*1.2;}
+    if(x<40||y<60||x>ZONE.w-40||y>ZONE.h-40)continue;const f=freeSpot(x,y);if(Math.hypot(f[0]-h.x,f[1]-h.y)>(run?250:75)&&!blockedAt(f[0],f[1],6))sp=f;}
   if(!sp)sp=freeSpot(h.x+200,h.y);
   const b=G.boss=mkBoss(sp[0],sp[1]);b.row=dir4(h.x-b.x,h.y-b.y);G.phase='boss';
   b.ent=run?{k:'run',t:0,dur:4}:{k:'drop',t:0,dur:1.3,fx:0};if(!run)b.zoff=380;
-  chat('Algo enorme se aproxima…',2);playMusic('m_chefe');sfx('sk_grito',.5);VF.shake(.3);
+  chat('Algo enorme se aproxima…',2);tenseMusic();sfx('sk_grito',.5);VF.shake(.3);
 }
 // entrada do chefe: cai do céu ('drop') ou chega correndo ('run'); depois ruge e só então a barra de vida e o nome aparecem
 function bossEntrance(m,dt){const e=m.ent,h=G.hero,c=m.T.aura||['#ff6a3a','#ffd070'];e.t+=dt;
@@ -2862,7 +2876,7 @@ function tickElix(dt){const E=SAVE.elix;if(!E)return;let ch=false;for(const k of
 function enterRoom(room,doorId){
   if(G.roomBusy)return;if(whenReady(()=>enterRoom(room,doorId)))return;G.roomBusy=1;sfx('tr_open',.6);
   fadeTo(()=>{G.roomBusy=0;G.wp=null;closeWin();G.room=room;G.fromDoor=doorId;useMap(room);initTown();const h=G.hero;h.x=ZONE.start[0];h.y=ZONE.start[1];h.row=0;h._lx=h.x;h._ly=h.y;G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2;
-    const d=MAPS.town.zone.doors.find(x=>x.id===doorId);if(d)setTimeout(()=>banner(d.nm,'','zone'),300);buildBar();});
+    const d=MAPS.town.zone.doors.find(x=>x.id===doorId);buildBar();});
 }
 function exitRoom(){
   if(G.roomBusy)return;G.roomBusy=1;sfx('tr_close',.6);const id=G.fromDoor;
@@ -2990,7 +3004,7 @@ function mmToggle(){MM.big=!MM.big;sfx('ui_click',.5);const c=$('mm');if(c)c._w=
 function plateTag(e){if(e.kind==='hero')return G.scene==='town'?e.name+'  Nv.'+SAVE.lv:'';if(e.kind==='boss')return '';const h=G.hero;return (h&&(h.tg===e||(h.act&&h.act.tgt===e)))?e.name+'  Nv.'+e.lv:'';}
 /* posiciona os nomes sem sobreposição: herói e chefe têm prioridade, os demais sobem até achar espaço */
 function plateLayout(list){const P=[];for(const it of list){if(it.e)it.e._pl=null;}for(const it of list){const e=it.e;if(!e||e.dead||e.kind==='vill'||e.kind==='npc')continue;const sx0=e.x-G.cam.x,sy0=e.y-G.cam.y-(e.kind==='boss'?98:(e.kind==='hero'?56:55));if(sx0<-30||sx0>G.LW+30||sy0<-20||sy0>G.LH+40)continue;
-    ctx.font='700 8px Rubik,sans-serif';const tag=plateTag(e),hbar=e.kind==='hero'?G.scene!=='town':e.hp>0;if(!tag&&!hbar&&!(e.sts&&Object.keys(e.sts).length))continue;const w=tag?ctx.measureText(tag).width+6:30;P.push({e,tag,w,sx:clamp(sx0,w/2+3,G.LW-w/2-3),sy:sy0,pri:e.kind==='hero'?0:e.kind==='boss'?1:2,bar:hbar});}
+    ctx.font='700 8px Rubik,sans-serif';const tag=plateTag(e),hbar=e.kind==='hero'?G.scene!=='town':e.hp>0&&!e.ent;if(!tag&&!hbar&&!(e.sts&&Object.keys(e.sts).length))continue;const w=tag?ctx.measureText(tag).width+6:30;P.push({e,tag,w,sx:clamp(sx0,w/2+3,G.LW-w/2-3),sy:sy0,pri:e.kind==='hero'?0:e.kind==='boss'?1:2,bar:hbar});}
   P.sort((a,b)=>a.pri-b.pri||b.e.y-a.e.y);const placed=[];
   for(const p of P){let tries=0;const r=()=>({x:p.sx-p.w/2,y:p.sy-9,w:p.w,h:p.bar?20:12});let q=r();
     while(tries<6&&placed.some(o=>q.x<o.x+o.w&&q.x+q.w>o.x&&q.y<o.y+o.h&&q.y+q.h>o.y)){p.sy-=11;q=r();tries++;}
