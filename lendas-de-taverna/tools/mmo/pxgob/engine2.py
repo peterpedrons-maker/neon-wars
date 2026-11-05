@@ -16,12 +16,12 @@ L=(-.5,-.62,.6);_n=math.sqrt(sum(c*c for c in L));L=tuple(c/_n for c in L)
 BAYER=[[0,2],[3,1]]
 class Img:
     def __init__(s,w,h):
-        s.w,s.h=w,h;s.col=[[None]*w for _ in range(h)];s.pid=[[0]*w for _ in range(h)];s.mat=[[None]*w for _ in range(h)];s.tone=[[0]*w for _ in range(h)];s.n=0
+        s.ox=s.oy=0;s.w,s.h=w,h;s.col=[[None]*w for _ in range(h)];s.pid=[[0]*w for _ in range(h)];s.mat=[[None]*w for _ in range(h)];s.tone=[[0]*w for _ in range(h)];s.n=0
     def shape(s,test,mat,outline=True,dither=0.0,bias=0.0,flat=None):
         s.n+=1;pid=s.n;mask={}
         for y in range(s.h):
             for x in range(s.w):
-                r=test(x+.5,y+.5)
+                r=test(x+.5-s.ox,y+.5-s.oy)
                 if r is not None:mask[(x,y)]=r
         R=RAMPS[mat]
         if outline:
@@ -40,6 +40,7 @@ class Img:
             s.col[y][x]=R[t];s.pid[y][x]=pid;s.mat[y][x]=mat;s.tone[y][x]=t
         return pid
     def dot(s,x,y,c):
+        x=int(x+s.ox);y=int(y+s.oy)
         if 0<=x<s.w and 0<=y<s.h:s.col[y][x]=c;s.pid[y][x]=99999
     def finish(s,ao=True,clean=True):
         if ao:   # oclusão de contato: peça de trás escurece junto de peça da frente (abaixo/direita)
