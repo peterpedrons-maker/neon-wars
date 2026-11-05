@@ -67,6 +67,10 @@ def spike(base,d,L,r,m,seg=5):
 def parent_to(empty,objs):
     for o in objs:
         o.parent=empty;o.matrix_parent_inverse=empty.matrix_world.inverted()
+def finger(p0,p1,p2,r,m,seg=6):
+    p0,p1,p2=Vector(p0),Vector(p1),Vector(p2)
+    limb(p0,p1,r,r*.92,m,seg=seg);blob(p1,(r*1.02,)*3,m,sub=1,noise=.03)
+    limb(p1,p2,r*.92,r*.80,m,seg=seg);blob(p2,(r*.84,)*3,m,sub=1,noise=.03)
 def mark(n0):return len(bpy.data.objects)
 G=M['green'];D=M['green2']
 def newobjs(since):return list(bpy.data.objects)[since:]
@@ -77,10 +81,16 @@ for sx in(1,-1):
     blob((sx*.31,-.10,.40),(.18,.17,.16),G,sub=1,noise=.04,seed=50+sx)             # joelho
     limb((sx*.31,-.10,.40),(sx*.32,-.16,.20),.17,.15,G,seg=7)
     ring((sx*.32,-.15,.26),.19,.11,M['tan'],seg=8,rot=(math.radians(-10),0,0))
-    blob((sx*.34,-.30,.14),(.30,.48,.15),G,sub=2,noise=.05,rot=(0,0,sx*.10),seed=60+sx)
-    for off in(-.17,0,.17):
-        blob((sx*.34+off*.95,-.30-.52+abs(off)*.12,.12),(.085,.12,.07),G,sub=1,noise=.03)   # dedos
-        blob((sx*.34+off*.95,-.30-.64+abs(off)*.12,.115),(.065,.06,.05),M['nail'],sub=1,noise=.03,rot=(0,0,0))
+    # pé: sola larga + calcanhar + 3 dedos grossos com unhas
+    blob((sx*.33,-.18,.13),(.27,.36,.12),G,sub=2,noise=.04,rot=(0,0,sx*.08),seed=60+sx)
+    blob((sx*.31,.00,.15),(.20,.18,.14),G,sub=1,noise=.04,seed=62+sx)                      # calcanhar
+    blob((sx*.34,-.40,.15),(.25,.22,.12),G,sub=1,noise=.04,seed=64+sx)                     # peito do pé
+    for k,off in enumerate((-.19,0,.19)):
+        a=off*1.2*sx
+        tx=sx*.34+off;ty=-.58-(.03 if k==1 else 0)
+        blob((tx,ty,.125),(.125,.19,.11),G,sub=1,noise=.03,rot=(0,0,a*.5),seed=70+k+sx)  # dedo
+        blob((tx+a*.05,ty-.14,.115),(.11,.09,.10),G,sub=1,noise=.03)                    # ponta
+        blob((tx+a*.07,ty-.19,.17),(.095,.10,.035),M['nail'],sub=1,noise=.02,rot=(-.35,0,a*.5))   # unha
 # ---------- TRONCO
 blob((0,.02,1.30),(.54,.42,.46),G,sub=2,noise=.05,seed=11)
 blob((0,-.03,1.02),(.46,.40,.36),G,sub=2,noise=.05,seed=12)
@@ -107,24 +117,25 @@ limb((.62,0,1.50),(.80,-.08,1.16),.21,.16,G,seg=7)
 blob((.80,-.08,1.16),(.16,.15,.15),G,sub=1,noise=.04,seed=72)
 limb((.80,-.08,1.16),(.84,-.28,.90),.16,.14,G,seg=7)
 ring((.84,-.27,.93),.17,.10,M['tan'],seg=8,rot=(math.radians(-24),0,0))
-blob((.86,-.36,.76),(.19,.17,.17),G,sub=2,noise=.05,seed=73)
-for i,dx in enumerate((-.09,.03,.14)):
-    limb((.86+dx,-.40,.74),(.86+dx*1.2,-.47,.60-abs(dx)*.2),.075,.055,G,seg=5)
-limb((.74,-.36,.76),(.70,-.46,.60),.06,.04,G,seg=5)     # polegar
+blob((.86,-.36,.78),(.20,.12,.19),G,sub=2,noise=.04,seed=73)                                # palma
+for dx,l in ((-.09,.98),(.03,1.04),(.14,.94)):
+    finger((.86+dx,-.38,.70),(.86+dx*1.15,-.44,.52*l+.06),(.86+dx*1.2,-.56,.36*l+.12),.075,G)
+finger((.69,-.34,.78),(.64,-.43,.66),(.66,-.54,.58),.07,G)                                    # polegar
 # ---------- BRAÇO DIREITO (x-): segura a clava
 blob((-.62,0,1.50),(.27,.26,.26),G,sub=2,noise=.05,seed=81)
 limb((-.62,0,1.50),(-.84,-.18,1.24),.21,.16,G,seg=7)
 blob((-.84,-.18,1.24),(.16,.15,.15),G,sub=1,noise=.04,seed=82)
 limb((-.84,-.18,1.24),(-.76,-.46,1.06),.16,.14,G,seg=7)
 ring((-.77,-.44,1.08),.17,.10,M['tan'],seg=8,rot=(math.radians(-60),0,0))
-blob((-.74,-.55,1.00),(.21,.18,.17),G,sub=2,noise=.05,seed=83)
+blob((-.76,-.50,1.06),(.20,.14,.20),G,sub=2,noise=.04,seed=83)                              # palma atrás do cabo
 limb((-.72,-.50,.70),(-.77,-.50,1.58),.10,.19,M['club'],seg=8)                 # clava
 blob((-.78,-.50,1.74),(.25,.24,.28),M['club'],sub=2,noise=.05,seed=5)
 for d in((-1,0,.2),(.9,.1,.25),(-.2,-.9,.3),(-.3,.9,.2),(0,0,1),(-.9,-.5,-.3),(.8,-.6,-.1)):
     dv=Vector(d).normalized();c=Vector((-.78,-.50,1.74))+Vector((dv.x*.2,dv.y*.2,dv.z*.24))
     spike(c,dv,.26,.075,M['metal'],seg=4)
-for k,dz in enumerate((-.10,0,.10,.20)):
-    blob((-.73,-.69,.96+dz*.6),(.10,.075,.065),G,sub=1,noise=.04)       # dedos em volta do cabo
+for z in (1.20,1.11,1.02,.93):                                                               # 4 dedos envolvendo o cabo
+    finger((-.62,-.52,z),(-.70,-.70,z-.005),(-.90,-.62,z-.01),.07,G)
+finger((-.62,-.62,1.28),(-.74,-.70,1.28),(-.86,-.68,1.22),.07,G)                              # polegar por cima
 # ---------- CABEÇA
 h0=len(bpy.data.objects)
 blob((0,-.06,2.00),(.70,.62,.56),G,sub=2,noise=.04,seed=21)
