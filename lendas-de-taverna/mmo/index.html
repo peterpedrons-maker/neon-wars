@@ -611,11 +611,19 @@ body.bossfight #qtr{display:none!important}
 #alertv{position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,transparent 38%,rgba(140,0,10,.35) 70%,rgba(170,0,12,.7) 100%);transition:opacity .5s}
 #alertv.on{opacity:1;animation:alv .8s ease-in-out infinite alternate}
 @keyframes alv{from{filter:brightness(.55)}to{filter:brightness(1.25)}}
-/* status do herói: ao lado do painel (em grupo, cada membro terá os seus ao lado) */
-#sts{left:204px!important;top:calc(8px + env(safe-area-inset-top))!important;width:54px!important;gap:2px!important}
-#sts .si{width:16px!important;height:24px!important}#sts .ib{width:16px!important;height:16px!important}#sts img{width:12px!important;height:12px!important}
-#sts .tm{font-size:8px!important}
-#buffs{top:calc(74px + env(safe-area-inset-top))!important}
+/* HUD compacto: painel do herói menor, status do herói logo abaixo dele, chefe centralizado no topo, nome da área sobre o minimapa e barrinha embaixo */
+#hero{transform:scale(.8);transform-origin:0 0}
+#sts{left:6px!important;top:calc(60px + env(safe-area-inset-top))!important;width:92px!important;gap:3px!important}
+#buffs{top:calc(62px + var(--sth,0px) + env(safe-area-inset-top))!important}
+#zname{position:absolute;right:6px;top:calc(6px + env(safe-area-inset-top));width:auto;text-align:right;font:700 11px var(--fd);letter-spacing:.1em;text-transform:uppercase;color:#f3d98e;text-shadow:0 1px 0 #000,0 0 6px #000;white-space:nowrap;display:none}
+#zname small{display:block;letter-spacing:.2em;font:600 8px var(--f);letter-spacing:.2em;color:#bdb59e;margin-top:1px}
+#hud #mm{top:calc(30px + env(safe-area-inset-top))!important}
+#prog{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;width:72px!important;right:6px}
+#prog::before,#prog::after{display:none!important}
+#prog #progt{display:none}
+#prog .bar{height:4px!important;margin:0!important}
+#boss{width:44%!important;top:calc(64px + env(safe-area-inset-top))!important}
+#boss .t{font-size:13px;letter-spacing:.26em}
 </style>
 </head>
 <body>
@@ -669,7 +677,7 @@ body.bossfight #qtr{display:none!important}
       <div class="pb" id="hpw"><div class="bar" id="hp"><b style="width:100%"></b></div><span id="hpt"></span></div>
       <div class="bar" id="xp"><b style="width:0"></b></div><span id="xpt"></span></div>
     <div id="zone" class="txt-o" style="display:none">·</div><div id="gold"><span id="goldn">0</span></div><div id="banner"><i class="o"></i><b id="bnT"></b><u></u><span id="bnS"></span></div>
-    <div id="sts"></div><canvas id="mm"></canvas><div id="prog" class="panel txt-o"><div id="progt">Clareira 0/10</div><div class="bar"><b style="width:0"></b></div></div>
+    <div id="sts"></div><canvas id="mm"></canvas><div id="zname"></div><div id="prog" class="panel txt-o"><div id="progt">Clareira 0/10</div><div class="bar"><b style="width:0"></b></div></div>
     <div id="alertv"></div><div id="boss"><div class="t" id="bosst">—</div><div class="bar"><b style="width:100%"></b></div><div id="bsts"></div></div>
     <div id="buffs"></div>
     <div id="soc"></div><button id="itb"></button>
@@ -1679,16 +1687,15 @@ let bstSig='';
 function updBossSts(){const el=$('bsts');if(!el)return;const b=G.boss,L=(G.on&&b&&!b.dead&&G.phase==='boss'&&b.sts)?stItems(b).filter(i=>!i.k.startsWith('b_')):[];
   const sig=L.map(i=>i.k+stFmt(i.t)+i.c).join('|');if(sig===bstSig)return;bstSig=sig;el.innerHTML=stHtml(L);}
 function updStatusHud(){updBossSts();const el=$('sts');if(!el)return;const h=G.hero,L=(G.on&&h&&h.state!=='ko'&&G.scene!=='town')?stItems(h):[];
-  const sig=L.map(i=>i.k+stFmt(i.t)+i.c).join('|');if(sig===stSig)return;stSig=sig;
-  el.innerHTML=L.map(i=>`<div class="si ${i.bad?'bad':''} ${i.t<2.5?'low':''}" data-t="${i.n}" data-d="${i.desc.replace(/"/g,'')}"><div class="ib"><img src="../assets/status/${i.ic}.png"></div>${i.c>1?`<span class="n">${i.c}</span>`:''}<span class="tm">${stFmt(i.t)}</span></div>`).join('');
-  }
+  const sig=L.map(i=>i.k+stFmt(i.t)+i.c).join('|');if(sig===stSig)return;stSig=sig;el.innerHTML=stHtml(L);
+  const rows=Math.ceil(L.length/3);if(rows!==stRows){stRows=rows;document.documentElement.style.setProperty('--sth',(rows?rows*38+2:0)+'px');}}
 (()=>{const el=$('sts');if(el)el.addEventListener('pointerdown',e=>{const si=e.target.closest('.si');if(si){e.stopPropagation();toast(si.dataset.t+' — '+si.dataset.d,2200);}});})();
 function updHUD(force){
   const h=G.hero;if(!h)return;
   updStatusHud();$('hp').firstChild.style.width=clamp(h.hp/h.maxhp*100,0,100)+'%';$('hpt').textContent=Math.ceil(h.hp)+'/'+h.maxhp;
   $('goldn').textContent=SAVE.gold;
   $('xp').firstChild.style.width=clamp(SAVE.xp/xpNeed(SAVE.lv)*100,0,100)+'%';$('hl').textContent=SAVE.lv;{const c=$('hcl');if(c&&!c.innerHTML)c.innerHTML=clsIc(SAVE.cls,16,SAVE.sub);const xt=$('xpt');if(xt)xt.textContent=Math.floor(SAVE.xp/xpNeed(SAVE.lv)*100)+'%';}
-  const dg=G.scene==='dungeon';$('prog').style.display=dg?'block':'none';
+  const dg=G.scene==='dungeon';$('prog').style.display=dg?'block':'none';{const zn=$('zname');zn.style.display=dg?'block':'none';if(dg){const hv=areaName().split(' ')[0]+'|'+G.zoneLv;if(zn.dataset.v!==hv){zn.dataset.v=hv;zn.innerHTML=areaName().split(' ')[0]+'<small>Zona '+G.zoneLv+'</small>';}}if(G.t-(G._qp||0)>1){G._qp=G.t;qPlace();}}
   if(dg&&(G.phase==='farm'||G.phase==='boss')){const ready=G.dtm>=BOSS_T0&&G.kills>=BOSS_KILLS&&SAVE.lv>=bossLv();{const nm=areaName().split(' ')[0],sb=G.phase==='boss'?'Zona '+G.zoneLv+' · '+G.kills+' abates':ready?'A área está inquieta…':'Zona '+G.zoneLv+' · '+G.kills+' abates',hv=nm+'|'+sb;if($('progt').dataset.v!==hv){$('progt').dataset.v=hv;$('progt').innerHTML='<b>'+(G.phase==='boss'?'Chefe':nm)+'</b><small>'+sb+'</small>';}}$('prog').querySelector('.bar b').style.width=Math.min(100,Math.min(G.dtm/BOSS_T0,G.kills/BOSS_KILLS,SAVE.lv/bossLv())*100)+'%';}
   const bs=G.boss,bsv=!!(dg&&G.phase==='boss'&&bs&&!bs.dead&&!(bs.ent&&bs.ent.k!=='phase'&&bs.ent.k!=='roar'));$('boss').style.display=bsv?'block':'none';document.body.classList.toggle('bossfight',dg&&G.phase==='boss'&&!!bs&&!bs.dead);
   const E=SAVE.elix||{},bf=[['forca','ni_eforca','Poder'],['defesa','ni_edefesa','Defesa']].filter(x=>E[x[0]]>0).map(x=>`<div><img src="../assets/ui-icons/${x[1]}.png">${Math.floor(E[x[0]]/60)}:${String(Math.floor(E[x[0]]%60)).padStart(2,'0')}</div>`).join('');if($('buffs').dataset.v!==bf){$('buffs').dataset.v=bf;$('buffs').innerHTML=bf;}
@@ -3418,7 +3425,7 @@ function socUI(){const s=$('soc');if(!s||s.dataset.b)return;s.dataset.b=1;petLoa
   const q=document.createElement('div');q.id='qtr';s.parentNode.appendChild(q);
   q.onclick=ev=>{if(ev.target.closest('.qth')){SAVE.qcol=(SAVE.qcol===false);sfx('ui_click',.5);writeSave();socRefresh();return;}if(G.winOpen)return;sfx('ui_click');G.qtab='m';openWin('diario');};
   setInterval(qPlace,400);}
-function qPlace(){const q=$('qtr'),m=$('mm'),h=$('hud');if(!q||!m||!h)return;if(MM.big){q.style.display='none';return;}q.style.display='';const r=m.getBoundingClientRect(),hr=h.getBoundingClientRect();if(r.height>0)q.style.top=Math.round(r.bottom-hr.top+6)+'px';}
+function qPlace(){const q=$('qtr'),m=$('mm'),h=$('hud');if(!q||!m||!h)return;if(MM.big){q.style.display='none';return;}q.style.display='';const r=m.getBoundingClientRect(),hr=h.getBoundingClientRect();if(r.height>0){q.style.top=Math.round(r.bottom-hr.top+14)+'px';const pg=$('prog');if(pg){pg.style.top=Math.round(r.bottom-hr.top+4)+'px';pg.style.width=Math.round(r.width)+'px';}};}
 function socRefresh(){if(!SAVE.q)return;socUI();
   const c=qMain(),t=$('qtr');if(t){const L=SAVE.q.d.l,rows=[];if(c){const v=qVal(c);rows.push([c.nm,v,c.n,c.ds.replace(/\.$/,''),v>=c.n,0]);}else rows.push(['Trilha concluída',1,1,'',1,0]);
     for(const d of L){const v=qVal(d);rows.push([d.nm,v,d.n,d.ds.replace(/\.$/,''),v>=d.n,d.c]);}
