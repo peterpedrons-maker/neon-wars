@@ -158,3 +158,55 @@ def run_helmet(an,outd):
     for name,dur in(('idle',[220]*6),('walk',[110]*6),('attack',[130,110,100,90,120,130,120,120]),('charge',[160,90,70,70,100,130]),('slam',[130,110,110,90,110,160,140,120])):
         orig=an[name];rc=[enraged(x) for x in orig];fr=aura(with_helmet(orig,rc,src),(210,30,30))
         save([place(x) for x in fr],dur,f'{outd}/grunk_enfurecido_elmo_{name}.gif')
+
+# ---------- encaixe fino do elmo: escala + deslocamento por quadro (busca) e suavização no tempo ----------
+def skin_mask(im):
+    a=rgba(im).astype(float);m=np.zeros(a.shape[:2],bool)
+    rgb=a[:,:,:3]/255;mx=rgb.max(2);mn=rgb.min(2);s=np.where(mx>0,(mx-mn)/np.maximum(mx,1e-6),0)
+    r,g,b=rgb[:,:,0],rgb[:,:,1],rgb[:,:,2]
+    return (a[:,:,3]>0)&(g>=r*.92)&(g>b*1.15)&(s>.22)&(mx>.2)         # tons de verde-oliva
+def scaled_helmet(hs,he,s):
+    if abs(s-1)<1e-3:return hs,he
+    w,h=hs.size;n=hs.resize((max(1,round(w*s)),max(1,round(h*s))),Image.NEAREST);return n,(he[0]*s,he[1]*s)
+def fit_one(o,hs,he,eye,scales=(.88,.94,1.0,1.06,1.12),rng=7):
+    sil=ndimage.binary_dilation(rgba(o)[:,:,3]>0,iterations=2);sk=skin_mask(o);H,W=sil.shape
+    yy,xx=np.mgrid[0:H,0:W]
+    near=(abs(xx-eye[0])<64)&(yy>eye[1]-78)&(yy<eye[1]+40);Hs=sk&near;up=Hs&(yy<eye[1]-2)
+    best=None
+    for s in scales:
+        sp,sh=scaled_helmet(hs,he,s);hm0=np.array(sp)[:,:,3]>0
+        for dy in range(-rng,rng+1):
+            for dx in range(-rng,rng+1):
+                ox=int(round(eye[0]-sh[0]))+dx;oy=int(round(eye[1]-sh[1]))+dy
+                y0,x0=max(0,oy),max(0,ox);y1,x1=min(H,oy+hm0.shape[0]),min(W,ox+hm0.shape[1])
+                if y1<=y0 or x1<=x0:continue
+                hm=hm0[y0-oy:y1-oy,x0-ox:x1-ox];region=(slice(y0,y1),slice(x0,x1))
+                cov=(hm&up[region]).sum()/max(1,up.sum());out=(hm&~sil[region]).sum()/max(1,hm.sum())
+                eyeblk=0
+                ex,ey=int(eye[0]),int(eye[1])
+                if y0<=ey<y1 and x0<=ex<x1 and hm[ey-y0,ex-x0]:eyeblk=1
+                score=cov-.55*out-.8*eyeblk-.01*(abs(dx)+abs(dy))-.15*abs(s-1)
+                if best is None or score>best[0]:best=(score,s,dx,dy)
+    return best
+def helmet_params(orig_frames,src):
+    hs,he=helmet_sprite(src);eps=[eye_point(o) for o in orig_frames]
+    for i,e in enumerate(eps):
+        if e is None:
+            p=next((eps[j] for j in range(i-1,-1,-1) if eps[j] is not None),None);q=next((eps[j] for j in range(i+1,len(eps)) if eps[j] is not None),None)
+            eps[i]=((p[0]+q[0])/2,(p[1]+q[1])/2) if p and q else (p or q)
+    P=[fit_one(o,hs,he,e) for o,e in zip(orig_frames,eps)]
+    # suavização temporal (média móvel de 3 quadros) para não tremer
+    S=[p[1] for p in P];DX=[p[2] for p in P];DY=[p[3] for p in P];n=len(P)
+    def sm(v):return [ (v[max(0,i-1)]+2*v[i]+v[min(n-1,i+1)])/4 for i in range(n)]
+    return hs,he,eps,sm(S),sm(DX),sm(DY)
+def with_helmet_fit(orig_frames,recolored,src):
+    hs,he,eps,S,DX,DY=helmet_params(orig_frames,src);out=[]
+    for rc,e,s,dx,dy in zip(recolored,eps,S,DX,DY):
+        sp,sh=scaled_helmet(hs,he,s);canvas=rc.copy();lay=Image.new('RGBA',canvas.size,(0,0,0,0))
+        lay.paste(sp,(int(round(e[0]-sh[0]+dx)),int(round(e[1]-sh[1]+dy))),sp);canvas.alpha_composite(lay);out.append(canvas)
+    return out
+def run_helmet_fit(an,outd):
+    src=an['enrage'][3]
+    for name,dur in(('idle',[220]*6),('walk',[110]*6),('attack',[130,110,100,90,120,130,120,120]),('charge',[160,90,70,70,100,130]),('slam',[130,110,110,90,110,160,140,120])):
+        orig=an[name];rc=[enraged(x) for x in orig];fr=aura(with_helmet_fit(orig,rc,src),(210,30,30))
+        save([place(x) for x in fr],dur,f'{outd}/grunk_elmo2_{name}.gif')
