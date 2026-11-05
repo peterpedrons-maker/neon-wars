@@ -705,9 +705,9 @@ body.bossbar #zname{top:calc(92px + env(safe-area-inset-top))!important}
     <div class="wb body" id="pBody"></div></div><div id="tip"></div></div>
   <!-- resultado -->
   <div class="scr" id="res">
-    <h2 class="txt-o">ZONA LIMPA!</h2>
+    <h2 class="txt-o">DUNGEON CONCLUÍDA!</h2>
     <div class="box panel"><div class="l" id="rl"></div></div>
-    <div class="col"><button class="btn" id="bNext">PRÓXIMA ZONA</button><button class="btn sec" id="bTown">VOLTAR À CIDADE</button></div>
+    <div class="col"><button class="btn" id="bNext">REPETIR DUNGEON</button><button class="btn sec" id="bTown">VOLTAR À CIDADE</button></div>
   </div>
   <div id="tapfx"></div>
 </div>
@@ -1174,7 +1174,7 @@ let SAVE=null;           // {name,cls,lv,xp,gold,kills,zone}
 const G={mp:[],scene:'town',map:'town',npcs:[],vill:[],winOpen:null,loot:[],on:false,speed:1,auto:true,t:0,cam:{x:0,y:0},K:3,LW:270,LH:480,mobs:[],projs:[],fx:[],zones:[],floats:[],hero:null,boss:null,
          kills:0,phase:'farm',zoneLv:1,koT:0,chat:[],bossWoke:false,wp:null,wpT:0};
 function refreshUniques(){const all=[...Object.values(SAVE.eq||{}),...(SAVE.inv||[]),...(SAVE.vault||[])];for(const it of all){if(it&&it.u){const d=UNIQUES.find(x=>x.id===it.u.id);if(d){it.u.fx=d.fx;it.u.desc=d.desc;}}}}
-function migrateSave(){if(!SAVE.tl)SAVE.tl={};if(!SAVE.mats)SAVE.mats={ferro:0,runa:0,cristal:0};SAVE.potL=SAVE.potL||0;SAVE.elix=SAVE.elix||{forca:0,defesa:0};SAVE.elix.defesa=SAVE.elix.defesa||0;SAVE.elix.vigor=0;SAVE.elix.sorte=0;SAVE.zoneMax=SAVE.zoneMax||SAVE.zone||1;SAVE.inv=SAVE.inv||[];SAVE.eq=SAVE.eq||{};SAVE.potions=SAVE.potions==null?2:SAVE.potions;SAVE.sk=SAVE.sk||[1,0,0];while(SAVE.sk.length<14)SAVE.sk.push(0);if(SAVE.sub===undefined)SAVE.sub=null;SAVE.vault=SAVE.vault||[];SAVE.eqs=SAVE.eqs||[0,1,2];refreshUniques();if(!SAVE.at||SAVE.at.int===undefined||SAVE.at.res!==undefined||SAVE.at.agi!==undefined)SAVE.at=ATT_NEW();if(SAVE.autoEq==null)SAVE.autoEq=true;
+function migrateSave(){if(!SAVE.tl)SAVE.tl={};if(!SAVE.mats)SAVE.mats={ferro:0,runa:0,cristal:0};SAVE.potL=SAVE.potL||0;SAVE.elix=SAVE.elix||{forca:0,defesa:0};SAVE.elix.defesa=SAVE.elix.defesa||0;SAVE.elix.vigor=0;SAVE.elix.sorte=0;if(!SAVE.dgDone){SAVE.dgDone={};const zm=Math.max(SAVE.zoneMax||1,SAVE.zone||1);for(let k=1;k<Math.min(zm,DUN.length+1);k++)SAVE.dgDone[k]=true;if(zm>DUN.length)SAVE.dgDone[DUN.length]=true;}SAVE.zone=Math.max(1,Math.min(DUN.length,SAVE.zone||1));SAVE.zoneMax=Math.max(1,Math.min(DUN.length,SAVE.zoneMax||SAVE.zone||1));SAVE.inv=SAVE.inv||[];SAVE.eq=SAVE.eq||{};SAVE.potions=SAVE.potions==null?2:SAVE.potions;SAVE.sk=SAVE.sk||[1,0,0];while(SAVE.sk.length<14)SAVE.sk.push(0);if(SAVE.sub===undefined)SAVE.sub=null;SAVE.vault=SAVE.vault||[];SAVE.eqs=SAVE.eqs||[0,1,2];refreshUniques();if(!SAVE.at||SAVE.at.int===undefined||SAVE.at.res!==undefined||SAVE.at.agi!==undefined)SAVE.at=ATT_NEW();if(SAVE.autoEq==null)SAVE.autoEq=true;
   const mig=it=>{if(!it)return;if(it.slot==='arma'&&!it.wl)it.wl=WLK[it.bn]||((UNIQUES.find(x=>x.id===(it.u&&it.u.id))||{}).wl)||SAVE.cls;if(it.slot==='escudo'&&it.sd===undefined)it.sd=SDEF.includes(it.bn);if(!it.tier){it.tier=tierOf(it.ilvl);let bn=it.name;for(const sx of SUFIX)if(bn.endsWith(' '+sx)){bn=bn.slice(0,-sx.length-1);break;}it.bn=bn;it.name=bn+' '+tierAdj(bn,it.tier);}
     if(it.tv!==2){const mu=tierMul(it.tier);if(mu>1)for(const k in it.s)it.s[k]=k==='crit'||k==='spd'||k==='kb'||k==='kd'?Math.round(it.s[k]*mu*10)/10:Math.round(it.s[k]*mu);it.tv=2;}};
   SAVE.inv.forEach(mig);SAVE.vault.forEach(mig);Object.values(SAVE.eq).forEach(mig);tfCalc();}
@@ -1597,8 +1597,15 @@ function makeElite(m,tier){
 /* FAMÍLIA por zona: cada zona tem um único tipo de inimigo (muda a cada zona); multiplicadores mantêm a força média de antes */
 const FAMV={goblin:['goblin','goblin','gobarq','xama','goblin'],esq:['esq','esq','esqmago','esqfogo','esqgelo'],javali:['javali'],rato:['rato']};
 const varOf=(z,i)=>{const a=FAMV[famOf(z)];return a[((i%a.length)+a.length)%a.length];};
+/* progressão definida: 4 dungeons, uma após a outra. Para entrar na seguinte é preciso derrotar o chefe da anterior e ter o nível mínimo. */
+const DUN=[{id:1,nm:'Floresta dos Goblins',unlock:1},{id:2,nm:'Catacumbas de Brumavale',unlock:8},{id:3,nm:'Floresta de Brumavale',unlock:13},{id:4,nm:'Esgotos de Brumavale',unlock:18}];
+const dgLv=z=>[1+(z-1)*BAL.zoneLv,8+(z-1)*BAL.zoneLv];   // faixa de nível dos monstros da dungeon z
+function dgUnlocked(z){if(z<=1)return true;const d=DUN[z-1];return !!(d&&SAVE.dgDone&&SAVE.dgDone[z-1]&&SAVE.lv>=d.unlock);}
+function dgRefresh(){let m=1;for(let z=2;z<=DUN.length;z++)if(dgUnlocked(z))m=z;if(m>(SAVE.zoneMax||1)){SAVE.zoneMax=m;chat('Nova dungeon liberada: '+DUN[m-1].nm+'!',4);try{banner('Nova dungeon',DUN[m-1].nm,'good');}catch(e){}}SAVE.zoneMax=Math.max(1,Math.min(DUN.length,SAVE.zoneMax||1));}
+// experiência estilo Cabal: monstro muito abaixo do seu nível rende 1 de XP (chefes mantêm um mínimo)
+const xpGapMul=g=>g<=2?1:g===3?.85:g===4?.7:g===5?.5:g===6?.3:g===7?.15:g===8?.07:0;
 const FAMS=['goblin','esq','javali','rato'],FAMM={goblin:[1.13,1.1,1.24],esq:[.85,.86,.83],javali:[.71,.77,.68],rato:[2.1,1.9,2]};
-const famOf=z=>FAMS[(Math.max(1,z)-1)%FAMS.length];
+const famOf=z=>FAMS[(clamp(z||1,1,DUN.length)-1)%FAMS.length];
 function mkMob(kind,x,y,sp){
   const T=MOBS[kind],lv=mobLevel(y),m={kind:'mob',type:kind,T,x,y,sx:x,sy:y,lv,row:1,state:'idle',animT:rnd(0,5),act:null,cd:rnd(.5,1.2),kvx:0,kvy:0,stun:0,sts:null,flash:0,dead:false,deadT:0,respawn:0,sp,wx:x,wy:y,wt:rnd(0,3)};
   const FM=FAMM[T.fam||kind]||[1,1,1];m.maxhp=Math.round(T.hp*FM[0]*mobHpMul(lv));m.hp=m.maxhp;m.pow=T.atk*FM[1]*mobAtkMul(lv);m.def=lv*1.3;m.name=T.nome;{const q=Math.random();if(q<eliteGoldChance())makeElite(m,'gold');else if(q<eliteGoldChance()+eliteChance())makeElite(m,'blue');}return m;
@@ -1637,14 +1644,15 @@ function enterTown(first,instant){
   if(instant)go();else fadeTo(go);
 }
 function enterDungeon(zlv){
+  zlv=clamp(zlv||1,1,DUN.length);if(!dgUnlocked(zlv)){sfx('ui_denied');return;}
   if(whenReady(()=>enterDungeon(zlv)))return;
   closeWin();if(G.scene==='town')PFX.boost=1;
   fadeTo(()=>{
     G.scene='dungeon';useMap(zoneMap(zlv));G.zoneLv=zlv;SAVE.zone=zlv;SAVE.entered=true;G.auto=true;
     const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;h.state='idle';h.act=null;h.kvx=h.kvy=0;h.sk=Array(14).fill(0);h.potCd=0;h.x=ZONE.start[0];h.y=ZONE.start[1];h._lx=h.x;h._ly=h.y;
     GX.clear();G.zones=[];G.floats=[];G.fx=[];G.loot=[];resetZone();MM.key='';G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2+34;G.wp=null;
-    show('hud');buildBar();updHUD(true);$('toast').style.display='none';setTimeout(()=>banner(areaName(),'Zona '+G.zoneLv,'zone'),500);
-    chat('Você entrou em '+areaName()+' (Zona '+G.zoneLv+'). Cuidado: algo grande pode surgir…',1);zoneMusic();ambStart();writeSave();
+    show('hud');buildBar();updHUD(true);$('toast').style.display='none';setTimeout(()=>banner(areaName(),'Nv. '+dgLv(G.zoneLv).join('–'),'zone'),500);
+    chat('Você entrou em '+areaName()+' (Nv. '+dgLv(G.zoneLv).join('–')+'). Cuidado: algo grande pode surgir…',1);zoneMusic();ambStart();writeSave();
   });
 }
 function mkTb(id,html,cls,fn){const e=document.createElement('button');e.className=cls;e.id=id;e.style.pointerEvents='auto';e.innerHTML=html;e.onclick=fn;return e;}
@@ -1828,13 +1836,13 @@ function hitMob(m,dmg,crit,fromX,fromY,kf=1){
 }
 function killMob(m){
   m.dead=true;m.deadT=0;m.hp=0;if(m.onDie&&!G.ev){const f=m.onDie;m.onDie=null;f();}const T=m.T;
-  const over=Math.max(0,SAVE.lv-(m.lv+2)),xp=Math.max(1,Math.round((m.elite?(m.tier==='gold'?3.5:2):1)*T.xp*((FAMM[m.T.fam||m.type]||[1,1,1])[2])*(1+.25*(m.lv-1))*Math.max(.12,1-.2*over)*(1+uf('xp'))));let g=rint(T.gold[0],T.gold[1])*(1+.2*(m.lv-1))*(1+uf('gold'));if(SAVE.cls==='bardo')g*=1.4;g=Math.round(g*(m.elite?(m.tier==='gold'?2.2:1.5):1));
+  const gap=SAVE.lv-m.lv,gm=xpGapMul(gap),boss=m.kind==='boss',xp=Math.max(1,Math.round((m.elite?(m.tier==='gold'?3.5:2):1)*T.xp*((FAMM[m.T.fam||m.type]||[1,1,1])[2])*(1+.25*(m.lv-1))*(boss?Math.max(.05,gm):gm)*(1+uf('xp'))*(gm>0||boss?1:0)));let g=rint(T.gold[0],T.gold[1])*(1+.2*(m.lv-1))*(1+uf('gold'));if(SAVE.cls==='bardo')g*=1.4;g=Math.round(g*(m.elite?(m.tier==='gold'?2.2:1.5):1));
   SAVE.gold+=g;gainXP(xp,m);floatText(m.x+12,m.y-30,'+'+g+' ouro','#ffd65a',8,1.1);sfx('coin',.5);
   SAVE.totalKills=(SAVE.totalKills||0)+1;{const fm=m.T.fam||m.type;bstAdd(fm,m.elite);qEv('kill');qEv('fam',fm);if(m.elite)qEv('elite');if(m.kind==='boss'){SAVE.bosses=(SAVE.bosses||0)+1;qEv('boss');}}
   dropLoot(m);dropMats(m);petDrop(m.kind==='boss',!!m.elite,m.tier==='gold');
   if(m.boom){addZone({shape:'circle',x:m.x,y:m.y,r:58,warn:1,mult:1.8,pow:m.pow,shake:.3});chat(m.name+' vai explodir!',2);}
   if(m.elite){chat((m.tier==='gold'?'Elite dourado':'Elite azul')+' derrotado!',4);}
-  if(m.kind==='boss'){chat(m.name+' foi derrotado!',3);G.phase='end';sfx('victory',.9);G.shake=.4;setTimeout(showResult,1600);G.endT=0;if(musSrc)zoneMusic();}
+  if(m.kind==='boss'){SAVE.dgDone=SAVE.dgDone||{};SAVE.dgDone[G.zoneLv]=true;dgRefresh();chat(m.name+' foi derrotado!',3);G.phase='end';sfx('victory',.9);G.shake=.4;setTimeout(showResult,1600);G.endT=0;if(musSrc)zoneMusic();}
   else{m.respawn=14;G.kills++;chat(m.name+' derrotado',1);
     checkBoss();}
   updHUD();writeSave();
@@ -1902,7 +1910,7 @@ function bossArrive(m,fall){const c=m.T.aura||['#ff6a3a','#ffd070'];
 function gainXP(x,at){
   SAVE.xp+=x;floatText(at.x,at.y-58,'+'+x+' Exp','#9fe0ff',8,1);
   let lvled=false;while(SAVE.xp>=xpNeed(SAVE.lv)){SAVE.xp-=xpNeed(SAVE.lv);SAVE.lv++;lvled=true;}
-  if(lvled){const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;sfx('levelup',.9);G.fx.push({k:'lv',x:h.x,y:h.y,life:1.2,max:1.2});levelUpFx(SAVE.lv);chat('Você alcançou o Nv.'+SAVE.lv+'!',4);qCheck();buildBar();chat('+1 ponto de habilidade',4);checkBoss();}
+  if(lvled){const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;sfx('levelup',.9);G.fx.push({k:'lv',x:h.x,y:h.y,life:1.2,max:1.2});levelUpFx(SAVE.lv);chat('Você alcançou o Nv.'+SAVE.lv+'!',4);dgRefresh();qCheck();buildBar();chat('+1 ponto de habilidade',4);checkBoss();}
 }
 function hurtHero(dmg,fromX,fromY,kf=1){
   const h=G.hero;if(h.state==='ko')return;if(h.inv>0){floatText(h.x,h.y-58,'Esquivou!','#cfe9ff',9,1);return;}{const tk=stMul(h,'taken');if(tk!==1)dmg=Math.max(1,Math.round(dmg*tk));}if(SAVE.sub==='cavaleiro')dmg=Math.round(dmg*.92);{const dr=tf('dmgred')+sb('dmgred');if(dr)dmg=Math.max(1,Math.round(dmg*(1-Math.min(.6,dr))));}if(h.shield>0){const ab=Math.min(h.shield,dmg);h.shield-=ab;dmg-=ab;floatText(h.x+(Math.random()<.5?-15:15),h.y-34,'-'+ab,'#7ab8ff',10,.9,{pop:1,vy:20});if(dmg<=0){sfx('hit_1',.4,1.3);return;}}h.hp-=dmg;h.flash=.14;h.combat=4;
@@ -1914,9 +1922,11 @@ function heroRevive(){const h=G.hero;h.sts=null;h.state='idle';h.hp=Math.round(h
   if(G.phase==='boss'){G.boss=null;G.phase='farm';G.dtm=0;G.bossRoll=1;zoneMusic();}G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2;}
 function showResult(){
   show('res');$('cv').style.display='block';const xp=bossDef().xp;
-  $('rl').innerHTML=`${SAVE.name} ${clsIc(SAVE.cls,18)} Nv.${SAVE.lv}<br>Chefe derrotado!<br>Ouro total: ${SAVE.gold}<br><span style="color:#96e08a">Próxima zona: monstros mais fortes</span>`;
+  $('rl').innerHTML=`${SAVE.name} ${clsIc(SAVE.cls,18)} Nv.${SAVE.lv}<br>Chefe derrotado!<br>Ouro total: ${SAVE.gold}${dgMsg()}`;
 }
-function nextZone(){G.zoneLv++;if(zoneMap(G.zoneLv)!==G.map)useMap(zoneMap(G.zoneLv));SAVE.zone=G.zoneLv;SAVE.zoneMax=Math.max(SAVE.zoneMax||1,G.zoneLv);qCheck();writeSave();show('hud');banner(areaName(),'Zona '+G.zoneLv,'zone');const h=G.hero;h.hp=h.maxhp;h.x=ZONE.start[0];h.y=ZONE.start[1];resetZone();updHUD();chat('Zona '+G.zoneLv+' — '+MOBS[famOf(G.zoneLv)].nome+'s, mais fortes!',2);zoneMusic();ambStart();}
+function dgMsg(){const n=G.zoneLv+1,d=DUN[n-1];if(!d)return '<br><span style="color:#d9c27a">Você concluiu todas as dungeons disponíveis. Novas virão!</span>';
+  if(dgUnlocked(n))return `<br><span style="color:#96e08a">Nova dungeon liberada: ${d.nm}</span>`;return `<br><span style="color:#d9c27a">${d.nm}: alcance o Nv. ${d.unlock} para entrar</span>`;}
+function nextZone(){if(zoneMap(G.zoneLv)!==G.map)useMap(zoneMap(G.zoneLv));SAVE.zone=G.zoneLv;qCheck();writeSave();show('hud');banner(areaName(),'Nv. '+dgLv(G.zoneLv).join('–'),'zone');const h=G.hero;h.hp=h.maxhp;h.x=ZONE.start[0];h.y=ZONE.start[1];resetZone();updHUD();chat('Você voltou a '+areaName()+'.',2);zoneMusic();ambStart();}
 
 /* ===== ARMAS: qualquer classe usa qualquer arma. A arma define o ataque básico, o visual e quais habilidades funcionam ===== */
 const WLK={'Espada':'guerreiro','Machado':'guerreiro','Martelo':'clerigo','Maça':'clerigo','Cetro Sagrado':'clerigo','Adaga':'ladino','Espada Curta':'ladino','Adaga de Palco':'ladino','Florete':'bardo','Cajado':'mago','Cetro':'mago','Arco':'arqueiro','Arco Longo':'arqueiro'};
@@ -3301,24 +3311,24 @@ const QMAIN=[
  {t:'fam',f:'goblin',n:20,nm:'Praga verde',ds:'Derrote 20 goblins.'},
  {t:'lv',n:6,nm:'Um caminho próprio',ds:'Alcance o nível 6 e ganhe seu primeiro ponto de talento.'},
  {t:'elite',n:3,nm:'Alvos marcados',ds:'Derrote 3 elites (azuis ou dourados).'},
- {t:'boss',n:1,nm:'O Ogro de Brumavale',ds:'Derrote o chefe de uma zona.'},
- {t:'zone',n:3,nm:'Mais fundo na floresta',ds:'Alcance a zona 3.'},
+ {t:'boss',n:1,nm:'O Ogro de Brumavale',ds:'Derrote o chefe de uma dungeon.'},
+ {t:'zone',n:2,nm:'Mais fundo na floresta',ds:'Libere a 2ª dungeon.'},
  {t:'up',n:3,nm:'Faíscas na bigorna',ds:'Melhore equipamentos 3 vezes com sucesso na forja.'},
  {t:'fam',f:'esq',n:40,nm:'Ossos inquietos',ds:'Derrote 40 esqueletos.'},
  {t:'lv',n:12,nm:'Veterano',ds:'Alcance o nível 12.'},
- {t:'zone',n:5,nm:'Além da clareira',ds:'Alcance a zona 5.'},
+ {t:'zone',n:3,nm:'Além da clareira',ds:'Libere a 3ª dungeon.'},
  {t:'fam',f:'javali',n:50,nm:'Caça grossa',ds:'Derrote 50 javalis.'},
  {t:'boss',n:5,nm:'Matador de chefes',ds:'Derrote 5 chefes.'},
  {t:'lv',n:20,nm:'Herói de Brumavale',ds:'Alcance o nível 20.'},
  {t:'fam',f:'rato',n:80,nm:'Dedetização',ds:'Derrote 80 ratos gigantes.'},
  {t:'elite',n:25,nm:'Caçador de elites',ds:'Derrote 25 elites.'},
- {t:'zone',n:8,nm:'Terras bravas',ds:'Alcance a zona 8.'},
+ {t:'zone',n:4,nm:'Terras bravas',ds:'Libere a 4ª dungeon.'},
  {t:'up',n:15,nm:'Mestre da forja',ds:'Melhore equipamentos 15 vezes com sucesso.'},
  {t:'lv',n:30,nm:'Lenda em ascensão',ds:'Alcance o nível 30.'},
- {t:'zone',n:10,nm:'O coração sombrio',ds:'Alcance a zona 10.'},
+ {t:'boss',n:10,nm:'O coração sombrio',ds:'Derrote 10 chefes.'},
  {t:'boss',n:20,nm:'Flagelo dos chefes',ds:'Derrote 20 chefes.'},
  {t:'lv',n:45,nm:'Campeão',ds:'Alcance o nível 45.'},
- {t:'zone',n:12,nm:'Fim da trilha',ds:'Alcance a zona 12.'},
+ {t:'boss',n:30,nm:'Fim da trilha',ds:'Derrote 30 chefes.'},
  {t:'lv',n:60,nm:'Lenda de Brumavale',ds:'Alcance o nível 60.'}
 ].map((q,i)=>(q.id='m'+i,q));
 const QDAY=[
@@ -3340,8 +3350,8 @@ const ACH=[
  {id:'l1',nm:'Aventureiro',ds:'Alcance o nível 10.',v:()=>SAVE.lv,n:10,ti:'o Aventureiro'},
  {id:'l2',nm:'Veterano de guerra',ds:'Alcance o nível 30.',v:()=>SAVE.lv,n:30,ti:'Veterano de Guerra'},
  {id:'l3',nm:'Lenda viva',ds:'Alcance o nível 60.',v:()=>SAVE.lv,n:60,ti:'Lenda Viva'},
- {id:'z1',nm:'Desbravador',ds:'Alcance a zona 5.',v:()=>SAVE.zoneMax||1,n:5,ti:'Desbravador'},
- {id:'z2',nm:'Explorador sombrio',ds:'Alcance a zona 10.',v:()=>SAVE.zoneMax||1,n:10,ti:'Explorador Sombrio'},
+ {id:'z1',nm:'Desbravador',ds:'Libere a 3ª dungeon.',v:()=>SAVE.zoneMax||1,n:3,ti:'Desbravador'},
+ {id:'z2',nm:'Explorador sombrio',ds:'Libere a 4ª dungeon.',v:()=>SAVE.zoneMax||1,n:4,ti:'Explorador Sombrio'},
  {id:'f1',nm:'Ferreiro',ds:'Melhore itens 10 vezes com sucesso.',v:()=>cnt('up'),n:10,ti:'o Ferreiro'},
  {id:'q1',nm:'Pau para toda obra',ds:'Conclua 10 missões da trilha.',v:()=>SAVE.q.m,n:10,ti:'Pau para Toda Obra'},
  {id:'q2',nm:'Cronista de Brumavale',ds:'Conclua toda a trilha principal.',v:()=>SAVE.q.m,n:QMAIN.length,ti:'Cronista de Brumavale'},
@@ -3359,7 +3369,7 @@ function winConq(){let h='';const n=ACH.filter(a=>SAVE.ach&&SAVE.ach[a.id]).leng
   h+=GR.map(([gn,ids])=>`<div class="qs ${gn[0]==='C'?'d':gn[0]==='P'?'p':'n'}"><b>${gn}</b></div>`+ACH.filter(a=>ids.includes(a.id[0])).map(a=>{const ok=SAVE.ach&&SAVE.ach[a.id],v=Math.min(a.n,a.v()),use=SAVE.title===a.id;
     return `<div class="wr${ok?'':' lock'}"><img class="ic" src="${UI}${ok?'imperial-crown':'padlock'}.png"><div class="tx"><b>${a.nm}${ok?' · <span style="display:inline;color:var(--ouroC)">'+a.ti+'</span>':''}</b><span>${a.ds}</span>${ok?'':`<div class="bar" style="margin-top:4px"><b style="width:${v/a.n*100}%"></b></div>`}</div>${ok?`<button class="${use?'gb':'db'}" data-a="ti:${a.id}">${use?'Em uso':'Usar'}</button>`:`<span class="pr">${v>=1000?Math.floor(v/100)/10+'k':v}/${a.n>=1000?a.n/1000+'k':a.n}</span>`}</div>`;}).join('')).join('');
   h+='<div class="qs n"><b>Recordes</b></div>';
-  const rec=[['Nível mais alto',SAVE.lv],['Zona mais alta',SAVE.zoneMax||1],['Monstros derrotados',cnt('kill')],['Elites derrotados',cnt('elite')],['Chefes derrotados',cnt('boss')],['Itens melhorados',cnt('up')],['Tempo de jogo',fmtT(SAVE.playT)]];
+  const rec=[['Nível mais alto',SAVE.lv],['Dungeon liberada',(SAVE.zoneMax||1)+'/'+DUN.length],['Monstros derrotados',cnt('kill')],['Elites derrotados',cnt('elite')],['Chefes derrotados',cnt('boss')],['Itens melhorados',cnt('up')],['Tempo de jogo',fmtT(SAVE.playT)]];
   h+='<div class="dd">'+rec.map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:3px 0"><span>${k}</span><b style="color:var(--ouroC)">${v}</b></div>`).join('')+'</div>';
   return h;}
 const BST_MS=[10,50,200,500];
@@ -3712,15 +3722,15 @@ function winAlq(){
 /* Portal */
 const AREAS=[{fam:['goblin'],nm:'Floresta dos Goblins',ic:'ni_d1',mon:'Goblins'},{fam:['esq'],nm:'Catacumbas de Brumavale',ic:'skull-staff',mon:'Esqueletos'},{fam:['javali'],nm:'Floresta de Brumavale',ic:'ni_d3',mon:'Javalis'},{fam:['rato'],nm:'Esgotos de Brumavale',ic:'ni_d4',mon:'Ratos Gigantes'}];
 function winPortal(){
-  $('wtt').textContent='Portal das Dungeons';const zs=G.pz||Math.min(SAVE.zoneMax||1,SAVE.zone||1)||1;G.pz=clamp(zs,1,SAVE.zoneMax||1);
+  $('wtt').textContent='Portal das Dungeons';G.pz=clamp(G.pz||Math.min(SAVE.zoneMax||1,SAVE.zone||1)||1,1,DUN.length);
   let h='<div class="sec-h"><span>Dungeons</span><span>O herói luta sozinho lá dentro</span></div>';
-  {const zc=G.pz,cur=AREAS.find(a=>a.fam.includes(famOf(zc)));
-   AREAS.forEach(d=>{const zs2=[];for(let q=1;q<=Math.max(SAVE.zoneMax||1,12)&&zs2.length<4;q++)if(d.fam.includes(famOf(q)))zs2.push(q);const reached=zs2.some(q=>q<=(SAVE.zoneMax||1));
-    h+=`<div class="dg ${d===cur?'sel':reached?'':'lock'}"><img class="ic" src="${UI}${d.ic}.png"><div><b>${d.nm}</b><span>${d.mon} · zonas ${zs2.join(', ')}…</span></div>${reached?'':`<img src="${UI}padlock.png" style="width:20px;height:20px;image-rendering:pixelated;margin-left:auto">`}</div>`;});}
   const z=G.pz;
-  h+=`<div class="dd"><div class="zs"><button class="db" data-a="pz:-1" ${z<=1?'disabled':''} style="min-width:44px">◀</button><b>Zona ${z}</b><button class="db" data-a="pz:1" ${z>=(SAVE.zoneMax||1)?'disabled':''} style="min-width:44px">▶</button></div>
-   <div class="row2"><span>Área</span><span>${areaName(zoneMap(z))}</span></div><div class="row2"><span>Monstros</span><span>${MOBS[famOf(z)].nome}s · Nv ${1+(z-1)*BAL.zoneLv}–${8+(z-1)*BAL.zoneLv}</span></div><div class="row2"><span>Chefe</span><span>Ogro de Brumavale · Nv ${8+(z-1)*BAL.zoneLv}</span></div><div class="row2"><span>Recompensa</span><span>${z>1?'Itens melhores':'Itens, ouro e XP'}</span></div></div>
-   <button class="gb big" data-a="go">Entrar na dungeon</button>`;
+  AREAS.forEach((d,i)=>{const n=i+1,un=dgUnlocked(n),L=dgLv(n);
+    h+=`<div class="dg ${n===z?'sel':un?'':'lock'}" data-a="pdg:${n}" style="cursor:pointer"><img class="ic" src="${UI}${d.ic}.png"><div><b>${d.nm}</b><span>${d.mon} · Nv ${L[0]}–${L[1]}</span></div>${un?(SAVE.dgDone&&SAVE.dgDone[n]?'<span style="margin-left:auto;color:#96e08a;font-size:11px">✔ concluída</span>':''):`<img src="${UI}padlock.png" style="width:20px;height:20px;image-rendering:pixelated;margin-left:auto">`}</div>`;});
+  const un=dgUnlocked(z),L=dgLv(z),B=bossDef(z),need=DUN[z-1],prev=DUN[z-2];
+  h+=`<div class="dd"><div class="row2"><span>Área</span><span>${areaName(zoneMap(z))}</span></div><div class="row2"><span>Monstros</span><span>${MOBS[famOf(z)].nome}s · Nv ${L[0]}–${L[1]}</span></div><div class="row2"><span>Chefe</span><span>${B.nome} · Nv ${L[1]}</span></div>
+   ${un?'':`<div class="row2"><span>Requisito</span><span style="color:#e0a070">${prev?'Derrotar o chefe de '+prev.nm+' e ':''}Nv ${need.unlock}</span></div>`}</div>
+   <button class="gb big" data-a="go" ${un?'':'disabled'}>${un?'Entrar na dungeon':'Bloqueada'}</button>`;
   $('wbody').innerHTML=h;
 }
 function winSub(){
@@ -3780,7 +3790,7 @@ function winAct(a){
   else if(k==='sub'){if(SAVE.lv<SUB_LV||SAVE.sub){sfx('ui_denied');return;}const sb=SUBS[SAVE.cls].find(x=>x.id===v);if(!sb)return;gConfirm('Esta escolha é definitiva e não poderá ser trocada.',{title:'Escolher '+sb.nome+'?',ok:'Escolher',no:'Voltar'}).then(ok=>{if(!ok||SAVE.sub)return;SAVE.sub=v;recalcHero(true);buildBar();setTitle(SAVE.title);sfx('levelup',.9);chat('Você agora é '+sb.nome+'!',4);banner(sb.nome,'Nova subclasse');writeSave();renderWin();});return;}
   else if(k==='vput'){const i=+v,it=SAVE.inv[i];if(!it||SAVE.vault.length>=VAULT_MAX){sfx('ui_denied');return;}SAVE.inv.splice(i,1);SAVE.vault.push(it);G.wsel=null;sfx('tr_equip',.7);}
   else if(k==='vtake'){const i=+v,it=SAVE.vault[i];if(!it||SAVE.inv.length>=24){sfx('ui_denied');return;}SAVE.vault.splice(i,1);SAVE.inv.push(it);G.wsel=null;sfx('tr_equip',.7);}
-  else if(k==='pz'){G.pz=clamp((G.pz||1)+ +v,1,SAVE.zoneMax||1);sfx('ui_click');}
+  else if(k==='pdg'){G.pz=clamp(+v,1,DUN.length);sfx('ui_click');}
   else if(k==='go'){sfx('spell_cast',.8);sfx('levelup',.4);enterDungeon(G.pz||1);return;}
   badge();writeSave();renderWin();
 }
@@ -3827,7 +3837,7 @@ $('cv').addEventListener('pointerdown',ev=>{
 (()=>{const c=$('mm');if(c){c.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();mmToggle();});}document.addEventListener('pointerdown',e=>{if(MM.big&&e.target.id!=='mm')mmToggle();},true);})();
 const newHero=()=>{audioInit();sfx('ui_confirm');SAVE={name:'',cls:'guerreiro',lv:1,xp:0,gold:0,zone:1,inv:[],eq:{},potions:2,potL:0,elix:{forca:0,vigor:0,sorte:0},zoneMax:1,sk:[1,0,0,0,0,0,0,0,0,0,0,0,0,0],eqs:[0,-1,-1],sub:null,at:{for:0,des:0,int:0,vit:0,sor:0},autoEq:true};selCls='guerreiro';$('cname').value='';show('create');buildCreate();playMusic('m_campina');};
 $('bNew').onclick=()=>{if(SAVE){audioInit();gConfirm('Criar um novo herói apaga '+SAVE.name+' (Nv.'+SAVE.lv+') para sempre.',{title:'Apagar o herói atual?',ok:'Criar novo',no:'Manter',danger:true}).then(ok=>{if(ok)newHero();});}else newHero();};
-$('bCont').onclick=()=>{audioInit();sfx('ui_confirm');G.zoneLv=SAVE.zoneMax||SAVE.zone||1;startGame();};
+$('bCont').onclick=()=>{audioInit();sfx('ui_confirm');G.zoneLv=clamp(SAVE.zone||1,1,DUN.length);startGame();};
 $('cname').addEventListener('input',()=>{updCreateBtn();});
 document.querySelectorAll('.ctabs button').forEach(b=>b.onclick=()=>{ctab=b.dataset.t;document.querySelectorAll('.ctabs button').forEach(x=>x.classList.toggle('on',x===b));sfx('ui_click',.6);renderLook();});
 $('bSug').onclick=()=>{sfx('ui_click',.6);$('cname').value=NOMES[Math.floor(Math.random()*NOMES.length)];updCreateBtn();};
@@ -3849,8 +3859,8 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
   $('bNew').disabled=true;$('bCont').disabled=true;
   try{await loadAll();}catch(e){$('title').insertAdjacentHTML('beforeend','<div style="color:#f88">Erro ao carregar: '+e.message+'</div>');console.error(e);return;}
   $('bNew').disabled=false;$('bCont').disabled=false;
-  if(SAVE)G.zoneLv=SAVE.zone||1;
-  window.__mmo={stAdd,BAL,openWin,levelUpFx,gainXP,banner,hStyle,wCat,skOk,UNIQUES,getZone:()=>ZONE,petTick,PETS,pb,SETS,setCount,sb,genItem,qEv,qCheck,partyAdd,partyClear,QMAIN,qInit,socRefresh,TALENTS,tfCalc,tlTotal,TL_REQ,TL_TIER,potPrice,SLOTS,recalcHero,AMBEV,ambStart,ambStop,AMBS,zoneMusic,TOD,LIFE,evStart,makeElite,ELMOD,addZone,heroDodge,spawnBossNow:spawnBoss,stAdd,STDEF,applySkillStatus,MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
+  if(SAVE)G.zoneLv=clamp(SAVE.zone||1,1,DUN.length);
+  window.__mmo={killMob,mkMob,dgUnlocked,dgRefresh,xpGapMul,DUN,stAdd,BAL,openWin,levelUpFx,gainXP,banner,hStyle,wCat,skOk,UNIQUES,getZone:()=>ZONE,petTick,PETS,pb,SETS,setCount,sb,genItem,qEv,qCheck,partyAdd,partyClear,QMAIN,qInit,socRefresh,TALENTS,tfCalc,tlTotal,TL_REQ,TL_TIER,potPrice,SLOTS,recalcHero,AMBEV,ambStart,ambStop,AMBS,zoneMusic,TOD,LIFE,evStart,makeElite,ELMOD,addZone,heroDodge,spawnBossNow:spawnBoss,stAdd,STDEF,applySkillStatus,MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
   requestAnimationFrame(frame);
 })();
 
