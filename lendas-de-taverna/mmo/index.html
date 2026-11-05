@@ -622,10 +622,17 @@ body.bossfight #qtr{display:none!important}
 #prog::before,#prog::after{display:none!important}
 #prog #progt{display:none}
 #prog .bar{height:5px!important;margin:0!important;border:1px solid #000!important;box-shadow:0 0 0 1px rgba(184,146,60,.7)}
-#boss{position:absolute!important;left:50%!important;transform:translateX(-50%);width:46%!important;top:calc(64px + env(safe-area-inset-top))!important}
-#boss .t{font-size:14px;letter-spacing:.28em;padding-left:.28em}
-#boss .bar{height:10px}
-#bsts{margin-top:5px}
+#boss{position:absolute!important;left:50%!important;transform:translateX(-50%);width:calc(100% - 20px)!important;top:calc(6px + env(safe-area-inset-top))!important}
+#boss .t{font-size:16px;letter-spacing:.32em;padding-left:.32em;margin-bottom:3px}
+#boss .bar{height:17px;border:2px solid #0a0606;background:linear-gradient(#1a0a0a,#2a1010);box-shadow:0 0 0 1px #b8923c,0 0 0 3px #3a2a10,0 4px 14px rgba(0,0,0,.8),inset 0 2px 4px #000}
+#boss .bar b{background:linear-gradient(#ff9a7a,#e0301e 45%,#8a0e0e);box-shadow:0 0 14px rgba(255,60,40,.75)}
+#bsts{margin-top:6px}
+/* na luta de chefe, painel do herói, status e minimapa descem para dar o topo à barra do chefe */
+#hero,#sts,#hud #mm,#zname{transition:top .45s ease}
+body.bossbar #hero{top:calc(92px + env(safe-area-inset-top))!important}
+body.bossbar #sts{top:calc(146px + env(safe-area-inset-top))!important}
+body.bossbar #hud #mm{top:calc(110px + env(safe-area-inset-top))!important}
+body.bossbar #zname{top:calc(92px + env(safe-area-inset-top))!important}
 </style>
 </head>
 <body>
@@ -1699,7 +1706,7 @@ function updHUD(force){
   $('xp').firstChild.style.width=clamp(SAVE.xp/xpNeed(SAVE.lv)*100,0,100)+'%';$('hl').textContent=SAVE.lv;{const c=$('hcl');if(c&&!c.innerHTML)c.innerHTML=clsIc(SAVE.cls,16,SAVE.sub);const xt=$('xpt');if(xt)xt.textContent=Math.floor(SAVE.xp/xpNeed(SAVE.lv)*100)+'%';}
   const dg=G.scene==='dungeon';$('prog').style.display=dg?'block':'none';{const zn=$('zname');zn.style.display=dg?'block':'none';if(dg){const hv=areaName().split(' ')[0]+'|'+G.zoneLv;if(zn.dataset.v!==hv){zn.dataset.v=hv;zn.innerHTML=areaName().split(' ')[0]+'<small>Zona '+G.zoneLv+'</small>';}}if(G.t-(G._qp||0)>1){G._qp=G.t;qPlace();}}
   if(dg&&(G.phase==='farm'||G.phase==='boss')){const ready=G.dtm>=BOSS_T0&&G.kills>=BOSS_KILLS&&SAVE.lv>=bossLv();{const nm=areaName().split(' ')[0],sb=G.phase==='boss'?'Zona '+G.zoneLv+' · '+G.kills+' abates':ready?'A área está inquieta…':'Zona '+G.zoneLv+' · '+G.kills+' abates',hv=nm+'|'+sb;if($('progt').dataset.v!==hv){$('progt').dataset.v=hv;$('progt').innerHTML='<b>'+(G.phase==='boss'?'Chefe':nm)+'</b><small>'+sb+'</small>';}}$('prog').querySelector('.bar b').style.width=Math.min(100,Math.min(G.dtm/BOSS_T0,G.kills/BOSS_KILLS,SAVE.lv/bossLv())*100)+'%';}
-  const bs=G.boss,bsv=!!(dg&&G.phase==='boss'&&bs&&!bs.dead&&!(bs.ent&&bs.ent.k!=='phase'&&bs.ent.k!=='roar'));$('boss').style.display=bsv?'block':'none';document.body.classList.toggle('bossfight',dg&&G.phase==='boss'&&!!bs&&!bs.dead);
+  const bs=G.boss,bsv=!!(dg&&G.phase==='boss'&&bs&&!bs.dead&&!(bs.ent&&bs.ent.k!=='phase'&&bs.ent.k!=='roar'));$('boss').style.display=bsv?'block':'none';document.body.classList.toggle('bossfight',dg&&G.phase==='boss'&&!!bs&&!bs.dead);{const had=document.body.classList.contains('bossbar');document.body.classList.toggle('bossbar',bsv);if(had!==bsv){setTimeout(qPlace,60);setTimeout(qPlace,520);}}
   const E=SAVE.elix||{},bf=[['forca','ni_eforca','Poder'],['defesa','ni_edefesa','Defesa']].filter(x=>E[x[0]]>0).map(x=>`<div><img src="../assets/ui-icons/${x[1]}.png">${Math.floor(E[x[0]]/60)}:${String(Math.floor(E[x[0]]%60)).padStart(2,'0')}</div>`).join('');if($('buffs').dataset.v!==bf){$('buffs').dataset.v=bf;$('buffs').innerHTML=bf;}
   if(bs){$('boss').querySelector('.bar b').style.width=clamp(bs.hp/bs.maxhp*100,0,100)+'%';$('bosst').textContent=bs.name;}
   [0,1,2].forEach(k=>{const i=SAVE.eqs[k],e=$('sk'+k);if(!e||i<0)return;const cd=h.sk[i],tot=skCd(i);e.querySelector('.cd').style.setProperty('--p',(cd>0?cd/tot*360:0)+'deg');e.querySelector('.ct').textContent=cd>0?(cd>=1?Math.ceil(cd):cd.toFixed(1)):'';const rd=cd<=0&&SAVE.sk[i]>0&&SAVE.lv>=SLOT_UNL[k];if(rd&&e._cd&&window.gsap){gsap.fromTo(e,{boxShadow:'0 0 22px 6px rgba(255,236,160,.95)'},{boxShadow:'0 0 10px rgba(243,217,142,.55)',duration:.5,clearProps:'boxShadow'});}e._cd=!rd;e.classList.toggle('ready',rd);});
