@@ -611,19 +611,21 @@ body.bossfight #qtr{display:none!important}
 #alertv{position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,transparent 38%,rgba(140,0,10,.35) 70%,rgba(170,0,12,.7) 100%);transition:opacity .5s}
 #alertv.on{opacity:1;animation:alv .8s ease-in-out infinite alternate}
 @keyframes alv{from{filter:brightness(.55)}to{filter:brightness(1.25)}}
-/* HUD compacto: painel do herói menor, status do herói logo abaixo dele, chefe centralizado no topo, nome da área sobre o minimapa e barrinha embaixo */
-#hero{transform:scale(.8);transform-origin:0 0}
-#sts{left:6px!important;top:calc(60px + env(safe-area-inset-top))!important;width:92px!important;gap:3px!important}
-#buffs{top:calc(62px + var(--sth,0px) + env(safe-area-inset-top))!important}
-#zname{position:absolute;right:6px;top:calc(6px + env(safe-area-inset-top));width:auto;text-align:right;font:700 11px var(--fd);letter-spacing:.1em;text-transform:uppercase;color:#f3d98e;text-shadow:0 1px 0 #000,0 0 6px #000;white-space:nowrap;display:none}
-#zname small{display:block;letter-spacing:.2em;font:600 8px var(--f);letter-spacing:.2em;color:#bdb59e;margin-top:1px}
-#hud #mm{top:calc(30px + env(safe-area-inset-top))!important}
-#prog{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;width:72px!important;right:6px}
+/* HUD compacto e alinhado: margem de 8 px; herói à esquerda, minimapa à direita (nome da área centralizado em cima, progresso embaixo, mesma largura); chefe centralizado na tela abaixo dessa faixa */
+#hero{left:8px!important;top:calc(8px + env(safe-area-inset-top))!important;transform:scale(.8);transform-origin:0 0}
+#sts{left:8px!important;top:calc(62px + env(safe-area-inset-top))!important;width:84px!important;gap:3px!important}
+#buffs{top:calc(64px + var(--sth,0px) + env(safe-area-inset-top))!important;left:8px!important}
+#hud #mm{right:8px!important;top:calc(26px + env(safe-area-inset-top))!important}
+#zname{position:absolute;right:8px;transform:translateX(-50%);top:calc(8px + env(safe-area-inset-top));text-align:center;font:700 9.5px/1 var(--fd);letter-spacing:.08em;text-transform:uppercase;color:#f3d98e;text-shadow:0 1px 0 #000,0 0 6px #000;white-space:nowrap;display:none;padding-left:.08em}
+#zname small{display:none}
+#prog{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;right:8px!important}
 #prog::before,#prog::after{display:none!important}
 #prog #progt{display:none}
-#prog .bar{height:4px!important;margin:0!important}
-#boss{width:44%!important;top:calc(64px + env(safe-area-inset-top))!important}
-#boss .t{font-size:13px;letter-spacing:.26em}
+#prog .bar{height:5px!important;margin:0!important;border:1px solid #000!important;box-shadow:0 0 0 1px rgba(184,146,60,.7)}
+#boss{position:absolute!important;left:50%!important;transform:translateX(-50%);width:46%!important;top:calc(64px + env(safe-area-inset-top))!important}
+#boss .t{font-size:14px;letter-spacing:.28em;padding-left:.28em}
+#boss .bar{height:10px}
+#bsts{margin-top:5px}
 </style>
 </head>
 <body>
@@ -3425,7 +3427,7 @@ function socUI(){const s=$('soc');if(!s||s.dataset.b)return;s.dataset.b=1;petLoa
   const q=document.createElement('div');q.id='qtr';s.parentNode.appendChild(q);
   q.onclick=ev=>{if(ev.target.closest('.qth')){SAVE.qcol=(SAVE.qcol===false);sfx('ui_click',.5);writeSave();socRefresh();return;}if(G.winOpen)return;sfx('ui_click');G.qtab='m';openWin('diario');};
   setInterval(qPlace,400);}
-function qPlace(){const q=$('qtr'),m=$('mm'),h=$('hud');if(!q||!m||!h)return;if(MM.big){q.style.display='none';return;}q.style.display='';const r=m.getBoundingClientRect(),hr=h.getBoundingClientRect();if(r.height>0){q.style.top=Math.round(r.bottom-hr.top+14)+'px';const pg=$('prog');if(pg){pg.style.top=Math.round(r.bottom-hr.top+4)+'px';pg.style.width=Math.round(r.width)+'px';}};}
+function qPlace(){const q=$('qtr'),m=$('mm'),h=$('hud');if(!q||!m||!h)return;if(MM.big){q.style.display='none';return;}q.style.display='';const r=m.getBoundingClientRect(),hr=h.getBoundingClientRect();if(r.height>0){q.style.top=Math.round(r.bottom-hr.top+14)+'px';const pg=$('prog');if(pg){pg.style.top=Math.round(r.bottom-hr.top+4)+'px';pg.style.width=Math.round(r.width)+'px';const zn=$('zname');if(zn){zn.style.right='auto';zn.style.left=Math.round(r.left+r.width/2-hr.left)+'px';}}};}
 function socRefresh(){if(!SAVE.q)return;socUI();
   const c=qMain(),t=$('qtr');if(t){const L=SAVE.q.d.l,rows=[];if(c){const v=qVal(c);rows.push([c.nm,v,c.n,c.ds.replace(/\.$/,''),v>=c.n,0]);}else rows.push(['Trilha concluída',1,1,'',1,0]);
     for(const d of L){const v=qVal(d);rows.push([d.nm,v,d.n,d.ds.replace(/\.$/,''),v>=d.n,d.c]);}
