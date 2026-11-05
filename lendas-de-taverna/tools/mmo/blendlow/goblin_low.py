@@ -13,7 +13,7 @@ def mat(name,c,rough=.55,spec=.25,metal=0):
     for k in('Specular IOR Level','Specular'):
         if k in b.inputs:b.inputs[k].default_value=spec
     return m
-M=dict(green=mat('green',(128,176,40)),green2=mat('green2',(98,146,30)),ear=mat('ear',(150,98,58)),leather=mat('leather',(128,82,48)),cloth=mat('cloth',(118,74,44)),
+M=dict(green=mat('green',(120,168,44)),green2=mat('green2',(86,128,32)),ear=mat('ear',(150,98,58)),leather=mat('leather',(128,82,48)),cloth=mat('cloth',(118,74,44)),
   club=mat('club',(160,92,54)),metal=mat('metal',(78,80,92),.35,.5,.6),tan=mat('tan',(218,188,132)),nail=mat('nail',(206,190,140)),tusk=mat('tusk',(242,228,194)),
   eye=mat('eye',(252,192,18),.3,.4),pup=mat('pup',(14,14,16),.4),rim=mat('rim',(60,92,20)))
 def finish(o,m,flat=True):
@@ -61,79 +61,99 @@ def tri_pyr(c,s,m,rot=(0,0,0),seg=4):
     bmesh.ops.transform(bm,matrix=Matrix.Translation(c)@R,verts=bm.verts)
     return finish(obj_from_bm(bm,'pyr'),m)
 
-G=M['green']
-# ---- pés e pernas (frente = -Y)
+
+def spike(base,d,L,r,m,seg=5):
+    b=Vector(base);d=Vector(d).normalized();return limb(b,b+d*L,r,0.0,m,seg=seg,cap=True)
+def parent_to(empty,objs):
+    for o in objs:
+        o.parent=empty;o.matrix_parent_inverse=empty.matrix_world.inverted()
+def mark(n0):return len(bpy.data.objects)
+G=M['green'];D=M['green2']
+def newobjs(since):return list(bpy.data.objects)[since:]
+# ---------- PERNAS E PÉS (frente = -Y)
 for sx in(1,-1):
-    foot=blob((sx*.32,-.18,.17),(.30,.46,.17),G,sub=2,noise=.05,rot=(0,0,sx*.12))
-    for k,off in enumerate((-.16,0,.16)):
-        n=blob((sx*.32+off*.95+sx*.01,-.58,.12),(.07,.11,.045),M['nail'],sub=1,noise=.03,rot=(0,0,0))
-    limb((sx*.30,-.05,.30),(sx*.28,0,.80),.20,.17,G,seg=7)
-    ring((sx*.29,-.04,.40),.22,.12,M['tan'],seg=8)
-# ---- tronco
-blob((0,.02,1.12),(.50,.40,.58),G,sub=2,noise=.05,seed=11)
-blob((0,-.05,1.0),(.40,.30,.45),M['green2'],sub=1,noise=.03,seed=3).scale=(1.0,.9,1.0)  # barriga levemente mais escura (invisível por dentro; só dá volume)
-# saiote de couro em dentes
-bm=bmesh.new();N=14;rt=.42;zt=.82
-top=[bm.verts.new((math.cos(a)*rt*1.05,math.sin(a)*rt*.82+.0,zt)) for a in [i*2*math.pi/N for i in range(N)]]
+    blob((sx*.27,0,.62),(.25,.24,.22),G,sub=2,noise=.05,seed=40+sx)                  # quadril
+    limb((sx*.27,0,.62),(sx*.31,-.10,.40),.21,.17,G,seg=7)
+    blob((sx*.31,-.10,.40),(.18,.17,.16),G,sub=1,noise=.04,seed=50+sx)             # joelho
+    limb((sx*.31,-.10,.40),(sx*.32,-.16,.20),.17,.15,G,seg=7)
+    ring((sx*.32,-.15,.26),.19,.11,M['tan'],seg=8,rot=(math.radians(-10),0,0))
+    blob((sx*.34,-.30,.14),(.30,.48,.15),G,sub=2,noise=.05,rot=(0,0,sx*.10),seed=60+sx)
+    for off in(-.17,0,.17):
+        blob((sx*.34+off*.95,-.30-.52+abs(off)*.12,.12),(.085,.12,.07),G,sub=1,noise=.03)   # dedos
+        blob((sx*.34+off*.95,-.30-.64+abs(off)*.12,.115),(.065,.06,.05),M['nail'],sub=1,noise=.03,rot=(0,0,0))
+# ---------- TRONCO
+blob((0,.02,1.30),(.54,.42,.46),G,sub=2,noise=.05,seed=11)
+blob((0,-.03,1.02),(.46,.40,.36),G,sub=2,noise=.05,seed=12)
+blob((0,.04,.78),(.42,.36,.20),G,sub=1,noise=.04,seed=13)
+# saiote em dentes
+bm=bmesh.new();N=15;zt=.86
+top=[bm.verts.new((math.cos(a)*.47,math.sin(a)*.42,zt)) for a in [i*2*math.pi/N for i in range(N)]]
 bot=[]
 for i in range(N):
-    a=i*2*math.pi/N;ab=a+math.pi/N
-    bot.append(bm.verts.new((math.cos(a)*rt*1.2,math.sin(a)*rt*.95,zt-.10)))
-    bot.append(bm.verts.new((math.cos(ab)*rt*1.28,math.sin(ab)*rt*1.0,zt-.34-random.uniform(0,.08))))
+    a=i*2*math.pi/N;ab=a+math.pi/N;f=(1.0 if math.sin(a)<0.2 else .6)
+    bot.append(bm.verts.new((math.cos(a)*.56,math.sin(a)*.51,zt-.12)))
+    bot.append(bm.verts.new((math.cos(ab)*.60,math.sin(ab)*.54,zt-.40*f-random.uniform(0,.07))))
 for i in range(N):
-    t0,t1=top[i],top[(i+1)%N];b0,bt,b1=bot[2*i],bot[2*i+1],bot[(2*i+2)%(2*N)]
-    bm.faces.new((t0,t1,b1,bt,b0))
+    bm.faces.new((top[i],top[(i+1)%N],bot[(2*i+2)%(2*N)],bot[2*i+1],bot[2*i]))
 bmesh.ops.recalc_face_normals(bm,faces=bm.faces)
-sk=obj_from_bm(bm,'skirt');sol=sk.modifiers.new('s','SOLIDIFY');sol.thickness=.03;finish(sk,M['cloth'])
-# correia diagonal + fivela
-limb((.36,-.30,1.66),(-.34,-.37,.84),.085,.085,M['leather'],seg=4)
-blob((.02,-.455,1.24),(.17,.035,.17),M['metal'],sub=0,noise=0,rot=(0,math.radians(45),0))
-blob((.02,-.47,1.24),(.085,.035,.085),M['leather'],sub=0,noise=0,rot=(0,math.radians(45),0))
-limb((-.44,-.30,.90),(.46,-.30,.90),.06,.06,M['leather'],seg=4)  # cinto
-# ---- braços: esquerdo do goblin (x+) pendurado; direito (x-) segura a clava
-limb((.52,0,1.48),(.78,-.10,.98),.17,.15,G,seg=7);ring((.77,-.10,1.02),.17,.10,M['tan'],seg=8,rot=(math.radians(-14),0,0))
-blob((.80,-.14,.82),(.19,.17,.17),G,sub=2,noise=.05)
-for k,(dx,dz) in enumerate(((.12,.0),(.02,-.04),(-.08,-.02),(.00,-.12))):pass
-for dx in(-.10,0,.10):
-    blob((.80+dx*.9,-.20,.64),(.06,.08,.12),G,sub=1,noise=.04,rot=(.15,0,0))
-limb((-.52,0,1.46),(-.66,-.28,1.08),.17,.15,G,seg=7)
-ring((-.66,-.30,1.10),.17,.10,M['tan'],seg=8,rot=(math.radians(-25),math.radians(-10),0))
-blob((-.68,-.40,.96),(.20,.17,.17),G,sub=2,noise=.05)
-# clava
-limb((-.69,-.40,.62),(-.74,-.36,1.50),.095,.17,M['club'],seg=8)
-blob((-.745,-.36,1.60),(.21,.20,.22),M['club'],sub=2,noise=.04,seed=5)
-for (x,y,z,rx,ry) in((-.95,-.36,1.28,0,-1.4),(-.55,-.50,1.40,1.3,0),(-.90,-.18,1.55,-.9,-1.1),(-.62,-.22,1.15,-1.2,1.0)):
-    tri_pyr((x,y,z),(.09,.30),M['metal'],rot=(rx,ry,0),seg=4)
-# ---- cabeça
-head=blob((0,-.04,1.88),(.70,.62,.58),G,sub=2,noise=.04,seed=21)
-blob((0,-.30,1.70),(.46,.36,.30),G,sub=1,noise=.04,seed=2)         # focinho/mandíbula
-# sobrancelhas
+sk=obj_from_bm(bm,'skirt');sl=sk.modifiers.new('s','SOLIDIFY');sl.thickness=.035;finish(sk,M['cloth'])
+limb((-.52,-.36,.90),(.52,-.36,.90),.07,.07,M['leather'],seg=4)
+limb((.40,-.30,1.70),(-.38,-.44,.94),.09,.09,M['leather'],seg=4)
+blob((.03,-.545,1.30),(.19,.04,.19),M['metal'],sub=0,noise=0,rot=(0,math.radians(45),0))
+blob((.03,-.565,1.30),(.095,.04,.095),M['leather'],sub=0,noise=0,rot=(0,math.radians(45),0))
+# ---------- BRAÇO ESQUERDO (x+): pendurado
+blob((.62,0,1.50),(.27,.26,.26),G,sub=2,noise=.05,seed=71)
+limb((.62,0,1.50),(.80,-.08,1.16),.21,.16,G,seg=7)
+blob((.80,-.08,1.16),(.16,.15,.15),G,sub=1,noise=.04,seed=72)
+limb((.80,-.08,1.16),(.84,-.28,.90),.16,.14,G,seg=7)
+ring((.84,-.27,.93),.17,.10,M['tan'],seg=8,rot=(math.radians(-24),0,0))
+blob((.86,-.36,.76),(.19,.17,.17),G,sub=2,noise=.05,seed=73)
+for i,dx in enumerate((-.09,.03,.14)):
+    limb((.86+dx,-.40,.74),(.86+dx*1.2,-.47,.60-abs(dx)*.2),.075,.055,G,seg=5)
+limb((.74,-.36,.76),(.70,-.46,.60),.06,.04,G,seg=5)     # polegar
+# ---------- BRAÇO DIREITO (x-): segura a clava
+blob((-.62,0,1.50),(.27,.26,.26),G,sub=2,noise=.05,seed=81)
+limb((-.62,0,1.50),(-.84,-.18,1.24),.21,.16,G,seg=7)
+blob((-.84,-.18,1.24),(.16,.15,.15),G,sub=1,noise=.04,seed=82)
+limb((-.84,-.18,1.24),(-.76,-.46,1.06),.16,.14,G,seg=7)
+ring((-.77,-.44,1.08),.17,.10,M['tan'],seg=8,rot=(math.radians(-60),0,0))
+blob((-.74,-.55,1.00),(.21,.18,.17),G,sub=2,noise=.05,seed=83)
+limb((-.72,-.50,.70),(-.77,-.50,1.58),.10,.19,M['club'],seg=8)                 # clava
+blob((-.78,-.50,1.74),(.25,.24,.28),M['club'],sub=2,noise=.05,seed=5)
+for d in((-1,0,.2),(.9,.1,.25),(-.2,-.9,.3),(-.3,.9,.2),(0,0,1),(-.9,-.5,-.3),(.8,-.6,-.1)):
+    dv=Vector(d).normalized();c=Vector((-.78,-.50,1.74))+Vector((dv.x*.2,dv.y*.2,dv.z*.24))
+    spike(c,dv,.26,.075,M['metal'],seg=4)
+for k,dz in enumerate((-.10,0,.10,.20)):
+    blob((-.73,-.69,.96+dz*.6),(.10,.075,.065),G,sub=1,noise=.04)       # dedos em volta do cabo
+# ---------- CABEÇA
+h0=len(bpy.data.objects)
+blob((0,-.06,2.00),(.70,.62,.56),G,sub=2,noise=.04,seed=21)
+blob((0,-.28,1.72),(.50,.38,.32),G,sub=2,noise=.04,seed=22)
 for sx in(1,-1):
-    brow=blob((sx*.27,-.50,2.06),(.30,.14,.09),G,sub=1,noise=.02,rot=(0.0,sx*(-.32),sx*(.28)))
-    # olho: aro escuro, globo amarelo, pupila
-    blob((sx*.27,-.55,1.93),(.22,.06,.22),M['rim'],sub=1,noise=0)
-    blob((sx*.27,-.59,1.93),(.17,.05,.19),M['eye'],sub=1,noise=0)
-    blob((sx*.25,-.635,1.93),(.085,.035,.10),M['pup'],sub=1,noise=0)
-# nariz
-tri_pyr((0,-.58,1.78),(.13,.34),G,rot=(math.pi/2+.35,0,0),seg=4)
-# bocas e presas
-blob((0,-.58,1.58),(.30,.10,.07),M['green2'],sub=1,noise=.03)
-for sx in(1,-1):tri_pyr((sx*.20,-.60,1.62),(.055,.20),M['tusk'],rot=(0,0,0),seg=5)
+    blob((sx*.43,-.36,1.84),(.25,.21,.22),G,sub=1,noise=.04,seed=23+sx)    # bochechas
+    blob((sx*.29,-.55,2.17),(.32,.15,.095),D,sub=1,noise=.03,rot=(0,sx*(-.38),sx*(.26)))      # sobrancelha pesada
+    blob((sx*.28,-.54,1.99),(.25,.07,.24),M['rim'],sub=2,noise=0)                         # aro do olho
+    blob((sx*.28,-.585,1.99),(.20,.06,.21),M['eye'],sub=2,noise=0)
+    blob((sx*.255,-.635,1.98),(.095,.04,.105),M['pup'],sub=2,noise=0)
+    spike((sx*.31,-.60,1.54),(sx*.08,-.30,1.0),.21,.06,M['tusk'],seg=5)               # presas
+blob((0,-.60,1.57),(.34,.12,.08),D,sub=1,noise=.03)                                       # boca
+blob((0,-.66,1.60),(.26,.10,.10),G,sub=1,noise=.03)                                       # queixo
+spike((0,-.50,1.92),(0,-1,-.25),.40,.17,G,seg=4)                                          # nariz de pirâmide
+blob((0,-.55,2.03),(.12,.10,.10),G,sub=1,noise=.03)
 # orelhas
 for sx in(1,-1):
-    ptsO=[(.50,1.80),(.80,1.76),(1.28,2.20),(1.50,2.72),(1.12,2.60),(.66,2.32),(.46,2.04)]
-    o=prism(ptsO,.08,G,y0=0.02);finish(o,G)
-    ptsI=[(.60,1.90),(.80,1.86),(1.14,2.22),(1.28,2.58),(.98,2.46),(.70,2.24),(.58,2.04)]
-    oi=prism(ptsI,.035,M['ear'],y0=-.012);finish(oi,M['ear'])
+    ptsO=[(0,-.22),(0,.26),(.48,.62),(1.00,1.12),(1.32,1.58),(.98,1.46),(.46,.94),(.10,.40)]
+    ptsO=[(0,-.24),(0,.28),(.45,.52),(.95,.78),(1.42,1.12),(1.02,.66),(.62,.14),(.28,-.16)]
+    ptsI=[(.10,-.12),(.10,.18),(.46,.42),(.90,.68),(1.20,.96),(.92,.58),(.58,.14),(.32,-.04)]
+    o=prism(ptsO,.16,G,y0=0);finish(o,G);oi=prism(ptsI,.05,M['ear'],y0=-.03);finish(oi,M['ear'])
     for ob in(o,oi):
-        ob.rotation_euler=(0,0,0)
-        # gira em torno do ponto da base para abrir e recuar
-        ob.location=(0,0,0)
-        ob.data.transform(Matrix.Translation((-.5,0,-1.9)))
-        ob.data.transform(Matrix.Rotation(math.radians(-14),4,'Y'))
-        ob.data.transform(Matrix.Rotation(math.radians(24),4,'Z'))
-        ob.data.transform(Matrix.Translation((.5,0,1.9)))
+        ob.data.transform(Matrix.Rotation(math.radians(-8),4,'Y'))
+        ob.data.transform(Matrix.Rotation(math.radians(6),4,'Z'))
+        ob.data.transform(Matrix.Translation((.60,.04,1.86)))
         if sx<0:ob.scale.x=-1
+hp=newobjs(h0)
+em=bpy.data.objects.new('headpivot',None);sc.collection.objects.link(em);em.location=(0,0,1.7)
+bpy.context.view_layer.update();parent_to(em,hp);em.rotation_euler=(math.radians(-3),0,math.radians(4))
 bpy.context.view_layer.update()
 # ---- cena
 bpy.ops.object.select_all(action='DESELECT')
@@ -144,7 +164,7 @@ sc.render.engine='CYCLES';sc.cycles.device='CPU';sc.cycles.samples=SM;sc.cycles.
 sc.render.resolution_x=W;sc.render.resolution_y=H;sc.render.image_settings.file_format='PNG'
 sc.view_settings.view_transform='Standard'
 cam=bpy.data.cameras.new('c');cam.lens=70;co=bpy.data.objects.new('c',cam);sc.collection.objects.link(co);sc.camera=co
-tgt=Vector((0.1,-.05,1.38));pos=Vector((4.4,-6.3,2.7));co.location=pos;co.rotation_euler=(tgt-pos).to_track_quat('-Z','Y').to_euler()
+tgt=Vector((0.25,-.05,1.5));pos=Vector((5.0,-7.4,3.0));co.location=pos;co.rotation_euler=(tgt-pos).to_track_quat('-Z','Y').to_euler()
 def area(loc,e,size,col):
     l=bpy.data.lights.new('a','AREA');l.energy=e;l.size=size;l.color=col;o=bpy.data.objects.new('a',l);sc.collection.objects.link(o);o.location=loc;o.rotation_euler=(tgt-Vector(loc)).to_track_quat('-Z','Y').to_euler()
 area((-3.5,-4.5,5.5),520,3.2,(1,.95,.88));area((4.5,3.5,3.5),380,4,(.65,.75,1));area((4.5,-4,1.2),60,4,(1,.9,.8))
