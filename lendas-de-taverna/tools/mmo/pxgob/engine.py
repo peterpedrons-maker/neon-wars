@@ -14,6 +14,16 @@ PAL={
  'R':[(223,65,74),(143,52,63),(63,39,49)],
 }
 LIGHT=(-.55,-.83)
+SOFT=False
+PAL4={
+ 'O':[(176,178,92),(140,148,68),(100,112,52),(52,64,34)],      # goblin oliva
+ 'P':[(186,134,70),(152,96,48),(112,64,36),(70,36,22)],        # couro/ocre
+ 'A':[(96,98,140),(68,70,108),(44,44,76),(22,20,44)],          # armadura azul-arroxeada
+ 'H':[(232,200,110),(204,160,68),(160,112,44),(96,60,30)],     # mãos/ouro
+ 'M':[(190,196,206),(140,150,168),(92,100,120),(44,50,66)],    # metal
+ 'W':[(250,246,220),(220,212,170),(170,160,120),(96,88,64)],   # osso/dente
+ 'D':[(120,70,44),(88,48,32),(56,30,24),(30,16,16)],           # madeira escura
+}
 class Img:
     def __init__(s,w,h):
         s.w,s.h=w,h;s.px=[[None]*w for _ in range(h)];s.pid=[[0]*w for _ in range(h)];s.n=0
@@ -30,14 +40,23 @@ class Img:
                 for dx,dy in((1,0),(-1,0),(0,1),(0,-1)):
                     q=(x+dx,y+dy)
                     if q not in mask and 0<=q[0]<s.w and 0<=q[1]<s.h:ring.add(q)
-            for (x,y) in ring:s.px[y][x]=OUT;s.pid[y][x]=-pid
-        tones=PAL[mat]
+            tones=PAL4[mat] if mat in PAL4 else PAL[mat]
+            oc=tones[3] if mat in PAL4 else OUT
+            for (x,y) in ring:s.px[y][x]=oc;s.pid[y][x]=-pid
+        tones=PAL4[mat] if mat in PAL4 else PAL[mat]
         for (x,y),nrm in mask.items():
             t=0
-            if not flat:
-                d=nrm[0]*-LIGHT[0]+nrm[1]*-LIGHT[1]
-                if d>shade:t=1
-                if deep is not None and d>deep:t=2
+            if mat in PAL4:
+                t=1
+                if not flat:
+                    d=nrm[0]*-LIGHT[0]+nrm[1]*-LIGHT[1]
+                    if d>shade:t=2
+                    elif d<-.5:t=0
+            else:
+                if not flat:
+                    d=nrm[0]*-LIGHT[0]+nrm[1]*-LIGHT[1]
+                    if d>shade:t=1
+                    if deep is not None and d>deep:t=2
             s.px[y][x]=tones[t];s.pid[y][x]=pid
         return pid
     def dot(s,x,y,col):
