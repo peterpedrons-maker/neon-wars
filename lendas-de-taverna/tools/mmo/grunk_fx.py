@@ -109,3 +109,52 @@ if __name__=='__main__':
     for name,dur in(('idle',[220]*6),('attack',[130,110,100,90,120,130,120,120]),('walk',[110]*6)):
         fr=aura([enraged(x) for x in an[name]],(210,30,30));save([place(x) for x in fr],dur,f'{outd}/grunk_enfurecido_{name}.gif')
     print('ok')
+
+# ---------- elmo da forma enfurecida colado nos quadros recoloridos ----------
+def eye_point(im,top=None):
+    a=rgba(im).astype(int);r,g,b,al=[a[:,:,i] for i in range(4)]
+    red=(al>0)&(r>140)&(g<95)&(b<95)&(r-g>70)
+    bb=im.getchannel('A').getbbox()
+    if bb is None:return None
+    y1=bb[1]+int((bb[3]-bb[1])*.5);red[y1:,:]=False
+    lab,n=ndimage.label(ndimage.binary_dilation(red,iterations=1));best=None
+    for i in range(1,n+1):
+        ys,xs=np.where((lab==i)&red)
+        if len(ys)<3:continue
+        c=(xs.mean(),ys.mean())
+        if best is None or c[1]<best[1]:best=c
+    return best
+def helmet_sprite(src):
+    a=rgba(src).astype(int);r,g,b,al=[a[:,:,i] for i in range(4)];bb=src.getchannel('A').getbbox()
+    head=np.zeros(al.shape,bool);head[bb[1]:bb[1]+int((bb[3]-bb[1])*.42),:]=True
+    gray=(al>0)&head&(abs(r-g)<12)&(abs(g-b)<18)&(np.maximum(np.maximum(r,g),b)<130)&(np.maximum(np.maximum(r,g),b)>26)
+    gray=ndimage.binary_opening(gray,iterations=1)
+    lab,n=ndimage.label(gray);sz=ndimage.sum(gray,lab,range(1,n+1));keep=1+int(np.argmax(sz));gm=lab==keep    # maior bloco cinza = capacete
+    near=ndimage.binary_dilation(gm,iterations=3)
+    dark=(al>0)&head&(np.maximum(np.maximum(r,g),b)<70)&ndimage.binary_dilation(gm,iterations=2)
+    cream=(al>0)&head&(r>170)&(g>150)&(b>110)&near
+    m=gm|dark|cream
+    m=ndimage.binary_closing(m,iterations=1)&(al>0)
+    out=np.array(src).copy();out[~m,3]=0
+    sp=Image.fromarray(out,'RGBA');ep=eye_point(src)
+    return sp,ep
+def with_helmet(orig_frames,recolored,src):
+    hs,he=helmet_sprite(src);out=[]
+    eps=[eye_point(o) for o in orig_frames]
+    for i,e in enumerate(eps):   # quadros sem olho visível: interpola entre os vizinhos
+        if e is None:
+            p=next((eps[j] for j in range(i-1,-1,-1) if eps[j] is not None),None);q=next((eps[j] for j in range(i+1,len(eps)) if eps[j] is not None),None)
+            eps[i]=((p[0]+q[0])/2,(p[1]+q[1])/2) if p and q else (p or q)
+    for o,rc,ep in zip(orig_frames,recolored,eps):
+        canvas=rc.copy()
+        if ep is not None and he is not None:
+            dx=int(round(ep[0]-he[0]));dy=int(round(ep[1]-he[1]))
+            lay=Image.new('RGBA',canvas.size,(0,0,0,0));lay.paste(hs,(dx,dy),hs);canvas.alpha_composite(lay)
+        out.append(canvas)
+    return out
+def run_helmet(an,outd):
+    src=an['enrage'][3]   # quadro com o elmo e a pele ainda verde: elmo mais legível
+    hs,he=helmet_sprite(src);hs.save(f'{outd}/elmo.png');print('olho elmo',he)
+    for name,dur in(('idle',[220]*6),('walk',[110]*6),('attack',[130,110,100,90,120,130,120,120]),('charge',[160,90,70,70,100,130]),('slam',[130,110,110,90,110,160,140,120])):
+        orig=an[name];rc=[enraged(x) for x in orig];fr=aura(with_helmet(orig,rc,src),(210,30,30))
+        save([place(x) for x in fr],dur,f'{outd}/grunk_enfurecido_elmo_{name}.gif')
