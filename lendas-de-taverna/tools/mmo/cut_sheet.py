@@ -7,10 +7,19 @@ src,out=sys.argv[1],sys.argv[2];os.makedirs(out,exist_ok=True)
 im=Image.open(src).convert('RGB');W,H=im.size
 xs=[round(W*i/6) for i in range(7)];ys=[round(H*i/5) for i in range(6)]
 def key(c):
-    a=np.array(c).astype(int);m=np.minimum(a[:,:,0],a[:,:,2])-a[:,:,1]
-    alpha=np.where(m>75,0,255).astype('uint8')
-    # grade escura roxa nas bordas
-    rgba=np.dstack([a.astype('uint8'),alpha]);return Image.fromarray(rgba,'RGBA')
+    """remove o magenta e o halo roxo/rosa das bordas (sangramento de cor do fundo, comum em JPG)"""
+    from scipy import ndimage
+    a=np.array(c).astype(float);m=np.minimum(a[:,:,0],a[:,:,2])-a[:,:,1]
+    bg=m>75
+    band=ndimage.binary_dilation(bg,iterations=3)&~bg          # faixa de 3 px ao redor do fundo
+    fringe=band&(m>26)&(a[:,:,0]>95)                              # pixels da borda ainda puxados para o magenta
+    bg2=bg|fringe
+    # mais um passo: borda restante com excesso de magenta é corrigida (de-spill)
+    band2=ndimage.binary_dilation(bg2,iterations=2)&~bg2
+    ex=np.clip(np.minimum(a[:,:,0],a[:,:,2])-a[:,:,1],0,None)
+    for ch in (0,2):a[:,:,ch]=np.where(band2,np.clip(a[:,:,ch]-ex*.85,0,255),a[:,:,ch])
+    alpha=np.where(bg2,0,255).astype('uint8')
+    return Image.fromarray(np.dstack([a.astype('uint8'),alpha]),'RGBA')
 def clean(img):
     a=np.array(img);al=a[:,:,3]>0
     # remove ilhas pequenas (restos de grade/ruído): mantém o maior componente e os próximos
