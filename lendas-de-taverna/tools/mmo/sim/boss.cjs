@@ -19,7 +19,7 @@ const CLS=process.argv[2]||'guerreiro',ZN=+(process.argv[3]||1),KIND=process.arg
   for(let n=0;n<N;n++){
    G.on=true;G.auto=true;G.mobs=[];G.hero.hp=G.hero.maxhp;S.potions=5;if(G.hero.state==='ko')G.hero.state='idle';
    M.spawnBoss();const bs=G.boss;bs.maxhp=Math.round(bs.maxhp*HPM);bs.hp=bs.maxhp;bs.pow*=ATM;let t=0,deaths=0,ko=false,min=1;
-   while(t<240&&!bs.dead&&bs.hp>0){M.update(dt);t+=dt;const h=G.hero;if(h.state==='ko'&&!ko){deaths++;ko=true;}if(h.state!=='ko')ko=false;min=Math.min(min,h.hp/h.maxhp);if(window.DBG&&Math.round(t*30)%150===0)rows.push({rng:h.rng,tg:h.tg&&h.tg.name,pow:Math.round(h.pow),cd:+h.cd.toFixed(2),act:!!h.act,sts:h.sts&&Object.keys(h.sts).join(),t:Math.round(t),hp:Math.round(h.hp),mh:h.maxhp,st:h.state,bhp:Math.round(bs.hp),bd:Math.round(Math.hypot(bs.x-h.x,bs.y-h.y)),ph:G.phase});if(G.phase==='end')break;}
+   while(t<420&&!bs.dead&&bs.hp>0){M.update(dt);t+=dt;const h=G.hero;if(h.state==='ko'&&!ko){deaths++;ko=true;}if(h.state!=='ko')ko=false;min=Math.min(min,h.hp/h.maxhp);if(window.DBG&&Math.round(t*30)%150===0)rows.push({rng:h.rng,tg:h.tg&&h.tg.name,pow:Math.round(h.pow),cd:+h.cd.toFixed(2),act:!!h.act,sts:h.sts&&Object.keys(h.sts).join(),t:Math.round(t),hp:Math.round(h.hp),mh:h.maxhp,st:h.state,bhp:Math.round(bs.hp),bd:Math.round(Math.hypot(bs.x-h.x,bs.y-h.y)),ph:G.phase});if(G.phase==='end')break;}
    rows.push({boss:bs.name,blv:bs.lv,herolv:S.lv,t:Math.round(t),killed:bs.hp<=0,bossHp:Math.round(bs.hp/bs.maxhp*100)+'%',deaths,minHp:Math.round(min*100)+'%'});
    G.phase='farm';G.boss=null;
   }return rows;},[N,+(process.env.HPM||1),+(process.env.ATM||1)]);

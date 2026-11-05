@@ -75,3 +75,10 @@ em 2–5 a campanha toda, então a chance de acertar é quase fixa (~45–70%).
 4. **Itens por ato.** Raridade/qualidade dependendo do mapa (nível do item), ou teto
    de raridade por ato, em vez de 50/28/14/6/2 fixo.
 5. **Limite de rodadas (24)** e o que acontece ao estourar.
+
+## Chefes: entrada, fases e ideias futuras
+- Entrada: `ent:'drop'` (cai do céu) ou `ent:'run'` (chega correndo); só depois do rugido aparecem o nome (estilo Dark Souls, só o nome) e a barra de vida. O chefe é invulnerável durante a entrada e as trocas de fase.
+- Fases: limiares `BOSS_PH=[.66,.33]` — a cada fase fica mais rápido (+10 %), ataca mais depressa (−10 %) e usa as habilidades mais seguido.
+- **Ideia para depois:** como a arte é por camadas, cada fase pode trocar uma peça (ex.: o Rei Esqueleto perde o elmo/ombreira e a armadura fica quebrada; o Grunk joga o escudo fora), gerando uma folha por fase e trocando `T.sheet` em `bossPhaseCheck`.
+- Alvo do herói automático: o chefe tem preferência (até 70 px mais longe que o inimigo mais próximo), mas inimigos grudados no herói são atacados antes.
+- Simulação: `tools/mmo/sim/boss.cjs <classe> <zona> <perfil> <níveis acima> <lutas>`; vida atual (base): Gorgash 1900, Grunk 2300, Morvath 2300.
