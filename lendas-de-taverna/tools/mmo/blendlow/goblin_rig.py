@@ -1,6 +1,6 @@
 """Goblin low-poly com esqueleto de articulações (pivôs): ombro, cotovelo, pulso, dedos, quadril, joelho, tornozelo, dedos do pé, coluna, pescoço e orelhas.
 Uso: /tmp/bpyenv/bin/python goblin_rig.py <idle|walk|attack|hurt|rest> <pasta_saida> [largura altura amostras]"""
-import bpy,bmesh,math,random,sys
+import bpy,bmesh,math,random,sys,os
 from mathutils import Vector,Matrix
 ANIM=sys.argv[1] if len(sys.argv)>1 else 'rest';OUT=sys.argv[2] if len(sys.argv)>2 else '/tmp/gob_rig'
 W=int(sys.argv[3]) if len(sys.argv)>3 else 480;H=int(sys.argv[4]) if len(sys.argv)>4 else 540;SM=int(sys.argv[5]) if len(sys.argv)>5 else 20
@@ -90,7 +90,7 @@ class grp:
 J('root',(0,0,0));J('hips',(0,0,.74),'root');J('spine',(0,0,.95),'hips');J('chest',(0,0,1.22),'spine');J('neck',(0,-.04,1.70),'chest')
 J('earL',(.60,.04,1.86),'neck');J('earR',(-.60,.04,1.86),'neck')
 J('shL',(.62,0,1.50),'chest');J('elL',(.80,-.08,1.16),'shL');J('wrL',(.84,-.27,.93),'elL')
-J('shR',(-.62,0,1.50),'chest');J('elR',(-.84,-.18,1.24),'shR');J('wrR',(-.77,-.44,1.08),'elR')
+J('shR',(-.62,0,1.50),'chest');J('elR',(-.84,-.18,1.24),'shR');J('wrR',(-.77,-.44,1.08),'elR');J('club',(-.745,-.50,.98),'wrR')
 FL=[(-.09,.98),(.03,1.04),(.14,.94)]
 for i,(dx,l) in enumerate(FL):
     J(f'fL{i}a',(.86+dx,-.38,.70),'wrL');J(f'fL{i}b',(.86+dx*1.15,-.44,.52*l+.06),f'fL{i}a')
@@ -159,12 +159,22 @@ with grp('elR'):
     ring((-.77,-.44,1.08),.17,.10,M['tan'],seg=8,rot=(math.radians(-60),0,0))
 with grp('wrR'):
     blob((-.76,-.50,1.06),(.20,.14,.20),G,sub=2,noise=.04,seed=83)
-    limb((-.72,-.50,.70),(-.77,-.50,1.58),.10,.19,M['club'],seg=8)
-    blob((-.78,-.50,1.74),(.25,.24,.28),M['club'],sub=2,noise=.05,seed=5)
-    for d in((-1,0,.2),(.9,.1,.25),(-.2,-.9,.3),(-.3,.9,.2),(0,0,1),(-.9,-.5,-.3),(.8,-.6,-.1)):
-        dv=Vector(d).normalized();c=Vector((-.78,-.50,1.74))+Vector((dv.x*.2,dv.y*.2,dv.z*.24));spike(c,dv,.26,.075,M['metal'],seg=4)
     for z in (1.20,1.11,1.02,.93):finger((-.62,-.52,z),(-.70,-.70,z-.005),(-.90,-.62,z-.01),.07,G)
     finger((-.62,-.62,1.28),(-.74,-.70,1.28),(-.86,-.68,1.22),.07,G)
+with grp('club'):
+    # cabo facetado com enrolado de couro, anel de ferro com rebites, cabeça nodosa e espinhos
+    cx=lambda z:(-.72-(z-.70)*.057,-.50,z)     # eixo levemente inclinado
+    limb(cx(.52),cx(1.02),.085,.105,M['club'],seg=7)                   # cabo
+    limb(cx(1.02),cx(1.58),.105,.185,M['club'],seg=7)                  # cabo alargando
+    for z in (.62,.78,.94,1.10):ring(cx(z),.115 if z<1 else .135,.07,M['leather'],seg=7)     # enrolado de couro
+    ring(cx(1.28),.20,.09,M['metal'],seg=8);ring(cx(1.46),.215,.08,M['metal'],seg=8)             # anéis de ferro
+    blob(cx(.50),(.12,.12,.08),M['leather'],sub=1,noise=.03,seed=91)                              # pomo
+    blob((-.79,-.50,1.74),(.27,.26,.30),M['club'],sub=2,noise=.07,seed=5)                       # cabeça
+    blob((-.79,-.50,1.92),(.17,.17,.12),M['club'],sub=1,noise=.08,seed=6)
+    for d in((-1,0,.2),(.9,.1,.25),(-.2,-.9,.3),(-.3,.9,.2),(0,0,1),(-.9,-.5,-.3),(.8,-.6,-.1),(.1,-.7,-.7),(-.7,.6,-.2),(.6,.7,.1)):
+        dv=Vector(d).normalized();c=Vector((-.79,-.50,1.74))+Vector((dv.x*.22,dv.y*.22,dv.z*.26));spike(c,dv,.30,.08,M['metal'],seg=5)
+    for k in range(5):                                                                              # rebites no anel
+        a=k*1.256;blob((-.79+math.cos(a)*.215,-.50+math.sin(a)*.215,1.46),(.035,.035,.035),M['tan'],sub=0,noise=0)
 # cabeça
 with grp('neck'):
     blob((0,-.06,2.00),(.70,.62,.56),G,sub=2,noise=.04,seed=21);blob((0,-.28,1.72),(.50,.38,.32),G,sub=2,noise=.04,seed=22)
@@ -186,10 +196,12 @@ for sx,n in((1,'L'),(-1,'R')):
             if sx<0:
                 ob.data.transform(Matrix.Scale(-1,4,(1,0,0)));ob.data.flip_normals()
 # ---------------- cena ----------------
-sc.render.engine='CYCLES';sc.cycles.device='CPU';sc.cycles.samples=SM;sc.cycles.use_denoising=True
+sc.render.engine='CYCLES';sc.cycles.device='CPU';sc.cycles.samples=SM;sc.cycles.use_denoising=True;sc.render.film_transparent=bool(os.environ.get('LAYERS'))
 sc.render.resolution_x=W;sc.render.resolution_y=H;sc.render.image_settings.file_format='PNG';sc.view_settings.view_transform='Standard'
 cam=bpy.data.cameras.new('c');cam.lens=70;co=bpy.data.objects.new('c',cam);sc.collection.objects.link(co);sc.camera=co
-tgt=Vector((-0.25,-.05,1.45));pos=Vector((-5.0,-7.4,3.0));co.location=pos;co.rotation_euler=(tgt-pos).to_track_quat('-Z','Y').to_euler()
+tgt=Vector((-0.25,-.05,1.45));pos=Vector((-5.0,-7.4,3.0))
+if os.environ.get('CAM'):
+    _c=[float(x) for x in os.environ['CAM'].split(',')];pos=Vector(_c[:3]);tgt=Vector(_c[3:6]);co.location=pos;co.rotation_euler=(tgt-pos).to_track_quat('-Z','Y').to_euler()
 def area(loc,e,size,col):
     l=bpy.data.lights.new('a','AREA');l.energy=e;l.size=size;l.color=col;o=bpy.data.objects.new('a',l);sc.collection.objects.link(o);o.location=loc;o.rotation_euler=(tgt-Vector(loc)).to_track_quat('-Z','Y').to_euler()
 area((-3.5,-4.5,5.5),520,3.2,(1,.95,.88));area((4.5,3.5,3.5),380,4,(.65,.75,1));area((4.5,-4,1.2),60,4,(1,.9,.8))
@@ -238,7 +250,7 @@ def pose_idle(t):
     P['shL']=(-3*math.sin(p-.5),2*math.sin(p),0);P['elL']=(-3*math.sin(p-1),0,0);P['wrL']=(2*math.sin(p-1.4),0,0)
     for i in range(3):P[f'fL{i}a']=(-2*math.sin(p-1.8-i*.3),0,0);P[f'fL{i}b']=(-3*math.sin(p-2.1-i*.3),0,0)
     P['shR']=(2*math.sin(p-.2),0,0);P['elR']=(-2.5*math.sin(p-.8),0,0);P['wrR']=(3*math.sin(p-1.2),0,0)
-    P['thL']=(0,0,0);P['knL']=(2*b,0,0);P['knR']=(-2*b,0,0)
+    P['thL']=(0,0,0);P['knL']=(2*b,0,0);P['knR']=(-2*b,0,0);P['club']=(4*math.sin(p-1.5),0,2*math.sin(p-.7))
     return add(BASE,P),(0,0,BASEROOT[2]+.012*b)
 def pose_walk(t):
     ph=2*math.pi*t;P={}
@@ -253,6 +265,7 @@ def pose_walk(t):
     P['shR']=(-9*sR,0,-3*math.sin(ph));P['elR']=(-(6+9*max(0,sR)),0,0);P['wrR']=(6*sR,0,0)
     P['hips']=(0,5*math.sin(ph),7*math.sin(ph));P['spine']=(2,0,-4*math.sin(ph));P['chest']=(-3,0,-6*math.sin(ph))
     P['neck']=(2+2*math.cos(2*ph),0,5*math.sin(ph-.3));P['earL']=(0,-9*math.sin(2*ph-1.0),0);P['earR']=(0,9*math.sin(2*ph-1.0),0)
+    P['club']=(10*math.sin(ph-1.2),0,4*math.sin(ph-.5))
     return add(BASE,P),(0,0,BASEROOT[2]+.035*math.cos(2*ph))
 def K(d,rz=0,ry=0):return (add(BASE,d),(0,ry,BASEROOT[2]+rz))
 L_CROUCH={'thL':(-14,0,0),'knL':(38,0,0),'anL':(-16,0,0),'thR':(10,0,0),'knR':(40,0,0),'anR':(-24,0,0)}
@@ -261,12 +274,12 @@ ATK=[(0,)+K({}),
  (.30,)+K(dict(L_CROUCH,hips=(0,0,-8),spine=(-5,0,-6),chest=(-7,0,-10),neck=(-6,0,7),shR=(135,-4,6),elR=(-62,0,0),wrR=(-70,0,0),shL=(-40,0,28),elL=(-56,0,0),wrL=(-8,0,0),
    knL=(44,0,0),knR=(46,0,0),earL=(0,-16,0),earR=(0,16,0),fL0a=(6,0,0),fL1a=(6,0,0),fL2a=(6,0,0),fL0b=(0,0,0),fL1b=(0,0,0),fL2b=(0,0,0)),-.12),
  (.39,)+K(dict(L_CROUCH,hips=(0,0,0),spine=(0,0,0),chest=(2,0,2),neck=(2,0,0),shR=(190,0,0),elR=(-62,0,0),wrR=(-62,0,0),shL=(-10,0,32),elL=(-50,0,0),thL=(-24,0,0),knL=(34,0,0),anL=(-8,0,0),thR=(14,0,0),knR=(30,0,0),earL=(0,8,0),earR=(0,-8,0)),-.10),
- (.46,)+K(dict(hips=(0,0,9),spine=(6,0,3),chest=(7,0,8),neck=(7,0,-14),shR=(262,0,0),elR=(-50,0,0),wrR=(-60,0,0),shL=(24,0,36),elL=(-46,0,0),
-   thL=(-36,0,0),knL=(30,0,0),anL=(-6,0,0),thR=(20,0,0),knR=(14,0,0),anR=(-22,0,0),earL=(0,28,0),earR=(0,-28,0)),-.07),
- (.55,)+K(dict(hips=(0,0,8),spine=(8,0,3),chest=(8,0,8),neck=(8,0,-12),shR=(282,0,0),elR=(-46,0,0),wrR=(-40,0,0),shL=(28,0,38),elL=(-44,0,0),
-   thL=(-38,0,0),knL=(36,0,0),anL=(-6,0,0),thR=(22,0,0),knR=(20,0,0),anR=(-26,0,0),earL=(0,18,0),earR=(0,-18,0)),-.11),
- (.78,)+K(dict(hips=(0,0,5),spine=(3,0,2),chest=(2,0,5),neck=(2,0,-2),shR=(335,0,0),elR=(-40,0,0),wrR=(-12,0,0),shL=(6,0,14),elL=(-34,0,0),
-   thL=(-16,0,0),knL=(22,0,0),anL=(-6,0,0),thR=(8,0,0),knR=(18,0,0),anR=(-14,0,0)),-.05),
+ (.46,)+K(dict(hips=(0,0,9),spine=(10,0,3),chest=(10,0,8),neck=(6,0,-14),shR=(256,0,0),elR=(-18,0,0),wrR=(-76,0,0),shL=(24,0,36),elL=(-46,0,0),
+   thL=(-36,0,0),knL=(30,0,0),anL=(-6,0,0),thR=(20,0,0),knR=(14,0,0),anR=(-22,0,0),earL=(0,28,0),earR=(0,-28,0)),-.07,-.22),
+ (.55,)+K(dict(hips=(0,0,8),spine=(11,0,3),chest=(11,0,8),neck=(8,0,-12),shR=(268,0,0),elR=(-24,0,0),wrR=(-72,0,0),shL=(28,0,38),elL=(-44,0,0),
+   thL=(-38,0,0),knL=(36,0,0),anL=(-6,0,0),thR=(22,0,0),knR=(20,0,0),anR=(-26,0,0),earL=(0,18,0),earR=(0,-18,0)),-.11,-.26),
+ (.78,)+K(dict(hips=(0,0,5),spine=(3,0,2),chest=(2,0,5),neck=(2,0,-2),shR=(310,0,0),elR=(-38,0,0),wrR=(-40,0,0),shL=(6,0,14),elL=(-34,0,0),
+   thL=(-16,0,0),knL=(22,0,0),anL=(-6,0,0),thR=(8,0,0),knR=(18,0,0),anR=(-14,0,0)),-.05,-.08),
  (1,)+K({'shR':(360,0,0)})]
 HURT=[(0,)+K({}),
  (.14,)+K({'spine':(-10,0,0),'chest':(-22,0,6),'neck':(-24,0,-8),'hips':(-8,0,-4),'shR':(28,0,-22),'elR':(-28,0,0),'wrR':(15,0,0),'shL':(-36,0,44),'elL':(-26,0,0),
@@ -274,8 +287,19 @@ HURT=[(0,)+K({}),
  (.4,)+K({'spine':(6,0,0),'chest':(8,0,-3),'neck':(8,0,4),'hips':(3,0,3),'shR':(-6,0,2),'elR':(-24,0,0),'shL':(-4,0,12),'elL':(-30,0,0),'thL':(-10,0,0),'knL':(26,0,0),'anL':(-8,0,0),'thR':(6,0,0),'knR':(20,0,0),'anR':(-12,0,0),'earL':(0,-16,0),'earR':(0,16,0)},-.07),
  (.7,)+K({'spine':(-2,0,0),'chest':(-2,0,1),'neck':(-2,0,0),'earL':(0,6,0),'earR':(0,-6,0)},-.035),
  (1,)+K({})]
-def pose_attack(t):return keyed(ATK,t)
-def pose_hurt(t):return keyed(HURT,t)
+def track(L,t):
+    for i in range(len(L)-1):
+        t0,v0=L[i];t1,v1=L[i+1]
+        if t<=t1:
+            u=ss((t-t0)/(t1-t0)) if t1>t0 else 1;return tuple(lerp(v0[k],v1[k],u) for k in range(3))
+    return L[-1][1]
+CLUB=[(0,(0,0,0)),(.13,(-8,0,0)),(.30,(-24,0,0)),(.39,(-12,0,0)),(.46,(-32,0,0)),(.55,(-34,0,0)),(.66,(-14,0,0)),(.78,(0,0,0)),(1,(0,0,0))]
+ABD=[(0,(0,0,0)),(.13,(0,0,8)),(.30,(0,0,24)),(.39,(0,0,26)),(.46,(0,0,10)),(.55,(0,0,0)),(1,(0,0,0))]
+def pose_attack(t):
+    P,r=keyed(ATK,t);P=dict(P);P['club']=track(CLUB,t);a=track(ABD,t);o=P.get('shR',(0,0,0));P['shR']=(o[0],o[1],o[2]+a[2]);return P,r
+HC=[(0,(0,0,0)),(.14,(-30,0,10)),(.4,(18,0,-6)),(.7,(-6,0,2)),(1,(0,0,0))]
+def pose_hurt(t):
+    P,r=keyed(HURT,t);P=dict(P);P['club']=track(HC,t);return P,r
 FN={'idle':(pose_idle,48),'walk':(pose_walk,24),'attack':(pose_attack,40),'hurt':(pose_hurt,20)}
 import os
 os.makedirs(OUT,exist_ok=True)
@@ -285,6 +309,19 @@ if ANIM=='rest':
 else:
     fn,N=FN[ANIM]
     frames=[(i,t) for i,t in enumerate(TS)] if TS else [(i,i/N) for i in range(N)]
+    LAY=bool(os.environ.get('LAYERS'))
+    meshes=[o for o in bpy.data.objects if o.type=='MESH']
+    clubs=[o for o in meshes if o.parent is JT['club'][0]]
+    others=[o for o in meshes if o not in clubs]
     for i,t in frames:
-        P,r=fn(t);setpose(P,r);sc.render.filepath=f'{OUT}/{ANIM}_{i:03d}.png';bpy.ops.render.render(write_still=True)
+        P,r=fn(t);setpose(P,r)
+        if not LAY:
+            sc.render.filepath=f'{OUT}/{ANIM}_{i:03d}.png';bpy.ops.render.render(write_still=True);continue
+        for o in clubs:o.hide_render=True
+        for o in others:o.is_holdout=False
+        sc.render.filepath=f'{OUT}/{ANIM}_{i:03d}_body.png';bpy.ops.render.render(write_still=True)
+        for o in clubs:o.hide_render=False
+        for o in others:o.is_holdout=True
+        sc.render.filepath=f'{OUT}/{ANIM}_{i:03d}_club.png';bpy.ops.render.render(write_still=True)
+        for o in others:o.is_holdout=False
 print('ok')
