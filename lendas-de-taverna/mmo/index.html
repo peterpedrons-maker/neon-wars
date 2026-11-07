@@ -821,18 +821,18 @@ Object.assign(MOBS,{
   esqfogo:{nome:'Esqueleto Flamejante',sheet:'esqfogo',hp:104,atk:9,xp:29,gold:[4,10],speed:42,aggro:120,rng:24,aspd:1.4,sw:18,st:['queimadura',.3,4,.02],fam:'esq'},
   esqgelo:{nome:'Esqueleto Gélido',sheet:'esqgelo',hp:112,atk:9,xp:29,gold:[4,10],speed:38,aggro:120,rng:24,aspd:1.5,sw:18,st:['gelado',.3,3,0],fam:'esq'}
 });
-const MOB_BAT={nome:'Morcego',atlas:'bat',fly:20,fam:'esq',hp:50,atk:7,xp:14,gold:[2,6],speed:78,aggro:150,rng:22,aspd:1.1,sw:16,dur:.55,fire:.55,st:['sangramento',.2,3,.01]};
-const MOB_VAMP={nome:'Morcego-Vampiro',atlas:'vamp',fly:38,fam:'esq',aura:['#a56bff','#ff4a6a'],furyTxt:'O MORCEGO-VAMPIRO ENFURECE!',noElite:1,hp:560,atk:9,xp:150,gold:[40,80],speed:66,aggro:260,rng:34,aspd:1.5,sw:30,dur:.75,fire:.5,st:['sangramento',.3,5,.02],enrageAt:.35,vamp:.6,
+const MOB_BAT={nome:'Morcego',atlas:'bat',shr:18,fly:20,fam:'esq',hp:50,atk:7,xp:14,gold:[2,6],speed:78,aggro:150,rng:22,aspd:1.1,sw:16,dur:.55,fire:.55,st:['sangramento',.2,3,.01]};
+const MOB_VAMP={nome:'Morcego-Vampiro',atlas:'vamp',rad:20,shr:36,fly:38,fam:'esq',aura:['#a56bff','#ff4a6a'],furyTxt:'O MORCEGO-VAMPIRO ENFURECE!',noElite:1,hp:560,atk:9,xp:150,gold:[40,80],speed:66,aggro:260,rng:34,aspd:1.5,sw:30,dur:.75,fire:.5,st:['sangramento',.3,5,.02],enrageAt:.35,vamp:.6,
   msk:[{id:'dive',hp:1,cd:7,warn:1.5,r:60,mult:2.4,st:['abalado',.5,4,0],wt:3,min:40,max:400},
        {id:'screech',hp:1,cd:9.5,warn:1.1,r:104,mult:1.3,st:['atordoado',.85,1.4,0],wt:2,max:170},
        {id:'summon',hp:.5,cd:99,warn:1.0,once:1,wt:9}]};
 MOBS.morcego=MOB_BAT;MOBS.vampiro=MOB_VAMP;
-const BOSS={nome:'Gorgash',ent:'drop',aura:['#ff7a3a','#ffd070'],sheet:'ogro',hp:1900,atk:14,xp:260,gold:[80,140],speed:36,aggro:260,rng:52,aspd:1.7,scale:2.1,st:['abalado',.4,6,0]};
-const BOSS_GOB={nome:'Grunk',ent:'run',aura:['#ff5a3a','#ffd070'],sheet:'grunk',atlas:'grunk',hp:2300,atk:16,xp:250,gold:[75,130],speed:40,aggro:260,rng:54,aspd:1.5,scale:1,dur:.9,fire:.5,st:['sangramento',.4,6,.02],
+const BOSS={nome:'Gorgash',rad:26,shr:36,ent:'drop',aura:['#ff7a3a','#ffd070'],sheet:'ogro',hp:1900,atk:14,xp:260,gold:[80,140],speed:36,aggro:260,rng:52,aspd:1.7,scale:2.1,st:['abalado',.4,6,0]};
+const BOSS_GOB={nome:'Grunk',ent:'run',aura:['#ff5a3a','#ffd070'],sheet:'grunk',atlas:'grunk',rad:30,shr:46,hp:2300,atk:16,xp:250,gold:[75,130],speed:40,aggro:260,rng:54,aspd:1.5,scale:1,dur:.9,fire:.5,st:['sangramento',.4,6,.02],
   enrageAt:.35,   /* a 35% de vida: canaliza a fúria (menos dano, regenera) e depois fica mais forte e rápido */
   msk:[{id:'leap',hp:1,cd:7.5,warn:1.05,r:78,mult:2.6,st:['abalado',.6,5,0],wt:3,max:330},
        {id:'charge',hp:.9,cd:9,warn:.9,w:44,len:250,mult:2.2,st:['atordoado',.8,1,0],wt:2,min:70}]};
-const BOSS_ESQ={nome:'Morvath',ent:'drop',aura:['#6ab8ff','#e6f6ff'],sheet:'skelchefe',hp:2300,atk:15,xp:280,gold:[85,150],speed:42,aggro:270,rng:52,aspd:1.4,scale:2,st:['sangramento',.45,6,.025],
+const BOSS_ESQ={nome:'Morvath',rad:26,shr:36,ent:'drop',aura:['#6ab8ff','#e6f6ff'],sheet:'skelchefe',hp:2300,atk:15,xp:280,gold:[85,150],speed:42,aggro:270,rng:52,aspd:1.4,scale:2,st:['sangramento',.45,6,.025],
   msk:[{id:'slam',hp:1,cd:5,warn:1,r:88,mult:2.5,st:['abalado',.6,5,0],w:3},{id:'charge',hp:.8,cd:7.5,warn:.85,w:44,len:260,mult:2.2,st:['atordoado',.8,1,0],wt:2},{id:'roar',hp:.5,cd:10,warn:1.25,r:155,mult:2,st:['medo',1,2.4,0],wt:3}]};
 const bossDef=z=>{const f=famOf(z===undefined?G.zoneLv:z);return f==='goblin'?BOSS_GOB:f==='esq'?BOSS_ESQ:BOSS;};
 /* ===== itens ÚNICOS (nomeados, com efeito próprio): por área; hoje só a Floresta de Brumavale ===== */
@@ -1635,7 +1635,7 @@ function mkMob(kind,x,y,sp){
 }
 function mkBoss(bx,by){
   bx=bx===undefined?ZONE.boss[0]:bx;by=by===undefined?ZONE.boss[1]:by;const lv=8+(G.zoneLv-1)*BAL.zoneLv,m={kind:'boss',type:'boss',T:bossDef(),x:bx,y:by,lv,row:2,state:'idle',animT:0,act:null,cd:1,kvx:0,kvy:0,stun:0,sts:null,flash:0,dead:false,deadT:0,hp:0,sx:bx,sy:by};
-  m.maxhp=Math.round(m.T.hp*mobHpMul(lv));m.hp=m.maxhp;m.pow=m.T.atk*mobAtkMul(lv);m.def=lv*1.3;m.name=m.T.nome;return m;
+  m.maxhp=Math.round(m.T.hp*mobHpMul(lv));m.hp=m.maxhp;m.pow=m.T.atk*mobAtkMul(lv)*.78;m.def=lv*1.3;m.name=m.T.nome;return m;
 }
 function resetZone(){
   G.mobs=[];ZONE.spawns.forEach((s,i)=>{G.mobs.push(mkMob(varOf(G.zoneLv,i),s[0],s[1],i));});
@@ -1838,7 +1838,7 @@ function skDu(i){return skAt(i,'du');}
 function floatText(x,y,t,col,size=9,life=.9,o){G.floats.push({x,y,t,col,size,life,max:life,vy:(o&&o.vy)||14,pop:!!(o&&o.pop),bold:!!(o&&o.bold)});}
 function spark(x,y,n=6){for(let i=0;i<n;i++){const a=Math.random()*6.28,s=rnd(40,90);G.fx.push({k:'sp',x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.22,max:.22});}}
 function dmgCalc(att,def,mult=1,critCh=.1){let d=att*rnd(.85,1.15)*mult*(1-Math.min(.85,def/(def+5*att)));let crit=Math.random()<critCh;if(crit)d*=1.8;return {d:Math.max(1,Math.round(d)),crit};}
-function knock(e,fx,fy,force){const d=Math.hypot(fx,fy)||1;e.kvx+=fx/d*force;e.kvy+=fy/d*force;}
+function knock(e,fx,fy,force){if(e.kind==='boss'||e.mini)return;const d=Math.hypot(fx,fy)||1;e.kvx+=fx/d*force;e.kvy+=fy/d*force;}
 /* EMPURRÃO é um atributo secundário: chance por golpe (base da classe + Força), com intervalo mínimo por alvo; chefes resistem.
    Habilidades com empurrão próprio (> 1,2) continuam garantidas. */
 const KNOCK_CLS={guerreiro:.30,ladino:.10,clerigo:.12,arqueiro:.07,mago:.05,bardo:.07},KNOCK_SUB={barbaro:.20,cavaleiro:.10};
@@ -1848,12 +1848,13 @@ const KD_CLS={guerreiro:.35,ladino:.1,clerigo:.1,arqueiro:0,mago:0,bardo:0},KD_S
 function knockDownMul(){const g=(G.hero&&G.hero.kdG)||0;return 1+Math.min(2,(KD_CLS[SAVE.cls]||0)+(KD_SUB[SAVE.sub]||0)+g/100+uf('kd'));}
 function hitMob(m,dmg,crit,fromX,fromY,kf=1){
   if(m.dead||m.ent)return;if(m.vuln>0)dmg=Math.round(dmg*1.15);if(m.take)dmg=Math.max(1,Math.round(dmg*m.take));{const tk=stMul(m,'taken');if(tk!==1)dmg=Math.max(1,Math.round(dmg*tk));}if(crit){const cd=tf('critd');if(cd)dmg=Math.round(dmg*(1+cd/1.8));}if(m.maxhp&&m.hp<m.maxhp*.3){const ex=tf('exec');if(ex)dmg=Math.round(dmg*(1+ex));}if(m.kind==='boss'||m.elite){const bs=tf('boss');if(bs)dmg=Math.round(dmg*(1+bs));}
-  m.hp-=dmg;{const ls=uf('ls');if(ls>0&&G.hero&&G.hero.state!=='ko')G.hero.hp=Math.min(G.hero.maxhp,G.hero.hp+dmg*ls);}m.flash=.14;if(m.T.atlas&&((m.act&&m.act.skill)||m.ch)&&m.kind!=='mob_'){}else{m.stun=m.kind==='boss'?(crit?.2:.08):(crit?.35:.16);m.act=null;}
+  m.hp-=dmg;{const ls=uf('ls');if(ls>0&&G.hero&&G.hero.state!=='ko')G.hero.hp=Math.min(G.hero.maxhp,G.hero.hp+dmg*ls);}m.flash=.14;if(m.kind==='boss'||m.mini){poiseHit(m,dmg,crit);}else{m.stun=crit?.35:.16;m.act=null;}
   floatText(m.x+rnd(-12,12),m.y-(m.kind==='boss'?70:30),(crit?dmg+'!':''+dmg),crit?'#ffc83a':'#ffffff',crit?14:9,crit?1.05:.8,{pop:crit,vy:crit?22:18,bold:crit});
   spark(m.x,m.y-(m.kind==='boss'?40:16),crit?9:5);
   const die=m.hp<=0;
   if(m.thorn&&!die&&G.hero&&G.hero.state!=='ko'&&!(G.hero.inv>0)&&kf<=1.2){hurtHero(Math.max(1,Math.round(dmg*m.thorn)),m.x,m.y,.1);}
-  if(die)knock(m,m.x-fromX,m.y-fromY,200*(m.kind==='boss'?.25:1)*Math.min(kf,1.2));
+  if(m.kind==='boss'||m.mini){}   // chefes: imunidade a empurrão
+  else if(die)knock(m,m.x-fromX,m.y-fromY,200*(m.kind==='boss'?.25:1)*Math.min(kf,1.2));
   else if(kf>1.2)knock(m,m.x-fromX,m.y-fromY,(crit?170:120)*(m.kind==='boss'?.25:1)*kf);
   else if(!(m.kbT>0)&&Math.random()<knockChance()*(m.kind==='boss'?.2:1)){knock(m,m.x-fromX,m.y-fromY,(crit?175:135)*(m.kind==='boss'?.25:1)*kf);m.kbT=2.4;m.stun=Math.max(m.stun,.3*knockDownMul()*(m.kind==='boss'?.3:1));floatText(m.x,m.y-(m.kind==='boss'?100:58),knockDownMul()>1.6?'Derrubado':'Empurrão','#e0d8c0',7,.7);}
   sfx(crit?'crit':(Math.random()<.5?'hit_0':'hit_1'),.7);
@@ -1978,7 +1979,7 @@ function atkDur(h){const k=hStyle();return k==='cast'?.75:k==='shoot'?.95:.5;}
 function atkFrames(h){const k=hStyle();return k==='cast'?7:k==='shoot'?13:6;}
 function atkHitAt(h){const k=hStyle();return k==='cast'?.62:k==='shoot'?.7:.5;}
 function startHeroAttack(h,t,force){
-  const C=CLASSES[h.cls];let sk=-1;const d=dist(h,t);
+  const C=CLASSES[h.cls];let sk=-1;const d=Math.max(0,dist(h,t)-((t.T&&t.T.rad)||0));
   if(force>=0)sk=force;else
   for(const k of [2,1,0]){const i=SAVE.eqs[k];if(i<0||SAVE.lv<SLOT_UNL[k]||!skAvail(i)||!skOk(i))continue;const S=C.skills[i],o=S[4];if(SAVE.sk[i]<1||h.sk[i]>0)continue;
     if(o.t==='heal'){if(h.hp>h.maxhp*.6)continue;}else
@@ -2026,7 +2027,7 @@ function heroHitMoment(h){
   else if(o.t==='multi'){for(let k=0;k<o.n;k++)setTimeout(()=>{if(G.on&&t&&!t.dead)fireProj(h,t,mult,false,PST[S[0]]);},k*110);}
   else if(o.t==='meteor'){const big=S[0]==='n_cataclismo',n=big?6:3,rain=S[0]==='n_chuva';if(rain){setTimeout(()=>{if(!G.on)return;allFoes().forEach(m=>{if(Math.hypot(m.x-t.x,m.y-t.y)<52){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),mult,heroCrit(h));hitMob(m,r.d,r.crit,t.x,t.y-30,1.1);}});},420);}
     else for(let k=0;k<n;k++){const bx=t.x+rnd(-34,34),by=t.y+rnd(-22,22);GXI_meteor(bx,by,k*.16,big);VF.meteor(bx,by,'#ff8a3a',k*.16,()=>{if(!G.on)return;allFoes().forEach(m=>{if(Math.hypot(m.x-bx,m.y-by)<(big?58:48)){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),mult*(big?.55:1),heroCrit(h));hitMob(m,r.d,r.crit,bx,by-30,1.2);}});VF.glow(bx,by-6,big?54:40,'#ff9a3a',.45);VF.wave(bx,by,big?52:38,'#ffb050',.45,3);VF.burst(bx,by-6,big?22:14,['#ff7a2a','#ffd070','#fff0c0','#5a3a20'],{s0:40,s1:150,up:30,g:120});G.fx.push({k:'boom',x:bx,y:by,life:.4,max:.4,delay:0});sfx('spell_hit',.5);G.shake=Math.max(G.shake||0,big?.3:.15);});}}
-  else if(o.t==='aoe'){allFoes().forEach(m=>{if(Math.hypot(m.x-h.x,m.y-h.y)<o.r){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),mult,heroCrit(h));hitMob(m,r.d,r.crit,h.x,h.y,o.knock||1.2);if(o.stun)m.stun=Math.max(m.stun,o.stun);if(SAVE.sub==='dissonante')m.vuln=6;}});
+  else if(o.t==='aoe'){allFoes().forEach(m=>{if(Math.hypot(m.x-h.x,m.y-h.y)-((m.T&&m.T.rad)||0)<o.r){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),mult,heroCrit(h));hitMob(m,r.d,r.crit,h.x,h.y,o.knock||1.2);if(o.stun)m.stun=Math.max(m.stun,o.stun);if(SAVE.sub==='dissonante')m.vuln=6;}});
     G.fx.push({k:'ring',x:h.x,y:h.y,life:.5,max:.5,col:'#ffe08a'});G.shake=Math.max(G.shake||0,.15);}
   else if(o.t==='heal'){const v=Math.round(h.maxhp*o.heal*ef*healM());h.hp=Math.min(h.maxhp,h.hp+v);floatText(h.x,h.y-52,'+'+v,'#8ef08a',10);sfx('heal',.8);G.fx.push({k:'ring',x:h.x,y:h.y,life:.7,max:.7,col:'#8ef08a'});}
   else if(o.t==='buff'){h.buff={atk:(o.atk||0)*ef,spd:o.spd||0,def:(o.def||0)*ef,crit:(o.crit||0)*ef,t:o.dur*du*(SAVE.sub==='consonante'?1.3:1),col:BUFFCOL[S[0]]||'#ffb050'};floatText(h.x,h.y-52,'Reforçado!','#ffe08a',9);G.fx.push({k:'ring',x:h.x,y:h.y,life:.6,max:.6,col:'#ffa63a'});sfx('buff',.6);}
@@ -2061,7 +2062,7 @@ function moveTo(e,tx,ty,sp,dt){
     e._sx=e.x;e._sy=e.y;e._sc=0;}
   const s=Math.min(d,sp*dt);e.x+=dx/d*s;e.y+=dy/d*s;e.row=dir4(dx,dy);return s;
 }
-function nearestMob(from,maxD){let b=null,bd=maxD;for(const m of G.mobs){if(m.dead)continue;const d=dist(from,m);if(d<bd){bd=d;b=m;}}const B=G.boss;if(B&&!B.dead&&!B.ent&&G.phase==='boss'){const d=dist(from,B)-14;if(d<maxD&&d-(b?70:0)<bd){bd=d;b=B;}}return b;}
+function nearestMob(from,maxD){let b=null,bd=maxD;for(const m of G.mobs){if(m.dead)continue;const d=dist(from,m);if(d<bd){bd=d;b=m;}}const B=G.boss;if(B&&!B.dead&&!B.ent&&G.phase==='boss'){const d=dist(from,B)-((B.T&&B.T.rad)||14);if(d<maxD&&d-(b?70:0)<bd){bd=d;b=B;}}return b;}
 /* ================= STATUS (buffs e debuffs, como no jogo tático) =================
    valem para o herói e para os inimigos; dano contínuo em valor fixo por segundo (por pilha) */
 const STDEF={
@@ -2078,7 +2079,7 @@ function stRm(e,id){if(e&&e.sts)delete e.sts[id];}
 function stAdd(e,id,dur,o={}){if(!e||e.dead||!STDEF[id])return false;const d=STDEF[id],isH=e.kind==='hero';
   if(e.imm&&(e.imm[id]||(d.ctrl&&e.imm.ctrl))){floatText(e.x,e.y-60,'Imune','#e0e8ff',8,.8);return false;}
   if(d.ctrl&&stHas(e,'inabalavel')){floatText(e.x,e.y-60,'Imune','#e0e8ff',8,.8);return false;}
-  if(e.kind==='boss'){if(id==='atordoado'||id==='medo'){id='abalado';dur=Math.max(dur,4);}else if(id==='preso'||id==='lento')dur*=.5;}
+  if(e.kind==='boss'||e.mini){if(id==='atordoado'||id==='medo'){id='abalado';dur=Math.max(dur,4);}else if(id==='preso'||id==='lento')dur*=.5;}
   const D=STDEF[id];e.sts=e.sts||{};
   if(id==='queimadura')stRm(e,'gelado');else if(id==='gelado')stRm(e,'queimadura');
   let s=e.sts[id];if(!s){s=e.sts[id]={t:dur,n:1,dps:o.dps||0,tk:1};floatText(e.x,e.y-(e.kind==='boss'?100:62),D.n,D.col,8,.9);}
@@ -2105,7 +2106,7 @@ function applySkillStatus(S,h,t,o){const e=SKST[S[0]];if(!e)return;
   const DU=skDu(CLASSES[h.cls].skills.indexOf(S));
   if(e.S)for(const [id,dur] of e.S)stAdd(h,id,dur*DU);
   if(!e.T)return;const dps=Math.max(1,heroPow(h)*(o.dps||.22)*skSc(CLASSES[h.cls].skills.indexOf(S))*(SAVE.sub==='piromante'?1.3:1));
-  let list;if(o.t==='aoe')list=allFoes().filter(m=>Math.hypot(m.x-h.x,m.y-h.y)<o.r);else if(o.t==='meteor')list=allFoes().filter(m=>Math.hypot(m.x-t.x,m.y-t.y)<60);else list=[t];
+  let list;if(o.t==='aoe')list=allFoes().filter(m=>Math.hypot(m.x-h.x,m.y-h.y)-((m.T&&m.T.rad)||0)<o.r);else if(o.t==='meteor')list=allFoes().filter(m=>Math.hypot(m.x-t.x,m.y-t.y)<60);else list=[t];
   const ranged=hStyle()!=='slash'&&o.t!=='aoe',dly=ranged?Math.min(500,dist(h,t)/250*1000):0;
   const go=()=>{if(!G.on)return;for(const m of list){if(!m||m.dead)continue;for(const [id,dur,ch] of e.T)if(Math.random()<(ch==null?1:ch))stAdd(m,id,dur*DU,{dps});}};
   if(dly>40)setTimeout(go,dly);else go();}
@@ -2217,6 +2218,9 @@ function leapStep(m,dt){const L=m.act.leap,t=m.act.t;
   m.x=L.sx+(L.tx-L.sx)*e;m.y=L.sy+(L.ty-L.sy)*e;m.wx=m.x;m.wy=m.y;m.zoff=Math.sin(Math.PI*p)*78;
   m.row=dir4(L.tx-L.sx,L.ty-L.sy);
   if(p>=1&&!L.down){L.down=true;m.zoff=0;bossSnd('slam');VF.shake(.7);}}
+/* POSTURA: golpes não interrompem o chefe. Cada golpe enche uma barra de postura; quando enche, ele fica abalado por 1,2 s (recebe mais dano) e depois fica 9 s imune a nova quebra */
+function poiseHit(m,dmg,crit){if(m.stagger>0||m.pimm>0||m.ch||m.ent||(m.act&&m.act.skill))return;m.poise=(m.poise||0)+dmg*(crit?1.6:1);
+  if(m.poise>=m.maxhp*.04){m.poise=0;m.stagger=1.4;m.pimm=8.6;m.act=null;m.vuln=Math.max(m.vuln||0,1.2);floatText(m.x,m.y-(m.kind==='boss'?104:70),'Postura quebrada','#ffd070',8,1.1);VF.burst(m.x,m.y-30,10,['#ffd070','#fff0b0'],{s0:30,s1:90,flat:.6,up:20});sfx('crit',.6);}}
 function startChannel(m){m.ch={t:0,dur:4.4};m.act=null;m.state='idle';m.take=.35;m.sts=null;
   floatText(m.x,m.y-100,m.T.furyTxt||'GRUNK ENFURECE!','#ff5a3a',12,1.8);bossSnd('roarbig');bossSnd('hum');
   const c=m.T.aura;VF.wave(m.x,m.y,90,c[0],.8,4);VF.glow(m.x,m.y-30,80,c[0],.9);VF.shake(.5);chat(m.T.nome+' canaliza uma fúria sombria!',2);}
@@ -2225,7 +2229,7 @@ function bossChannel(m,dt){const c=m.ch;c.t+=dt;m.state='idle';m.row=dir4(G.hero
   if(Math.random()<dt*28)VF.pt(m.x+rnd(-24,24),m.y-rnd(0,70),{vy:-rnd(30,80),vx:rnd(-8,8),life:.9,col:['#ff5a3a','#ffd070','#ff2a1a'][rint(0,2)],sz:2.4});
   if(Math.random()<dt*5)VF.pt(m.x+rnd(-20,20),m.y-rnd(10,60),{vy:-rnd(20,40),life:1,col:'#7fe88a',sz:2.4});
   if(c.t>c.dur*.5&&!c.r2){c.r2=1;VF.wave(m.x,m.y,120,'#ff3a2a',.7,4);bossSnd('growl');}
-  if(c.t>=c.dur){m.ch=null;m.take=null;m.fury=1;m.pow*=1.4;m.spdMul=1.4;m.aspdMul=.68;m.sk={};m.act=null;
+  if(c.t>=c.dur){m.ch=null;m.take=null;m.fury=1;m.pow*=1.2;m.spdMul=1.3;m.aspdMul=.8;m.sk={};m.act=null;
     bossSnd('fury');VF.wave(m.x,m.y,160,'#ff3a2a',.9,6);VF.wave(m.x,m.y,100,'#ffd070',.7,3,.08);VF.burst(m.x,m.y-20,34,['#ff5a3a','#ffd070','#fff'],{s0:50,s1:200,flat:.6,up:40,g:90});VF.shake(.9);
     const h=G.hero,d=dist(m,h);if(d<120&&h.state!=='ko'){const k=Math.max(1,d);h.kvx=(h.x-m.x)/k*300;h.kvy=(h.y-m.y)/k*300;}
     floatText(m.x,m.y-100,'MODO FÚRIA!','#ff3a2a',13,1.6);}}
@@ -2280,10 +2284,10 @@ function updateHero(dt){
   if(jm){moved=moveTo(h,h.x+G.joy.x*60,h.y+G.joy.y*60,hSpd(h)*Math.max(.35,G.joy.m),dt);h.row=dir4(G.joy.x,G.joy.y);}
   if(!G.auto&&G.castReq>=0&&h.cd<=0)manualCast();
   if(tgt&&!jm){
-    const d=dist(h,tgt),want=h.rng*(h.rng>60?.9:.8);
-    if(G.auto&&h.rng>100&&d<h.rng*.55&&h.cd>.15){const k=Math.max(1,d);moved=moveTo(h,h.x+(h.x-tgt.x)/k*50,h.y+(h.y-tgt.y)/k*50,hSpd(h)*.95,dt);h.row=dir4(tgt.x-h.x,tgt.y-h.y);}
-    else if(d<=h.rng+1.5&&h.cd<=0){startHeroAttack(h,tgt);}   // (o chefe empurra o herói a 30 px: não pode exigir chegar mais perto para bater)
-    else if(d>want&&(G.auto||G.wp)){ if(G.auto)moved=moveTo(h,tgt.x,tgt.y,hSpd(h),dt);}
+    const d=Math.max(0,dist(h,tgt)-((tgt.T&&tgt.T.rad)||0)),want=h.rng*(h.rng>60?.9:.8);   // alcance medido da borda do corpo
+    if(G.auto&&h.rng>100&&dist(h,tgt)<h.rng*.55&&h.cd>.15){const k=Math.max(1,dist(h,tgt));moved=moveTo(h,h.x+(h.x-tgt.x)/k*50,h.y+(h.y-tgt.y)/k*50,hSpd(h)*.95,dt);h.row=dir4(tgt.x-h.x,tgt.y-h.y);}
+    else if(d<=h.rng+1.5&&h.cd<=0){startHeroAttack(h,tgt);}
+    else if(d>Math.max(want,h.rng*.95)&&(G.auto||G.wp)){ if(G.auto)moved=moveTo(h,tgt.x,tgt.y,hSpd(h),dt);}   // já está no alcance de ataque: fica parado (não empurra o chefe)
     else if(d<=h.rng){h.row=dir4(tgt.x-h.x,tgt.y-h.y);}
   }
   // loot: pegar o que está perto
@@ -2302,6 +2306,8 @@ function updateMob(m,dt){
     if(m.minion){if(m.deadT>2.2)m.gone=1;return;}
     if(m.kind==='mob'){m.respawn-=dt;if(m.respawn<=0&&(G.phase==='farm'||G.phase==='boss')){const n=mkMob(m.type,m.sx,m.sy,m.sp);Object.assign(m,n);}}return;}
   m.flash=Math.max(0,m.flash-dt);
+  if(m.kind==='boss'||m.mini){if(m.pimm>0)m.pimm-=dt;if(m.poise>0)m.poise=Math.max(0,m.poise-m.maxhp*.004*dt);if(m.stagger>0){m.stagger-=dt;m.state='hurt';m.act=null;return;}}
+  if(m.kind==='boss'&&m.state==='walk'&&!m.ent&&!m.ch&&Math.random()<dt*5)VF.pt(m.x+rnd(-14,14),m.y-1,{vy:-rnd(5,12),vx:rnd(-8,8),life:.45,col:'#a89878',sz:2.6,add:false});
   if(m.T.fly&&!(m.act&&m.act.dive))m.zoff=m.T.fly+Math.sin(G.t*5+m.animT*2)*2.5;
   if(m.ent){bossEntrance(m,dt);return;}
   if(m.T.enrageAt&&!m.fury&&!m.ch&&m.hp>0&&m.hp<m.maxhp*m.T.enrageAt&&(G.phase==='boss'||m.mini)&&!(m.act&&(m.act.leap||m.act.dive))){startChannel(m);}
@@ -3001,7 +3007,7 @@ function updateProjs(dt){
 }
 /* separação: personagens não ficam um em cima do outro */
 function separateEnts(){const h=G.hero;if(!h||h.state==='ko')return;const near=[];for(const m of allFoes()){if(Math.abs(m.x-h.x)<90&&Math.abs(m.y-h.y)<90)near.push(m);}
-  for(const m of near){const dx=m.x-h.x,dy=m.y-h.y,d=Math.hypot(dx,dy)||.01,mn=m.kind==='boss'?30:17;if(d<mn){const k=(mn-d),ux=dx/d||1,uy=dy/d;m.x+=ux*k*.65;m.y+=uy*k*.65;h.x-=ux*k*.35;h.y-=uy*k*.35;collide(m,6);collide(h);}}
+  for(const m of near){const dx=m.x-h.x,dy=m.y-h.y,d=Math.hypot(dx,dy)||.01,mn=(m.T&&m.T.rad)?m.T.rad+10:(m.kind==='boss'?30:17);if(d<mn){const k=(mn-d),ux=dx/d||1,uy=dy/d;m.x+=ux*k*.65;m.y+=uy*k*.65;h.x-=ux*k*.35;h.y-=uy*k*.35;collide(m,6);collide(h);}}
   for(let i=0;i<near.length;i++)for(let j=i+1;j<near.length;j++){const a=near[i],b=near[j],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||.01;if(d<13){const k=(13-d)*.5,ux=dx/d,uy=dy/d;a.x-=ux*k;a.y-=uy*k;b.x+=ux*k;b.y+=uy*k;}}}
 function update(dt){
   G.t+=dt;todTick(dt);if(PFX.boost>0)PFX.boost=Math.max(0,PFX.boost-dt*.7);joyShow();if(G.castReq>=0){G.castT=(G.castT||0)+dt;if(G.castT>.7){G.castReq=-1;G.castT=0;}}else G.castT=0;
@@ -3120,7 +3126,7 @@ function grunkFrame(e){const sh=SHEETS[e.T.atlas],p=e.fury?'e_':'',n=a=>sh.meta.
   if(e.dead)return atlasFrame(sh,A('death'),Math.floor(e.deadT*7));
   if(e.ch)return atlasFrame(sh,'channel',Math.floor(G.t*10)%n('channel'));
   if(e.ent){if(e.ent.k==='run')return atlasFrame(sh,A('walk'),Math.floor(e.animT*11)%6);if(e.ent.k==='roar'||e.ent.k==='phase')return atlasFrame(sh,A('roar'),Math.min(5,Math.floor(e.ent.t/e.ent.dur*6)));return atlasFrame(sh,A('idle'),0);}
-  if(e.stun>0&&!(e.act&&e.act.skill))return atlasFrame(sh,A('hurt'),(e.flash>.07?1:2));
+  if((e.stun>0||e.stagger>0)&&!(e.act&&e.act.skill))return atlasFrame(sh,A('hurt'),(e.flash>.07?1:2));
   const a=e.act;
   if(a&&a.skill){
     if(a.anim==='leap'){const L=a.leap,t=a.t,w=L.w;let f;if(t<L.c*.5)f=0;else if(t<L.c)f=1;else if(t<L.c+(w-L.c)*.45)f=2;else if(t<w)f=3;else f=Math.min(6,4+Math.floor((t-w)/(a.dur-w)*3));return atlasFrame(sh,A('slam'),f);}
@@ -3133,7 +3139,7 @@ function grunkFrame(e){const sh=SHEETS[e.T.atlas],p=e.fury?'e_':'',n=a=>sh.meta.
 function vampFrame(e){const sh=SHEETS.vamp,p=e.fury?'e_':'',a=e.act,A=n=>p+n;
   if(e.dead)return atlasFrame(sh,A('death'),Math.min(9,Math.floor(e.deadT*9)));
   if(e.ch)return atlasFrame(sh,'channel',Math.floor(G.t*9)%4);
-  if(e.stun>0&&!(a&&a.skill))return atlasFrame(sh,A('hurt'),e.flash>.07?1:(e.stun>.12?2:3));
+  if((e.stun>0||e.stagger>0)&&!(a&&a.skill))return atlasFrame(sh,A('hurt'),e.flash>.07?1:(e.stagger>.5||e.stun>.12?2:3));
   if(a&&a.skill){const t=a.t;
     if(a.anim==='dive'){const D=a.dive,w=D.w;if(t<D.up)return atlasFrame(sh,A('dive_up'),Math.floor(t*14)%4);if(t<w-.4)return atlasFrame(sh,A('dive_apex'),0);if(t<w)return atlasFrame(sh,A('dive_down'),0);if(t<w+.18)return atlasFrame(sh,A('dive_hit'),0);return atlasFrame(sh,A('dive_end'),0);}
     if(a.anim==='screech')return atlasFrame(sh,A('screech'),Math.min(5,Math.floor(t/a.dur*6)));
@@ -3254,7 +3260,7 @@ function render(){
       else contactShadow(X,Y-1,Math.min(20,a[2]*.45+3),.3*nA);}
     for(const it of list){const e=it.e;if(!e||e.dead||e.kind==='vill'&&false)continue;if(!e||e.kind===undefined)continue;const X=e.x-cx,Y=e.y-cy;if(X<-60||X>G.LW+60||Y<-30||Y>G.LH+120)continue;
       const fr=entFrame(e),sc=e.kind==='boss'?e.T.scale:1,sw=e.kind==='hero'?22:e.kind==='boss'?40:(e.T?e.T.sw:22),al=e.dead?Math.max(0,1-Math.max(0,e.deadT-.5)/.6):1;
-      contactShadow(X,Y,sw*.62,.36*nA*al);castShadow(fr[0],fr[1],fr[2],fr[3],fr[4],fr[5],fr[6],sc,X,Y,.3*nA*al,1);}}
+      {const sr=(e.T&&e.T.shr)||sw*.62,fl=e.zoff?Math.min(.55,e.zoff/220):0,big=(e.T&&e.T.shr)?1.45:1;contactShadow(X,Y,sr*(1-fl),Math.min(.8,.36*nA*al*big*(1-fl)));if(!(e.T&&e.T.fly))castShadow(fr[0],fr[1],fr[2],fr[3],fr[4],fr[5],fr[6],sc,X,Y,.3*nA*al,1);}}}
   let heroDrawn=false;
   for(const it of list){
     if(it.p){const p=it.p;
