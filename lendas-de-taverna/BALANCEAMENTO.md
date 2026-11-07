@@ -82,3 +82,10 @@ em 2–5 a campanha toda, então a chance de acertar é quase fixa (~45–70%).
 - **Ideia para depois:** como a arte é por camadas, cada fase pode trocar uma peça (ex.: o Rei Esqueleto perde o elmo/ombreira e a armadura fica quebrada; o Grunk joga o escudo fora), gerando uma folha por fase e trocando `T.sheet` em `bossPhaseCheck`.
 - Alvo do herói automático: o chefe tem preferência (até 70 px mais longe que o inimigo mais próximo), mas inimigos grudados no herói são atacados antes.
 - Simulação: `tools/mmo/sim/boss.cjs <classe> <zona> <perfil> <níveis acima> <lutas>`; vida atual (base): Gorgash 1900, Grunk 2300, Morvath 2300.
+
+## Chefes: postura (poise) e imunidade a knockback
+- Chefes e mini-chefes não sofrem knockback nem são interrompidos por golpes comuns.
+- Barra de postura oculta: acumula dano (crítico ×1.6); ao chegar a 4% da vida máxima o chefe fica "abalado" 1.4 s (dano extra) e depois ~8.6 s imune a nova quebra. Perde 0.4%/s de postura quando não apanha.
+- Compensação da perda do stun por golpe: dano base dos chefes ×0.78 e fúria do Grunk ×1.2 dano / ×1.3 vel. / ×0.8 intervalo (antes 1.4 / 1.4 / .68).
+- Alcance do herói é medido da borda do corpo (`T.rad`), então o herói não empurra o chefe.
+- Simulação (Grunk, nv 12, equip. 'med', 3 lutas): guerreiro, ladino, clérigo e bardo matam em 60–165 s sem morrer; mago e arqueiro ainda morrem na fúria (arqueiro já falhava antes da mudança).

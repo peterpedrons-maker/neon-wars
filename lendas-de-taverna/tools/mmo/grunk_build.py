@@ -6,18 +6,21 @@ from PIL import Image
 from scipy import ndimage
 import cut_grid,grunk_fx as G
 CW,CH=G.CW,G.CH
+def feet_y(x):
+    """linha dos pés do corpo, ignorando poeira/anéis de efeito (que ficam abaixo dos pés e faziam o corpo 'flutuar' em alguns quadros)"""
+    b=G.strip_fx(x).getchannel('A').getbbox() or x.getchannel('A').getbbox();return b[3]
 def place_t(x,bottom=10):
-    c=Image.new('RGBA',(CW,CH),(0,0,0,0));c.alpha_composite(x,((CW-x.width)//2,CH-bottom-x.height));return c
+    c=Image.new('RGBA',(CW,CH),(0,0,0,0));c.alpha_composite(x,((CW-x.width)//2,CH-bottom-feet_y(x)));return c
 def slam_rgba(an):
     s=an['slam'];body5=G.strip_fx(s[4]);body7=G.strip_fx(s[6]);dust=G.fxlayer(s[5],60);out=[]
     for i,f in enumerate(s):
         if i<4 or i==7:out.append(place_t(f));continue
         body=body5 if i==4 else body7
         bb=body.getchannel('A').getbbox();gx=(CW-body.width)//2+(bb[0]+bb[2])//2;gy=CH-10-body.height+bb[3]-4
-        cv=Image.new('RGBA',(CW,CH),(0,0,0,0))
+        cv=Image.new('RGBA',(CW,CH),(0,0,0,0));fy=feet_y(body)
         if i>=5:cv.alpha_composite(dust,((CW-dust.width)//2,CH-10-dust.height))
-        G.ring(cv,gx,gy,[0,0,0,0,46,92,138][i],fade=[0,0,0,0,0,0.15,0.45][i])
-        cv.alpha_composite(body,((CW-body.width)//2,CH-10-body.height));out.append(cv)
+        G.ring(cv,gx,CH-14,[0,0,0,0,46,92,138][i],fade=[0,0,0,0,0,0.15,0.45][i])
+        cv.alpha_composite(body,((CW-body.width)//2,CH-10-fy));out.append(cv)
     return out
 def strip_ring(im):
     a=np.array(im).astype(int);r,g,bb,al=[a[:,:,i] for i in range(4)];out=np.array(im).copy()
