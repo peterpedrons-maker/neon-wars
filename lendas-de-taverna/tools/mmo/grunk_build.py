@@ -19,8 +19,20 @@ def slam_rgba(an):
         G.ring(cv,gx,gy,[0,0,0,0,46,92,138][i],fade=[0,0,0,0,0,0.15,0.45][i])
         cv.alpha_composite(body,((CW-body.width)//2,CH-10-body.height));out.append(cv)
     return out
+def strip_ring(im):
+    a=np.array(im).astype(int);r,g,bb,al=[a[:,:,i] for i in range(4)];out=np.array(im).copy()
+    red=(al>0)&(r>150)&(g<85)&(bb<85)&(r-g>80)
+    ys,xs=np.where(al>0);top,bot=ys.min(),ys.max();lab,n=ndimage.label(ndimage.binary_dilation(red,iterations=1))
+    for i in range(1,n+1):
+        m=(lab==i)&red;sz=m.sum()
+        if sz==0:continue
+        cy=np.where(m)[0].mean()
+        if sz>=80 or (sz>=10 and cy>top+(bot-top)*.45):out[ndimage.binary_dilation(m,iterations=1),3]=0
+    # sobras escuras/rosadas finas do anel
+    return Image.fromarray(out,'RGBA')
 def base_sets(an):
     S={k:[place_t(x) for x in an[k]] for k in('idle','walk','attack','charge','roar','hurt','death')}
+    for i in range(6):S['roar'][i]=strip_ring(S['roar'][i])   # a aura/anel do rugido da IA foi removido: é desenhado por código no jogo
     S['roar'][4]=S['roar'][3].copy()   # quadro com o anel vermelho cheio (quadrado) é descartado: o anel é redesenhado por código no jogo
     S['slam']=slam_rgba(an);return S
 EYE_NEIGH={'roar':[4]}
