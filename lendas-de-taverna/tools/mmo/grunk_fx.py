@@ -52,7 +52,7 @@ def slam_fixed(an):
         base=Image.new('RGBA',(CW,CH),BG);dd=ImageDraw.Draw(base);dd.ellipse((CW*.25,CH-52,CW*.75,CH-24),fill=(36,52,34,255))
         base.alpha_composite(cv);base.alpha_composite(body,((CW-body.width)//2,CH-10-body.height));out.append(base)
     return out
-def channel(an,n=10):
+def channel(an,n=10,bg=True):
     src=an['enrage'][-1];a=rgba(src);mask=a[:,:,3]>0;out=[];rs=random.Random(4)
     parts=[(rs.uniform(.15,.85),rs.random(),rs.uniform(.6,1.2)) for _ in range(14)]
     reg=[(rs.uniform(.2,.8),rs.random()) for _ in range(5)]
@@ -80,6 +80,7 @@ def channel(an,n=10):
         for (px,ph) in reg:
             yy=1-((t+ph)%1);x=ox+W*px;y=oy+H*.15+yy*H*.75;c=(110,235,120,int(255*min(1,yy*1.6)))
             d.rectangle((x-1,y-4,x+1,y+4),fill=c);d.rectangle((x-4,y-1,x+4,y+1),fill=c)
+        if not bg:out.append(lay);continue
         base=Image.new('RGBA',(CW,CH),BG);dd=ImageDraw.Draw(base);dd.ellipse((CW*.25,CH-52,CW*.75,CH-24),fill=(36,52,34,255));base.alpha_composite(lay);out.append(base)
     return out
 def enraged(im):
