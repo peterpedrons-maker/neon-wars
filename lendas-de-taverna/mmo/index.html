@@ -3067,6 +3067,23 @@ function drawSprite(e,fr,scale,flash,alpha){
 function bowFrame(a){const ch=a.ch||0,t=a.t;if(t<.4)return Math.min(8,Math.floor(t/.4*9));if(t<ch+.3)return 8;return Math.min(12,9+Math.floor((t-ch-.3)/.1));}
 function castFrame(a){const ch=a.ch||0,t=a.t;if(ch<=0)return Math.min(6,Math.floor(t/a.dur*7));if(t<.24)return Math.min(1,Math.floor(t/.12));if(t<ch+.24)return 2+Math.floor((t-.24)*7)%3;return Math.min(6,5+Math.floor((t-ch-.24)/.14));}
 const CHCOL={guerreiro:'#ff9a5a',ladino:'#a98aff',mago:'#8ac8ff',clerigo:'#ffe28a',arqueiro:'#ffb050',bardo:'#ffc060'};
+/* aura do rugido desenhada por código: brilho no chão e atrás do corpo (camada 0) + anéis de choque elípticos e faíscas (camada 1) */
+function roarAura(e,x,y,layer){const p=clamp(e.ent.t/e.ent.dur,0,1);ctx.save();
+  const grow=Math.sin(Math.min(1,p*1.25)*Math.PI*.5),fade=p>.7?1-(p-.7)/.3:1;
+  if(layer===0){   // atrás do corpo: poça de brilho vermelho no chão e halo vertical
+    let g=ctx.createRadialGradient(x,y-4,2,x,y-4,96*grow+8);g.addColorStop(0,'rgba(230,24,18,'+(.85*fade).toFixed(3)+')');g.addColorStop(.5,'rgba(190,14,14,'+(.5*fade).toFixed(3)+')');g.addColorStop(1,'rgba(140,0,0,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y-4,100*grow+8,38*grow+4,0,0,7);ctx.fill();
+    g=ctx.createRadialGradient(x,y-46,4,x,y-46,84*grow+6);g.addColorStop(0,'rgba(255,60,30,'+(.5*fade).toFixed(3)+')');g.addColorStop(.6,'rgba(210,20,16,'+(.26*fade).toFixed(3)+')');g.addColorStop(1,'rgba(160,0,0,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y-46,58*grow+4,78*grow+4,0,0,7);ctx.fill();
+  }else{           // na frente: anéis de choque (nítidos, em passos de pixel) e brasas subindo
+    for(let k=0;k<3;k++){const q=p*1.5-k*.24;if(q<=0||q>=1)continue;const r=Math.round(18+q*140),a=Math.pow(1-q,1.1);
+      ctx.lineWidth=Math.max(2,Math.round(7*(1-q)+2));ctx.strokeStyle='rgba(235,30,24,'+(a).toFixed(3)+')';ctx.beginPath();ctx.ellipse(x,y-2,r,Math.round(r*.42),0,0,7);ctx.stroke();
+      ctx.lineWidth=2;ctx.strokeStyle='rgba(255,170,90,'+(a).toFixed(3)+')';ctx.beginPath();ctx.ellipse(x,y-2,r-3,Math.round((r-3)*.42),0,0,7);ctx.stroke();}
+    ctx.globalCompositeOperation='lighter';
+    for(let i=0;i<26;i++){const ph=(i*.137+p*(.8+(i%5)*.15))%1,ang=i*2.399+e.x*.01,rr=22+(i%7)*8+ph*12,px=x+Math.cos(ang)*rr,py=y-8-ph*(66+(i%4)*14)+Math.sin(ang)*rr*.3,al=(1-ph)*fade,big=i%4===0;
+      ctx.fillStyle=(i%3?'rgba(255,120,50,':'rgba(255,220,150,')+al.toFixed(3)+')';ctx.fillRect(Math.round(px),Math.round(py),big?3:2,big?3:2);}
+  }
+  ctx.restore();}
 function atlasFrame(sh,anim,i){const M=sh.meta,L=M.anims[anim]||M.anims.idle,k=L[Math.max(0,Math.min(L.length-1,i))];return [sh.atlasImg,(k%M.cols)*M.w,Math.floor(k/M.cols)*M.h,M.w,M.h,M.ax,M.ay];}
 function grunkFrame(e){const sh=SHEETS[e.T.atlas],p=e.fury?'e_':'',n=a=>sh.meta.anims[p+a]?sh.meta.anims[p+a].length:sh.meta.anims[a].length,A=a=>p+a;
   if(e.dead)return atlasFrame(sh,A('death'),Math.floor(e.deadT*7));
@@ -3211,7 +3228,7 @@ function render(){
         ctx.restore();if(Math.random()<(gd?.4:.25))VF.pt(e.x+rnd(-8,8),e.y-rnd(0,24),{vy:-rnd(14,34),life:.8,col:e.elCol,sz:gd?2:1.6});}
       const fr=entFrame(e);let al=1;if(e.dead)al=Math.max(0,1-Math.max(0,e.deadT-.5)/.6);
       if(e.kind==='hero'&&e.dod){const dd=e.dod;if(dd.type==='roll'){const px=e.x-cx,py=e.y-cy-14,ang=dd.p*6.283*dd.sg;ctx.save();ctx.translate(px,py);ctx.rotate(ang);ctx.translate(-px,-py);drawSprite(e,fr,sc,false,.95);ctx.restore();}else drawSprite(e,fr,sc,false,Math.min(1,.1+dd.t/.22));}
-      else{const zo=e.zoff||0;if(zo)e.y-=zo;drawSprite(e,fr,sc,e.flash>0,al);if(zo)e.y+=zo;}entLight(e,cx,cy);if(e.kind==='hero')heroDrawn=true;else if(e.kind==='mob'||e.kind==='boss')ents.push({e,fr,sc,al,b:[sxx-16*sc,syy-52*sc,sxx+16*sc,syy+4],o:false});
+      else{const zo=e.zoff||0,ra=e.kind==='boss'&&e.T.atlas&&e.ent&&e.ent.k==='roar';if(ra)roarAura(e,sxx,syy,0);if(zo)e.y-=zo;drawSprite(e,fr,sc,e.flash>0,al);if(zo)e.y+=zo;if(ra)roarAura(e,sxx,syy,1);}entLight(e,cx,cy);if(e.kind==='hero')heroDrawn=true;else if(e.kind==='mob'||e.kind==='boss')ents.push({e,fr,sc,al,b:[sxx-16*sc,syy-52*sc,sxx+16*sc,syy+4],o:false});
     }}
   if(occl&&h.state!=='ko'){drawSprite(h,entFrame(h),1,false,.5);}
   for(const q of ents)if(q.o&&!q.e.dead)drawSprite(q.e,q.fr,q.sc,false,.5*q.al);
