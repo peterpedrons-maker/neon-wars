@@ -9,10 +9,10 @@ def seq_dive(A):
     # (quadro, deslocamento vertical em px, tempo ms)
     return [(d[0],0,90),(d[1],-14,80),(s[1],-34,80),(d[1],-58,80),(h[1],-80,90),(d[2],-82,110),(d[3],-60,70),(d[3],-26,55),(d[4],6,150),(d[5],0,110),(d[0],0,110)]
 def seq_death(A):
-    d=A['death'];rot=lambda f,a:crop(f).rotate(-a,resample=Image.NEAREST,expand=True)
-    out=[(d[0],0,100),(d[1],4,90)]
-    for a,y in((35,10,),(75,22),(115,36),(150,50)):out.append((rot(d[1],a),y,70))
-    out+= [(d[2],56,90),(d[3],70,100),(d[4],82,130),(d[5],90,500)]
+    d=A['death'];f=A['dive'][3];rot=lambda x,a:crop(x).rotate(-a,resample=Image.NEAREST,expand=True)   # f = quadro com as asas fechadas
+    out=[(d[0],0,100),(d[1],4,90),(rot(d[1],30),9,70)]
+    for a,y in((65,18),(105,32),(145,48)):out.append((rot(f,a),y,70))   # gira com as asas fechadas
+    out+=[(d[2],56,90),(d[3],70,100),(d[4],82,130),(d[5],90,500)]
     return out
 def render(seq,path,BG=(34,30,44,255),sc=1.7,pad=16,tw=None):
     tr=[(crop(f) if f.getchannel('A').getbbox() else f,y,t) for f,y,t in seq]
