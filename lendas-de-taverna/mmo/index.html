@@ -839,10 +839,22 @@ const BOSS_GOB={nome:'Grunk',ent:'run',aura:['#ff5a3a','#ffd070'],sheet:'grunk',
 const BOSS_ESQ={nome:'Morvath',rad:26,shr:36,ent:'drop',aura:['#6ab8ff','#e6f6ff'],sheet:'skelchefe',hp:2300,atk:15,xp:280,gold:[85,150],speed:42,aggro:270,rng:52,aspd:1.4,scale:2,st:['sangramento',.45,6,.025],
   msk:[{id:'slam',hp:1,cd:5,warn:1,r:88,mult:2.5,st:['abalado',.6,5,0],w:3},{id:'charge',hp:.8,cd:7.5,warn:.85,w:44,len:260,mult:2.2,st:['atordoado',.8,1,0],wt:2},{id:'roar',hp:.5,cd:10,warn:1.25,r:155,mult:2,st:['medo',1,2.4,0],wt:3}]};
 const bossDef=z=>{const f=famOf(z===undefined?G.zoneLv:z);return f==='goblin'?BOSS_GOB:f==='esq'?BOSS_ESQ:BOSS;};
-/* ===== itens ÚNICOS (nomeados, com efeito próprio): por área; hoje só a Floresta de Brumavale ===== */
+/* ===== itens ÚNICOS (nomeados, com efeito próprio): por área; chefes e mini-chefes têm os seus ===== */
 const UNIQUES=[
- {id:'clava_ogro',nm:'Clava do Ogro de Brumavale',slot:'arma',wl:'clerigo',ic:'i_martelo',src:'boss',cls:['guerreiro','clerigo'],mul:1.5,fx:{ls:.05,kb:.10,kd:.5},desc:'Cada golpe devolve 5% do dano causado em vida. +10% de chance de empurrão e +50% de duração da queda.'},
- {id:'couraca_ogro',nm:'Couro Grosso do Ogro',slot:'armadura',ic:'i_couraca',src:'boss',mul:1.45,fx:{thorns:.25,kd:.25},desc:'Reflete 25% do dano recebido ao atacante e +25% de duração da queda.'},
+ /* chefes: cada um tem os seus (bk = chefe); mini-chefes: src = tipo do monstro */
+ {id:'clava_ogro',nm:'Clava de Gorgash',slot:'arma',wl:'clerigo',ic:'i_martelo',src:'boss',bk:'gorgash',cls:['guerreiro','clerigo'],mul:1.5,fx:{ls:.05,kb:.10,kd:.5},desc:'Cada golpe devolve 5% do dano causado em vida. +10% de chance de empurrão e +50% de duração da queda.'},
+ {id:'couraca_ogro',nm:'Couro Grosso de Gorgash',slot:'armadura',ic:'i_couraca',src:'boss',bk:'gorgash',mul:1.45,fx:{thorns:.25,kd:.25},desc:'Reflete 25% do dano recebido ao atacante e +25% de duração da queda.'},
+ {id:'cutelo_grunk',nm:'Cutelo de Grunk',slot:'arma',wl:'guerreiro',ic:'i_machado',src:'boss',bk:'grunk',cls:['guerreiro'],mul:1.5,fx:{kb:.12,kd:.4,ls:.03},desc:'+12% de chance de empurrão, +40% de duração da queda e 3% do dano causado devolvido em vida.'},
+ {id:'elmo_grunk',nm:'Elmo Cornudo de Grunk',slot:'elmo',ic:'i_cornos',src:'boss',bk:'grunk',mul:1.45,fx:{thorns:.15,xp:.1},desc:'Reflete 15% do dano recebido e +10% de experiência.'},
+ {id:'botas_grunk',nm:'Botas Pesadas de Grunk',slot:'botas',ic:'i_botas',src:'boss',bk:'grunk',mul:1.45,fx:{kd:.3,kb:.06},desc:'+30% de duração da queda e +6% de chance de empurrão.'},
+ {id:'lamina_morvath',nm:'Lâmina do Rei Esqueleto',slot:'arma',wl:'ladino',ic:'i_espada',src:'boss',bk:'morvath',cls:['ladino'],mul:1.5,fx:{ls:.04,gold:.1},desc:'Recupera 4% do dano causado em vida e +10% de ouro dos monstros.'},
+ {id:'coroa_morvath',nm:'Coroa Gélida de Morvath',slot:'elmo',ic:'i_coroa',src:'boss',bk:'morvath',mul:1.45,fx:{xp:.15,ls:.03},desc:'+15% de experiência e 3% do dano causado devolvido em vida.'},
+ {id:'manto_morvath',nm:'Manto de Ossos de Morvath',slot:'armadura',ic:'i_manto',src:'boss',bk:'morvath',mul:1.45,fx:{thorns:.2,kd:.2},desc:'Reflete 20% do dano recebido e +20% de duração da queda.'},
+ {id:'cajado_skrix',nm:'Cajado do Xamã Skrix',slot:'arma',wl:'mago',ic:'i_cajado',src:'skrix',cls:['mago'],mul:1.4,fx:{xp:.1,ls:.03},desc:'+10% de experiência e 3% do dano causado devolvido em vida.'},
+ {id:'colar_skrix',nm:'Colar de Dentes de Skrix',slot:'amuleto',ic:'i_colar',src:'skrix',mul:1.4,fx:{gold:.2,xp:.1},desc:'+20% de ouro e +10% de experiência.'},
+ {id:'mascara_skrix',nm:'Máscara de Osso do Xamã',slot:'elmo',ic:'i_mascara',src:'skrix',mul:1.4,fx:{thorns:.12,gold:.1},desc:'Reflete 12% do dano recebido e +10% de ouro.'},
+ {id:'presa_vamp',nm:'Presa do Morcego-Vampiro',slot:'anel',ic:'i_anel',src:'vampiro',mul:1.4,fx:{ls:.05},desc:'Recupera 5% do dano causado em vida.'},
+ {id:'garras_vamp',nm:'Garras do Morcego-Vampiro',slot:'botas',ic:'i_garra',src:'vampiro',mul:1.4,fx:{kb:.08,xp:.1},desc:'+8% de chance de empurrão e +10% de experiência.'},
  {id:'coroa_goblin',nm:'Coroa do Rei Goblin',slot:'elmo',ic:'i_coroa',src:'goblin',mul:1.4,fx:{gold:.3},desc:'+30% de ouro dos monstros.'},
  {id:'botas_javali',nm:'Botas de Presa de Javali',slot:'botas',ic:'i_botas',src:'javali',mul:1.4,fx:{xp:.2,kb:.08,kd:.3},desc:'+20% de experiência, +8% de chance de empurrão e +30% de duração da queda.'},
  {id:'amuleto_vigia',nm:'Amuleto do Vigia Ósseo',slot:'amuleto',ic:'i_talisma',src:'esq',mul:1.4,fx:{ls:.03,xp:.1},desc:'Recupera 3% do dano em vida e +10% de experiência.'},
@@ -1804,9 +1816,9 @@ function dropLoot(m){
   const il=Math.max(1,Math.round(SAVE.lv*.5+m.lv*.5+(boss?2:0))),mk=it=>{const a=Math.random()*6.283,d=rnd(16,34);
     G.loot.push({x:m.x,y:m.y,ox:m.x,oy:m.y,tx:m.x+Math.cos(a)*d,ty:m.y+Math.sin(a)*d*.6,it,t:0,fly:.5,rest:.9+.3*it.rar,h:0,v:70});};
   for(let i=0;i<n;i++)mk(genItem(il,boss?(i===0?2:1):(m.elite?(m.tier==='gold'&&i===0?2:1):0),(boss?12:G.zoneLv*2)+luck*10));
-  const pool=UNIQUES.filter(u=>(boss?u.src==='boss':u.src===(m.T.fam||m.type))&&(!u.cls||u.cls.includes(SAVE.cls)));
+  const bk=boss?({goblin:'grunk',esq:'morvath'}[famOf(G.zoneLv)]||'gorgash'):null,pool=UNIQUES.filter(u=>(boss?(u.src==='boss'&&u.bk===bk):u.src===(m.mini?m.type:(m.T.fam||m.type)))&&(!u.cls||u.cls.includes(SAVE.cls)));
   {const fam=boss?famOf(G.zoneLv):(m.T.fam||m.type),ST=SETS.find(x=>x.fam===fam);if(ST&&Math.random()<(boss?.35:.006*(m.elite?(m.tier==='gold'?10:4):1)*(1+luck))){mk(genItem(il,3,0,null,ST));SAVE.cnt=SAVE.cnt||{};SAVE.cnt.set=(SAVE.cnt.set||0)+1;chat('Peça de conjunto: '+ST.nm,4);}}
-  if(pool.length&&Math.random()<(boss?.45:.004*(m.elite?(m.tier==='gold'?8:3):1)*(1+luck)))mk(genItem(il+1,4,0,pick(pool)));
+  if(pool.length&&Math.random()<(boss?.45:m.mini?.4:.004*(m.elite?(m.tier==='gold'?8:3):1)*(1+luck)))mk(genItem(il+1,4,0,pick(pool)));
 }
 /* itens no chão: caem em arco, brilham pela raridade, descansam um instante e então são puxados até o herói */
 function updateLoot(dt){
