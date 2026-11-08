@@ -95,3 +95,7 @@ em 2–5 a campanha toda, então a chance de acertar é quase fixa (~45–70%).
 - Habilidades: **Totem tóxico** (poça de veneno periódica; até 2; some em 13 s ou quando destruído), **Maldição** (dot + enfraquecido por 10 s; quebra ao destruir os totens), **Chamado da tribo** (3 goblins + escudo que reduz o dano a 12% por até 12 s ou até os adds morrerem), **Fuga** a 35% de vida (teleporta e finca um totem grande).
 - IA do herói em modo automático: com escudo ativo ataca os adds; com maldição ativa ataca o totem mais próximo (`skPrio`).
 - Dificuldade ainda não balanceada de propósito (o jogo segue em modo automático para testes).
+
+## Drops únicos por chefe
+- Cada chefe tem seus únicos (`bk`): Grunk (Cutelo, Elmo Cornudo, Botas Pesadas), Morvath (Lâmina do Rei Esqueleto, Coroa Gélida, Manto de Ossos), Gorgash (Clava e Couro Grosso). Chance de único: 45% por morte.
+- Mini-chefes: Skrix (Cajado, Colar de Dentes, Máscara de Osso) e Morcego-Vampiro (Presa, Garras), 40% por morte. Cada único respeita a classe (`cls`).
