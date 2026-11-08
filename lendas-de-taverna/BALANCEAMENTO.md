@@ -103,4 +103,4 @@ em 2–5 a campanha toda, então a chance de acertar é quase fixa (~45–70%).
 - Regra para a futura Arena do Chefe: precisa ser uma escolha. Menos experiência e mais chance de único, enquanto a dungeon completa dá mais experiência e menos chance de único. Nunca melhor nos dois.
 - Variedade: cada chefe tem 1 arma única para cada uma das 6 classes + 3 peças (4 opções por classe); cada mini-chefe, 1 arma por classe + 2 peças (3 opções). Nenhuma classe sai na frente; o sorteio escolhe entre as opções válidas da classe.
 - Chances atuais: único de chefe 10%, de mini-chefe 6% (a dungeon completa manda mais XP; a futura Arena terá chance maior e XP menor).
-- A chance de único cai ao longo do jogo (fator por dungeon: 100% / 60% / 35% / 20%). Chefe: 10% → 6% → 3,5% → 2%. Mini-chefe: 6% → 3,6% → 2,1% → 1,2%. No fim do jogo o jogador caça os itens, então precisa ser raro.
+- A chance de único cai com o NÍVEL da dungeon, não com a posição na lista: fator = (8 / nível do chefe)^0,8. Chefe: 10% (Nv 8), 6,8% (Nv 13), 4,3% (Nv 23), 2,6% (Nv 43), ~2% (Nv 60). Mini-chefe: 60% desses valores. Várias dungeons na mesma faixa de nível têm a mesma chance.
