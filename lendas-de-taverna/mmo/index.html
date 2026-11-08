@@ -3161,7 +3161,7 @@ function totemStep(m,dt){m.age+=dt;m.life-=dt;if(m.age<.6)return;
   if(m.life<=0)killMob(m);}
 function totemBreak(m){const h=G.hero;VF.burst(m.x,m.y-20,14,['#6a5a3a','#d8d0b0','#7ae04a'],{s0:40,s1:110,flat:.6,up:40});sfx('hit_1',.6);
   if(h&&!G.mobs.some(t=>t!==m&&t.type==='totem'&&!t.dead)){if(stHas(h,'maldicao')||stHas(h,'enfraquecido')){stRm(h,'maldicao');stRm(h,'enfraquecido');floatText(h.x,h.y-60,'Maldição quebrada','#c8ff8a',8,1);}}}
-function skShield(e,x,y){const p=.5+.5*Math.sin(G.t*5);ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.2+.1*p;ctx.fillStyle='#7ae04a';ctx.beginPath();ctx.ellipse(x,y-34,30,44,0,0,7);ctx.fill();ctx.globalAlpha=.55;ctx.strokeStyle='#c8ff8a';ctx.lineWidth=1.5;ctx.stroke();ctx.restore();}
+function skShield(e,x,y){const p=.5+.5*Math.sin(G.t*5);ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.07+.05*p;ctx.fillStyle='#7ae04a';ctx.beginPath();ctx.ellipse(x,y-44,38,58,0,0,7);ctx.fill();ctx.globalAlpha=.6;ctx.strokeStyle='#c8ff8a';ctx.lineWidth=1.5;ctx.stroke();ctx.restore();}
 function skrixTick(m,dt){if(m.shd>0){m.shd-=dt;const adds=G.mobs.some(b=>b.skAdd&&!b.dead);if(m.shd<=0||!adds){m.shd=0;m.take=null;floatText(m.x,m.y-76,'Escudo quebrado','#c8ff8a',8,1);VF.burst(m.x,m.y-30,12,['#7ae04a','#c8ff8a'],{s0:40,s1:100});sfx('crit',.5);}else m.take=.12;}}
 function skPrio(h,t){const sk=G.mobs.find(m=>m.type==='skrix'&&!m.dead);if(!sk)return t;
   if(sk.shd>0){let b=null,bd=9999;for(const m of G.mobs){if(m.dead||!m.skAdd)continue;const d=dist(h,m);if(d<bd){bd=d;b=m;}}if(b)return b;}
