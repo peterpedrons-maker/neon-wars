@@ -1826,8 +1826,8 @@ function addItem(it,quiet){
 }
 function sellItem(it,silent){SAVE.gold+=itemVal(it);if(!silent)sfx('coin',.6);}
 function recalcHero(keepRatio){const h=G.hero;if(wantLook()!==wLook()&&!G.hBusy)buildHeroSheet();const r=h.hp/h.maxhp;heroStatsInto(h);h.hp=keepRatio?Math.min(h.maxhp,Math.max(1,h.maxhp*r)):h.maxhp;}
-/* chance de item único cai ao longo do jogo: dungeon 1 = 100%, 2 = 60%, 3 = 35%, 4 = 20% do valor base */
-const UQZ=()=>[1,.6,.35,.2][clamp((G.zoneLv||1)-1,0,3)];
+/* chance de item único cai com o nível da dungeon (várias dungeons na mesma faixa de nível têm a mesma chance) */
+const UQZ=()=>{const L=dgLv(G.zoneLv||1)[1];return Math.min(1,Math.pow(8/Math.max(8,L),.8));};   // depende do nível da dungeon (não da posição): 100% no Nv 8, ~48% no 20, ~35% no 30, ~20% no 60
 function dropLoot(m){
   const boss=m.kind==='boss',luck=(SAVE.elix&&SAVE.elix.sorte>0)?1:0;let n=boss?2:(m.elite?(m.tier==='gold'?2:1):(Math.random()<(.2+.12*luck+tf('drop'))?1:0));
   const il=Math.max(1,Math.round(SAVE.lv*.5+m.lv*.5+(boss?2:0))),mk=it=>{const a=Math.random()*6.283,d=rnd(16,34);
