@@ -97,7 +97,9 @@ em 2–5 a campanha toda, então a chance de acertar é quase fixa (~45–70%).
 - Dificuldade ainda não balanceada de propósito (o jogo segue em modo automático para testes).
 
 ## Drops únicos por chefe
-- Cada chefe tem seus únicos (`bk`): Grunk (Cutelo, Elmo Cornudo, Botas Pesadas), Morvath (Lâmina do Rei Esqueleto, Coroa Gélida, Manto de Ossos), Gorgash (Clava e Couro Grosso). Chance de único: 30% por morte.
-- Mini-chefes: Skrix (Cajado, Colar de Dentes, Máscara de Osso) e Morcego-Vampiro (Presa, Garras), 25% por morte. Cada único respeita a classe (`cls`).
+- Cada chefe tem seus únicos (`bk`): Grunk (Cutelo, Elmo Cornudo, Botas Pesadas), Morvath (Lâmina do Rei Esqueleto, Coroa Gélida, Manto de Ossos), Gorgash (Clava e Couro Grosso). Chance de único: 10% por morte.
+- Mini-chefes: Skrix (Cajado, Colar de Dentes, Máscara de Osso) e Morcego-Vampiro (Presa, Garras), 6% por morte. Cada único respeita a classe (`cls`).
 - Força: o `mul` de cada único agora é o múltiplo da força de um Épico (atributos base e afixos). Chefe 1.3, mini-chefe 1.2, únicos de área 1.25. Medido por simulação (ilvl 8/14/25): único de chefe ≈ 1.4× Épico, de mini-chefe ≈ 1.3×, peça de conjunto ≈ 1.15×, Épico ≈ 1.5× Mágico (antes o único era ≈ 2× Épico). Itens já salvos mantêm os atributos de quando caíram.
 - Regra para a futura Arena do Chefe: precisa ser uma escolha. Menos experiência e mais chance de único, enquanto a dungeon completa dá mais experiência e menos chance de único. Nunca melhor nos dois.
+- Variedade: cada chefe tem 1 arma única para cada uma das 6 classes + 3 peças (4 opções por classe); cada mini-chefe, 1 arma por classe + 2 peças (3 opções). Nenhuma classe sai na frente; o sorteio escolhe entre as opções válidas da classe.
+- Chances atuais: único de chefe 10%, de mini-chefe 6% (a dungeon completa manda mais XP; a futura Arena terá chance maior e XP menor).

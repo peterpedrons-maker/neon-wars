@@ -859,6 +859,21 @@ const UNIQUES=[
  {id:'botas_javali',nm:'Botas de Presa de Javali',slot:'botas',ic:'i_botas',src:'javali',mul:1.25,fx:{xp:.2,kb:.08,kd:.3},desc:'+20% de experiência, +8% de chance de empurrão e +30% de duração da queda.'},
  {id:'amuleto_vigia',nm:'Amuleto do Vigia Ósseo',slot:'amuleto',ic:'i_talisma',src:'esq',mul:1.25,fx:{ls:.03,xp:.1},desc:'Recupera 3% do dano em vida e +10% de experiência.'},
  {id:'anel_rato',nm:'Anel do Rei dos Ratos',slot:'anel',ic:'i_anel',src:'rato',mul:1.25,fx:{gold:.15,thorns:.1},desc:'+15% de ouro e reflete 10% do dano recebido.'}];
+/* armas únicas para as 6 classes em cada chefe/mini-chefe (para nenhuma classe sair na frente) + peças extras; [nome, ícone] por classe */
+{const WX={
+ grunk:{src:'boss',bk:'grunk',mul:1.3,M:{kb:.12,kd:.4,ls:.03},C:{xp:.1,ls:.03,kd:.3},n:{guerreiro:['Cutelo de Grunk','i_machado'],ladino:['Adaga Serrilhada de Grunk','i_adaga'],mago:['Cajado Rúnico de Grunk','i_cajado'],clerigo:['Maça de Ferro de Grunk','i_martelo'],arqueiro:['Arco de Chifre de Grunk','i_arco'],bardo:['Florete Enferrujado de Grunk','i_espada']}},
+ morvath:{src:'boss',bk:'morvath',mul:1.3,M:{ls:.04,gold:.1},C:{xp:.12,ls:.03},n:{guerreiro:['Espada do Rei Esqueleto','i_espada'],ladino:['Lâmina do Rei Esqueleto','i_espada'],mago:['Cajado Gélido de Morvath','i_cajado'],clerigo:['Cetro de Ossos de Morvath','i_cetro'],arqueiro:['Arco de Costela de Morvath','i_arco'],bardo:['Florete Gélido de Morvath','i_espada']}},
+ gorgash:{src:'boss',bk:'gorgash',mul:1.3,M:{ls:.05,kb:.10,kd:.5},C:{ls:.04,kd:.4,xp:.08},n:{guerreiro:['Clava de Gorgash','i_martelo'],ladino:['Adaga de Presa de Gorgash','i_adaga'],mago:['Cajado de Ossada de Gorgash','i_cajado'],clerigo:['Maça de Gorgash','i_martelo'],arqueiro:['Arco de Tendão de Gorgash','i_arco'],bardo:['Florete Pesado de Gorgash','i_espada']}},
+ skrix:{src:'skrix',mul:1.2,M:{xp:.1,ls:.03},C:{xp:.1,gold:.1},n:{guerreiro:['Clava de Osso do Xamã','i_martelo'],ladino:['Adaga Ritual de Skrix','i_adaga'],mago:['Cajado do Xamã Skrix','i_cajado'],clerigo:['Maça Totêmica de Skrix','i_martelo'],arqueiro:['Arco Tribal de Skrix','i_arco'],bardo:['Florete Tribal de Skrix','i_espada']}},
+ vamp:{src:'vampiro',mul:1.2,M:{ls:.05},C:{ls:.04,xp:.08},n:{guerreiro:['Espada Noturna do Morcego','i_espada'],ladino:['Presa-Adaga do Morcego-Vampiro','i_adaga'],mago:['Cajado da Noite do Morcego','i_cajado'],clerigo:['Maça Noturna do Morcego','i_martelo'],arqueiro:['Arco Noturno do Morcego','i_arco'],bardo:['Florete Noturno do Morcego','i_espada']}}};
+ const FXD={ls:v=>`Cada golpe devolve ${Math.round(v*100)}% do dano causado em vida.`,kb:v=>`+${Math.round(v*100)}% de chance de empurrão.`,kd:v=>`+${Math.round(v*100)}% de duração da queda.`,xp:v=>`+${Math.round(v*100)}% de experiência.`,gold:v=>`+${Math.round(v*100)}% de ouro.`,thorns:v=>`Reflete ${Math.round(v*100)}% do dano recebido.`};
+ const covers=(x,c)=>UNIQUES.some(u=>u.slot==='arma'&&u.src===x.src&&(x.bk?u.bk===x.bk:true)&&(!u.cls||u.cls.includes(c))&&(u.cls||u.src===x.src));
+ for(const k in WX){const x=WX[k];for(const c of ['guerreiro','ladino','mago','clerigo','arqueiro','bardo']){
+   if(UNIQUES.some(u=>u.slot==='arma'&&u.src===x.src&&(x.bk?u.bk===x.bk:true)&&u.cls&&u.cls.includes(c)))continue;
+   const fx=['guerreiro','ladino','clerigo'].includes(c)?x.M:x.C,[nm,ic]=x.n[c];
+   UNIQUES.push({id:'w_'+k+'_'+c,nm,slot:'arma',wl:c,ic,src:x.src,bk:x.bk,cls:[c],mul:x.mul,fx,desc:Object.keys(fx).map(q=>FXD[q](fx[q])).join(' ')});}}
+ const EX=[['peitoral_grunk','Peitoral de Couro de Grunk','armadura','i_couraca','boss','grunk',1.3,{thorns:.15,kd:.2}],['grevas_morvath','Grevas Gélidas de Morvath','botas','i_grevas','boss','morvath',1.3,{kd:.25,kb:.06}],['elmo_gorgash','Elmo de Gorgash','elmo','i_elmo','boss','gorgash',1.3,{thorns:.15,xp:.08}],['botas_gorgash','Botas de Gorgash','botas','i_botas','boss','gorgash',1.3,{kd:.3,kb:.06}]];
+ for(const [id,nm,slot,ic,src,bk,mul,fx] of EX)UNIQUES.push({id,nm,slot,ic,src,bk,mul,fx,desc:Object.keys(fx).map(q=>FXD[q](fx[q])).join(' ')});}
 /* ===== CONJUNTOS: 6 peças por família de monstro; bônus com 2, 4 e 6 peças equipadas ===== */
 const SETS=[
  {id:'goblin',nm:'Saque do Rei Goblin',fam:'goblin',col:'#8ee05a',pcs:{elmo:'Elmo do Saqueador',armadura:'Colete do Saqueador',luvas:'Luvas do Saqueador',botas:'Botas do Saqueador',amuleto:'Amuleto do Saqueador',anel:'Anel do Saqueador'},
@@ -1818,7 +1833,7 @@ function dropLoot(m){
   for(let i=0;i<n;i++)mk(genItem(il,boss?(i===0?2:1):(m.elite?(m.tier==='gold'&&i===0?2:1):0),(boss?12:G.zoneLv*2)+luck*10));
   const bk=boss?({goblin:'grunk',esq:'morvath'}[famOf(G.zoneLv)]||'gorgash'):null,pool=UNIQUES.filter(u=>(boss?(u.src==='boss'&&u.bk===bk):u.src===(m.mini?m.type:(m.T.fam||m.type)))&&(!u.cls||u.cls.includes(SAVE.cls)));
   {const fam=boss?famOf(G.zoneLv):(m.T.fam||m.type),ST=SETS.find(x=>x.fam===fam);if(ST&&Math.random()<(boss?.35:.006*(m.elite?(m.tier==='gold'?10:4):1)*(1+luck))){mk(genItem(il,3,0,null,ST));SAVE.cnt=SAVE.cnt||{};SAVE.cnt.set=(SAVE.cnt.set||0)+1;chat('Peça de conjunto: '+ST.nm,4);}}
-  if(pool.length&&Math.random()<(boss?.30:m.mini?.25:.004*(m.elite?(m.tier==='gold'?8:3):1)*(1+luck)))mk(genItem(il+1,4,0,pick(pool)));
+  if(pool.length&&Math.random()<(boss?.10:m.mini?.06:.004*(m.elite?(m.tier==='gold'?8:3):1)*(1+luck)))mk(genItem(il+1,4,0,pick(pool)));
 }
 /* itens no chão: caem em arco, brilham pela raridade, descansam um instante e então são puxados até o herói */
 function updateLoot(dt){
