@@ -109,3 +109,14 @@ em 2–5 a campanha toda, então a chance de acertar é quase fixa (~45–70%).
 - PC do item = pontuação dos atributos (ataque×3, defesa×2, vida×0,35, crítico%×4, velocidade%×1,5, empurrão×1,2, queda×0,4), com o aprimoramento. Aparece na ficha do item.
 - PC do herói = a mesma fórmula sobre os atributos finais (inclui nível, atributos, talentos e conjuntos). Aparece na aba Equip. do personagem.
 - Nível necessário do item = início da faixa do tier (Tier 1 = nv 1, Tier 2 = nv 6, Tier 3 = nv 11…). Itens acima do nível não equipam (nem pelo auto-equipar); itens já equipados em saves antigos continuam.
+
+## Poder de combate recomendado por dungeon (calibração)
+Simulação (`tools/mmo/sim/pc_calib.cjs` e `boss.cjs`, herói automático, equipamento 'med', luta contra o chefe):
+| Dungeon | Chefe (nível) | Perde com PC | Vence com folga com PC | PC recomendado |
+|---|---|---|---|---|
+| 1 Floresta dos Goblins | Grunk (8) | ≤ 460 | ≥ 570–610 | **600** |
+| 2 Catacumbas | Morvath (13) | ≤ 984 | ≥ 1090–1185 | **1100** |
+| 3 Floresta de Brumavale | Gorgash (18) | ≤ 870 | ≥ 1056–1214 | **1200** |
+| 4 Esgotos | Gorgash (23) | ≤ 1247 | ≥ 1366 | **1400** |
+- PC típico de um herói 'med' no nível do chefe: 432 / 717 / 986 / 1325 (as 6 classes ficam dentro de ±12%). Ou seja, os chefes 2 a 4 exigem equipamento acima do 'médio'.
+- **Alerta de balanceamento:** o Morvath exige quase o dobro do poder do Grunk (1100 contra 600) e é o salto mais brusco; Gorgash fica em 1200 e 1400. Candidato a ajuste quando formos mexer na dificuldade.
