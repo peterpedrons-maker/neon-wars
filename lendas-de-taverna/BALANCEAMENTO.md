@@ -115,7 +115,7 @@ Simulação (`tools/mmo/sim/pc_calib.cjs` e `boss.cjs`, herói automático, equi
 | Dungeon | Chefe (nível) | Perde com PC | Vence com folga com PC | PC recomendado |
 |---|---|---|---|---|
 | 1 Floresta dos Goblins | Grunk (8) | ≤ 460 | ≥ 570–610 | **600** |
-| 2 Catacumbas | Morvath (13) | ≤ 984 | ≥ 1090–1185 | **1100** |
+| 2 Catacumbas | Morvath (13) | ≤ 984 (antes do ajuste) | ≥ 1090–1185 (antes do ajuste) | **900** (após o ajuste) |
 | 3 Floresta de Brumavale | Gorgash (18) | ≤ 870 | ≥ 1056–1214 | **1200** |
 | 4 Esgotos | Gorgash (23) | ≤ 1247 | ≥ 1366 | **1400** |
 - PC típico de um herói 'med' no nível do chefe: 432 / 717 / 986 / 1325 (as 6 classes ficam dentro de ±12%). Ou seja, os chefes 2 a 4 exigem equipamento acima do 'médio'.
@@ -131,3 +131,9 @@ Simulação (`tools/mmo/sim/pc_calib.cjs` e `boss.cjs`, herói automático, equi
 - **Boss Rush:** os 4 chefes em sequência, com 35% de cura entre eles (mínimo 20% de vida ao começar). Libera ao derrotar os chefes das 4 dungeons. Nota: S ≤ 420 s, A ≤ 600 s, B ≤ 840 s. PC recomendado = 1.1× o da última dungeon.
 - Derrota (herói cai): tela com "Tentar de novo" e "Voltar à cidade". Recordes em `SAVE.arena` (`z1…z4` e `rush`) com `w` (vitórias) e `best` (melhor tempo).
 - As notas e os tempos são palpites iniciais (S pensado para um herói forte); ajustar com os resultados reais.
+
+## Ajuste do Morvath
+- Antes: exigia quase o dobro do poder do Grunk (1.100 contra 600), o salto mais brusco entre as dungeons.
+- Ajuste: vida 2300 → 1900, ataque 15 → 11,5 e habilidades mais espaçadas (Pancada 5 → 6,5 s, Investida 7,5 → 9 s, Rugido 10 → 12 s).
+- Resultado medido (equipamento 'med'): vence cerca de metade das lutas com PC 735–800 e com folga a partir de ~900. PC recomendado passa de 1.100 para **900**, e a progressão fica 600 → 900 → 1.200 → 1.400.
+- Medido com guerreiro, mago, arqueiro e clérigo (poucas lutas por caso, então a margem é aproximada).
