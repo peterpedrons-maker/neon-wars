@@ -907,8 +907,8 @@ const BOSS_GOB={nome:'Grunk',ent:'run',aura:['#ff5a3a','#ffd070'],sheet:'grunk',
   enrageAt:.35,   /* a 35% de vida: canaliza a fúria (menos dano, regenera) e depois fica mais forte e rápido */
   msk:[{id:'leap',hp:1,cd:7.5,warn:1.05,r:78,mult:2.6,st:['abalado',.6,5,0],wt:3,max:330},
        {id:'charge',hp:.9,cd:9,warn:.9,w:44,len:250,mult:2.2,st:['atordoado',.8,1,0],wt:2,min:70}]};
-const BOSS_ESQ={nome:'Morvath',rad:26,shr:36,ent:'drop',aura:['#6ab8ff','#e6f6ff'],sheet:'skelchefe',hp:2300,atk:15,xp:280,gold:[85,150],speed:42,aggro:270,rng:52,aspd:1.4,scale:2,st:['sangramento',.45,6,.025],
-  msk:[{id:'slam',hp:1,cd:5,warn:1,r:88,mult:2.5,st:['abalado',.6,5,0],w:3},{id:'charge',hp:.8,cd:7.5,warn:.85,w:44,len:260,mult:2.2,st:['atordoado',.8,1,0],wt:2},{id:'roar',hp:.5,cd:10,warn:1.25,r:155,mult:2,st:['medo',1,2.4,0],wt:3}]};
+const BOSS_ESQ={nome:'Morvath',rad:26,shr:36,ent:'drop',aura:['#6ab8ff','#e6f6ff'],sheet:'skelchefe',hp:1900,atk:11.5,xp:280,gold:[85,150],speed:42,aggro:270,rng:52,aspd:1.4,scale:2,st:['sangramento',.45,6,.025],
+  msk:[{id:'slam',hp:1,cd:6.5,warn:1,r:88,mult:2.5,st:['abalado',.6,5,0],w:3},{id:'charge',hp:.8,cd:9,warn:.85,w:44,len:260,mult:2.2,st:['atordoado',.8,1,0],wt:2},{id:'roar',hp:.5,cd:12,warn:1.25,r:155,mult:2,st:['medo',1,2.4,0],wt:3}]};
 const bossDef=z=>{const f=famOf(z===undefined?G.zoneLv:z);return f==='goblin'?BOSS_GOB:f==='esq'?BOSS_ESQ:BOSS;};
 /* ===== itens ÚNICOS (nomeados, com efeito próprio): por área; chefes e mini-chefes têm os seus ===== */
 const UNIQUES=[
@@ -1724,7 +1724,7 @@ const FAMV={goblin:['goblin','goblin','gobarq','xama','goblin'],esq:['esq','esq'
 const varOf=(z,i)=>{const a=FAMV[famOf(z)];return a[((i%a.length)+a.length)%a.length];};
 /* progressão definida: 4 dungeons, uma após a outra. Para entrar na seguinte é preciso derrotar o chefe da anterior e ter o nível mínimo. */
 /* pc = poder de combate recomendado (calibrado por simulação: PC com o qual o herói de equipamento médio vence o chefe com folga; tools/mmo/sim/pc_calib.cjs + boss.cjs) */
-const DUN=[{id:1,nm:'Floresta dos Goblins',unlock:1,pc:600},{id:2,nm:'Catacumbas de Brumavale',unlock:8,pc:1100},{id:3,nm:'Floresta de Brumavale',unlock:13,pc:1200},{id:4,nm:'Esgotos de Brumavale',unlock:18,pc:1400}];
+const DUN=[{id:1,nm:'Floresta dos Goblins',unlock:1,pc:600},{id:2,nm:'Catacumbas de Brumavale',unlock:8,pc:900},{id:3,nm:'Floresta de Brumavale',unlock:13,pc:1200},{id:4,nm:'Esgotos de Brumavale',unlock:18,pc:1400}];
 const dgLv=z=>[1+(z-1)*BAL.zoneLv,8+(z-1)*BAL.zoneLv];   // faixa de nível dos monstros da dungeon z
 function dgUnlocked(z){if(z<=1)return true;const d=DUN[z-1];return !!(d&&SAVE.dgDone&&SAVE.dgDone[z-1]&&SAVE.lv>=d.unlock);}
 function dgRefresh(){let m=1;for(let z=2;z<=DUN.length;z++)if(dgUnlocked(z))m=z;if(m>(SAVE.zoneMax||1)){SAVE.zoneMax=m;chat('Nova dungeon liberada: '+DUN[m-1].nm+'!',4);sfx('levelup',.4);if(G.hero)floatText(G.hero.x,G.hero.y-80,'Nova dungeon!','#8ef08a',9,1.4);}SAVE.zoneMax=Math.max(1,Math.min(DUN.length,SAVE.zoneMax||1));}
