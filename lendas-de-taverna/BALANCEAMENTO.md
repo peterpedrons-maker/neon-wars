@@ -137,3 +137,6 @@ Simulação (`tools/mmo/sim/pc_calib.cjs` e `boss.cjs`, herói automático, equi
 - Ajuste: vida 2300 → 1900, ataque 15 → 11,5 e habilidades mais espaçadas (Pancada 5 → 6,5 s, Investida 7,5 → 9 s, Rugido 10 → 12 s).
 - Resultado medido (equipamento 'med'): vence cerca de metade das lutas com PC 735–800 e com folga a partir de ~900. PC recomendado passa de 1.100 para **900**, e a progressão fica 600 → 900 → 1.200 → 1.400.
 - Medido com guerreiro, mago, arqueiro e clérigo (poucas lutas por caso, então a margem é aproximada).
+
+## Boss Rush removido
+- Era muito parecido com a Arena do Chefe; ficou só a **Arena do Chefe** (uma por dungeon) na aba Especiais. O código do Boss Rush continua no jogo, sem entrada na interface, caso a ideia volte (por exemplo, como modo com ranking).

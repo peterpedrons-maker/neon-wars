@@ -4110,8 +4110,7 @@ function pzGauge(rec,locked){const hpc=heroPC(),r=hpc/rec,col=r>=1?'#5fd36a':r>=
 function pzItems(){
   if(PZ.tab==='d')return DUN.map((d,i)=>{const z=i+1,cur=(SAVE.zone||0)===z&&SAVE.entered,dn=SAVE.dgDone&&SAVE.dgDone[z];return {img:PZD[i].img,hd:'ÁREA '+z,nm:d.nm,lore:PZD[i].lore,unlock:d.unlock,locked:!dgUnlocked(z),st:cur?'● ATUAL':dn?'✔ concluída':'',cur,z};});
   const L=[];DUN.forEach((d,i)=>{const z=i+1,ok=!!(SAVE.dgDone&&SAVE.dgDone[z])&&SAVE.lv>=d.unlock,r=(SAVE.arena||{})['z'+z];L.push({img:PZD[i].img,hd:'ARENA DO CHEFE',nm:'Arena de '+bossDef(z).nome,lore:d.nm,unlock:d.unlock,locked:!ok,st:r&&r.w?'✔ '+r.w+' vitória'+(r.w>1?'s':''):'',z,arena:1});});
-  const all=DUN.every((d,i)=>SAVE.dgDone&&SAVE.dgDone[i+1])&&SAVE.lv>=DUN[DUN.length-1].unlock,rr=(SAVE.arena||{}).rush;
-  L.push({img:'d2',hd:'BOSS RUSH',nm:'Desfile dos Chefes',lore:'Todos, um atrás do outro.',unlock:DUN[DUN.length-1].unlock,locked:!all,st:rr&&rr.w?'✔ '+rr.w+' vitória'+(rr.w>1?'s':''):'',rush:1});return L;}
+  return L;}
 function pzDetail(it){
   if(PZ.tab==='d'){const z=it.z,d=DUN[z-1],I=PZD[z-1],un=!it.locked,lvOkd=SAVE.lv>=d.unlock,prev=DUN[z-2],prevOk=!prev||!!(SAVE.dgDone&&SAVE.dgDone[z-1]);
     let h='<div class="pzh">REQUISITOS</div><div class="pzr">'+pzReqRow(lvOkd,'Nível '+d.unlock,`você: ${SAVE.lv} ${lvOkd?'✔':'🔒'}${!lvOkd?' · faltam '+(d.unlock-SAVE.lv):''}`);
