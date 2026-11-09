@@ -120,3 +120,8 @@ Simulação (`tools/mmo/sim/pc_calib.cjs` e `boss.cjs`, herói automático, equi
 | 4 Esgotos | Gorgash (23) | ≤ 1247 | ≥ 1366 | **1400** |
 - PC típico de um herói 'med' no nível do chefe: 432 / 717 / 986 / 1325 (as 6 classes ficam dentro de ±12%). Ou seja, os chefes 2 a 4 exigem equipamento acima do 'médio'.
 - **Alerta de balanceamento:** o Morvath exige quase o dobro do poder do Grunk (1100 contra 600) e é o salto mais brusco; Gorgash fica em 1200 e 1400. Candidato a ajuste quando formos mexer na dificuldade.
+
+## Portal das Dungeons (tela cheia)
+- Substitui a janela antiga: carrossel de cartões (deslize ou toque), requisitos (nível e chefe anterior com ✔/🔒), poder de combate com número e barra, habitantes, faixa de tier/nível dos itens, botões Entrar e Continuar atual. Aba Especiais ainda "Em breve" (Arena do Chefe e Boss Rush).
+- Imagens dos cartões provisórias (capturas do jogo em `assets/portal/d1..d4.jpg`): trocar pelas artes de IA mantendo os mesmos nomes.
+- As barras de faixa de nível (1–10, 10–20…) voltam quando houver dungeons suficientes.

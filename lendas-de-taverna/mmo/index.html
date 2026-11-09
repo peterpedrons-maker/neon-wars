@@ -464,6 +464,40 @@ i.ul{position:absolute;right:2px;top:1px;font:700 9px var(--f);font-style:normal
 .nh b{font-size:19px;letter-spacing:.1em;filter:drop-shadow(0 0 8px rgba(240,194,79,.4))}.nh span{font-size:12px;color:#a9a18a;margin-top:2px}
 .nh .np{box-shadow:0 0 16px rgba(240,194,79,.45)}
 .sec-h{gap:12px}.sec-h span:last-child:not(:first-child){text-align:right;font-size:10px;letter-spacing:.08em;color:#8d866f;text-transform:none}
+/* portal em tela cheia */
+#pz{position:fixed;inset:0;z-index:10010;display:flex;flex-direction:column;background:#0b0911;color:#d8d2c0;overflow:hidden;font-family:var(--f)}
+#pz *{box-sizing:border-box}
+#pz .pzbg{position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(7px) brightness(.45) saturate(1.1);transform:scale(1.15);transition:background-image .3s}
+#pz .pzbg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,9,17,.55),rgba(11,9,17,.82) 55%,#0b0911)}
+#pz>*:not(.pzbg){position:relative}
+#pz .pztb{display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top)) 12px 0}
+#pz .pzbk{width:36px;height:36px;border:1px solid #6b5a2e;background:rgba(10,8,16,.7);color:#e8c35a;font-size:20px;line-height:1}
+#pz h1{flex:1;margin:0;font:700 15px var(--fd);letter-spacing:.06em;white-space:nowrap;color:#e8c35a;text-shadow:0 2px 8px #000}
+#pz .pzme{text-align:right;line-height:1.1}#pz .pzme small{display:block;font:700 8.5px var(--fd);letter-spacing:.15em;color:#a9a18a}#pz .pzme b{font:700 18px var(--fd);color:#e8c35a;text-shadow:0 0 10px rgba(232,195,90,.5)}
+#pz .pztab{display:flex;padding:6px 12px 0}#pz .pztab span{flex:1;text-align:center;padding:9px 0;font:700 13px var(--fd);letter-spacing:.08em;color:#8d866f;border-bottom:2px solid #2a2438;cursor:pointer}#pz .pztab span.on{color:#e8c35a;border-bottom-color:#e8c35a}
+#pz .pzbody{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+#pz .pzcr{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:20px calc(50% - 98px) 10px;scrollbar-width:none}#pz .pzcr::-webkit-scrollbar{display:none}
+#pz .pzc{position:relative;flex:none;width:176px;height:290px;scroll-snap-align:center;background-size:cover;background-position:center;border:1px solid #3a3550;overflow:hidden;opacity:.6;transform:scale(.92);transition:transform .2s,opacity .2s;cursor:pointer}
+#pz .pzc.sel{opacity:1;transform:scale(1.04);border:2px solid #e8c35a;box-shadow:0 0 20px rgba(232,195,90,.5)}
+#pz .pzc::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,6,14,.55) 0%,rgba(8,6,14,0) 22%,rgba(8,6,14,.2) 42%,rgba(8,6,14,.95) 80%)}
+#pz .pzc.lock{filter:grayscale(.7) brightness(.8)}
+#pz .pzc .hd{position:absolute;left:0;right:0;top:0;text-align:center;padding:5px 0;font:700 10px var(--fd);letter-spacing:.2em;color:#cdbf8f;z-index:2}
+#pz .pzc .nf{position:absolute;left:9px;right:9px;bottom:9px;z-index:2}#pz .pzc .nf b{display:block;font:700 16px var(--fd);color:#f1e6c2;text-shadow:0 2px 6px #000;line-height:1.1}#pz .pzc.sel .nf b{color:#e8c35a}
+#pz .pzc .nf i{display:block;margin:4px 0 6px;font:italic 11px/1.35 var(--f);color:#b8b09a}
+#pz .pzc .rq{display:flex;justify-content:space-between;padding-top:5px;border-top:1px solid rgba(232,195,90,.25);font-size:10.5px;color:#a9a18a}#pz .pzc .rq b{font:700 12px var(--fd);display:inline;color:inherit;text-shadow:none}#pz .pzc .rq b.ok{color:#7dff9a}#pz .pzc .rq b.no{color:#ff6a5a}
+#pz .pzc .st{position:absolute;left:7px;top:24px;z-index:2;font:700 9.5px var(--f);color:#96e08a}#pz .pzc .st.cur{color:#7dff9a}
+#pz .pzc .lk{position:absolute;right:7px;top:22px;z-index:3}#pz .pzc .lk img{width:22px;height:22px;image-rendering:pixelated}
+#pz .pzdots{display:flex;justify-content:center;gap:5px;margin:0 0 4px}#pz .pzdots i{width:6px;height:6px;border-radius:50%;background:#3a3550}#pz .pzdots i.on{background:#e8c35a}
+#pz .pzdet{padding:0 14px}
+#pz .pzh{margin:9px 0 5px;font:700 10.5px var(--fd);letter-spacing:.15em;color:#a9a18a;border-bottom:1px solid #2a2438;padding-bottom:3px}
+#pz .pzr{display:flex;flex-direction:column;gap:3px;font-size:12px}#pz .pzr div{display:flex;justify-content:space-between;padding:5px 8px;background:rgba(10,8,16,.7);border:1px solid #2a2438}#pz .pzr .ok b{color:#7dff9a}#pz .pzr .no b{color:#ff6a5a}
+#pz .pzg{margin-top:6px;padding:8px 10px;background:rgba(10,8,16,.7);border:1px solid #2a2438}#pz .pzg.dim{opacity:.8}#pz .pzg .l{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;margin-bottom:6px}#pz .pzg .l b{font:700 17px var(--fd)}#pz .pzg .l em{font-style:normal;color:#9a927c}
+#pz .pzg .bar{position:relative;height:9px;background:#1d1a2a;border:1px solid #3a3550}#pz .pzg .f{height:100%}#pz .pzg .m{position:absolute;top:-4px;width:2px;height:17px;background:#fff}#pz .pzg small{display:block;margin-top:6px;font-size:10.5px;color:#9a927c}
+#pz .pzen{display:flex;gap:8px}#pz .pzen>div{flex:1;text-align:center;background:#0f0d16;border:1px solid #2f2a40;padding:5px 3px;min-width:0}#pz .pzen canvas{width:74px;height:56px;display:block;margin:0 auto}#pz .pzen b{display:block;font-size:11px;margin-top:2px}#pz .pzen i{font:normal 9px var(--f);letter-spacing:.05em}
+#pz .pzen .Chefe i{color:#ff7a5a}#pz .pzen .Mini i{color:#ffb860}#pz .pzen .Comum i{color:#8a8a98}#pz .pzen .Chefe{border-color:#7a3a2a}#pz .pzen .Mini{border-color:#7a5a2a}
+#pz .pzeq{display:flex;justify-content:space-between;padding:6px 8px;background:rgba(10,8,16,.7);border:1px solid #2a2438;font-size:12px}#pz .pzeq b{color:#fff}
+#pz .pzft{display:flex;gap:8px;padding:10px 14px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(transparent,#0b0911 30%)}#pz .pzft button{flex:1;margin:0}#pz .pzft .sec{flex:.8;background:#252238;border:1px solid #4a4566;color:#cfc9e0;font:700 11px var(--fd);letter-spacing:.03em;padding:12px 4px;white-space:nowrap}
+#pz .pzsoon{margin:40px 20px;padding:24px 18px;text-align:center;background:rgba(10,8,16,.7);border:1px solid #2a2438}#pz .pzsoon>b{display:block;font:700 18px var(--fd);letter-spacing:.2em;color:#e8c35a;margin-bottom:10px}#pz .pzsoon p{margin:0;font-size:12.5px;line-height:1.55;color:#b8b09a}
 .pcw{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin:0 0 6px;border:1px solid #e8c35a;background:linear-gradient(#2a2312,#1a160d);box-shadow:0 0 14px rgba(232,195,90,.35)}
 .pcw span{font:700 12px var(--fd);letter-spacing:.12em;color:#cdbf8f}.pcw b{font:700 24px var(--fd);color:#e8c35a;text-shadow:0 0 10px rgba(232,195,90,.6)}
 .pcb{display:flex;justify-content:space-between;align-items:center;margin:6px 0 2px;padding:5px 8px;border:1px solid #e8c35a;background:#2a2312}
@@ -3849,9 +3883,9 @@ function socAct(a){const [k,v,w]=a.split(':');
   else if(k==='cs'){const t=($('cmsg').value||'').trim();if(t){(G.clog=G.clog||[]).push({c:G.cch,who:SAVE.name,t,col:G.cch==='p'?'#8ec2ff':'#e6dcc2'});sfx('ui_click',.4);}}
   else return false;
   writeSave();renderWin();return true;}
-function openWin(id){sfx('tr_open',.6);G.winOpen=id;G.wsel=null;G.wp=null;if(id==='forja'&&!G.fslot)G.fslot=SLOTS.find(k=>SAVE.eq[k])||'arma';if(id==='mercador'&&!G.shop)restock(true);
+function openWin(id){if(id==='portal'){sfx('tr_open',.6);G.winOpen='portal';G.wsel=null;G.wp=null;$('toast').style.display='none';pzOpen();return;}sfx('tr_open',.6);G.winOpen=id;G.wsel=null;G.wp=null;if(id==='forja'&&!G.fslot)G.fslot=SLOTS.find(k=>SAVE.eq[k])||'arma';if(id==='mercador'&&!G.shop)restock(true);
   $('toast').style.display='none';$('win').classList.add('on');renderWin();}
-function closeWin(){G.winOpen=null;$('win').classList.remove('on');}
+function closeWin(){G.winOpen=null;$('win').classList.remove('on');pzClose();}
 $('wx').onclick=()=>{sfx('tr_close',.6);closeWin();};
 function renderWin(){const f={cofre:winCofre,leilao:winLeilao,mercador:winMercador,forja:winForja,alquimista:winAlq,portal:winPortal,locais:winLocais,subclasse:winSub,...SOCW}[G.winOpen];$('wtip').classList.remove('on');if(f){f();updPot();winTip();}}
 $('wbody').addEventListener('click',ev=>{const w=ev.target.closest('[data-w]');if(w){const [t,k]=w.dataset.w.split(':');const same=G.wsel&&G.wsel.t===t&&G.wsel.k==(+k);G.wsel=same?null:{t,k:+k};sfx('ui_click',.5);renderWin();return;}
@@ -4025,6 +4059,67 @@ function winAlq(){
   h+='</div><div class="sub">Poções curam sozinhas na dungeon. Elixires duram 5 min dentro dela.</div>';
   $('wbody').innerHTML=h;
 }
+/* ===== PORTAL DAS DUNGEONS (tela cheia): carrossel de cartões, requisitos, poder recomendado e aba Especiais ===== */
+const PZD=[
+ {img:'d1',lore:'A tribo ruge na mata.',hab:[['goblin','Goblins','Comum'],['skrix','Xamã Skrix','Mini-chefe'],['grunk','Grunk','Chefe']]},
+ {img:'d2',lore:'O frio sobe pelas escadas.',hab:[['esq','Esqueletos','Comum'],['vamp','Morcego-Vampiro','Mini-chefe'],['morvath','Morvath','Chefe']]},
+ {img:'d3',lore:'Presas na escuridão.',hab:[['javali','Javalis','Comum'],['gorgash','Gorgash','Chefe']]},
+ {img:'d4',lore:'Algo se move na água.',hab:[['rato','Ratos Gigantes','Comum'],['gorgash','Gorgash','Chefe']]}];
+const PZ={tab:'d',sel:0,t:0};
+function pzPortrait(cv){const k=cv.dataset.k,x=cv.getContext('2d');let fr=null;
+  try{if(k==='grunk')fr=atlasFrame(SHEETS.grunk,'idle',0);else if(k==='skrix')fr=atlasFrame(SHEETS.skrix,'idle',0);else if(k==='vamp')fr=atlasFrame(SHEETS.vamp,'idle',0);
+   else if(k==='goblin')fr=sheetFrame(SHEETS.goblin,'walk',1,0);else if(k==='esq')fr=sheetFrame(SHEETS.esqueleto,'walk',1,0);else if(k==='morvath')fr=sheetFrame(SHEETS.skelchefe,'walk',1,0);
+   else if(k==='javali')fr=sheetFrame(SHEETS.javali,'walk',1,0);else if(k==='rato')fr=sheetFrame(SHEETS.rato,'walk',1,0);else if(k==='gorgash')fr=sheetFrame(SHEETS.ogro,'walk',1,0);}catch(e){}
+  if(!fr){x.fillStyle='#555';x.font='bold 36px sans-serif';x.textAlign='center';x.fillText('?',cv.width/2,cv.height*.7);return;}
+  const [img,sx,sy,sw,sh]=fr,t=document.createElement('canvas');t.width=sw;t.height=sh;const tc=t.getContext('2d');tc.drawImage(img,sx,sy,sw,sh,0,0,sw,sh);
+  const d=tc.getImageData(0,0,sw,sh).data;let x0=1e9,y0=1e9,x1=-1,y1=-1;for(let yy=0;yy<sh;yy++)for(let xx=0;xx<sw;xx++)if(d[(yy*sw+xx)*4+3]>40){if(xx<x0)x0=xx;if(xx>x1)x1=xx;if(yy<y0)y0=yy;if(yy>y1)y1=yy;}
+  if(x1<0)return;const bw=x1-x0+1,bh=y1-y0+1,s=Math.min((cv.width-8)/bw,(cv.height-6)/bh);x.imageSmoothingEnabled=false;x.drawImage(t,x0,y0,bw,bh,(cv.width-bw*s)/2,cv.height-3-bh*s,bw*s,bh*s);}
+function pzTierTxt(z){const L=dgLv(z),a=tierOf(L[0]),b=tierOf(L[1]);return (a===b?'Tier '+a:'Tier '+a+'–'+b)+' · nível '+((a-1)*5+1)+'–'+(b*5);}
+function pzDetail(z){
+  const d=DUN[z-1],I=PZD[z-1],un=dgUnlocked(z),L=dgLv(z),hpc=heroPC(),r=hpc/d.pc,col=r>=1?'#5fd36a':r>=.8?'#e8c35a':'#ff6a5a';
+  const lvOkd=SAVE.lv>=d.unlock,prev=DUN[z-2],prevOk=!prev||!!(SAVE.dgDone&&SAVE.dgDone[z-1]);
+  const B=bossDef(z);let h='<div class="pzh">REQUISITOS</div><div class="pzr">';
+  h+=`<div class="${lvOkd?'ok':'no'}"><span>Nível ${d.unlock}</span><b>você: ${SAVE.lv} ${lvOkd?'✔':'🔒'}${!lvOkd&&d.unlock-SAVE.lv>0?' · faltam '+(d.unlock-SAVE.lv):''}</b></div>`;
+  if(prev)h+=`<div class="${prevOk?'ok':'no'}"><span>Derrotar ${bossDef(z-1).nome}</span><b>${prevOk?'✔':'🔒'}</b></div>`;
+  h+='</div>';
+  if(un){const pct=Math.min(100,hpc/(d.pc*1.25)*100),mk=d.pc/(d.pc*1.25)*100,txt=r>=1?'Poder adequado para esta dungeon':r>=.8?'Um pouco abaixo: a luta será difícil':'Muito abaixo: você vai apanhar';
+    h+=`<div class="pzg"><div class="l"><span>Seu poder de combate</span><span><b style="color:${col}">${pcFmt(hpc)}</b> <em>/ ${pcFmt(d.pc)} recomendado</em></span></div><div class="bar"><div class="f" style="width:${pct}%;background:${col}"></div><div class="m" style="left:${mk}%"></div></div><small style="color:${col}">${txt}</small></div>`;}
+  else h+=`<div class="pzg dim"><div class="l"><span>Poder de combate recomendado</span><span><b>${pcFmt(d.pc)}</b></span></div><small>Você tem ${pcFmt(hpc)}. Disponível ao liberar a dungeon.</small></div>`;
+  h+='<div class="pzh">HABITANTES</div><div class="pzen">'+I.hab.map(e=>`<div class="${e[2].replace('-chefe','')}"><canvas data-k="${un?e[0]:'?'}" width="148" height="112"></canvas><b>${un?e[1]:'???'}</b><i>${un?e[2].toUpperCase():''}</i></div>`).join('')+'</div>';
+  h+=`<div class="pzh">EQUIPAMENTO</div><div class="pzeq"><span>Dropa itens de</span><b>${pzTierTxt(z)}</b></div>`;
+  return h;}
+function pzFoot(z){const un=dgUnlocked(z),d=DUN[z-1],last=clamp(SAVE.zone||0,0,DUN.length),showCont=SAVE.entered&&last&&last!==z&&dgUnlocked(last);
+  const need=un?'':(SAVE.lv<d.unlock?'Requer nível '+d.unlock:'Derrote '+bossDef(z-1).nome);
+  return `<button class="gb big" data-pz="go" ${un?'':'disabled'}>${un?'Entrar na dungeon':need}</button>${showCont?`<button class="gb sec" data-pz="cont">Continuar atual</button>`:''}`;}
+function pzRender(){const root=$('pz');if(!root)return;
+  const hpc=heroPC();
+  if(PZ.tab==='e'){
+    root.querySelector('.pzbody').innerHTML='<div class="pzsoon"><b>EM BREVE</b><p>Aqui ficarão as dungeons especiais: a <b>Arena do Chefe</b> (só o chefe, sem monstros) e o <b>Boss Rush</b>. Elas liberam depois que você derrotar os chefes das dungeons.</p></div>';
+    root.querySelector('.pzft').innerHTML='';root.querySelectorAll('.pztab span').forEach((e,i)=>e.classList.toggle('on',i===1));return;}
+  root.querySelectorAll('.pztab span').forEach((e,i)=>e.classList.toggle('on',i===0));
+  const cards=DUN.map((d,i)=>{const z=i+1,un=dgUnlocked(z),I=PZD[i],lvOkd=SAVE.lv>=d.unlock,cur=(SAVE.zone||0)===z&&SAVE.entered,dn=SAVE.dgDone&&SAVE.dgDone[z];
+    return `<div class="pzc ${un?'':'lock'}" data-i="${i}" style="background-image:url(assets/portal/${I.img}.jpg)"><div class="hd">ÁREA ${z}</div>${cur?'<span class="st cur">● ATUAL</span>':dn?'<span class="st">✔ concluída</span>':''}${un?'':`<div class="lk"><img src="${UI}padlock.png"></div>`}<div class="nf"><b>${d.nm}</b><i>${I.lore}</i><div class="rq"><span>Nível</span><b class="${lvOkd?'ok':'no'}">${d.unlock}+ ${lvOkd?'✔':'🔒'}</b></div></div></div>`;}).join('');
+  root.querySelector('.pzbody').innerHTML=`<div class="pzcr" id="pzcr">${cards}</div><div class="pzdots">${DUN.map((d,i)=>`<i data-i="${i}"></i>`).join('')}</div><div class="pzdet" id="pzdet"></div>`;
+  pzSelect(PZ.sel,true);
+  const cr=$('pzcr');cr.addEventListener('scroll',()=>{clearTimeout(PZ.t);PZ.t=setTimeout(()=>{const r=cr.getBoundingClientRect(),cx=r.left+r.width/2;let b=0,bd=1e9;cr.querySelectorAll('.pzc').forEach((c,i)=>{const q=c.getBoundingClientRect(),d=Math.abs(q.left+q.width/2-cx);if(d<bd){bd=d;b=i;}});if(b!==PZ.sel)pzSelect(b,false);},90);});
+  cr.querySelectorAll('.pzc').forEach(c=>c.onclick=()=>{const i=+c.dataset.i;if(i!==PZ.sel){sfx('ui_click',.5);pzSelect(i,true);}});}
+function pzSelect(i,scroll){PZ.sel=i;G.pz=i+1;const root=$('pz');if(!root)return;
+  root.querySelectorAll('.pzc').forEach((c,k)=>c.classList.toggle('sel',k===i));root.querySelectorAll('.pzdots i').forEach((e,k)=>e.classList.toggle('on',k===i));
+  const bg=root.querySelector('.pzbg');if(bg)bg.style.backgroundImage=`url(assets/portal/${PZD[i].img}.jpg)`;
+  $('pzdet').innerHTML=pzDetail(i+1);root.querySelectorAll('#pzdet canvas').forEach(pzPortrait);root.querySelector('.pzft').innerHTML=pzFoot(i+1);
+  if(scroll){const c=root.querySelector(`.pzc[data-i="${i}"]`),cr=$('pzcr');if(c&&cr)cr.scrollTo({left:c.offsetLeft-cr.clientWidth/2+c.offsetWidth/2,behavior:PZ.first?'smooth':'auto'});PZ.first=1;}}
+function pzOpen(){pzClose();PZ.tab='d';PZ.first=0;
+  const best=DUN.reduce((m,d,i)=>dgUnlocked(i+1)?i:m,0);PZ.sel=clamp((G.pz?G.pz-1:(SAVE.zone?SAVE.zone-1:best)),0,DUN.length-1);if(!dgUnlocked(PZ.sel+1))PZ.sel=best;
+  const root=document.createElement('div');root.id='pz';
+  root.innerHTML=`<div class="pzbg"></div><div class="pztb"><button class="pzbk" data-pz="close">‹</button><h1>Portal das Dungeons</h1><div class="pzme"><small>SEU PODER</small><b id="pzpc">${pcFmt(heroPC())}</b></div></div><div class="pztab"><span data-pz="tabd">Dungeons</span><span data-pz="tabe">Especiais</span></div><div class="pzbody"></div><div class="pzft"></div>`;
+  document.body.appendChild(root);
+  root.onclick=ev=>{const e=ev.target.closest('[data-pz]');if(!e||e.disabled)return;const a=e.dataset.pz;
+    if(a==='close'){sfx('tr_close',.6);closeWin();}
+    else if(a==='tabd'){PZ.tab='d';sfx('ui_click',.5);pzRender();}else if(a==='tabe'){PZ.tab='e';sfx('ui_click',.5);pzRender();}
+    else if(a==='go'){const z=PZ.sel+1;if(!dgUnlocked(z)){sfx('ui_denied');return;}closeWin();sfx('spell_cast',.8);sfx('levelup',.4);enterDungeon(z);}
+    else if(a==='cont'){const z=clamp(SAVE.zone||1,1,DUN.length);if(!dgUnlocked(z)){sfx('ui_denied');return;}closeWin();sfx('spell_cast',.8);sfx('levelup',.4);enterDungeon(z);}};
+  pzRender();}
+function pzClose(){const r=document.getElementById('pz');if(r)r.remove();}
 /* Portal */
 const AREAS=[{fam:['goblin'],nm:'Floresta dos Goblins',ic:'ni_d1',mon:'Goblins'},{fam:['esq'],nm:'Catacumbas de Brumavale',ic:'skull-staff',mon:'Esqueletos'},{fam:['javali'],nm:'Floresta de Brumavale',ic:'ni_d4',mon:'Javalis'},{fam:['rato'],nm:'Esgotos de Brumavale',ic:'ni_d3',mon:'Ratos Gigantes'}];
 function winPortal(){
