@@ -914,7 +914,7 @@ const BOSS_GOB={nome:'Grunk',ent:'run',aura:['#ff5a3a','#ffd070'],sheet:'grunk',
   enrageAt:.35,   /* a 35% de vida: canaliza a fúria (menos dano, regenera) e depois fica mais forte e rápido */
   msk:[{id:'leap',hp:1,cd:7.5,warn:1.05,r:78,mult:2.6,st:['abalado',.6,5,0],wt:3,max:330},
        {id:'charge',hp:.9,cd:9,warn:.9,w:44,len:250,mult:2.2,st:['atordoado',.8,1,0],wt:2,min:70}]};
-const BOSS_ESQ={nome:'Morvath',rad:26,shr:36,ent:'drop',aura:['#6ab8ff','#e6f6ff'],sheet:'skelchefe',hp:1900,atk:11.5,xp:280,gold:[85,150],speed:42,aggro:270,rng:52,aspd:1.4,scale:2,st:['sangramento',.45,6,.025],
+const BOSS_ESQ={nome:'Morvath',rad:26,shr:40,ent:'drop',aura:['#6ab8ff','#e6f6ff'],sheet:'skelchefe',atlas:'morvath',hp:1900,atk:11.5,xp:280,gold:[85,150],speed:42,aggro:270,rng:52,aspd:1.4,scale:.95,st:['sangramento',.45,6,.025],
   msk:[{id:'slam',hp:1,cd:6.5,warn:1,r:88,mult:2.5,st:['abalado',.6,5,0],w:3},{id:'charge',hp:.8,cd:9,warn:.85,w:44,len:260,mult:2.2,st:['atordoado',.8,1,0],wt:2},{id:'roar',hp:.5,cd:12,warn:1.25,r:155,mult:2,st:['medo',1,2.4,0],wt:3}]};
 const bossDef=z=>{const f=famOf(z===undefined?G.zoneLv:z);return f==='goblin'?BOSS_GOB:f==='esq'?BOSS_ESQ:BOSS;};
 /* ===== itens ÚNICOS (nomeados, com efeito próprio): por área; chefes e mini-chefes têm os seus ===== */
@@ -1043,7 +1043,7 @@ async function loadAll(){
   prepMap('town');useMap('town');
   STAGE2=(async()=>{
     const jobs=[loadMap('zone1','assets/zone1.json','assets/atlas.json','assets/zone1_ground.png','assets/atlas.png'),loadMap('zone1_gob','assets/zone1_gob.json','assets/atlas_gob.json','assets/zone1_gob_ground.png','assets/atlas_gob.png'),loadMap('zone_cripta','assets/zone_cripta.json','assets/atlas_cripta.json','assets/zone_cripta_ground.png','assets/atlas_cripta.png'),loadMap('zone_esgoto','assets/zone_esgoto.json','assets/atlas_esgoto.json','assets/zone_esgoto_ground.png','assets/atlas_esgoto.png'),...['mer','fer','alq','mes','cof','lei'].map(k=>loadMap('int_'+k,'assets/int_'+k+'.json','assets/int_atlas.json','assets/int_'+k+'_ground.png','assets/int_atlas.png'))];
-    for(const k of ['goblin','esqueleto','javali','rato','ogro','gobchefe','skelchefe','xama','esqfogo','esqgelo'])jobs.push(loadSheet(k,'slash'));jobs.push(loadSheet('gobarq','shoot'));jobs.push(loadSheet('esqmago','spellcast'));jobs.push(loadAtlasBoss('grunk'));jobs.push(loadAtlasBoss('vamp'));jobs.push(loadAtlasBoss('bat'));jobs.push(loadAtlasBoss('skrix'));jobs.push(loadAtlasBoss('totem'));
+    for(const k of ['goblin','esqueleto','javali','rato','ogro','gobchefe','skelchefe','xama','esqfogo','esqgelo'])jobs.push(loadSheet(k,'slash'));jobs.push(loadSheet('gobarq','shoot'));jobs.push(loadSheet('esqmago','spellcast'));jobs.push(loadAtlasBoss('grunk'));jobs.push(loadAtlasBoss('vamp'));jobs.push(loadAtlasBoss('bat'));jobs.push(loadAtlasBoss('skrix'));jobs.push(loadAtlasBoss('morvath'));jobs.push(loadAtlasBoss('totem'));
     for(const k of new Set(CLS_ORDER.flatMap(c=>CLASSES[c].skills.map(s=>s[0]))))jobs.push(loadImg(skImg(k)).then(im=>{IMG[k]=im;}).catch(()=>{IMG[k]=null;}));
     for(const n of ['i_espada','i_machado','i_martelo','i_adaga','i_cajado','i_cetro','i_arco','i_elmo','i_capuz','i_couraca','i_cota','i_colete','i_manto','i_tunica','i_botas','i_sandalias','i_colar','i_pingente','i_talisma','i_anel','i_luvas','i_manoplas','i_escudo','i_escudog','i_garra','i_livro','i_gema','i_bracelete','i_coroa'])jobs.push(loadImg('../assets/ico/'+n+'.png').then(im=>{IMG_ICO[n]=im;}).catch(()=>{IMG_ICO[n]=null;}));
     for(const n of ['coins','anvil','health-potion','treasure-map','clover','fist','heart-plus','shop','greek-temple','scroll-unfurled'])jobs.push(loadImg('../assets/ui-icons/'+n+'.png').then(im=>{IMG_UI[n]=im;}).catch(()=>{IMG_UI[n]=null;}));
@@ -3320,6 +3320,18 @@ function skrixFrame(e){const sh=SHEETS.skrix,a=e.act;
   if(e.state==='atk'&&a)return atlasFrame(sh,'attack',Math.min(6,Math.floor(a.t/a.dur*7)));
   if(e.state==='walk')return atlasFrame(sh,'walk',Math.floor(e.animT*9)%8);
   return atlasFrame(sh,'idle',Math.floor(G.t*5)%6);}
+function morvathFrame(e){const sh=SHEETS.morvath,a=e.act,F=(n,i)=>atlasFrame(sh,n,i);
+  if(e.dead)return F('death',Math.min(6,Math.floor(e.deadT*8)));
+  if(e.ent)return F('idle',0);
+  if((e.stun>0||e.stagger>0)&&!(a&&a.skill))return F('hurt',e.flash>.07?0:(e.stagger>.5||e.stun>.12?1:2));
+  if(a&&a.skill){const t=a.t,w=a.dur-.45;
+    if(a.anim==='slam')return F('slam',t<w?Math.min(3,Math.floor(t/w*4)):4+Math.min(3,Math.floor((t-w)/.45*4)));
+    if(a.anim==='charge')return F('charge',t<w?(t<w*.6?0:1):e.dash?2+Math.floor(e.animT*12)%4:6);
+    if(a.anim==='roar')return F('roar',t<w?Math.min(4,Math.floor(t/w*5)):(t<w+.25?5:6));}
+  if(e.dash)return F('charge',2+Math.floor(e.animT*12)%4);
+  if(e.state==='atk'&&a)return F('attack',Math.min(6,Math.floor(a.t/a.dur*7)));
+  if(e.state==='walk')return F('walk',Math.floor(e.animT*9)%12);
+  return F('idle',Math.floor(G.t*5)%8);}
 function totemFrame(e){const sh=SHEETS.totem;
   if(e.dead)return atlasFrame(sh,'death',Math.min(2,Math.floor(e.deadT*5)));
   if(e.age<.6)return atlasFrame(sh,'rise',Math.min(5,Math.floor(e.age/.6*6)));
@@ -3342,7 +3354,7 @@ function batFrame(e){const sh=SHEETS.bat;
   if(e.state==='atk'&&e.act)return atlasFrame(sh,'bite',Math.min(5,Math.floor(e.act.t/e.act.dur*6)));
   return atlasFrame(sh,'fly',Math.floor((G.t*12+e.animT*3))%6);}
 function entFrame(e){
-  if(e.T&&e.T.atlas){if(e.T.atlas==='skrix')return skrixFrame(e);if(e.T.atlas==='totem')return totemFrame(e);if(e.T.atlas==='vamp')return vampFrame(e);if(e.T.atlas==='bat')return batFrame(e);if(e.kind==='boss')return grunkFrame(e);}
+  if(e.T&&e.T.atlas){if(e.T.atlas==='skrix')return skrixFrame(e);if(e.T.atlas==='morvath')return morvathFrame(e);if(e.T.atlas==='totem')return totemFrame(e);if(e.T.atlas==='vamp')return vampFrame(e);if(e.T.atlas==='bat')return batFrame(e);if(e.kind==='boss')return grunkFrame(e);}
   if(e.kind==='npc'||e.kind==='vill'){const sh=SHEETS[e.sh];return sheetFrame(sh,'walk',e.row,e.moving?Math.floor(e.animT*11)%9:0);}
   const nm=e.kind==='hero'?'hero':(e.kind==='boss'?e.T.sheet:e.T.sheet),sh=SHEETS[nm];
   if(e.kind==='hero'&&e.state==='ko'){return sheetFrame(sh,'hurt',0,Math.min(5,Math.floor((3-e.koT)*4)));}
