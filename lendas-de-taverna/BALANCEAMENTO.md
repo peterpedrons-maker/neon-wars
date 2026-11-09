@@ -123,7 +123,7 @@ Simulação (`tools/mmo/sim/pc_calib.cjs` e `boss.cjs`, herói automático, equi
 
 ## Portal das Dungeons (tela cheia)
 - Substitui a janela antiga: carrossel de cartões (deslize ou toque), requisitos (nível e chefe anterior com ✔/🔒), poder de combate com número e barra, habitantes, faixa de tier/nível dos itens, botões Entrar e Continuar atual. Aba Especiais ainda "Em breve" (Arena do Chefe e Boss Rush).
-- Imagens dos cartões provisórias (capturas do jogo em `assets/portal/d1..d4.jpg`): trocar pelas artes de IA mantendo os mesmos nomes.
+- Imagens dos cartões: artes de IA em `assets/portal/d1..d4.jpg` (640 px de largura, proporção 2:3).
 - As barras de faixa de nível (1–10, 10–20…) voltam quando houver dungeons suficientes.
 
 ## Arena do Chefe e Boss Rush (aba Especiais do portal)
