@@ -104,3 +104,8 @@ em 2–5 a campanha toda, então a chance de acertar é quase fixa (~45–70%).
 - Variedade: cada chefe tem 1 arma única para cada uma das 6 classes + 3 peças (4 opções por classe); cada mini-chefe, 1 arma por classe + 2 peças (3 opções). Nenhuma classe sai na frente; o sorteio escolhe entre as opções válidas da classe.
 - Chances atuais: único de chefe 10%, de mini-chefe 6% (a dungeon completa manda mais XP; a futura Arena terá chance maior e XP menor).
 - A chance de único cai com o NÍVEL da dungeon, não com a posição na lista: fator = (8 / nível do chefe)^0,8. Chefe: 10% (Nv 8), 6,8% (Nv 13), 4,3% (Nv 23), 2,6% (Nv 43), ~2% (Nv 60). Mini-chefe: 60% desses valores. Várias dungeons na mesma faixa de nível têm a mesma chance.
+
+## Poder de combate (PC) e nível necessário dos itens
+- PC do item = pontuação dos atributos (ataque×3, defesa×2, vida×0,35, crítico%×4, velocidade%×1,5, empurrão×1,2, queda×0,4), com o aprimoramento. Aparece na ficha do item.
+- PC do herói = a mesma fórmula sobre os atributos finais (inclui nível, atributos, talentos e conjuntos). Aparece na aba Equip. do personagem.
+- Nível necessário do item = início da faixa do tier (Tier 1 = nv 1, Tier 2 = nv 6, Tier 3 = nv 11…). Itens acima do nível não equipam (nem pelo auto-equipar); itens já equipados em saves antigos continuam.
