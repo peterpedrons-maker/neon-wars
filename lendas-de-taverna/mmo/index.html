@@ -455,6 +455,12 @@ i.ul{position:absolute;right:2px;top:1px;font:700 9px var(--f);font-style:normal
 #tip .uq,#wtip .uq{font-style:italic;font-size:11.5px;border:0;border-left:2px solid #ffa63a;background:linear-gradient(90deg,rgba(255,166,58,.14),transparent);padding:5px 9px;line-height:1.4}
 #tip .pcb,#wtip .pcb{margin:8px 0 3px;padding:7px 10px;box-shadow:0 0 12px rgba(232,195,90,.25)}#tip .pcb b,#wtip .pcb b{font-size:22px}
 #tip .cl,#wtip .cl{color:#8d866f;font-size:10.5px;letter-spacing:.06em}#tip .cn,#wtip .cn{font:700 13px var(--fd)}
+/* padronização tipográfica da HUD e das janelas */
+#hpc{position:absolute;right:8px;bottom:-9px;padding:1px 7px;background:#2a2312;border:1px solid #d9b45f;font:700 10.5px var(--fd);color:#e8c35a;letter-spacing:.06em;z-index:2;box-shadow:0 0 8px rgba(232,195,90,.3)}#hpc em{font-style:normal;font-size:8px;color:#cdbf8f;margin-right:3px;letter-spacing:.1em}
+#hpt{font:700 10px var(--fd);letter-spacing:.06em}
+#chat div:not(:last-child){opacity:.78}
+.dd .row2 span:first-child{font-size:11.5px;letter-spacing:.05em;color:#8d866f}.dd .row2 span:last-child{color:#f1e6c2;font-weight:600}
+.dd .row2{padding:4px 0}
 .pcw{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin:0 0 6px;border:1px solid #e8c35a;background:linear-gradient(#2a2312,#1a160d);box-shadow:0 0 14px rgba(232,195,90,.35)}
 .pcw span{font:700 12px var(--fd);letter-spacing:.12em;color:#cdbf8f}.pcw b{font:700 24px var(--fd);color:#e8c35a;text-shadow:0 0 10px rgba(232,195,90,.6)}
 .pcb{display:flex;justify-content:space-between;align-items:center;margin:6px 0 2px;padding:5px 8px;border:1px solid #e8c35a;background:#2a2312}
@@ -717,7 +723,7 @@ body.bossbar #zname{top:calc(92px + env(safe-area-inset-top))!important}
     <div id="hero" class="panel"><div id="hport"><canvas id="hface" width="32" height="32"></canvas><span id="hl">1</span></div>
       <div class="nm txt-o"><span id="hn">—</span><span id="hcl"></span></div>
       <div class="pb" id="hpw"><div class="bar" id="hp"><b style="width:100%"></b></div><span id="hpt"></span></div>
-      <div class="bar" id="xp"><b style="width:0"></b></div><span id="xpt"></span></div>
+      <div class="bar" id="xp"><b style="width:0"></b></div><span id="xpt"></span><div id="hpc"><em>PC</em><b>0</b></div></div>
     <div id="zone" class="txt-o" style="display:none">·</div><div id="gold"><span id="goldn">0</span></div><div id="banner"><i class="o"></i><b id="bnT"></b><u></u><span id="bnS"></span></div>
     <div id="sts"></div><canvas id="mm"></canvas><div id="zname"></div><div id="prog" class="panel txt-o"><div id="progt">Clareira 0/10</div><div class="bar"><b style="width:0"></b></div></div>
     <div id="alertv"></div><div id="boss"><div class="t" id="bosst">—</div><div class="bar"><b style="width:100%"></b></div><div id="bsts"></div></div>
@@ -734,7 +740,7 @@ body.bossbar #zname{top:calc(92px + env(safe-area-inset-top))!important}
   <div id="gc"><div class="gcb"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><h3 id="gct"></h3><p id="gcm"></p><div class="gcbt"><button id="gcn" class="sec"></button><button id="gcy" class="ok"></button></div></div></div>
   <div id="fade"></div>
   <div class="scr" id="pan"><div class="box"><div class="tt"><span>Personagem</span><button class="xb" id="pClose"></button></div>
-    <div class="tabs"><button id="tEq" class="on">Equip.</button><button id="tBg">Mochila</button><button id="tAt">Atrib.</button><button id="tSk">Habil.</button><button id="tTl">Talent.</button></div>
+    <div class="tabs"><button id="tEq" class="on">Equipamento</button><button id="tBg">Mochila</button><button id="tAt">Atributos</button><button id="tSk">Habilidades</button><button id="tTl">Talentos</button></div>
     <div class="wb body" id="pBody"></div></div><div id="tip"></div></div>
   <!-- resultado -->
   <div class="scr" id="res">
@@ -1785,7 +1791,7 @@ function updStatusHud(){updBossSts();const el=$('sts');if(!el)return;const h=G.h
 (()=>{const el=$('sts');if(el)el.addEventListener('pointerdown',e=>{const si=e.target.closest('.si');if(si){e.stopPropagation();toast(si.dataset.t+' — '+si.dataset.d,2200);}});})();
 function updHUD(force){
   const h=G.hero;if(!h)return;
-  updStatusHud();$('hp').firstChild.style.width=clamp(h.hp/h.maxhp*100,0,100)+'%';$('hpt').textContent=Math.ceil(h.hp)+'/'+h.maxhp;
+  updStatusHud();{const q=$('hpc');if(q)q.lastChild.textContent=pcFmt(heroPC());}$('hp').firstChild.style.width=clamp(h.hp/h.maxhp*100,0,100)+'%';$('hpt').textContent=Math.ceil(h.hp)+'/'+h.maxhp;
   $('goldn').textContent=SAVE.gold;
   $('xp').firstChild.style.width=clamp(SAVE.xp/xpNeed(SAVE.lv)*100,0,100)+'%';$('hl').textContent=SAVE.lv;{const c=$('hcl');if(c&&!c.innerHTML)c.innerHTML=clsIc(SAVE.cls,16,SAVE.sub);const xt=$('xpt');if(xt)xt.textContent=Math.floor(SAVE.xp/xpNeed(SAVE.lv)*100)+'%';}
   const dg=G.scene==='dungeon';$('prog').style.display=dg?'block':'none';{const zn=$('zname');zn.style.display=dg?'block':'none';if(dg){const hv=areaName().split(' ')[0]+'|'+G.zoneLv;if(zn.dataset.v!==hv){zn.dataset.v=hv;zn.innerHTML=areaName().split(' ')[0]+'<small>Zona '+G.zoneLv+'</small>';}}if(G.t-(G._qp||0)>1){G._qp=G.t;qPlace();}}
@@ -1876,7 +1882,7 @@ function updateLoot(dt){
     if(Math.random()<dt*30)VF.pt(L.x+rnd(-3,3),L.y+rnd(-3,3),{life:.3,col:RAR[L.it.rar].c,sz:2});
     if(d<9){G.loot.splice(i,1);addItem(L.it);}}
 }
-function badge(){const p=atPoints()+skPoints()+tlPoints(),b=$('bdPs');if(b){b.style.display=p>0?'block':'none';b.textContent=p;}}
+function badge(){const p=atPoints(),q=skPoints()+tlPoints(),b=$('bdPs'),c=$('bdHb');if(b){b.style.display=p>0?'block':'none';b.textContent=p;}if(c){c.style.display=q>0?'block':'none';c.textContent=q;}}
 
 /* ------------------------------ combate --------------------------------- */
 /* NÍVEL DE HABILIDADE (1–5): curvas por classe, nada linear. dmg = dano; ef = potência de cura/escudo/buff; du = duração dos efeitos (debuffs, buffs, escudo); cd = recarga.
@@ -3452,6 +3458,8 @@ function render(){
 }
 /* ------------------------------ painel do herói -------------------------- */
 let panTab='eq',panSel=null,skSlot=0;   // panSel: {src:'bag'|'eq', k}
+const PL={pers:'eq',hab:'sk'};   // última aba de cada janela
+const isHabTab=t=>t==='sk'||t==='tl';
 function openPan(t){sfx('tr_open',.6);panTab=t||panTab;panSel=null;$('pan').classList.add('on');renderPan();}
 function closePan(){$('pan').classList.remove('on');}
 function statLine(it,cmp){const keys=['atk','def','hp','crit','spd','kb','kd'];return keys.filter(k=>(it.s[k]||0)||(cmp&&(cmp.s[k]||0))).map(k=>{const v=effS(it,k),o=cmp?effS(cmp,k):null;let d='';if(cmp!=null&&o!==null){const df=Math.round((v-o)*10)/10;if(df)d=` <span class="${df>0?'up':'dn'}">${df>0?'▲+':'▼'}${df}</span>`;}
@@ -3498,6 +3506,8 @@ function showTip(){
   t.style.setProperty('--ax',(r.left+r.width/2-pr.left-x)+'px');
 }
 function renderPan(){
+  const hb=isHabTab(panTab);PL[hb?'hab':'pers']=panTab;$('pan').querySelector('.tt span').textContent=hb?'Habilidades':'Personagem';
+  ['Eq','Bg','At'].forEach(x=>$('t'+x).style.display=hb?'none':'');['Sk','Tl'].forEach(x=>$('t'+x).style.display=hb?'':'none');
   ['Eq','Bg','Sk','At','Tl'].forEach(x=>$('t'+x).classList.toggle('on',panTab===x.toLowerCase()));
   hideTip();
   const B=$('pBody'),C=CLASSES[SAVE.cls],h=G.hero;B.onclick=null;
@@ -3747,7 +3757,8 @@ function socMenu(m,dun){
   const mk=(id,ic,lab,fn,bd,hud)=>mkTb(id,'<img src="'+ic+'"'+(hud?'':' class="ui"')+'><small>'+lab+'</small>'+(bd?'<span class="bd" id="'+bd+'"></span>':''),'mbtn grp',()=>{if(G.winOpen)return;sfx('ui_click');fn();});
   const tg=mkTb('bMt','<span>'+(SAVE.mcol?'☰':'‹')+'</span>','mbtn mtgl',()=>{SAVE.mcol=!SAVE.mcol;m.classList.toggle('col',!!SAVE.mcol);tg.firstChild.textContent=SAVE.mcol?'☰':'‹';sfx('ui_click',.5);writeSave();});
   m.classList.toggle('col',!!SAVE.mcol);m.appendChild(tg);
-  m.appendChild(mk('bPs','assets/hud/heroi.png','Pers.',()=>openPan(panTab||'eq'),'bdPs',1));
+  m.appendChild(mk('bPs','assets/hud/heroi.png','Pers.',()=>openPan(PL.pers),'bdPs',1));
+  m.appendChild(mk('bHb','assets/hud/hab.png','Habil.',()=>openPan(PL.hab),'bdHb',1));
   m.appendChild(mk('bQ',UI+'scroll-unfurled.png','Diário',()=>openWin('diario'),'bdQ'));
   m.appendChild(mk('bGp',UI+'team-idea.png','Social',()=>openWin('grupo')));
 }
