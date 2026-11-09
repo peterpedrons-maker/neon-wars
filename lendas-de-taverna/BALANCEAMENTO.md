@@ -125,3 +125,9 @@ Simulação (`tools/mmo/sim/pc_calib.cjs` e `boss.cjs`, herói automático, equi
 - Substitui a janela antiga: carrossel de cartões (deslize ou toque), requisitos (nível e chefe anterior com ✔/🔒), poder de combate com número e barra, habitantes, faixa de tier/nível dos itens, botões Entrar e Continuar atual. Aba Especiais ainda "Em breve" (Arena do Chefe e Boss Rush).
 - Imagens dos cartões provisórias (capturas do jogo em `assets/portal/d1..d4.jpg`): trocar pelas artes de IA mantendo os mesmos nomes.
 - As barras de faixa de nível (1–10, 10–20…) voltam quando houver dungeons suficientes.
+
+## Arena do Chefe e Boss Rush (aba Especiais do portal)
+- **Arena do Chefe** (uma por dungeon): entra direto na luta contra o chefe, sem monstros. Libera ao derrotar o chefe na dungeon (e atingir o nível). **XP 20%** do normal; **chance de item único ×2**. Chefe da arena não conta para as missões. Vitória mostra nota (S ≤ 100 s, A ≤ 160 s, B ≤ 240 s, C), tempo, vitórias e "Novo recorde!".
+- **Boss Rush:** os 4 chefes em sequência, com 35% de cura entre eles (mínimo 20% de vida ao começar). Libera ao derrotar os chefes das 4 dungeons. Nota: S ≤ 420 s, A ≤ 600 s, B ≤ 840 s. PC recomendado = 1.1× o da última dungeon.
+- Derrota (herói cai): tela com "Tentar de novo" e "Voltar à cidade". Recordes em `SAVE.arena` (`z1…z4` e `rush`) com `w` (vitórias) e `best` (melhor tempo).
+- As notas e os tempos são palpites iniciais (S pensado para um herói forte); ajustar com os resultados reais.

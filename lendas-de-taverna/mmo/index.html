@@ -498,6 +498,14 @@ i.ul{position:absolute;right:2px;top:1px;font:700 9px var(--f);font-style:normal
 #pz .pzeq{display:flex;justify-content:space-between;padding:6px 8px;background:rgba(10,8,16,.7);border:1px solid #2a2438;font-size:12px}#pz .pzeq b{color:#fff}
 #pz .pzft{display:flex;gap:8px;padding:10px 14px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(transparent,#0b0911 30%)}#pz .pzft button{flex:1;margin:0}#pz .pzft .sec{flex:.8;background:#252238;border:1px solid #4a4566;color:#cfc9e0;font:700 11px var(--fd);letter-spacing:.03em;padding:12px 4px;white-space:nowrap}
 #pz .pzsoon{margin:40px 20px;padding:24px 18px;text-align:center;background:rgba(10,8,16,.7);border:1px solid #2a2438}#pz .pzsoon>b{display:block;font:700 18px var(--fd);letter-spacing:.2em;color:#e8c35a;margin-bottom:10px}#pz .pzsoon p{margin:0;font-size:12.5px;line-height:1.55;color:#b8b09a}
+#arres{position:fixed;inset:0;z-index:10020;display:flex;align-items:center;justify-content:center;background:rgba(6,4,10,.78)}
+#arres .arb{width:min(86vw,340px);padding:22px 18px 18px;text-align:center;background:linear-gradient(#241d30,#120e1a);border:1px solid #e8c35a;box-shadow:0 0 30px rgba(232,195,90,.3)}
+#arres small{display:block;font:700 10px var(--fd);letter-spacing:.25em;color:#a9a18a}
+#arres h2{margin:6px 0 10px;font:700 30px var(--fd);letter-spacing:.14em}#arres h2.w{color:#e8c35a;text-shadow:0 0 18px rgba(232,195,90,.6)}#arres h2.l{color:#ff6a5a;text-shadow:0 0 18px rgba(255,90,70,.5)}
+#arres .arg{font:700 54px var(--fd);color:#e8c35a;text-shadow:0 0 22px rgba(232,195,90,.7);line-height:1}
+#arres .arr{display:flex;justify-content:space-between;padding:6px 10px;margin-top:6px;background:rgba(10,8,16,.7);border:1px solid #2a2438;font-size:13px}#arres .arr b{color:#fff}
+#arres .arn{margin-top:8px;font:700 12px var(--fd);letter-spacing:.15em;color:#7dff9a}#arres p{margin:0 0 6px;font-size:12.5px;color:#b8b09a;line-height:1.5}
+#arres .arc{display:flex;flex-direction:column;gap:8px;margin-top:16px}#arres .arc button{margin:0}#arres .arc .sec{background:#252238;border:1px solid #4a4566;color:#cfc9e0;font:700 12px var(--fd);padding:12px}
 .pcw{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin:0 0 6px;border:1px solid #e8c35a;background:linear-gradient(#2a2312,#1a160d);box-shadow:0 0 14px rgba(232,195,90,.35)}
 .pcw span{font:700 12px var(--fd);letter-spacing:.12em;color:#cdbf8f}.pcw b{font:700 24px var(--fd);color:#e8c35a;text-shadow:0 0 10px rgba(232,195,90,.6)}
 .pcb{display:flex;justify-content:space-between;align-items:center;margin:6px 0 2px;padding:5px 8px;border:1px solid #e8c35a;background:#2a2312}
@@ -1748,6 +1756,7 @@ function initTown(){
   G.shop=null;lifeInit();
 }
 function enterTown(first,instant){
+  G.arena=null;{const r=document.getElementById('arres');if(r)r.remove();}
   const go=()=>{
     for(const L of G.loot)addItem(L.it,true);G.loot=[];
     ambStop();G.scene='town';G.room=null;useMap('town');G.mobs=[];G.boss=null;G.projs=[];G.phase='town';closeWin();
@@ -1761,16 +1770,18 @@ function enterTown(first,instant){
   };
   if(instant)go();else fadeTo(go);
 }
-function enterDungeon(zlv){
-  zlv=clamp(zlv||1,1,DUN.length);if(!dgUnlocked(zlv)){sfx('ui_denied');return;}
-  if(whenReady(()=>enterDungeon(zlv)))return;
+function enterDungeon(zlv,opts){
+  zlv=clamp(zlv||1,1,DUN.length);if(!dgUnlocked(zlv)&&!(opts&&opts.arena)){sfx('ui_denied');return;}
+  if(whenReady(()=>enterDungeon(zlv,opts)))return;
+  const hp0=G.hero&&G.hero.maxhp?G.hero.hp/G.hero.maxhp:1;
   closeWin();if(G.scene==='town')PFX.boost=1;
   fadeTo(()=>{
     G.scene='dungeon';useMap(zoneMap(zlv));G.zoneLv=zlv;SAVE.zone=zlv;SAVE.entered=true;G.auto=true;
     const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;h.state='idle';h.act=null;h.kvx=h.kvy=0;h.sk=Array(14).fill(0);h.potCd=0;h.x=ZONE.start[0];h.y=ZONE.start[1];h._lx=h.x;h._ly=h.y;
-    GX.clear();G.zones=[];G.floats=[];G.fx=[];G.loot=[];resetZone();MM.key='';G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2+34;G.wp=null;
+    GX.clear();G.zones=[];G.floats=[];G.fx=[];G.loot=[];resetZone();G.arena=(opts&&opts.arena)||null;if(G.arena){G.mobs=[];G.arena.over=0;if(opts.keepHp)h.hp=Math.round(h.maxhp*Math.min(1,Math.max(.2,hp0)+.35));}MM.key='';G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2+34;G.wp=null;
     show('hud');buildBar();updHUD(true);$('toast').style.display='none';setTimeout(()=>banner(areaName(),'Nv. '+dgLv(G.zoneLv).join('–'),'zone'),500);
-    chat('Você entrou em '+areaName()+' (Nv. '+dgLv(G.zoneLv).join('–')+'). Cuidado: algo grande pode surgir…',1);zoneMusic();ambStart();writeSave();
+    chat(G.arena?(G.arena.rush?'Boss Rush: '+(G.arena.idx+1)+' de '+G.arena.queue.length+'.':'Arena do Chefe: só você e o chefe.'):'Você entrou em '+areaName()+' (Nv. '+dgLv(G.zoneLv).join('–')+'). Cuidado: algo grande pode surgir…',1);zoneMusic();ambStart();writeSave();
+    if(G.arena)setTimeout(()=>{if(G.arena&&G.scene==='dungeon'&&G.phase==='farm'&&!G.boss)spawnBoss();},1600);
   });
 }
 function mkTb(id,html,cls,fn){const e=document.createElement('button');e.className=cls;e.id=id;e.style.pointerEvents='auto';e.innerHTML=html;e.onclick=fn;return e;}
@@ -1906,7 +1917,7 @@ function dropLoot(m){
   for(let i=0;i<n;i++)mk(genItem(il,boss?(i===0?2:1):(m.elite?(m.tier==='gold'&&i===0?2:1):0),(boss?12:G.zoneLv*2)+luck*10));
   const bk=boss?({goblin:'grunk',esq:'morvath'}[famOf(G.zoneLv)]||'gorgash'):null,pool=UNIQUES.filter(u=>(boss?(u.src==='boss'&&u.bk===bk):u.src===(m.mini?m.type:(m.T.fam||m.type)))&&(!u.cls||u.cls.includes(SAVE.cls)));
   {const fam=boss?famOf(G.zoneLv):(m.T.fam||m.type),ST=SETS.find(x=>x.fam===fam);if(ST&&Math.random()<(boss?.35:.006*(m.elite?(m.tier==='gold'?10:4):1)*(1+luck))){mk(genItem(il,3,0,null,ST));SAVE.cnt=SAVE.cnt||{};SAVE.cnt.set=(SAVE.cnt.set||0)+1;chat('Peça de conjunto: '+ST.nm,4);}}
-  if(pool.length&&Math.random()<(boss?.10*UQZ():m.mini?.06*UQZ():.004*(m.elite?(m.tier==='gold'?8:3):1)*(1+luck)))mk(genItem(il+1,4,0,pick(pool)));
+  if(pool.length&&Math.random()<(boss?.10*UQZ()*(G.arena?2:1):m.mini?.06*UQZ():.004*(m.elite?(m.tier==='gold'?8:3):1)*(1+luck)))mk(genItem(il+1,4,0,pick(pool)));
 }
 /* itens no chão: caem em arco, brilham pela raridade, descansam um instante e então são puxados até o herói */
 function updateLoot(dt){
@@ -1968,12 +1979,13 @@ function killMob(m){
   if(m.T&&m.T.totem){if(!m.dead){m.dead=true;m.deadT=0;m.hp=0;totemBreak(m);}return;}
   m.dead=true;m.deadT=0;m.hp=0;if(m.onDie&&!G.ev){const f=m.onDie;m.onDie=null;f();}const T=m.T;
   const gap=SAVE.lv-m.lv,gm=xpGapMul(gap),boss=m.kind==='boss',xp=Math.max(1,Math.round((m.elite?(m.tier==='gold'?3.5:2):1)*T.xp*((FAMM[m.T.fam||m.type]||[1,1,1])[2])*(1+.25*(m.lv-1))*(boss?Math.max(.05,gm):gm)*(1+uf('xp'))*(gm>0||boss?1:0)));let g=rint(T.gold[0],T.gold[1])*(1+.2*(m.lv-1))*(1+uf('gold'));if(SAVE.cls==='bardo')g*=1.4;g=Math.round(g*(m.elite?(m.tier==='gold'?2.2:1.5):1));
-  SAVE.gold+=g;gainXP(xp,m);floatText(m.x+12,m.y-30,'+'+g+' ouro','#ffd65a',8,1.1);sfx('coin',.5);
-  SAVE.totalKills=(SAVE.totalKills||0)+1;{const fm=m.T.fam||m.type;bstAdd(fm,m.elite);qEv('kill');qEv('fam',fm);if(m.elite)qEv('elite');if(m.kind==='boss'){SAVE.bosses=(SAVE.bosses||0)+1;qEv('boss');}}
+  SAVE.gold+=g;gainXP(G.arena?Math.max(1,Math.round(xp*.2)):xp,m);floatText(m.x+12,m.y-30,'+'+g+' ouro','#ffd65a',8,1.1);sfx('coin',.5);
+  SAVE.totalKills=(SAVE.totalKills||0)+1;{const fm=m.T.fam||m.type;bstAdd(fm,m.elite);qEv('kill');qEv('fam',fm);if(m.elite)qEv('elite');if(m.kind==='boss'&&!G.arena){SAVE.bosses=(SAVE.bosses||0)+1;qEv('boss');}}
   dropLoot(m);dropMats(m);petDrop(m.kind==='boss',!!m.elite,m.tier==='gold');
   if(m.boom){addZone({shape:'circle',x:m.x,y:m.y,r:58,warn:1,mult:1.8,pow:m.pow,shake:.3});chat(m.name+' vai explodir!',2);}
   if(m.elite){chat((m.tier==='gold'?'Elite dourado':'Elite azul')+' derrotado!',4);}
-  if(m.kind==='boss'){SAVE.dgDone=SAVE.dgDone||{};SAVE.dgDone[G.zoneLv]=true;dgRefresh();chat(m.name+' foi derrotado!',3);G.phase='end';sfx('victory',.9);G.shake=.4;G.endT=0;qCheck();setTimeout(()=>{if(G.phase==='end'&&G.scene==='dungeon'){G.phase='farm';G.boss=null;G.dtm=0;G.kills=0;G.bossRoll=1;updHUD(true);}},2800);if(musSrc)zoneMusic();}
+  if(m.kind==='boss'&&G.arena){arenaWin(m);}
+  else if(m.kind==='boss'){SAVE.dgDone=SAVE.dgDone||{};SAVE.dgDone[G.zoneLv]=true;dgRefresh();chat(m.name+' foi derrotado!',3);G.phase='end';sfx('victory',.9);G.shake=.4;G.endT=0;qCheck();setTimeout(()=>{if(G.phase==='end'&&G.scene==='dungeon'){G.phase='farm';G.boss=null;G.dtm=0;G.kills=0;G.bossRoll=1;updHUD(true);}},2800);if(musSrc)zoneMusic();}
   else{m.respawn=14;G.kills++;chat(m.name+' derrotado',1);
     checkBoss();}
   updHUD();writeSave();
@@ -2056,7 +2068,7 @@ function hurtHero(dmg,fromX,fromY,kf=1){
   if(h.hp<=0){h.hp=0;h.state='ko';h.koT=3;h.act=null;sfx('death',.8);chat('Você caiu em batalha…',2);$('ko').classList.add('on');$('ko').style.display='flex';SAVE.gold=Math.round(SAVE.gold*.9);}
 }
 function heroRevive(){const h=G.hero;h.sts=null;h.state='idle';h.hp=Math.round(h.maxhp*.6);h.x=ZONE.start[0];h.y=ZONE.start[1];h.kvx=h.kvy=0;$('ko').classList.remove('on');$('ko').style.display='none';
-  if(G.phase==='boss'){G.boss=null;G.phase='farm';G.dtm=0;G.bossRoll=1;zoneMusic();}G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2;}
+  if(G.arena&&!G.arena.over){G.arena.over=1;G.boss=null;G.phase='end';bossAlert(false);arenaResult(false);}else if(G.phase==='boss'){G.boss=null;G.phase='farm';G.dtm=0;G.bossRoll=1;zoneMusic();}G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2;}
 function showResult(){
   show('res');$('cv').style.display='block';const xp=bossDef().xp;
   $('rl').innerHTML=`${SAVE.name} ${clsIc(SAVE.cls,18)} Nv.${SAVE.lv}<br>Chefe derrotado!<br>Ouro total: ${SAVE.gold}${dgMsg()}`;
@@ -3125,7 +3137,7 @@ function update(dt){
   G.t+=dt;todTick(dt);if(PFX.boost>0)PFX.boost=Math.max(0,PFX.boost-dt*.7);joyShow();if(G.castReq>=0){G.castT=(G.castT||0)+dt;if(G.castT>.7){G.castReq=-1;G.castT=0;}}else G.castT=0;
   petTick(dt);
   if(G.scene==='town')updateTown(dt);
-  else{if(G.nearKey){G.nearKey='';G.near=null;itbUpd();}updateHero(dt);if(tf('regen')&&G.hero.state!=='ko'&&G.hero.hp<G.hero.maxhp)G.hero.hp=Math.min(G.hero.maxhp,G.hero.hp+G.hero.maxhp*tf('regen')*dt);updateZones(dt);for(const m of G.mobs)updateMob(m,dt);if(G.boss)updateMob(G.boss,dt);separateEnts();updateProjs(dt);updateMProjs(dt);tickElix(dt);bossTick(dt);evTick(dt);if(G.mobs.some(m=>m.gone))G.mobs=G.mobs.filter(m=>!m.gone);}
+  else{if(G.nearKey){G.nearKey='';G.near=null;itbUpd();}updateHero(dt);if(tf('regen')&&G.hero.state!=='ko'&&G.hero.hp<G.hero.maxhp)G.hero.hp=Math.min(G.hero.maxhp,G.hero.hp+G.hero.maxhp*tf('regen')*dt);updateZones(dt);for(const m of G.mobs)updateMob(m,dt);if(G.boss)updateMob(G.boss,dt);separateEnts();updateProjs(dt);updateMProjs(dt);tickElix(dt);bossTick(dt);evTick(dt);if(G.arena&&G.phase==='boss'&&!G.arena.over)G.arena.tm=(G.arena.tm||0)+dt;if(G.mobs.some(m=>m.gone))G.mobs=G.mobs.filter(m=>!m.gone);}
   for(let i=G.floats.length-1;i>=0;i--){const f=G.floats[i];f.life-=dt;f.y-=(f.vy||14)*dt;if(f.life<=0)G.floats.splice(i,1);}
   updateFxList(dt);
   if(G.shake>0)G.shake=Math.max(0,G.shake-dt);
@@ -4059,6 +4071,21 @@ function winAlq(){
   h+='</div><div class="sub">Poções curam sozinhas na dungeon. Elixires duram 5 min dentro dela.</div>';
   $('wbody').innerHTML=h;
 }
+/* ===== ARENA DO CHEFE e BOSS RUSH: só o chefe, sem monstros; XP 20% e chance de único dobrada ===== */
+const arKey=a=>a.rush?'rush':'z'+a.z;
+function arGrade(tm,rush){const t=rush?[420,600,840]:[100,160,240];return tm<=t[0]?'S':tm<=t[1]?'A':tm<=t[2]?'B':'C';}
+const mmss=s=>{s=Math.round(s);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');};
+function arenaStart(z,rush){const a=rush?{rush:true,queue:DUN.map((d,i)=>i+1),idx:0,z:1,tm:0}:{z,rush:false,tm:0};enterDungeon(rush?1:z,{arena:a});}
+function arenaWin(m){const a=G.arena;a.over=1;chat(m.name+' foi derrotado!',3);sfx('victory',.9);G.shake=.4;G.phase='end';bossAlert(false);if(musSrc)zoneMusic();
+  if(a.rush&&a.idx<a.queue.length-1){setTimeout(()=>{if(!G.arena||G.arena!==a)return;const nz=a.queue[a.idx+1];const na=Object.assign({},a,{idx:a.idx+1,over:0});enterDungeon(nz,{arena:na,keepHp:true});},2600);return;}
+  const k=arKey(a);SAVE.arena=SAVE.arena||{};const r=SAVE.arena[k]=SAVE.arena[k]||{w:0,best:0};r.w++;const rec=!r.best||a.tm<r.best;if(rec)r.best=Math.round(a.tm*10)/10;writeSave();
+  setTimeout(()=>{if(G.arena===a)arenaResult(true,{tm:a.tm,rec,w:r.w});},2400);}
+function arenaResult(win,info){const a=G.arena;if(!a)return;const old=document.getElementById('arres');if(old)old.remove();
+  const g=win?arGrade(info.tm,a.rush):'';const nm=a.rush?'Boss Rush':'Arena de '+bossDef(a.z).nome;
+  const d=document.createElement('div');d.id='arres';
+  d.innerHTML=`<div class="arb"><small>${nm.toUpperCase()}</small><h2 class="${win?'w':'l'}">${win?'VITÓRIA!':'DERROTA'}</h2>${win?`<div class="arg">${g}</div><div class="arr"><span>Tempo</span><b>${mmss(info.tm)}</b></div><div class="arr"><span>Vitórias</span><b>${info.w}</b></div>${info.rec?'<div class="arn">Novo recorde!</div>':''}`:`<p>O herói caiu. Treine mais, equipe-se melhor e tente de novo.</p>`}<div class="arc"><button class="gb big" data-ar="again">${win?'Lutar de novo':'Tentar de novo'}</button><button class="gb sec" data-ar="town">Voltar à cidade</button></div></div>`;
+  d.onclick=ev=>{const e=ev.target.closest('[data-ar]');if(!e)return;const q=e.dataset.ar;d.remove();sfx('ui_confirm');if(q==='again')arenaStart(a.z,a.rush);else{show('hud');enterTown(false);}};
+  document.body.appendChild(d);}
 /* ===== PORTAL DAS DUNGEONS (tela cheia): carrossel de cartões, requisitos, poder recomendado e aba Especiais ===== */
 const PZD=[
  {img:'d1',lore:'A tribo ruge na mata.',hab:[['goblin','Goblins','Comum'],['skrix','Xamã Skrix','Mini-chefe'],['grunk','Grunk','Chefe']]},
@@ -4075,48 +4102,59 @@ function pzPortrait(cv){const k=cv.dataset.k,x=cv.getContext('2d');let fr=null;
   const d=tc.getImageData(0,0,sw,sh).data;let x0=1e9,y0=1e9,x1=-1,y1=-1;for(let yy=0;yy<sh;yy++)for(let xx=0;xx<sw;xx++)if(d[(yy*sw+xx)*4+3]>40){if(xx<x0)x0=xx;if(xx>x1)x1=xx;if(yy<y0)y0=yy;if(yy>y1)y1=yy;}
   if(x1<0)return;const bw=x1-x0+1,bh=y1-y0+1,s=Math.min((cv.width-8)/bw,(cv.height-6)/bh);x.imageSmoothingEnabled=false;x.drawImage(t,x0,y0,bw,bh,(cv.width-bw*s)/2,cv.height-3-bh*s,bw*s,bh*s);}
 function pzTierTxt(z){const L=dgLv(z),a=tierOf(L[0]),b=tierOf(L[1]);return (a===b?'Tier '+a:'Tier '+a+'–'+b)+' · nível '+((a-1)*5+1)+'–'+(b*5);}
-function pzDetail(z){
-  const d=DUN[z-1],I=PZD[z-1],un=dgUnlocked(z),L=dgLv(z),hpc=heroPC(),r=hpc/d.pc,col=r>=1?'#5fd36a':r>=.8?'#e8c35a':'#ff6a5a';
-  const lvOkd=SAVE.lv>=d.unlock,prev=DUN[z-2],prevOk=!prev||!!(SAVE.dgDone&&SAVE.dgDone[z-1]);
-  const B=bossDef(z);let h='<div class="pzh">REQUISITOS</div><div class="pzr">';
-  h+=`<div class="${lvOkd?'ok':'no'}"><span>Nível ${d.unlock}</span><b>você: ${SAVE.lv} ${lvOkd?'✔':'🔒'}${!lvOkd&&d.unlock-SAVE.lv>0?' · faltam '+(d.unlock-SAVE.lv):''}</b></div>`;
-  if(prev)h+=`<div class="${prevOk?'ok':'no'}"><span>Derrotar ${bossDef(z-1).nome}</span><b>${prevOk?'✔':'🔒'}</b></div>`;
-  h+='</div>';
-  if(un){const pct=Math.min(100,hpc/(d.pc*1.25)*100),mk=d.pc/(d.pc*1.25)*100,txt=r>=1?'Poder adequado para esta dungeon':r>=.8?'Um pouco abaixo: a luta será difícil':'Muito abaixo: você vai apanhar';
-    h+=`<div class="pzg"><div class="l"><span>Seu poder de combate</span><span><b style="color:${col}">${pcFmt(hpc)}</b> <em>/ ${pcFmt(d.pc)} recomendado</em></span></div><div class="bar"><div class="f" style="width:${pct}%;background:${col}"></div><div class="m" style="left:${mk}%"></div></div><small style="color:${col}">${txt}</small></div>`;}
-  else h+=`<div class="pzg dim"><div class="l"><span>Poder de combate recomendado</span><span><b>${pcFmt(d.pc)}</b></span></div><small>Você tem ${pcFmt(hpc)}. Disponível ao liberar a dungeon.</small></div>`;
-  h+='<div class="pzh">HABITANTES</div><div class="pzen">'+I.hab.map(e=>`<div class="${e[2].replace('-chefe','')}"><canvas data-k="${un?e[0]:'?'}" width="148" height="112"></canvas><b>${un?e[1]:'???'}</b><i>${un?e[2].toUpperCase():''}</i></div>`).join('')+'</div>';
-  h+=`<div class="pzh">EQUIPAMENTO</div><div class="pzeq"><span>Dropa itens de</span><b>${pzTierTxt(z)}</b></div>`;
-  return h;}
-function pzFoot(z){const un=dgUnlocked(z),d=DUN[z-1],last=clamp(SAVE.zone||0,0,DUN.length),showCont=SAVE.entered&&last&&last!==z&&dgUnlocked(last);
-  const need=un?'':(SAVE.lv<d.unlock?'Requer nível '+d.unlock:'Derrote '+bossDef(z-1).nome);
-  return `<button class="gb big" data-pz="go" ${un?'':'disabled'}>${un?'Entrar na dungeon':need}</button>${showCont?`<button class="gb sec" data-pz="cont">Continuar atual</button>`:''}`;}
+function pzReqRow(ok,txt,right){return `<div class="${ok?'ok':'no'}"><span>${txt}</span><b>${right}</b></div>`;}
+function pzGauge(rec,locked){const hpc=heroPC(),r=hpc/rec,col=r>=1?'#5fd36a':r>=.8?'#e8c35a':'#ff6a5a';
+  if(locked)return `<div class="pzg dim"><div class="l"><span>Poder de combate recomendado</span><span><b>${pcFmt(rec)}</b></span></div><small>Você tem ${pcFmt(hpc)}. Disponível ao liberar.</small></div>`;
+  const pct=Math.min(100,hpc/(rec*1.25)*100),mk=rec/(rec*1.25)*100,txt=r>=1?'Poder adequado para esta luta':r>=.8?'Um pouco abaixo: a luta será difícil':'Muito abaixo: você vai apanhar';
+  return `<div class="pzg"><div class="l"><span>Seu poder de combate</span><span><b style="color:${col}">${pcFmt(hpc)}</b> <em>/ ${pcFmt(rec)} recomendado</em></span></div><div class="bar"><div class="f" style="width:${pct}%;background:${col}"></div><div class="m" style="left:${mk}%"></div></div><small style="color:${col}">${txt}</small></div>`;}
+function pzItems(){
+  if(PZ.tab==='d')return DUN.map((d,i)=>{const z=i+1,cur=(SAVE.zone||0)===z&&SAVE.entered,dn=SAVE.dgDone&&SAVE.dgDone[z];return {img:PZD[i].img,hd:'ÁREA '+z,nm:d.nm,lore:PZD[i].lore,unlock:d.unlock,locked:!dgUnlocked(z),st:cur?'● ATUAL':dn?'✔ concluída':'',cur,z};});
+  const L=[];DUN.forEach((d,i)=>{const z=i+1,ok=!!(SAVE.dgDone&&SAVE.dgDone[z])&&SAVE.lv>=d.unlock,r=(SAVE.arena||{})['z'+z];L.push({img:PZD[i].img,hd:'ARENA DO CHEFE',nm:'Arena de '+bossDef(z).nome,lore:d.nm,unlock:d.unlock,locked:!ok,st:r&&r.w?'✔ '+r.w+' vitória'+(r.w>1?'s':''):'',z,arena:1});});
+  const all=DUN.every((d,i)=>SAVE.dgDone&&SAVE.dgDone[i+1])&&SAVE.lv>=DUN[DUN.length-1].unlock,rr=(SAVE.arena||{}).rush;
+  L.push({img:'d2',hd:'BOSS RUSH',nm:'Desfile dos Chefes',lore:'Todos, um atrás do outro.',unlock:DUN[DUN.length-1].unlock,locked:!all,st:rr&&rr.w?'✔ '+rr.w+' vitória'+(rr.w>1?'s':''):'',rush:1});return L;}
+function pzDetail(it){
+  if(PZ.tab==='d'){const z=it.z,d=DUN[z-1],I=PZD[z-1],un=!it.locked,lvOkd=SAVE.lv>=d.unlock,prev=DUN[z-2],prevOk=!prev||!!(SAVE.dgDone&&SAVE.dgDone[z-1]);
+    let h='<div class="pzh">REQUISITOS</div><div class="pzr">'+pzReqRow(lvOkd,'Nível '+d.unlock,`você: ${SAVE.lv} ${lvOkd?'✔':'🔒'}${!lvOkd?' · faltam '+(d.unlock-SAVE.lv):''}`);
+    if(prev)h+=pzReqRow(prevOk,'Derrotar '+bossDef(z-1).nome,prevOk?'✔':'🔒');
+    h+='</div>'+pzGauge(d.pc,!un);
+    h+='<div class="pzh">HABITANTES</div><div class="pzen">'+I.hab.map(e=>`<div class="${e[2].replace('-chefe','')}"><canvas data-k="${un?e[0]:'?'}" width="148" height="112"></canvas><b>${un?e[1]:'???'}</b><i>${un?e[2].toUpperCase():''}</i></div>`).join('')+'</div>';
+    return h+`<div class="pzh">EQUIPAMENTO</div><div class="pzeq"><span>Dropa itens de</span><b>${pzTierTxt(z)}</b></div>`;}
+  // especiais
+  const ar=SAVE.arena||{},k=it.rush?'rush':'z'+it.z,r=ar[k],lv=SAVE.lv>=it.unlock;let h='<div class="pzh">REQUISITOS</div><div class="pzr">'+pzReqRow(lv,'Nível '+it.unlock,`você: ${SAVE.lv} ${lv?'✔':'🔒'}${!lv?' · faltam '+(it.unlock-SAVE.lv):''}`);
+  if(it.rush){const n=DUN.filter((d,i)=>SAVE.dgDone&&SAVE.dgDone[i+1]).length;h+=pzReqRow(n===DUN.length,'Derrotar os chefes das '+DUN.length+' dungeons',n+' de '+DUN.length+(n===DUN.length?' ✔':' 🔒'));}
+  else{const dn=!!(SAVE.dgDone&&SAVE.dgDone[it.z]);h+=pzReqRow(dn,'Derrotar '+bossDef(it.z).nome+' na dungeon',dn?'✔':'🔒');}
+  h+='</div>'+pzGauge(it.rush?Math.round(DUN[DUN.length-1].pc*1.1):DUN[it.z-1].pc,it.locked);
+  h+='<div class="pzh">RECORDE</div><div class="pzr"><div><span>Vitórias</span><b>'+(r?r.w:0)+'</b></div><div><span>Melhor tempo</span><b>'+(r&&r.best?mmss(r.best):'—')+'</b></div><div><span>Nota</span><b>'+(r&&r.best?arGrade(r.best,!!it.rush):'—')+'</b></div></div>';
+  h+='<div class="pzh">'+(it.rush?'CHEFES':'CHEFE')+'</div><div class="pzen">'+(it.rush?DUN.map((d,i)=>{const B=bossDef(i+1);return `<div class="Chefe"><canvas data-k="${PZD[i].hab[PZD[i].hab.length-1][0]}" width="148" height="112"></canvas><b>${B.nome}</b><i>NV ${dgLv(i+1)[1]}</i></div>`;}).join(''):`<div class="Chefe" style="max-width:160px"><canvas data-k="${PZD[it.z-1].hab[PZD[it.z-1].hab.length-1][0]}" width="148" height="112"></canvas><b>${bossDef(it.z).nome}</b><i>NV ${dgLv(it.z)[1]}</i></div>`)+'</div>';
+  return h+'<div class="pzh">RECOMPENSAS</div><div class="pzr"><div><span>Experiência</span><b>20% do normal</b></div><div><span>Itens únicos</span><b>chance dobrada</b></div></div>';}
+function pzFoot(it){
+  if(PZ.tab==='d'){const z=it.z,un=!it.locked,d=DUN[z-1],last=clamp(SAVE.zone||0,0,DUN.length),showCont=SAVE.entered&&last&&last!==z&&dgUnlocked(last);
+    const need=un?'':(SAVE.lv<d.unlock?'Requer nível '+d.unlock:'Derrote '+bossDef(z-1).nome);
+    return `<button class="gb big" data-pz="go" ${un?'':'disabled'}>${un?'Entrar na dungeon':need}</button>${showCont?`<button class="gb sec" data-pz="cont">Continuar atual</button>`:''}`;}
+  const need=SAVE.lv<it.unlock?'Requer nível '+it.unlock:it.rush?'Derrote todos os chefes':'Derrote '+bossDef(it.z).nome;
+  return `<button class="gb big" data-pz="go" ${it.locked?'disabled':''}>${it.locked?need:it.rush?'Iniciar o Boss Rush':'Entrar na arena'}</button>`;}
 function pzRender(){const root=$('pz');if(!root)return;
-  const hpc=heroPC();
-  if(PZ.tab==='e'){
-    root.querySelector('.pzbody').innerHTML='<div class="pzsoon"><b>EM BREVE</b><p>Aqui ficarão as dungeons especiais: a <b>Arena do Chefe</b> (só o chefe, sem monstros) e o <b>Boss Rush</b>. Elas liberam depois que você derrotar os chefes das dungeons.</p></div>';
-    root.querySelector('.pzft').innerHTML='';root.querySelectorAll('.pztab span').forEach((e,i)=>e.classList.toggle('on',i===1));return;}
-  root.querySelectorAll('.pztab span').forEach((e,i)=>e.classList.toggle('on',i===0));
-  const cards=DUN.map((d,i)=>{const z=i+1,un=dgUnlocked(z),I=PZD[i],lvOkd=SAVE.lv>=d.unlock,cur=(SAVE.zone||0)===z&&SAVE.entered,dn=SAVE.dgDone&&SAVE.dgDone[z];
-    return `<div class="pzc ${un?'':'lock'}" data-i="${i}" style="background-image:url(assets/portal/${I.img}.jpg)"><div class="hd">ÁREA ${z}</div>${cur?'<span class="st cur">● ATUAL</span>':dn?'<span class="st">✔ concluída</span>':''}${un?'':`<div class="lk"><img src="${UI}padlock.png"></div>`}<div class="nf"><b>${d.nm}</b><i>${I.lore}</i><div class="rq"><span>Nível</span><b class="${lvOkd?'ok':'no'}">${d.unlock}+ ${lvOkd?'✔':'🔒'}</b></div></div></div>`;}).join('');
-  root.querySelector('.pzbody').innerHTML=`<div class="pzcr" id="pzcr">${cards}</div><div class="pzdots">${DUN.map((d,i)=>`<i data-i="${i}"></i>`).join('')}</div><div class="pzdet" id="pzdet"></div>`;
-  pzSelect(PZ.sel,true);
-  const cr=$('pzcr');cr.addEventListener('scroll',()=>{clearTimeout(PZ.t);PZ.t=setTimeout(()=>{const r=cr.getBoundingClientRect(),cx=r.left+r.width/2;let b=0,bd=1e9;cr.querySelectorAll('.pzc').forEach((c,i)=>{const q=c.getBoundingClientRect(),d=Math.abs(q.left+q.width/2-cx);if(d<bd){bd=d;b=i;}});if(b!==PZ.sel)pzSelect(b,false);},90);});
-  cr.querySelectorAll('.pzc').forEach(c=>c.onclick=()=>{const i=+c.dataset.i;if(i!==PZ.sel){sfx('ui_click',.5);pzSelect(i,true);}});}
-function pzSelect(i,scroll){PZ.sel=i;G.pz=i+1;const root=$('pz');if(!root)return;
+  root.querySelectorAll('.pztab span').forEach((e,i)=>e.classList.toggle('on',(i===0)===(PZ.tab==='d')));
+  PZ.items=pzItems();const sel=PZ.tab==='d'?PZ.sel:PZ.selE;
+  const cards=PZ.items.map((c,i)=>`<div class="pzc ${c.locked?'lock':''}" data-i="${i}" style="background-image:url(assets/portal/${c.img}.jpg)"><div class="hd">${c.hd}</div>${c.st?`<span class="st ${c.cur?'cur':''}">${c.st}</span>`:''}${c.locked?`<div class="lk"><img src="${UI}padlock.png"></div>`:''}<div class="nf"><b>${c.nm}</b><i>${c.lore}</i><div class="rq"><span>Nível</span><b class="${SAVE.lv>=c.unlock?'ok':'no'}">${c.unlock}+ ${SAVE.lv>=c.unlock?'✔':'🔒'}</b></div></div></div>`).join('');
+  root.querySelector('.pzbody').innerHTML=`<div class="pzcr" id="pzcr">${cards}</div><div class="pzdots">${PZ.items.map((c,i)=>`<i data-i="${i}"></i>`).join('')}</div><div class="pzdet" id="pzdet"></div>`;
+  PZ.first=0;pzSelect(clamp(sel,0,PZ.items.length-1),true);
+  const cr=$('pzcr');cr.addEventListener('scroll',()=>{clearTimeout(PZ.t);PZ.t=setTimeout(()=>{const r=cr.getBoundingClientRect(),cx=r.left+r.width/2;let b=0,bd=1e9;cr.querySelectorAll('.pzc').forEach((c,i)=>{const q=c.getBoundingClientRect(),d=Math.abs(q.left+q.width/2-cx);if(d<bd){bd=d;b=i;}});if(b!==(PZ.tab==='d'?PZ.sel:PZ.selE))pzSelect(b,false);},90);});
+  cr.querySelectorAll('.pzc').forEach(c=>c.onclick=()=>{const i=+c.dataset.i;if(i!==(PZ.tab==='d'?PZ.sel:PZ.selE)){sfx('ui_click',.5);pzSelect(i,true);}});}
+function pzSelect(i,scroll){if(PZ.tab==='d')PZ.sel=i;else PZ.selE=i;const it=PZ.items[i];if(!it)return;if(PZ.tab==='d')G.pz=it.z;const root=$('pz');if(!root)return;
   root.querySelectorAll('.pzc').forEach((c,k)=>c.classList.toggle('sel',k===i));root.querySelectorAll('.pzdots i').forEach((e,k)=>e.classList.toggle('on',k===i));
-  const bg=root.querySelector('.pzbg');if(bg)bg.style.backgroundImage=`url(assets/portal/${PZD[i].img}.jpg)`;
-  $('pzdet').innerHTML=pzDetail(i+1);root.querySelectorAll('#pzdet canvas').forEach(pzPortrait);root.querySelector('.pzft').innerHTML=pzFoot(i+1);
+  const bg=root.querySelector('.pzbg');if(bg)bg.style.backgroundImage=`url(assets/portal/${it.img}.jpg)`;
+  $('pzdet').innerHTML=pzDetail(it);root.querySelectorAll('#pzdet canvas').forEach(pzPortrait);root.querySelector('.pzft').innerHTML=pzFoot(it);
   if(scroll){const c=root.querySelector(`.pzc[data-i="${i}"]`),cr=$('pzcr');if(c&&cr)cr.scrollTo({left:c.offsetLeft-cr.clientWidth/2+c.offsetWidth/2,behavior:PZ.first?'smooth':'auto'});PZ.first=1;}}
-function pzOpen(){pzClose();PZ.tab='d';PZ.first=0;
+function pzOpen(){pzClose();PZ.tab='d';PZ.selE=0;
   const best=DUN.reduce((m,d,i)=>dgUnlocked(i+1)?i:m,0);PZ.sel=clamp((G.pz?G.pz-1:(SAVE.zone?SAVE.zone-1:best)),0,DUN.length-1);if(!dgUnlocked(PZ.sel+1))PZ.sel=best;
   const root=document.createElement('div');root.id='pz';
   root.innerHTML=`<div class="pzbg"></div><div class="pztb"><button class="pzbk" data-pz="close">‹</button><h1>Portal das Dungeons</h1><div class="pzme"><small>SEU PODER</small><b id="pzpc">${pcFmt(heroPC())}</b></div></div><div class="pztab"><span data-pz="tabd">Dungeons</span><span data-pz="tabe">Especiais</span></div><div class="pzbody"></div><div class="pzft"></div>`;
   document.body.appendChild(root);
   root.onclick=ev=>{const e=ev.target.closest('[data-pz]');if(!e||e.disabled)return;const a=e.dataset.pz;
     if(a==='close'){sfx('tr_close',.6);closeWin();}
-    else if(a==='tabd'){PZ.tab='d';sfx('ui_click',.5);pzRender();}else if(a==='tabe'){PZ.tab='e';sfx('ui_click',.5);pzRender();}
-    else if(a==='go'){const z=PZ.sel+1;if(!dgUnlocked(z)){sfx('ui_denied');return;}closeWin();sfx('spell_cast',.8);sfx('levelup',.4);enterDungeon(z);}
+    else if(a==='tabd'||a==='tabe'){PZ.tab=a==='tabd'?'d':'e';sfx('ui_click',.5);pzRender();}
+    else if(a==='go'){const it=PZ.items[PZ.tab==='d'?PZ.sel:PZ.selE];if(!it||it.locked){sfx('ui_denied');return;}closeWin();sfx('spell_cast',.8);sfx('levelup',.4);if(PZ.tab==='d')enterDungeon(it.z);else arenaStart(it.z,!!it.rush);}
     else if(a==='cont'){const z=clamp(SAVE.zone||1,1,DUN.length);if(!dgUnlocked(z)){sfx('ui_denied');return;}closeWin();sfx('spell_cast',.8);sfx('levelup',.4);enterDungeon(z);}};
   pzRender();}
 function pzClose(){const r=document.getElementById('pz');if(r)r.remove();}
