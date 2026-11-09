@@ -140,3 +140,9 @@ Simulação (`tools/mmo/sim/pc_calib.cjs` e `boss.cjs`, herói automático, equi
 
 ## Boss Rush removido
 - Era muito parecido com a Arena do Chefe; ficou só a **Arena do Chefe** (uma por dungeon) na aba Especiais. O código do Boss Rush continua no jogo, sem entrada na interface, caso a ideia volte (por exemplo, como modo com ranking).
+
+## Informações de combate na tela
+- Dano causado: branco (normal), amarelo-claro maior (golpe forte: ≥ 18% da vida do alvo, ≥ 3% se for chefe/mini-chefe), dourado grande com "!" e brilho (crítico). Valores grandes formatados (1.240; 12,4k).
+- Dano sofrido: vermelho com sinal "−"; maior e mais intenso para golpes ≥ 12% e ≥ 25% da vida do herói.
+- Cura: verde com "+", em negrito e com brilho.
+- Nomes: elites (azul/dourado) e mini-chefes (dourado) mostram o nome sempre; o nível aparece menor e apagado ao lado. Os demais seguem mostrando o nome só do alvo.
