@@ -461,6 +461,9 @@ i.ul{position:absolute;right:2px;top:1px;font:700 9px var(--f);font-style:normal
 #chat div:not(:last-child){opacity:.78}
 .dd .row2 span:first-child{font-size:11.5px;letter-spacing:.05em;color:#8d866f}.dd .row2 span:last-child{color:#f1e6c2;font-weight:600}
 .dd .row2{padding:4px 0}
+.nh b{font-size:19px;letter-spacing:.1em;filter:drop-shadow(0 0 8px rgba(240,194,79,.4))}.nh span{font-size:12px;color:#a9a18a;margin-top:2px}
+.nh .np{box-shadow:0 0 16px rgba(240,194,79,.45)}
+.sec-h{gap:12px}.sec-h span:last-child:not(:first-child){text-align:right;font-size:10px;letter-spacing:.08em;color:#8d866f;text-transform:none}
 .pcw{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin:0 0 6px;border:1px solid #e8c35a;background:linear-gradient(#2a2312,#1a160d);box-shadow:0 0 14px rgba(232,195,90,.35)}
 .pcw span{font:700 12px var(--fd);letter-spacing:.12em;color:#cdbf8f}.pcw b{font:700 24px var(--fd);color:#e8c35a;text-shadow:0 0 10px rgba(232,195,90,.6)}
 .pcb{display:flex;justify-content:space-between;align-items:center;margin:6px 0 2px;padding:5px 8px;border:1px solid #e8c35a;background:#2a2312}
@@ -1678,7 +1681,8 @@ function makeElite(m,tier){
 const FAMV={goblin:['goblin','goblin','gobarq','xama','goblin'],esq:['esq','esq','esqmago','morcego','esqfogo','esqgelo'],javali:['javali'],rato:['rato']};
 const varOf=(z,i)=>{const a=FAMV[famOf(z)];return a[((i%a.length)+a.length)%a.length];};
 /* progressão definida: 4 dungeons, uma após a outra. Para entrar na seguinte é preciso derrotar o chefe da anterior e ter o nível mínimo. */
-const DUN=[{id:1,nm:'Floresta dos Goblins',unlock:1},{id:2,nm:'Catacumbas de Brumavale',unlock:8},{id:3,nm:'Floresta de Brumavale',unlock:13},{id:4,nm:'Esgotos de Brumavale',unlock:18}];
+/* pc = poder de combate recomendado (calibrado por simulação: PC com o qual o herói de equipamento médio vence o chefe com folga; tools/mmo/sim/pc_calib.cjs + boss.cjs) */
+const DUN=[{id:1,nm:'Floresta dos Goblins',unlock:1,pc:600},{id:2,nm:'Catacumbas de Brumavale',unlock:8,pc:1100},{id:3,nm:'Floresta de Brumavale',unlock:13,pc:1200},{id:4,nm:'Esgotos de Brumavale',unlock:18,pc:1400}];
 const dgLv=z=>[1+(z-1)*BAL.zoneLv,8+(z-1)*BAL.zoneLv];   // faixa de nível dos monstros da dungeon z
 function dgUnlocked(z){if(z<=1)return true;const d=DUN[z-1];return !!(d&&SAVE.dgDone&&SAVE.dgDone[z-1]&&SAVE.lv>=d.unlock);}
 function dgRefresh(){let m=1;for(let z=2;z<=DUN.length;z++)if(dgUnlocked(z))m=z;if(m>(SAVE.zoneMax||1)){SAVE.zoneMax=m;chat('Nova dungeon liberada: '+DUN[m-1].nm+'!',4);sfx('levelup',.4);if(G.hero)floatText(G.hero.x,G.hero.y-80,'Nova dungeon!','#8ef08a',9,1.4);}SAVE.zoneMax=Math.max(1,Math.min(DUN.length,SAVE.zoneMax||1));}
@@ -4022,7 +4026,7 @@ function winAlq(){
   $('wbody').innerHTML=h;
 }
 /* Portal */
-const AREAS=[{fam:['goblin'],nm:'Floresta dos Goblins',ic:'ni_d1',mon:'Goblins'},{fam:['esq'],nm:'Catacumbas de Brumavale',ic:'skull-staff',mon:'Esqueletos'},{fam:['javali'],nm:'Floresta de Brumavale',ic:'ni_d3',mon:'Javalis'},{fam:['rato'],nm:'Esgotos de Brumavale',ic:'ni_d4',mon:'Ratos Gigantes'}];
+const AREAS=[{fam:['goblin'],nm:'Floresta dos Goblins',ic:'ni_d1',mon:'Goblins'},{fam:['esq'],nm:'Catacumbas de Brumavale',ic:'skull-staff',mon:'Esqueletos'},{fam:['javali'],nm:'Floresta de Brumavale',ic:'ni_d4',mon:'Javalis'},{fam:['rato'],nm:'Esgotos de Brumavale',ic:'ni_d3',mon:'Ratos Gigantes'}];
 function winPortal(){
   $('wtt').textContent='Portal das Dungeons';G.pz=clamp(G.pz||Math.min(SAVE.zoneMax||1,SAVE.zone||1)||1,1,DUN.length);
   let h='<div class="sec-h"><span>Dungeons</span><span>O herói luta sozinho lá dentro</span></div>';
@@ -4030,7 +4034,7 @@ function winPortal(){
   AREAS.forEach((d,i)=>{const n=i+1,un=dgUnlocked(n),L=dgLv(n);
     h+=`<div class="dg ${n===z?'sel':un?'':'lock'}" data-a="pdg:${n}" style="cursor:pointer"><img class="ic" src="${UI}${d.ic}.png"><div><b>${d.nm}</b><span>${d.mon} · Nv ${L[0]}–${L[1]}</span></div>${un?(SAVE.dgDone&&SAVE.dgDone[n]?'<span style="margin-left:auto;color:#96e08a;font-size:11px">✔ concluída</span>':''):`<img src="${UI}padlock.png" style="width:20px;height:20px;image-rendering:pixelated;margin-left:auto">`}</div>`;});
   const un=dgUnlocked(z),L=dgLv(z),B=bossDef(z),need=DUN[z-1],prev=DUN[z-2];
-  h+=`<div class="dd"><div class="row2"><span>Área</span><span>${areaName(zoneMap(z))}</span></div><div class="row2"><span>Monstros</span><span>${MOBS[famOf(z)].nome}s · Nv ${L[0]}–${L[1]}</span></div><div class="row2"><span>Chefe</span><span>${B.nome} · Nv ${L[1]}</span></div>
+  h+=`<div class="dd"><div class="row2"><span>Área</span><span>${areaName(zoneMap(z))}</span></div><div class="row2"><span>Monstros</span><span>${MOBS[famOf(z)].nome}s · Nv ${L[0]}–${L[1]}</span></div><div class="row2"><span>Chefe</span><span>${B.nome} · Nv ${L[1]}</span></div><div class="row2"><span>Poder de combate</span><span>${(()=>{const hp=heroPC(),r=hp/need.pc,c=r>=1?'#7dff9a':r>=.8?'#e8c35a':'#ff6a5a';return `<b style="color:${c}">${pcFmt(hp)}</b> <span style="color:#8d866f">/ ${pcFmt(need.pc)} recomendado</span>`;})()}</span></div>
    ${un?'':`<div class="row2"><span>Requisito</span><span style="color:#e0a070">${prev?'Derrotar o chefe de '+prev.nm+' e ':''}Nv ${need.unlock}</span></div>`}</div>
    <button class="gb big" data-a="go" ${un?'':'disabled'}>${un?'Entrar na dungeon':'Bloqueada'}</button>`;
   $('wbody').innerHTML=h;
