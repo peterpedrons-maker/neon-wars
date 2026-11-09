@@ -3330,8 +3330,8 @@ function morvathFrame(e){const sh=SHEETS.morvath,a=e.act,F=(n,i)=>atlasFrame(sh,
     if(a.anim==='roar')return F('roar',t<w?Math.min(4,Math.floor(t/w*5)):(t<w+.25?5:6));}
   if(e.dash)return F('charge',2+Math.floor(e.animT*12)%4);
   if(e.state==='atk'&&a)return F('attack',Math.min(6,Math.floor(a.t/a.dur*7)));
-  if(e.state==='walk')return F('walk',Math.floor(e.animT*9)%12);
-  return F('idle',Math.floor(G.t*5)%8);}
+  if(e.state==='walk')return F('walk',Math.floor(e.animT*13)%24);
+  return F('idle',Math.floor(G.t*10)%16);}
 function totemFrame(e){const sh=SHEETS.totem;
   if(e.dead)return atlasFrame(sh,'death',Math.min(2,Math.floor(e.deadT*5)));
   if(e.age<.6)return atlasFrame(sh,'rise',Math.min(5,Math.floor(e.age/.6*6)));
