@@ -909,7 +909,7 @@ const MOB_SKRIX={nome:'Xamã Skrix',atlas:'skrix',rad:16,shr:28,fam:'goblin',aur
   msk:[{id:'totem',hp:1,cd:10,warn:.95,wt:3,max:320},{id:'curse',hp:1,cd:13,warn:1.0,wt:2,max:280},{id:'summon',hp:.75,cd:22,warn:1.1,wt:4},{id:'blink',hp:.35,cd:99,warn:.7,once:1,wt:9}]};
 const MOB_TOTEM={nome:'Totem Tóxico',atlas:'totem',totem:1,rad:14,shr:30,fam:'goblin',noElite:1,hp:150,atk:0,xp:0,gold:[0,0],speed:0,aggro:0,rng:0,aspd:99,sw:20};
 MOBS.skrix=MOB_SKRIX;MOBS.totem=MOB_TOTEM;
-const BOSS={nome:'Gorgash',rad:26,shr:36,ent:'drop',aura:['#ff7a3a','#ffd070'],sheet:'ogro',hp:1900,atk:14,xp:260,gold:[80,140],speed:36,aggro:260,rng:52,aspd:1.7,scale:2.1,st:['abalado',.4,6,0]};
+const BOSS={nome:'Gorgash',rad:26,shr:40,ent:'drop',fire:.58,aura:['#ff7a3a','#ffd070'],sheet:'ogro',atlas:'gorgash',hp:1900,atk:14,xp:260,gold:[80,140],speed:36,aggro:260,rng:52,aspd:1.7,scale:1,st:['abalado',.4,6,0]};
 const BOSS_GOB={nome:'Grunk',ent:'run',aura:['#ff5a3a','#ffd070'],sheet:'grunk',atlas:'grunk',rad:30,shr:46,hp:2300,atk:16,xp:250,gold:[75,130],speed:40,aggro:260,rng:54,aspd:1.5,scale:1,dur:.9,fire:.5,st:['sangramento',.4,6,.02],
   enrageAt:.35,   /* a 35% de vida: canaliza a fúria (menos dano, regenera) e depois fica mais forte e rápido */
   msk:[{id:'leap',hp:1,cd:7.5,warn:1.05,r:78,mult:2.6,st:['abalado',.6,5,0],wt:3,max:330},
@@ -1043,7 +1043,7 @@ async function loadAll(){
   prepMap('town');useMap('town');
   STAGE2=(async()=>{
     const jobs=[loadMap('zone1','assets/zone1.json','assets/atlas.json','assets/zone1_ground.png','assets/atlas.png'),loadMap('zone1_gob','assets/zone1_gob.json','assets/atlas_gob.json','assets/zone1_gob_ground.png','assets/atlas_gob.png'),loadMap('zone_cripta','assets/zone_cripta.json','assets/atlas_cripta.json','assets/zone_cripta_ground.png','assets/atlas_cripta.png'),loadMap('zone_esgoto','assets/zone_esgoto.json','assets/atlas_esgoto.json','assets/zone_esgoto_ground.png','assets/atlas_esgoto.png'),...['mer','fer','alq','mes','cof','lei'].map(k=>loadMap('int_'+k,'assets/int_'+k+'.json','assets/int_atlas.json','assets/int_'+k+'_ground.png','assets/int_atlas.png'))];
-    for(const k of ['goblin','esqueleto','javali','rato','ogro','gobchefe','skelchefe','xama','esqfogo','esqgelo'])jobs.push(loadSheet(k,'slash'));jobs.push(loadSheet('gobarq','shoot'));jobs.push(loadSheet('esqmago','spellcast'));jobs.push(loadAtlasBoss('grunk'));jobs.push(loadAtlasBoss('vamp'));jobs.push(loadAtlasBoss('bat'));jobs.push(loadAtlasBoss('skrix'));jobs.push(loadAtlasBoss('morvath'));jobs.push(loadAtlasBoss('totem'));
+    for(const k of ['goblin','esqueleto','javali','rato','ogro','gobchefe','skelchefe','xama','esqfogo','esqgelo'])jobs.push(loadSheet(k,'slash'));jobs.push(loadSheet('gobarq','shoot'));jobs.push(loadSheet('esqmago','spellcast'));jobs.push(loadAtlasBoss('grunk'));jobs.push(loadAtlasBoss('vamp'));jobs.push(loadAtlasBoss('bat'));jobs.push(loadAtlasBoss('skrix'));jobs.push(loadAtlasBoss('morvath'));jobs.push(loadAtlasBoss('gorgash'));jobs.push(loadAtlasBoss('totem'));
     for(const k of new Set(CLS_ORDER.flatMap(c=>CLASSES[c].skills.map(s=>s[0]))))jobs.push(loadImg(skImg(k)).then(im=>{IMG[k]=im;}).catch(()=>{IMG[k]=null;}));
     for(const n of ['i_espada','i_machado','i_martelo','i_adaga','i_cajado','i_cetro','i_arco','i_elmo','i_capuz','i_couraca','i_cota','i_colete','i_manto','i_tunica','i_botas','i_sandalias','i_colar','i_pingente','i_talisma','i_anel','i_luvas','i_manoplas','i_escudo','i_escudog','i_garra','i_livro','i_gema','i_bracelete','i_coroa'])jobs.push(loadImg('../assets/ico/'+n+'.png').then(im=>{IMG_ICO[n]=im;}).catch(()=>{IMG_ICO[n]=null;}));
     for(const n of ['coins','anvil','health-potion','treasure-map','clover','fist','heart-plus','shop','greek-temple','scroll-unfurled'])jobs.push(loadImg('../assets/ui-icons/'+n+'.png').then(im=>{IMG_UI[n]=im;}).catch(()=>{IMG_UI[n]=null;}));
@@ -2055,7 +2055,7 @@ function bossEntrance(m,dt){const e=m.ent,h=G.hero,c=m.T.aura||['#ff6a3a','#ffd0
   if(e.k==='drop'){const p=Math.min(1,e.t/e.dur);m.zoff=380*(1-p*p);m.state='idle';
     e.fx-=dt;if(e.fx<=0){e.fx=.28;G.fx.push({k:'ring',x:m.x,y:m.y,life:.3,max:.3,col:'#ff3a2a'});}
     if(Math.random()<dt*40)VF.pt(m.x+rnd(-10,10),m.y-m.zoff*.8-rnd(0,30),{vy:-rnd(20,60),life:.5,col:c[0],sz:2.4});
-    if(p>=1){m.zoff=0;e.k='roar';e.t=0;e.dur=1.4;bossArrive(m,true);}}
+    if(p>=1){m.zoff=0;e.k='roar';e.t=0;e.dur=1.4;e.strike=1;bossArrive(m,true);}}
   else if(e.k==='charge'){m.row=dir4(h.x-m.x,h.y-m.y);const d=dist(m,h),dx=h.x-m.x,dy=h.y-m.y,L=d||1;
     if(d>74&&e.t<e.dur){const sp=d>230?600:d>150?520:430;m.x+=dx/L*sp*dt;m.y+=dy/L*sp*dt;collide(m,6);m.wx=m.x;m.wy=m.y;m.state='walk';m.animT+=dt*12;
       if(Math.random()<dt*90)VF.puff(m.x-dx/L*16,m.y,1,['#a89878','#7a7a8a'],{r:6,up:8,sz:1.2,a:.45});
@@ -3358,6 +3358,18 @@ function morvathFrame(e){const sh=SHEETS.morvath,a=e.act,F=(n,i)=>atlasFrame(sh,
   if(e.state==='atk'&&a)return F('attack',Math.min(6,Math.floor(a.t/a.dur*7)));
   if(e.state==='walk')return F('walk',Math.floor(e.animT*13)%24);
   return F('idle',Math.floor(G.t*10)%16);}
+function gorgashFrame(e){const sh=SHEETS.gorgash,a=e.act,F=(n,i)=>atlasFrame(sh,n,i),N=n=>sh.meta.anims[n].length;
+  if(e.dead)return F('death',Math.min(7,Math.floor(e.deadT*8)));
+  if(e.ent){const k=e.ent.k;if(k==='drop')return F('slam',3);if(k==='roar'||k==='phase'){if(e.ent.strike&&e.ent.t<.3)return F('slam',5);const p=e.ent.t/e.ent.dur;return F('roar',p<.7?Math.min(4,Math.floor(p/.7*5)):p<.9?5:6);}return F('idle',0);}
+  if((e.stun>0||e.stagger>0)&&!(a&&a.skill))return F('hurt',e.flash>.07?0:(e.stagger>.5||e.stun>.12?1:2));
+  if(a&&a.skill){const t=a.t,w=a.dur-.45;
+    if(a.anim==='slam')return F('slam',t<w?Math.min(4,Math.floor(t/w*5)):5+Math.min(2,Math.floor((t-w)/.45*3)));
+    if(a.anim==='charge')return F('charge',t<w?(t<w*.6?0:1):e.dash?2+Math.floor(e.animT*12)%3:6);
+    if(a.anim==='roar')return F('roar',t<w?Math.min(4,Math.floor(t/w*5)):(t<w+.25?5:6));}
+  if(e.dash)return F('charge',2+Math.floor(e.animT*12)%3);
+  if(e.state==='atk'&&a)return F('attack',Math.min(6,Math.floor(a.t/a.dur*7)));
+  if(e.state==='walk')return F('walk',Math.floor(e.animT*13)%N('walk'));
+  return F('idle',Math.floor(G.t*10)%N('idle'));}
 function totemFrame(e){const sh=SHEETS.totem;
   if(e.dead)return atlasFrame(sh,'death',Math.min(2,Math.floor(e.deadT*5)));
   if(e.age<.6)return atlasFrame(sh,'rise',Math.min(5,Math.floor(e.age/.6*6)));
@@ -3380,7 +3392,7 @@ function batFrame(e){const sh=SHEETS.bat;
   if(e.state==='atk'&&e.act)return atlasFrame(sh,'bite',Math.min(5,Math.floor(e.act.t/e.act.dur*6)));
   return atlasFrame(sh,'fly',Math.floor((G.t*12+e.animT*3))%6);}
 function entFrame(e){
-  if(e.T&&e.T.atlas){if(e.T.atlas==='skrix')return skrixFrame(e);if(e.T.atlas==='morvath')return morvathFrame(e);if(e.T.atlas==='totem')return totemFrame(e);if(e.T.atlas==='vamp')return vampFrame(e);if(e.T.atlas==='bat')return batFrame(e);if(e.kind==='boss')return grunkFrame(e);}
+  if(e.T&&e.T.atlas){if(e.T.atlas==='skrix')return skrixFrame(e);if(e.T.atlas==='morvath')return morvathFrame(e);if(e.T.atlas==='gorgash')return gorgashFrame(e);if(e.T.atlas==='totem')return totemFrame(e);if(e.T.atlas==='vamp')return vampFrame(e);if(e.T.atlas==='bat')return batFrame(e);if(e.kind==='boss')return grunkFrame(e);}
   if(e.kind==='npc'||e.kind==='vill'){const sh=SHEETS[e.sh];return sheetFrame(sh,'walk',e.row,e.moving?Math.floor(e.animT*11)%9:0);}
   const nm=e.kind==='hero'?'hero':(e.kind==='boss'?e.T.sheet:e.T.sheet),sh=SHEETS[nm];
   if(e.kind==='hero'&&e.state==='ko'){return sheetFrame(sh,'hurt',0,Math.min(5,Math.floor((3-e.koT)*4)));}
