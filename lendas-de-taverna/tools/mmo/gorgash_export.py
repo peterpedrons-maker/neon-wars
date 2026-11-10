@@ -47,6 +47,14 @@ def build():
       'slam':[sl(i) for i in range(7)]+[at(10)],
       'charge':[ch(0),ch(1),ch(2),ch(4),ch(5),ch(2),ch(7)],
       'roar':[ro(i) for i in range(7)],'death':[de(i) for i in range(8)]}
+def soften(A,gam=.72,sat=1.22,lift=10,mix=.88):
+    """suaviza o tom do orc (escuro demais sobre a floresta clara): levanta sombras (gama), um pouco mais de saturação e piso de brilho"""
+    a=np.array(A).astype(np.float32);rgb=a[:,:,:3]/255.
+    rgb=np.power(rgb,gam)
+    g=rgb.mean(2,keepdims=True);rgb=np.clip(g+(rgb-g)*sat,0,1)
+    rgb=rgb*(1-lift/255.)+lift/255.*.9
+    a[:,:,:3]=np.clip(rgb*255*mix+a[:,:,:3]*(1-mix)*0+ (0 if mix==1 else 0),0,255)/ (mix if False else 1)
+    return Image.fromarray(a.astype(np.uint8),'RGBA')
 def main(sc):
     an=build();info={};scaled={}
     for n,fr in an.items():
@@ -69,6 +77,7 @@ def main(sc):
         for c in pl:frames.append(c.resize((W,H),Image.LANCZOS))
     cols=meta['cols'];rows=(len(frames)+cols-1)//cols;A=Image.new('RGBA',(cols*W,rows*H),(0,0,0,0))
     for i,f in enumerate(frames):A.alpha_composite(f,((i%cols)*W,(i//cols)*H))
+    A=soften(A)
     A.save(OUT+'gorgash_atlas.png',optimize=True);json.dump(meta,open(OUT+'gorgash_atlas.json','w'))
     print(A.size,len(frames),'quadros; célula',W,H,{k:len(v) for k,v in meta['anims'].items()})
 if __name__=='__main__':main(float(sys.argv[1]) if len(sys.argv)>1 else .64)
