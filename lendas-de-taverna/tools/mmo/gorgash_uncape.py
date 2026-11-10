@@ -20,9 +20,20 @@ def uncape(cell,dx=0,m=6):
         if (lb==i).sum()>60:keep|=lb==i
     alpha=k[:,:,3]>0
     cut=left&alpha&~keep
+    # capa visível entre as pernas / atrás dos joelhos: região lisa e escura (desvio local < 2,2 na imagem original), abaixo da cintura
+    L=a.mean(2);mu=cv2.blur(L,(3,3));v=cv2.blur(np.sqrt(np.maximum(cv2.blur(L*L,(3,3))-mu*mu,0)),(5,5))
+    flat=(v<2.2)&(L<60)&alpha&(yy+m>150)
+    lb2,n2=nd.label(flat);sz=nd.sum(flat,lb2,range(1,n2+1)) if n2 else []
+    flat=np.isin(lb2,[i+1 for i,q in enumerate(sz) if q>=30])
+    flat=nd.binary_dilation(flat,iterations=1)&alpha&~keep
+    cut=cut|flat
     # suaviza a borda do corte e limpa restos
     cut=nd.binary_closing(cut,iterations=2)
     alpha2=alpha&~cut
+    # restos finos do contorno da capa (cacos pontudos, fios): abertura morfológica na metade de baixo, fora da lâmina do machado
+    reg=(yy+m>150)&(xx<140)
+    op=nd.binary_opening(alpha2,structure=np.ones((5,5),bool))
+    alpha2=np.where(reg,alpha2&op,alpha2)
     k=k.copy();k[:,:,3]=np.where(alpha2,255,0)
     return k
 if __name__=='__main__':
