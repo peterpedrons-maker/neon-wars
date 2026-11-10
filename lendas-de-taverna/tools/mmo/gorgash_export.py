@@ -47,14 +47,65 @@ def build():
       'slam':[sl(i) for i in range(7)]+[at(10)],
       'charge':[ch(0),ch(1),ch(2),ch(4),ch(5),ch(2),ch(7)],
       'roar':[ro(i) for i in range(7)],'death':[de(i) for i in range(8)]}
-def soften(A,gam=.72,sat=1.22,lift=10,mix=.88):
-    """suaviza o tom do orc (escuro demais sobre a floresta clara): levanta sombras (gama), um pouco mais de saturação e piso de brilho"""
-    a=np.array(A).astype(np.float32);rgb=a[:,:,:3]/255.
-    rgb=np.power(rgb,gam)
-    g=rgb.mean(2,keepdims=True);rgb=np.clip(g+(rgb-g)*sat,0,1)
-    rgb=rgb*(1-lift/255.)+lift/255.*.9
-    a[:,:,:3]=np.clip(rgb*255*mix+a[:,:,:3]*(1-mix)*0+ (0 if mix==1 else 0),0,255)/ (mix if False else 1)
-    return Image.fromarray(a.astype(np.uint8),'RGBA')
+def soften(A,cells=None,CW=0,CH=0):
+    """Recolorização POR MATERIAL (não é um filtro único): separa pele, couro/tecido laranja, metal e pelo por cor e textura
+    e trata cada um com sua própria curva de luz e tom: pele verde viva e clara, couro cobre quente, aço frio com brilho especular,
+    pelo marrom acinzentado. Contornos escuros ficam escuros para preservar os detalhes da armadura."""
+    a=np.array(A);al=a[:,:,3]>0
+    hsv=cv2.cvtColor(a[:,:,:3],cv2.COLOR_RGB2HSV).astype(np.float32);H,Sx,V=hsv[:,:,0],hsv[:,:,1],hsv[:,:,2]
+    lab=cv2.cvtColor(a[:,:,:3],cv2.COLOR_RGB2LAB).astype(np.float32);L,Ac,Bc=lab[:,:,0],lab[:,:,1],lab[:,:,2]
+    var=np.sqrt(np.maximum(cv2.blur(L*L,(5,5))-cv2.blur(L,(5,5))**2,0))
+    skin=al&(H>=22)&(H<=52)&(Sx>38)
+    warm=al&~skin&(((H<=22)|(H>=168))&(Sx>62)&(V>45))
+    fur=al&~skin&~warm&(L<80)&(var>10)
+    metal=al&~skin&~warm&~fur
+    def soft(m):return np.clip(cv2.GaussianBlur(m.astype(np.float32),(0,0),1.0),0,1)
+    ms={'skin':soft(skin),'warm':soft(warm),'fur':soft(fur),'metal':soft(metal)}
+    Lo=np.zeros_like(L);Ao=np.zeros_like(L);Bo=np.zeros_like(L);W=np.zeros_like(L)+1e-6
+    # (faixa de L de saída, gama, croma alvo a/b, mistura do croma, ganho do croma, realce especular)
+    P={'skin':((62,206),.82,(128-30,128+38),.42,1.45,0),
+       'warm':((50,190),.85,(128+30,128+42),.30,1.30,0),
+       'fur':((48,150),.9,(128+7,128+15),.40,1.0,0),
+       'metal':((30,216),.9,(128-3,128-16),.45,1.0,34)}
+    PG={}
+    for k,m in ms.items():
+        sel=(m>.5);PG[k]=np.percentile(L[sel],[3,98]) if sel.sum()>100 else (10,200)
+    def pct(k,sel_cell):
+        lo,hi=PG[k]
+        if sel_cell is not None and sel_cell.sum()>150:
+            cl,ch=np.percentile(L[sel_cell],[3,98]);lo=.2*lo+.8*cl;hi=.2*hi+.8*ch
+        return lo,hi
+    cellid=None
+    if cells:
+        cellid=np.zeros(L.shape,np.int32)
+        for n in range(cells):
+            cellid[(n//12)*CH:(n//12+1)*CH,(n%12)*CW:(n%12+1)*CW]=n+1
+    for k,m in ms.items():
+        sel=(m>.5)
+        if cellid is None:lo,hi=PG[k];stretch=None
+        (o0,o1),gam,(ta,tb),mix,gain,spec=P[k]
+        if cellid is None:
+            t=np.clip((L-lo)/max(1,hi-lo),0,1)
+        else:
+            t=np.zeros_like(L)
+            for n in range(1,cells+1):
+                cm=(cellid==n)
+                if not (cm&sel).any():continue
+                lo,hi=pct(k,cm&sel);t[cm]=np.clip((L[cm]-lo)/max(1,hi-lo),0,1)
+        Ln=o0+(o1-o0)*np.power(t,gam)
+        if spec:Ln+=spec*np.clip((t-.62)/.38,0,1)**1.6
+        # contornos/frestas escuras continuam escuros
+        o=np.clip((38-L)/22,0,1);Ln=Ln*(1-o)+np.minimum(L*1.25+6,60)*o
+        An=128+(Ac-128)*gain;Bn=128+(Bc-128)*gain
+        An=An*(1-mix)+ta*mix;Bn=Bn*(1-mix)+tb*mix
+        Lo+=Ln*m;Ao+=An*m;Bo+=Bn*m;W+=m
+    Lo/=W;Ao/=W;Bo/=W
+    rgb=cv2.cvtColor(np.dstack([np.clip(Lo,0,255),np.clip(Ao,0,255),np.clip(Bo,0,255)]).astype(np.uint8),cv2.COLOR_LAB2RGB)
+    # olhos vermelho-alaranjados brilhantes: preservados e realçados
+    eye=al&(a[:,:,0]>190)&(a[:,:,1]<130)&(a[:,:,2]<90)
+    rgb[eye]=a[:,:,:3][eye]
+    out=np.dstack([rgb,a[:,:,3]]);out[~al]=0
+    return Image.fromarray(out,'RGBA')
 def main(sc):
     an=build();info={};scaled={}
     for n,fr in an.items():
@@ -77,7 +128,7 @@ def main(sc):
         for c in pl:frames.append(c.resize((W,H),Image.LANCZOS))
     cols=meta['cols'];rows=(len(frames)+cols-1)//cols;A=Image.new('RGBA',(cols*W,rows*H),(0,0,0,0))
     for i,f in enumerate(frames):A.alpha_composite(f,((i%cols)*W,(i//cols)*H))
-    A=soften(A)
+    A=soften(A,len(frames),W,H)
     A.save(OUT+'gorgash_atlas.png',optimize=True);json.dump(meta,open(OUT+'gorgash_atlas.json','w'))
     print(A.size,len(frames),'quadros; célula',W,H,{k:len(v) for k,v in meta['anims'].items()})
 if __name__=='__main__':main(float(sys.argv[1]) if len(sys.argv)>1 else .64)
