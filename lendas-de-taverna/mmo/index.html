@@ -4215,7 +4215,7 @@ function pzGauge(rec,locked){const hpc=heroPC(),r=hpc/rec,col=r>=1?'#5fd36a':r>=
 const arId=z=>{const t=bossDef(z);return t.atlas||'gorgash';};
 function pzItems(){
   if(PZ.tab==='d')return DUN.map((d,i)=>{const z=i+1,cur=(SAVE.zone||0)===z&&SAVE.entered,dn=SAVE.dgDone&&SAVE.dgDone[z];return {img:PZD[i].img,hd:'ÁREA '+z,nm:d.nm,lore:PZD[i].lore,unlock:d.unlock,locked:!dgUnlocked(z),st:cur?'● ATUAL':dn?'✔ concluída':'',cur,z};});
-  const L=[];DUN.forEach((d,i)=>{const z=i+1,ok=!!(SAVE.dgDone&&SAVE.dgDone[z])&&SAVE.lv>=d.unlock,r=(SAVE.arena||{})['z'+z];L.push({img:PZD[i].img,hd:'ARENA DO CHEFE',nm:'Arena de '+bossDef(z).nome,lore:d.nm,unlock:d.unlock,locked:!ok,st:r&&r.w?'✔ '+r.w+' vitória'+(r.w>1?'s':''):'',z,arena:1});});
+  const L=[];DUN.forEach((d,i)=>{const z=i+1,ok=!!(SAVE.dgDone&&SAVE.dgDone[z])&&SAVE.lv>=d.unlock,r=(SAVE.arena||{})['z'+z];L.push({img:PZD[i].img,hd:'ARENA DO CHEFE',nm:'Arena de '+bossDef(z).nome,lore:d.nm,unlock:d.unlock,locked:!ok,st:r&&r.w?'✔ '+r.w+' vitória'+(r.w>1?'s':''):'',z,arena:1,bl:dgLv(z)[1]});});
   return L;}
 function pzDetail(it){
   if(PZ.tab==='d'){const z=it.z,d=DUN[z-1],I=PZD[z-1],un=!it.locked,lvOkd=SAVE.lv>=d.unlock,prev=DUN[z-2],prevOk=!prev||!!(SAVE.dgDone&&SAVE.dgDone[z-1]);
@@ -4225,7 +4225,7 @@ function pzDetail(it){
     h+='<div class="pzh">HABITANTES</div><div class="pzen">'+I.hab.map(e=>`<div class="${e[2].replace('-chefe','')}"><canvas data-k="${un?e[0]:'?'}" width="148" height="112"></canvas><b>${un?e[1]:'???'}</b><i>${un?e[2].toUpperCase():''}</i></div>`).join('')+'</div>';
     return h+`<div class="pzh">EQUIPAMENTO</div><div class="pzeq"><span>Dropa itens de</span><b>${pzTierTxt(z)}</b></div>`;}
   // especiais
-  const ar=SAVE.arena||{},k=it.rush?'rush':'z'+it.z,r=ar[k],lv=SAVE.lv>=it.unlock;const bkey=PZD[it.z-1].hab[PZD[it.z-1].hab.length-1][0];let h=`<div class="pzbh ${it.locked?'lock':''}"><img class="pza" src="assets/portal/arena_${arId(it.z)}.jpg"><div><small>CHEFE DA ARENA</small><b>${it.locked?'???':bossDef(it.z).nome}</b><span>${DUN[it.z-1].nm}</span><em>Nível ${dgLv(it.z)[1]}</em></div></div>`;h+='<div class="pzh">REQUISITOS</div><div class="pzr">'+pzReqRow(lv,'Nível '+it.unlock,`você: ${SAVE.lv} ${lv?'✔':'🔒'}${!lv?' · faltam '+(it.unlock-SAVE.lv):''}`);
+  const ar=SAVE.arena||{},k=it.rush?'rush':'z'+it.z,r=ar[k],lv=SAVE.lv>=it.unlock;const bkey=PZD[it.z-1].hab[PZD[it.z-1].hab.length-1][0];let h='';h+='<div class="pzh">REQUISITOS</div><div class="pzr">'+pzReqRow(lv,'Nível '+it.unlock,`você: ${SAVE.lv} ${lv?'✔':'🔒'}${!lv?' · faltam '+(it.unlock-SAVE.lv):''}`);
   if(it.rush){const n=DUN.filter((d,i)=>SAVE.dgDone&&SAVE.dgDone[i+1]).length;h+=pzReqRow(n===DUN.length,'Derrotar os chefes das '+DUN.length+' dungeons',n+' de '+DUN.length+(n===DUN.length?' ✔':' 🔒'));}
   else{const dn=!!(SAVE.dgDone&&SAVE.dgDone[it.z]);h+=pzReqRow(dn,'Derrotar '+bossDef(it.z).nome+' na dungeon',dn?'✔':'🔒');}
   h+='</div>'+pzGauge(it.rush?Math.round(DUN[DUN.length-1].pc*1.1):DUN[it.z-1].pc,it.locked);
@@ -4241,7 +4241,7 @@ function pzRender(){const root=$('pz');if(!root)return;
   root.querySelectorAll('.pztab span').forEach((e,i)=>e.classList.toggle('on',(i===0)===(PZ.tab==='d')));
   PZ.items=pzItems();const sel=PZ.tab==='d'?PZ.sel:PZ.selE;
   const bk=z=>PZD[z-1].hab[PZD[z-1].hab.length-1][0];
-  const cards=PZ.items.map((c,i)=>`<div class="pzc ${c.locked?'lock':''} ${c.arena?'ar':''}" data-i="${i}" style="background-image:url(assets/portal/${c.arena?'arena_'+arId(c.z):c.img}.jpg)"><div class="hd">${c.hd}</div>${c.st?`<span class="st ${c.cur?'cur':''}">${c.st}</span>`:''}${c.locked?`<div class="lk"><img src="${UI}padlock.png"></div>`:''}<div class="nf"><b>${c.nm}</b><i>${c.lore}</i><div class="rq"><span>Nível</span><b class="${SAVE.lv>=c.unlock?'ok':'no'}">${c.unlock}+ ${SAVE.lv>=c.unlock?'✔':'🔒'}</b></div></div></div>`).join('');
+  const cards=PZ.items.map((c,i)=>`<div class="pzc ${c.locked?'lock':''} ${c.arena?'ar':''}" data-i="${i}" style="background-image:url(assets/portal/${c.arena?'arena_'+arId(c.z):c.img}.jpg)"><div class="hd">${c.hd}</div>${c.st?`<span class="st ${c.cur?'cur':''}">${c.st}</span>`:''}${c.locked?`<div class="lk"><img src="${UI}padlock.png"></div>`:''}<div class="nf"><b>${c.nm}</b><i>${c.lore}</i>${c.arena?`<div class="rq"><span>Nível do chefe</span><b class="bl">${c.bl}</b></div>`:''}<div class="rq"><span>Nível</span><b class="${SAVE.lv>=c.unlock?'ok':'no'}">${c.unlock}+ ${SAVE.lv>=c.unlock?'✔':'🔒'}</b></div></div></div>`).join('');
   root.querySelector('.pzbody').innerHTML=`<div class="pzcr" id="pzcr">${cards}</div><div class="pzdots">${PZ.items.map((c,i)=>`<i data-i="${i}"></i>`).join('')}</div><div class="pzdet" id="pzdet"></div>`;
   root.querySelectorAll('.pzc .pzp').forEach(pzPortrait);PZ.first=0;pzSelect(clamp(sel,0,PZ.items.length-1),true);
   const cr=$('pzcr');cr.addEventListener('scroll',()=>{clearTimeout(PZ.t);PZ.t=setTimeout(()=>{const r=cr.getBoundingClientRect(),cx=r.left+r.width/2;let b=0,bd=1e9;cr.querySelectorAll('.pzc').forEach((c,i)=>{const q=c.getBoundingClientRect(),d=Math.abs(q.left+q.width/2-cx);if(d<bd){bd=d;b=i;}});if(b!==(PZ.tab==='d'?PZ.sel:PZ.selE))pzSelect(b,false);},90);});
