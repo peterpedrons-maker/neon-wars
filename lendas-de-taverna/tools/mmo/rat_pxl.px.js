@@ -83,7 +83,7 @@ function pose(c, p) {
   const hx = OX + 22 + dx
   const feet = Math.max(...[[p.hF, p.kF], [p.hN, p.kN]].map(([hd, kn]) => { const k = fk(0, 0, 11, hd), a = fk(k[0], k[1], 11, hd - kn); return a[1] }))
   const hy = GY - feet - 1 + (p.bob || 0) * K
-  c.ellipse(hx + 4, GY + 1, 13, 1, "d")
+
   const tw = (p.tail || 0) * K
   limb(c, [hx - 5, hy + 1], [hx - 11, hy + 4 + tw], 2, "P"); limb(c, [hx - 11, hy + 4 + tw], [hx - 16, hy + 2 - tw], 1.5, "P"); limb(c, [hx - 16, hy + 2 - tw], [hx - 20, hy + 5 - tw * .5], 1, "P")
   leg(c, [hx, hy], p.hF, p.kF, false)
@@ -126,6 +126,15 @@ function pose(c, p) {
       c.ellipse(tx, GY, 6 + 12 * a, 1 + 2 * a, "u", true)
     } else if (fx.kind === "sweep") {
       for (let i = 0; i < fx.trail.length; i++) { const [x0, y0, x1, y1] = fx.trail[i]; c.line(R0(x0), R0(y0), R0(x1), R0(y1), i < 1 ? "n" : (i < 2 ? "S" : "s"), 1) }
+    } else if (fx.kind === "cast") {
+      const cx = R0(bx), cy = R0(by); for (let i = 0; i < 3; i++) c.ellipse(cx, GY - 2, 8 + 22 * fx.a - i * 4, 2 + 5 * fx.a - i, i ? "e" : "n", true)
+      for (let i = 0; i < 6; i++) c.px(cx - 14 + i * 6, GY - 2 - R0(10 * fx.a * Math.abs(Math.sin(i * 1.3 + fx.a * 4))), "e")
+    } else if (fx.kind === "plague") {
+      const tx = R0(c1[0]), ty = R0(c1[1]); c.ellipse(tx, GY, 6 + 16 * fx.a, 1 + 3 * fx.a, "e", true); c.ellipse(tx, GY, 3 + 9 * fx.a, 1 + 2 * fx.a, "n", true)
+      for (let i = 0; i < 8; i++) { const an = (-150 + i * 30) * R; c.px(R0(tx + Math.cos(an) * (4 + 12 * fx.a)), R0(ty + Math.sin(an) * (3 + 8 * fx.a)), "e") }
+    } else if (fx.kind === "dig") {
+      for (let i = 0; i < 9; i++) c.px(hx - 8 + i * 3, GY - R0(1 + 6 * fx.a * Math.abs(Math.sin(i * 1.9))), i % 2 ? "f" : "d")
+      c.ellipse(hx + 3, GY, 6 + 14 * fx.a, 1 + 3 * fx.a, "g", true)
     } else if (fx.kind === "bite") {
       const sx = hxh + 22, sy = hyh + 8
       for (let i = 0; i < 5; i++) { const an = (-60 + i * 30) * R; c.line(sx, sy, R0(sx + Math.cos(an) * 7), R0(sy + Math.sin(an) * 7), i % 2 ? "n" : "h", 1) }
@@ -167,7 +176,19 @@ function tipXY(p) {   // ponta do cano para o rastro da varrida
   const hy = GY - feet - 1 + (p.bob || 0) * K, sh2 = [hx + 2 + lean * K * .5, hy - 14], e = fk(sh2[0], sh2[1], 8, -p.aN), hd = fk(e[0], e[1], 8, -p.aN + (p.bend || 26))
   return fk(hd[0], hd[1], 22, p.club)
 }
+const hurt = (t) => ({ ...REST, lean: -6 * Math.sin(t * Math.PI), dx: -3 * Math.sin(t * Math.PI), hdx: -2, hdy: 1, mouth: 1, aN: 24, club: 110 })
+const die = (t) => { const u = Math.min(1, t * 1.25); return { ...REST, lean: -8 * u, dx: -6 * u, bob: 6 * u, kN: 18 + 50 * u, kF: 18 + 50 * u, hN: 14 + 16 * u, hF: -14 - 16 * u, hdy: 8 * u, hdx: -3 * u, aN: 30 + 20 * u, club: 90 - 50 * u, mouth: u > .4 ? 1 : 0 } }
+const CAST = [[0, REST], [.3, { ...REST, aN: -150, club: 200, bend: 4, lean: -4, mouth: 1, hdy: -1, bob: 1 }], [.75, { ...REST, aN: -150, club: 200, bend: 4, lean: -5, mouth: 1, hdy: -1, bob: 1 }], [1, REST]]
+const cast = (t) => { const p = keyed(CAST, t); if (t > .3 && t < .95) p.fx = { kind: "cast", a: Math.min(1, (t - .3) / .5) }; return p }
+const plague = (t) => { const p = keyed(SMASH, t, [2]); if (t >= .56 && t <= .8) p.fx = { kind: "plague", a: (t - .56) / .24 }; return p }
+const DIG = [[0, REST], [.3, { ...REST, hN: 30, kN: 60, hF: -30, kF: 60, aN: 30, club: 40, lean: 6, bob: 6, mouth: 1 }], [.7, { ...REST, hN: 40, kN: 76, hF: -40, kF: 76, aN: 40, club: 30, lean: 8, bob: 11, hdy: 4, mouth: 1 }], [1, { ...REST, hN: 40, kN: 76, hF: -40, kF: 76, aN: 40, club: 30, lean: 8, bob: 14, hdy: 6 }]]
+const dig = (t) => { const p = keyed(DIG, t); p.fx = { kind: "dig", a: t }; return p }
 const W = 96, H = 72
+anim("rat_hurt", { w: W, h: H, frames: 6, fps: 14, outline: "k" }, (c) => pose(c, hurt(c.phase)))
+anim("rat_die", { w: W, h: H, frames: 14, fps: 14, outline: "k" }, (c) => pose(c, die(c.phase)))
+anim("rat_cast", { w: W, h: H, frames: 16, fps: 14, outline: "k" }, (c) => pose(c, cast(c.phase)))
+anim("rat_plague", { w: W, h: H, frames: 18, fps: 14, outline: "k" }, (c) => pose(c, plague(c.phase)))
+anim("rat_dig", { w: W, h: H, frames: 14, fps: 14, outline: "k" }, (c) => pose(c, dig(c.phase)))
 anim("rat_walk", { w: W, h: H, frames: 12, fps: 12, outline: "k" }, (c) => pose(c, walk(c.phase)))
 anim("rat_idle", { w: W, h: H, frames: 8, fps: 6, outline: "k" }, (c) => pose(c, idle(c.phase)))
 anim("rat_atk1", { w: W, h: H, frames: 18, fps: 14, outline: "k" }, (c) => pose(c, attack1(c.phase)))

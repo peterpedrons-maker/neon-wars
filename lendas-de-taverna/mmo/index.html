@@ -917,7 +917,7 @@ const BOSS_GOB={nome:'Grunk',ent:'run',aura:['#ff5a3a','#ffd070'],sheet:'grunk',
 const BOSS_ESQ={nome:'Morvath',rad:26,shr:40,ent:'charge',fire:.58,aura:['#6ab8ff','#e6f6ff'],sheet:'skelchefe',atlas:'morvath',hp:1900,atk:11.5,xp:280,gold:[85,150],speed:42,aggro:270,rng:52,aspd:1.4,scale:.95,st:['sangramento',.45,6,.025],
   msk:[{id:'slam',hp:1,cd:6.5,warn:1,r:88,mult:2.5,st:['abalado',.6,5,0],w:3},{id:'charge',hp:.8,cd:9,warn:.85,w:44,len:260,mult:2.2,st:['atordoado',.8,1,0],wt:2},{id:'roar',hp:.5,cd:12,warn:1.25,r:155,mult:2,st:['medo',1,2.4,0],wt:3}]};
 /* Rei dos Ratos: chefe dos esgotos (sprite provisório = rato gigante ampliado, arte de IA em produção). Kit próprio: enxame, poças de praga, escavar; ao morrer solta ratos */
-const BOSS_RAT={nome:'Rei dos Ratos',rk:1,rad:26,shr:40,ent:'drop',fire:.55,aura:['#8ad24a','#d8ff90'],sheet:'rato',hp:2000,atk:12,xp:290,gold:[90,160],speed:46,aggro:270,rng:50,aspd:1.4,scale:3,st:['veneno',.5,6,.02],
+const BOSS_RAT={nome:'Rei dos Ratos',rk:1,atlas:'ratking',rad:26,shr:40,ent:'drop',fire:.55,aura:['#8ad24a','#d8ff90'],sheet:'rato',hp:2000,atk:12,xp:290,gold:[90,160],speed:46,aggro:270,rng:50,aspd:1.4,dur:.95,scale:2.2,st:['veneno',.5,6,.02],
   msk:[{id:'swarm',hp:1,cd:11,warn:1.0,wt:3},
        {id:'plague',hp:1,cd:9,warn:1.15,r:58,mult:.9,st:['veneno',.9,6,.025],wt:3,max:340,pool:6},
        {id:'burrow',hp:.7,cd:12.5,warn:1.1,r:60,mult:2.2,st:['atordoado',.6,1,0],wt:2,min:90}]};
@@ -1048,7 +1048,7 @@ async function loadAll(){
   prepMap('town');useMap('town');
   STAGE2=(async()=>{
     const jobs=[loadMap('zone1','assets/zone1.json','assets/atlas.json','assets/zone1_ground.png','assets/atlas.png'),loadMap('zone1_gob','assets/zone1_gob.json','assets/atlas_gob.json','assets/zone1_gob_ground.png','assets/atlas_gob.png'),loadMap('zone_cripta','assets/zone_cripta.json','assets/atlas_cripta.json','assets/zone_cripta_ground.png','assets/atlas_cripta.png'),loadMap('zone_esgoto','assets/zone_esgoto.json','assets/atlas_esgoto.json','assets/zone_esgoto_ground.png','assets/atlas_esgoto.png'),...['mer','fer','alq','mes','cof','lei'].map(k=>loadMap('int_'+k,'assets/int_'+k+'.json','assets/int_atlas.json','assets/int_'+k+'_ground.png','assets/int_atlas.png'))];
-    for(const k of ['goblin','esqueleto','javali','rato','ogro','gobchefe','skelchefe','xama','esqfogo','esqgelo'])jobs.push(loadSheet(k,'slash'));jobs.push(loadSheet('gobarq','shoot'));jobs.push(loadSheet('esqmago','spellcast'));jobs.push(loadAtlasBoss('grunk'));jobs.push(loadAtlasBoss('vamp'));jobs.push(loadAtlasBoss('bat'));jobs.push(loadAtlasBoss('skrix'));jobs.push(loadAtlasBoss('morvath'));jobs.push(loadAtlasBoss('gorgash'));jobs.push(loadAtlasBoss('totem'));
+    for(const k of ['goblin','esqueleto','javali','rato','ogro','gobchefe','skelchefe','xama','esqfogo','esqgelo'])jobs.push(loadSheet(k,'slash'));jobs.push(loadSheet('gobarq','shoot'));jobs.push(loadSheet('esqmago','spellcast'));jobs.push(loadAtlasBoss('grunk'));jobs.push(loadAtlasBoss('vamp'));jobs.push(loadAtlasBoss('bat'));jobs.push(loadAtlasBoss('skrix'));jobs.push(loadAtlasBoss('morvath'));jobs.push(loadAtlasBoss('gorgash'));jobs.push(loadAtlasBoss('ratking'));jobs.push(loadAtlasBoss('pxhero'));jobs.push(loadAtlasBoss('totem'));
     for(const k of new Set(CLS_ORDER.flatMap(c=>CLASSES[c].skills.map(s=>s[0]))))jobs.push(loadImg(skImg(k)).then(im=>{IMG[k]=im;}).catch(()=>{IMG[k]=null;}));
     for(const n of ['i_espada','i_machado','i_martelo','i_adaga','i_cajado','i_cetro','i_arco','i_elmo','i_capuz','i_couraca','i_cota','i_colete','i_manto','i_tunica','i_botas','i_sandalias','i_colar','i_pingente','i_talisma','i_anel','i_luvas','i_manoplas','i_escudo','i_escudog','i_garra','i_livro','i_gema','i_bracelete','i_coroa'])jobs.push(loadImg('../assets/ico/'+n+'.png').then(im=>{IMG_ICO[n]=im;}).catch(()=>{IMG_ICO[n]=null;}));
     for(const n of ['coins','anvil','health-potion','treasure-map','clover','fist','heart-plus','shop','greek-temple','scroll-unfurled'])jobs.push(loadImg('../assets/ui-icons/'+n+'.png').then(im=>{IMG_UI[n]=im;}).catch(()=>{IMG_UI[n]=null;}));
@@ -3440,6 +3440,32 @@ function gorgashFrame(e){const sh=SHEETS.gorgash,a=e.act,F=(n,i)=>atlasFrame(sh,
   if(e.state==='atk'&&a)return F('attack',Math.min(6,Math.floor(a.t/a.dur*7)));
   if(e.state==='walk')return F('walk',Math.floor(e.animT*13)%N('walk'));
   return F('idle',Math.floor(G.t*10)%N('idle'));}
+function ratkingFrame(e){const sh=SHEETS.ratking,a=e.act,F=(n,i)=>atlasFrame(sh,n,i),N=n=>sh.meta.anims[n].length;
+  if(e.dead)return F('die',Math.min(N('die')-1,Math.floor(e.deadT*12)));
+  if(e.ent){const k=e.ent.k;if(k==='roar'||k==='phase'){const p=e.ent.t/e.ent.dur;return F('cast',Math.min(N('cast')-1,Math.floor(p*N('cast'))));}return F('idle',0);}
+  if((e.stun>0||e.stagger>0)&&!(a&&a.skill))return F('hurt',e.flash>.07?1:Math.min(5,e.stagger>.5||e.stun>.12?2:4));
+  if(a&&a.skill){const p=Math.min(.999,a.t/a.dur);
+    if(a.anim==='swarm')return F('cast',Math.floor(p*N('cast')));
+    if(a.anim==='plague')return F('plague',Math.floor(p*N('plague')));
+    if(a.anim==='burrow')return F('dig',Math.floor(p*N('dig')));}
+  if(e.state==='atk'&&a){if(a.v===undefined)a.v=Math.floor(Math.random()*3);const k=['atk1','atk2','atk3'][a.v];return F(k,Math.min(N(k)-1,Math.floor(a.t/a.dur*N(k))));}
+  if(e.state==='walk')return F('walk',Math.floor(e.animT*11)%N('walk'));
+  return F('idle',Math.floor(G.t*6)%N('idle'));}
+/* Guerreiro em pixel art (teste): lados espelhados, frente e costas; uma animação por habilidade. Desliga com ?px=0 */
+const PXH=new URLSearchParams(location.search).get('px')!=='0';
+const PX_IMP={power:.6,spin:.4,shake:.64,roar:.45,slash:.5};
+function pxAnimOf(h,a){if(!a||a.sk===undefined||a.sk<0)return 'slash';const S=(CLASSES[SAVE.cls]||{skills:[]}).skills[a.sk];if(!S)return 'slash';const id=S[0],t=S[4]&&S[4].t;
+  if(/terremoto|tremor/.test(id))return 'shake';if(t==='aoe')return 'spin';if(t==='buff'||t==='shield'||t==='heal')return 'roar';if(t==='single'&&/poderoso|esmaga|execucao/.test(id))return 'power';return 'slash';}
+function pxHeroFrame(e){const sh=SHEETS.pxhero,F=(n,i)=>atlasFrame(sh,n,i),N=n=>sh.meta.anims[n].length;
+  if(e.row===1)e.pxs='l';else if(e.row===3)e.pxs='r';const sd=e.pxs||'r';
+  if(e.state==='ko')return F('hurt_'+sd,5);
+  if(e.dod){const d=e.dod,p=Math.min(.999,(d.t||0)/(d.dur||.4));return F('dodge_'+sd,Math.floor(p*N('dodge_'+sd)));}
+  if(e.state==='hurt'||e.stun>0)return F('hurt_'+sd,2);
+  if(e.state==='atk'&&e.act){const a=e.act,k=pxAnimOf(e,a),nm=k+'_'+sd,n=N(nm),hit=Math.max(.15,Math.min(.9,a.hit||.5)),imp=PX_IMP[k]||.5,p=Math.min(.999,a.t/a.dur);const u=p<hit?p/hit*imp:imp+(p-hit)/(1-hit)*(1-imp);return F(nm,Math.min(n-1,Math.floor(u*n)));}
+  const mv=e.state==='walk';
+  if(e.row===0)return F('walk_up',mv?Math.floor(e.animT*11)%N('walk_up'):0);
+  if(e.row===2)return F('walk_down',mv?Math.floor(e.animT*11)%N('walk_down'):0);
+  return F('walk_'+sd,mv?Math.floor(e.animT*11)%N('walk_'+sd):0);}
 function totemFrame(e){const sh=SHEETS.totem;
   if(e.dead)return atlasFrame(sh,'death',Math.min(2,Math.floor(e.deadT*5)));
   if(e.age<.6)return atlasFrame(sh,'rise',Math.min(5,Math.floor(e.age/.6*6)));
@@ -3462,7 +3488,8 @@ function batFrame(e){const sh=SHEETS.bat;
   if(e.state==='atk'&&e.act)return atlasFrame(sh,'bite',Math.min(5,Math.floor(e.act.t/e.act.dur*6)));
   return atlasFrame(sh,'fly',Math.floor((G.t*12+e.animT*3))%6);}
 function entFrame(e){
-  if(e.T&&e.T.atlas){if(e.T.atlas==='skrix')return skrixFrame(e);if(e.T.atlas==='morvath')return morvathFrame(e);if(e.T.atlas==='gorgash')return gorgashFrame(e);if(e.T.atlas==='totem')return totemFrame(e);if(e.T.atlas==='vamp')return vampFrame(e);if(e.T.atlas==='bat')return batFrame(e);if(e.kind==='boss')return grunkFrame(e);}
+  if(e.kind==='hero'&&PXH&&SAVE.cls==='guerreiro'&&SHEETS.pxhero)return pxHeroFrame(e);
+  if(e.T&&e.T.atlas){if(e.T.atlas==='skrix')return skrixFrame(e);if(e.T.atlas==='morvath')return morvathFrame(e);if(e.T.atlas==='gorgash')return gorgashFrame(e);if(e.T.atlas==='ratking')return ratkingFrame(e);if(e.T.atlas==='totem')return totemFrame(e);if(e.T.atlas==='vamp')return vampFrame(e);if(e.T.atlas==='bat')return batFrame(e);if(e.kind==='boss')return grunkFrame(e);}
   if(e.kind==='npc'||e.kind==='vill'){const sh=SHEETS[e.sh];return sheetFrame(sh,'walk',e.row,e.moving?Math.floor(e.animT*11)%9:0);}
   const nm=e.kind==='hero'?'hero':(e.kind==='boss'?e.T.sheet:e.T.sheet),sh=SHEETS[nm];
   if(e.kind==='hero'&&e.state==='ko'){return sheetFrame(sh,'hurt',0,Math.min(5,Math.floor((3-e.koT)*4)));}
