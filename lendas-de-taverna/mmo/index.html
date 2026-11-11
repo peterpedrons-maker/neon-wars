@@ -916,6 +916,12 @@ const MOB_SKRIX={nome:'Xamã Skrix',atlas:'skrix',rad:16,shr:28,fam:'goblin',aur
   msk:[{id:'totem',hp:1,cd:10,warn:.95,wt:3,max:320},{id:'curse',hp:1,cd:13,warn:1.0,wt:2,max:280},{id:'summon',hp:.75,cd:22,warn:1.1,wt:4},{id:'blink',hp:.35,cd:99,warn:.7,once:1,wt:9}]};
 const MOB_TOTEM={nome:'Totem Tóxico',atlas:'totem',totem:1,rad:14,shr:30,fam:'goblin',noElite:1,hp:150,atk:0,xp:0,gold:[0,0],speed:0,aggro:0,rng:0,aspd:99,sw:20};
 MOBS.skrix=MOB_SKRIX;MOBS.totem=MOB_TOTEM;
+/* Capitão Presa-de-Ferro: mini-chefe da Floresta de Brumavale (família javali). Luta sozinho: guarda com contra-ataque, investida em zigue-zague, machadada giratória */
+const MOB_JAVCAP={nome:'Capitão Presa-de-Ferro',atlas:'javcap',rad:20,shr:34,fam:'javali',aura:['#d0503a','#ffd070'],noElite:1,hp:760,atk:11,xp:170,gold:[45,90],speed:52,aggro:260,rng:44,aspd:1.6,sw:28,dur:.85,fire:.5,st:['atordoado',.2,1,0],
+  msk:[{id:'guard',hp:1,cd:12,warn:2.2,wt:2,max:220},
+       {id:'zig',hp:1,cd:11,warn:.5,wt:3,min:50,max:380,n:4,len:150,w:40,mult:1.7,st:['atordoado',.5,1,0]},
+       {id:'spin',hp:1,cd:8,warn:1.0,r:74,mult:2.2,st:['abalado',.5,4,0],wt:3,max:130}]};
+MOBS.javcap=MOB_JAVCAP;
 const BOSS={nome:'Gorgash',rad:26,shr:40,ent:'drop',fire:.58,aura:['#ff7a3a','#ffd070'],sheet:'ogro',atlas:'gorgash',hp:1900,atk:14,xp:260,gold:[80,140],speed:36,aggro:260,rng:52,aspd:1.7,scale:1,st:['abalado',.4,6,0]};
 const BOSS_GOB={nome:'Grunk',ent:'run',aura:['#ff5a3a','#ffd070'],sheet:'grunk',atlas:'grunk',rad:30,shr:46,hp:2300,atk:16,xp:250,gold:[75,130],speed:40,aggro:260,rng:54,aspd:1.5,scale:1,dur:.9,fire:.5,st:['sangramento',.4,6,.02],
   enrageAt:.35,   /* a 35% de vida: canaliza a fúria (menos dano, regenera) e depois fica mais forte e rápido */
@@ -1055,7 +1061,7 @@ async function loadAll(){
   prepMap('town');useMap('town');
   STAGE2=(async()=>{
     const jobs=[loadMap('zone1','assets/zone1.json','assets/atlas.json','assets/zone1_ground.png','assets/atlas.png'),loadMap('zone1_gob','assets/zone1_gob.json','assets/atlas_gob.json','assets/zone1_gob_ground.png','assets/atlas_gob.png'),loadMap('zone_cripta','assets/zone_cripta.json','assets/atlas_cripta.json','assets/zone_cripta_ground.png','assets/atlas_cripta.png'),loadMap('zone_esgoto','assets/zone_esgoto.json','assets/atlas_esgoto.json','assets/zone_esgoto_ground.png','assets/atlas_esgoto.png'),...['mer','fer','alq','mes','cof','lei'].map(k=>loadMap('int_'+k,'assets/int_'+k+'.json','assets/int_atlas.json','assets/int_'+k+'_ground.png','assets/int_atlas.png'))];
-    for(const k of ['goblin','esqueleto','javali','rato','ogro','gobchefe','skelchefe','xama','esqfogo','esqgelo'])jobs.push(loadSheet(k,'slash'));jobs.push(loadSheet('gobarq','shoot'));jobs.push(loadSheet('esqmago','spellcast'));for(const k of ['javguer','javbruto','ratass'])jobs.push(loadSheet(k,'slash'));for(const k of ['javarq','ratarq'])jobs.push(loadSheet(k,'shoot'));for(const k of ['javmago','ratalq'])jobs.push(loadSheet(k,'spellcast'));jobs.push(loadAtlasBoss('grunk'));jobs.push(loadAtlasBoss('vamp'));jobs.push(loadAtlasBoss('bat'));jobs.push(loadAtlasBoss('skrix'));jobs.push(loadAtlasBoss('morvath'));jobs.push(loadAtlasBoss('gorgash'));jobs.push(loadAtlasBoss('ratking'));jobs.push(loadAtlasBoss('pxhero'));jobs.push(loadAtlasBoss('totem'));
+    for(const k of ['goblin','esqueleto','javali','rato','ogro','gobchefe','skelchefe','xama','esqfogo','esqgelo'])jobs.push(loadSheet(k,'slash'));jobs.push(loadSheet('gobarq','shoot'));jobs.push(loadSheet('esqmago','spellcast'));for(const k of ['javguer','javbruto','ratass'])jobs.push(loadSheet(k,'slash'));for(const k of ['javarq','ratarq'])jobs.push(loadSheet(k,'shoot'));for(const k of ['javmago','ratalq'])jobs.push(loadSheet(k,'spellcast'));jobs.push(loadAtlasBoss('grunk'));jobs.push(loadAtlasBoss('vamp'));jobs.push(loadAtlasBoss('bat'));jobs.push(loadAtlasBoss('skrix'));jobs.push(loadAtlasBoss('morvath'));jobs.push(loadAtlasBoss('gorgash'));jobs.push(loadAtlasBoss('ratking'));jobs.push(loadAtlasBoss('javcap'));jobs.push(loadAtlasBoss('pxhero'));jobs.push(loadAtlasBoss('totem'));
     for(const k of new Set(CLS_ORDER.flatMap(c=>CLASSES[c].skills.map(s=>s[0]))))jobs.push(loadImg(skImg(k)).then(im=>{IMG[k]=im;}).catch(()=>{IMG[k]=null;}));
     for(const n of ['i_espada','i_machado','i_martelo','i_adaga','i_cajado','i_cetro','i_arco','i_elmo','i_capuz','i_couraca','i_cota','i_colete','i_manto','i_tunica','i_botas','i_sandalias','i_colar','i_pingente','i_talisma','i_anel','i_luvas','i_manoplas','i_escudo','i_escudog','i_garra','i_livro','i_gema','i_bracelete','i_coroa'])jobs.push(loadImg('../assets/ico/'+n+'.png').then(im=>{IMG_ICO[n]=im;}).catch(()=>{IMG_ICO[n]=null;}));
     for(const n of ['coins','anvil','health-potion','treasure-map','clover','fist','heart-plus','shop','greek-temple','scroll-unfurled'])jobs.push(loadImg('../assets/ui-icons/'+n+'.png').then(im=>{IMG_UI[n]=im;}).catch(()=>{IMG_UI[n]=null;}));
@@ -1984,8 +1990,9 @@ function knockChance(){const A=SAVE.at||{},g=(G.hero&&G.hero.kbG)||0;return Math
 const KD_CLS={guerreiro:.35,ladino:.1,clerigo:.1,arqueiro:0,mago:0,bardo:0},KD_SUB={barbaro:.4,cavaleiro:.25};
 /* QUEDA: quanto mais tempo o inimigo fica caído depois de um empurrão (multiplicador do tempo base de 0,3 s) */
 function knockDownMul(){const g=(G.hero&&G.hero.kdG)||0;return 1+Math.min(2,(KD_CLS[SAVE.cls]||0)+(KD_SUB[SAVE.sub]||0)+g/100+uf('kd'));}
+function guardCounter(m){addZone({shape:'circle',x:m.x,y:m.y,r:70,warn:.3,mult:1.5,st:['abalado',.5,3,0],src:m,shake:.5,pc:'#ffd070'});VF.ringw(m.x,m.y,50,'#ffd070',.35,5);VF.sparks(m.x,m.y-24,10,['#ffd070','#fff'],{s0:60,s1:160});floatText(m.x,m.y-84,'Contra-ataque!','#ffd070',9,.9);}
 function hitMob(m,dmg,crit,fromX,fromY,kf=1){
-  if(m.dead||m.ent)return;if(m.vuln>0)dmg=Math.round(dmg*1.15);if(m.take)dmg=Math.max(1,Math.round(dmg*m.take));{const tk=stMul(m,'taken');if(tk!==1)dmg=Math.max(1,Math.round(dmg*tk));}if(crit){const cd=tf('critd');if(cd)dmg=Math.round(dmg*(1+cd/1.8));}if(m.maxhp&&m.hp<m.maxhp*.3){const ex=tf('exec');if(ex)dmg=Math.round(dmg*(1+ex));}if(m.kind==='boss'||m.elite){const bs=tf('boss');if(bs)dmg=Math.round(dmg*(1+bs));}
+  if(m.dead||m.ent)return;if(m.guardT>0&&!(m.gcd>0)){m.gcd=1.1;guardCounter(m);}if(m.vuln>0)dmg=Math.round(dmg*1.15);if(m.take)dmg=Math.max(1,Math.round(dmg*m.take));{const tk=stMul(m,'taken');if(tk!==1)dmg=Math.max(1,Math.round(dmg*tk));}if(crit){const cd=tf('critd');if(cd)dmg=Math.round(dmg*(1+cd/1.8));}if(m.maxhp&&m.hp<m.maxhp*.3){const ex=tf('exec');if(ex)dmg=Math.round(dmg*(1+ex));}if(m.kind==='boss'||m.elite){const bs=tf('boss');if(bs)dmg=Math.round(dmg*(1+bs));}
   m.hp-=dmg;{const ls=uf('ls');if(ls>0&&G.hero&&G.hero.state!=='ko')G.hero.hp=Math.min(G.hero.maxhp,G.hero.hp+dmg*ls);}m.flash=.14;if(m.kind==='boss'||m.mini){poiseHit(m,dmg,crit);}else{m.stun=crit?.35:.16;m.act=null;}
   {const big=!crit&&dmg>=m.maxhp*(m.kind==='boss'||m.mini?.03:.18);floatText(m.x+rnd(-12,12),m.y-(m.kind==='boss'?70:30),crit?nfm(dmg)+'!':nfm(dmg),crit?'#ffc83a':big?'#ffe9a0':'#ffffff',crit?15:big?11.5:9,crit?1.1:.8,{pop:crit||big,vy:crit?24:18,bold:crit||big,glow:crit});}
   spark(m.x,m.y-(m.kind==='boss'?40:16),crit?9:5);
@@ -2027,6 +2034,7 @@ function evStart(){
   if(k<.4){const ms=[];for(let i=0;i<9;i++){const f=evSpot(210,270);ms.push(evMob(f[0],f[1],{hunt:true,tier:i===0?'blue':null}));}
     G.ev={t:'horda',mobs:ms,time:0};banner('Horda!','Inimigos cercam você','alert');chat('Uma horda de '+MOBS[famOf(G.zoneLv)].nome+'s surgiu!',2);sfx('sk_grito',.6);}
   else if(k<.7&&famOf(G.zoneLv)==='goblin'&&Math.random()<.85){const f=evSpot(220,280),m=spawnSkrix(f[0],f[1]);G.ev={t:'errante',mobs:[m],time:0};banner('Mini-chefe','A tribo ruge na mata','alert');chat('O Xamã Skrix surgiu!',2);}
+  else if(k<.7&&famOf(G.zoneLv)==='javali'&&Math.random()<.85){const f=evSpot(220,280),m=spawnJavcap(f[0],f[1]);G.ev={t:'errante',mobs:[m],time:0};banner('Mini-chefe','Um comandante ronda a floresta','alert');chat('O Capitão Presa-de-Ferro surgiu!',2);}
   else if(k<.7&&famOf(G.zoneLv)==='esq'&&Math.random()<.85){const f=evSpot(220,280),m=spawnVamp(f[0],f[1]);G.ev={t:'errante',mobs:[m],time:0};banner('Mini-chefe','Algo bate asas na escuridão','alert');chat('O Morcego-Vampiro surgiu!',2);}
   else if(k<.7){const f=evSpot(200,250),m=evMob(f[0],f[1],{hunt:true,tier:'gold'});m.maxhp=Math.round(m.maxhp*1.7);m.hp=m.maxhp;m.mini=true;m.name='Errante '+m.name;
     m.onDie=()=>{evLoot(m.x,m.y,2,2);chat('Mini-chefe derrotado! Recompensa extra.',4);};G.ev={t:'errante',mobs:[m],time:0};banner('Mini-chefe','Um errante veio caçar você','alert');chat(m.name+' surgiu!',2);sfx('sk_grito',.5);VF.wave(m.x,m.y,70,'#ffd24a',.7,4);}
@@ -2444,6 +2452,9 @@ function bossSkillFx(m,dt){const a=m.act,c=m.T.aura||['#ff6a3a','#ffd070'],w=a.d
   else if(a.anim==='swarm'){if(a.t<w&&a.rf<=0){a.rf=.2;VF.ringw(m.x,m.y,40+60*p,c[0],.45,5);}if(Math.random()<dt*50)emb(1);if(!a.rel&&a.t>=w*.5){a.rel=1;VF.burst(m.x,m.y-20,20,[c[0],c[1],'#4a3a2a'],{s0:60,s1:190,flat:.6});VF.shake(.3);}}
   else if(a.anim==='plague'){if(a.t<w&&Math.random()<dt*60)emb(1);if(!a.rel&&a.t>=w*.5){a.rel=1;VF.shake(.25);}}
   else if(a.anim==='burrow'){if(a.t<.4&&Math.random()<dt*90)VF.pt(m.x+rnd(-26,26),m.y-rnd(0,6),{vx:rnd(-40,40),vy:-rnd(40,110),life:rnd(.35,.7),col:['#4a3a2a','#6a5a48','#a89878'][rint(0,2)],sz:rnd(2,3.6),add:false,g:260});}
+  else if(a.anim==='spin'){if(a.t<w&&a.rf<=0){a.rf=.22;VF.ringw(m.x,m.y,R*(.4+.5*p),c[0],.4,4);}if(Math.random()<dt*50)emb(1);
+    if(a.t>=w&&Math.random()<dt*140){const an=Math.random()*6.283;VF.pt(m.x+Math.cos(an)*R*.8,m.y-8+Math.sin(an)*R*.35,{vx:Math.cos(an+1.57)*80,vy:Math.sin(an+1.57)*30-10,life:.3,col:'#ffd070',sz:2});}
+    if(!a.rel&&a.t>=w){a.rel=1;VF.ringw(m.x,m.y,R*1.05,'#ffd070',.5,10);VF.wave(m.x,m.y,R,c[0],.5,5);VF.shake(.6);VF.sparks(m.x,m.y-20,16,[c[0],c[1],'#fff'],{s0:80,s1:230});}}
   else if(a.anim==='curse'){if(a.t<w&&a.rf<=0){a.rf=.22;VF.rune(m.x,m.y,36+20*p,'#a050d0',.5,2);}if(Math.random()<dt*50)VF.pt(m.x+rnd(-18,18),m.y-rnd(0,50),{vx:rnd(-6,6),vy:-rnd(20,50),life:rnd(.5,.9),col:'#c070f0',sz:rnd(1.6,2.6)});
     if(!a.rel&&a.t>=w*.5){a.rel=1;VF.ringw(m.x,m.y,70,'#a050d0',.5,8);VF.glow(m.x,m.y-26,50,'#a050d0',.4);VF.shake(.2);}}
   else if(a.anim==='summon'){if(a.t<w&&a.rf<=0){a.rf=.2;VF.ringw(m.x,m.y,30+40*p,c[0],.4,5);}if(Math.random()<dt*60)emb(1);
@@ -2495,6 +2506,9 @@ function mobSkillStart(m,d,dt){const list=m.T.msk||MSK[m.kind==='boss'?'boss':m.
   if(pick.id==='blink'){m.act.fxT=m.act.dur*.5;m.act.fx=mm=>{const hh=G.hero;VF.burst(mm.x,mm.y-20,14,['#7ae04a','#fff'],{s0:30,s1:90});const a=Math.atan2(mm.y-hh.y,mm.x-hh.x),f=freeSpot(clamp(hh.x+Math.cos(a)*230,60,ZONE.w-60),clamp(hh.y+Math.sin(a)*190,90,ZONE.h-100));mm.x=f[0];mm.y=f[1];mm.wx=mm.x;mm.wy=mm.y;VF.burst(mm.x,mm.y-20,14,['#7ae04a','#fff'],{s0:30,s1:90});plantTotem(mm,mm.x+(hh.x>mm.x?40:-40),mm.y+8,true);chat('Skrix foge e finca um grande totem!',2);bossSnd('roar');};return true;}
   if(pick.id==='swarm'){m.act.fxT=m.act.dur*.5;m.act.fx=mm=>{const alive=G.mobs.filter(x=>x.rkAdd&&!x.dead).length;for(let k=0;k<4&&alive+k<8;k++){const a=k*1.57+Math.random(),f=freeSpot(mm.x+Math.cos(a)*44,mm.y+Math.sin(a)*28),b=mkMob('rato',f[0],f[1],-1);b.minion=true;b.respawn=1e9;b.hunt=true;b.elite=false;b.tier=null;b.name='Rato da Praga';b.rkAdd=1;b.lv=mm.lv;b.maxhp=Math.round(b.maxhp*.5);b.hp=b.maxhp;G.mobs.push(b);VF.glow(f[0],f[1]-10,26,'#8ad24a',.4);VF.puff(f[0],f[1],3,['#6a5a48'],{r:8,up:10,sz:.8,a:.5});}};bossSnd('crouch');return true;}
   if(pick.id==='plague'){const hh=h,offs=[[0,0],[-52,-14],[52,16]];offs.forEach((o,i)=>{const f=freeSpot(clamp(hh.x+o[0],40,ZONE.w-40),clamp(hh.y+o[1],70,ZONE.h-60));addZone({shape:'circle',x:f[0],y:f[1],r:pick.r,warn:pick.warn+i*.18,mult:pick.mult,st:pick.st,src:m,shake:.2,pc:'#9ae05a',pool:{life:pick.pool}});});m.act.fxT=m.act.dur*.4;m.act.fx=mm=>{VF.burst(mm.x+(hh.x>mm.x?16:-16),mm.y-34,14,['#3f6a1c','#6aa02a','#9ad24a'],{s0:50,s1:130,flat:.3,up:60,g:200});bossSnd('slam');};bossSnd('hum');return true;}
+  if(pick.id==='guard'){m.act.guard=1;m.guardT=pick.warn;m.take=.2;m.gcd=0;bossSnd('crouch');VF.glow(m.x,m.y-30,50,'#ffd070',.5);return true;}
+  if(pick.id==='spin'){m.act.spin=1;addZone({shape:'circle',x:m.x,y:m.y,r:pick.r,warn:pick.warn,mult:pick.mult,st:pick.st,src:m,shake:.7,pc:'#ffd070'});bossSnd('crouch');return true;}
+  if(pick.id==='zig'){m.act.dur=99;m.act.zig={n:pick.n,i:0,wait:.15,len:pick.len,w:pick.w,mult:pick.mult,st:pick.st,warn:pick.warn,side:Math.random()<.5?-1:1};bossSnd('chargeup');return true;}
   if(pick.id==='burrow'){const f=freeSpot(h.x,h.y);m.act.burrow={tx:f[0],ty:f[1]};addZone({shape:'circle',x:f[0],y:f[1],r:pick.r,warn:pick.warn,mult:pick.mult,st:pick.st,src:m,shake:.7,pc:'#b0a07a'});m.take=.02;(G.digs=G.digs||[]).push({x0:m.x,y0:m.y,x1:f[0],y1:f[1],t:0,warn:pick.warn,life:pick.warn+1.6,r:pick.r});bossSnd('crouch');
     m.act.fxT=pick.warn;m.act.fx=mm=>{const B=mm.act.burrow;mm.x=B.tx;mm.y=B.ty;mm.wx=mm.x;mm.wy=mm.y;mm.hide=false;mm.take=null;digEmerge(mm.x,mm.y);};bossSnd('crouch');return true;}
   if(pick.id==='charge')bossSnd('chargeup');
@@ -2566,6 +2580,7 @@ function updateMob(m,dt){
   if(m.T.enrageAt&&!m.fury&&!m.ch&&m.hp>0&&m.hp<m.maxhp*m.T.enrageAt&&(G.phase==='boss'||m.mini)&&!(m.act&&(m.act.leap||m.act.dive))){startChannel(m);}
   if(m.ch){bossChannel(m,dt);return;}
   if(m.kind==='boss'&&G.phase==='boss'&&!m.dead){const c=m.T.aura||['#ff6a3a','#ffd070'];if(Math.random()<dt*(10+6*(m.ph||0)))VF.pt(m.x+rnd(-26,26),m.y-rnd(6,80),{vy:-rnd(14,40),vx:rnd(-10,10),life:.9,col:c[Math.random()<.5?0:1],sz:2.2});if(m.state==='walk'&&Math.random()<dt*5)VF.pt(m.x+rnd(-14,14),m.y-2,{vy:-rnd(5,12),life:.4,col:'#a89878',sz:2.4,add:false});}
+  if(m.guardT>0){m.guardT-=dt;if(m.guardT<=0&&m.take===.2)m.take=null;}if(m.gcd>0)m.gcd-=dt;
   if(m.kbT>0)m.kbT-=dt;if(m.vuln>0)m.vuln-=dt;if(m.sts){stUpdate(m,dt);if(m.dead)return;}
   if(m.kvx||m.kvy){m.x+=m.kvx*dt;m.y+=m.kvy*dt;const f=Math.exp(-11*dt);m.kvx*=f;m.kvy*=f;if(Math.abs(m.kvx)+Math.abs(m.kvy)<4)m.kvx=m.kvy=0;collide(m);m.wx=m.x;m.wy=m.y;}
   if(m.kind==='boss'&&m.dash)bossGhost(m);
@@ -2577,11 +2592,17 @@ function updateMob(m,dt){
   if(m.act){m.act.t+=dt;m.state='atk';
     if(fxBoss(m)&&m.act.skill)bossSkillFx(m,dt);
     if(m.act.burrow&&m.act.t>=.4&&m.act.fxT!==undefined&&!m.hide)m.hide=true;
+    if(m.act.zig){const Z=m.act.zig;
+      if(Z.zone){if(Z.zone.done&&!m.dash){Z.zone=null;Z.wait=.28;}}
+      else{Z.wait-=dt;if(Z.wait<=0){if(Z.i>=Z.n){m.act.dur=m.act.t+.8;m.act.zig=null;}
+        else{const dx=h.x-m.x,dy=h.y-m.y,dd=Math.hypot(dx,dy)||1;let a=Math.atan2(dy,dx)+Z.side*.32;Z.side=-Z.side;let len=Math.min(Z.len,dd+80);
+          while(len>40){const ex=m.x+Math.cos(a)*len,ey=m.y+Math.sin(a)*len;if(ex>50&&ex<ZONE.w-50&&ey>70&&ey<ZONE.h-50)break;len-=15;}
+          addZone({shape:'line',x:m.x,y:m.y,a,w:Z.w,len,warn:Z.warn,mult:Z.mult,st:Z.st,src:m,shake:.35});Z.zone=G.zones[G.zones.length-1];Z.i++;m.flipX=Math.cos(a)<0;bossSnd('chargeup');}}}}
     if(m.kind==='boss'&&!m.act.skill&&m.act.t>m.act.dur*.3&&m.act.t<m.act.dur*.58&&d>m.T.rng*.55){const L=d||1;m.x+=(h.x-m.x)/L*70*dt;m.y+=(h.y-m.y)/L*70*dt;collide(m,6);m.wx=m.x;m.wy=m.y;}
     if(m.act.leap)leapStep(m,dt);if(m.act.dive)diveStep(m,dt);if(m.act.fxT!==undefined&&m.act.t>=m.act.fxT){m.act.fxT=undefined;m.act.fx(m);}
     if(!m.act.done&&m.act.t>=m.act.dur*(m.T.fire||.5)){m.act.done=true;mobAttackMoment(m);}
     if(!m.act)return;
-    if(m.act.t>=m.act.dur){if(m.act.leap||m.act.dive){m.zoff=0;}if(m.hide){m.hide=false;m.take=null;}m.act=null;m.state='idle';}return;}
+    if(m.act.t>=m.act.dur){if(m.act.leap||m.act.dive){m.zoff=0;}if(m.hide){m.hide=false;m.take=null;}if(m.act.guard){m.take=null;m.guardT=0;}m.act=null;m.state='idle';}return;}
   if(m.kind==='boss'){
     if(G.phase!=='boss'){m.state='idle';return;}
   }
@@ -3395,6 +3416,10 @@ function grunkFrame(e){const sh=SHEETS[e.T.atlas],p=e.fury?'e_':'',n=a=>sh.meta.
   if(e.state==='atk'&&a)return atlasFrame(sh,A('attack'),Math.min(7,Math.floor(a.t/a.dur*8)));
   if(e.state==='walk')return atlasFrame(sh,A('walk'),Math.floor(e.animT*11)%6);
   return atlasFrame(sh,A('idle'),Math.floor(G.t*5)%6);}
+function spawnJavcap(x,y){const L=dgLv(G.zoneLv),m=mkMob('javcap',x,y,-1),lv=Math.round((L[0]+L[1])/2)+1;m.lv=lv;const FM=FAMM.javali;m.maxhp=Math.round(m.T.hp*FM[0]*mobHpMul(lv));m.hp=m.maxhp;m.pow=m.T.atk*FM[1]*mobAtkMul(lv);m.def=lv*1.3;
+  m.minion=true;m.respawn=1e9;m.hunt=true;m.mini=true;m.sc=.8;m.name=m.T.nome;G.mobs.push(m);
+  m.onDie=()=>{evLoot(m.x,m.y,3,2);chat('O Capitão Presa-de-Ferro foi derrotado! Recompensa extra.',4);};
+  bossSnd('roar');VF.wave(m.x,m.y,90,'#d0503a',.8,4);VF.glow(m.x,m.y-30,60,'#d0503a',.6);return m;}
 function spawnSkrix(x,y){const L=dgLv(G.zoneLv),m=mkMob('skrix',x,y,-1),lv=Math.round((L[0]+L[1])/2)+1;m.lv=lv;const FM=FAMM.goblin;m.maxhp=Math.round(m.T.hp*FM[0]*mobHpMul(lv));m.hp=m.maxhp;m.pow=m.T.atk*FM[1]*mobAtkMul(lv);m.def=lv*1.3;
   m.minion=true;m.respawn=1e9;m.hunt=true;m.mini=true;m.name=m.T.nome;G.mobs.push(m);
   m.onDie=()=>{evLoot(m.x,m.y,3,2);chat('O Xamã Skrix foi derrotado! Recompensa extra.',4);G.mobs.forEach(b=>{if(!b.dead&&(b.skAdd||b.type==='totem'))killMob(b);});};
@@ -3540,6 +3565,7 @@ const DOLLB={
  gorgash:{g:'waddle',idle:['idle',0],wind:['attack',2],strike:['attack',4],up:['slam',3],down:['slam',6],charge:['charge',2],roar:['roar',4],hurt:['hurt',1],d1:['death',3],d2:['death',7]},
  grunk:{g:'hop',idle:['idle',0],wind:['attack',2],strike:['attack',4],up:['slam',3],down:['slam',6],charge:['charge',2],roar:['roar',3],hurt:['hurt',3],d1:['death',1],d2:['death',2]},
  morvath:{g:'glide',idle:['idle',0],wind:['attack',3],strike:['attack',5],up:['slam',4],down:['slam',6],charge:['charge',3],roar:['roar',4],hurt:['hurt',1],d1:['death',3],d2:['death',5]},
+ javcap:{g:'waddle',idle:['idle',0],wind:['windup',0],strike:['strike',0],up:['windup',0],down:['strike',0],charge:['strike',0],roar:['windup',0],hurt:['hurt',0],d1:['death1',0],d2:['death2',0],guard:['guard',0]},
  skrix:{g:'hop',idle:['idle',0],wind:['attack',2],strike:['attack',4],up:['idle',0],down:['attack',4],charge:['attack',4],roar:['summon',4],hurt:['hurt',1],d1:['death',3],d2:['death',10],totem:['totem',3],curse:['curse',4],summon:['summon',4]},
  ratking:{g:'hop',idle:['idle',0],wind:['windup',0],strike:['strike',0],up:['idle',0],down:['strike',0],charge:['strike',0],roar:['swarm',0],hurt:['hurt',0],d1:['death1',0],d2:['death2',0],swarm:['swarm',0],plague:['plague',0],burrow:['burrow',0]}};
 const DOLL_UNDEAD=/^(esq|skel)/,DOLL_HEAVY=/^(ogro|gobchefe|guardiao|golem)/;
@@ -3571,6 +3597,9 @@ function dollBoss(e){const key=e.T.atlas,B=DOLLB[key];if(!B||!SHEETS[key])return
     if(an==='charge'){dollSet(e,{k:e.dash?'dash':'skill',shake:t<w?p*1.5:0});return F('charge');}
     if(an==='burrow'){const warn=w+.45-.45,tf=a.dur-.45,SK=.4;let sink=0;if(t<SK)sink=t/SK;else if(a.fxT===undefined&&t>tf){sink=Math.max(0,1-(t-tf)/.4);}else sink=1;
       dollSet(e,{k:'skill',sink,shake:t<SK?1.5:0});return F('burrow');}
+    if(an==='guard'){dollSet(e,{k:'skill',shake:.4,sy:-.02});return F('guard');}
+    if(an==='zig'){dollSet(e,{k:e.dash?'dash':'skill',shake:e.dash?0:1.2,sy:e.dash?0:-.04});return F(e.dash?'strike':'wind');}
+    if(an==='spin'){if(t<w){dollSet(e,{k:'skill',shake:p*1.6,sy:-.07*p});return F('wind');}const q=(t-w)/.45;dollSet(e,{k:'skill'});e.dx.rot=Math.min(1,q)*12.566;return F('strike');}
     if(an==='swarm'||an==='plague'||an==='roar'){dollSet(e,{k:'skill',shake:p*1.4,sy:an==='roar'?.04*Math.sin(p*3.14):.03*Math.sin(p*9)});return F(B[an]?an:'roar');}
     dollSet(e,{k:'skill',shake:p});return F('roar');}
   if(e.dash){dollSet(e,{k:'dash'});return F('charge');}
@@ -4366,13 +4395,13 @@ function arenaResult(win,info){const a=G.arena;if(!a)return;const old=document.g
 const PZD=[
  {img:'d1',lore:'A tribo ruge na mata.',hab:[['goblin','Goblins','Comum'],['skrix','Xamã Skrix','Mini-chefe'],['grunk','Grunk','Chefe']]},
  {img:'d2',lore:'O frio sobe pelas escadas.',hab:[['esq','Esqueletos','Comum'],['vamp','Morcego-Vampiro','Mini-chefe'],['morvath','Morvath','Chefe']]},
- {img:'d3',lore:'Presas na escuridão.',hab:[['javali','Javalis','Comum'],['gorgash','Gorgash','Chefe']]},
+ {img:'d3',lore:'Presas na escuridão.',hab:[['javali','Javalis','Comum'],['javcap','Capitão Presa-de-Ferro','Mini-chefe'],['gorgash','Gorgash','Chefe']]},
  {img:'d4',lore:'Algo se move na água.',hab:[['rato','Ratos Gigantes','Comum'],['ratking','Rei dos Ratos','Chefe']]}];
 const PZ={tab:'d',sel:0,t:0};
 function pzPortrait(cv){const k=cv.dataset.k,x=cv.getContext('2d');let fr=null;
   try{if(k==='grunk')fr=atlasFrame(SHEETS.grunk,'idle',0);else if(k==='skrix')fr=atlasFrame(SHEETS.skrix,'idle',0);else if(k==='vamp')fr=atlasFrame(SHEETS.vamp,'idle',0);
    else if(k==='goblin')fr=sheetFrame(SHEETS.goblin,'walk',1,0);else if(k==='esq')fr=sheetFrame(SHEETS.esqueleto,'walk',1,0);else if(k==='morvath')fr=sheetFrame(SHEETS.skelchefe,'walk',1,0);
-   else if(k==='javali')fr=sheetFrame(SHEETS.javali,'walk',1,0);else if(k==='rato')fr=sheetFrame(SHEETS.rato,'walk',1,0);else if(k==='gorgash')fr=sheetFrame(SHEETS.ogro,'walk',1,0);else if(k==='ratking')fr=atlasFrame(SHEETS.ratking,'idle',0);}catch(e){}
+   else if(k==='javcap')fr=atlasFrame(SHEETS.javcap,'idle',0);else if(k==='javali')fr=sheetFrame(SHEETS.javali,'walk',1,0);else if(k==='rato')fr=sheetFrame(SHEETS.rato,'walk',1,0);else if(k==='gorgash')fr=sheetFrame(SHEETS.ogro,'walk',1,0);else if(k==='ratking')fr=atlasFrame(SHEETS.ratking,'idle',0);}catch(e){}
   if(!fr){x.fillStyle='#555';x.font='bold 36px sans-serif';x.textAlign='center';x.fillText('?',cv.width/2,cv.height*.7);return;}
   const [img,sx,sy,sw,sh]=fr,t=document.createElement('canvas');t.width=sw;t.height=sh;const tc=t.getContext('2d');tc.drawImage(img,sx,sy,sw,sh,0,0,sw,sh);
   const d=tc.getImageData(0,0,sw,sh).data;let x0=1e9,y0=1e9,x1=-1,y1=-1;for(let yy=0;yy<sh;yy++)for(let xx=0;xx<sw;xx++)if(d[(yy*sw+xx)*4+3]>40){if(xx<x0)x0=xx;if(xx>x1)x1=xx;if(yy<y0)y0=yy;if(yy>y1)y1=yy;}
@@ -4575,7 +4604,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
   try{await loadAll();}catch(e){$('title').insertAdjacentHTML('beforeend','<div style="color:#f88">Erro ao carregar: '+e.message+'</div>');console.error(e);return;}
   $('bNew').disabled=false;$('bCont').disabled=false;
   if(SAVE)G.zoneLv=clamp(SAVE.zone||1,1,DUN.length);
-  window.__mmo={spawnVamp,spawnSkrix,MOBS,killMob,mkMob,dgUnlocked,dgRefresh,xpGapMul,DUN,stAdd,BAL,openWin,levelUpFx,gainXP,banner,hStyle,wCat,skOk,UNIQUES,getZone:()=>ZONE,petTick,PETS,pb,SETS,setCount,sb,genItem,qEv,qCheck,partyAdd,partyClear,QMAIN,qInit,socRefresh,TALENTS,tfCalc,tlTotal,TL_REQ,TL_TIER,potPrice,SLOTS,recalcHero,AMBEV,ambStart,ambStop,AMBS,zoneMusic,TOD,LIFE,evStart,makeElite,ELMOD,addZone,heroDodge,spawnBossNow:spawnBoss,stAdd,STDEF,applySkillStatus,MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
+  window.__mmo={spawnVamp,spawnSkrix,spawnJavcap,MOBS,killMob,mkMob,dgUnlocked,dgRefresh,xpGapMul,DUN,stAdd,BAL,openWin,levelUpFx,gainXP,banner,hStyle,wCat,skOk,UNIQUES,getZone:()=>ZONE,petTick,PETS,pb,SETS,setCount,sb,genItem,qEv,qCheck,partyAdd,partyClear,QMAIN,qInit,socRefresh,TALENTS,tfCalc,tlTotal,TL_REQ,TL_TIER,potPrice,SLOTS,recalcHero,AMBEV,ambStart,ambStop,AMBS,zoneMusic,TOD,LIFE,evStart,makeElite,ELMOD,addZone,heroDodge,spawnBossNow:spawnBoss,stAdd,STDEF,applySkillStatus,MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
   requestAnimationFrame(frame);
 })();
 
