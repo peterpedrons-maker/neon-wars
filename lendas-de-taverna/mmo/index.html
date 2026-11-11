@@ -897,7 +897,14 @@ Object.assign(MOBS,{
   xama:{nome:'Goblin Xamã',sheet:'xama',nfr:6,fire:.6,dur:.85,ranged:'bolt',col:'#9be06a',hp:72,atk:9,xp:24,gold:[3,9],speed:42,aggro:170,rng:135,aspd:2.3,sw:18,st:['maldicao',.3,5,.02],fam:'goblin'},
   esqmago:{nome:'Esqueleto Mago',sheet:'esqmago',nfr:7,fire:.65,dur:.9,ranged:'bolt',col:'#8ac8ff',hp:80,atk:11,xp:30,gold:[4,11],speed:38,aggro:170,rng:135,aspd:2.4,sw:18,st:['gelado',.3,3,0],fam:'esq'},
   esqfogo:{nome:'Esqueleto Flamejante',sheet:'esqfogo',hp:104,atk:9,xp:29,gold:[4,10],speed:42,aggro:120,rng:24,aspd:1.4,sw:18,st:['queimadura',.3,4,.02],fam:'esq'},
-  esqgelo:{nome:'Esqueleto Gélido',sheet:'esqgelo',hp:112,atk:9,xp:29,gold:[4,10],speed:38,aggro:120,rng:24,aspd:1.5,sw:18,st:['gelado',.3,3,0],fam:'esq'}
+  esqgelo:{nome:'Esqueleto Gélido',sheet:'esqgelo',hp:112,atk:9,xp:29,gold:[4,10],speed:38,aggro:120,rng:24,aspd:1.5,sw:18,st:['gelado',.3,3,0],fam:'esq'},
+  javguer:{nome:'Javali Guerreiro',sheet:'javguer',hp:140,atk:11,xp:36,gold:[5,12],speed:56,aggro:140,rng:28,aspd:1.5,sw:22,st:['atordoado',.15,1,0],fam:'javali'},
+  javbruto:{nome:'Javali Bruto',sheet:'javbruto',hp:195,atk:13,xp:46,gold:[6,14],speed:46,aggro:130,rng:30,aspd:1.8,sw:24,st:['atordoado',.2,1,0],fam:'javali'},
+  javarq:{nome:'Javali Arqueiro',sheet:'javarq',nfr:13,fire:.74,dur:1,ranged:'arrow',col:'#c8b080',hp:92,atk:10,xp:38,gold:[5,12],speed:48,aggro:190,rng:150,aspd:2.2,sw:22,st:['sangramento',.25,4,.02],fam:'javali'},
+  javmago:{nome:'Javali Mago',sheet:'javmago',nfr:7,fire:.65,dur:.9,ranged:'bolt',col:'#c08aff',hp:100,atk:12,xp:40,gold:[5,13],speed:42,aggro:170,rng:135,aspd:2.4,sw:22,st:['enfraquecido',.3,6,0],fam:'javali'},
+  ratass:{nome:'Rato Assassino',sheet:'ratass',hp:40,atk:6,xp:14,gold:[2,5],speed:80,aggro:130,rng:22,aspd:.9,sw:16,st:['veneno',.45,5,.02],fam:'rato'},
+  ratarq:{nome:'Rato Arqueiro',sheet:'ratarq',nfr:13,fire:.74,dur:1,ranged:'arrow',col:'#b0d070',hp:40,atk:5,xp:14,gold:[2,5],speed:56,aggro:190,rng:150,aspd:2.2,sw:16,st:['veneno',.35,5,.015],fam:'rato'},
+  ratalq:{nome:'Rato Alquimista',sheet:'ratalq',nfr:7,fire:.65,dur:.9,ranged:'bolt',col:'#7ae04a',hp:52,atk:6,xp:16,gold:[2,6],speed:46,aggro:170,rng:135,aspd:2.4,sw:16,st:['veneno',.5,6,.02],fam:'rato'}
 });
 const MOB_BAT={nome:'Morcego',atlas:'bat',shr:18,fly:20,fam:'esq',hp:50,atk:7,xp:14,gold:[2,6],speed:78,aggro:150,rng:22,aspd:1.1,sw:16,dur:.55,fire:.55,st:['sangramento',.2,3,.01]};
 const MOB_VAMP={nome:'Morcego-Vampiro',atlas:'vamp',rad:20,shr:36,fly:38,fam:'esq',aura:['#a56bff','#ff4a6a'],furyTxt:'O MORCEGO-VAMPIRO ENFURECE!',noElite:1,hp:560,atk:9,xp:150,gold:[40,80],speed:66,aggro:260,rng:34,aspd:1.5,sw:30,dur:.75,fire:.5,st:['sangramento',.3,5,.02],enrageAt:.35,vamp:.6,
@@ -1048,7 +1055,7 @@ async function loadAll(){
   prepMap('town');useMap('town');
   STAGE2=(async()=>{
     const jobs=[loadMap('zone1','assets/zone1.json','assets/atlas.json','assets/zone1_ground.png','assets/atlas.png'),loadMap('zone1_gob','assets/zone1_gob.json','assets/atlas_gob.json','assets/zone1_gob_ground.png','assets/atlas_gob.png'),loadMap('zone_cripta','assets/zone_cripta.json','assets/atlas_cripta.json','assets/zone_cripta_ground.png','assets/atlas_cripta.png'),loadMap('zone_esgoto','assets/zone_esgoto.json','assets/atlas_esgoto.json','assets/zone_esgoto_ground.png','assets/atlas_esgoto.png'),...['mer','fer','alq','mes','cof','lei'].map(k=>loadMap('int_'+k,'assets/int_'+k+'.json','assets/int_atlas.json','assets/int_'+k+'_ground.png','assets/int_atlas.png'))];
-    for(const k of ['goblin','esqueleto','javali','rato','ogro','gobchefe','skelchefe','xama','esqfogo','esqgelo'])jobs.push(loadSheet(k,'slash'));jobs.push(loadSheet('gobarq','shoot'));jobs.push(loadSheet('esqmago','spellcast'));jobs.push(loadAtlasBoss('grunk'));jobs.push(loadAtlasBoss('vamp'));jobs.push(loadAtlasBoss('bat'));jobs.push(loadAtlasBoss('skrix'));jobs.push(loadAtlasBoss('morvath'));jobs.push(loadAtlasBoss('gorgash'));jobs.push(loadAtlasBoss('ratking'));jobs.push(loadAtlasBoss('pxhero'));jobs.push(loadAtlasBoss('totem'));
+    for(const k of ['goblin','esqueleto','javali','rato','ogro','gobchefe','skelchefe','xama','esqfogo','esqgelo'])jobs.push(loadSheet(k,'slash'));jobs.push(loadSheet('gobarq','shoot'));jobs.push(loadSheet('esqmago','spellcast'));for(const k of ['javguer','javbruto','ratass'])jobs.push(loadSheet(k,'slash'));for(const k of ['javarq','ratarq'])jobs.push(loadSheet(k,'shoot'));for(const k of ['javmago','ratalq'])jobs.push(loadSheet(k,'spellcast'));jobs.push(loadAtlasBoss('grunk'));jobs.push(loadAtlasBoss('vamp'));jobs.push(loadAtlasBoss('bat'));jobs.push(loadAtlasBoss('skrix'));jobs.push(loadAtlasBoss('morvath'));jobs.push(loadAtlasBoss('gorgash'));jobs.push(loadAtlasBoss('ratking'));jobs.push(loadAtlasBoss('pxhero'));jobs.push(loadAtlasBoss('totem'));
     for(const k of new Set(CLS_ORDER.flatMap(c=>CLASSES[c].skills.map(s=>s[0]))))jobs.push(loadImg(skImg(k)).then(im=>{IMG[k]=im;}).catch(()=>{IMG[k]=null;}));
     for(const n of ['i_espada','i_machado','i_martelo','i_adaga','i_cajado','i_cetro','i_arco','i_elmo','i_capuz','i_couraca','i_cota','i_colete','i_manto','i_tunica','i_botas','i_sandalias','i_colar','i_pingente','i_talisma','i_anel','i_luvas','i_manoplas','i_escudo','i_escudog','i_garra','i_livro','i_gema','i_bracelete','i_coroa'])jobs.push(loadImg('../assets/ico/'+n+'.png').then(im=>{IMG_ICO[n]=im;}).catch(()=>{IMG_ICO[n]=null;}));
     for(const n of ['coins','anvil','health-potion','treasure-map','clover','fist','heart-plus','shop','greek-temple','scroll-unfurled'])jobs.push(loadImg('../assets/ui-icons/'+n+'.png').then(im=>{IMG_UI[n]=im;}).catch(()=>{IMG_UI[n]=null;}));
@@ -1732,7 +1739,7 @@ function makeElite(m,tier){
   return m;
 }
 /* FAMÍLIA por zona: cada zona tem um único tipo de inimigo (muda a cada zona); multiplicadores mantêm a força média de antes */
-const FAMV={goblin:['goblin','goblin','gobarq','xama','goblin'],esq:['esq','esq','esqmago','morcego','esqfogo','esqgelo'],javali:['javali'],rato:['rato']};
+const FAMV={goblin:['goblin','goblin','gobarq','xama','goblin'],esq:['esq','esq','esqmago','morcego','esqfogo','esqgelo'],javali:['javali','javguer','javarq','javbruto','javmago','javguer'],rato:['rato','ratass','ratarq','ratalq','rato','ratass']};
 const varOf=(z,i)=>{const a=FAMV[famOf(z)];return a[((i%a.length)+a.length)%a.length];};
 /* progressão definida: 4 dungeons, uma após a outra. Para entrar na seguinte é preciso derrotar o chefe da anterior e ter o nível mínimo. */
 /* pc = poder de combate recomendado (calibrado por simulação: PC com o qual o herói de equipamento médio vence o chefe com folga; tools/mmo/sim/pc_calib.cjs + boss.cjs) */
