@@ -46,3 +46,6 @@ Props (árvores, tendas, totens, estacas, paliçadas, ossos, cogumelos etc.) ger
 
 ## Trilhas da floresta e efeitos de combate
 Músicas `floresta_*` compostas para o jogo e renderizadas com instrumentos reais amostrados do **GeneralUser GS** (S. Christian Collins, licença própria que permite uso em projetos comerciais). Efeitos de combate refeitos em `tools/mmo/music/sfx2.py` (camadas sintetizadas e instrumentos do mesmo banco de sons).
+
+## Monstros LPC (assets/lpc_monsters)
+"[LPC] Monsters" — Charles Sanchez (CharlesGabriel), bagzie e bluecarrot16 — CC-BY-SA 3.0+ ou GPL 3.0+ (morcego: OGA-BY 3.0). https://opengameart.org/content/lpc-monsters . Detalhes em `assets/lpc_monsters/CREDITS.md`.
