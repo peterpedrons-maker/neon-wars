@@ -1049,14 +1049,14 @@ async function loadSheet(name,atkKind){
 const areaName=m=>(m||G.map)==='zone_esgoto'?'Esgotos de Brumavale':(m||G.map)==='zone_cripta'?'Catacumbas de Brumavale':(m||G.map)==='zone1_gob'?'Floresta dos Goblins':'Floresta de Brumavale';
 const zoneMap=z=>{const f=famOf(z);return f==='goblin'?'zone1_gob':f==='esq'?'zone_cripta':f==='rato'?'zone_esgoto':'zone1';};
 function zoneAutoFx(z){if(z._afx)return z._afx;const L=(z.fx||[]).slice();if(!(z.fx||[]).some(e=>e.k==='fire'))for(const p of z.props)if(p.t==='fire')L.push({k:'fire',x:p.x,y:p.y-8,spr:1,r:50});return z._afx=L;}
-function useMap(n,quiet){const m=MAPS[n];ZONE=m.zone;ATLAS=m.atlas;ATLAS_J=m.atlasJ;GROUND=m.ground;WATER=m.water;WCW=m.wcw;WL=m.wl||null;WSP=m.wsp||[];WRX=m.wrx||null;GCTX=m.gx||null;G.prints=[];buildLights(zoneAutoFx(m.zone));G.map=n;MM.key='';if(!quiet&&typeof AMB!=="undefined")AMB.setup(zoneAutoFx(m.zone),n==='zone1_gob'?'gob':n==='zone1'?'forest':null);}
+function useMap(n,quiet){const m=MAPS[n];ZONE=m.zone;ATLAS=m.atlas;ATLAS_J=m.atlasJ;GROUND=m.ground;WATER=m.water;WCW=m.wcw;NAV=m.nav||null;WL=m.wl||null;WSP=m.wsp||[];WRX=m.wrx||null;GCTX=m.gx||null;G.prints=[];buildLights(zoneAutoFx(m.zone));G.map=n;MM.key='';if(!quiet&&typeof AMB!=="undefined")AMB.setup(zoneAutoFx(m.zone),n==='zone1_gob'?'gob':n==='zone1'?'forest':null);}
 async function loadMap(name,zf,af,gf,pf){
   const [z,aj]=await Promise.all([fetch(zf).then(r=>r.json()),fetch(af).then(r=>r.json())]);
   const [g,at]=await Promise.all([loadImg(gf),loadImg(pf)]);MAPS[name]={zone:z,atlasJ:aj,ground:g,atlas:at,water:null,wcw:0};
 }
 let STAGE2=null,STAGE2_OK=false;
 /* carregamento em 2 estágios: o essencial (cidade, classes, NPCs) libera os botões do título; floresta, interiores, monstros e ícones chegam em segundo plano */
-function prepMap(name){useMap(name,true);buildSolids();buildWater();MAPS[name].water=WATER;MAPS[name].wcw=WCW;MAPS[name].wl=WL;MAPS[name].wsp=WSP;MAPS[name].wrx=WRX;MAPS[name].gx=GCTXB;
+function prepMap(name){useMap(name,true);buildSolids();buildWater();MAPS[name].nav=buildNav();MAPS[name].water=WATER;MAPS[name].wcw=WCW;MAPS[name].wl=WL;MAPS[name].wsp=WSP;MAPS[name].wrx=WRX;MAPS[name].gx=GCTXB;
   if(name==='zone1'||name==='zone1_gob'||name==='zone_cripta'||name==='zone_esgoto')fixSpawns();else{ZONE.start=freeSpot(ZONE.start[0],ZONE.start[1]);if(ZONE.portal)ZONE.portal.stand=freeSpot(ZONE.portal.stand[0],ZONE.portal.stand[1]);if(ZONE.doors)ZONE.doors.forEach(d=>{const f=freeSpot(d.x,d.y+10);d.sx=f[0];d.sy=f[1];});}}
 async function loadAll(){
   const core=[fetch('assets/look2/look2.json').then(r=>r.json()).then(j=>{LOOKM=j;}),
@@ -2262,7 +2262,33 @@ function agileFlee(m,h,d,dt){const T=m.T,L=d||1,ax=(m.x-h.x)/L,ay=(m.y-h.y)/L,bx
   m.strT=(m.strT||0)-dt;if(m.strT<=0){m.strT=rnd(.7,1.4);m.strS=Math.random()<.5?-1:1;}
   const sp=T.speed*(m.spdMul||1)*stMul(m,'spd')*1.2;moveTo(m,m.x+ax*60-ay*m.strS*50,m.y+ay*60+ax*m.strS*50,sp,dt);collide(m,6);
   if(Math.hypot(m.x-bx,m.y-by)<sp*dt*.4){m.strS=-(m.strS||1);m.strT=rnd(.7,1.4);}}   /* encurralado: troca de lado */
-function moveTo(e,tx,ty,sp,dt){
+/* ===== caminhos: grade de navegação + A* para contornar água, árvores e pedras ao perseguir um alvo ===== */
+let NAV=null;const NC=12;
+function buildNav(){const Z=ZONE,w=Math.ceil(Z.w/NC),h=Math.ceil(Z.h/NC),a=new Uint8Array(w*h);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const px=x*NC+NC/2,py=y*NC+NC/2;a[y*w+x]=(px<16||py<(Z.ymin||50)+4||px>Z.w-16||py>Z.h-12||blockedAt(px,py,8))?1:0;}return {a,w,h};}
+function clearLine(x0,y0,x1,y1){const d=Math.hypot(x1-x0,y1-y0),n=Math.ceil(d/6);for(let i=1;i<=n;i++){const t=i/n,x=x0+(x1-x0)*t,y=y0+(y1-y0)*t;if(blockedAt(x,y,7))return false;}return true;}
+function navCell(x,y){return [clamp(Math.floor(x/NC),0,NAV.w-1),clamp(Math.floor(y/NC),0,NAV.h-1)];}
+function navFree(cx,cy){const A=NAV.a,W=NAV.w;if(!A[cy*W+cx])return [cx,cy];for(let R=1;R<14;R++)for(let dy=-R;dy<=R;dy++)for(let dx=-R;dx<=R;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==R)continue;const x=cx+dx,y=cy+dy;if(x>=0&&y>=0&&x<W&&y<NAV.h&&!A[y*W+x])return [x,y];}return null;}
+function findPath(x0,y0,x1,y1){if(!NAV)return null;const W=NAV.w,Hh=NAV.h,A=NAV.a;let s0=navFree(...navCell(x0,y0)),g0=navFree(...navCell(x1,y1));if(!s0||!g0)return null;
+  const sI=s0[1]*W+s0[0],gI=g0[1]*W+g0[0];if(sI===gI)return [[x1,y1]];
+  const N=W*Hh,gs=new Float32Array(N).fill(1e9),from=new Int32Array(N).fill(-1),closed=new Uint8Array(N),heap=[],hx=g0[0],hy=g0[1];
+  const hh=i=>{const dx=Math.abs((i%W)-hx),dy=Math.abs(((i/W)|0)-hy);return (dx+dy)+(Math.SQRT2-2)*Math.min(dx,dy);};
+  const push=(i,f)=>{heap.push([f,i]);let k=heap.length-1;while(k>0){const q=(k-1)>>1;if(heap[q][0]<=heap[k][0])break;[heap[q],heap[k]]=[heap[k],heap[q]];k=q;}};
+  const pop=()=>{const t=heap[0],l=heap.pop();if(heap.length){heap[0]=l;let k=0;for(;;){let a=2*k+1,b=a+1,m=k;if(a<heap.length&&heap[a][0]<heap[m][0])m=a;if(b<heap.length&&heap[b][0]<heap[m][0])m=b;if(m===k)break;[heap[m],heap[k]]=[heap[k],heap[m]];k=m;}}return t;};
+  gs[sI]=0;push(sI,hh(sI));let it=0,found=false;
+  while(heap.length&&it++<9000){const [,i]=pop();if(closed[i])continue;closed[i]=1;if(i===gI){found=true;break;}const cx=i%W,cy=(i/W)|0;
+    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const nx=cx+dx,ny=cy+dy;if(nx<0||ny<0||nx>=W||ny>=Hh)continue;const ni=ny*W+nx;if(A[ni]||closed[ni])continue;
+      if(dx&&dy&&(A[cy*W+nx]||A[ny*W+cx]))continue;const ng=gs[i]+(dx&&dy?1.414:1);if(ng<gs[ni]){gs[ni]=ng;from[ni]=i;push(ni,ng+hh(ni));}}}
+  if(!found)return null;const pts=[];for(let i=gI;i!==-1&&i!==sI;i=from[i])pts.push([(i%W)*NC+NC/2,((i/W)|0)*NC+NC/2]);pts.reverse();pts.push([x1,y1]);return pts;}
+function navStep(e,tx,ty){   /* devolve o próximo ponto a seguir para chegar em (tx,ty) contornando obstáculos; null = ir direto */
+  if(!NAV)return null;if(clearLine(e.x,e.y,tx,ty)){e._pth=null;return null;}
+  const P=e._pth;if(!P||G.t-P.t>.7||Math.hypot(P.tx-tx,P.ty-ty)>40){const pts=findPath(e.x,e.y,tx,ty);if(!pts){e._pth={t:G.t,tx,ty,pts:null};return null;}e._pth={t:G.t,tx,ty,pts};}
+  const pts=e._pth.pts;if(!pts)return null;
+  while(pts.length>1&&Math.hypot(pts[0][0]-e.x,pts[0][1]-e.y)<10)pts.shift();
+  let k=0;for(let i=Math.min(pts.length-1,10);i>0;i--){if(clearLine(e.x,e.y,pts[i][0],pts[i][1])){k=i;break;}}   /* atalho: ponto mais distante com linha livre */
+  return pts[k];}
+function moveTo(e,tx,ty,sp,dt,pf){
+  if(pf){const w=navStep(e,tx,ty);if(w){tx=w[0];ty=w[1];e.detour=null;}}
   if(e.detour){e.detour.t-=dt;if(e.detour.t>0&&Math.hypot(e.x-e.detour.x,e.y-e.detour.y)>6){tx=e.detour.x;ty=e.detour.y;}else e.detour=null;}
   const dx=tx-e.x,dy=ty-e.y,d=Math.hypot(dx,dy);if(d<1)return 0;
   if(G.t-(e._lt||-9)>.3){e._sx=e.x;e._sy=e.y;e._sc=0;}   // voltou a andar depois de uma pausa
@@ -2613,15 +2639,15 @@ function updateHero(dt){
     const d=Math.max(0,dist(h,tgt)-((tgt.T&&tgt.T.rad)||0)),want=h.rng*(h.rng>60?.9:.8);   // alcance medido da borda do corpo
     if(G.auto&&h.rng>100&&dist(h,tgt)<h.rng*.55&&h.cd>.15){const k=Math.max(1,dist(h,tgt));moved=moveTo(h,h.x+(h.x-tgt.x)/k*50,h.y+(h.y-tgt.y)/k*50,hSpd(h)*.95,dt);h.row=dir4(tgt.x-h.x,tgt.y-h.y);}
     else if(d<=h.rng+1.5&&h.cd<=0){startHeroAttack(h,tgt);}
-    else if(d>Math.max(want,h.rng*.95)&&(G.auto||G.wp)){ if(G.auto)moved=moveTo(h,tgt.x,tgt.y,hSpd(h),dt);}   // já está no alcance de ataque: fica parado (não empurra o chefe)
+    else if(d>Math.max(want,h.rng*.95)&&(G.auto||G.wp)){ if(G.auto)moved=moveTo(h,tgt.x,tgt.y,hSpd(h),dt,1);}   // já está no alcance de ataque: fica parado (não empurra o chefe)
     else if(d<=h.rng){h.row=dir4(tgt.x-h.x,tgt.y-h.y);}
   }
   // loot: pegar o que está perto
   updateLoot(dt);
-  if(!moved&&G.wp){moved=moveTo(h,G.wp.x,G.wp.y,hSpd(h),dt);if(dist(h,G.wp)<4)G.wp=null;}
+  if(!moved&&G.wp){moved=moveTo(h,G.wp.x,G.wp.y,hSpd(h),dt,1);if(dist(h,G.wp)<4)G.wp=null;}
   else if(!moved&&!tgt&&G.auto){ // explorar: ir até o monstro vivo mais próximo ou vagar
     const m=(G.phase==='farm'||G.phase==='boss')?nearestMob(h,9999):null;
-    if(m)moved=moveTo(h,m.x,m.y,hSpd(h),dt);
+    if(m)moved=moveTo(h,m.x,m.y,hSpd(h),dt,1);
     else{G.wpT-=dt;if(!G.wanderP||G.wpT<=0||dist(h,G.wanderP)<8){G.wanderP={x:ZONE.spawns[rint(0,ZONE.spawns.length-1)][0],y:ZONE.spawns[rint(0,ZONE.spawns.length-1)][1]};G.wpT=6;}moved=moveTo(h,G.wanderP.x,G.wanderP.y,hSpd(h)*.7,dt);}
   }
   if(moved){h.state='walk';h.animT+=dt*(h.speed/70);collide(h);stepFx(h,dt);if(Math.floor(h.animT*2.6)!==h.lastStep){h.lastStep=Math.floor(h.animT*2.6);}}else h.state='idle';
@@ -2679,7 +2705,7 @@ function updateMob(m,dt){
     m.row=dir4(h.x-m.x,h.y-m.y);
     if(m.sts&&stHas(m,'medo')){moveTo(m,m.x+(m.x-h.x),m.y+(m.y-h.y),T.speed*(m.spdMul||1)*stMul(m,'spd')*1.1,dt);m.state='walk';m.animT+=dt*(T.speed/46);collide(m,6);m.wx=m.x;m.wy=m.y;}
     else if(T.ranged&&d<(T.kite||50)&&!(m.sts&&stHas(m,'preso'))){if(T.agile)agileFlee(m,h,d,dt);else moveTo(m,m.x+(m.x-h.x),m.y+(m.y-h.y),T.speed*(m.spdMul||1)*stMul(m,'spd')*.9,dt);m.state='walk';m.animT+=dt*(T.speed/46)*(T.agile?.55:1);collide(m,6);m.wx=m.x;m.wy=m.y;if(m.cd<=0){m.act={t:0,dur:T.dur||.6,done:false};m.cd=T.aspd*(m.aspdMul||1);m.row=dir4(h.x-m.x,h.y-m.y);}}
-    else if(d>T.rng*.85){if(m.sts&&stHas(m,'preso'))m.state='idle';else{const s=moveTo(m,h.x,h.y,T.speed*(m.spdMul||1)*stMul(m,'spd'),dt);m.state='walk';m.animT+=dt*(T.speed/46);collide(m,6);m.wx=m.x;m.wy=m.y;}}
+    else if(d>T.rng*.85){if(m.sts&&stHas(m,'preso'))m.state='idle';else{const s=moveTo(m,h.x,h.y,T.speed*(m.spdMul||1)*stMul(m,'spd'),dt,1);m.state='walk';m.animT+=dt*(T.speed/46);collide(m,6);m.wx=m.x;m.wy=m.y;}}
     else{m.state='idle';if(m.cd<=0){m.act={t:0,dur:T.dur||.6,done:false};m.cd=T.aspd*(m.aspdMul||1);m.row=dir4(h.x-m.x,h.y-m.y);}}
   }else{
     m.wt-=dt;if(m.wt<=0){m.wt=rnd(1.5,4);m.wvx=rnd(-1,1)*14;m.wvy=rnd(-1,1)*10;if(Math.random()<.4){m.wvx=m.wvy=0;}}
