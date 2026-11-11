@@ -3533,6 +3533,7 @@ const DOLLB={
  gorgash:{g:'waddle',idle:['idle',0],wind:['attack',2],strike:['attack',4],up:['slam',3],down:['slam',6],charge:['charge',2],roar:['roar',4],hurt:['hurt',1],d1:['death',3],d2:['death',7]},
  grunk:{g:'hop',idle:['idle',0],wind:['attack',2],strike:['attack',4],up:['slam',3],down:['slam',6],charge:['charge',2],roar:['roar',3],hurt:['hurt',3],d1:['death',1],d2:['death',2]},
  morvath:{g:'glide',idle:['idle',0],wind:['attack',3],strike:['attack',5],up:['slam',4],down:['slam',6],charge:['charge',3],roar:['roar',4],hurt:['hurt',1],d1:['death',3],d2:['death',5]},
+ skrix:{g:'hop',idle:['idle',0],wind:['attack',2],strike:['attack',4],up:['idle',0],down:['attack',4],charge:['attack',4],roar:['summon',4],hurt:['hurt',1],d1:['death',3],d2:['death',10],totem:['totem',3],curse:['curse',4],summon:['summon',4]},
  ratking:{g:'hop',idle:['idle',0],wind:['windup',0],strike:['strike',0],up:['idle',0],down:['strike',0],charge:['strike',0],roar:['swarm',0],hurt:['hurt',0],d1:['death1',0],d2:['death2',0],swarm:['swarm',0],plague:['plague',0],burrow:['burrow',0]}};
 const DOLL_UNDEAD=/^(esq|skel)/,DOLL_HEAVY=/^(ogro|gobchefe|guardiao|golem)/;
 function dollGaitOf(e){if(e.kind==='hero')return 'hop';const T=e.T||{},s=T.sheet||'';if(T.fly)return 'float';if(DOLL_UNDEAD.test(s))return 'glide';if(DOLL_HEAVY.test(s))return 'waddle';return 'hop';}
