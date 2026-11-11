@@ -895,16 +895,16 @@ const MOBS={
 Object.assign(MOBS,{
   gobarq:{nome:'Goblin Arqueiro',sheet:'gobarq',nfr:13,fire:.74,dur:1,ranged:'arrow',col:'#d8c8a0',hp:62,atk:8,xp:22,gold:[3,9],speed:44,aggro:190,rng:150,aspd:2.2,sw:18,st:['sangramento',.25,4,.02],fam:'goblin'},
   xama:{nome:'Goblin Xamã',sheet:'xama',nfr:6,fire:.6,dur:.85,ranged:'bolt',col:'#9be06a',hp:72,atk:9,xp:24,gold:[3,9],speed:42,aggro:170,rng:135,aspd:2.3,sw:18,st:['maldicao',.3,5,.02],fam:'goblin'},
-  esqmago:{nome:'Esqueleto Mago',sheet:'esqmago',nfr:7,fire:.65,dur:.9,ranged:'bolt',col:'#8ac8ff',hp:80,atk:11,xp:30,gold:[4,11],speed:38,aggro:170,rng:135,aspd:2.4,sw:18,st:['gelado',.3,3,0],fam:'esq'},
+  esqmago:{nome:'Esqueleto Mago',sheet:'esqmago',nfr:7,fire:.65,dur:.9,ranged:'bolt',glow:'#8ac8ff',col:'#8ac8ff',hp:80,atk:11,xp:30,gold:[4,11],speed:38,aggro:170,rng:135,aspd:2.4,sw:18,st:['gelado',.3,3,0],fam:'esq'},
   esqfogo:{nome:'Esqueleto Flamejante',sheet:'esqfogo',hp:104,atk:9,xp:29,gold:[4,10],speed:42,aggro:120,rng:24,aspd:1.4,sw:18,st:['queimadura',.3,4,.02],fam:'esq'},
   esqgelo:{nome:'Esqueleto Gélido',sheet:'esqgelo',hp:112,atk:9,xp:29,gold:[4,10],speed:38,aggro:120,rng:24,aspd:1.5,sw:18,st:['gelado',.3,3,0],fam:'esq'},
   javguer:{nome:'Javali Guerreiro',sheet:'javguer',hp:140,atk:11,xp:36,gold:[5,12],speed:56,aggro:140,rng:28,aspd:1.5,sw:22,st:['atordoado',.15,1,0],fam:'javali'},
   javbruto:{nome:'Javali Bruto',sheet:'javbruto',hp:195,atk:13,xp:46,gold:[6,14],speed:46,aggro:130,rng:30,aspd:1.8,sw:24,st:['atordoado',.2,1,0],fam:'javali'},
   javarq:{nome:'Javali Arqueiro',sheet:'javarq',nfr:13,fire:.74,dur:1,ranged:'arrow',col:'#c8b080',hp:92,atk:10,xp:38,gold:[5,12],speed:48,aggro:190,rng:150,aspd:2.2,sw:22,st:['sangramento',.25,4,.02],fam:'javali'},
-  javmago:{nome:'Javali Mago',sheet:'javmago',nfr:7,fire:.65,dur:.9,ranged:'bolt',col:'#c08aff',hp:100,atk:12,xp:40,gold:[5,13],speed:42,aggro:170,rng:135,aspd:2.4,sw:22,st:['enfraquecido',.3,6,0],fam:'javali'},
+  javmago:{nome:'Javali Mago',sheet:'javmago',nfr:7,fire:.65,dur:.9,ranged:'bolt',glow:'#c08aff',col:'#c08aff',hp:100,atk:12,xp:40,gold:[5,13],speed:42,aggro:170,rng:135,aspd:2.4,sw:22,st:['enfraquecido',.3,6,0],fam:'javali'},
   ratass:{nome:'Rato Assassino',sheet:'ratass',hp:40,atk:6,xp:14,gold:[2,5],speed:80,aggro:130,rng:22,aspd:.9,sw:16,st:['veneno',.45,5,.02],fam:'rato'},
   ratarq:{nome:'Rato Arqueiro',sheet:'ratarq',nfr:13,fire:.74,dur:1,ranged:'arrow',col:'#b0d070',hp:40,atk:5,xp:14,gold:[2,5],speed:56,aggro:190,rng:150,aspd:2.2,sw:16,st:['veneno',.35,5,.015],fam:'rato'},
-  ratalq:{nome:'Rato Alquimista',sheet:'ratalq',nfr:7,fire:.65,dur:.9,ranged:'bolt',col:'#7ae04a',hp:52,atk:6,xp:16,gold:[2,6],speed:46,aggro:170,rng:135,aspd:2.4,sw:16,st:['veneno',.5,6,.02],fam:'rato'}
+  ratalq:{nome:'Rato Alquimista',sheet:'ratalq',nfr:7,fire:.65,dur:.9,ranged:'bolt',glow:'#7ae04a',col:'#7ae04a',hp:52,atk:6,xp:16,gold:[2,6],speed:46,aggro:170,rng:135,aspd:2.4,sw:16,st:['veneno',.5,6,.02],fam:'rato'}
 });
 const MOB_BAT={nome:'Morcego',atlas:'bat',shr:18,fly:20,fam:'esq',hp:50,atk:7,xp:14,gold:[2,6],speed:78,aggro:150,rng:22,aspd:1.1,sw:16,dur:.55,fire:.55,st:['sangramento',.2,3,.01]};
 const MOB_VAMP={nome:'Morcego-Vampiro',atlas:'vamp',rad:20,shr:36,fly:38,fam:'esq',aura:['#a56bff','#ff4a6a'],furyTxt:'O MORCEGO-VAMPIRO ENFURECE!',noElite:1,hp:560,atk:9,xp:150,gold:[40,80],speed:66,aggro:260,rng:34,aspd:1.5,sw:30,dur:.75,fire:.5,st:['sangramento',.3,5,.02],enrageAt:.35,vamp:.6,
@@ -3585,7 +3585,7 @@ function dollSheet(e){const nm=e.kind==='hero'?'hero':e.T.sheet,sh=SHEETS[nm];if
   if(e.kind==='hero'&&e.state==='atk'&&e.act&&e.act.bow&&sh.atk){dollSet(e,{k:'idle'});return sheetFrame(sh,'atk',e.act.up?0:e.row,bowFrame(e.act));}
   if(e.kind==='hero'&&e.state==='atk'&&e.act&&e.act.cast&&sh.cast){dollSet(e,{k:'idle'});return sheetFrame(sh,'cast',e.row,castFrame(e.act));}
   if(e.state==='atk'&&e.act&&sh.atk){const n=e.kind==='hero'?atkFrames(e):(e.T&&e.T.nfr)||6,p=Math.min(.999,e.act.t/e.act.dur);
-    if(ranged||n!==6){dollSet(e,{k:'idle'});return sheetFrame(sh,'atk',e.row,Math.min(n-1,Math.floor(p*n)));}
+    if(ranged||n!==6){dollSet(e,{k:'idle'});const fi=Math.min(n-1,Math.floor(p*n));if(e.T&&e.T.glow&&n===7)e.glowF=fi;return sheetFrame(sh,'atk',e.row,fi);}
     dollSet(e,{k:'atk',p,lunge:e.kind==='hero'?5:6});return sheetFrame(sh,'atk',e.row,p<.35?1:p<.8?3:4);}
   if(e.state==='walk'){dollSet(e,{k:'move',g:gait});return idleF();}
   dollSet(e,{k:'idle'});return idleF();}
@@ -3594,13 +3594,24 @@ function dollBat(e){const k=e.T.atlas,sh=SHEETS[k];if(!sh)return null;const a=e.
   if(e.dead||e.ch||e.stun>0||e.stagger>0||(a&&(a.skill||e.state==='atk')))return null;
   const p=(k==='vamp'&&e.fury)?'e_':'',nm=sh.meta.anims[p+'fly']?p+'fly':'fly',n=sh.meta.anims[nm].length,mv=e.state==='walk',cyc=mv?1.1:1.9,ph=((G.t+e.x*.013)%cyc)/cyc,fw=mv?.5:.3,i=ph<fw?Math.floor(ph/fw*n)%n:0;
   dollSet(e,{k:'idle'});e.dx.y=Math.sin(G.t*3+e.x*.05)*(mv?1.5:2.5);e.dx.rot=Math.sin(G.t*2+e.x*.03)*.03;return atlasFrame(sh,nm,i);}
-function entFrame(e){e.dx=null;
+function entFrame(e){e.dx=null;e.glowF=-1;
   if(DOLL&&(e.kind==='boss'||e.kind==='mob'||e.kind==='hero')){let fr=null;
     if((e.T&&(e.T.atlas==='bat'||e.T.atlas==='vamp'))&&e.kind!=='hero'){fr=dollBat(e);if(fr)return fr;e.dx=null;return entFrame0(e);}
     if(e.kind==='hero'&&PXH&&SAVE.cls==='guerreiro'&&SHEETS.pxhero){fr=entFrame0(e);if(e.state==='walk')dollSet(e,{k:'move',g:'hop'});else if(e.state==='idle')dollSet(e,{k:'idle'});return fr;}
     if(e.T&&e.T.atlas){if(DOLLB[e.T.atlas])fr=dollBoss(e);}else if(e.T||e.kind==='hero')fr=dollSheet(e);
     if(fr)return fr;e.dx=null;}
   return entFrame0(e);}
+/* brilho de canalização nas mãos dos magos inimigos (quadros de braços abertos); posições das mãos por quadro/direção na célula de 64px */
+const HANDS=[[[17,42,46,42],[18,40,45,40],[18,39,45,39],[14,41,49,41],[7,33,56,33],[8,28,55,28],[14,41,49,41]],[[23,28,42,39],[21,44,43,41],[22,40,42,38],[20,40,45,40],[18,37,50,34],[18,29,50,29],[20,40,47,39]],[[17,42,46,42],[17,41,46,41],[18,40,45,40],[14,42,49,42],[7,32,56,32],[8,27,55,27],[15,43,48,43]],[[21,39,40,28],[20,41,42,44],[21,38,41,40],[18,40,43,40],[13,34,45,37],[13,29,45,29],[16,39,43,40]]],GLOWK=[0,0,.2,.7,1,1,.35];
+function drawGlow(e,fr,scale,px,py){const k=GLOWK[e.glowF]||0;if(k<=0)return;const row=e.row,hh=HANDS[row]&&HANDS[row][e.glowF];if(!hh)return;const ax=fr[5],ay=fr[6],col=e.T.glow,pu=.75+.25*Math.sin(G.t*22);
+  const pts=[[hh[0],hh[1]],[hh[2],hh[3]]];if(Math.hypot(hh[0]-hh[2],hh[1]-hh[3])<5)pts.length=1;
+  ctx.save();ctx.globalCompositeOperation='lighter';
+  for(let q=0;q<pts.length;q++){const X=px+(pts[q][0]-ax)*scale,Y=py+(pts[q][1]-ay)*scale,R=(9+3*pu)*scale*(.5+.5*k);
+    const g=ctx.createRadialGradient(X,Y,0,X,Y,R);g.addColorStop(0,'rgba(255,255,255,'+(.95*k).toFixed(3)+')');g.addColorStop(.25,hexA(col,.8*k));g.addColorStop(1,hexA(col,0));ctx.fillStyle=g;ctx.beginPath();ctx.arc(X,Y,R,0,7);ctx.fill();
+    ctx.fillStyle=hexA('#ffffff',.9*k);ctx.fillRect(Math.round(X)-1,Math.round(Y)-1,2,2);
+    for(let i=0;i<3;i++){const a=G.t*9+i*2.1+q*1.3,rr=(4+2*Math.sin(G.t*13+i))*scale;ctx.fillStyle=hexA(col,.9*k);ctx.fillRect(Math.round(X+Math.cos(a)*rr),Math.round(Y+Math.sin(a)*rr*.8),1,1);}
+    if(Math.random()<.35*k)VF.pt(e.x+(pts[q][0]-ax)*scale,e.y+(pts[q][1]-ay)*scale,{vy:-rnd(10,30),vx:rnd(-8,8),life:.5,col:col,sz:1.6});}
+  ctx.restore();}
 function drawPaper(e,fr,scale,flash,alpha){const [img,sx,sy,sw,sh,ax,ay]=fr,d=e.dx;let fl=false;
   if(e.T&&e.T.atlas&&!e.T.totem){const h=G.hero;if(h){if(h.x<e.x-10)e.flipX=true;else if(h.x>e.x+10)e.flipX=false;}fl=!!e.flipX;}
   const px=Math.round(e.x-G.cam.x+d.x),py=Math.round(e.y-G.cam.y+d.y);if(px>G.LW+240||px<-240||py>G.LH+240||py<-300)return;
@@ -3609,7 +3620,7 @@ function drawPaper(e,fr,scale,flash,alpha){const [img,sx,sy,sw,sh,ax,ay]=fr,d=e.
   if(alpha<1)ctx.globalAlpha=alpha;ctx.save();
   if(d.sink>0){ctx.beginPath();ctx.rect(px-400,py-900,800,900+2);ctx.clip();}
   ctx.translate(px,py+d.sink*ay*scale*.95);ctx.rotate(d.rot);ctx.scale(fl?-d.sx:d.sx,d.sy);
-  ctx.drawImage(src,a,b,w,hh,Math.round(-ax*scale),Math.round(-ay*scale),w*scale,hh*scale);if(ov)ctx.drawImage(flashC,0,0,sw,sh,Math.round(-ax*scale),Math.round(-ay*scale),sw*scale,sh*scale);ctx.restore();if(alpha<1)ctx.globalAlpha=1;}
+  ctx.drawImage(src,a,b,w,hh,Math.round(-ax*scale),Math.round(-ay*scale),w*scale,hh*scale);if(ov)ctx.drawImage(flashC,0,0,sw,sh,Math.round(-ax*scale),Math.round(-ay*scale),sw*scale,sh*scale);ctx.restore();if(alpha<1)ctx.globalAlpha=1;if(e.glowF>=0)drawGlow(e,fr,scale,px,py);}
 function drawNpcTag(e){
   let sx=e.x-G.cam.x;const sy=e.y-G.cam.y-48;if(e.kind==='vill')return;
   ctx.font='700 8.5px Rubik,sans-serif';ctx.textAlign='center';ctx.lineWidth=2.6;ctx.strokeStyle='rgba(20,10,6,.95)';if(sx<-30||sx>G.LW+30)return;sx=clamp(sx,36,G.LW-36);ctx.strokeText(e.nm,sx,sy);ctx.fillStyle='#ffe69a';ctx.fillText(e.nm,sx,sy);
