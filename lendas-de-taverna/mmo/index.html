@@ -3582,8 +3582,14 @@ function dollSheet(e){const nm=e.kind==='hero'?'hero':e.T.sheet,sh=SHEETS[nm];if
     dollSet(e,{k:'atk',p,lunge:e.kind==='hero'?5:6});return sheetFrame(sh,'atk',e.row,p<.35?1:p<.8?3:4);}
   if(e.state==='walk'){dollSet(e,{k:'move',g:gait});return idleF();}
   dollSet(e,{k:'idle'});return idleF();}
+/* morcego e morcego-vampiro: meio termo — pairam com leve sobe-e-desce e só batem as asas de vez em quando; ataque/habilidades/dano/morte mantêm a animação completa */
+function dollBat(e){const k=e.T.atlas,sh=SHEETS[k];if(!sh)return null;const a=e.act;
+  if(e.dead||e.ch||e.stun>0||e.stagger>0||(a&&(a.skill||e.state==='atk')))return null;
+  const p=(k==='vamp'&&e.fury)?'e_':'',nm=sh.meta.anims[p+'fly']?p+'fly':'fly',n=sh.meta.anims[nm].length,mv=e.state==='walk',cyc=mv?1.1:1.9,ph=((G.t+e.x*.013)%cyc)/cyc,fw=mv?.5:.3,i=ph<fw?Math.floor(ph/fw*n)%n:0;
+  dollSet(e,{k:'idle'});e.dx.y=Math.sin(G.t*3+e.x*.05)*(mv?1.5:2.5);e.dx.rot=Math.sin(G.t*2+e.x*.03)*.03;return atlasFrame(sh,nm,i);}
 function entFrame(e){e.dx=null;
   if(DOLL&&(e.kind==='boss'||e.kind==='mob'||e.kind==='hero')){let fr=null;
+    if((e.T&&(e.T.atlas==='bat'||e.T.atlas==='vamp'))&&e.kind!=='hero'){fr=dollBat(e);if(fr)return fr;e.dx=null;return entFrame0(e);}
     if(e.kind==='hero'&&PXH&&SAVE.cls==='guerreiro'&&SHEETS.pxhero){fr=entFrame0(e);if(e.state==='walk')dollSet(e,{k:'move',g:'hop'});else if(e.state==='idle')dollSet(e,{k:'idle'});return fr;}
     if(e.T&&e.T.atlas){if(DOLLB[e.T.atlas])fr=dollBoss(e);}else if(e.T||e.kind==='hero')fr=dollSheet(e);
     if(fr)return fr;e.dx=null;}
