@@ -3476,7 +3476,7 @@ function ratkingFrame(e){const sh=SHEETS.ratking,a=e.act,F=(n,i)=>atlasFrame(sh,
   if(e.state==='walk')return F('walk',Math.floor(e.animT*11)%N('walk'));
   return F('idle',Math.floor(G.t*6)%N('idle'));}
 /* Guerreiro em pixel art (teste): lados espelhados, frente e costas; uma animação por habilidade. Desliga com ?px=0 */
-const PXH=new URLSearchParams(location.search).get('px')!=='0';
+const PXH=new URLSearchParams(location.search).get('px')==='1';
 const PX_IMP={power:.6,spin:.4,shake:.64,roar:.45,slash:.5};
 function pxAnimOf(h,a){if(!a||a.sk===undefined||a.sk<0)return 'slash';const S=(CLASSES[SAVE.cls]||{skills:[]}).skills[a.sk];if(!S)return 'slash';const id=S[0],t=S[4]&&S[4].t;
   if(/terremoto|tremor/.test(id))return 'shake';if(t==='aoe')return 'spin';if(t==='buff'||t==='shield'||t==='heal')return 'roar';if(t==='single'&&/poderoso|esmaga|execucao/.test(id))return 'power';return 'slash';}
