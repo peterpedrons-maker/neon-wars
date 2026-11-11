@@ -3565,7 +3565,7 @@ const DOLLB={
  gorgash:{g:'waddle',idle:['idle',0],wind:['attack',2],strike:['attack',4],up:['slam',3],down:['slam',6],charge:['charge',2],roar:['roar',4],hurt:['hurt',1],d1:['death',3],d2:['death',7]},
  grunk:{g:'hop',idle:['idle',0],wind:['attack',2],strike:['attack',4],up:['slam',3],down:['slam',6],charge:['charge',2],roar:['roar',3],hurt:['hurt',3],d1:['death',1],d2:['death',2]},
  morvath:{g:'glide',idle:['idle',0],wind:['attack',3],strike:['attack',5],up:['slam',4],down:['slam',6],charge:['charge',3],roar:['roar',4],hurt:['hurt',1],d1:['death',3],d2:['death',5]},
- javcap:{g:'waddle',idle:['idle',0],wind:['windup',0],strike:['strike',0],up:['windup',0],down:['strike',0],charge:['strike',0],roar:['windup',0],hurt:['hurt',0],d1:['death1',0],d2:['death2',0],guard:['guard',0]},
+ javcap:{g:'waddle',idle:['idle',0],wind:['windup',0],strike:['strike',0],up:['windup',0],down:['strike',0],charge:['charge',0],roar:['windup',0],hurt:['hurt',0],d1:['death1',0],d2:['death2',0],guard:['guard',0],spin:['spin',0]},
  skrix:{g:'hop',idle:['idle',0],wind:['attack',2],strike:['attack',4],up:['idle',0],down:['attack',4],charge:['attack',4],roar:['summon',4],hurt:['hurt',1],d1:['death',3],d2:['death',10],totem:['totem',3],curse:['curse',4],summon:['summon',4]},
  ratking:{g:'hop',idle:['idle',0],wind:['windup',0],strike:['strike',0],up:['idle',0],down:['strike',0],charge:['strike',0],roar:['swarm',0],hurt:['hurt',0],d1:['death1',0],d2:['death2',0],swarm:['swarm',0],plague:['plague',0],burrow:['burrow',0]}};
 const DOLL_UNDEAD=/^(esq|skel)/,DOLL_HEAVY=/^(ogro|gobchefe|guardiao|golem)/;
@@ -3598,8 +3598,8 @@ function dollBoss(e){const key=e.T.atlas,B=DOLLB[key];if(!B||!SHEETS[key])return
     if(an==='burrow'){const warn=w+.45-.45,tf=a.dur-.45,SK=.4;let sink=0;if(t<SK)sink=t/SK;else if(a.fxT===undefined&&t>tf){sink=Math.max(0,1-(t-tf)/.4);}else sink=1;
       dollSet(e,{k:'skill',sink,shake:t<SK?1.5:0});return F('burrow');}
     if(an==='guard'){dollSet(e,{k:'skill',shake:.4,sy:-.02});return F('guard');}
-    if(an==='zig'){dollSet(e,{k:e.dash?'dash':'skill',shake:e.dash?0:1.2,sy:e.dash?0:-.04});return F(e.dash?'strike':'wind');}
-    if(an==='spin'){if(t<w){dollSet(e,{k:'skill',shake:p*1.6,sy:-.07*p});return F('wind');}const q=(t-w)/.45;dollSet(e,{k:'skill'});e.dx.rot=Math.min(1,q)*12.566;return F('strike');}
+    if(an==='zig'){dollSet(e,{k:e.dash?'dash':'skill',shake:e.dash?0:1.2,sy:e.dash?0:-.04});return F(e.dash?'charge':'wind');}
+    if(an==='spin'){if(t<w){dollSet(e,{k:'skill',shake:p*1.6,sy:-.07*p});return F('wind');}const q=Math.min(1,(t-w)/.45);dollSet(e,{k:'skill'});e.dx.sx=Math.cos(q*12.566);e.dx.sy=1+.04*Math.sin(q*12.566*2);return F('spin');}
     if(an==='swarm'||an==='plague'||an==='roar'){dollSet(e,{k:'skill',shake:p*1.4,sy:an==='roar'?.04*Math.sin(p*3.14):.03*Math.sin(p*9)});return F(B[an]?an:'roar');}
     dollSet(e,{k:'skill',shake:p});return F('roar');}
   if(e.dash){dollSet(e,{k:'dash'});return F('charge');}
