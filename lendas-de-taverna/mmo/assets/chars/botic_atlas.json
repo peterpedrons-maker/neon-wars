@@ -1,0 +1,1 @@
+{"w": 242, "h": 166, "ax": 139, "ay": 165, "cols": 4, "poses": {"idle": 0, "windup": 1, "throw": 2, "drink": 3, "hurt": 4, "death1": 5, "death2": 6}, "anims": {"idle": [0], "windup": [1], "throw": [2], "drink": [3], "hurt": [4], "death1": [5], "death2": [6], "walk": [0]}}

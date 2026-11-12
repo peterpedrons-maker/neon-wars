@@ -1,0 +1,1 @@
+{"w": 254, "h": 199, "ax": 120, "ay": 165, "cols": 5, "poses": {"idle": 0, "windup": 1, "strike": 2, "guard": 3, "hurt": 4, "death1": 5, "death2": 6, "charge": 7, "spin": 8}, "anims": {"idle": [0], "windup": [1], "strike": [2], "guard": [3], "hurt": [4], "death1": [5], "death2": [6], "charge": [7], "spin": [8], "walk": [0]}}
