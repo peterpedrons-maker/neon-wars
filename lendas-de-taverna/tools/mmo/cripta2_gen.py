@@ -133,6 +133,7 @@ for key,n in AUTO.items():
 for key_,(x0_,y0_,x1_,y1_) in ROOMS.items():
     for (cx,cy_,sx,sy) in((x0_,y0_,1,1),(x1_,y0_,-1,1),(x0_,y1_,1,-1),(x1_,y1_,-1,-1)):
         x,y=cell(cx,cy_,0 if sx>0 else TW-1,0 if sy>0 else TH-1); web(x,y,sx,sy)
+FLOOR_ONLY=im.copy()
 # ---------- plataforma + escada da câmara do Rei
 def stone_slab(x,y,w0=16,h0=15):
     return K['w1b'] if hh(x//w0,y//h0)%2 else K['w1']
@@ -308,6 +309,7 @@ for j in range(mask.shape[0]):
         mask[j,i]=255 if m[min(H-1,j*4+2),min(W-1,i*4+2)] else 0
 Image.fromarray(mask).save(AS+'/zone_cripta2_walk.png')
 im.save(AS+'/zone_cripta2_ground.png')
+FLOOR_ONLY.save(AS+'/zone_cripta2_floor.png')
 # ---------- atlas de props
 names=list(atlas_items); X=Y=RH=0; AW=512; aj={}; items=[]
 for n in names:
@@ -334,6 +336,7 @@ rooms=[
 route=[C(2,8,0,22),C(12,8),C(25,8,24,22),C(36,9),C(46,8,24,22),C(56,9),C(55,15,24,22),C(55,21,24,22),C(55,28),C(45,28,24,22),C(37,28),C(28,28,24,22),C(20,30),[720,YP1+ST_H+30]]
 zone=dict(w=W,h=H,ymin=20,props=props,spawns=[],plaza=[0,0,0,0],road=[],start=[1*TW+30,OY+8*TH+22],boss=[720,YP0+95],gate=[0,0],fx=fx,dark=1,
  crp=dict(rooms=rooms,route=route,plat=dict(x0=PX0,x1=PX1,y0=YP0,y1=YP1,sx0=SX0,sx1=SX1,elev=ELEV,sh=ST_H),walkTo=[8*TW,OY+8*TH+22]))
+zone['grid']=[''.join(r) for r in g];zone['cell']=[TW,TH,OY];zone['decor']=[[k,cx,cy] for k,cx,cy in decor if g[cy][cx]=='#']
 json.dump(zone,open(AS+'/zone_cripta2.json','w'))
 # ---------- imagem do portal (recorte do mapa)
 ov=im.crop((0,0,W,H)).resize((W*2,H*2),Image.NEAREST)
