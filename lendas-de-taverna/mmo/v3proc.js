@@ -91,7 +91,7 @@ const MODELS={
   column(c){const m=Mesh(),cc=new T.Color(c);m.add(new T.CylinderGeometry(.3,.36,1,7),cc,M4(0,.5,0,1,1,1));m.add(new T.BoxGeometry(.8,.08,.8),cc.clone().multiplyScalar(1.1),M4(0,.96,0,1,1,1));return m.geo();},
   rune(c){const m=Mesh();m.add(new T.RingGeometry(.43,.5,40),c,M4(0,.045,0,1,1,1,-Math.PI/2));m.add(new T.RingGeometry(.28,.31,32),c,M4(0,.046,0,1,1,1,-Math.PI/2));for(let i=0;i<5;i++){const a=i*1.2566,b=((i+2)%5)*1.2566;const x1=Math.cos(a)*.36,z1=Math.sin(a)*.36,x2=Math.cos(b)*.36,z2=Math.sin(b)*.36;const l=Math.hypot(x2-x1,z2-z1),ang=Math.atan2(z2-z1,x2-x1);m.add(new T.PlaneGeometry(l,.03),c,M4((x1+x2)/2,.047,(z1+z2)/2,1,1,1,-Math.PI/2).multiply(new T.Matrix4().makeRotationZ(-ang)));}return m.geo();},
 
-  lamp(c){const m=Mesh();m.add(new T.CylinderGeometry(.04,.06,1,6),0x2a2a30,M4(0,.5,0,1,1,1));m.add(new T.BoxGeometry(.3,.4,.3),0x2a2a30,M4(0,1.0,0,1,1,1));m.add(new T.BoxGeometry(.22,.3,.22),0xffe2a0,M4(0,1.0,0,1,1,1));m.add(new T.ConeGeometry(.24,.18,4),0x2a2a30,M4(0,1.28,0,1,1,1).multiply(new T.Matrix4().makeRotationY(Math.PI/4)));return m.geo();},
+  lamp(c){const m=Mesh();m.add(new T.CylinderGeometry(.035,.05,1,6),0x2a2a30,M4(0,.5,0,1,1,1));m.add(new T.CylinderGeometry(.09,.07,.1,6),0x2a2a30,M4(0,.05,0,1,1,1));m.add(new T.BoxGeometry(.3,.05,.3),0x2a2a30,M4(0,.83,0,1,1,1));m.add(new T.BoxGeometry(.34,.36,.34),0xfff0b0,M4(0,1.03,0,1,1,1));[[-.17,-.17],[.17,-.17],[-.17,.17],[.17,.17]].forEach(([x,z])=>m.add(new T.BoxGeometry(.035,.4,.035),0x2a2a30,M4(x,1.03,z,1,1,1)));m.add(new T.ConeGeometry(.27,.2,4),0x2a2a30,M4(0,1.3,0,1,1,1).multiply(new T.Matrix4().makeRotationY(Math.PI/4)));return m.geo();},
   bench(c){const m=Mesh(),cc=new T.Color(c);m.add(new T.BoxGeometry(1,.1,.45),cc,M4(0,.45,0,1,1,1));m.add(new T.BoxGeometry(1,.4,.06),cc.clone().multiplyScalar(.85),M4(0,.75,-.2,1,1,1));[-.42,.42].forEach(x=>m.add(new T.BoxGeometry(.07,.45,.4),0x2a2a30,M4(x,.22,0,1,1,1)));return m.geo();},
   planter(c){const m=Mesh();m.add(new T.BoxGeometry(1,.5,.6),0x6a4a2a,M4(0,.25,0,1,1,1));m.add(new T.BoxGeometry(.94,.1,.54),0x3a2a1a,M4(0,.52,0,1,1,1));for(let i=0;i<6;i++){m.add(new T.IcosahedronGeometry(.09,0),new T.Color().setHSL(hash(i,1,1),.7,.6),M4(-.38+i*.15,.62+hash(i,2,2)*.1,(hash(i,3,3)-.5)*.3,1,1,1));}return m.geo();},
 
@@ -116,7 +116,7 @@ const MODELS={
   sign(c){const m=Mesh();m.add(new T.CylinderGeometry(.04,.05,1,5),0x4a3220,M4(0,.5,0,1,1,1));m.add(new T.BoxGeometry(.6,.14,.04),0x7a5a30,M4(.2,.88,0,1,1,1));m.add(new T.BoxGeometry(.55,.14,.04),0x7a5a30,M4(-.18,.68,0,1,1,1));return m.geo();},
   stall(c){const m=Mesh();[[-.45,-.4],[.45,-.4],[-.45,.4],[.45,.4]].forEach(([x,z])=>m.add(new T.CylinderGeometry(.03,.03,.9,5),0x5a3a20,M4(x,.45,z,1,1,1)));
     for(let i=0;i<6;i++)m.add(new T.BoxGeometry(.18,.04,1.0),i%2?0xf2ecd8:0xb83a30,M4(-.43+i*.172,.98-Math.abs(i-2.5)*0.0,0,1,1,1,.0,0));m.add(new T.BoxGeometry(.96,.4,.4),0x7a5230,M4(0,.2,.1,1,1,1));return m.geo();},
-  well(c){const m=Mesh();m.add(new T.CylinderGeometry(.42,.46,.42,10),0x8a8a90,M4(0,.21,0,1,1,1));m.add(new T.CylinderGeometry(.3,.3,.02,10),0x1a2a3a,M4(0,.4,0,1,1,1));[-.38,.38].forEach(x=>m.add(new T.BoxGeometry(.06,.8,.06),0x4a3220,M4(x,.7,0,1,1,1)));m.add(new T.ConeGeometry(.62,.32,4),0x8a4a30,M4(0,1.28,0,1,1,1).multiply(new T.Matrix4().makeRotationY(Math.PI/4)));m.add(new T.CylinderGeometry(.03,.03,.78,5),0x4a3220,M4(0,1.0,0,1,1,1,0,1.5708));return m.geo();},
+  well(c){const m=Mesh(),st=new T.Color(0x8a8c92);for(let i=0;i<10;i++){const a=i/10*6.283;m.add(new T.BoxGeometry(.3,.34,.2),st.clone().multiplyScalar(.85+hash(i,1,1)*.3),M4(Math.cos(a)*.38,.17,Math.sin(a)*.38,1,1,1).multiply(new T.Matrix4().makeRotationY(-a+1.5708)));}m.add(new T.CylinderGeometry(.3,.3,.02,10),0x15212c,M4(0,.3,0,1,1,1));[-.4,.4].forEach(x=>m.add(new T.BoxGeometry(.06,.75,.06),0x4a3220,M4(x,.62,0,1,1,1)));m.add(new T.BoxGeometry(1.1,.06,.06),0x4a3220,M4(0,.98,0,1,1,1));[-1,1].forEach(s=>m.add(new T.BoxGeometry(.72,.04,1.0),0x8a4a30,M4(0,1.12,s*.2,1,1,1,s*.55,0).multiply(new T.Matrix4().makeRotationX(s*.55))));m.add(new T.CylinderGeometry(.02,.02,.5,4),0x4a3220,M4(0,.74,0,1,1,1));m.add(new T.CylinderGeometry(.09,.07,.12,7),0x6a4a2a,M4(0,.5,0,1,1,1));return m.geo();},
   pebble(c){const m=Mesh();m.add(jitter(new T.DodecahedronGeometry(.2,0),.4,1),c,M4(0,.06,0,1,.55,1));return m.geo();}
 };
 MODELS.slime=MODELS.blood=MODELS.puddle;
@@ -216,10 +216,11 @@ P.fire=function(add,x,z,s,kind){
 const DIMS={bench:16,planter:16,cabinet:26,potshelf:26,longcounter:30,plants:18,window:6,wallseg:16,drape:6,rug:(w,h)=>h*1.3,forge:46,table:56,stall:44,sign:8,flag:8,well:60,barrelpile:36,hedge:(w,h)=>h*.8,trophy:14};
 const TOWNMAP={'7721':'lamp','d6ee':'lamp','0ed4':'lamp','5a6a':'lamp','52e1':'lamp','c15b':'barrelpile','4ce7':'barrelpile','8291':'bench','769a':'bench','9304':'flag','7c7e':'flag','63e3':'planter','afca':'planter','8a8b':'sign','df9b':'stall','15eb':'well','32e6':'hedge','718d':'hedge'};
 const INMAP={'5dfc':'cabinet','0dd8':'cabinet','ae14':'potshelf','f586':'potshelf','2774':'potshelf','adee':'longcounter','6bde':'plants','1168':'window','5d78':'trophy','ecbe':'wallseg','a719':'wallseg','0367':'wallseg','e04f':'wallseg','df00':'drape','3820':'drape','64c7':'bench','dca1':'rug','1c44':'forge','fbc2':'forge','f1a3':'lamp','5b39':'table','a94a':'table'};
-function kindTown(a,rgb,flat,id){const mk0=TOWNMAP[(id||'').slice(0,4)];if(mk0)return (mk0==='bench'||mk0==='planter')?mk0:null;const [,,w,h]=a,[r,g,b]=rgb,mx=Math.max(r,g,b),mn=Math.min(r,g,b),sat=(mx-mn)/(mx||1),green=g>r+6&&g>=b-4,brown=r>g+8&&g>=b-6&&sat>.22;
+function kindTown(a,rgb,flat,id){const mk0=TOWNMAP[(id||'').slice(0,4)];if(mk0)return (window.V3_HAND||mk0==='bench'||mk0==='planter')?mk0:null;const [,,w,h]=a,[r,g,b]=rgb,mx=Math.max(r,g,b),mn=Math.min(r,g,b),sat=(mx-mn)/(mx||1),green=g>r+6&&g>=b-4,brown=r>g+8&&g>=b-6&&sat>.22;
   if(flat)return rgb[1]>rgb[0]+6?'tuft':'flower';
   if(h>=100&&w>=90)return (b>=r-4)?'frost':(sat<.5?'dead':'broad');
   if(h<=70&&w>=18&&green&&sat>.18)return 'bush';
+  if(window.V3_HAND&&w<=24&&h>=50)return 'lamp';
   return null;}
 function kindIn(a,rgb,flat,id){return null;const mk0=INMAP[(id||'').slice(0,4)];if(mk0)return mk0;const [,,w,h]=a,[r,g,b]=rgb,sat=(Math.max(r,g,b)-Math.min(r,g,b))/(Math.max(r,g,b)||1),green=g>r+6&&g>=b-4;
   if(flat)return null;if(h<=70&&green&&sat>.18)return 'bush';if(w<=22&&h>=60)return 'lamp';return kindDg(a,rgb,false);}
@@ -249,7 +250,7 @@ P.forest=function(env,add,rnd,items,theme){const DG=theme==='dungeon'||theme==='
       else if(k==='puddle'||k==='twig'){H=1;R=Math.max(.3,Math.max(w,h*1.2)*U*.5);}else if(k==='bones'){H=1;R=Math.max(.25,Math.max(w,h*1.2)*U*.3);}
       else{H=Math.max(.35,h*U*2.2);R=Math.max(.5,w*U*2);}
       e.set(0,(k==='tent'||k==='drums'||DM?0:r*6.283),0);q.setFromEuler(e);const sc=k==='totem'||k==='post'||DM?1:.9+r*.25;
-      const sx=k==='post'?1:(k==='totem'?H*.45:k==='lamp'?Math.max(.55,R*2*2.4):R*2*sc),sz=DM?(typeof DM==='function'?DM(w,h):DM)*U:(k==='post'?1:sx);m4.compose(new T.Vector3(it.x*U,0,it.y*U),q,new T.Vector3(sx,H*sc,sz));im.setMatrixAt(i,m4);
+      const sx=k==='post'?1:(k==='totem'?H*.45:k==='lamp'?Math.max(.4,R*2*1.5):R*2*sc),sz=DM?(typeof DM==='function'?DM(w,h):DM)*U:(k==='post'?1:sx);m4.compose(new T.Vector3(it.x*U,0,it.y*U),q,new T.Vector3(sx,H*sc,sz));im.setMatrixAt(i,m4);
       const c0=new T.Color(k==='flower'?`hsl(${Math.round(hash(i,3,3)*360)},70%,62%)`:'#ffffff');if(k!=='flower')c0.multiplyScalar(.88+hash(i,5,5)*.22);else c0.convertSRGBToLinear();im.setColorAt(i,c0);});
     im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;im.frustumCulled=false;add(im);}
   P.lastRest=rest;P.lastKinds=Object.fromEntries(Object.entries(buckets).map(([k,v])=>[k,v.length]));
@@ -270,6 +271,7 @@ P.palCripta={f1:[78,106,122],f2:[62,88,104],f3:[40,58,72],mortar:[22,32,42],bw:3
 P.palEsgoto={f1:[64,84,66],f2:[50,70,58],f3:[34,52,44],mortar:[18,28,24],bw:32,bh:24,moss:[52,92,40],w1:[86,130,50],w2:[50,86,34],shore:[34,52,36]};
 P.palCripta2={f1:[70,92,112],f2:[54,76,98],f3:[34,50,70],mortar:[18,26,38],bw:40,bh:30,stain:[60,24,30],w1:[40,70,90],w2:[20,40,60]};
 P.palCidade={g1:[62,128,36],g2:[78,144,44],g3:[48,110,30],d1:[116,86,54],d2:[132,100,62],d3:[96,70,44],st:[126,114,98],sm:[72,64,54],shore:[150,130,90],w1:[70,140,170],w2:[34,84,120]};
+P.MODELS=MODELS;P.hash=hash;P.mix=mix;P.fbm=fbm;
 P.palMadeira={base:'#6a4a2a',p:[148,104,60]};
 P.palFloresta={g1:[40,86,34],g2:[56,106,42],g3:[30,68,30],d1:[116,86,54],d2:[132,100,62],d3:[96,70,44],st:[128,128,120],sm:[70,70,66],shore:[150,130,90],w1:[70,140,170],w2:[34,84,120]};
 })();
