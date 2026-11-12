@@ -14,6 +14,15 @@ WP=[wl('parede_1'),wl('parede_1'),wl('parede_2'),wl('parede_3'),wl('parede_4')]
 tw,th=FL[0].size;wh=WP[0].height;cap_h=int(wh*.2);side=34;F=74
 arch=sc(L('porta_1'));aw,ah=arch.size;leaf=sc(L('porta_2'))
 ar=np.array(arch);opn=(ar[:,:,:3].max(2)<14)&(ar[:,:,3]>0);ys,xs=np.where(opn);ox0,ox1,oy0,oy1=xs.min(),xs.max(),ys.min(),ys.max()
+# vão: chão iluminado (mais escuro no alto, claro embaixo) em vez de preto
+_t=Image.new('RGBA',(aw,ah))
+for _i in range(0,aw,tw):
+    for _j in range(0,ah,th):_t.alpha_composite(FL[0],(_i,_j))
+_t=np.array(_t).astype(float);_g=(0.62+0.5*np.linspace(0,1,ah)**1.2)[:,None,None]
+_t[:,:,:3]=np.clip(_t[:,:,:3]*_g*1.08+np.array([8,6,0]),0,255)
+_ar=ar.copy().astype(float);_ar[opn]=_t[opn]
+arch_lit=Image.fromarray(_ar.astype('uint8'),'RGBA')
+_fr=ar.copy();_fr[opn]=[0,0,0,0];arch_frame=Image.fromarray(_fr,'RGBA')
 D=lambda n,h:(lambda im:im.resize((max(1,round(im.width*h/im.height)),h),Image.LANCZOS))(Image.open(f'decor/{n}.png').convert('RGBA'))
 # layout (de baixo para cima): (nome, colunas, linhas, deslocamento do corredor de saída em colunas)
 ROOMS=[('atrio',7,4,0),('guardioes',6,5,-1),('armadilhas',9,3,1),('altares',6,5,0),('cofre',4,3,-1),('camara',9,7,None)]
@@ -48,25 +57,26 @@ for p in placed:
         cx=p['door_cx'];cols=[(cx-tw//2)]
         for j in range(r):put(bg,CARP if j<r-1 else CAP,cols[0],fy+j*th)
     # parede norte (faixa) com arco
-    cur=x0-side
+    cur=x0
     dx=p['door_cx']-aw//2 if p['off'] is not None else None
-    while cur<x0+rw+side:
+    while cur<x0+rw:
         w=random.choice(WP)
         if dx is not None and cur<dx+aw and cur+w.width>dx:
             gap=dx-cur
             if gap>0:put(bg,w.crop((0,0,gap,w.height)),cur,p['band_y'])
-            put(bg,arch,dx,p['band_y']+wh-ah);cur=dx+aw;continue
-        put(bg,w.crop((0,0,min(w.width,x0+rw+side-cur),w.height)),cur,p['band_y']);cur+=w.width
+            put(bg,arch_lit,dx,p['band_y']+wh-ah);cur=dx+aw;continue
+        put(bg,w.crop((0,0,min(w.width,x0+rw-cur),w.height)),cur,p['band_y']);cur+=w.width
     # laterais (capa rotacionada)
-    capstrip=WP[0].crop((0,0,WP[0].width,cap_h)).resize((fh+cap_h,side)).rotate(90,expand=True).crop((0,0,side,fh))
-    put(bg,capstrip,x0-side,fy);put(bg,capstrip.transpose(Image.FLIP_LEFT_RIGHT),x0+rw,fy)
+    LH=fh+wh
+    capstrip=WP[0].crop((0,0,WP[0].width,cap_h)).resize((LH,side)).rotate(90,expand=True).crop((0,0,side,LH))
+    put(bg,capstrip,x0-side,p['band_y']);put(bg,capstrip.transpose(Image.FLIP_LEFT_RIGHT),x0+rw,p['band_y'])
     # parede sul alta na camada da frente, com vão para o corredor (exceto a primeira sala)
     bottom=fy+fh;gx=None
     if p['i']>0:
         prev=placed[p['i']-1];gx=prev['door_cx']
     cur=x0-side
     while cur<x0+rw+side:
-        w=random.choice(WP[:3]+WP[4:])
+        w=random.choice([WP[0],WP[0],WP[3]])
         for sx_ in range(0,w.width,1):pass
         seg=w.crop((0,0,min(w.width,x0+rw+side-cur),w.height))
         if gx is not None and cur<gx+tw//2 and cur+seg.width>gx-tw//2:
@@ -147,7 +157,8 @@ for tx,ty in torches:
 glow=glow.filter(ImageFilter.GaussianBlur(26));bg.alpha_composite(glow)
 # vinheta de profundidade no chão (escurece perto das paredes) e leve névoa fria
 arr=np.array(bg).astype(float)
-json.dump({'W':CW,'H':H,'torches':torches,'rooms':[{k:(int(v) if isinstance(v,(int,np.integer)) else v) for k,v in p.items() if v is not None} for p in placed],'props':[(n,int(x),int(b),int(h)) for n,x,b,h in props]},open('cripta_layout.json','w'))
+arch_frame.save('cripta_arco_frame.png');arch_lit.save('cripta_arco_lit.png')
+json.dump({'W':CW,'H':H,'arch':[aw,ah,int(ox0),int(ox1),int(oy0),int(oy1)],'torches':torches,'rooms':[{k:(int(v) if isinstance(v,(int,np.integer)) else v) for k,v in p.items() if v is not None} for p in placed],'props':[(n,int(x),int(b),int(h)) for n,x,b,h in props]},open('cripta_layout.json','w'))
 bg.save('cripta_bg.png');front.save('cripta_front.png');np.save('cripta_walk.npy',walk)
 ov=np.array(bg.convert('RGB')).copy();ov[walk]=(ov[walk]*.6+np.array([0,200,60])*.4).astype('uint8');Image.fromarray(ov).resize((CW//3,H//3)).save('cripta_walk_ov.png')
 comp=bg.copy();comp.alpha_composite(front);comp.convert('RGB').save('cripta_mapa_completo.png')
