@@ -226,7 +226,7 @@ function drawEnt(sc,e,frame){
         if(ra&&typeof roarAura==='function')roarAura(e,S0/2,S0-12,1);}
     }catch(err){}
     ctx=oc;G.cam.x=ox;G.cam.y=oy;G.LW=ow;G.LH=oh;r.tex.needsUpdate=true;}
-  const el=(G.crp&&typeof crpElev==='function'?crpElev(e):0)*U/CT,zz=((e.T&&e.T.fly)?(e.zoff||0)*.4:0)*U/CT;   /* sem pulos: os sprites só deslizam pelo chão (voadores flutuam pouco) */
+  const el=(G.crp&&typeof crpElev==='function'?crpElev(e):0)*U/CT,zz=(e.zoff||0)*U/CT;   /* andar e esquivar só deslizam; saltos de habilidade (zoff) continuam */
   r.root.position.set(e.x*U,el,e.y*U);r.me.position.y=zz;if(r.gh)r.gh.position.y=zz;
   const sw=e.kind==='hero'?22:e.kind==='boss'?40:(e.T?e.T.sw:22),sr=(e.T&&e.T.shr)||sw*.62,fl=zz?Math.min(.6,zz*CT/U/220):0,bs=sr*3.1*U/1.3*(1-fl);
   r.bl.scale.set(bs,bs,1);r.bl.material.opacity=Math.min(1,al*(1-fl)*(sc.mood==='dark'?.9:1));
