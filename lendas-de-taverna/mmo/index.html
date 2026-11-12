@@ -940,7 +940,8 @@ const BOSS_RAT={nome:'Rei dos Ratos',rk:1,atlas:'ratking',rad:26,shr:40,ent:'dro
   msk:[{id:'swarm',hp:1,cd:11,warn:1.0,wt:3},
        {id:'plague',hp:1,cd:9,warn:1.15,r:58,mult:.9,st:['veneno',.9,6,.025],wt:3,max:340,pool:6},
        {id:'burrow',hp:.7,cd:12.5,warn:1.1,r:60,mult:2.2,st:['atordoado',.6,1,0],wt:2,min:90}]};
-const bossDef=z=>{const f=famOf(z===undefined?G.zoneLv:z);return f==='goblin'?BOSS_GOB:f==='esq'?BOSS_ESQ:f==='rato'?BOSS_RAT:BOSS;};
+const BOSS_CRIP={...BOSS_ESQ,nome:'Rei Esquecido',hp:2700,atk:13.5,xp:340,gold:[110,190],aura:['#a070ff','#efe0ff'],ent:null,scale:1.05};
+const bossDef=z=>{z=z===undefined?G.zoneLv:z;if(z>=5)return BOSS_CRIP;const f=famOf(z);return f==='goblin'?BOSS_GOB:f==='esq'?BOSS_ESQ:f==='rato'?BOSS_RAT:BOSS;};
 /* ===== itens ÚNICOS (nomeados, com efeito próprio): por área; chefes e mini-chefes têm os seus ===== */
 const UNIQUES=[
  /* chefes: cada um tem os seus (bk = chefe); mini-chefes: src = tipo do monstro */
@@ -1046,8 +1047,8 @@ async function loadSheet(name,atkKind){
   const anc=[0,1,2,3].map(r=>anchorOf(walk,0,r*64,64,64));
   SHEETS[name]={walk,hurt,atk,cell,frames,anc,stunF:(name==='goblin2'||(name==='goblin'&&location.search.indexOf('gob2')>=0))?1:3};
 }
-const areaName=m=>(m||G.map)==='zone_esgoto'?'Esgotos de Brumavale':(m||G.map)==='zone_cripta'?'Catacumbas de Brumavale':(m||G.map)==='zone1_gob'?'Floresta dos Goblins':'Floresta de Brumavale';
-const zoneMap=z=>{const f=famOf(z);return f==='goblin'?'zone1_gob':f==='esq'?'zone_cripta':f==='rato'?'zone_esgoto':'zone1';};
+const areaName=m=>(m||G.map)==='zone_cripta2'?'Cripta do Rei Esquecido':(m||G.map)==='zone_esgoto'?'Esgotos de Brumavale':(m||G.map)==='zone_cripta'?'Catacumbas de Brumavale':(m||G.map)==='zone1_gob'?'Floresta dos Goblins':'Floresta de Brumavale';
+const zoneMap=z=>{if(z>=5)return 'zone_cripta2';const f=famOf(z);return f==='goblin'?'zone1_gob':f==='esq'?'zone_cripta':f==='rato'?'zone_esgoto':'zone1';};
 function zoneAutoFx(z){if(z._afx)return z._afx;const L=(z.fx||[]).slice();if(!(z.fx||[]).some(e=>e.k==='fire'))for(const p of z.props)if(p.t==='fire')L.push({k:'fire',x:p.x,y:p.y-8,spr:1,r:50});return z._afx=L;}
 function useMap(n,quiet){const m=MAPS[n];ZONE=m.zone;ATLAS=m.atlas;ATLAS_J=m.atlasJ;GROUND=m.ground;WATER=m.water;WCW=m.wcw;NAV=m.nav||null;WL=m.wl||null;WSP=m.wsp||[];WRX=m.wrx||null;GCTX=m.gx||null;G.prints=[];buildLights(zoneAutoFx(m.zone));G.map=n;MM.key='';if(!quiet&&typeof AMB!=="undefined")AMB.setup(zoneAutoFx(m.zone),n==='zone1_gob'?'gob':n==='zone1'?'forest':null);}
 async function loadMap(name,zf,af,gf,pf){
@@ -1056,8 +1057,41 @@ async function loadMap(name,zf,af,gf,pf){
 }
 let STAGE2=null,STAGE2_OK=false;
 /* carregamento em 2 estágios: o essencial (cidade, classes, NPCs) libera os botões do título; floresta, interiores, monstros e ícones chegam em segundo plano */
-function prepMap(name){useMap(name,true);buildSolids();buildWater();MAPS[name].nav=buildNav();MAPS[name].water=WATER;MAPS[name].wcw=WCW;MAPS[name].wl=WL;MAPS[name].wsp=WSP;MAPS[name].wrx=WRX;MAPS[name].gx=GCTXB;
+function prepMap(name){useMap(name,true);buildSolids();if(name==='zone_cripta2'){crpPrep(name);return;}buildWater();MAPS[name].nav=buildNav();MAPS[name].water=WATER;MAPS[name].wcw=WCW;MAPS[name].wl=WL;MAPS[name].wsp=WSP;MAPS[name].wrx=WRX;MAPS[name].gx=GCTXB;
   if(name==='zone1'||name==='zone1_gob'||name==='zone_cripta'||name==='zone_esgoto')fixSpawns();else{ZONE.start=freeSpot(ZONE.start[0],ZONE.start[1]);if(ZONE.portal)ZONE.portal.stand=freeSpot(ZONE.portal.stand[0],ZONE.portal.stand[1]);if(ZONE.doors)ZONE.doors.forEach(d=>{const f=freeSpot(d.x,d.y+10);d.sx=f[0];d.sy=f[1];});}}
+
+/* ===== CRIPTA DO REI ESQUECIDO: dungeon linear de salas (mapa pixel art gerado por tools/mmo/cripta2_gen.py) ===== */
+function crpPrep(name){
+  const M=MAPS[name],c=document.createElement('canvas');c.width=GROUND.width;c.height=GROUND.height;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(GROUND,0,0);GCTXB=x;
+  const mk=M.mask,mc=document.createElement('canvas');mc.width=mk.width;mc.height=mk.height;const mx=mc.getContext('2d');mx.drawImage(mk,0,0);const d=mx.getImageData(0,0,mk.width,mk.height).data;
+  WCW=mk.width;WATER=new Uint8Array(mk.width*mk.height);for(let i=0;i<WATER.length;i++)WATER[i]=d[i*4]>128?1:0;WL=null;WSP=[];WRX=null;WSH=null;WRP=[];
+  ZONE.start=freeSpot(ZONE.start[0],ZONE.start[1]);
+  M.nav=buildNav();M.water=WATER;M.wcw=WCW;M.wl=null;M.wsp=[];M.wrx=null;M.gx=GCTXB;
+}
+function crpElev(e){const C=G.crp;if(!C)return 0;const p=ZONE.crp.plat;if(e.x<p.x0||e.x>p.x1||e.y<p.y0)return 0;if(e.y<=p.y1)return p.elev;
+  if(e.y<p.y1+p.sh&&e.x>=p.sx0&&e.x<=p.sx1)return p.elev*(1-(e.y-p.y1)/p.sh);return 0;}
+function crpInit(){
+  G.mobs=[];bossAlert(false);G.boss=null;G.mp=[];G.ev=null;G.chest=null;G.evT=1e9;G.kills=0;G.phase='farm';G.bossWoke=false;G.dtm=0;G.bossRoll=1e9;G.projs=[];
+  G.crp={sp:{},wi:1,intro:3.4,room:'',won:false};
+}
+function crpSpawnPack(r){
+  r.mobs.forEach((p,i)=>{const f=freeSpot(p[0],p[1]),m=mkMob(varOf(5,i+(r.id.charCodeAt(0))),f[0],f[1],-1);m.respawn=1e9;m.hunt=true;G.mobs.push(m);
+    VF.puff(m.x,m.y,6,['#6a7a90','#3a4658'],{r:14,up:12,sz:1.4,a:.6});});
+  if(r.mobs.length)sfx('sk_grito',.25);
+}
+function crpTick(dt){
+  const C=G.crp,h=G.hero;if(!C||G.scene!=='dungeon'||!h)return;
+  if(C.intro>0){C.intro-=dt;}
+  for(const r of ZONE.crp.rooms){
+    if(h.x<r.x0||h.x>r.x1||h.y<r.y0||h.y>r.y1)continue;
+    if(C.room!==r.id){C.room=r.id;if(C.intro<=0)banner(r.nm,'','zone');}
+    if(!C.sp[r.id]){C.sp[r.id]=1;
+      if(r.boss){const b=G.boss=mkBoss(r.boss[0],r.boss[1]);b.row=1;b.noRespawn=1;G.phase='boss';bossAlert(true);tenseMusic();sfx('sk_grito',.5);VF.shake(.3);chat('O Rei Esquecido desperta…',2);}
+      else crpSpawnPack(r);}
+  }
+}
+function crpWin(){const C=G.crp;if(!C||C.won)return;C.won=true;banner('Cripta concluída','O Rei Esquecido descansa','zone');
+  setTimeout(()=>{if(G.crp&&G.scene==='dungeon')enterTown(false);},5200);}
 async function loadAll(){
   const core=[fetch('assets/look2/look2.json').then(r=>r.json()).then(j=>{LOOKM=j;}),
     loadMap('town','assets/town.json','assets/town_atlas.json','assets/town_ground.png','assets/town_atlas.png')];
@@ -1066,7 +1100,7 @@ async function loadAll(){
   await Promise.all(core);
   prepMap('town');useMap('town');
   STAGE2=(async()=>{
-    const jobs=[loadMap('zone1','assets/zone1.json','assets/atlas.json','assets/zone1_ground.png','assets/atlas.png'),loadMap('zone1_gob','assets/zone1_gob.json','assets/atlas_gob.json','assets/zone1_gob_ground.png','assets/atlas_gob.png'),loadMap('zone_cripta','assets/zone_cripta.json','assets/atlas_cripta.json','assets/zone_cripta_ground.png','assets/atlas_cripta.png'),loadMap('zone_esgoto','assets/zone_esgoto.json','assets/atlas_esgoto.json','assets/zone_esgoto_ground.png','assets/atlas_esgoto.png'),...['mer','fer','alq','mes','cof','lei'].map(k=>loadMap('int_'+k,'assets/int_'+k+'.json','assets/int_atlas.json','assets/int_'+k+'_ground.png','assets/int_atlas.png'))];
+    const jobs=[loadMap('zone1','assets/zone1.json','assets/atlas.json','assets/zone1_ground.png','assets/atlas.png'),loadMap('zone1_gob','assets/zone1_gob.json','assets/atlas_gob.json','assets/zone1_gob_ground.png','assets/atlas_gob.png'),loadMap('zone_cripta','assets/zone_cripta.json','assets/atlas_cripta.json','assets/zone_cripta_ground.png','assets/atlas_cripta.png'),loadMap('zone_cripta2','assets/zone_cripta2.json','assets/atlas_cripta2.json','assets/zone_cripta2_ground.png','assets/atlas_cripta2.png').then(()=>loadImg('assets/zone_cripta2_walk.png')).then(im=>{MAPS.zone_cripta2.mask=im;}),loadMap('zone_esgoto','assets/zone_esgoto.json','assets/atlas_esgoto.json','assets/zone_esgoto_ground.png','assets/atlas_esgoto.png'),...['mer','fer','alq','mes','cof','lei'].map(k=>loadMap('int_'+k,'assets/int_'+k+'.json','assets/int_atlas.json','assets/int_'+k+'_ground.png','assets/int_atlas.png'))];
     for(const k of ['goblin','esqueleto','javali','rato','ogro','gobchefe','skelchefe','xama','esqfogo','esqgelo'])jobs.push(loadSheet(k,'slash'));jobs.push(loadSheet('gobarq','shoot'));jobs.push(loadSheet('esqmago','spellcast'));for(const k of ['javguer','javbruto','ratass'])jobs.push(loadSheet(k,'slash'));for(const k of ['javarq','ratarq'])jobs.push(loadSheet(k,'shoot'));for(const k of ['javmago','ratalq'])jobs.push(loadSheet(k,'spellcast'));jobs.push(loadAtlasBoss('grunk'));jobs.push(loadAtlasBoss('vamp'));jobs.push(loadAtlasBoss('bat'));jobs.push(loadAtlasBoss('skrix'));jobs.push(loadAtlasBoss('morvath'));jobs.push(loadAtlasBoss('gorgash'));jobs.push(loadAtlasBoss('ratking'));jobs.push(loadAtlasBoss('javcap'));jobs.push(loadAtlasBoss('botic'));jobs.push(loadAtlasBoss('pxhero'));jobs.push(loadAtlasBoss('totem'));
     for(const k of new Set(CLS_ORDER.flatMap(c=>CLASSES[c].skills.map(s=>s[0]))))jobs.push(loadImg(skImg(k)).then(im=>{IMG[k]=im;}).catch(()=>{IMG[k]=null;}));
     for(const n of ['i_espada','i_machado','i_martelo','i_adaga','i_cajado','i_cetro','i_arco','i_elmo','i_capuz','i_couraca','i_cota','i_colete','i_manto','i_tunica','i_botas','i_sandalias','i_colar','i_pingente','i_talisma','i_anel','i_luvas','i_manoplas','i_escudo','i_escudog','i_garra','i_livro','i_gema','i_bracelete','i_coroa'])jobs.push(loadImg('../assets/ico/'+n+'.png').then(im=>{IMG_ICO[n]=im;}).catch(()=>{IMG_ICO[n]=null;}));
@@ -1510,7 +1544,7 @@ let DEMO=null,DEMO_T=0;
 const DEMO_SH={};
 function demoSheet(){const key=selCls+JSON.stringify(LK);if(DEMO_SH[key])return DEMO_SH[key];lookSheet(selCls,LK,true).then(sh=>{DEMO_SH[key]=sh;if(DEMO&&DEMO.cls===selCls)DEMO.sh=sh;});return null;}
 function startDemo(i){const C=CLASSES[selCls],S=C.skills[i];DEMO={i,S,cls:selCls,t:0,next:.35,act:null,sh:demoSheet(),dm:{x:0,y:0,kind:'mob',demo:true,hp:9999,maxhp:9999,def:1,dead:false,flash:0}};
-  GX.clear();G.zones=[];G.fx=[];G.projs=[];G.floats=[];G.shake=0;const ranged=C.atk_!=='slash',o=S[4];DEMO.dm.x=(ranged||o.t==='meteor'||o.t==='multi')?70:2;DEMO.dh={x:-40,y:0};
+  G.crp=null;GX.clear();G.zones=[];G.fx=[];G.projs=[];G.floats=[];G.shake=0;const ranged=C.atk_!=='slash',o=S[4];DEMO.dm.x=(ranged||o.t==='meteor'||o.t==='multi')?70:2;DEMO.dh={x:-40,y:0};
   const d=$('cdemo');d.querySelector('b').textContent=S[1]+(S[4].sub?'':'');d.querySelector('.dd2').innerHTML=S[4].d+(S[4].sub?` · exclusiva ${clsIc(selCls,14,S[4].sub)} ${SUBS[selCls].find(x=>x.id===S[4].sub).nome}`:'');d.classList.add('on');$('cname-tag').style.visibility='hidden';
   document.querySelectorAll('#csk img,#csub img').forEach(e=>e.classList.toggle('on',+e.dataset.d===i));}
 function stopDemo(){DEMO=null;GX.clear();G.zones=[];const nt=$('cname-tag');if(nt)nt.style.visibility='visible';G.fx=[];G.projs=[];$('cdemo')&&$('cdemo').classList.remove('on');document.querySelectorAll('#csk img,#csub img').forEach(e=>e.classList.remove('on'));}
@@ -1774,14 +1808,14 @@ const FAMV={goblin:['goblin','goblin','gobarq','xama','goblin'],esq:['esq','esq'
 const varOf=(z,i)=>{const a=FAMV[famOf(z)];return a[((i%a.length)+a.length)%a.length];};
 /* progressão definida: 4 dungeons, uma após a outra. Para entrar na seguinte é preciso derrotar o chefe da anterior e ter o nível mínimo. */
 /* pc = poder de combate recomendado (calibrado por simulação: PC com o qual o herói de equipamento médio vence o chefe com folga; tools/mmo/sim/pc_calib.cjs + boss.cjs) */
-const DUN=[{id:1,nm:'Floresta dos Goblins',unlock:1,pc:600},{id:2,nm:'Catacumbas de Brumavale',unlock:8,pc:900},{id:3,nm:'Floresta de Brumavale',unlock:13,pc:1200},{id:4,nm:'Esgotos de Brumavale',unlock:18,pc:1400}];
+const DUN=[{id:1,nm:'Floresta dos Goblins',unlock:1,pc:600},{id:2,nm:'Catacumbas de Brumavale',unlock:8,pc:900},{id:3,nm:'Floresta de Brumavale',unlock:13,pc:1200},{id:4,nm:'Esgotos de Brumavale',unlock:18,pc:1400},{id:5,nm:'Cripta do Rei Esquecido',unlock:23,pc:1650}];
 const dgLv=z=>[1+(z-1)*BAL.zoneLv,8+(z-1)*BAL.zoneLv];   // faixa de nível dos monstros da dungeon z
-function dgUnlocked(z){if(z<=1)return true;const d=DUN[z-1];return !!(d&&SAVE.dgDone&&SAVE.dgDone[z-1]&&SAVE.lv>=d.unlock);}
+function dgUnlocked(z){if(z<=1)return true;if(z===5&&/[?&]cripta/.test(location.search))return true;const d=DUN[z-1];return !!(d&&SAVE.dgDone&&SAVE.dgDone[z-1]&&SAVE.lv>=d.unlock);}
 function dgRefresh(){let m=1;for(let z=2;z<=DUN.length;z++)if(dgUnlocked(z))m=z;if(m>(SAVE.zoneMax||1)){SAVE.zoneMax=m;chat('Nova dungeon liberada: '+DUN[m-1].nm+'!',4);sfx('levelup',.4);if(G.hero)floatText(G.hero.x,G.hero.y-80,'Nova dungeon!','#8ef08a',9,1.4);}SAVE.zoneMax=Math.max(1,Math.min(DUN.length,SAVE.zoneMax||1));}
 // experiência estilo Cabal: monstro muito abaixo do seu nível rende 1 de XP (chefes mantêm um mínimo)
 const xpGapMul=g=>g<=2?1:g===3?.85:g===4?.7:g===5?.5:g===6?.3:g===7?.15:g===8?.07:0;
 const FAMS=['goblin','esq','javali','rato'],FAMM={goblin:[1.13,1.1,1.24],esq:[.85,.86,.83],javali:[.71,.77,.68],rato:[2.1,1.9,2]};
-const famOf=z=>FAMS[(clamp(z||1,1,DUN.length)-1)%FAMS.length];
+const famOf=z=>{z=clamp(z||1,1,DUN.length);return z>=5?'esq':FAMS[(z-1)%FAMS.length];};
 function mkMob(kind,x,y,sp){
   if(ZONE&&WATER){const f=freeSpot(x,y);x=f[0];y=f[1];}
   const T=MOBS[kind],lv=mobLevel(y),m={kind:'mob',type:kind,T,x,y,sx:x,sy:y,lv,row:1,state:'idle',animT:rnd(0,5),act:null,cd:rnd(.5,1.2),kvx:0,kvy:0,stun:0,sts:null,flash:0,dead:false,deadT:0,respawn:0,sp,wx:x,wy:y,wt:rnd(0,3)};
@@ -1795,6 +1829,7 @@ function mkBoss(bx,by){
   return m;
 }
 function resetZone(){
+  if(ZONE.crp){crpInit();return;}
   G.mobs=[];ZONE.spawns.forEach((s,i)=>{{const f=freeSpot(s[0],s[1]);G.mobs.push(mkMob(varOf(G.zoneLv,i),f[0],f[1],i));}});
   bossAlert(false);G.boss=null;G.mp=[];G.ev=null;G.chest=null;G.evT=rnd(40,70);G.kills=0;G.phase='farm';G.bossWoke=false;G.dtm=0;G.bossRoll=1;G.projs=[];
 }
@@ -1810,7 +1845,7 @@ function initTown(){
   G.shop=null;lifeInit();
 }
 function enterTown(first,instant){
-  G.arena=null;{const r=document.getElementById('arres');if(r)r.remove();}
+  G.arena=null;G.crp=null;{const r=document.getElementById('arres');if(r)r.remove();}
   const go=()=>{
     for(const L of G.loot)addItem(L.it,true);G.loot=[];
     ambStop();G.scene='town';G.room=null;useMap('town');G.mobs=[];G.boss=null;G.projs=[];G.phase='town';closeWin();
@@ -1867,7 +1902,7 @@ function usePotion(manual){const h=G.hero;if(!h||h.state==='ko')return;
   v=Math.round(v*(1+tf('pot')));h.hp=Math.min(h.maxhp,h.hp+v);h.potCd=8;floatText(h.x,h.y-52,'+'+v,'#8ef08a',10);potionSynth();G.fx.push({k:'ring',x:h.x,y:h.y,life:.5,max:.5,col:'#8ef08a'});updPot();chat('Usou '+(big?'uma poção maior':'uma poção'),1);}
 function chat(t,type){G.chat.push({t,type});(G.clog=G.clog||[]).push({c:'s',t,col:type===2?'#ff8a70':type===3?'#d6a0ff':type===4?'#96f090':'#ffd678'});if(G.clog.length>120)G.clog.shift();if(G.chat.length>4)G.chat.shift();
   $('chat').innerHTML=G.chat.map(c=>`<div style="color:${c.type===2?'#ff8a70':c.type===3?'#d6a0ff':c.type===4?'#96f090':'#ffd678'}">${c.type===2?'[Aviso]':'[Sistema]'} ${c.t}</div>`).join('');}
-function banner(t,sub,kind){$('bnT').textContent=t;$('bnS').textContent=sub||'';const b=$('banner');b.className='';void b.offsetWidth;b.className='show'+(kind?' '+kind:'');}
+function banner(t,sub,kind){$('bnT').textContent=t;$('bnT').style.fontSize=t.length>16?'66%':'';$('bnS').textContent=sub||'';const b=$('banner');b.className='';void b.offsetWidth;b.className='show'+(kind?' '+kind:'');}
 function levelUpFx(lv){const st=$('stage');if(!st)return;const old=st.querySelector('.lvfx');if(old)old.remove();const d=document.createElement('div');d.className='lvfx';
   let sp='';for(let i=0;i<22;i++){const a=Math.random()*6.283,r=90+Math.random()*150;sp+=`<i style="--dx:${Math.round(Math.cos(a)*r)}px;--dy:${Math.round(Math.sin(a)*r*.7-30)}px;--d:${(Math.random()*.5).toFixed(2)}s;--s:${(3+Math.random()*4).toFixed(1)}px"></i>`;}
   d.innerHTML=`<div class="rays"></div><div class="ring"></div><b>LEVEL UP</b><em><span>NÍVEL</span> ${lv}</em><small>+1 ponto de habilidade</small>${sp}`;
@@ -1897,7 +1932,7 @@ function updHUD(force){
   updStatusHud();{const q=$('hpc');if(q)q.lastChild.textContent=pcFmt(heroPC());}$('hp').firstChild.style.width=clamp(h.hp/h.maxhp*100,0,100)+'%';$('hpt').textContent=Math.ceil(h.hp)+'/'+h.maxhp;
   $('goldn').textContent=SAVE.gold;
   $('xp').firstChild.style.width=clamp(SAVE.xp/xpNeed(SAVE.lv)*100,0,100)+'%';$('hl').textContent=SAVE.lv;{const c=$('hcl');if(c&&!c.innerHTML)c.innerHTML=clsIc(SAVE.cls,16,SAVE.sub);const xt=$('xpt');if(xt)xt.textContent=Math.floor(SAVE.xp/xpNeed(SAVE.lv)*100)+'%';}
-  const dg=G.scene==='dungeon';$('prog').style.display=dg?'block':'none';{const zn=$('zname');zn.style.display=dg?'block':'none';if(dg){const hv=areaName().split(' ')[0]+'|'+G.zoneLv;if(zn.dataset.v!==hv){zn.dataset.v=hv;zn.innerHTML=areaName().split(' ')[0]+'<small>Zona '+G.zoneLv+'</small>';}}if(G.t-(G._qp||0)>1){G._qp=G.t;qPlace();}}
+  const dg=G.scene==='dungeon';$('prog').style.display=dg&&!G.crp?'block':'none';{const zn=$('zname');zn.style.display=dg?'block':'none';if(dg){const hv=areaName().split(' ')[0]+'|'+G.zoneLv;if(zn.dataset.v!==hv){zn.dataset.v=hv;zn.innerHTML=areaName().split(' ')[0]+'<small>Zona '+G.zoneLv+'</small>';}}if(G.t-(G._qp||0)>1){G._qp=G.t;qPlace();}}
   if(dg&&(G.phase==='farm'||G.phase==='boss')){const ready=G.dtm>=BOSS_T0&&G.kills>=BOSS_KILLS&&SAVE.lv>=bossLv();{const nm=areaName().split(' ')[0],sb=G.phase==='boss'?'Zona '+G.zoneLv+' · '+G.kills+' abates':ready?'A área está inquieta…':'Zona '+G.zoneLv+' · '+G.kills+' abates',hv=nm+'|'+sb;if($('progt').dataset.v!==hv){$('progt').dataset.v=hv;$('progt').innerHTML='<b>'+(G.phase==='boss'?'Chefe':nm)+'</b><small>'+sb+'</small>';}}$('prog').querySelector('.bar b').style.width=Math.min(100,Math.min(G.dtm/BOSS_T0,G.kills/BOSS_KILLS,SAVE.lv/bossLv())*100)+'%';}
   const bs=G.boss,bsv=!!(dg&&G.phase==='boss'&&bs&&!bs.dead&&!(bs.ent&&bs.ent.k!=='phase'&&bs.ent.k!=='roar'));$('boss').style.display=bsv?'block':'none';document.body.classList.toggle('bossfight',dg&&G.phase==='boss'&&!!bs&&!bs.dead);{const had=document.body.classList.contains('bossbar');document.body.classList.toggle('bossbar',bsv);if(had!==bsv){setTimeout(qPlace,60);setTimeout(qPlace,520);}}
   const E=SAVE.elix||{},bf=[['forca','ni_eforca','Poder'],['defesa','ni_edefesa','Defesa']].filter(x=>E[x[0]]>0).map(x=>`<div><img src="../assets/ui-icons/${x[1]}.png">${Math.floor(E[x[0]]/60)}:${String(Math.floor(E[x[0]]%60)).padStart(2,'0')}</div>`).join('');if($('buffs').dataset.v!==bf){$('buffs').dataset.v=bf;$('buffs').innerHTML=bf;}
@@ -2041,8 +2076,8 @@ function killMob(m){
   if(m.boom){addZone({shape:'circle',x:m.x,y:m.y,r:58,warn:1,mult:1.8,pow:m.pow,shake:.3});chat(m.name+' vai explodir!',2);}
   if(m.elite){chat((m.tier==='gold'?'Elite dourado':'Elite azul')+' derrotado!',4);}
   if(m.kind==='boss'&&G.arena){arenaWin(m);}
-  else if(m.kind==='boss'){SAVE.dgDone=SAVE.dgDone||{};SAVE.dgDone[G.zoneLv]=true;dgRefresh();chat(m.name+' foi derrotado!',3);G.phase='end';sfx('victory',.9);G.shake=.4;G.endT=0;qCheck();setTimeout(()=>{if(G.phase==='end'&&G.scene==='dungeon'){G.phase='farm';G.boss=null;G.dtm=0;G.kills=0;G.bossRoll=1;updHUD(true);}},2800);if(musSrc)zoneMusic();}
-  else{m.respawn=14;G.kills++;chat(m.name+' derrotado',1);
+  else if(m.kind==='boss'){SAVE.dgDone=SAVE.dgDone||{};SAVE.dgDone[G.zoneLv]=true;dgRefresh();chat(m.name+' foi derrotado!',3);G.phase='end';sfx('victory',.9);G.shake=.4;G.endT=0;qCheck();if(G.crp)crpWin();setTimeout(()=>{if(G.phase==='end'&&G.scene==='dungeon'){G.phase='farm';G.boss=null;G.dtm=0;G.kills=0;G.bossRoll=1;updHUD(true);}},2800);if(musSrc)zoneMusic();}
+  else{m.respawn=G.crp?1e9:14;G.kills++;chat(m.name+' derrotado',1);
     checkBoss();}
   updHUD();writeSave();
 }
@@ -2613,6 +2648,7 @@ function updateHero(dt){
   h.flash=Math.max(0,h.flash-dt);for(let i=0;i<14;i++)if(h.sk[i]>0)h.sk[i]=Math.max(0,h.sk[i]-dt);
   if(h.kvx||h.kvy){h.x+=h.kvx*dt;h.y+=h.kvy*dt;const f=Math.exp(-11*dt);h.kvx*=f;h.kvy*=f;if(Math.abs(h.kvx)+Math.abs(h.kvy)<4)h.kvx=h.kvy=0;collide(h);}
   if(h.state==='ko'){h.koT-=dt;if(h.koT<=0)heroRevive();return;}
+  if(G.crp&&G.crp.intro>0){const w=ZONE.crp.walkTo;h.state='walk';h.row=dir4(w[0]-h.x,w[1]-h.y);h.animT+=dt*(h.speed/70);moveTo(h,w[0],w[1],hSpd(h)*.55,dt);collide(h);return;}
   h.cd-=dt;h.combat=Math.max(0,h.combat-dt);h.potCd=Math.max(0,h.potCd-dt);if(h.dcd>0)h.dcd-=dt;if(h.inv>0)h.inv-=dt;
   if(h.sts){stUpdate(h,dt);if(h.state==='ko')return;if(stHas(h,'atordoado')){h.state='idle';h.act=null;return;}
     if(stHas(h,'medo')){const fm=nearestMob(h,300);if(fm){moveTo(h,h.x+(h.x-fm.x),h.y+(h.y-fm.y),h.speed*.9,dt);h.row=dir4(h.x-fm.x,h.y-fm.y);h.state='walk';h.animT+=dt*(h.speed/70);collide(h);return;}}}
@@ -2648,6 +2684,7 @@ function updateHero(dt){
   else if(!moved&&!tgt&&G.auto){ // explorar: ir até o monstro vivo mais próximo ou vagar
     const m=(G.phase==='farm'||G.phase==='boss')?nearestMob(h,9999):null;
     if(m)moved=moveTo(h,m.x,m.y,hSpd(h),dt,1);
+    else if(G.crp){const R=ZONE.crp.route,C=G.crp;while(C.wi<R.length-1&&dist(h,{x:R[C.wi][0],y:R[C.wi][1]})<26)C.wi++;moved=moveTo(h,R[C.wi][0],R[C.wi][1],hSpd(h)*.9,dt,1);}
     else{G.wpT-=dt;if(!G.wanderP||G.wpT<=0||dist(h,G.wanderP)<8){G.wanderP={x:ZONE.spawns[rint(0,ZONE.spawns.length-1)][0],y:ZONE.spawns[rint(0,ZONE.spawns.length-1)][1]};G.wpT=6;}moved=moveTo(h,G.wanderP.x,G.wanderP.y,hSpd(h)*.7,dt);}
   }
   if(moved){h.state='walk';h.animT+=dt*(h.speed/70);collide(h);stepFx(h,dt);if(Math.floor(h.animT*2.6)!==h.lastStep){h.lastStep=Math.floor(h.animT*2.6);}}else h.state='idle';
@@ -3408,7 +3445,7 @@ function update(dt){
   G.t+=dt;todTick(dt);if(PFX.boost>0)PFX.boost=Math.max(0,PFX.boost-dt*.7);joyShow();if(G.castReq>=0){G.castT=(G.castT||0)+dt;if(G.castT>.7){G.castReq=-1;G.castT=0;}}else G.castT=0;
   petTick(dt);
   if(G.scene==='town')updateTown(dt);
-  else{if(G.nearKey){G.nearKey='';G.near=null;itbUpd();}updateHero(dt);if(tf('regen')&&G.hero.state!=='ko'&&G.hero.hp<G.hero.maxhp)G.hero.hp=Math.min(G.hero.maxhp,G.hero.hp+G.hero.maxhp*tf('regen')*dt);updateZones(dt);for(const m of G.mobs)updateMob(m,dt);if(G.boss)updateMob(G.boss,dt);separateEnts();updateProjs(dt);updateMProjs(dt);tickElix(dt);bossTick(dt);evTick(dt);if(G.arena&&G.phase==='boss'&&!G.arena.over)G.arena.tm=(G.arena.tm||0)+dt;if(G.mobs.some(m=>m.gone))G.mobs=G.mobs.filter(m=>!m.gone);}
+  else{if(G.nearKey){G.nearKey='';G.near=null;itbUpd();}updateHero(dt);crpTick(dt);if(tf('regen')&&G.hero.state!=='ko'&&G.hero.hp<G.hero.maxhp)G.hero.hp=Math.min(G.hero.maxhp,G.hero.hp+G.hero.maxhp*tf('regen')*dt);updateZones(dt);for(const m of G.mobs)updateMob(m,dt);if(G.boss)updateMob(G.boss,dt);separateEnts();updateProjs(dt);updateMProjs(dt);tickElix(dt);bossTick(dt);evTick(dt);if(G.arena&&G.phase==='boss'&&!G.arena.over)G.arena.tm=(G.arena.tm||0)+dt;if(G.mobs.some(m=>m.gone))G.mobs=G.mobs.filter(m=>!m.gone);}
   for(let i=G.floats.length-1;i>=0;i--){const f=G.floats[i];f.life-=dt;f.y-=(f.vy||14)*dt;if(f.life<=0)G.floats.splice(i,1);}
   updateFxList(dt);
   if(G.shake>0)G.shake=Math.max(0,G.shake-dt);
@@ -3877,7 +3914,7 @@ function render(){
   {const nA=1-TOD.n*.85;for(const it of list){const p=it.p;if(!p||p.t!=='p')continue;const a=ATLAS_J[p.id];if(!a||a[3]<22)continue;const X=p.x-cx,Y=p.y-cy;if(X<-90||X>G.LW+90||Y<-40||Y>G.LH+150)continue;
       if(a[3]>=60&&a[2]>=24){castShadow(ATLAS,a[0],a[1],a[2],a[3],a[4],a[5],1,X,Y,.26*nA,a[3]>=100?.9:.75);contactShadow(X,Y-1,Math.min(26,a[2]*.3),.28*nA);}
       else contactShadow(X,Y-1,Math.min(20,a[2]*.45+3),.3*nA);}
-    for(const it of list){const e=it.e;if(!e||e.dead||e.kind==='vill'&&false)continue;if(!e||e.kind===undefined)continue;const X=e.x-cx,Y=e.y-cy;if(X<-60||X>G.LW+60||Y<-30||Y>G.LH+120)continue;
+    for(const it of list){const e=it.e;if(!e||e.dead||e.kind==='vill'&&false)continue;if(!e||e.kind===undefined)continue;const X=e.x-cx,Y=e.y-cy-(G.crp?crpElev(e):0);if(X<-60||X>G.LW+60||Y<-30||Y>G.LH+120)continue;
       const fr=entFrame(e),sc=e.kind==='boss'?e.T.scale:1,sw=e.kind==='hero'?22:e.kind==='boss'?40:(e.T?e.T.sw:22),al=e.hide?0:e.dead?Math.max(0,1-Math.max(0,e.deadT-.5)/.6):1;
       {const sr=(e.T&&e.T.shr)||sw*.62,zz=(e.zoff||0)+(e.dx&&e.dx.y<0?-e.dx.y*5:0),fl=zz?Math.min(.55,zz/220):0,big=(e.T&&e.T.shr)?1.45:1;contactShadow(X,Y,sr*(1-fl),Math.min(.8,.36*nA*al*big*(1-fl)));if(!(e.T&&e.T.fly))castShadow(fr[0],fr[1],fr[2],fr[3],fr[4],fr[5],fr[6],sc,X,Y,.3*nA*al,1);}}}
   let heroDrawn=false;
@@ -3900,7 +3937,7 @@ function render(){
         ctx.restore();if(Math.random()<(gd?.4:.25))VF.pt(e.x+rnd(-8,8),e.y-rnd(0,24),{vy:-rnd(14,34),life:.8,col:e.elCol,sz:gd?2:1.6});}
       const fr=entFrame(e);let al=1;if(e.dead)al=Math.max(0,1-Math.max(0,e.deadT-.5)/.6);
       if(e.kind==='hero'&&e.dod){const dd=e.dod;if(dd.type==='roll'){const px=e.x-cx,py=e.y-cy-14,ang=dd.p*6.283*dd.sg;ctx.save();ctx.translate(px,py);ctx.rotate(ang);ctx.translate(-px,-py);drawSprite(e,fr,sc,false,.95);ctx.restore();}else drawSprite(e,fr,sc,false,Math.min(1,.1+dd.t/.22));}
-      else{const zo=e.zoff||0,ra=e.kind==='boss'&&e.T.atlas&&((e.ent&&e.ent.k==='roar')||(e.act&&e.act.skill&&e.act.anim==='roar'&&!e.dead));if(ra)roarAura(e,sxx,syy,0);if(zo)e.y-=zo;if(fxBoss(e)){e.tint=bossTint(e);if(e.gh&&e.gh.length)drawGhosts(e);}drawSprite(e,fr,sc,e.flash>0,al);if(e.tint)e.tint=null;if(zo)e.y+=zo;if(e.shd>0&&e.type==='skrix'&&!e.dead)skShield(e,sxx,syy,fr,sc);if(ra)roarAura(e,sxx,syy,1);}entLight(e,cx,cy);if(e.kind==='hero')heroDrawn=true;else if(e.kind==='mob'||e.kind==='boss')ents.push({e,fr,sc,al,b:[sxx-16*sc,syy-52*sc,sxx+16*sc,syy+4],o:false});
+      else{const zo=(e.zoff||0)+(G.crp?crpElev(e):0),ra=e.kind==='boss'&&e.T.atlas&&((e.ent&&e.ent.k==='roar')||(e.act&&e.act.skill&&e.act.anim==='roar'&&!e.dead));if(ra)roarAura(e,sxx,syy,0);if(zo)e.y-=zo;if(fxBoss(e)){e.tint=bossTint(e);if(e.gh&&e.gh.length)drawGhosts(e);}drawSprite(e,fr,sc,e.flash>0,al);if(e.tint)e.tint=null;if(zo)e.y+=zo;if(e.shd>0&&e.type==='skrix'&&!e.dead)skShield(e,sxx,syy,fr,sc);if(ra)roarAura(e,sxx,syy,1);}entLight(e,cx,cy);if(e.kind==='hero')heroDrawn=true;else if(e.kind==='mob'||e.kind==='boss')ents.push({e,fr,sc,al,b:[sxx-16*sc,syy-52*sc,sxx+16*sc,syy+4],o:false});
     }}
   if(occl&&h.state!=='ko'){drawSprite(h,entFrame(h),1,false,.5);}
   for(const q of ents)if(q.o&&!q.e.dead)drawSprite(q.e,q.fr,q.sc,false,.5*q.al);
@@ -4529,7 +4566,8 @@ const PZD=[
  {img:'d1',lore:'A tribo ruge na mata.',hab:[['goblin','Goblins','Comum'],['skrix','Xamã Skrix','Mini-chefe'],['grunk','Grunk','Chefe']]},
  {img:'d2',lore:'O frio sobe pelas escadas.',hab:[['esq','Esqueletos','Comum'],['vamp','Morcego-Vampiro','Mini-chefe'],['morvath','Morvath','Chefe']]},
  {img:'d3',lore:'Presas na escuridão.',hab:[['javali','Javalis','Comum'],['javcap','Capitão Presa-de-Ferro','Mini-chefe'],['gorgash','Gorgash','Chefe']]},
- {img:'d4',lore:'Algo se move na água.',hab:[['rato','Ratos Gigantes','Comum'],['botic','Boticário Podre','Mini-chefe'],['ratking','Rei dos Ratos','Chefe']]}];
+ {img:'d4',lore:'Algo se move na água.',hab:[['rato','Ratos Gigantes','Comum'],['botic','Boticário Podre','Mini-chefe'],['ratking','Rei dos Ratos','Chefe']]},
+ {img:'d5',lore:'Um rei que ninguém lembra ainda manda aqui.',hab:[['esq','Servos da Cripta','Comum'],['morvath','Guardião da Cripta','Mini-chefe'],['morvath','Rei Esquecido','Chefe']]}];
 const PZ={tab:'d',sel:0,t:0};
 function pzPortrait(cv){const k=cv.dataset.k,x=cv.getContext('2d');let fr=null;
   try{if(k==='grunk')fr=atlasFrame(SHEETS.grunk,'idle',0);else if(k==='skrix')fr=atlasFrame(SHEETS.skrix,'idle',0);else if(k==='vamp')fr=atlasFrame(SHEETS.vamp,'idle',0);

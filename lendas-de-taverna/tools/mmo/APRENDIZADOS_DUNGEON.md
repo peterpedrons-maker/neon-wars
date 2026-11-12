@@ -59,3 +59,10 @@ Regras que apareceram ao montar a Cripta do Rei Esquecido. Valem para qualquer d
 ## 9. Menos é mais
 - Poluição visual é o erro mais comum: por sala, 2 pilares, 1 ou 2 peças de função, 1 decalque grande e só. Sem estantes, sacos, barris e manchas "para encher".
 - Estandartes (2) e uma janela por parede norte; tochas só nas pontas.
+
+## Cripta v2 (pixel art por código)
+- Estrutura (chão, paredes, escada, tochas, luz tramada) é gerada por `cripta2_gen.py`; criaturas continuam sendo arte de IA.
+- Caminho único: salas ligadas por corredores, sem atalhos; colisão vem de máscara 4px (`zone_cripta2_walk.png`) reaproveitando `WATER`.
+- Parede sul: beiral (7px) bloqueia o chão para a cabeça do herói nunca ficar coberta.
+- Plataforma do boss: entidades sobem `elev` px (função `crpElev`), a superfície é desenhada 16px acima e a escada tem 3 degraus.
+- Teste: `?cripta=1` libera a dungeon 5 sem requisitos.
