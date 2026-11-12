@@ -1057,7 +1057,7 @@ const xpNeed=L=>Math.round(38*Math.pow(L,1.6)+30);
 
 /* ------------------------------ assets ---------------------------------- */
 const IMG={};
-function loadImg(src){return new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>err(new Error('img '+src));i.src=src;});}
+function loadImg(src,tries){tries=tries==null?2:tries;return new Promise((ok,err)=>{const i=new Image();let to=setTimeout(()=>{i.onload=i.onerror=null;tries>0?ok(loadImg(src,tries-1)):err(new Error('img '+src+' (demorou)'));},20000);i.onload=()=>{clearTimeout(to);ok(i);};i.onerror=()=>{clearTimeout(to);tries>0?setTimeout(()=>ok(loadImg(src,tries-1)),600):err(new Error('img '+src));};i.src=src;});}
 let ZONE=null,ATLAS=null,ATLAS_J=null,GROUND=null;
 const SHEETS={};const MAPS={};const IMG_UI={};   // nome -> {walk,hurt,atk,cell,frames,anc:{x,y}}
 function anchorOf(img,cx,cy,cw,ch){
@@ -4851,9 +4851,9 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
 (async function(){
   fitStage();
   SAVE=loadSave();if(SAVE){$('bCont').style.display='block';$('bCont').textContent='CONTINUAR · '+SAVE.name+' Nv.'+SAVE.lv;}
-  $('bNew').disabled=true;$('bCont').disabled=true;
+  $('bNew').disabled=true;$('bCont').disabled=true;const _ct=$('bCont').textContent;$('bCont').textContent='CARREGANDO…';
   try{await loadAll();}catch(e){$('title').insertAdjacentHTML('beforeend','<div style="color:#f88">Erro ao carregar: '+e.message+'</div>');console.error(e);return;}
-  $('bNew').disabled=false;$('bCont').disabled=false;
+  $('bNew').disabled=false;$('bCont').disabled=false;$('bCont').textContent=_ct;
   if(SAVE)G.zoneLv=clamp(SAVE.zone||1,1,DUN.length);
   window.__mmo={BUF,AMBS,mobSnd,bossSnd,enterRoom,dgTitle,spawnVamp,spawnSkrix,spawnJavcap,spawnBotic,MOBS,killMob,mkMob,dgUnlocked,dgRefresh,xpGapMul,DUN,stAdd,BAL,openWin,levelUpFx,gainXP,banner,hStyle,wCat,skOk,UNIQUES,getZone:()=>ZONE,petTick,PETS,pb,SETS,setCount,sb,genItem,qEv,qCheck,partyAdd,partyClear,QMAIN,qInit,socRefresh,TALENTS,tfCalc,tlTotal,TL_REQ,TL_TIER,potPrice,SLOTS,recalcHero,AMBEV,ambStart,ambStop,AMBS,zoneMusic,TOD,LIFE,evStart,makeElite,ELMOD,addZone,heroDodge,spawnBossNow:spawnBoss,stAdd,STDEF,applySkillStatus,MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
   requestAnimationFrame(frame);
