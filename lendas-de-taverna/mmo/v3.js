@@ -32,7 +32,7 @@ function init(){
   glc=document.createElement('canvas');glc.id='gl3';stageEl.insertBefore(glc,$('cv'));
   const mk=cl=>{const d=document.createElement('div');d.className=cl;stageEl.insertBefore(d,$('cv').nextSibling);return d;};
   lbBox=document.createElement('div');lbBox.id='v3lb';stageEl.insertBefore(lbBox,$('cv').nextSibling);
-  mk('v3ts t');mk('v3ts b');const vg=document.createElement('div');vg.id='v3vg';stageEl.insertBefore(vg,$('cv').nextSibling);
+  const vg=document.createElement('div');vg.id='v3vg';stageEl.insertBefore(vg,$('cv').nextSibling);
   try{R=new T.WebGLRenderer({canvas:glc,antialias:true,powerPreference:'high-performance'});}catch(err){V3.err='este aparelho não liberou o WebGL';return;}
   R.outputEncoding=T.sRGBEncoding;R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;R.toneMapping=T.ACESFilmicToneMapping;
   S=new T.Scene();cam=new T.PerspectiveCamera(32,1,.5,200);
@@ -51,6 +51,7 @@ function crTex(draw,w,h,rep){const c=cvs(w,h);draw(c.getContext('2d'),w,h);const
 function bufGeo(pos,uv,idx,norm){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setIndex(idx);if(norm)g.computeVertexNormals();return g;}
 function disposeScene(sc){S.remove(sc.grp);sc.grp.traverse(o=>{if(o.geometry&&!o.geometry._shared)o.geometry.dispose();if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{if(m.map&&!m.map._shared)m.map.dispose();m.dispose();});}});for(const [,r] of sc.ents)r.tex.dispose();for(const [,el] of sc.labels)el.remove();}
 [BT,flameTex,ringTex].forEach(t=>t._shared=true);
+const TOPDOWN=new Set(['5b39','a94a','dca1','64c7','0367']);   /* arte desenhada vista de cima (mesas, bancos, tapetes): fica deitada no chão */
 const hex=(s,d)=>{try{const v=parseInt(String(s||'').replace('#','').slice(0,6),16);return isNaN(v)?d:v;}catch(e){return d;}};
 // ------------------------------------------------------------------ cenários
 function buildScene(key){
@@ -102,7 +103,8 @@ function buildScene(key){
   for(const p of ZONE.props){if(p.t==='fire'){sc.fires.push(p);continue;}
     if(!p.id||p.t==='portal')continue;
     const a=ATLAS_J[p.id];if(!a)continue;
-    if(p.t==='flat'){flats.push([p.id,p.x,p.y]);continue;}
+    if(mood==='room'&&p.id.slice(0,4)==='f1a3')continue;   /* lustre preto (arte sem luz): fica só a luz */
+    if(p.t==='flat'||(mood==='room'&&TOPDOWN.has(p.id.slice(0,4)))){flats.push([p.id,p.x,p.y]);continue;}
     if(key==='town'&&p.id.startsWith('b_'))continue;stand.push([p.id,p.x,p.y]);
     if(key==='town'&&a[2]<=24&&a[3]>=80)lampsP.push([p.x*U,2.3,p.y*U]);}
   if(key==='zone_pantano'&&V3.proc)V3.proc.direct(add,ZONE.props.filter(p=>p.k),sc);
@@ -372,10 +374,30 @@ function overlay2D(h,list){
   if(h.buff&&h.buff.t>0)base(h.x,h.y,()=>{ctx.strokeStyle='rgba(255,170,60,'+(.4+.3*Math.sin(G.t*9))+')';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(0,0,14,6,0,0,7);ctx.stroke();},hel);
   if(h.act&&(h.act.cast||h.act.bow)&&h.act.ch>0&&!h.act.done&&h.state!=='ko')base(h.x,h.y,()=>{const p=Math.min(1,h.act.t/(h.act.ch+.32));ctx.fillStyle='rgba(8,6,12,.88)';ctx.fillRect(-16,-66,32,6);ctx.fillStyle=CHCOL[h.cls];ctx.fillRect(-15,-65,30*p,4);ctx.strokeStyle='#000';ctx.lineWidth=1;ctx.strokeRect(-16.5,-66.5,33,7);},hel);
   if(G.scene==='town'&&!G.room&&!SAVE.entered&&ZONE.portal){const P=ZONE.portal,bob=Math.sin(G.t*5)*3;base(P.x,P.y,()=>{ctx.font='700 14px Rubik,sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#1a0a2a';ctx.strokeText('▼',0,-86+bob);ctx.fillStyle='#e6d2ff';ctx.fillText('▼',0,-86+bob);});}
-  // números de dano
-  for(const f of G.floats){const sp=toScreen(f.x,f.y,0),a=Math.min(1,f.life/(f.max*.35)),age=f.max-f.life,q=f.pop&&age<.16?1+(1-age/.16)*.6:1,fs=f.size*q*G.K*.8;
-    ctx.globalAlpha=a;ctx.font=(f.bold?'800 ':'700 ')+fs+'px Rubik,sans-serif';ctx.textAlign='center';ctx.lineJoin='round';ctx.lineWidth=f.bold?4:3;ctx.strokeStyle='rgba(20,6,4,.96)';ctx.strokeText(f.t,sp[0]*k,sp[1]*k);
-    if(f.glow){ctx.shadowColor=f.col;ctx.shadowBlur=9;}ctx.fillStyle=f.col;ctx.fillText(f.t,sp[0]*k,sp[1]*k);ctx.shadowBlur=0;ctx.globalAlpha=1;}
+  // números de combate: cada tipo tem cara própria (dano, crítico, dano recebido, cura, poção, roubo de vida)
+  for(const f of G.floats){const sp=toScreen(f.x,f.y,0),a=Math.min(1,f.life/(f.max*.35)),age=f.max-f.life,pp=f.pop&&age<.18?1+(1-age/.18)*.7:1,kd=f.kd||'dmg';
+    let fs=f.size*pp*G.K*1.05,X=sp[0]*k,Y=sp[1]*k;
+    if(kd==='crit')fs*=1.35;else if(kd==='taken')fs*=1.1;else if(kd==='pot')fs*=1.25;else if(kd==='steal')fs*=.95;
+    if(kd==='taken'&&age<.2){X+=Math.sin(age*90)*3*k;}
+    ctx.save();ctx.globalAlpha=a;ctx.textAlign='center';ctx.lineJoin='round';
+    const txt=String(f.t),lw=(kd==='crit'||kd==='pot'?5:4)*k*.8;
+    const stroke=kd==='heal'||kd==='pot'?'rgba(6,36,14,.96)':kd==='steal'?'rgba(50,6,32,.96)':kd==='taken'?'rgba(40,2,2,.97)':'rgba(24,8,2,.96)';
+    if(kd==='crit'){ // estrela dourada por trás + etiqueta
+      const R0=fs*(1.05+.12*Math.sin(age*18)),n=10;ctx.save();ctx.translate(X,Y-fs*.35);ctx.rotate(age*1.2);ctx.beginPath();for(let i=0;i<n*2;i++){const r=i%2?R0*.62:R0,an=i/(n*2)*6.283;ctx.lineTo(Math.cos(an)*r,Math.sin(an)*r);}ctx.closePath();ctx.fillStyle='rgba(255,196,50,.30)';ctx.fill();ctx.restore();
+      if(age<.55){ctx.font='800 '+(fs*.42)+'px Rubik,sans-serif';ctx.lineWidth=lw*.7;ctx.strokeStyle=stroke;ctx.strokeText('CRÍTICO',X,Y-fs*1.05);ctx.fillStyle='#ff9a2a';ctx.fillText('CRÍTICO',X,Y-fs*1.05);}}
+    ctx.font=(f.bold||kd!=='dmg'?'800 ':'700 ')+fs+'px Rubik,sans-serif';
+    let label=txt;if(kd==='steal')label=txt+' ♥';
+    const w=ctx.measureText(label).width;
+    if(kd==='heal'||kd==='pot'){ // cruz de cura à esquerda
+      const cs=fs*.62,cx0=X-w/2-cs*.85,cy0=Y-fs*.34;ctx.fillStyle=stroke;ctx.fillRect(cx0-cs*.2-lw*.5,cy0-cs*.55-lw*.5,cs*.4+lw,cs*1.1+lw);ctx.fillRect(cx0-cs*.55-lw*.5,cy0-cs*.2-lw*.5,cs*1.1+lw,cs*.4+lw);
+      ctx.fillStyle='#7dff9a';ctx.fillRect(cx0-cs*.2,cy0-cs*.55,cs*.4,cs*1.1);ctx.fillRect(cx0-cs*.55,cy0-cs*.2,cs*1.1,cs*.4);}
+    ctx.lineWidth=lw;ctx.strokeStyle=stroke;ctx.strokeText(label,X,Y);
+    const col=kd==='heal'||kd==='pot'?'#7dff9a':kd==='steal'?'#ff7ab8':kd==='crit'?'#ffd24a':f.col;
+    if(kd==='crit'){const g=ctx.createLinearGradient(0,Y-fs,0,Y);g.addColorStop(0,'#fff6c8');g.addColorStop(1,'#ffb020');ctx.fillStyle=g;}else ctx.fillStyle=col;
+    if(f.glow||kd==='heal'||kd==='pot'||kd==='steal'||kd==='crit'){ctx.shadowColor=col;ctx.shadowBlur=(kd==='crit'?14:10)*k*.8;}
+    ctx.fillText(label,X,Y);ctx.shadowBlur=0;
+    if(kd==='pot'&&age<1){ctx.font='700 '+(fs*.38)+'px Rubik,sans-serif';ctx.lineWidth=lw*.6;ctx.strokeStyle=stroke;ctx.strokeText('poção',X,Y+fs*.5);ctx.fillStyle='#c8ffd6';ctx.fillText('poção',X,Y+fs*.5);}
+    ctx.restore();}
   ctx.setTransform(1,0,0,1,0,0);
   try{mmDraw();}catch(err){}
   // ---- nomes e barras de vida (HTML por cima)
