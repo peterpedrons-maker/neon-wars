@@ -11,7 +11,8 @@ def lin(c):return tuple(x**2.2 for x in c)
 bpy.ops.wm.read_factory_settings(use_empty=True)
 sc=bpy.context.scene;R=sc.render
 R.engine='CYCLES';sc.cycles.device='CPU';sc.cycles.samples=SAMP;sc.cycles.use_denoising=True;sc.cycles.denoiser='OPENIMAGEDENOISE'
-sc.cycles.max_bounces=6;sc.cycles.volume_bounces=1;sc.cycles.volume_step_rate=2.0
+import os
+sc.cycles.max_bounces=int(os.environ.get('BOUNCES','6'));sc.cycles.volume_bounces=1;sc.cycles.volume_step_rate=2.0;sc.cycles.caustics_reflective=False;sc.cycles.caustics_refractive=False
 R.resolution_x=RW;R.resolution_y=int(RW*.625);R.image_settings.file_format='PNG'
 sc.view_settings.view_transform='AgX';sc.view_settings.look='AgX - Medium High Contrast' if 'AgX - Medium High Contrast' in [i.identifier for i in sc.view_settings.bl_rna.properties['look'].enum_items] else 'None'
 # ---------------- materiais ----------------
@@ -269,6 +270,7 @@ def web(x,y,z,sx,sy):
         c.bevel_depth=.003;o=bpy.data.objects.new('w',c);link(o);o.data.materials.append(M['white'])
 web(-ROOM_X+.02,ROOM_Y-.02,WALL_H-.05,1,0)
 # ---------------- GUERREIRO ----------------
+WAR={}
 def warrior(px,py,rz):
     root=bpy.data.objects.new('warrior',None);link(root);root.location=(px,py,0);root.rotation_euler=(0,0,math.radians(rz))
     objs0=set(bpy.data.objects)
@@ -285,9 +287,11 @@ def warrior(px,py,rz):
     # ombreiras e braços
     for sy in(-1,1):
         prim('sphere',(0,sy*.34,1.0),(.17,.17,.15),M['steel'],seg=20);prim('torus',(0,sy*.34,.93),(1,1,.5),M['gold'],r=.15,r2=.012)
+    _A=set(bpy.data.objects)
     # braço da espada (y-): levantado para a frente
     limb((0,-.34,1.0),(.28,-.5,.98),.065,.06,M['steel_d']);limb((.28,-.5,.98),(.42,-.38,1.2),.06,.055,M['leather'])
     prim('sphere',(.42,-.38,1.21),(.075,.075,.075),M['leather'],seg=14)
+    _arm=[o for o in bpy.data.objects if o not in _A]
     # braço do escudo (y+): dobrado à frente do corpo
     limb((0,.34,1.0),(.12,.5,.82),.065,.06,M['steel_d']);limb((.12,.5,.82),(.34,.5,.86),.06,.055,M['leather'])
     # cabeça
@@ -324,6 +328,10 @@ def warrior(px,py,rz):
     bl=sp(prim('cube',(sx,sy_,sz+.66),(.035,.1,.98),M['steel']));bevel(bl,.008)
     tp=prim('cone',(sx,sy_,sz+1.2),(.1,.035,.2),M['steel'],r=1,d=1,seg=4);tp.scale=(.045,.05,.2);sp(tp)
     sp(prim('sphere',(sx,sy_,sz-.09),(.04,.04,.04),M['gold'],seg=12))
+    S0=Vector((0,-.34,1.0));armR=bpy.data.objects.new('armR',None);link(armR);armR.location=S0
+    for o in _arm+[sr]:
+        o.parent=armR;o.location=o.location-S0
+    WAR['arm']=armR
     # escudo redondo
     shx,shy,shz=.36,.56,.86
     sd=prim('cyl',(shx,shy,shz),(1,1,1),M['wood2'],r=.36,d=.07,rot=(0,90,0),seg=40)
@@ -336,7 +344,7 @@ def warrior(px,py,rz):
     for o in new:
         if o.parent is None:
             o.parent=root
-    return root
+    WAR['root']=root;return root
 # ---------------- RATO ----------------
 def rat(px,py,rz,s=1.0):
     root=bpy.data.objects.new('rat',None);link(root);root.location=(px,py,0);root.rotation_euler=(0,0,math.radians(rz));objs0=set(bpy.data.objects)
@@ -378,7 +386,7 @@ def rat(px,py,rz,s=1.0):
             o.parent=root
     root.scale=(s,s,s);return root
 warrior(-1.45,-.5,-28)
-rat(1.5,-.15,22,1.3)
+RATROOT=rat(1.5,-.15,22,1.3)
 # ---------------- ambiente e luz ----------------
 w=bpy.data.worlds.new('w');sc.world=w;w.use_nodes=True;bg=w.node_tree.nodes['Background'];bg.inputs[0].default_value=(.015,.02,.035,1);bg.inputs[1].default_value=1.0
 def area(loc,rot,e,col,size):
@@ -386,11 +394,15 @@ def area(loc,rot,e,col,size):
 area((-1,-3,7.5),(20,0,0),260,(.5,.64,1.0),9)    # luz fria de cima (preenchimento)
 area((6,-7,4),(70,0,35),300,(1,.78,.6),5)          # recorte quente frontal
 # névoa volumétrica leve
-vol=prim('cube',(0,0,2.2),(ROOM_X*2,ROOM_Y*2,4.4),None);vm=bpy.data.materials.new('vol');vm.use_nodes=True;nt=vm.node_tree
-for n in list(nt.nodes):nt.nodes.remove(n)
-pv=nt.nodes.new('ShaderNodeVolumePrincipled');pv.inputs['Density'].default_value=.012;pv.inputs['Color'].default_value=(.6,.7,.9,1);pv.inputs['Anisotropy'].default_value=.45
-out=nt.nodes.new('ShaderNodeOutputMaterial');nt.links.new(pv.outputs[0],out.inputs['Volume']);vol.data.materials.append(vm)
-vol.display_type='WIRE'
+vol=prim('cube',(0,0,2.2),(ROOM_X*2,ROOM_Y*2,4.4),None)
+if os.environ.get('VOL','1')=='0':
+    bpy.data.objects.remove(vol)
+else:
+    vm=bpy.data.materials.new('vol');vm.use_nodes=True;nt=vm.node_tree
+    for n in list(nt.nodes):nt.nodes.remove(n)
+    pv=nt.nodes.new('ShaderNodeVolumePrincipled');pv.inputs['Density'].default_value=.012;pv.inputs['Color'].default_value=(.6,.7,.9,1);pv.inputs['Anisotropy'].default_value=.45
+    out=nt.nodes.new('ShaderNodeOutputMaterial');nt.links.new(pv.outputs[0],out.inputs['Volume']);vol.data.materials.append(vm)
+    vol.display_type='WIRE'
 # ---------------- câmera ----------------
 cam=bpy.data.cameras.new('cam');co=bpy.data.objects.new('cam',cam);link(co);sc.camera=co
 def look(co,pos,tgt,lens):
@@ -399,6 +411,64 @@ if VIEW=='wide':
     look(co,(10.5,-12.5,9.0),(-0.3,.6,.9),52)
 else:
     look(co,(.6,-6.3,2.6),(0,-.1,.8),44);co.data.dof.use_dof=True;co.data.dof.focus_distance=(Vector((.6,-6.3,2.6))-Vector((0,-.3,.8))).length;co.data.dof.aperture_fstop=4.0
-R.filepath=OUT
-bpy.ops.render.render(write_still=True)
-print('ok',OUT)
+
+def kf(o,f,loc=None,rot=None,scl=None):
+    if loc is not None:o.location=loc;o.keyframe_insert('location',frame=f)
+    if rot is not None:o.rotation_euler=[math.radians(a) for a in rot];o.keyframe_insert('rotation_euler',frame=f)
+    if scl is not None:o.scale=scl;o.keyframe_insert('scale',frame=f)
+def fcs(act):
+    try:return list(act.fcurves)
+    except AttributeError:
+        out=[]
+        for l in act.layers:
+            for st in l.strips:
+                for cb in st.channelbags:out+=list(cb.fcurves)
+        return out
+def ease(o,mode='BEZIER'):
+    if o.animation_data and o.animation_data.action:
+        for fc in fcs(o.animation_data.action):
+            for k in fc.keyframe_points:k.interpolation=mode
+def animate():
+    sc.render.fps=24;wr=WAR['root'];arm=WAR['arm'];rt=RATROOT
+    wx,wy=-1.45,-.5;wrz=-28
+    # --- guerreiro: respira, ergue a espada, golpeia, comemora
+    for f in range(1,217,12):kf(wr,f,(wx,wy,.012*(1 if (f//12)%2 else 0)),(0,0,wrz))
+    kf(wr,84,(wx,wy,0),(0,0,wrz));kf(wr,90,(wx+.28,wy+.04,0),(0,0,wrz+10));kf(wr,98,(wx+.3,wy+.05,0),(0,0,wrz+12));kf(wr,132,(wx,wy,0),(0,0,wrz))
+    for f,a in((1,0),(58,0),(78,-48),(82,-52),(89,38),(97,62),(112,40),(132,10),(150,-34),(190,-34),(216,-20)):kf(arm,f,None,(-6,a,0))
+    # --- rato: rasteja, agacha, salta, é lançado para trás e cai
+    pts=[(1,4.4,0),(10,4.0,.05),(18,3.7,0),(26,3.4,.05),(34,3.1,0),(42,2.85,.05),(50,2.6,0),(58,2.4,.05),(66,2.3,0)]
+    for f,x,z in pts:kf(rt,f,(x,-.15,z),(0,0,22),(1.3,1.3,1.3))
+    kf(rt,74,(2.3,-.15,0),(0,0,22),(1.34,1.3,1.0))                     # agacha
+    kf(rt,78,(2.3,-.15,0),(0,0,22),(1.34,1.3,.95))
+    kf(rt,84,(1.4,-.15,.95),(0,14,22),(1.3,1.3,1.3))                   # salto
+    kf(rt,90,(.4,-.15,.6),(0,-22,22),(1.3,1.3,1.3))                 # contato com a espada
+    kf(rt,102,(1.9,-.15,1.0),(90,10,22),(1.3,1.3,1.3))                 # arremessado
+    kf(rt,112,(2.5,-.1,.26),(90,0,35),(1.3,1.3,1.3))                   # cai de lado
+    kf(rt,118,(2.6,-.1,.25),(90,0,35),(1.3,1.3,1.3))
+    kf(rt,216,(2.6,-.1,.25),(90,0,35),(1.3,1.3,1.3))
+    for o in(wr,arm,rt):ease(o)
+    # --- tochas tremulando
+    for o in bpy.data.objects:
+        if o.type=='LIGHT' and o.data.type=='POINT' and o.name.startswith('t'):
+            e=o.data.energy;o.data.keyframe_insert('energy',frame=1)
+            fc=fcs(o.data.animation_data.action)[0];m=fc.modifiers.new('NOISE');m.scale=3+random.random()*3;m.strength=e*.35;m.phase=random.random()*50
+    # --- câmera: aproxima, acompanha o golpe e recua para a vista geral
+    tg=bpy.data.objects.new('tg',None);link(tg);cam_=co
+    kf(tg,1,(0,-.1,.8));kf(tg,84,(.2,-.2,.9));kf(tg,100,(.5,-.2,.8));kf(tg,150,(.2,-.1,.8));kf(tg,216,(-.3,.6,.9))
+    kf(co,1,(.6,-6.3,2.6));kf(co,70,(.1,-5.2,2.0));kf(co,100,(.8,-5.0,1.9));kf(co,150,(1.2,-5.6,2.2));kf(co,216,(10.5,-12.5,9.0))
+    for f,l in((1,44),(100,40),(150,42),(216,52)):cam.lens=l;cam.keyframe_insert('lens',frame=f)
+    tc=co.constraints.new('TRACK_TO');tc.target=tg;tc.track_axis='TRACK_NEGATIVE_Z';tc.up_axis='UP_Y'
+    cam.dof.focus_object=tg;cam.dof.use_dof=True;cam.dof.aperture_fstop=3.2
+    for o in(tg,co):ease(o)
+    sc.frame_start=1;sc.frame_end=216
+if VIEW=='anim':
+    animate()
+    FS=int(sys.argv[5]) if len(sys.argv)>5 else 1;FE=int(sys.argv[6]) if len(sys.argv)>6 else 216
+    import os;os.makedirs(OUT,exist_ok=True)
+    for f in range(FS,FE+1):
+        sc.frame_set(f);R.filepath=f'{OUT}/f{f:04d}.png';bpy.ops.render.render(write_still=True)
+    print('ok anim',FS,FE)
+else:
+    R.filepath=OUT
+    bpy.ops.render.render(write_still=True)
+    print('ok',OUT)
