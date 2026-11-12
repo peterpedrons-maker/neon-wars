@@ -9,7 +9,7 @@ def ft(n):
 FL=[ft('chao_1'),ft('chao_2'),ft('chao_1'),ft('chao_3'),ft('chao_4'),ft('chao_2')]
 CARP=ft('chao_7');CAP=ft('chao_8');CARP=CARP.crop((0,3,CARP.width,CARP.height-3));CAP=CAP.crop((0,3,CAP.width,CAP.height))
 def wl(n):
-    w=L(n);return sc(w.crop((2,0,w.width-2,w.height)))
+    w=L(n);return sc(w.crop((5,0,w.width-5,w.height)))
 WP=[wl('parede_1'),wl('parede_1'),wl('parede_3'),wl('parede_4')]
 tw,th=FL[0].size;wh=WP[0].height;cap_h=int(wh*.2);side=34;F=74
 AS=.86
@@ -23,7 +23,15 @@ _t=np.array(_t).astype(float);_g=(0.62+0.5*np.linspace(0,1,ah)**1.2)[:,None,None
 _t[:,:,:3]=np.clip(_t[:,:,:3]*_g*1.08+np.array([8,6,0]),0,255)
 _ar=ar.copy().astype(float);_ar[opn]=_t[opn]
 arch_lit=Image.fromarray(_ar.astype('uint8'),'RGBA')
-_fr=ar.copy();_fr[opn]=[0,0,0,0];arch_frame=Image.fromarray(_fr,'RGBA')
+import scipy.ndimage as ndi
+_lum=ar[:,:,:3].astype(float).mean(2);_stone=(ar[:,:,3]>0)&(_lum>119)&~opn
+_lab,_n=ndi.label(_stone,structure=np.ones((3,3)));_sz=ndi.sum(_stone,_lab,range(1,_n+1));_ring=np.isin(_lab,[i+1 for i,z in enumerate(_sz) if z>=40])
+_inner=ndi.binary_fill_holes(_ring|opn)         # anel + vão
+_keep=ndi.binary_dilation(_ring,iterations=1)&(ar[:,:,3]>0)|ndi.binary_dilation(opn,iterations=1)&(ar[:,:,3]>0)
+_keep&=ndi.binary_dilation(_inner,iterations=1)
+_arr=_ar.copy();_arr[~_keep]=0;_arr[~_keep,3]=0
+arch_lit=Image.fromarray(_arr.astype('uint8'),'RGBA')
+_fr=ar.copy();_fr[opn]=[0,0,0,0];_fr[~_keep]=0;_fr[~_keep,3]=0;_fr[~(_keep&~opn),3]=0;arch_frame=Image.fromarray(_fr,'RGBA')
 D=lambda n,h:(lambda im:im.resize((max(1,round(im.width*h/im.height)),h),Image.LANCZOS))(Image.open(f'decor/{n}.png').convert('RGBA'))
 # layout (de baixo para cima): (nome, colunas, linhas, deslocamento do corredor de saída em colunas)
 ROOMS=[('atrio',7,4,0),('guardioes',6,5,-1),('armadilhas',9,3,1),('altares',6,5,0),('cofre',4,3,-1),('camara',9,7,None)]
@@ -63,19 +71,11 @@ for p in placed:
     banners=[]
     while cur<x0+rw:
         w=random.choice(WP)
-        if w is WP[3] and (cur+w.width>x0+rw or (dx is not None and cur<dx+aw+10 and cur+w.width>dx-10) or banners):w=WP[0]
-        if dx is not None and cur<dx+aw and cur+w.width>dx:
-            gap=dx-cur
-            if gap>0:put(bg,w.crop((0,0,gap,w.height)),cur,p['band_y'])
-            # fundo da parede atrás do arco (tijolo) + viga contínua + arco abaixo dela
-            bgw=WP[0].crop((0,0,min(WP[0].width,aw),WP[0].height))
-            if bgw.width<aw:bgw=WP[0].crop((0,0,aw,WP[0].height))
-            put(bg,bgw,dx,p['band_y'])
-            put(bg,arch_lit,dx,p['band_y']+wh-ah)
-            capseg=WP[0].crop((60,0,60+aw,cap_h));put(bg,capseg,dx,p['band_y']);cur=dx+aw;continue
+        if w is WP[3] and (cur+w.width>x0+rw or (dx is not None and cur<dx+aw+40 and cur+w.width>dx-40) or banners):w=WP[0]
         put(bg,w.crop((0,0,min(w.width,x0+rw-cur),w.height)),cur,p['band_y'])
         if w is WP[3]:banners.append(cur+w.width//2)
         cur+=w.width
+    if dx is not None:put(bg,arch_lit,dx,p['band_y']+wh-ah)
     p['banners']=banners
     # laterais (capa rotacionada)
     LH=fh+wh

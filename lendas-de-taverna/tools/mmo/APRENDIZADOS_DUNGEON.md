@@ -14,6 +14,7 @@ Regras que apareceram ao montar a Cripta do Rei Esquecido. Valem para qualquer d
 - **Laterais param na viga da parede sul**, sem descer ao lado da face. A face (tijolos) da parede sul passa por baixo, na largura toda, inclusive embaixo dos cantos. É igual ao encontro de cima.
 - **Corredor:** as laterais dele nascem na viga da parede sul da sala de cima e descem até a viga da faixa da sala de baixo.
 - **Arco:** é menor que a parede (escala ~0,86) e fica **encaixado abaixo** da viga, que corre reta por cima dele. Largura menor que a do corredor. Nunca colar a viga por cima do arco.
+- **Recorte do arco:** usar só a moldura de pedra (anel + pés) e o vão, nunca o retângulo da peça inteira: o tijolo da parede contínua passa por trás. Cortar 5 px das bordas das peças de parede para tirar fios de magenta.
 - Peças vizinhas (tochas, estandartes) não podem se sobrepor nem ser cortadas; tochas duplicadas a menos de 110 px são descartadas.
 
 ## 2. Camadas (ordem de desenho)
