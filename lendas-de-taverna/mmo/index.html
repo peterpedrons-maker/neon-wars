@@ -1084,7 +1084,7 @@ async function loadMap(name,zf,af,gf,pf){
   const [z,aj]=await Promise.all([fetch(zf).then(r=>r.json()),fetch(af).then(r=>r.json())]);
   const [g,at]=await Promise.all([loadImg(gf),loadImg(pf)]);MAPS[name]={zone:z,atlasJ:aj,ground:g,atlas:at,water:null,wcw:0};
 }
-let STAGE2=null,STAGE2_OK=false;
+let STAGE2=null,STAGE2_OK=false,BOOTING=0;
 /* carregamento em 2 estágios: o essencial (cidade, classes, NPCs) libera os botões do título; floresta, interiores, monstros e ícones chegam em segundo plano */
 function prepMap(name){useMap(name,true);buildSolids();if(name==='zone_cripta2'){crpPrep(name);return;}buildWater();MAPS[name].nav=buildNav();MAPS[name].water=WATER;MAPS[name].wcw=WCW;MAPS[name].wl=WL;MAPS[name].wsp=WSP;MAPS[name].wrx=WRX;MAPS[name].gx=GCTXB;
   if(name==='zone1'||name==='zone1_gob'||name==='zone_cripta'||name==='zone_esgoto')fixSpawns();else{ZONE.start=freeSpot(ZONE.start[0],ZONE.start[1]);if(ZONE.portal)ZONE.portal.stand=freeSpot(ZONE.portal.stand[0],ZONE.portal.stand[1]);if(ZONE.doors)ZONE.doors.forEach(d=>{const f=freeSpot(d.x,d.y+10);d.sx=f[0];d.sy=f[1];});}}
@@ -1136,8 +1136,10 @@ async function loadAll(){
     for(const n of ['coins','anvil','health-potion','treasure-map','clover','fist','heart-plus','shop','greek-temple','scroll-unfurled'])jobs.push(loadImg('../assets/ui-icons/'+n+'.png').then(im=>{IMG_UI[n]=im;}).catch(()=>{IMG_UI[n]=null;}));
     await Promise.all(jobs);
     const cur=G.map||'town';
-    for(const name of Object.keys(MAPS))if(name!=='town')prepMap(name);
-    useMap(cur,true);STAGE2_OK=true;
+    /* preparo de cada mapa (água, navegação) em fatias: um mapa por vez, devolvendo o controle ao navegador entre eles; assim "Continuar" e o jogo não travam */
+    for(const name of Object.keys(MAPS)){if(name==='town')continue;await new Promise(r=>setTimeout(r,30));while(BOOTING)await new Promise(r=>setTimeout(r,80));   /* se o jogador clicou em Continuar/Criar, espera a cidade abrir antes de preparar o próximo mapa */
+      const back=G.map||'town';prepMap(name);useMap(back,true);}
+    STAGE2_OK=true;
   })();
 }
 /* caixa de confirmação no visual do jogo (substitui o confirm() do navegador) */
@@ -1883,6 +1885,9 @@ function resetZone(){
 }
 function fadeTo(cb){const f=$('fade');f.classList.add('on');setTimeout(()=>{cb();setTimeout(()=>f.classList.remove('on'),220);},380);}
 async function startGame(){
+  BOOTING=1;try{await startGame0();}finally{BOOTING=0;}
+}
+async function startGame0(){
   migrateSave();qInit();await buildHeroSheet();G.on=true;G.hero=mkHero();G.floats=[];G.fx=[];G.chat=[];G.loot=[];G.auto=true;
   faceCanvas(SAVE.cls,$('hface'),SHEETS.hero);$('hn').textContent=SAVE.name;$('chat').style.display='block';
   audioInit();enterTown(true,true);socRefresh();if(SAVE.title)setTitle(SAVE.title);achCheck();
