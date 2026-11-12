@@ -4867,7 +4867,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
   b.addEventListener('click',async e=>{e.preventDefault();if(ev){ev.prompt();try{await ev.userChoice;}catch(_){}ev=null;return;}
     await gConfirm('O Chrome não ofereceu a instalação. Se ele diz que já está instalado, existe um app antigo (Neon Wars ou Hearthblade) cobrindo este endereço, mesmo sem ícone na tela inicial. Para resolver: 1) abra chrome://webapks no Chrome e veja a lista; 2) em Configurações do celular > Apps, procure Neon Wars e Hearthblade e toque em Desinstalar; 3) volte aqui e toque em Instalar o app. Depois você pode reinstalar o outro.',{title:'Instalar o app',ok:'Entendi',no:'Fechar'});});})();
 </script>
-<script>if(new URLSearchParams(location.search).get('v3')==='0')window.V3_OFF=1;if(new URLSearchParams(location.search).get('proc')==='0')window.V3_NOPROC=1;</script>
+<script>if(new URLSearchParams(location.search).get('v3')==='0')window.V3_OFF=1;if(new URLSearchParams(location.search).get('proc')==='0')window.V3_NOPROC=1;if(new URLSearchParams(location.search).get('hand')==='1')window.V3_HAND=1;</script>
 <script src="three.min.js"></script>
 <script src="v3.js"></script>
 <script src="v3proc.js"></script>
