@@ -1820,7 +1820,8 @@ function heroStatsInto(h){
 const BAL={zoneLv:5,K:{"1":[1.253,0.453],"5":[4.021,1.316],"10":[7.72,5.947],"20":[16.574,12.011],"30":[42.982,20.693],"40":[132.41,59.734],"50":[197.794,100.885],"60":[279.165,206.051]}};   // multiplicadores [vida, ataque] por nível, calibrados com heróis de equipamento mediano (início) até quase perfeito (endgame)
 function balMul(lv,j){const ks=Object.keys(BAL.K).map(Number).sort((a,b)=>a-b);if(lv<=ks[0])return BAL.K[ks[0]][j];if(lv>=ks[ks.length-1]){const e=ks[ks.length-1],q=ks[ks.length-2];return BAL.K[e][j]*Math.pow(BAL.K[e][j]/BAL.K[q][j],(lv-e)/(e-q));}for(let i=0;i<ks.length-1;i++)if(lv<=ks[i+1]){const f=(lv-ks[i])/(ks[i+1]-ks[i]);return Math.exp(Math.log(BAL.K[ks[i]][j])*(1-f)+Math.log(BAL.K[ks[i+1]][j])*f);}}
 const mobHpMul=lv=>balMul(lv,0),mobAtkMul=lv=>balMul(lv,1);
-function mobLevel(y){const d=ZONE&&ZONE.h?Math.max(0,Math.min(1,1-(y||0)/ZONE.h)):0;return 1+Math.round(d*5)+rint(0,2)+(G.zoneLv-1)*BAL.zoneLv;}
+function mobLevel(y){if(G.map==='zone_cripta2'&&SAVE&&SAVE.lv<dgLv(5)[0])return Math.max(1,SAVE.lv+rint(0,2));   /* aberta a qualquer nível: abaixo da faixa, os monstros acompanham o herói */
+  const d=ZONE&&ZONE.h?Math.max(0,Math.min(1,1-(y||0)/ZONE.h)):0;return 1+Math.round(d*5)+rint(0,2)+(G.zoneLv-1)*BAL.zoneLv;}
 /* ===== ELITES: 1 a 3 modificadores sorteados (mais mods em zonas mais altas) ===== */
 const ELMOD={
   veloz:{n:'Veloz',col:'#6ae0ff',d:'ataca e anda mais rápido'},
@@ -1855,9 +1856,9 @@ const FAMV={goblin:['goblin','goblin','gobarq','xama','goblin'],esq:['esq','esq'
 const varOf=(z,i)=>{const a=FAMV[famOf(z)];return a[((i%a.length)+a.length)%a.length];};
 /* progressão definida: 4 dungeons, uma após a outra. Para entrar na seguinte é preciso derrotar o chefe da anterior e ter o nível mínimo. */
 /* pc = poder de combate recomendado (calibrado por simulação: PC com o qual o herói de equipamento médio vence o chefe com folga; tools/mmo/sim/pc_calib.cjs + boss.cjs) */
-const DUN=[{id:1,nm:'Floresta dos Goblins',unlock:1,pc:600},{id:2,nm:'Catacumbas de Brumavale',unlock:8,pc:900},{id:3,nm:'Floresta de Brumavale',unlock:13,pc:1200},{id:4,nm:'Esgotos de Brumavale',unlock:18,pc:1400},{id:5,nm:'Cripta do Rei Esquecido',unlock:23,pc:1650}];
+const DUN=[{id:1,nm:'Floresta dos Goblins',unlock:1,pc:600},{id:2,nm:'Catacumbas de Brumavale',unlock:8,pc:900},{id:3,nm:'Floresta de Brumavale',unlock:13,pc:1200},{id:4,nm:'Esgotos de Brumavale',unlock:18,pc:1400},{id:5,nm:'Cripta do Rei Esquecido',unlock:1,pc:1650}];
 const dgLv=z=>[1+(z-1)*BAL.zoneLv,8+(z-1)*BAL.zoneLv];   // faixa de nível dos monstros da dungeon z
-function dgUnlocked(z){if(z<=1)return true;if(z===5&&/[?&]cripta/.test(location.search))return true;const d=DUN[z-1];return !!(d&&SAVE.dgDone&&SAVE.dgDone[z-1]&&SAVE.lv>=d.unlock);}
+function dgUnlocked(z){if(z<=1||z===5)return true;const d=DUN[z-1];return !!(d&&SAVE.dgDone&&SAVE.dgDone[z-1]&&SAVE.lv>=d.unlock);}
 function dgRefresh(){let m=1;for(let z=2;z<=DUN.length;z++)if(dgUnlocked(z))m=z;if(m>(SAVE.zoneMax||1)){SAVE.zoneMax=m;chat('Nova dungeon liberada: '+DUN[m-1].nm+'!',4);sfx('levelup',.4);if(G.hero)floatText(G.hero.x,G.hero.y-80,'Nova dungeon!','#8ef08a',9,1.4);}SAVE.zoneMax=Math.max(1,Math.min(DUN.length,SAVE.zoneMax||1));}
 // experiência estilo Cabal: monstro muito abaixo do seu nível rende 1 de XP (chefes mantêm um mínimo)
 const xpGapMul=g=>g<=2?1:g===3?.85:g===4?.7:g===5?.5:g===6?.3:g===7?.15:g===8?.07:0;
@@ -1869,7 +1870,7 @@ function mkMob(kind,x,y,sp){
   const FM=FAMM[T.fam||kind]||[1,1,1];m.maxhp=Math.round(T.hp*FM[0]*mobHpMul(lv));m.hp=m.maxhp;m.pow=T.atk*FM[1]*mobAtkMul(lv);m.def=lv*1.3;m.name=T.nome;{const q=T.noElite?1:Math.random();if(q<eliteGoldChance())makeElite(m,'gold');else if(q<eliteGoldChance()+eliteChance())makeElite(m,'blue');}return m;
 }
 function mkBoss(bx,by){
-  bx=bx===undefined?ZONE.boss[0]:bx;by=by===undefined?ZONE.boss[1]:by;const lv=8+(G.zoneLv-1)*BAL.zoneLv,m={kind:'boss',type:'boss',T:bossDef(),x:bx,y:by,lv,row:2,state:'idle',animT:0,act:null,cd:1,kvx:0,kvy:0,stun:0,sts:null,flash:0,dead:false,deadT:0,hp:0,sx:bx,sy:by};
+  bx=bx===undefined?ZONE.boss[0]:bx;by=by===undefined?ZONE.boss[1]:by;const lv=(G.map==='zone_cripta2'&&SAVE.lv<8+(G.zoneLv-1)*BAL.zoneLv)?SAVE.lv+2:8+(G.zoneLv-1)*BAL.zoneLv,m={kind:'boss',type:'boss',T:bossDef(),x:bx,y:by,lv,row:2,state:'idle',animT:0,act:null,cd:1,kvx:0,kvy:0,stun:0,sts:null,flash:0,dead:false,deadT:0,hp:0,sx:bx,sy:by};
   m.maxhp=Math.round(m.T.hp*mobHpMul(lv));m.hp=m.maxhp;m.pow=m.T.atk*mobAtkMul(lv)*.78;m.def=lv*1.3;m.name=m.T.nome;
   if(m.T.rk)m.onDie=()=>{if(G.arena)return;const c=m.T.aura;VF.burst(m.x,m.y-20,34,[c[0],c[1],'#4a3a2a'],{s0:60,s1:220,flat:.6,up:40,g:100});VF.wave(m.x,m.y,120,c[0],.7,5);VF.shake(.6);
     for(let k=0;k<6;k++){const a=k*1.047+Math.random()*.5,f=freeSpot(m.x+Math.cos(a)*40,m.y+Math.sin(a)*26),b=mkMob('rato',f[0],f[1],-1);b.minion=true;b.respawn=1e9;b.hunt=true;b.elite=false;b.tier=null;b.name='Rato da Praga';b.rkAdd=1;b.lv=m.lv;b.maxhp=Math.round(b.maxhp*.5);b.hp=b.maxhp;G.mobs.push(b);}chat('O Rei dos Ratos explode em ratos!',2);};
@@ -3737,7 +3738,7 @@ function ratkingFrame(e){const sh=SHEETS.ratking,a=e.act,F=(n,i)=>atlasFrame(sh,
   if(e.state==='walk')return F('walk',Math.floor(e.animT*11)%N('walk'));
   return F('idle',Math.floor(G.t*6)%N('idle'));}
 /* Guerreiro em pixel art (teste): lados espelhados, frente e costas; uma animação por habilidade. Desliga com ?px=0 */
-const PXH=new URLSearchParams(location.search).get('px')==='1';
+const PXH=false;   /* guerreiro de pixel art de teste: desativado (o herói é sempre o LPC original) */
 const PX_IMP={power:.6,spin:.4,shake:.64,roar:.45,slash:.5};
 function pxAnimOf(h,a){if(!a||a.sk===undefined||a.sk<0)return 'slash';const S=(CLASSES[SAVE.cls]||{skills:[]}).skills[a.sk];if(!S)return 'slash';const id=S[0],t=S[4]&&S[4].t;
   if(/terremoto|tremor/.test(id))return 'shake';if(t==='aoe')return 'spin';if(t==='buff'||t==='shield'||t==='heal')return 'roar';if(t==='single'&&/poderoso|esmaga|execucao/.test(id))return 'power';return 'slash';}
@@ -4639,7 +4640,7 @@ const PZD=[
  {img:'d2',lore:'O frio sobe pelas escadas.',hab:[['esq','Esqueletos','Comum'],['vamp','Morcego-Vampiro','Mini-chefe'],['morvath','Morvath','Chefe']]},
  {img:'d3',lore:'Presas na escuridão.',hab:[['javali','Javalis','Comum'],['javcap','Capitão Presa-de-Ferro','Mini-chefe'],['gorgash','Gorgash','Chefe']]},
  {img:'d4',lore:'Algo se move na água.',hab:[['rato','Ratos Gigantes','Comum'],['botic','Boticário Podre','Mini-chefe'],['ratking','Rei dos Ratos','Chefe']]},
- {img:'d5',lore:'Um rei que ninguém lembra ainda manda aqui.',hab:[['esq','Servos da Cripta','Comum'],['morvath','Guardião da Cripta','Mini-chefe'],['morvath','Rei Esquecido','Chefe']]}];
+ {img:'d5',lore:'Um rei que ninguém lembra ainda manda aqui.',hab:[['esq','Servos da Cripta','Comum'],['morvath','Rei Esquecido','Chefe']]}];
 const PZ={tab:'d',sel:0,t:0};
 function pzPortrait(cv){const k=cv.dataset.k,x=cv.getContext('2d');let fr=null;
   try{if(k==='grunk')fr=atlasFrame(SHEETS.grunk,'idle',0);else if(k==='skrix')fr=atlasFrame(SHEETS.skrix,'idle',0);else if(k==='vamp')fr=atlasFrame(SHEETS.vamp,'idle',0);
@@ -4661,7 +4662,7 @@ function pzItems(){
   const L=[];DUN.forEach((d,i)=>{const z=i+1,ok=!!(SAVE.dgDone&&SAVE.dgDone[z])&&SAVE.lv>=d.unlock,r=(SAVE.arena||{})['z'+z];L.push({img:PZD[i].img,hd:'ARENA DO CHEFE',nm:'Arena de '+bossDef(z).nome,lore:d.nm,unlock:d.unlock,locked:!ok,st:r&&r.w?'✔ '+r.w+' vitória'+(r.w>1?'s':''):'',z,arena:1,bl:dgLv(z)[1]});});
   return L;}
 function pzDetail(it){
-  if(PZ.tab==='d'){const z=it.z,d=DUN[z-1],I=PZD[z-1],un=!it.locked,lvOkd=SAVE.lv>=d.unlock,prev=DUN[z-2],prevOk=!prev||!!(SAVE.dgDone&&SAVE.dgDone[z-1]);
+  if(PZ.tab==='d'){const z=it.z,d=DUN[z-1],I=PZD[z-1],un=!it.locked,lvOkd=SAVE.lv>=d.unlock,prev=DUN[z-2],prevOk=z>=5||!prev||!!(SAVE.dgDone&&SAVE.dgDone[z-1]);
     let h='<div class="pzh">REQUISITOS</div><div class="pzr">'+pzReqRow(lvOkd,'Nível '+d.unlock,`você: ${SAVE.lv} ${lvOkd?'✔':'🔒'}${!lvOkd?' · faltam '+(d.unlock-SAVE.lv):''}`);
     if(prev)h+=pzReqRow(prevOk,'Derrotar '+bossDef(z-1).nome,prevOk?'✔':'🔒');
     h+='</div>'+pzGauge(d.pc,!un);
