@@ -41,7 +41,7 @@ function resize(){R.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/
 addEventListener('resize',resize);resize();
 let seed=11;const rnd=()=>{seed=(seed*16807)%2147483647;return (seed-1)/2147483646;};
 function cvs(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
-const U=1.3/46,wx=p=>(p-450)*U,wz=p=>p*U,TILT=34*Math.PI/180;
+const U=1.3/46,wx=p=>(p-450)*U,wz=p=>p*U,TILT=47*Math.PI/180;
 const loader=new T.TextureLoader();
 function load(src,px){return new Promise(ok=>loader.load(src,t=>{if(px){t.magFilter=T.NearestFilter;t.minFilter=T.LinearMipmapLinearFilter;}t.encoding=T.sRGBEncoding;ok(t);}));}
 const [gTex,aTex,sH,sG,sP,sL,sB]=await Promise.all([load(DATA.img.ground,1),load(DATA.img.atlas,1),load(DATA.img.hw,1),load(DATA.img.gw,1),load(DATA.img.pw,1),load(DATA.img.lw,1),load(DATA.img.bw,1)]);
@@ -90,7 +90,7 @@ const BT=blobTex();
   S.add(new T.Mesh(g,new T.MeshBasicMaterial({map:BT,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3})));}
 // ---------- casas em 3D ----------
 const HC={b_fer:{name:'Ferreiro',roof:'#2d3540',wall:'#b99a74',glow:'#ff8a2a',smoke:1},b_mer:{name:'Mercador',roof:'#7a3b29',wall:'#c4a58a',glow:'#ffd27a'},b_mes:{name:'Mestre de Classe',roof:'#34455a',wall:'#c9b8a8',glow:'#ffd27a'},b_alq:{name:'Alquimista',roof:'#355868',wall:'#a99aa6',glow:'#9affc0',smoke:1},b_lei:{name:'Leilão',roof:'#562729',wall:'#b98f6c',glow:'#ffd27a'},b_cof:{name:'Cofre',roof:'#364b42',wall:'#6a6668',glow:'#8ac8ff'}};
-const winMats=[];
+const winMats=[],houses=[];
 function facade(cfg){const W=512,H=384,c=cvs(W,H),x=c.getContext('2d'),e=cvs(W,H),y=e.getContext('2d');
   x.fillStyle=cfg.wall;x.fillRect(0,0,W,H);for(let i=0;i<500;i++){x.fillStyle=`rgba(${rnd()<.5?'0,0,0':'255,255,255'},${.03+rnd()*.05})`;x.fillRect(rnd()*W,rnd()*H,2+rnd()*6,2+rnd()*3);}
   y.fillStyle='#000';y.fillRect(0,0,W,H);
@@ -120,17 +120,19 @@ function house(id,px,py){const cfg=HC[id];const g=new T.Group();g.position.set(w
   const roof=new T.Mesh(new T.CylinderGeometry(.9,Math.hypot(w/2+.5,d/2+.5),2.3,4,1),rm);roof.rotation.y=Math.PI/4;roof.scale.set((w+1)/(d+1)*.95,1,1);
   // pirâmide (telhado de quatro águas): ajusta pela raiz para cobrir w x d
   roof.scale.set(1,1,1);const rg=roof.geometry;rg.dispose();
-  const hip=new T.BufferGeometry(),a=w/2+.45,b=d/2+.45,rh=2.2,ra=Math.min(a,b)*.0+1.1,v=[[-a,0,b],[a,0,b],[a,0,-b],[-a,0,-b],[-ra,rh,-.1],[ra,rh,-.1]];
+  const hip=new T.BufferGeometry(),a=w/2+.45,b=d/2+.45,rh=1.45,ra=Math.min(a,b)*.0+1.0,v=[[-a,0,b],[a,0,b],[a,0,-b],[-a,0,-b],[-ra,rh,-.1],[ra,rh,-.1]];
   const f=[[0,1,5],[0,5,4],[1,2,5],[2,3,4],[2,4,5],[3,0,4]];const P=[],UV=[];
   const tri=(i,j,k)=>{[i,j,k].forEach(q=>{P.push(...v[q]);});UV.push(0,0,1,0,.5,1);};f.forEach(t=>tri(...t));
   hip.setAttribute('position',new T.Float32BufferAttribute(P,3));hip.setAttribute('uv',new T.Float32BufferAttribute(UV,2));hip.computeVertexNormals();
   const rf=new T.Mesh(hip,new T.MeshStandardMaterial({map:rt,roughness:.85,side:T.DoubleSide}));rf.position.set(0,h,-d/2);g.add(rf);
   const rim=new T.Mesh(new T.BoxGeometry(w+1,.14,d+1),new T.MeshStandardMaterial({color:0x2a1a0e,roughness:.9}));rim.position.set(0,h+.04,-d/2);g.add(rim);
-  const ch=new T.Mesh(new T.BoxGeometry(.7,1.7,.7),new T.MeshStandardMaterial({color:0x3b3b40,roughness:.9}));ch.position.set(w*.28,h+1.6,-d*.6);g.add(ch);
-  if(cfg.smoke)chimneys.push({x:g.position.x+w*.28,y:h+2.6,z:g.position.z-d*.6});
+  const ch=new T.Mesh(new T.BoxGeometry(.7,1.2,.7),new T.MeshStandardMaterial({color:0x3b3b40,roughness:.9}));ch.position.set(w*.28,h+1.1,-d*.6);g.add(ch);
+  if(cfg.smoke)chimneys.push({x:g.position.x+w*.28,y:h+1.8,z:g.position.z-d*.6});
   const sg=new T.Mesh(new T.PlaneGeometry(1.5,.56),new T.MeshBasicMaterial({map:sign(cfg.name),side:T.DoubleSide}));sg.position.set(0,h*.72,.35);sg.rotation.x=-.05;g.add(sg);
   const br=new T.Mesh(new T.BoxGeometry(.06,.06,.6),new T.MeshStandardMaterial({color:0x222}));br.position.set(0,h*.72+.34,.1);g.add(br);
   for(let i=0;i<2;i++){const s=new T.Mesh(new T.BoxGeometry(1.6-i*.3,.12,.5),new T.MeshStandardMaterial({color:0x5a5d62,roughness:.9}));s.position.set(0,.06+i*.12,.28+(1-i)*.25);g.add(s);}
+  const mats=[];g.traverse(o=>{if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{if(!mats.includes(m))mats.push(m);});}});
+  g.userData={mats,o:1,box:new T.Box3(new T.Vector3(g.position.x-w/2-.7,0,g.position.z-d-.7),new T.Vector3(g.position.x+w/2+.7,h+1.7,g.position.z+.5))};houses.push(g);
   S.add(g);solids.push({aabb:[g.position.x-w/2-.1,g.position.z-d,g.position.x+w/2+.1,g.position.z+.05]});return g;}
 const houseDoors={};
 for(const [t,id,x,y] of DATA.props){if(id.startsWith('b_')){house(id,x,y);}}
@@ -206,7 +208,12 @@ function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/
   const asp=cam.aspect,dist=18*(asp<1?1+(1-asp)*1.2:1);camT.x+=(hero.x*.96-camT.x)*Math.min(1,dt*4);camT.z+=(hero.z-camT.z)*Math.min(1,dt*4);
   cam.position.set(camT.x,.9+D.y*dist,camT.z-1+D.z*dist);cam.lookAt(camT.x,.9,camT.z-1);
   hero.face();for(const n of NPC)n.face();
+  // casas na frente do herói ficam transparentes
+  {const head=new T.Vector3(hero.x,1.0,hero.z),dir=head.clone().sub(cam.position),L=dir.length();dir.normalize();const ray=new T.Ray(cam.position,dir),hit=new T.Vector3();
+   for(const g of houses){const u=g.userData,p=ray.intersectBox(u.box,hit),block=p&&cam.position.distanceTo(hit)<L-.3,tg=block?.14:1;u.o+=(tg-u.o)*Math.min(1,dt*7);
+     for(const m of u.mats){m.transparent=u.o<.995;m.opacity=u.o;m.depthWrite=u.o>.6;}}}
   R.render(S,cam);}
+window.__town={hero};
 requestAnimationFrame(loop);
 })();
 </script></body></html>
