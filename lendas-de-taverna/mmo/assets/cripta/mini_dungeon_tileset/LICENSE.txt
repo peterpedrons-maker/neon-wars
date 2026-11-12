@@ -1,0 +1,4 @@
+Mini dungeon tileset, por Elena Nazaire (ElenaNazaire)
+https://opengameart.org/content/mini-dungeon-tileset
+Licença: CC0 (domínio público). Não exige crédito; agradecimento opcional ao autor.
+dungeon_tiles_azul.png é uma versão recolorida por nós (matiz deslocado).
