@@ -12,7 +12,8 @@ def wl(n):
     w=L(n);return sc(w.crop((2,0,w.width-2,w.height)))
 WP=[wl('parede_1'),wl('parede_1'),wl('parede_3'),wl('parede_4')]
 tw,th=FL[0].size;wh=WP[0].height;cap_h=int(wh*.2);side=34;F=74
-arch=sc(L('porta_1'));aw,ah=arch.size;leaf=sc(L('porta_2'))
+AS=.86
+arch=sc(L('porta_1'),S*AS);aw,ah=arch.size;leaf=sc(L('porta_2'),S*AS)
 ar=np.array(arch);opn=(ar[:,:,:3].max(2)<14)&(ar[:,:,3]>0);ys,xs=np.where(opn);ox0,ox1,oy0,oy1=xs.min(),xs.max(),ys.min(),ys.max()
 # vão: chão iluminado (mais escuro no alto, claro embaixo) em vez de preto
 _t=Image.new('RGBA',(aw,ah))
@@ -66,7 +67,12 @@ for p in placed:
         if dx is not None and cur<dx+aw and cur+w.width>dx:
             gap=dx-cur
             if gap>0:put(bg,w.crop((0,0,gap,w.height)),cur,p['band_y'])
-            put(bg,arch_lit,dx,p['band_y']+wh-ah);capseg=WP[0].crop((0,0,min(WP[0].width,aw),cap_h)).resize((aw,cap_h));put(bg,capseg,dx,p['band_y']);cur=dx+aw;continue
+            # fundo da parede atrás do arco (tijolo) + viga contínua + arco abaixo dela
+            bgw=WP[0].crop((0,0,min(WP[0].width,aw),WP[0].height))
+            if bgw.width<aw:bgw=WP[0].crop((0,0,aw,WP[0].height))
+            put(bg,bgw,dx,p['band_y'])
+            put(bg,arch_lit,dx,p['band_y']+wh-ah)
+            capseg=WP[0].crop((60,0,60+aw,cap_h));put(bg,capseg,dx,p['band_y']);cur=dx+aw;continue
         put(bg,w.crop((0,0,min(w.width,x0+rw-cur),w.height)),cur,p['band_y'])
         if w is WP[3]:banners.append(cur+w.width//2)
         cur+=w.width
@@ -74,17 +80,17 @@ for p in placed:
     # laterais (capa rotacionada)
     LH=fh+wh
     capstrip=WP[0].crop((0,0,WP[0].width,cap_h)).resize((LH,side)).rotate(90,expand=True).crop((0,0,side,LH))
-    LH2=(fy+fh-F+wh)-p['band_y'];cs2=WP[0].crop((0,0,WP[0].width,cap_h)).resize((LH2,side)).rotate(90,expand=True).crop((0,0,side,LH2))
+    LH2=(fy+fh-F+cap_h)-p['band_y'];cs2=WP[0].crop((0,0,WP[0].width,cap_h)).resize((LH2,side)).rotate(90,expand=True).crop((0,0,side,LH2))
     put(front,cs2,x0-side,p['band_y']);put(front,cs2.transpose(Image.FLIP_LEFT_RIGHT),x0+rw,p['band_y'])
     # parede sul alta na camada da frente, com vão para o corredor (exceto a primeira sala)
     bottom=fy+fh;gx=None
     if p['i']>0:
         prev=placed[p['i']-1];gx=prev['door_cx']
-    cur=x0
-    while cur<x0+rw:
+    cur=x0-side
+    while cur<x0+rw+side:
         w=WP[0]
         for sx_ in range(0,w.width,1):pass
-        seg=w.crop((0,0,min(w.width,x0+rw-cur),w.height))
+        seg=w.crop((0,0,min(w.width,x0+rw+side-cur),w.height))
         if gx is not None and cur<gx+tw//2 and cur+seg.width>gx-tw//2:
             a0=max(0,gx-tw//2-cur);a1=min(seg.width,gx+tw//2-cur)
             if a0>0:put(front,seg.crop((0,0,a0,seg.height)),cur,bottom-F)
@@ -118,7 +124,7 @@ for p in placed:
     cxs=[p['x0']+tw//2+int(.3*tw),p['x0']+p['c']*tw-tw//2-int(.3*tw)]
     if p['off'] is not None:cxs+=[p['door_cx']-int(1.45*tw),p['door_cx']+int(1.45*tw)]
     for tx in sorted(set(cxs)):
-        if p['x0']+30<tx<p['x0']+p['c']*tw-30 and all(abs(tx-bx)>70 for bx in p.get('banners',[])):torches.append((tx,p['band_y']+int(wh*.30)))
+        if p['x0']+30<tx<p['x0']+p['c']*tw-30 and all(abs(tx-bx)>70 for bx in p.get('banners',[])) and all(abs(tx-ox)>110 or abs(oy-(p['band_y']+int(wh*.30)))>20 for ox,oy in torches):torches.append((tx,p['band_y']+int(wh*.30)))
 # props: (sprite, x, base_y, altura)
 def col(p,i):return p['x0']+int((i+.5)*tw)
 for p in placed:

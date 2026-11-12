@@ -9,6 +9,13 @@ Regras que apareceram ao montar a Cripta do Rei Esquecido. Valem para qualquer d
 - **Cantos:** as laterais sobem até o topo da parede norte e a faixa norte fica *entre* elas, nunca por cima.
 - **Portas:** o arco tem a mesma pedra de capa que a parede, em linha contínua por cima. O vão mostra o *chão* iluminado, não preto. O herói passa *por baixo* do arco: a pedra do arco (sem o vão) é desenhada sobre ele enquanto estiver dentro do vão.
 
+### Viga (capa de pedra) e contorno
+- A **viga** é a capa de pedra clara no topo de cada parede. Todas as vigas de uma sala formam um **contorno fechado**: norte, sul e as duas laterais se encontram em quadrados de canto.
+- **Laterais param na viga da parede sul**, sem descer ao lado da face. A face (tijolos) da parede sul passa por baixo, na largura toda, inclusive embaixo dos cantos. É igual ao encontro de cima.
+- **Corredor:** as laterais dele nascem na viga da parede sul da sala de cima e descem até a viga da faixa da sala de baixo.
+- **Arco:** é menor que a parede (escala ~0,86) e fica **encaixado abaixo** da viga, que corre reta por cima dele. Largura menor que a do corredor. Nunca colar a viga por cima do arco.
+- Peças vizinhas (tochas, estandartes) não podem se sobrepor nem ser cortadas; tochas duplicadas a menos de 110 px são descartadas.
+
 ## 2. Camadas (ordem de desenho)
 1. Chão, tapete, parede norte, objetos de fundo
 2. Personagens e objetos, ordenados pelo pé (y)
