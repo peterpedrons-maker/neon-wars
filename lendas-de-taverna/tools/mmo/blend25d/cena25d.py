@@ -385,8 +385,81 @@ def rat(px,py,rz,s=1.0):
         if o.parent is None:
             o.parent=root
     root.scale=(s,s,s);return root
-warrior(-1.45,-.5,-28)
-RATROOT=rat(1.5,-.15,22,1.3)
+import os
+
+# ================= PERSONAGENS EM PIXEL ART (sprites do jogo) NO CENÁRIO 3D (estilo HD-2D) =================
+SPR={}
+CHARS_DIR='/home/user/neon-wars/lendas-de-taverna/mmo/assets/chars/'
+PXW=1.3/46.0      # unidades de mundo por pixel do sprite (herói de 46 px = 1,3 de altura)
+def sprite_plane(name,png,cell,cols,rows,ax,ay,parent,flip=False,tint=None):
+    im=bpy.data.images.load(CHARS_DIR+png);im.colorspace_settings.name='sRGB'
+    bm=bmesh.new();x0=-ax*PXW;x1=(cell-ax)*PXW;zb=-(cell-ay)*PXW;zt=ay*PXW
+    if flip:x0,x1=-x1,-x0
+    vs=[bm.verts.new((x0,0,zb)),bm.verts.new((x1,0,zb)),bm.verts.new((x1,0,zt)),bm.verts.new((x0,0,zt))]
+    f=bm.faces.new(vs);uv=bm.loops.layers.uv.new()
+    uvs=[(0,0),(1,0),(1,1),(0,1)]
+    if flip:uvs=[(1,0),(0,0),(0,1),(1,1)]
+    for l,u in zip(f.loops,uvs):l[uv].uv=u
+    me=bpy.data.meshes.new(name);bm.to_mesh(me);bm.free()
+    o=bpy.data.objects.new(name,me);link(o);o.parent=parent
+    m=bpy.data.materials.new(name);m.use_nodes=True;t=m.node_tree;N=t.nodes;L=t.links
+    for n in list(N):N.remove(n)
+    tc=N.new('ShaderNodeTexCoord');mp=N.new('ShaderNodeMapping');mp.inputs['Scale'].default_value=(1/cols,1/rows,1)
+    tx=N.new('ShaderNodeTexImage');tx.image=im;tx.interpolation='Closest';tx.extension='CLIP'
+    L.new(tc.outputs['UV'],mp.inputs['Vector']);L.new(mp.outputs['Vector'],tx.inputs['Vector'])
+    fl=N.new('ShaderNodeValue');fl.outputs[0].default_value=0.0                       # clarão branco (dano)
+    base=tx.outputs['Color']
+    if tint:
+        tm=N.new('ShaderNodeMix');tm.data_type='RGBA';tm.blend_type='MULTIPLY';tm.inputs[0].default_value=1.0;L.new(tx.outputs['Color'],tm.inputs[6]);tm.inputs[7].default_value=(*[c**2.2 for c in tint],1);base=tm.outputs[2]
+    mixc=N.new('ShaderNodeMix');mixc.data_type='RGBA';L.new(fl.outputs[0],mixc.inputs[0]);L.new(base,mixc.inputs[6]);mixc.inputs[7].default_value=(1,1,1,1)
+    df=N.new('ShaderNodeBsdfDiffuse');L.new(mixc.outputs[2],df.inputs['Color'])
+    em=N.new('ShaderNodeEmission');L.new(mixc.outputs[2],em.inputs['Color']);em.inputs['Strength'].default_value=.38
+    fe=N.new('ShaderNodeMath');fe.operation='MAXIMUM';L.new(fl.outputs[0],fe.inputs[0]);fe.inputs[1].default_value=0
+    ad=N.new('ShaderNodeAddShader');L.new(df.outputs[0],ad.inputs[0]);L.new(em.outputs[0],ad.inputs[1])
+    vis=N.new('ShaderNodeValue');vis.outputs[0].default_value=1.0
+    af=N.new('ShaderNodeMath');af.operation='MULTIPLY';L.new(tx.outputs['Alpha'],af.inputs[0]);L.new(vis.outputs[0],af.inputs[1])
+    tr=N.new('ShaderNodeBsdfTransparent');mx=N.new('ShaderNodeMixShader');L.new(af.outputs[0],mx.inputs[0]);L.new(tr.outputs[0],mx.inputs[1]);L.new(ad.outputs[0],mx.inputs[2])
+    out=N.new('ShaderNodeOutputMaterial');L.new(mx.outputs[0],out.inputs['Surface']);o.data.materials.append(m)
+    SPR[name]=dict(o=o,mp=mp,cols=cols,rows=rows,fl=fl,vis=vis,m=m)
+    return o
+def spr_frame(name,f,col,row):
+    d=SPR[name];mp=d['mp'];mp.inputs['Location'].default_value=(col/d['cols'],1-(row+1)/d['rows'],0)
+    mp.inputs['Location'].keyframe_insert('default_value',frame=f)
+def spr_show(name,f,on):
+    o=SPR[name]['o'];o.hide_render=not on;o.keyframe_insert('hide_render',frame=f)
+def spr_val(name,key,f,v):
+    n=SPR[name][key].outputs[0];n.default_value=v;n.keyframe_insert('default_value',frame=f)
+def blob(parent,rx,ry,al=.5):
+    bm=bmesh.new();vs=[bm.verts.new((-rx,-ry,.014)),bm.verts.new((rx,-ry,.014)),bm.verts.new((rx,ry,.014)),bm.verts.new((-rx,ry,.014))];f=bm.faces.new(vs);uv=bm.loops.layers.uv.new()
+    for l,u in zip(f.loops,[(0,0),(1,0),(1,1),(0,1)]):l[uv].uv=u
+    me=bpy.data.meshes.new('blob');bm.to_mesh(me);bm.free();o=bpy.data.objects.new('blob',me);link(o);o.parent=parent
+    m=bpy.data.materials.new('blob');m.use_nodes=True;t=m.node_tree;N=t.nodes;L=t.links
+    for n in list(N):N.remove(n)
+    tc=N.new('ShaderNodeTexCoord');gr=N.new('ShaderNodeTexGradient');gr.gradient_type='SPHERICAL'
+    mp=N.new('ShaderNodeMapping');mp.inputs['Location'].default_value=(-.5,-.5,0);L.new(tc.outputs['UV'],mp.inputs['Vector']);L.new(mp.outputs[0],gr.inputs[0])
+    cr=N.new('ShaderNodeValToRGB');cr.color_ramp.elements[0].color=(al,al,al,1);cr.color_ramp.elements[0].position=0;cr.color_ramp.elements[1].color=(0,0,0,1);cr.color_ramp.elements[1].position=.5
+    L.new(gr.outputs[0],cr.inputs[0]);bs=N.new('ShaderNodeBsdfDiffuse');bs.inputs['Color'].default_value=(0,0,0,1)
+    tr=N.new('ShaderNodeBsdfTransparent');mx=N.new('ShaderNodeMixShader');L.new(cr.outputs[0],mx.inputs[0]);L.new(tr.outputs[0],mx.inputs[1]);L.new(bs.outputs[0],mx.inputs[2])
+    out=N.new('ShaderNodeOutputMaterial');L.new(mx.outputs[0],out.inputs['Surface']);o.data.materials.append(m);return o
+def build_sprites():
+    hero=bpy.data.objects.new('hero',None);link(hero);hero.location=(-1.3,-.5,0)
+    rat_=bpy.data.objects.new('ratroot',None);link(rat_);rat_.location=(4.6,-.35,0)
+    SPR['_hero']=hero;SPR['_rat']=rat_
+    # âncoras: x,y do pé na folha de caminhada (como no jogo); folhas de ataque têm célula maior (+ (cell-64)/2)
+    hax,hay=28,61;rax,ray=27,61
+    sprite_plane('h_idle','guerreiro__walk.png',64,9,4,hax,hay,hero)
+    sprite_plane('h_slash','guerreiro__slash.png',192,6,4,hax+64,hay+64,hero)
+    sprite_plane('r_walk','rato__walk.png',64,9,4,rax,ray,rat_,tint=(.62,.5,.42))
+    sprite_plane('r_slash','rato__slash.png',64,6,4,rax,ray,rat_,tint=(.62,.5,.42))
+    sprite_plane('r_hurt','rato__hurt.png',64,6,1,rax,ray,rat_,tint=(.62,.5,.42))
+    blob(hero,.5,.28,.55);blob(rat_,.55,.3,.55)
+    return hero,rat_
+CH=os.environ.get('CHARS','3d')
+if CH=='3d':
+    warrior(-1.45,-.5,-28)
+    RATROOT=rat(1.5,-.15,22,1.3)
+else:
+    HERO,RATR=build_sprites()
 # ---------------- ambiente e luz ----------------
 w=bpy.data.worlds.new('w');sc.world=w;w.use_nodes=True;bg=w.node_tree.nodes['Background'];bg.inputs[0].default_value=(.015,.02,.035,1);bg.inputs[1].default_value=1.0
 def area(loc,rot,e,col,size):
@@ -428,7 +501,56 @@ def ease(o,mode='BEZIER'):
     if o.animation_data and o.animation_data.action:
         for fc in fcs(o.animation_data.action):
             for k in fc.keyframe_points:k.interpolation=mode
+
+def animate_sprites():
+    sc.render.fps=24;hero=SPR['_hero'];rr=SPR['_rat'];END=156
+    # --- guerreiro: parado (respirando) -> golpe -> parado
+    spr_show('h_slash',1,False);spr_show('h_idle',1,True)
+    for f in range(1,END+1,12):
+        kf(hero,f,(-1.3,-.5,.014*((f//12)%2)))
+    kf(hero,64,(-1.3,-.5,0));kf(hero,70,(-1.05,-.5,0));kf(hero,84,(-1.05,-.5,0));kf(hero,100,(-1.3,-.5,0))
+    spr_frame('h_idle',1,0,3);spr_frame('h_slash',1,0,3)
+    spr_show('h_idle',66,False);spr_show('h_slash',66,True)
+    for i in range(6):spr_frame('h_slash',66+i*2,i,3)
+    spr_show('h_slash',80,False);spr_show('h_idle',80,True)
+    # --- rato: anda, ataca, leva o golpe, some
+    for n in('r_walk','r_slash','r_hurt'):spr_show(n,1,n=='r_walk')
+    for f in range(1,61,3):spr_frame('r_walk',f,1+((f//3)%8),1)
+    kf(rr,1,(4.8,-.35,0));kf(rr,60,(2.0,-.35,0));kf(rr,62,(2.0,-.35,0))
+    spr_show('r_walk',62,False);spr_show('r_slash',62,True)
+    for i in range(6):spr_frame('r_slash',62+i*2,i,1)
+    kf(rr,68,(1.55,-.35,0));kf(rr,72,(1.3,-.35,0))          # bote para a frente
+    spr_show('r_slash',73,False);spr_show('r_hurt',73,True)  # leva a espadada
+    for i,c in enumerate((0,1,2,2,2,2)):spr_frame('r_hurt',73+i*3,c,0)
+    kf(rr,73,(1.3,-.35,0));kf(rr,91,(2.7,-.35,0));kf(rr,100,(2.9,-.35,0))
+    spr_val('r_hurt','fl',73,1.0);spr_val('r_hurt','fl',78,0.0)
+    spr_val('r_hurt','vis',96,1.0);spr_val('r_hurt','vis',118,0.0)
+    # --- tochas
+    for o in bpy.data.objects:
+        if o.type=='LIGHT' and o.data.type=='POINT' and o.name.startswith('t'):
+            e=o.data.energy;o.data.keyframe_insert('energy',frame=1)
+            fc=fcs(o.data.animation_data.action)[0];m=fc.modifiers.new('NOISE');m.scale=3+random.random()*3;m.strength=e*.35;m.phase=random.random()*50
+    # --- câmera: aproxima, treme no golpe, sobe e recua
+    tg=bpy.data.objects.new('tg',None);link(tg)
+    kf(tg,1,(.1,-.3,.9));kf(tg,70,(.45,-.3,.85));kf(tg,100,(.6,-.3,.85));kf(tg,END,(.3,-.2,.9))
+    kf(co,1,(.3,-8.2,3.6));kf(co,60,(.5,-7.0,3.0));kf(co,70,(.5,-7.0,3.0))
+    for f,dx,dz in((71,.08,.05),(73,-.07,-.05),(75,.05,.03),(77,0,0)):kf(co,f,(.5+dx,-7.0,3.0+dz))
+    kf(co,110,(.8,-7.2,3.1));kf(co,END,(2.4,-8.6,4.2))
+    for f,l in((1,40),(100,40),(END,38)):cam.lens=l;cam.keyframe_insert('lens',frame=f)
+    tc=co.constraints.new('TRACK_TO');tc.target=tg;tc.track_axis='TRACK_NEGATIVE_Z';tc.up_axis='UP_Y'
+    cam.dof.use_dof=True;cam.dof.focus_object=tg;cam.dof.aperture_fstop=2.4
+    # keyframes de sprite e visibilidade sem interpolação
+    for n,d in SPR.items():
+        if n.startswith('_'):continue
+        for idn in(d['m'].node_tree,d['o']):
+            if idn.animation_data and idn.animation_data.action:
+                for fc in fcs(idn.animation_data.action):
+                    for k in fc.keyframe_points:
+                        if 'Location' in fc.data_path or 'hide_render' in fc.data_path or 'default_value' in fc.data_path and 'fl' in fc.data_path:k.interpolation='CONSTANT'
+    for o in(tg,co,hero,rr):ease(o)
+    sc.frame_start=1;sc.frame_end=END
 def animate():
+    if CH=='sprites':return animate_sprites()
     sc.render.fps=24;wr=WAR['root'];arm=WAR['arm'];rt=RATROOT
     wx,wy=-1.45,-.5;wrz=-28
     # --- guerreiro: respira, ergue a espada, golpeia, comemora
@@ -463,7 +585,7 @@ def animate():
     sc.frame_start=1;sc.frame_end=216
 if VIEW=='anim':
     animate()
-    FS=int(sys.argv[5]) if len(sys.argv)>5 else 1;FE=int(sys.argv[6]) if len(sys.argv)>6 else 216
+    FS=int(sys.argv[5]) if len(sys.argv)>5 else 1;FE=int(sys.argv[6]) if len(sys.argv)>6 else sc.frame_end
     import os;os.makedirs(OUT,exist_ok=True)
     for f in range(FS,FE+1):
         sc.frame_set(f);R.filepath=f'{OUT}/f{f:04d}.png';bpy.ops.render.render(write_still=True)
