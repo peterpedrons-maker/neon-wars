@@ -3968,6 +3968,7 @@ function drawNameplate(e,col){
 }
 function render(){
   const cv=$('cv');if(!ctx)ctx=cv.getContext('2d');
+  if(window.V3&&V3.active()){V3.render();return;}   /* visual 2.5D (?v3=1): só desenha; a lógica não muda */
   ctx.setTransform(G.K,0,0,G.K,0,0);ctx.imageSmoothingEnabled=false;
   let shx=0,shy=0;if(G.shake>0){shx=Math.round(rnd(-1.5,1.5));shy=Math.round(rnd(-1.5,1.5));}
   ctx.translate(shx,shy);
@@ -4816,10 +4817,11 @@ G.joy={x:0,y:0,m:0};G.castReq=-1;
 })();
 function joyShow(){const J=$('joy');if(!J)return;const on=G.on&&!G.winOpen&&!$('pan').classList.contains('on')&&$('hud').offsetParent!==null&&G.scene==='town';if(J.classList.contains('on')!==on){J.classList.toggle('on',on);if(!on){G.joy.m=0;$('joyk').style.transform='';}}}
 $('cv').addEventListener('pointerdown',ev=>{
-  if(!G.on||G.winOpen)return;const r=$('cv').getBoundingClientRect();const lx=(ev.clientX-r.left)/r.width*G.LW+G.cam.x,ly=(ev.clientY-r.top)/r.height*G.LH+G.cam.y;
+  if(!G.on||G.winOpen)return;const r=$('cv').getBoundingClientRect();let lx=(ev.clientX-r.left)/r.width*G.LW+G.cam.x,ly=(ev.clientY-r.top)/r.height*G.LH+G.cam.y;const V=window.V3&&V3.active();if(V){const q=V3.pick(ev.clientX,ev.clientY);lx=q[0];ly=q[1];}
   const fx=()=>{tapFx(ev.clientX-$('stage').getBoundingClientRect().left,ev.clientY);sfx('ui_click',.4);};
   if(G.scene==='town'){
-    let t=null;for(const n of G.npcs)if(Math.abs(lx-n.x)<24&&ly>n.y-62&&ly<n.y+10)t=n;
+    if(V){const hn=V3.hitNpc(ev.clientX,ev.clientY);if(hn){G.wp=hn.ap?{x:hn.ap[0],y:hn.ap[1],target:hn}:{x:hn.x,y:hn.y+8,target:hn};fx();return;}const hd=V3.hitDoor(ev.clientX,ev.clientY);if(hd){const tt={kind:'door',id:hd.id,room:hd.room};G.wp={x:hd.x,y:hd.y-2,target:tt};fx();return;}}
+    let t=null;if(!V)for(const n of G.npcs)if(Math.abs(lx-n.x)<24&&ly>n.y-62&&ly<n.y+10)t=n;
     if(!t&&ZONE.doors)for(const d of ZONE.doors)if(Math.abs(lx-d.x)<d.w/2&&ly>d.y-d.h&&ly<d.y+12){t={kind:'door',id:d.id,room:d.room};G.wp={x:d.x,y:d.y-2,target:t};fx();return;}
     if(!t){const P=ZONE.portal;if(Math.abs(lx-P.x)<46&&ly>P.y-90&&ly<P.y+14)t={kind:'portal'};}
     if(t&&t.kind==='npc')G.wp=t.ap?{x:t.ap[0],y:t.ap[1],target:t}:{x:t.x,y:t.y+8,target:t};else if(t)G.wp={x:ZONE.portal.stand[0],y:ZONE.portal.stand[1],target:t};else G.wp={x:lx,y:ly};
@@ -4865,5 +4867,6 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
   b.addEventListener('click',async e=>{e.preventDefault();if(ev){ev.prompt();try{await ev.userChoice;}catch(_){}ev=null;return;}
     await gConfirm('O Chrome não ofereceu a instalação. Se ele diz que já está instalado, existe um app antigo (Neon Wars ou Hearthblade) cobrindo este endereço, mesmo sem ícone na tela inicial. Para resolver: 1) abra chrome://webapks no Chrome e veja a lista; 2) em Configurações do celular > Apps, procure Neon Wars e Hearthblade e toque em Desinstalar; 3) volte aqui e toque em Instalar o app. Depois você pode reinstalar o outro.',{title:'Instalar o app',ok:'Entendi',no:'Fechar'});});})();
 </script>
+<script>if(new URLSearchParams(location.search).get('v3')==='1'){document.write('<script src="three.min.js"><\/script><script src="v3.js"><\/script>');}</script>
 </body>
 </html>
