@@ -7,10 +7,10 @@ def sc(im,s=S):return im.resize((max(1,round(im.width*s)),max(1,round(im.height*
 def ft(n):
     t=L(n);w,h=t.size;return sc(t.crop((14,14,w-14,h-24)))
 FL=[ft('chao_1'),ft('chao_2'),ft('chao_1'),ft('chao_3'),ft('chao_4'),ft('chao_2')]
-CARP=ft('chao_7');CAP=ft('chao_8')
+CARP=ft('chao_7');CAP=ft('chao_8');CARP=CARP.crop((0,3,CARP.width,CARP.height-3));CAP=CAP.crop((0,3,CAP.width,CAP.height))
 def wl(n):
     w=L(n);return sc(w.crop((2,0,w.width-2,w.height)))
-WP=[wl('parede_1'),wl('parede_1'),wl('parede_2'),wl('parede_3'),wl('parede_4')]
+WP=[wl('parede_1'),wl('parede_1'),wl('parede_3'),wl('parede_4')]
 tw,th=FL[0].size;wh=WP[0].height;cap_h=int(wh*.2);side=34;F=74
 arch=sc(L('porta_1'));aw,ah=arch.size;leaf=sc(L('porta_2'))
 ar=np.array(arch);opn=(ar[:,:,:3].max(2)<14)&(ar[:,:,3]>0);ys,xs=np.where(opn);ox0,ox1,oy0,oy1=xs.min(),xs.max(),ys.min(),ys.max()
@@ -55,30 +55,36 @@ for p in placed:
     # tapete: do arco para baixo
     if p['off'] is not None and nm in('atrio','guardioes','altares','camara'):
         cx=p['door_cx'];cols=[(cx-tw//2)]
-        for j in range(r):put(bg,CARP if j<r-1 else CAP,cols[0],fy+j*th)
+        for j in range(r):put(bg,CARP if j<r-1 else CAP,cols[0],fy+j*(th-6)) if False else put(bg,CARP.resize((CARP.width,th)) if j<r-1 else CAP.resize((CAP.width,th)),cols[0],fy+j*th)
     # parede norte (faixa) com arco
     cur=x0
     dx=p['door_cx']-aw//2 if p['off'] is not None else None
+    banners=[]
     while cur<x0+rw:
         w=random.choice(WP)
+        if w is WP[3] and (cur+w.width>x0+rw or (dx is not None and cur<dx+aw+10 and cur+w.width>dx-10) or banners):w=WP[0]
         if dx is not None and cur<dx+aw and cur+w.width>dx:
             gap=dx-cur
             if gap>0:put(bg,w.crop((0,0,gap,w.height)),cur,p['band_y'])
-            put(bg,arch_lit,dx,p['band_y']+wh-ah);cur=dx+aw;continue
-        put(bg,w.crop((0,0,min(w.width,x0+rw-cur),w.height)),cur,p['band_y']);cur+=w.width
+            put(bg,arch_lit,dx,p['band_y']+wh-ah);capseg=WP[0].crop((0,0,min(WP[0].width,aw),cap_h)).resize((aw,cap_h));put(bg,capseg,dx,p['band_y']);cur=dx+aw;continue
+        put(bg,w.crop((0,0,min(w.width,x0+rw-cur),w.height)),cur,p['band_y'])
+        if w is WP[3]:banners.append(cur+w.width//2)
+        cur+=w.width
+    p['banners']=banners
     # laterais (capa rotacionada)
     LH=fh+wh
     capstrip=WP[0].crop((0,0,WP[0].width,cap_h)).resize((LH,side)).rotate(90,expand=True).crop((0,0,side,LH))
-    put(bg,capstrip,x0-side,p['band_y']);put(bg,capstrip.transpose(Image.FLIP_LEFT_RIGHT),x0+rw,p['band_y'])
+    LH2=(fy+fh-F+wh)-p['band_y'];cs2=WP[0].crop((0,0,WP[0].width,cap_h)).resize((LH2,side)).rotate(90,expand=True).crop((0,0,side,LH2))
+    put(front,cs2,x0-side,p['band_y']);put(front,cs2.transpose(Image.FLIP_LEFT_RIGHT),x0+rw,p['band_y'])
     # parede sul alta na camada da frente, com vão para o corredor (exceto a primeira sala)
     bottom=fy+fh;gx=None
     if p['i']>0:
         prev=placed[p['i']-1];gx=prev['door_cx']
-    cur=x0-side
-    while cur<x0+rw+side:
-        w=random.choice([WP[0],WP[0],WP[3]])
+    cur=x0
+    while cur<x0+rw:
+        w=WP[0]
         for sx_ in range(0,w.width,1):pass
-        seg=w.crop((0,0,min(w.width,x0+rw+side-cur),w.height))
+        seg=w.crop((0,0,min(w.width,x0+rw-cur),w.height))
         if gx is not None and cur<gx+tw//2 and cur+seg.width>gx-tw//2:
             a0=max(0,gx-tw//2-cur);a1=min(seg.width,gx+tw//2-cur)
             if a0>0:put(front,seg.crop((0,0,a0,seg.height)),cur,bottom-F)
@@ -103,7 +109,8 @@ for p in placed:
     below=placed[p['i']-1];gx=below['door_cx'];cy=p['cor_y'];ch=p['cor_h']
     floorfill(gx-tw//2,cy,tw,ch)
     capstrip=WP[0].crop((0,0,WP[0].width,cap_h)).resize((ch+cap_h,side)).rotate(90,expand=True).crop((0,0,side,ch))
-    put(bg,capstrip,gx-tw//2-side,cy);put(bg,capstrip.transpose(Image.FLIP_LEFT_RIGHT),gx+tw//2,cy)
+    top=cy-F;LHc=below['band_y']-top;csc=WP[0].crop((0,0,WP[0].width,cap_h)).resize((LHc,side)).rotate(90,expand=True).crop((0,0,side,LHc))
+    put(front,csc,gx-tw//2-side,top);put(front,csc.transpose(Image.FLIP_LEFT_RIGHT),gx+tw//2,top)
     walk[cy-F+26:below['floor_y']+8,gx-tw//2+14:gx+tw//2-14]=True
     # chão do corredor entre a faixa e a parede da sala de cima já coberto; tapete no corredor
 for p in placed:
@@ -111,7 +118,7 @@ for p in placed:
     cxs=[p['x0']+tw//2+int(.3*tw),p['x0']+p['c']*tw-tw//2-int(.3*tw)]
     if p['off'] is not None:cxs+=[p['door_cx']-int(1.45*tw),p['door_cx']+int(1.45*tw)]
     for tx in sorted(set(cxs)):
-        if p['x0']+30<tx<p['x0']+p['c']*tw-30:torches.append((tx,p['band_y']+int(wh*.30)))
+        if p['x0']+30<tx<p['x0']+p['c']*tw-30 and all(abs(tx-bx)>70 for bx in p.get('banners',[])):torches.append((tx,p['band_y']+int(wh*.30)))
 # props: (sprite, x, base_y, altura)
 def col(p,i):return p['x0']+int((i+.5)*tw)
 for p in placed:
@@ -133,6 +140,18 @@ for p in placed:
         for k in range(8):
             a=k*math.pi/4+math.pi/8;props.append(('f_pilar',int(cx+math.cos(a)*(rw*.40)),int(cyy+math.sin(a)*(fh*.36))+30,112))
         props+=[('f_estatua',x0+int(.6*tw),b-4,124),('f_estatua',x0+rw-int(.6*tw),b-4,124)]
+# regra: nada de objeto em cima do tapete / do caminho da porta
+_dc={p['i']:p.get('door_cx') for p in placed}
+def _room_of(by):
+    for p in placed:
+        if p['floor_y']-5<=by<=p['floor_y']+p['floor_h']+5:return p
+    return None
+_ok=[]
+for n,x,by,h in props:
+    p=_room_of(by)
+    if p is not None and p.get('door_cx') is not None and p['nm'] in ('atrio','guardioes','altares') and abs(x-p['door_cx'])<tw*.85:continue
+    _ok.append((n,x,by,h))
+props=_ok
 # aranhas nos cantos das faixas
 webs=[]
 for p in placed:
