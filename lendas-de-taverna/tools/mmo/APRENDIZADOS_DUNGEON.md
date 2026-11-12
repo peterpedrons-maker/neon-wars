@@ -12,7 +12,7 @@ Regras que apareceram ao montar a Cripta do Rei Esquecido. Valem para qualquer d
 ### Viga (capa de pedra) e contorno
 - A **viga** é a capa de pedra clara no topo de cada parede. Todas as vigas de uma sala formam um **contorno fechado**: norte, sul e as duas laterais se encontram em quadrados de canto.
 - **Laterais param na viga da parede sul**, sem descer ao lado da face. A face (tijolos) da parede sul passa por baixo, na largura toda, inclusive embaixo dos cantos. É igual ao encontro de cima.
-- **Corredor:** as laterais dele nascem na viga da parede sul da sala de cima e descem até a viga da faixa da sala de baixo.
+- **Corredor:** as laterais dele nascem na viga da parede sul da sala de cima e descem **só até a viga da parede norte da sala de baixo**. As duas vigas se encontram e terminam ali; a viga vertical nunca desce até o pé da parede.
 - **Arco:** é menor que a parede (escala ~0,86) e fica **encaixado abaixo** da viga, que corre reta por cima dele. Largura menor que a do corredor. Nunca colar a viga por cima do arco.
 - **Recorte do arco:** usar só a moldura de pedra (anel + pés) e o vão, nunca o retângulo da peça inteira: o tijolo da parede contínua passa por trás. Cortar 5 px das bordas das peças de parede para tirar fios de magenta.
 - Peças vizinhas (tochas, estandartes) não podem se sobrepor nem ser cortadas; tochas duplicadas a menos de 110 px são descartadas.
@@ -47,7 +47,7 @@ Regras que apareceram ao montar a Cripta do Rei Esquecido. Valem para qualquer d
 
 ## 7. Passagens e portas (decisão de design)
 - **Sem porta nas passagens comuns.** Abertura simples no contorno, com a parede vertical por cima nos dois lados, descendo até o chão da sala de baixo. Menos peças, mais limpo.
-- **Uma porta só: a do chefe**, que fecha e abre. Parede alta (dupla) com moldura de pedra e caveira; o vão fica transparente e as folhas de madeira fecham por cima. A parede dessa sala precisa ser alta o bastante para a moldura caber (aprox. 1,75× a altura normal).
+- **Uma porta só: a do chefe**, que fecha e abre. Nada de moldura gigante (testamos e ficou ruim): é a mesma abertura das outras, com duas folhas de madeira estreitas, recolhidas nas laterais quando aberta, e uma placa de caveira acima. Na animação as folhas se juntam no meio.
 - **Folhas das peças geradas** (porta esquerda/direita) servem para a animação de abrir e fechar; a luz vermelha vem do vão.
 
 ## 8. Decoração com função
@@ -55,3 +55,7 @@ Regras que apareceram ao montar a Cripta do Rei Esquecido. Valem para qualquer d
 - Objetos **encostados na parede norte** (base a ~70% da altura do objeto) ou nos cantos; nunca no eixo da porta nem no tapete.
 - Estandarte de uma cor por sala (vermelho, azul, verde) e janelas de grade espaçadas simetricamente; tochas fogem deles (> 46 px).
 - Decalques no chão (sangue, ralo, ossos, musgo, buraco, runas) dão vida sem bloquear.
+
+## 9. Menos é mais
+- Poluição visual é o erro mais comum: por sala, 2 pilares, 1 ou 2 peças de função, 1 decalque grande e só. Sem estantes, sacos, barris e manchas "para encher".
+- Estandartes (2) e uma janela por parede norte; tochas só nas pontas.

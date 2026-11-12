@@ -57,7 +57,7 @@ for idx in range(len(ROOMS)-1,-1,-1):
     band_y=y;floor_y=y+wh;floor_h=int(r*th);placed.append(dict(i=idx,nm=nm,c=c,r=r,off=off,band_y=band_y,floor_y=floor_y,floor_h=floor_h,x0=(CW-c*tw)//2))
     y=floor_y+floor_h
     if idx>0:
-        cor_h=int((4.2 if idx==5 else COR_ROWS)*th);placed[-1]['cor_y']=y;placed[-1]['cor_h']=cor_h;y+=cor_h
+        cor_h=int(COR_ROWS*th);placed[-1]['cor_y']=y;placed[-1]['cor_h']=cor_h;y+=cor_h
 H=y+wh-F+10
 placed.sort(key=lambda p:p['i'])
 # corredor que entra em R(k+1) pelo sul sai da porta de R(k): coluna absoluta
@@ -86,7 +86,7 @@ for p in placed:
     gapx=p['door_cx'] if p['off'] is not None else None
     if gapx is not None:floorfill(gapx-tw//2,p['band_y'],tw,wh)
     BCOL={'atrio':'v_est_verm','guardioes':'v_est_azul','armadilhas':'v_est_verde','altares':'v_est_verm','cofre':'v_est_azul','camara':'v_est_verm'}[nm]
-    for frac,kind in ((.17,'b'),(.83,'b'),(.35,'w'),(.65,'w')):
+    for frac,kind in ((.2,'b'),(.8,'b'),(.5,'w')):
         xx=int(x0+rw*frac)
         if gapx is not None and abs(xx-gapx)<tw*.95:continue
         if kind=='b':im=D(BCOL,98);put(bg,im,xx-im.width//2,p['band_y']+cap_h-3)
@@ -103,20 +103,25 @@ for p in placed:
     if p['i']>0:
         prev=placed[p['i']-1];gx=prev['door_cx']
     boss=(p['i']==5)
-    BG_=OW+8 if boss else tw
+    BG_=tw
     cur=x0-side
     while cur<x0+rw+side:
         w=WP[0]
         for sx_ in range(0,w.width,1):pass
         segw=min(w.width,x0+rw+side-cur)
-        seg=(tall_wall(w,segw) if boss else w.crop((0,0,segw,w.height)))
+        seg=w.crop((0,0,segw,w.height))
         if gx is not None and cur<gx+BG_//2 and cur+seg.width>gx-BG_//2:
             a0=max(0,gx-BG_//2-cur);a1=min(seg.width,gx+BG_//2-cur)
             if a0>0:put(front,seg.crop((0,0,a0,seg.height)),cur,bottom-F)
             if a1<seg.width:put(front,seg.crop((a1,0,seg.width,seg.height)),cur+a1,bottom-F)
         else:put(front,seg,cur,bottom-F)
         cur+=w.width
-    if boss and gx is not None:put(front,BOSS_FR,gx-BOSS_FR.width//2,bottom-F)
+    if boss and gx is not None:
+        lf=Image.open('d2/boss_folha_esq.png').convert('RGBA');lh=wh-6;lw=max(8,round(lf.width*lh/lf.height))
+        lfs=lf.resize((lw,lh),Image.LANCZOS).resize((max(8,lw//2),lh),Image.LANCZOS)     # folha aberta: recolhida na lateral
+        put(front,lfs,gx-tw//2,bottom-F+2);put(front,lfs.transpose(Image.FLIP_LEFT_RIGHT),gx+tw//2-lfs.width,bottom-F+2)
+        sk=D('v_placa',34);put(front,sk,gx-sk.width//2,bottom-F+cap_h+4)
+        p['boss_door']=[int(gx),int(bottom-F)]
     # andável
     m=14
     walk[fy+6:bottom-F+24,x0+m:x0+rw-m]=True
@@ -135,53 +140,42 @@ for p in placed:
     below=placed[p['i']-1];gx=below['door_cx'];cy=p['cor_y'];ch=p['cor_h']
     floorfill(gx-tw//2,cy,tw,ch)
     capstrip=WP[0].crop((0,0,WP[0].width,cap_h)).resize((ch+cap_h,side)).rotate(90,expand=True).crop((0,0,side,ch))
-    top=cy-F;LHc=below['floor_y']-top;csc=WP[0].crop((0,0,WP[0].width,cap_h)).resize((LHc,side)).rotate(90,expand=True).crop((0,0,side,LHc))
+    top=cy-F;LHc=below['band_y']+cap_h-top;csc=WP[0].crop((0,0,WP[0].width,cap_h)).resize((LHc,side)).rotate(90,expand=True).crop((0,0,side,LHc))
     put(front,csc,gx-tw//2-side,top);put(front,csc.transpose(Image.FLIP_LEFT_RIGHT),gx+tw//2,top)
     walk[cy-F+26:below['floor_y']+8,gx-tw//2+14:gx+tw//2-14]=True
     # chão do corredor entre a faixa e a parede da sala de cima já coberto; tapete no corredor
 for p in placed:
     # tochas nas faixas, dos dois lados do arco
     cxs=[p['x0']+tw//2+int(.3*tw),p['x0']+p['c']*tw-tw//2-int(.3*tw)]
-    if p['off'] is not None:cxs+=[p['door_cx']-int(1.45*tw),p['door_cx']+int(1.45*tw)]
     for tx in sorted(set(cxs)):
         if p['x0']+30<tx<p['x0']+p['c']*tw-30 and all(abs(tx-bx)>46 for bx in p.get('banners',[])) and all(abs(tx-ox)>110 or abs(oy-(p['band_y']+int(wh*.30)))>20 for ox,oy in torches):torches.append((tx,p['band_y']+int(wh*.30)))
 # props: (sprite, x, base_y, altura)
 import math
-decals=[]   # (nome, cx, cy, largura, alpha)
+decals=[]
 for p in placed:
     nm=p['nm'];fy=p['floor_y'];fh=p['floor_h'];x0=p['x0'];rw=p['c']*tw;b=fy+fh-F;mid=x0+rw//2
-    W_=lambda f:x0+int(rw*f)
     if nm=='atrio':
-        props+=[('f_braseiro',p['door_cx']-int(1.1*tw),fy+int(.7*th),62),('f_braseiro',p['door_cx']+int(1.1*tw),fy+int(.7*th),62),
-                ('f_pilar',x0+int(.45*tw),fy+int(1.5*th),104),('f_pilar',x0+rw-int(.45*tw),fy+int(1.5*th),104),
-                ('p_barril',x0+rw-int(.5*tw),fy+46,62),('p_caixas',x0+rw-int(1.15*tw),fy+52,64),('p_sacos',x0+int(.55*tw),fy+40,48),('f_sarcofago',x0+rw-int(.8*tw),b-4,88)]
-        decals+=[('x_ralo',W_(.28),fy+int(fh*.55),52,1),('x_sangue',W_(.76),fy+int(fh*.66),84,.8),('x_ossos',x0+int(.9*tw),b-18,60,1),('x_musgo',W_(.12),fy+int(fh*.85),64,.8)]
+        props+=[('f_braseiro',p['door_cx']-int(1.1*tw),fy+int(.7*th),62),('f_braseiro',p['door_cx']+int(1.1*tw),fy+int(.7*th),62),('f_pilar',x0+int(.45*tw),fy+int(1.5*th),104),('f_pilar',x0+rw-int(.45*tw),fy+int(1.5*th),104)]
     if nm=='guardioes':
-        props+=[('f_estatua',mid,fy+int(.95*th),124),('f_pilar',x0+int(.5*tw),fy+int(1.2*th),104),('f_pilar',x0+rw-int(.5*tw),fy+int(1.2*th),104),
-                ('p_rack',x0+int(1.05*tw),fy+52,70),('p_rack',x0+rw-int(1.05*tw),fy+52,70),('p_barril',x0+rw-int(.45*tw),b-6,56)]
-        decals+=[('x_runa',mid,fy+int(fh*.58),170,.95),('x_sangue',W_(.22),fy+int(fh*.78),80,.8),('x_ossos',x0+rw-int(.9*tw),b-18,56,1)]
+        props+=[('f_estatua',mid,fy+int(.95*th),124),('f_pilar',x0+int(.5*tw),fy+int(1.2*th),104),('f_pilar',x0+rw-int(.5*tw),fy+int(1.2*th),104),('p_rack',x0+int(1.05*tw),fy+52,70),('p_rack',x0+rw-int(1.05*tw),fy+52,70)]
+        decals+=[('x_runa',mid+int(.4*tw),fy+int(fh*.6),170,.95)]
     if nm=='armadilhas':
-        props+=[('f_pilar',x0+int(.5*tw),fy+int(1.1*th),104),('f_pilar',x0+rw-int(.5*tw),fy+int(1.1*th),104),('f_braseiro',x0+int(.8*tw),b-8,62),('f_braseiro',x0+rw-int(.8*tw),b-8,62),('p_barril',x0+rw-int(.5*tw),fy+44,58)]
-        for ri,yy in enumerate((fy+int(fh*.38),fy+int(fh*.74))):
-            for ci_ in range(5):
-                xx=x0+int(tw*(1.2+1.55*ci_))
-                if abs(xx-p['door_cx'])<tw*.7 or abs(xx-placed[0]['door_cx'])<0:continue
-                decals.append(('x_placa_on' if (ri+ci_)%2 else 'x_placa_off',xx,yy,82,1))
-        decals+=[('x_sangue',mid,fy+int(fh*.5),70,.7)]
+        props+=[('f_pilar',x0+int(.5*tw),fy+int(1.1*th),104),('f_pilar',x0+rw-int(.5*tw),fy+int(1.1*th),104)]
+        for ci_ in range(4):
+            xx=x0+int(tw*(1.6+1.6*ci_))
+            if abs(xx-p['door_cx'])<tw*.8:continue
+            decals.append(('x_placa_on' if ci_%2 else 'x_placa_off',xx,fy+int(fh*.55),82,1))
     if nm=='altares':
-        props+=[('f_altar',x0+int(.9*tw),fy+int(1.7*th),70),('f_altar',x0+rw-int(.9*tw),fy+int(1.7*th),70),('f_altar',mid,fy+int(.9*th),70),
-                ('f_pilar',x0+int(.45*tw),b-4,104),('f_pilar',x0+rw-int(.45*tw),b-4,104),('p_mesa',x0+int(.9*tw),fy+54,64),('p_prateleira',x0+rw-int(1.0*tw),fy+44,52)]
-        decals+=[('x_runa',x0+int(.9*tw),fy+int(1.7*th)+10,86,.9),('x_runa',x0+rw-int(.9*tw),fy+int(1.7*th)+10,86,.9),('x_runa',mid,fy+int(.9*th)+10,86,.9),('x_buraco',W_(.3),fy+int(fh*.78),70,1),('x_ossos',W_(.8),fy+int(fh*.8),56,1)]
+        props+=[('f_altar',x0+int(.9*tw),fy+int(1.7*th),70),('f_altar',x0+rw-int(.9*tw),fy+int(1.7*th),70),('f_altar',mid,fy+int(.9*th),70),('f_pilar',x0+int(.45*tw),b-4,104),('f_pilar',x0+rw-int(.45*tw),b-4,104)]
     if nm=='cofre':
-        props+=[('p_bau',x0+int(.5*tw),fy+44,52),('p_bau_aberto',x0+int(1.1*tw),fy+50,56),('p_prateleira',x0+rw-int(.9*tw),fy+42,50),('f_jaula',x0+rw-int(.6*tw),b-4,92),('p_banco',x0+int(.7*tw),b-6,46),('f_braseiro',mid,fy+int(.7*th),58)]
-        decals+=[('x_chaves',mid+10,fy+int(fh*.62),36,1),('x_potes',x0+int(1.4*tw),b-14,44,1)]
+        props+=[('p_bau',x0+int(.55*tw),fy+44,52),('p_prateleira',x0+rw-int(1.0*tw),fy+42,50),('f_jaula',x0+rw-int(.55*tw),b-4,92)]
     if nm=='camara':
         cx=mid;cyy=fy+int(fh*.50)
         props+=[('f_altar',cx,cyy+34,110)]
         for k in range(8):
-            a=k*math.pi/4+math.pi/8;props.append(('f_pilar',int(cx+math.cos(a)*(rw*.40)),int(cyy+math.sin(a)*(fh*.36))+30,112))
-        props+=[('f_estatua',x0+int(.6*tw),b-4,124),('f_estatua',x0+rw-int(.6*tw),b-4,124),('p_rack',x0+int(1.5*tw),fy+60,76),('p_rack',x0+rw-int(1.5*tw),fy+60,76)]
-        decals+=[('x_runa',cx,cyy+22,330,.9),('x_sangue',cx+int(rw*.2),cyy+int(fh*.25),90,.8),('x_ossos',x0+int(.9*tw),b-20,64,1),('x_ossos',x0+rw-int(1.2*tw),b-20,64,1)]
+            a_=k*math.pi/4+math.pi/8;props.append(('f_pilar',int(cx+math.cos(a_)*(rw*.40)),int(cyy+math.sin(a_)*(fh*.36))+30,112))
+        props+=[('f_estatua',x0+int(.6*tw),b-4,124),('f_estatua',x0+rw-int(.6*tw),b-4,124)]
+        decals+=[('x_runa',cx,cyy+22,330,.9)]
 for n,cx,cy,w_,al in decals:
     im=DW(n,w_)
     if al<1:
