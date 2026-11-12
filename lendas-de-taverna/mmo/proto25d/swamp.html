@@ -46,12 +46,14 @@ for(const y of [200,560,820,1100]){const x=path(y)+60;P.fire(o=>S.add(o),x*U,y*U
 const fliesGeo=new T.BufferGeometry(),NF=120,fp=new Float32Array(NF*3);for(let i=0;i<NF;i++){fp[i*3]=path(i*10)*U+(hash(i,1,1)-.5)*14;fp[i*3+1]=.6+hash(i,2,2)*2.4;fp[i*3+2]=(i*10%H)*U;}
 fliesGeo.setAttribute('position',new T.BufferAttribute(fp,3));const fcv=document.createElement('canvas');fcv.width=fcv.height=32;const fcx=fcv.getContext('2d'),fg=fcx.createRadialGradient(16,16,0,16,16,16);fg.addColorStop(0,'rgba(220,255,160,1)');fg.addColorStop(1,'rgba(220,255,160,0)');fcx.fillStyle=fg;fcx.fillRect(0,0,32,32);
 const flies=new T.Points(fliesGeo,new T.PointsMaterial({map:new T.CanvasTexture(fcv),size:.5,transparent:true,blending:T.AdditiveBlending,depthWrite:false}));S.add(flies);
-// herói (placeholder em pé)
-const hc=document.createElement('canvas');hc.width=64;hc.height=96;{const x=hc.getContext('2d');x.fillStyle='#c0402a';x.fillRect(22,8,20,18);x.fillStyle='#f0d0b0';x.fillRect(24,22,16,14);x.fillStyle='#486fa8';x.fillRect(18,36,28,34);x.fillStyle='#d8d8e0';x.fillRect(46,40,6,30);x.fillStyle='#5a3a20';x.fillRect(22,70,8,20);x.fillRect(34,70,8,20);}
-const ht=new T.CanvasTexture(hc);ht.magFilter=T.NearestFilter;const hero=new T.Mesh(new T.PlaneGeometry(1.5,2.25),new T.MeshBasicMaterial({map:ht,transparent:true,alphaTest:.3}));hero.scale.y=1/CT;hero.geometry.translate(0,1.1,0);S.add(hero);
+// herói: o MESMO sprite do jogo (folha de caminhada do pack LPC, gerada pelo próprio jogo), em pé no mundo 3D
+const ht=new T.TextureLoader().load('hero_walk.png');ht.encoding=T.sRGBEncoding;ht.magFilter=T.NearestFilter;ht.minFilter=T.NearestFilter;ht.repeat.set(1/9,1/4);
+const hg=new T.PlaneGeometry(64*U,64*U);hg.translate((32-28)*U,(60-32)*U,0);
+const hero=new T.Mesh(hg,new T.MeshBasicMaterial({map:ht,transparent:true,alphaTest:.3,side:T.DoubleSide}));hero.scale.y=1/CT;S.add(hero);
+const hsh=new T.Mesh(new T.PlaneGeometry(1.2,.7),new T.MeshBasicMaterial({map:(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d'),g=x.createRadialGradient(32,32,2,32,32,30);g.addColorStop(0,'rgba(0,0,0,.6)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,64,64);return new T.CanvasTexture(c);})(),transparent:true,depthWrite:false}));hsh.rotation.x=-Math.PI/2;S.add(hsh);
 const hl=new T.PointLight(0xffb870,1.4,9,2);S.add(hl);
 window.step=function(t){ // t em segundos
-  P.time.value=t;const y=1380-t*95,x=path(y);hero.position.set(x*U,0,y*U);hl.position.set(x*U,1.8,y*U+.3);
+  P.time.value=t;const y=1380-t*95,x=path(y);hero.position.set(x*U,0,y*U);hsh.position.set(x*U,.05,y*U);{const c=Math.floor(t*8)%6;ht.offset.set(c/9,1-1/4);}hl.position.set(x*U,1.8,y*U+.3);
   cam.position.set(x*U,.9+Math.sin(47*Math.PI/180)*12.5,y*U-1+Math.cos(47*Math.PI/180)*12.5);cam.lookAt(x*U,.9,y*U-1);
   sun.position.set(x*U-9,15,y*U+7);sun.target.position.set(x*U,0,y*U);sun.target.updateMatrixWorld();
   lights.forEach((L,i)=>{const q=mp[(Math.floor(y/30)*5+i*7)%mp.length];L.position.set(q[0]*U,.6,q[1]*U);L.intensity=1+.3*Math.sin(t*3+i);});
