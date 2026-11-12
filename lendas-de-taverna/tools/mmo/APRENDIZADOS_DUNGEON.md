@@ -44,3 +44,14 @@ Regras que apareceram ao montar a Cripta do Rei Esquecido. Valem para qualquer d
 ## 6. Processo
 - Olhar o mapa em **recortes 1:1** de cada encontro (cantos, portas, entradas de corredor), não só a visão geral.
 - Corrigir uma regra por vez e anotá-la aqui.
+
+## 7. Passagens e portas (decisão de design)
+- **Sem porta nas passagens comuns.** Abertura simples no contorno, com a parede vertical por cima nos dois lados, descendo até o chão da sala de baixo. Menos peças, mais limpo.
+- **Uma porta só: a do chefe**, que fecha e abre. Parede alta (dupla) com moldura de pedra e caveira; o vão fica transparente e as folhas de madeira fecham por cima. A parede dessa sala precisa ser alta o bastante para a moldura caber (aprox. 1,75× a altura normal).
+- **Folhas das peças geradas** (porta esquerda/direita) servem para a animação de abrir e fechar; a luz vermelha vem do vão.
+
+## 8. Decoração com função
+- Cada sala conta o que acontece: bancadas de armas nos Guardiões, placas de espinhos nas Armadilhas, altares e runas nos Altares, baús e poções no Cofre, runas grandes na Câmara.
+- Objetos **encostados na parede norte** (base a ~70% da altura do objeto) ou nos cantos; nunca no eixo da porta nem no tapete.
+- Estandarte de uma cor por sala (vermelho, azul, verde) e janelas de grade espaçadas simetricamente; tochas fogem deles (> 46 px).
+- Decalques no chão (sangue, ralo, ossos, musgo, buraco, runas) dão vida sem bloquear.
