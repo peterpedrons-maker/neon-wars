@@ -34,7 +34,7 @@ function init(){
   lbBox=document.createElement('div');lbBox.id='v3lb';stageEl.insertBefore(lbBox,$('cv').nextSibling);
   mk('v3ts t');mk('v3ts b');const vg=document.createElement('div');vg.id='v3vg';stageEl.insertBefore(vg,$('cv').nextSibling);
   try{R=new T.WebGLRenderer({canvas:glc,antialias:true,powerPreference:'high-performance'});}catch(err){V3.err='este aparelho não liberou o WebGL';return;}
-  R.outputEncoding=T.sRGBEncoding;R.toneMapping=T.ACESFilmicToneMapping;
+  R.outputEncoding=T.sRGBEncoding;R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;R.toneMapping=T.ACESFilmicToneMapping;
   S=new T.Scene();cam=new T.PerspectiveCamera(32,1,.5,200);
   V3.ready=true;
 }
@@ -62,6 +62,7 @@ function buildScene(key){
   const aTex=texOf(ATLAS,1),AW=ATLAS.width,AH=ATLAS.height,GWu=ZONE.w*U,GHu=ZONE.h*U;
   sc.hemi=new T.HemisphereLight(0xcfe3ff,0x4a5a3a,.8);sc.sun=new T.DirectionalLight(0xfff0d0,1.0);sc.sun.position.set(-8,14,10);add(sc.hemi);add(sc.sun);
   sc.hl=new T.PointLight(0xffb870,0,10,2);add(sc.hl);
+  if(mood==='field'){const sh=sc.sun.shadow;sc.sun.castShadow=true;sh.mapSize.set(2048,2048);const c=sh.camera;c.left=-17;c.right=17;c.top=17;c.bottom=-17;c.near=1;c.far=60;sh.bias=-.0006;sh.normalBias=.03;add(sc.sun.target);}
   // ---- chão
   if(mood==='room'){
     const WH=88,H=GROUND.height,W=GROUND.width,ft=texOf(GROUND,1),wt=texOf(GROUND,1);
@@ -75,9 +76,10 @@ function buildScene(key){
     for(const [px,pz] of[[W*.28,H*.40],[W*.72,H*.40],[W*.5,H*.7]])sc.sources.push({p:new T.Vector3(px*U,2.4,pz*U),c:0xffc070,k:1.3,night:1,still:1,nog:1});
   }else{
     const procOn=mood==='field'&&V3.proc&&!window.V3_NOPROC;sc.proc=procOn;
-    const gimg=key==='zone_cripta2'?crpFloor:(procOn?V3.proc.ground({W:ZONE.w,H:ZONE.h,WATER,WCW,GROUND},V3.proc.palFloresta,key==='zone1'?5:7):GROUND),gTex=texOf(gimg,1);
+    const gimg=key==='zone_cripta2'?crpFloor:(procOn?V3.proc.ground({W:ZONE.w,H:ZONE.h,WATER,WCW,GROUND},V3.proc.palFloresta,key==='zone1'?5:7):GROUND);
+    const pg=procOn?gimg:null,gTex=texOf(pg?pg.canvas:gimg,1);gTex.anisotropy=8;
     const gm=new T.MeshStandardMaterial({map:gTex,roughness:.95});if(mood!=='dark'){gm.bumpMap=gTex;gm.bumpScale=1.2;}
-    const ground=new T.Mesh(new T.PlaneGeometry(GWu,GHu),gm);ground.rotation.x=-Math.PI/2;ground.position.set(GWu/2,0,GHu/2);add(ground);
+    const ground=new T.Mesh(new T.PlaneGeometry(GWu,GHu),gm);ground.rotation.x=-Math.PI/2;ground.position.set(GWu/2,0,GHu/2);add(ground);ground.receiveShadow=true;if(pg)add(V3.proc.waterMesh(pg,GWu,GHu));
     if(mood!=='dark'){const far=new T.Mesh(new T.PlaneGeometry(400,400),new T.MeshStandardMaterial({color:0x2c5a22,roughness:1}));far.rotation.x=-Math.PI/2;far.position.set(GWu/2,-.02,GHu/2);add(far);}
   }
   // ---- props do atlas (billboards em pé, mesclados)
@@ -266,18 +268,20 @@ function render3(){
   const nTod=TOD.n||0,wm=TOD.warm||0;
   let n,bgc,fogD,fogC,hemi,sunI,hemC=0xcfe3ff,sunC=0xfff0d0;
   if(mood==='town'||mood==='field'){
-    n=nTod*(mood==='town'?1:.45);hemi=.88-.62*n;sunI=1.15-.97*n+wm*.2;hemC=n>.5?0x6a82c8:0xcfe3ff;sunC=n>.5?0x8aa0ff:(wm>.4?0xffc890:0xfff0d0);
+    n=nTod*(mood==='town'?1:.45);hemi=(mood==='field'?1.02:.88)-.62*n;sunI=1.15-.97*n+wm*.2;hemC=n>.5?0x6a82c8:0xcfe3ff;sunC=n>.5?0x8aa0ff:(wm>.4?0xffc890:0xfff0d0);
     bgc=_c1.setHex(0xa9c9e6).lerp(_c2.setHex(0x070b1a),Math.min(1,n*1.1));if(wm>.3)bgc.lerp(_c2.setHex(0xe6a468),(wm-.3)*.8*(1-n));
     fogD=.012+.008*n;
     if(mood==='field'){const th=(typeof ZTHEME!=='undefined'&&G.scene==='dungeon')?ZTHEME[famOf(G.zoneLv)]:null;if(th){hemC=new T.Color(hemC).multiply(_c2.set(th.mul)).getHex();}}
   }else if(mood==='dark'){n=.9;hemi=G.map==='zone_cripta2'?.95:.7;sunI=.22;hemC=0x7f8cc4;sunC=0x8aa0ff;bgc=_c1.setHex(0x04050a);fogD=.026;}
   else{n=.45;hemi=1.0;sunI=.35;hemC=0xffe6bf;sunC=0xffd9a0;bgc=_c1.setHex(0x0b0806);fogD=.004;}
   scn.hemi.intensity=hemi;scn.hemi.color.setHex(hemC);scn.sun.intensity=sunI;scn.sun.color.setHex(sunC);
+  if(V3.proc)V3.proc.time.value=t;
   S.background=bgc.clone();S.fog=S.fog||new T.FogExp2(0x9fc4e6,.012);S.fog.color.copy(bgc);S.fog.density=fogD;R.toneMappingExposure=1.0+.15*n+(mood==='dark'?.25:0);
   // ---- câmera (segue o centro da câmera do jogo)
   const asp=cam.aspect,dist=scn.dist*(asp<1?1+(1-asp)*1.2:1);const tx=(G.cam.x+G.LW/2)*U,tz=(G.cam.y+G.LH/2)*U;
   if(!camT)camT=new T.Vector3(tx,0,tz);camT.x+=(tx-camT.x)*.5;camT.z+=(tz-camT.z)*.5;
   const sh=G.shake>0?G.shake:0;cam.position.set(camT.x+(Math.random()-.5)*sh*.3,.9+Math.sin(TILT)*dist,camT.z-1+Math.cos(TILT)*dist);cam.lookAt(camT.x,.9,camT.z-1);
+  if(mood==='field'){scn.sun.position.set(camT.x-9,15,camT.z+7);scn.sun.target.position.set(camT.x,0,camT.z);scn.sun.target.updateMatrixWorld();scn.sun.castShadow=sunI>.35;}
   G.cam.rx=Math.round(G.cam.x);G.cam.ry=Math.round(G.cam.y);
   // ---- entidades
   const h=G.hero,list=[h];
