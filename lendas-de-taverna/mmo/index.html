@@ -767,7 +767,6 @@ body.bossbar #zname{top:calc(92px + env(safe-area-inset-top))!important}
       <button class="btn" id="bCont" style="display:none">CONTINUAR</button>
       <button class="btn" id="bNew">NOVO HERÓI</button>
       <a href="../tatico.html" style="margin-top:6px">Jogo tático clássico →</a>
-      <a href="#" id="bV3" style="margin-top:2px">Visual 2.5D (teste)</a>
       <a href="#" id="bInst" style="margin-top:2px;display:none">Instalar o app →</a>
     </div>
   </div>
@@ -4868,11 +4867,8 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
   b.addEventListener('click',async e=>{e.preventDefault();if(ev){ev.prompt();try{await ev.userChoice;}catch(_){}ev=null;return;}
     await gConfirm('O Chrome não ofereceu a instalação. Se ele diz que já está instalado, existe um app antigo (Neon Wars ou Hearthblade) cobrindo este endereço, mesmo sem ícone na tela inicial. Para resolver: 1) abra chrome://webapks no Chrome e veja a lista; 2) em Configurações do celular > Apps, procure Neon Wars e Hearthblade e toque em Desinstalar; 3) volte aqui e toque em Instalar o app. Depois você pode reinstalar o outro.',{title:'Instalar o app',ok:'Entendi',no:'Fechar'});});})();
 </script>
-<script>(function(){const q=new URLSearchParams(location.search).get('v3');try{if(q==='1')localStorage.setItem('hb_v3','1');else if(q==='0')localStorage.removeItem('hb_v3');}catch(e){}
-let on=q==='1';try{if(q!=='0')on=on||localStorage.getItem('hb_v3')==='1';}catch(e){}
-window.V3_REQ=on;
-if(on)document.write('<script src="three.min.js" onerror="window.V3_FAIL=\'não carregou o three.js\'"><\/script><script src="v3.js" onerror="window.V3_FAIL=\'não carregou o v3.js\'"><\/script>');
-const b=document.getElementById('bV3');if(b){b.textContent='Visual 2.5D (teste): '+(on?'ligado':'desligado');b.onclick=e=>{e.preventDefault();try{if(on)localStorage.removeItem('hb_v3');else localStorage.setItem('hb_v3','1');}catch(x){}location.href=location.pathname+'?v3='+(on?'0':'1');};}
-setTimeout(()=>{if(on&&typeof toast==='function'){if(window.V3_FAIL)toast('Visual 2.5D indisponível: '+window.V3_FAIL,5000);else if(window.V3&&window.V3.err)toast('Visual 2.5D indisponível: '+window.V3.err,5000);else if(!window.V3)toast('Visual 2.5D indisponível: v3.js não iniciou',5000);}},2500);})();</script>
+<script>if(new URLSearchParams(location.search).get('v3')==='0')window.V3_OFF=1;</script>
+<script src="three.min.js"></script>
+<script src="v3.js"></script>
 </body>
 </html>
