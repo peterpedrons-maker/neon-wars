@@ -20,7 +20,7 @@ function masks(env){
   if(env.WATER&&env.WCW)for(let y=0;y<gh;y++)for(let x=0;x<gw;x++)if(env.WATER[y*env.WCW+x])water[y*gw+x]=1;
   if(env.GROUND){const c=cv(gw,gh),x=c.getContext('2d',{willReadFrequently:true});x.drawImage(env.GROUND,0,0,gw,gh);const d=x.getImageData(0,0,gw,gh).data;
     for(let i=0;i<gw*gh;i++){const r=d[i*4],g=d[i*4+1],b=d[i*4+2];if(water[i])continue;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),sat=(mx-mn)/(mx||1);
-      if(r>g+4&&r>b+18&&r>70)dirt[i]=1;else if(sat<.14&&mx>85)stone[i]=1;}}
+      if(env.stoneNonGreen){if(!(g>r+25&&g>b+25))stone[i]=1;}else if(r>g+4&&r>b+18&&r>70)dirt[i]=1;else if(sat<.14&&mx>85)stone[i]=1;}}
   return {gw,gh,water:blur(blur(water,gw,gh,2),gw,gh,1),dirt:blur(dirt,gw,gh,1),stone:blur(stone,gw,gh,1)};
 }
 const samp=(m,gw,gh,gx,gy)=>{const x=Math.max(0,Math.min(gw-1.001,gx)),y=Math.max(0,Math.min(gh-1.001,gy)),xi=x|0,yi=y|0,xf=x-xi,yf=y-yi;
@@ -94,8 +94,32 @@ const MODELS={
   lamp(c){const m=Mesh();m.add(new T.CylinderGeometry(.04,.06,1,6),0x2a2a30,M4(0,.5,0,1,1,1));m.add(new T.BoxGeometry(.3,.4,.3),0x2a2a30,M4(0,1.0,0,1,1,1));m.add(new T.BoxGeometry(.22,.3,.22),0xffe2a0,M4(0,1.0,0,1,1,1));m.add(new T.ConeGeometry(.24,.18,4),0x2a2a30,M4(0,1.28,0,1,1,1).multiply(new T.Matrix4().makeRotationY(Math.PI/4)));return m.geo();},
   bench(c){const m=Mesh(),cc=new T.Color(c);m.add(new T.BoxGeometry(1,.1,.45),cc,M4(0,.45,0,1,1,1));m.add(new T.BoxGeometry(1,.4,.06),cc.clone().multiplyScalar(.85),M4(0,.75,-.2,1,1,1));[-.42,.42].forEach(x=>m.add(new T.BoxGeometry(.07,.45,.4),0x2a2a30,M4(x,.22,0,1,1,1)));return m.geo();},
   planter(c){const m=Mesh();m.add(new T.BoxGeometry(1,.5,.6),0x6a4a2a,M4(0,.25,0,1,1,1));m.add(new T.BoxGeometry(.94,.1,.54),0x3a2a1a,M4(0,.52,0,1,1,1));for(let i=0;i<6;i++){m.add(new T.IcosahedronGeometry(.09,0),new T.Color().setHSL(hash(i,1,1),.7,.6),M4(-.38+i*.15,.62+hash(i,2,2)*.1,(hash(i,3,3)-.5)*.3,1,1,1));}return m.geo();},
+
+  cabinet(c){const m=Mesh(),cc=new T.Color(c);m.add(new T.BoxGeometry(1,.94,1),cc,M4(0,.47,0,1,1,1));m.add(new T.BoxGeometry(1.04,.06,1.06),cc.clone().multiplyScalar(1.25),M4(0,.97,0,1,1,1));[.3,.6].forEach(y=>m.add(new T.BoxGeometry(.92,.03,.04),cc.clone().multiplyScalar(.5),M4(0,y,.5,1,1,1)));m.add(new T.BoxGeometry(.04,.8,.04),cc.clone().multiplyScalar(.5),M4(0,.45,.5,1,1,1));return m.geo();},
+  potshelf(c){const m=Mesh(),cc=new T.Color(c);m.add(new T.BoxGeometry(1,.94,1),cc,M4(0,.47,0,1,1,1));m.add(new T.BoxGeometry(1.04,.07,1.06),cc.clone().multiplyScalar(1.3),M4(0,.97,0,1,1,1));
+    [.34,.68].forEach((y,j)=>{m.add(new T.BoxGeometry(.94,.04,.3),0x3a2616,M4(0,y,.5,1,1,1));for(let i=0;i<6;i++)m.add(new T.CylinderGeometry(.05,.06,.14,6),new T.Color().setHSL(hash(i,j,4),.65,.5),M4(-.38+i*.15,y+.09,.5,1,1,1));});return m.geo();},
+  longcounter(c){const m=Mesh(),cc=new T.Color(c);m.add(new T.BoxGeometry(1,.8,1),cc,M4(0,.4,0,1,1,1));m.add(new T.BoxGeometry(1.01,.08,1.2),cc.clone().multiplyScalar(1.5),M4(0,.84,.05,1,1,1));m.add(new T.BoxGeometry(.98,.5,.02),cc.clone().multiplyScalar(.55),M4(0,.35,.51,1,1,1));return m.geo();},
+  plants(c){const m=Mesh();for(let i=0;i<4;i++){const x=-.36+i*.24;m.add(new T.CylinderGeometry(.09,.07,.2,6),0x6a4a2a,M4(x,.1,0,1,1,1));m.add(jitter(new T.IcosahedronGeometry(.13+hash(i,1,1)*.05,0),.4,i+1),i===1?0xc050c0:0x3f7a32,M4(x,.3,0,1,1.3,1));}return m.geo();},
+  window(c){const m=Mesh();m.add(new T.BoxGeometry(1,1,.3),0x4a2e18,M4(0,.5,0,1,1,1));m.add(new T.BoxGeometry(.78,.78,.34),0xbfe0f4,M4(0,.5,0,1,1,1));m.add(new T.BoxGeometry(.04,.78,.36),0x4a2e18,M4(0,.5,0,1,1,1));m.add(new T.BoxGeometry(.78,.04,.36),0x4a2e18,M4(0,.5,0,1,1,1));return m.geo();},
+  trophy(c){const m=Mesh();m.add(jitter(new T.IcosahedronGeometry(.4,0),.2,3),c,M4(0,.5,0,1,1,.7));[-.3,.3].forEach(x=>m.add(new T.SphereGeometry(.12,6,5),c,M4(x,.85,0,1,1,.6)));m.add(new T.BoxGeometry(.5,.1,.3),0x4a2e18,M4(0,.05,0,1,1,1));return m.geo();},
+  wallseg(c){const m=Mesh(),cc=new T.Color(c);m.add(new T.BoxGeometry(1,1,1),cc,M4(0,.5,0,1,1,1));m.add(new T.BoxGeometry(1.01,.1,1.1),cc.clone().multiplyScalar(.7),M4(0,1,0,1,1,1));return m.geo();},
+  drape(c){const m=Mesh();m.add(new T.BoxGeometry(1.08,.06,1.5),0x4a2e18,M4(0,.97,0,1,1,1));m.add(new T.BoxGeometry(.96,.9,1),c,M4(0,.5,0,1,1,1));return m.geo();},
+  rug(c){const m=Mesh();m.add(new T.BoxGeometry(1,.03,1),c,M4(0,.02,0,1,1,1));m.add(new T.BoxGeometry(.8,.035,.8),new T.Color(c).multiplyScalar(1.3),M4(0,.025,0,1,1,1));return m.geo();},
+  forge(c){const m=Mesh(),cc=new T.Color(c);m.add(new T.BoxGeometry(1,.45,1),cc,M4(0,.22,0,1,1,1));m.add(new T.ConeGeometry(.75,.45,4),cc.clone().multiplyScalar(1.1),M4(0,.67,0,1,1,1).multiply(new T.Matrix4().makeRotationY(Math.PI/4)));m.add(new T.BoxGeometry(.3,.6,.4),cc.clone().multiplyScalar(.9),M4(0,1.1,0,1,1,1));
+    m.add(new T.BoxGeometry(.5,.26,.04),0x1a0e08,M4(0,.22,.52,1,1,1));m.add(new T.BoxGeometry(.4,.14,.045),0xff7a20,M4(0,.17,.53,1,1,1));return m.geo();},
+  table(c){const m=Mesh(),cc=new T.Color(c);m.add(new T.BoxGeometry(1,.1,.7),cc,M4(0,.68,0,1,1,1));[[-.44,-.28],[.44,-.28],[-.44,.28],[.44,.28]].forEach(([x,z])=>m.add(new T.BoxGeometry(.08,.66,.08),cc.clone().multiplyScalar(.7),M4(x,.33,z,1,1,1)));[-.5,.5].forEach(z=>m.add(new T.BoxGeometry(.9,.08,.2),cc.clone().multiplyScalar(.85),M4(0,.4,z*1.1,1,1,1)));return m.geo();},
+  frost(c){const m=Mesh();m.add(new T.CylinderGeometry(.05,.11,.62,6),0x3a2a22,M4(0,.31,0,1,1,1));[[.16,.55,0,.5,-1.0],[-.18,.62,.02,.45,1.1],[.04,.76,-.12,.4,.3],[0,.8,.1,.35,-.4]].forEach(([x,y,z,l,rz])=>m.add(new T.CylinderGeometry(.015,.04,l,5),0x4a3a30,M4(x,y,z,1,1,1,0,rz)));
+    for(let i=0;i<14;i++)m.add(new T.OctahedronGeometry(.045,0),0xa8dcff,M4((hash(i,1,2)-.5)*.8,.6+hash(i,2,2)*.55,(hash(i,3,2)-.5)*.5,1,1.6,1));return m.geo();},
+  barrelpile(c){const m=Mesh();[[-.25,-.1],[.25,-.1],[0,.2]].forEach(([x,z],i)=>{m.add(new T.CylinderGeometry(.24,.2,.6,9),0x7a5230,M4(x,.3,z,1,1,1));[.15,.45].forEach(y=>m.add(new T.CylinderGeometry(.245,.245,.04,9),0x2a2a2e,M4(x,y,z,1,1,1)));});return m.geo();},
+  hedge(c){const m=Mesh(),cc=new T.Color(c);[[0,-.34,.3],[.05,0,.34],[-.04,.34,.3]].forEach(([x,z,r],i)=>m.add(jitter(new T.IcosahedronGeometry(r+.1,1),.3,i+3),cc.clone().multiplyScalar(.85+i*.1),M4(x,.3,z,1,.85,1)));return m.geo();},
+  flag(c){const m=Mesh(),cc=new T.Color(c);m.add(new T.CylinderGeometry(.03,.04,1,5),0x3a3a40,M4(0,.5,0,1,1,1));m.add(new T.BoxGeometry(.7,.55,.04),cc,M4(.38,.68,0,1,1,1));m.add(new T.ConeGeometry(.35,.18,3),cc,M4(.38,.34,0,1,1,.12,0,Math.PI));return m.geo();},
+  sign(c){const m=Mesh();m.add(new T.CylinderGeometry(.04,.05,1,5),0x4a3220,M4(0,.5,0,1,1,1));m.add(new T.BoxGeometry(.6,.14,.04),0x7a5a30,M4(.2,.88,0,1,1,1));m.add(new T.BoxGeometry(.55,.14,.04),0x7a5a30,M4(-.18,.68,0,1,1,1));return m.geo();},
+  stall(c){const m=Mesh();[[-.45,-.4],[.45,-.4],[-.45,.4],[.45,.4]].forEach(([x,z])=>m.add(new T.CylinderGeometry(.03,.03,.9,5),0x5a3a20,M4(x,.45,z,1,1,1)));
+    for(let i=0;i<6;i++)m.add(new T.BoxGeometry(.18,.04,1.0),i%2?0xf2ecd8:0xb83a30,M4(-.43+i*.172,.98-Math.abs(i-2.5)*0.0,0,1,1,1,.0,0));m.add(new T.BoxGeometry(.96,.4,.4),0x7a5230,M4(0,.2,.1,1,1,1));return m.geo();},
+  well(c){const m=Mesh();m.add(new T.CylinderGeometry(.42,.46,.42,10),0x8a8a90,M4(0,.21,0,1,1,1));m.add(new T.CylinderGeometry(.3,.3,.02,10),0x1a2a3a,M4(0,.4,0,1,1,1));[-.38,.38].forEach(x=>m.add(new T.BoxGeometry(.06,.8,.06),0x4a3220,M4(x,.7,0,1,1,1)));m.add(new T.ConeGeometry(.62,.32,4),0x8a4a30,M4(0,1.28,0,1,1,1).multiply(new T.Matrix4().makeRotationY(Math.PI/4)));m.add(new T.CylinderGeometry(.03,.03,.78,5),0x4a3220,M4(0,1.0,0,1,1,1,0,1.5708));return m.geo();},
   pebble(c){const m=Mesh();m.add(jitter(new T.DodecahedronGeometry(.2,0),.4,1),c,M4(0,.06,0,1,.55,1));return m.geo();}
 };
+MODELS.slime=MODELS.blood=MODELS.puddle;
 // ---- classificação a partir dos dados do mapa (tamanho + cor média do recorte do atlas)
 const colCache={};
 function avgCol(env,id){if(colCache[id])return colCache[id];const a=env.ATLAS_J[id],c=cv(16,16),x=c.getContext('2d',{willReadFrequently:true});x.drawImage(env.ATLAS,a[0],a[1],a[2],a[3],0,0,16,16);const d=x.getImageData(0,0,16,16).data;let r=0,g=0,b=0,w=0,br=0;
@@ -189,19 +213,20 @@ P.fire=function(add,x,z,s,kind){
   const fh=(kind==='torch'?.55:1.1)*s,fw=(kind==='torch'?.4:.8)*s,fy=kind==='torch'?.95*s:.1;
   for(let i=0;i<2;i++){const f=new T.Mesh(new T.PlaneGeometry(fw,fh),flameMat());f.position.y=fy+fh/2;f.rotation.y=i*Math.PI/2;g.add(f);}
   add(g);return g;};
-function kindTown(a,rgb,flat){const [,,w,h]=a,[r,g,b]=rgb,mx=Math.max(r,g,b),mn=Math.min(r,g,b),sat=(mx-mn)/(mx||1),green=g>r+6&&g>=b-4,brown=r>g+8&&g>=b-6&&sat>.22;
-  if(flat)return kindOf(a,rgb,true);
-  if(h>=100)return (b>r+10)?'conifer':(r>g+6&&sat<.55&&mx<175?'dead':'broad');
-  if(w<=24&&h>=60)return 'lamp';
+const DIMS={bench:16,planter:16,cabinet:26,potshelf:26,longcounter:30,plants:18,window:6,wallseg:16,drape:6,rug:(w,h)=>h*1.3,forge:46,table:56,stall:44,sign:8,flag:8,well:60,barrelpile:36,hedge:(w,h)=>h*.8,trophy:14};
+const TOWNMAP={'7721':'lamp','d6ee':'lamp','0ed4':'lamp','5a6a':'lamp','52e1':'lamp','c15b':'barrelpile','4ce7':'barrelpile','8291':'bench','769a':'bench','9304':'flag','7c7e':'flag','63e3':'planter','afca':'planter','8a8b':'sign','df9b':'stall','15eb':'well','32e6':'hedge','718d':'hedge'};
+const INMAP={'5dfc':'cabinet','0dd8':'cabinet','ae14':'potshelf','f586':'potshelf','2774':'potshelf','adee':'longcounter','6bde':'plants','1168':'window','5d78':'trophy','ecbe':'wallseg','a719':'wallseg','0367':'wallseg','e04f':'wallseg','df00':'drape','3820':'drape','64c7':'bench','dca1':'rug','1c44':'forge','fbc2':'forge','f1a3':'lamp','5b39':'table','a94a':'table'};
+function kindTown(a,rgb,flat,id){const mk0=TOWNMAP[(id||'').slice(0,4)];if(mk0)return (mk0==='bench'||mk0==='planter')?mk0:null;const [,,w,h]=a,[r,g,b]=rgb,mx=Math.max(r,g,b),mn=Math.min(r,g,b),sat=(mx-mn)/(mx||1),green=g>r+6&&g>=b-4,brown=r>g+8&&g>=b-6&&sat>.22;
+  if(flat)return rgb[1]>rgb[0]+6?'tuft':'flower';
+  if(h>=100&&w>=90)return (b>=r-4)?'frost':(sat<.5?'dead':'broad');
   if(h<=70&&w>=18&&green&&sat>.18)return 'bush';
-  if(brown&&w>=h*1.5&&h<=40)return w<=52?'planter':'bench';
-  return kindDg(a,rgb,false);}
-function kindIn(a,rgb,flat){const [,,w,h]=a,[r,g,b]=rgb,sat=(Math.max(r,g,b)-Math.min(r,g,b))/(Math.max(r,g,b)||1),green=g>r+6&&g>=b-4;
+  return null;}
+function kindIn(a,rgb,flat,id){return null;const mk0=INMAP[(id||'').slice(0,4)];if(mk0)return mk0;const [,,w,h]=a,[r,g,b]=rgb,sat=(Math.max(r,g,b)-Math.min(r,g,b))/(Math.max(r,g,b)||1),green=g>r+6&&g>=b-4;
   if(flat)return null;if(h<=70&&green&&sat>.18)return 'bush';if(w<=22&&h>=60)return 'lamp';return kindDg(a,rgb,false);}
 // ---- floresta: devolve o que sobrou (props sem modelo) para continuarem como sprites
 P.forest=function(env,add,rnd,items,theme){const DG=theme==='dungeon'||theme==='indoor';
   const mats={},buckets={},rest={stand:[],flats:[]};
-  const take=(list,flat)=>{for(const it of list){const [id,x,y]=it,a=env.ATLAS_J[id];if(!a)continue;const rgb=avgCol(env,id),k=kindOf(a,rgb,flat);if(!k){(flat?rest.flats:rest.stand).push(it);continue;}(buckets[k]=buckets[k]||[]).push({x,y,a,rgb});}};
+  const take=(list,flat)=>{for(const it of list){const [id,x,y]=it,a=env.ATLAS_J[id];if(!a)continue;const rgb=avgCol(env,id),k=theme==='indoor'?kindIn(a,rgb,flat,id):theme==='town'?kindTown(a,rgb,flat,id):DG?kindDg(a,rgb,flat):kindOf(a,rgb,flat);if(!k||!MODELS[k]){if(k&&!MODELS[k])console.warn('[v3] sem modelo:',k);if(DG&&flat)continue;(flat?rest.flats:rest.stand).push(it);continue;}(buckets[k]=buckets[k]||[]).push({x,y,a,rgb});}};
   take(items.stand,false);take(items.flats,true);
   const runeMat=()=>new T.MeshBasicMaterial({vertexColors:true,transparent:true,blending:T.AdditiveBlending,depthWrite:false,opacity:.9});
   const slimeMat=()=>new T.MeshStandardMaterial({vertexColors:true,emissive:0x40c040,emissiveIntensity:.5,roughness:.3});
@@ -215,15 +240,16 @@ P.forest=function(env,add,rnd,items,theme){const DG=theme==='dungeon'||theme==='
     const geo=MODELS[k](k==='flower'?0xffffff:col),im=new T.InstancedMesh(geo,(k==='rune'?runeMat():k==='slime'?slimeMat():mk(SW[k]||0)),L.length),m4=new T.Matrix4(),q=new T.Quaternion(),e=new T.Euler();
     im.castShadow=!(k==='rune'||k==='slime'||k==='blood'||k==='puddle'||k==='bones'||k==='twig'||k==='pebble'||k==='tuft'||k==='flower');im.receiveShadow=true;
     L.forEach((it,i)=>{const w=it.a[2],h=it.a[3],r=hash(Math.round(it.x),Math.round(it.y),11);let H,R;
-      if(k==='conifer'||k==='broad'||k==='dead'){H=h*U/CT*.8;R=w*U*.5;}else if(k==='post'){H=h*U/CT*.85;R=1;}
+      const DM=DIMS[k];
+      if(DM){H=h*U/CT*.85*({forge:.7,well:.75,cabinet:.9}[k]||1);R=w*U*.5;}else if(k==='conifer'||k==='broad'||k==='dead'||k==='frost'){H=h*U/CT*.8;R=w*U*.5;}else if(k==='post'){H=h*U/CT*.85;R=1;}
       else if(k==='rock'||k==='bush'||k==='thorn'){H=Math.max(.5,h*U/CT*.9);R=Math.max(.6,w*U*.6);}
-      else if(k==='lamp'||k==='pillar'||k==='banner'||k==='bench'||k==='planter'||k==='column'||k==='tombstone'||k==='urn'||k==='barrel'||k==='crate'||k==='chest'||k==='coffin'||k==='block'||k==='tomb'){H=h*U/CT*.85;R=w*U*.5;}
+      else if(k==='lamp'||k==='pillar'||k==='banner'||k==='column'||k==='tombstone'||k==='urn'||k==='barrel'||k==='crate'||k==='chest'||k==='coffin'||k==='block'||k==='tomb'){H=h*U/CT*.85;R=w*U*.5;}
       else if(k==='rune'||k==='slime'||k==='blood'){H=1;R=Math.max(.3,Math.max(w,h*1.2)*U*.5);}
       else if(k==='tent'||k==='drums'||k==='totem'||k==='mush'){H=h*U/CT*.85;R=w*U*.5;}
-      else if(k==='puddle'||k==='bones'||k==='twig'){H=1;R=Math.max(.3,Math.max(w,h*1.2)*U*.5);}
+      else if(k==='puddle'||k==='twig'){H=1;R=Math.max(.3,Math.max(w,h*1.2)*U*.5);}else if(k==='bones'){H=1;R=Math.max(.25,Math.max(w,h*1.2)*U*.3);}
       else{H=Math.max(.35,h*U*2.2);R=Math.max(.5,w*U*2);}
-      e.set(0,(k==='tent'||k==='drums'?0:r*6.283),0);q.setFromEuler(e);const sc=k==='totem'||k==='post'?1:.9+r*.25;
-      const sx=k==='post'?1:(k==='totem'?H*.45:R*2*sc);m4.compose(new T.Vector3(it.x*U,0,it.y*U),q,new T.Vector3(sx,H*sc,k==='post'?1:sx));im.setMatrixAt(i,m4);
+      e.set(0,(k==='tent'||k==='drums'||DM?0:r*6.283),0);q.setFromEuler(e);const sc=k==='totem'||k==='post'||DM?1:.9+r*.25;
+      const sx=k==='post'?1:(k==='totem'?H*.45:k==='lamp'?Math.max(.55,R*2*2.4):R*2*sc),sz=DM?(typeof DM==='function'?DM(w,h):DM)*U:(k==='post'?1:sx);m4.compose(new T.Vector3(it.x*U,0,it.y*U),q,new T.Vector3(sx,H*sc,sz));im.setMatrixAt(i,m4);
       const c0=new T.Color(k==='flower'?`hsl(${Math.round(hash(i,3,3)*360)},70%,62%)`:'#ffffff');if(k!=='flower')c0.multiplyScalar(.88+hash(i,5,5)*.22);else c0.convertSRGBToLinear();im.setColorAt(i,c0);});
     im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;im.frustumCulled=false;add(im);}
   P.lastRest=rest;P.lastKinds=Object.fromEntries(Object.entries(buckets).map(([k,v])=>[k,v.length]));
@@ -243,6 +269,7 @@ P.waterMesh=function(g,GWu,GHu,tint){
 P.palCripta={f1:[78,106,122],f2:[62,88,104],f3:[40,58,72],mortar:[22,32,42],bw:32,bh:24,stain:[70,28,28],w1:[40,70,90],w2:[20,40,60]};
 P.palEsgoto={f1:[64,84,66],f2:[50,70,58],f3:[34,52,44],mortar:[18,28,24],bw:32,bh:24,moss:[52,92,40],w1:[86,130,50],w2:[50,86,34],shore:[34,52,36]};
 P.palCripta2={f1:[70,92,112],f2:[54,76,98],f3:[34,50,70],mortar:[18,26,38],bw:40,bh:30,stain:[60,24,30],w1:[40,70,90],w2:[20,40,60]};
+P.palCidade={g1:[62,128,36],g2:[78,144,44],g3:[48,110,30],d1:[116,86,54],d2:[132,100,62],d3:[96,70,44],st:[126,114,98],sm:[72,64,54],shore:[150,130,90],w1:[70,140,170],w2:[34,84,120]};
 P.palMadeira={base:'#6a4a2a',p:[148,104,60]};
 P.palFloresta={g1:[40,86,34],g2:[56,106,42],g3:[30,68,30],d1:[116,86,54],d2:[132,100,62],d3:[96,70,44],st:[128,128,120],sm:[70,70,66],shore:[150,130,90],w1:[70,140,170],w2:[34,84,120]};
 })();

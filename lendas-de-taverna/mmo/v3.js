@@ -66,7 +66,7 @@ function buildScene(key){
   // ---- chão
   let dgrid=null;
   if(mood==='room'){
-    const WH=88,H=GROUND.height,W=GROUND.width,pr0=false,ft=pr0?texOf(V3.proc.woodFloor({W,H},V3.proc.palMadeira,key.length).canvas,1):texOf(GROUND,1),wt=pr0?V3.proc.woodWall(W,WH,key.length):texOf(GROUND,1);
+    const WH=88,H=GROUND.height,W=GROUND.width,pr0=V3.proc&&!window.V3_NOPROC,ft=pr0?texOf(V3.proc.woodFloor({W,H},V3.proc.palMadeira,key.length).canvas,1):texOf(GROUND,1),wt=pr0?V3.proc.woodWall(W,WH,key.length):texOf(GROUND,1);
     ft.repeat.set(1,(H-WH)/H);ft.offset.set(0,0);if(!pr0){wt.repeat.set(1,WH/H);wt.offset.set(0,(H-WH)/H);}sc.proc=pr0;
     const fl=new T.Mesh(new T.PlaneGeometry(W*U,(H-WH)*U),new T.MeshStandardMaterial({map:ft,roughness:.9}));fl.rotation.x=-Math.PI/2;fl.position.set(W*U/2,0,(WH+(H-WH)/2)*U);add(fl);
     const wh=WH*U/CT,wl=new T.Mesh(new T.PlaneGeometry(W*U,wh),new T.MeshBasicMaterial({map:wt,depthTest:false,depthWrite:false}));wl.position.set(W*U/2,wh/2,WH*U);wl.renderOrder=-10;add(wl);
@@ -76,11 +76,11 @@ function buildScene(key){
     sc.hemi.color.setHex(0xffe6bf);sc.hemi.groundColor.setHex(0x5a4020);
     for(const [px,pz] of[[W*.28,H*.40],[W*.72,H*.40],[W*.5,H*.7]])sc.sources.push({p:new T.Vector3(px*U,2.4,pz*U),c:0xffc070,k:1.3,night:1,still:1,nog:1});
   }else{
-    const procOn=(mood==='field'||mood==='dark')&&V3.proc&&!window.V3_NOPROC;sc.proc=procOn;
+    const procOn=(mood==='field'||mood==='dark'||mood==='town')&&V3.proc&&!window.V3_NOPROC;sc.proc=procOn;
     dgrid=(procOn&&mood==='dark')?dungeonGrid(key):null;
-    const envP={W:ZONE.w,H:ZONE.h,WATER,WCW,GROUND};
+    const envP={W:ZONE.w,H:ZONE.h,WATER:mood==='town'?null:WATER,WCW,GROUND,stoneNonGreen:mood==='town'};
     let gimg=key==='zone_cripta2'?crpFloor:GROUND;
-    if(procOn&&(mood==='field'||mood==='town'))gimg=V3.proc.ground(envP,V3.proc.palFloresta,key==='zone1'?5:key==='town'?9:7);
+    if(procOn&&(mood==='field'||mood==='town'))gimg=V3.proc.ground(envP,mood==='town'?V3.proc.palCidade:V3.proc.palFloresta,key==='zone1'?5:key==='town'?9:7);
     else if(procOn){const pal=key==='zone_esgoto'?V3.proc.palEsgoto:key==='zone_cripta2'?V3.proc.palCripta2:V3.proc.palCripta;gimg=V3.proc.dungeonFloor(envP,pal,key==='zone_esgoto'?4:key==='zone_cripta2'?6:3);
       {const x=gimg.canvas.getContext('2d'),S0=gimg.canvas.width/ZONE.w;x.fillStyle='#030409';for(let cy=0;cy<dgrid.rows;cy++)for(let cx=0;cx<dgrid.cols;cx++)if(!dgrid.isF(cx,cy))x.fillRect(Math.floor((dgrid.ox+cx*dgrid.cw)*S0),Math.floor((dgrid.oy+cy*dgrid.ch)*S0),Math.ceil(dgrid.cw*S0)+1,Math.ceil(dgrid.ch*S0)+1);}}
     const pg=procOn?gimg:null,gTex=texOf(pg?pg.canvas:gimg,1);gTex.anisotropy=8;
