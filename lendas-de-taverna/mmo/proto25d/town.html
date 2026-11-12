@@ -67,7 +67,7 @@ function mergedQuads(items,flat){
     const cs=[[-ax,ay],[sw-ax,ay],[sw-ax,ay-sh],[-ax,ay-sh]];   // x p/ direita, y p/ cima (px)
     cs.forEach(([cx,cy],i)=>{
       if(flat)pos.push(X+cx*U,.02+(rnd()*.002),Z-cy*U);
-      else pos.push(X+cx*U,Math.max(0,cy*U*Math.cos(TILT))+(cy<0?0:0),Z-cy*U*Math.sin(TILT));
+      else pos.push(X+cx*U,Math.max(0,cy*U/Math.cos(TILT)),Z);   // em pé, sem inclinar: nada entra nas paredes
       const ux=[0,1,1,0][i],vy=[0,0,1,1][i];uv.push((sx+ux*sw)/AW,1-(sy+vy*sh)/AH);});
     idx.push(n,n+1,n+2,n,n+2,n+3);n+=4;}
   const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();
@@ -133,12 +133,12 @@ function house(id,px,py){const cfg=HC[id];const g=new T.Group();g.position.set(w
   for(let i=0;i<2;i++){const s=new T.Mesh(new T.BoxGeometry(1.6-i*.3,.12,.5),new T.MeshStandardMaterial({color:0x5a5d62,roughness:.9}));s.position.set(0,.06+i*.12,.28+(1-i)*.25);g.add(s);}
   const mats=[];g.traverse(o=>{if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{if(!mats.includes(m))mats.push(m);});}});
   g.userData={mats,o:1,box:new T.Box3(new T.Vector3(g.position.x-w/2-.7,0,g.position.z-d-.7),new T.Vector3(g.position.x+w/2+.7,h+1.7,g.position.z+.5))};houses.push(g);
-  S.add(g);solids.push({aabb:[g.position.x-w/2-.1,g.position.z-d,g.position.x+w/2+.1,g.position.z+.05]});return g;}
+  S.add(g);solids.push({aabb:[g.position.x-w/2-.1,g.position.z-d,g.position.x+w/2+.1,g.position.z+.62]});return g;}
 const houseDoors={};
 for(const [t,id,x,y] of DATA.props){if(id.startsWith('b_')){house(id,x,y);}}
 // ---------- portal (arco de pedra + vórtice) ----------
 const portal=new T.Group();portal.position.set(wx(450),0,wz(129));S.add(portal);
-const stoneM=new T.MeshStandardMaterial({color:0x3e4247,roughness:.95});
+const stoneM=new T.MeshStandardMaterial({color:0x2f3338,roughness:.95});
 for(const s of[-1,1]){const p=new T.Mesh(new T.BoxGeometry(.9,3.4,.9),stoneM);p.position.set(s*1.75,1.7,0);portal.add(p);const b=new T.Mesh(new T.BoxGeometry(1.2,.35,1.2),stoneM);b.position.set(s*1.75,.18,0);portal.add(b);const c=new T.Mesh(new T.BoxGeometry(1.1,.3,1.1),stoneM);c.position.set(s*1.75,3.5,0);portal.add(c);}
 const arc=new T.Mesh(new T.TorusGeometry(1.75,.42,12,36,Math.PI),stoneM);arc.position.set(0,3.4,0);portal.add(arc);
 const vm=new T.ShaderMaterial({transparent:true,depthWrite:false,blending:T.AdditiveBlending,uniforms:{t:{value:0}},vertexShader:'varying vec2 u;void main(){u=uv*2.-1.;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
@@ -161,7 +161,7 @@ class Actor{constructor(tex,tint){this.root=new T.Group();S.add(this.root);this.
   const g=new T.PlaneGeometry(64*PX,64*PX);g.translate((32-28)*PX,(61-32)*PX,0);
   this.mat=new T.MeshLambertMaterial({map:this.tex,transparent:true,alphaTest:.35,emissive:0xffffff,emissiveMap:this.tex,emissiveIntensity:.3,color:tint||0xffffff,side:T.DoubleSide});
   this.me=new T.Mesh(g,this.mat);this.root.add(this.me);const bl=new T.Mesh(new T.PlaneGeometry(1.3,.8),new T.MeshBasicMaterial({map:BT,transparent:true,depthWrite:false}));bl.rotation.x=-Math.PI/2;bl.position.y=.02;this.root.add(bl);}
-  set(c,r){setFrame(this.tex,c,r);}face(){this.me.quaternion.copy(cam.quaternion);}}
+  set(c,r){setFrame(this.tex,c,r);}face(){this.me.quaternion.identity();this.me.scale.y=1/Math.cos(TILT);}}
 const hero=new Actor(sH);hero.x=wx(450);hero.z=wz(735);hero.row=2;
 const NPC=[
  {nm:'Guarda do Portal',tex:sG,x:450,y:198,row:2,tint:0xffffff},{nm:'Capitão Ruvel',tex:sG,x:520,y:648,row:2,tint:0x9fe08a},

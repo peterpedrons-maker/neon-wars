@@ -143,7 +143,7 @@ class Actor{
     this.cur=null;}
   show(k,c,r){if(this.cur!==k){if(this.cur)this.m[this.cur].me.visible=false;this.m[k].me.visible=true;this.cur=k;}setFrame(this.m[k].tex,c,r);}
   flash(v){for(const k in this.m){const m=this.m[k].mat;m.emissive.setScalar(v>0?1:1);m.emissiveIntensity=.3+v*1.6;}}
-  face(){this.group.quaternion.copy(cam.quaternion);}
+  face(){const d=new T.Vector3();cam.getWorldDirection(d);const p=Math.asin(Math.max(-.99,Math.min(.99,-d.y)));this.group.quaternion.identity();this.group.scale.y=1/Math.cos(p);}
 }
 const DIRROW=(dx,dz)=>Math.abs(dx)>Math.abs(dz)?(dx>0?3:1):(dz>0?2:0);
 let hero,rats=[],texs,state={hp:100,wave:0,over:false,shake:0};
