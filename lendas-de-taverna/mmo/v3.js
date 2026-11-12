@@ -74,7 +74,8 @@ function buildScene(key){
     sc.hemi.color.setHex(0xffe6bf);sc.hemi.groundColor.setHex(0x5a4020);
     for(const [px,pz] of[[W*.28,H*.40],[W*.72,H*.40],[W*.5,H*.7]])sc.sources.push({p:new T.Vector3(px*U,2.4,pz*U),c:0xffc070,k:1.3,night:1,still:1,nog:1});
   }else{
-    const gimg=key==='zone_cripta2'?crpFloor:GROUND,gTex=texOf(gimg,1);
+    const procOn=mood==='field'&&V3.proc&&!window.V3_NOPROC;sc.proc=procOn;
+    const gimg=key==='zone_cripta2'?crpFloor:(procOn?V3.proc.ground({W:ZONE.w,H:ZONE.h,WATER,WCW,GROUND},V3.proc.palFloresta,key==='zone1'?5:7):GROUND),gTex=texOf(gimg,1);
     const gm=new T.MeshStandardMaterial({map:gTex,roughness:.95});if(mood!=='dark'){gm.bumpMap=gTex;gm.bumpScale=1.2;}
     const ground=new T.Mesh(new T.PlaneGeometry(GWu,GHu),gm);ground.rotation.x=-Math.PI/2;ground.position.set(GWu/2,0,GHu/2);add(ground);
     if(mood!=='dark'){const far=new T.Mesh(new T.PlaneGeometry(400,400),new T.MeshStandardMaterial({color:0x2c5a22,roughness:1}));far.rotation.x=-Math.PI/2;far.position.set(GWu/2,-.02,GHu/2);add(far);}
@@ -96,7 +97,8 @@ function buildScene(key){
     if(p.t==='flat'){flats.push([p.id,p.x,p.y]);continue;}
     if(key==='town'&&p.id.startsWith('b_'))continue;stand.push([p.id,p.x,p.y]);
     if(key==='town'&&a[2]<=24&&a[3]>=80)lampsP.push([p.x*U,2.3,p.y*U]);}
-  const mf=quads(flats,true);if(mf){mf.material.polygonOffset=true;mf.material.polygonOffsetFactor=-2;}quads(stand,false);
+  let st0=stand,fl0=flats;if(sc.proc){const rest=V3.proc.forest({ATLAS,ATLAS_J},add,rnd,{stand,flats});st0=rest.stand;fl0=rest.flats;}
+  const mf=quads(fl0,true);if(mf){mf.material.polygonOffset=true;mf.material.polygonOffsetFactor=-2;}quads(st0,false);
   {const pos=[],uv=[],idx=[];let n=0;for(const [id,px,py] of stand){const a=ATLAS_J[id];if(!a||a[3]<60)continue;const X=px*U,Z=py*U,rw=Math.min(a[2],100)*U*.55,rd=rw*.5;
     [[-rw,-rd],[rw,-rd],[rw,rd],[-rw,rd]].forEach(([cx,cz],i)=>{pos.push(X+cx,.03,Z+cz+rd*.6);uv.push([0,1,1,0][i],[0,0,1,1][i]);});idx.push(n,n+1,n+2,n,n+2,n+3);n+=4;}
     if(n)add(new T.Mesh(bufGeo(pos,uv,idx,0),new T.MeshBasicMaterial({map:BT,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3,opacity:mood==='dark'?.8:1})));}
