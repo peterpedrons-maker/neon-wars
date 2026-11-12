@@ -970,7 +970,7 @@ const BOSS_RAT={nome:'Rei dos Ratos',rk:1,atlas:'ratking',rad:26,shr:40,ent:'dro
        {id:'plague',hp:1,cd:9,warn:1.15,r:58,mult:.9,st:['veneno',.9,6,.025],wt:3,max:340,pool:6},
        {id:'burrow',hp:.7,cd:12.5,warn:1.1,r:60,mult:2.2,st:['atordoado',.6,1,0],wt:2,min:90}]};
 const BOSS_CRIP={...BOSS_ESQ,nome:'Rei Esquecido',hp:2700,atk:13.5,xp:340,gold:[110,190],aura:['#a070ff','#efe0ff'],ent:null,scale:1.05};
-const bossDef=z=>{z=z===undefined?G.zoneLv:z;if(z>=5)return BOSS_CRIP;const f=famOf(z);return f==='goblin'?BOSS_GOB:f==='esq'?BOSS_ESQ:f==='rato'?BOSS_RAT:BOSS;};
+const bossDef=z=>{z=z===undefined?G.zoneLv:z;if(z===5)return BOSS_CRIP;const f=famOf(z);return f==='goblin'?BOSS_GOB:f==='esq'?BOSS_ESQ:f==='rato'?BOSS_RAT:BOSS;};
 /* ===== itens ÚNICOS (nomeados, com efeito próprio): por área; chefes e mini-chefes têm os seus ===== */
 const UNIQUES=[
  /* chefes: cada um tem os seus (bk = chefe); mini-chefes: src = tipo do monstro */
@@ -1076,8 +1076,8 @@ async function loadSheet(name,atkKind){
   const anc=[0,1,2,3].map(r=>anchorOf(walk,0,r*64,64,64));
   SHEETS[name]={walk,hurt,atk,cell,frames,anc,stunF:(name==='goblin2'||(name==='goblin'&&location.search.indexOf('gob2')>=0))?1:3};
 }
-const areaName=m=>(m||G.map)==='zone_cripta2'?'Cripta do Rei Esquecido':(m||G.map)==='zone_esgoto'?'Esgotos de Brumavale':(m||G.map)==='zone_cripta'?'Catacumbas de Brumavale':(m||G.map)==='zone1_gob'?'Floresta dos Goblins':'Floresta de Brumavale';
-const zoneMap=z=>{if(z>=5)return 'zone_cripta2';const f=famOf(z);return f==='goblin'?'zone1_gob':f==='esq'?'zone_cripta':f==='rato'?'zone_esgoto':'zone1';};
+const areaName=m=>(m||G.map)==='zone_pantano'?'Pântano das Brumas':(m||G.map)==='zone_cripta2'?'Cripta do Rei Esquecido':(m||G.map)==='zone_esgoto'?'Esgotos de Brumavale':(m||G.map)==='zone_cripta'?'Catacumbas de Brumavale':(m||G.map)==='zone1_gob'?'Floresta dos Goblins':'Floresta de Brumavale';
+const zoneMap=z=>{if(z===5)return 'zone_cripta2';if(z>=6)return 'zone_pantano';const f=famOf(z);return f==='goblin'?'zone1_gob':f==='esq'?'zone_cripta':f==='rato'?'zone_esgoto':'zone1';};
 function zoneAutoFx(z){if(z._afx)return z._afx;const L=(z.fx||[]).slice();if(!(z.fx||[]).some(e=>e.k==='fire'))for(const p of z.props)if(p.t==='fire')L.push({k:'fire',x:p.x,y:p.y-8,spr:1,r:50});return z._afx=L;}
 function useMap(n,quiet){const m=MAPS[n];ZONE=m.zone;ATLAS=m.atlas;ATLAS_J=m.atlasJ;GROUND=m.ground;WATER=m.water;WCW=m.wcw;NAV=m.nav||null;WL=m.wl||null;WSP=m.wsp||[];WRX=m.wrx||null;GCTX=m.gx||null;G.prints=[];buildLights(zoneAutoFx(m.zone));G.map=n;MM.key='';if(!quiet&&typeof AMB!=="undefined")AMB.setup(zoneAutoFx(m.zone),n==='zone1_gob'?'gob':n==='zone1'?'forest':null);}
 async function loadMap(name,zf,af,gf,pf){
@@ -1121,6 +1121,39 @@ function crpTick(dt){
 }
 function crpWin(){const C=G.crp;if(!C||C.won)return;C.won=true;banner('Cripta concluída','O Rei Esquecido descansa','zone');
   setTimeout(()=>{if(G.crp&&G.scene==='dungeon')enterTown(false);},5200);}
+
+/* Pântano das Brumas: mapa gerado inteiramente por código (sem imagens). Posição/colisão dos props e as máscaras do chão nascem aqui;
+   o visual 2.5D (v3.js/v3proc.js) lê o campo k de cada prop e desenha os modelos 3D. */
+function genPantano(){
+  const W=1440,H=2250,hs=(x,y,s)=>{let h=(x*374761393+y*668265263+s*982451653)|0;h=Math.imul(h^(h>>>13),1274126177);return((h^(h>>>16))>>>0)/4294967296;};
+  const vn=(x,y,s)=>{const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);return(hs(xi,yi,s)*(1-u)+hs(xi+1,yi,s)*u)*(1-v)+(hs(xi,yi+1,s)*(1-u)+hs(xi+1,yi+1,s)*u)*v;};
+  const fb=(x,y,s)=>vn(x,y,s)*.5+vn(x*2,y*2,s+1)*.25+vn(x*4,y*4,s+2)*.125+vn(x*8,y*8,s+3)*.0625;
+  const px=y=>720+Math.sin(y*.004)*190+Math.sin(y*.011)*60,st=[px(2078),2078],bs=[px(450),450];
+  const clear=(x,y)=>Math.hypot(x-bs[0],y-bs[1])<300||Math.hypot(x-st[0],y-st[1])<200;
+  const onPath=(x,y,r)=>Math.abs(x-px(y))<r,lake=(x,y)=>fb(x/260,y/260,5)>.64&&!onPath(x,y,125)&&!clear(x,y);
+  const g=document.createElement('canvas');g.width=W;g.height=H;const x=g.getContext('2d');x.fillStyle='#2f6a28';x.fillRect(0,0,W,H);
+  x.fillStyle='#7a5a3a';for(let y=0;y<H;y+=6)x.fillRect(px(y)-62,y,124,7);
+  for(const c of [st,bs]){x.beginPath();x.arc(c[0],c[1],190,0,7);x.fill();}
+  x.fillStyle='#3a78c8';for(let y=0;y<H;y+=8)for(let xx=0;xx<W;xx+=8)if(lake(xx+4,y+4))x.fillRect(xx,y,8,8);
+  const props=[],fx=[];
+  const camps=[[1500,1],[900,-1]];
+  for(const [cy,sd] of camps){const cx=px(cy)+sd*190;props.push({t:'p',id:'',k:'tent',x:cx,y:cy,s:96,col:[[0,-10,26]]});props.push({t:'fire',x:cx-sd*70,y:cy+30,small:false});props.push({t:'p',id:'',k:'totem',x:cx+sd*80,y:cy+20,s:92,col:[[0,-3,5]]});props.push({t:'p',id:'',k:'totem',x:cx-sd*30,y:cy-60,s:84,col:[[0,-3,5]]});}
+  const near=(x,y)=>camps.some(([cy,sd])=>Math.hypot(x-(px(cy)+sd*190),y-cy)<130);
+  for(let gy=60;gy<H-40;gy+=56)for(let gx=40;gx<W-30;gx+=56){const X=gx+(hs(gx,gy,1)-.5)*50,Y=gy+(hs(gx,gy,2)-.5)*50;
+    if(lake(X,Y)||lake(X+28,Y)||lake(X-28,Y)||lake(X,Y+28)||lake(X,Y-28)||near(X,Y))continue;
+    const r=hs(gx,gy,3),d=.55+fb(X/220,Y/220,9)*.9,flat=!onPath(X,Y,80)&&true;
+    if(onPath(X,Y,88)||clear(X,Y)){if(r<.35)props.push({t:'flat',id:'',k:r<.2?'tuft':'bones',x:X,y:Y,s:r<.2?28:24});continue;}
+    if(r<.2*d){const dead=hs(gx,gy,4)<.45;props.push({t:'p',id:'',k:dead?'dead':'broad',x:X,y:Y,s:(dead?150:135)+hs(gx,gy,5)*44,col:[[0,-3,9]]});}
+    else if(r<.27*d)props.push({t:'p',id:'',k:'thorn',x:X,y:Y,s:38+hs(gx,gy,6)*10,col:[[0,-3,8]]});
+    else if(r<.33*d)props.push({t:'p',id:'',k:'rock',x:X,y:Y,s:30+hs(gx,gy,7)*12,col:[[0,-3,10]]});
+    else if(r<.52)props.push({t:'flat',id:'',k:'tuft',x:X,y:Y,s:26+hs(gx,gy,8)*10});
+    else if(r<.58)props.push({t:'flat',id:'',k:'mush',x:X,y:Y,s:30+hs(gx,gy,9)*12});
+    else if(r<.6)props.push({t:'flat',id:'',k:'bones',x:X,y:Y,s:24});}
+  for(let y=250;y<2060;y+=330){const side=((y/330)|0)%2?1:-1;fx.push({k:'torch',x:px(y)+side*78,y});}
+  const spawns=[];for(let i=0;i<46;i++){const y=300+i*38,xx=px(y)+(hs(i,7,7)-.5)*280;spawns.push(lake(xx,y)?[px(y),y]:[xx,y]);}
+  const ac=document.createElement('canvas');ac.width=ac.height=1;
+  MAPS.zone_pantano={zone:{w:W,h:H,props,spawns,plaza:[0,0,1,1],road:[],start:st,boss:bs,gate:[px(2178),2178],fx,swamp:1},atlasJ:{},ground:g,atlas:ac,water:null,wcw:0};
+}
 async function loadAll(){
   const core=[fetch('assets/look2/look2.json').then(r=>r.json()).then(j=>{LOOKM=j;}),
     loadMap('town','assets/town.json','assets/town_atlas.json','assets/town_ground.png','assets/town_atlas.png')];
@@ -1129,6 +1162,7 @@ async function loadAll(){
   await Promise.all(core);
   prepMap('town');useMap('town');
   STAGE2=(async()=>{
+    genPantano();
     const jobs=[loadMap('zone1','assets/zone1.json','assets/atlas.json','assets/zone1_ground.png','assets/atlas.png'),loadMap('zone1_gob','assets/zone1_gob.json','assets/atlas_gob.json','assets/zone1_gob_ground.png','assets/atlas_gob.png'),loadMap('zone_cripta','assets/zone_cripta.json','assets/atlas_cripta.json','assets/zone_cripta_ground.png','assets/atlas_cripta.png'),loadMap('zone_cripta2','assets/zone_cripta2.json','assets/atlas_cripta2.json','assets/zone_cripta2_ground.png','assets/atlas_cripta2.png').then(()=>loadImg('assets/zone_cripta2_walk.png')).then(im=>{MAPS.zone_cripta2.mask=im;}),loadMap('zone_esgoto','assets/zone_esgoto.json','assets/atlas_esgoto.json','assets/zone_esgoto_ground.png','assets/atlas_esgoto.png'),...['mer','fer','alq','mes','cof','lei'].map(k=>loadMap('int_'+k,'assets/int_'+k+'.json','assets/int_atlas.json','assets/int_'+k+'_ground.png','assets/int_atlas.png'))];
     for(const k of ['goblin','esqueleto','javali','rato','ogro','gobchefe','skelchefe','xama','esqfogo','esqgelo'])jobs.push(loadSheet(k,'slash'));jobs.push(loadSheet('gobarq','shoot'));jobs.push(loadSheet('esqmago','spellcast'));for(const k of ['javguer','javbruto','ratass'])jobs.push(loadSheet(k,'slash'));for(const k of ['javarq','ratarq'])jobs.push(loadSheet(k,'shoot'));for(const k of ['javmago','ratalq'])jobs.push(loadSheet(k,'spellcast'));jobs.push(loadAtlasBoss('grunk'));jobs.push(loadAtlasBoss('vamp'));jobs.push(loadAtlasBoss('bat'));jobs.push(loadAtlasBoss('skrix'));jobs.push(loadAtlasBoss('morvath'));jobs.push(loadAtlasBoss('gorgash'));jobs.push(loadAtlasBoss('ratking'));jobs.push(loadAtlasBoss('javcap'));jobs.push(loadAtlasBoss('botic'));jobs.push(loadAtlasBoss('pxhero'));jobs.push(loadAtlasBoss('totem'));
     for(const k of new Set(CLS_ORDER.flatMap(c=>CLASSES[c].skills.map(s=>s[0]))))jobs.push(loadImg(skImg(k)).then(im=>{IMG[k]=im;}).catch(()=>{IMG[k]=null;}));
@@ -1858,14 +1892,14 @@ const FAMV={goblin:['goblin','goblin','gobarq','xama','goblin'],esq:['esq','esq'
 const varOf=(z,i)=>{const a=FAMV[famOf(z)];return a[((i%a.length)+a.length)%a.length];};
 /* progressão definida: 4 dungeons, uma após a outra. Para entrar na seguinte é preciso derrotar o chefe da anterior e ter o nível mínimo. */
 /* pc = poder de combate recomendado (calibrado por simulação: PC com o qual o herói de equipamento médio vence o chefe com folga; tools/mmo/sim/pc_calib.cjs + boss.cjs) */
-const DUN=[{id:1,nm:'Floresta dos Goblins',unlock:1,pc:600},{id:2,nm:'Catacumbas de Brumavale',unlock:8,pc:900},{id:3,nm:'Floresta de Brumavale',unlock:13,pc:1200},{id:4,nm:'Esgotos de Brumavale',unlock:18,pc:1400},{id:5,nm:'Cripta do Rei Esquecido',unlock:1,pc:1650}];
+const DUN=[{id:1,nm:'Floresta dos Goblins',unlock:1,pc:600},{id:2,nm:'Catacumbas de Brumavale',unlock:8,pc:900},{id:3,nm:'Floresta de Brumavale',unlock:13,pc:1200},{id:4,nm:'Esgotos de Brumavale',unlock:18,pc:1400},{id:5,nm:'Cripta do Rei Esquecido',unlock:1,pc:1650},{id:6,nm:'Pântano das Brumas',unlock:22,pc:1900}];
 const dgLv=z=>[1+(z-1)*BAL.zoneLv,8+(z-1)*BAL.zoneLv];   // faixa de nível dos monstros da dungeon z
 function dgUnlocked(z){if(z<=1||z===5)return true;const d=DUN[z-1];return !!(d&&SAVE.dgDone&&SAVE.dgDone[z-1]&&SAVE.lv>=d.unlock);}
 function dgRefresh(){let m=1;for(let z=2;z<=DUN.length;z++)if(dgUnlocked(z))m=z;if(m>(SAVE.zoneMax||1)){SAVE.zoneMax=m;chat('Nova dungeon liberada: '+DUN[m-1].nm+'!',4);sfx('levelup',.4);if(G.hero)floatText(G.hero.x,G.hero.y-80,'Nova dungeon!','#8ef08a',9,1.4);}SAVE.zoneMax=Math.max(1,Math.min(DUN.length,SAVE.zoneMax||1));}
 // experiência estilo Cabal: monstro muito abaixo do seu nível rende 1 de XP (chefes mantêm um mínimo)
 const xpGapMul=g=>g<=2?1:g===3?.85:g===4?.7:g===5?.5:g===6?.3:g===7?.15:g===8?.07:0;
 const FAMS=['goblin','esq','javali','rato'],FAMM={goblin:[1.13,1.1,1.24],esq:[.85,.86,.83],javali:[.71,.77,.68],rato:[2.1,1.9,2]};
-const famOf=z=>{z=clamp(z||1,1,DUN.length);return z>=5?'esq':FAMS[(z-1)%FAMS.length];};
+const famOf=z=>{z=clamp(z||1,1,DUN.length);return z===5?'esq':z>=6?'goblin':FAMS[(z-1)%FAMS.length];};
 function mkMob(kind,x,y,sp){
   if(ZONE&&WATER){const f=freeSpot(x,y);x=f[0];y=f[1];}
   const T=MOBS[kind],lv=mobLevel(y),m={kind:'mob',type:kind,T,x,y,sx:x,sy:y,lv,row:1,state:'idle',animT:rnd(0,5),act:null,cd:rnd(.5,1.2),kvx:0,kvy:0,stun:0,sts:null,flash:0,dead:false,deadT:0,respawn:0,sp,wx:x,wy:y,wt:rnd(0,3)};
@@ -4646,7 +4680,8 @@ const PZD=[
  {img:'d2',lore:'O frio sobe pelas escadas.',hab:[['esq','Esqueletos','Comum'],['vamp','Morcego-Vampiro','Mini-chefe'],['morvath','Morvath','Chefe']]},
  {img:'d3',lore:'Presas na escuridão.',hab:[['javali','Javalis','Comum'],['javcap','Capitão Presa-de-Ferro','Mini-chefe'],['gorgash','Gorgash','Chefe']]},
  {img:'d4',lore:'Algo se move na água.',hab:[['rato','Ratos Gigantes','Comum'],['botic','Boticário Podre','Mini-chefe'],['ratking','Rei dos Ratos','Chefe']]},
- {img:'d5',lore:'Um rei que ninguém lembra ainda manda aqui.',hab:[['esq','Servos da Cripta','Comum'],['morvath','Rei Esquecido','Chefe']]}];
+ {img:'d5',lore:'Um rei que ninguém lembra ainda manda aqui.',hab:[['esq','Servos da Cripta','Comum'],['morvath','Rei Esquecido','Chefe']]},
+ {img:'d6',lore:'A névoa guarda o que o pântano devorou.',hab:[['goblin','Goblins do Pântano','Comum'],['skrix','Xamã Skrix','Mini-chefe'],['grunk','Grunk','Chefe']]}];
 const PZ={tab:'d',sel:0,t:0};
 function pzPortrait(cv){const k=cv.dataset.k,x=cv.getContext('2d');let fr=null;
   try{if(k==='grunk')fr=atlasFrame(SHEETS.grunk,'idle',0);else if(k==='skrix')fr=atlasFrame(SHEETS.skrix,'idle',0);else if(k==='vamp')fr=atlasFrame(SHEETS.vamp,'idle',0);
