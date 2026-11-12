@@ -3,10 +3,10 @@
    Cenas que ainda não têm versão 3D caem automaticamente no desenho 2D antigo. */
 (function(){
 'use strict';
-if(new URLSearchParams(location.search).get('v3')!=='1')return;
-if(typeof THREE==='undefined'){console.warn('[v3] three.js ausente');return;}
+if(!window.V3_REQ)return;
+if(typeof THREE==='undefined'){window.V3_FAIL='three.js ausente';return;}
 const T=THREE,U=1.3/46,TILT=47*Math.PI/180,CT=Math.cos(TILT);
-const V3=window.V3={ready:false};
+const V3=window.V3={ready:false,err:''};
 let R,S,cam,glc,stageEl,lbBox,scn=null,fxCv=null;
 const $=id=>document.getElementById(id);
 const rndSeed=s=>()=>{s=(s*16807)%2147483647;return (s-1)/2147483646;};
@@ -31,7 +31,7 @@ function init(){
   const mk=(c,cl)=>{const d=document.createElement('div');d.className=cl;stageEl.insertBefore(d,$('cv').nextSibling);return d;};
   lbBox=document.createElement('div');lbBox.id='v3lb';stageEl.insertBefore(lbBox,$('cv').nextSibling);
   mk(0,'v3ts t');mk(0,'v3ts b');const vg=document.createElement('div');vg.id='v3vg';stageEl.insertBefore(vg,$('cv').nextSibling);
-  R=new T.WebGLRenderer({canvas:glc,antialias:true,powerPreference:'high-performance'});
+  try{R=new T.WebGLRenderer({canvas:glc,antialias:true,powerPreference:'high-performance'});}catch(err){V3.err='este aparelho não liberou o WebGL';return;}
   R.outputEncoding=T.sRGBEncoding;R.toneMapping=T.ACESFilmicToneMapping;
   S=new T.Scene();cam=new T.PerspectiveCamera(32,1,.5,160);
   V3.ready=true;
@@ -154,7 +154,11 @@ V3.hitDoor=function(cx,cy){if(!scn)return null;const r=stageEl.getBoundingClient
     const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);if(x>Math.min(...xs)&&x<Math.max(...xs)&&y>Math.min(...ys)&&y<Math.max(...ys)){const id=u.id.slice(2);const d=(ZONE.doors||[]).find(q=>q.id===id);if(d)return d;}}return null;};
 // ------------------------------------------------------------------ laço de desenho
 let frameNo=0,camT=null;
+let shown=false,bad=0;
 V3.render=function(){
+  try{render3();if(!shown){shown=true;if(typeof toast==='function')toast('Visual 2.5D ligado',1800);}}catch(err){bad++;V3.err=String(err&&err.message||err);console.error('[v3]',err);if(bad>=3){V3.ready=false;document.body.classList.remove('v3on');if(typeof toast==='function')toast('Visual 2.5D desligado: '+V3.err,5000);}}
+};
+function render3(){
   if(!scn||scn.key!=='town'){if(scn){S.remove(scn.grp);}scn=buildTown();}
   size();frameNo++;const dt=1/60,t=G.t;
   // luz do dia (usa o relógio do jogo)
@@ -195,6 +199,6 @@ V3.render=function(){
     const p=toScreen(e.x,e.y,e.kind==='hero'?62:60);el.style.left=p[0]+'px';el.style.top=p[1]+'px';el.style.display=p[2]<1?'block':'none';seen.add(e);};
   lab(G.hero,SAVE.name||'Herói','Nv.'+SAVE.lv,'h');for(const nn of (G.npcs||[]))lab(nn,nn.nm,'','');
   for(const [e,el] of scn.labels)if(!seen.has(e)){el.remove();scn.labels.delete(e);}
-};
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
