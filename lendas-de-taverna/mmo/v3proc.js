@@ -272,6 +272,21 @@ P.palEsgoto={f1:[64,84,66],f2:[50,70,58],f3:[34,52,44],mortar:[18,28,24],bw:32,b
 P.palCripta2={f1:[70,92,112],f2:[54,76,98],f3:[34,50,70],mortar:[18,26,38],bw:40,bh:30,stain:[60,24,30],w1:[40,70,90],w2:[20,40,60]};
 P.palCidade={g1:[62,128,36],g2:[78,144,44],g3:[48,110,30],d1:[116,86,54],d2:[132,100,62],d3:[96,70,44],st:[126,114,98],sm:[72,64,54],shore:[150,130,90],w1:[70,140,170],w2:[34,84,120]};
 P.MODELS=MODELS;P.hash=hash;P.mix=mix;P.fbm=fbm;
+
+// ---- props descritos direto por dados (mapas gerados por código): [{k,x,y,s}] -> instâncias 3D
+P.direct=function(add,list,sc){
+  const COL={dead:'#4a3a30',broad:'#2f4a2a',thorn:'#4a3424',rock:'#5a5e58',tuft:'#46783a',bones:'#d6ccb0',mush:'#5ff0d0',totem:'#4a3220',tent:'#6a4a30',flower:'#ffffff'};
+  const WF={dead:.8,broad:1.1,rock:1.6,tent:1.3,totem:.45,thorn:1.1};const by={};
+  for(const q of list)(by[q.k]=by[q.k]||[]).push(q);
+  const mat=(k)=>{if(k==='mush')return new T.MeshStandardMaterial({vertexColors:true,flatShading:true,emissive:0x22ccaa,emissiveIntensity:.9,roughness:.5});
+    const m=new T.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:.9});if(k==='tuft'||k==='dead'||k==='broad'){const sw={tuft:.35,dead:.01,broad:.02}[k];m.onBeforeCompile=sh=>{sh.uniforms.uTime=P.time;sh.vertexShader='uniform float uTime;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n#ifdef USE_INSTANCING\nfloat ph=instanceMatrix[3].x*.9+instanceMatrix[3].z*.6;\n#else\nfloat ph=0.;\n#endif\ntransformed.x+=sin(uTime*1.7+ph)*position.y*'+sw.toFixed(3)+';transformed.z+=cos(uTime*1.3+ph*1.3)*position.y*'+(sw*.6).toFixed(3)+';');};}return m;};
+  for(const k in by){const L=by[k];if(!MODELS[k])continue;const im=new T.InstancedMesh(MODELS[k](new T.Color(COL[k]||'#888')),mat(k),L.length),m4=new T.Matrix4(),q=new T.Quaternion(),e=new T.Euler();
+    L.forEach((it,i)=>{const r=hash(Math.round(it.x),Math.round(it.y),11),H=it.s*U/CT*.8,w=(WF[k]||1),s=.9+r*.25;e.set(0,k==='tent'?0:r*6.283,0);q.setFromEuler(e);
+      m4.compose(new T.Vector3(it.x*U,0,it.y*U),q,new T.Vector3(H*w*s,H*s,H*w*s));im.setMatrixAt(i,m4);im.setColorAt(i,new T.Color().setScalar(.85+hash(i,5,5)*.3));});
+    im.castShadow=!(k==='tuft'||k==='bones'||k==='mush');im.receiveShadow=true;im.frustumCulled=false;add(im);
+    if(k==='mush'&&sc)L.forEach((it,i)=>{if(i%7===0)sc.sources.push({p:new T.Vector3(it.x*U,.6,it.y*U),c:0x40ffd0,k:.9,night:1,fl:0});});}
+};
+P.palPantano={g1:[34,60,34],g2:[48,78,40],g3:[26,46,30],d1:[84,66,44],d2:[98,78,52],d3:[70,54,38],st:[110,110,100],sm:[60,60,56],shore:[58,56,38],w1:[70,100,72],w2:[28,50,42]};
 P.palMadeira={base:'#6a4a2a',p:[148,104,60]};
 P.palFloresta={g1:[40,86,34],g2:[56,106,42],g3:[30,68,30],d1:[116,86,54],d2:[132,100,62],d3:[96,70,44],st:[128,128,120],sm:[70,70,66],shore:[150,130,90],w1:[70,140,170],w2:[34,84,120]};
 })();
