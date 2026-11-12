@@ -227,7 +227,7 @@ function kindIn(a,rgb,flat,id){return null;const mk0=INMAP[(id||'').slice(0,4)];
 // ---- floresta: devolve o que sobrou (props sem modelo) para continuarem como sprites
 P.forest=function(env,add,rnd,items,theme){const DG=theme==='dungeon'||theme==='indoor';
   const mats={},buckets={},rest={stand:[],flats:[]};
-  const take=(list,flat)=>{for(const it of list){const [id,x,y]=it,a=env.ATLAS_J[id];if(!a)continue;const rgb=avgCol(env,id),k=theme==='indoor'?kindIn(a,rgb,flat,id):theme==='town'?kindTown(a,rgb,flat,id):DG?kindDg(a,rgb,flat):kindOf(a,rgb,flat);if(!k||!MODELS[k]){if(k&&!MODELS[k])console.warn('[v3] sem modelo:',k);if(DG&&flat)continue;(flat?rest.flats:rest.stand).push(it);continue;}(buckets[k]=buckets[k]||[]).push({x,y,a,rgb});}};
+  const take=(list,flat)=>{for(const it of list){const [id,x,y]=it,a=env.ATLAS_J[id];if(!a)continue;const rgb=avgCol(env,id),k=theme==='indoor'?kindIn(a,rgb,flat,id):theme==='town'?kindTown(a,rgb,flat,id):DG?kindDg(a,rgb,flat):kindOf(a,rgb,flat);if(!k||!MODELS[k]){if(k&&!MODELS[k])console.warn('[v3] sem modelo:',k);if(DG&&flat&&theme!=='indoor')continue;(flat?rest.flats:rest.stand).push(it);continue;}(buckets[k]=buckets[k]||[]).push({x,y,a,rgb});}};
   take(items.stand,false);take(items.flats,true);
   const runeMat=()=>new T.MeshBasicMaterial({vertexColors:true,transparent:true,blending:T.AdditiveBlending,depthWrite:false,opacity:.9});
   const slimeMat=()=>new T.MeshStandardMaterial({vertexColors:true,emissive:0x40c040,emissiveIntensity:.5,roughness:.3});
