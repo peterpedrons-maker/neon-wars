@@ -216,7 +216,6 @@ function drawEnt(sc,e,frame){
     G.cam.x=e.x-S0/2;G.cam.y=e.y-(S0-12);G.LW=S0;G.LH=S0;
     try{
       if(e.pet)drawPet(e,S0/2,S0-12);
-      else if(e.kind==='hero'&&e.dod&&e.dod.type==='roll'){const dd=e.dod,px=S0/2,py=S0-12-14,ang=dd.p*6.283*dd.sg;ctx.save();ctx.translate(px,py);ctx.rotate(ang);ctx.translate(-px,-py);drawSprite(e,fr,scale,false,.95);ctx.restore();}
       else if(e.kind==='hero'&&e.dod)drawSprite(e,fr,scale,false,Math.min(1,.1+e.dod.t/.22));
       else{
         const ra=e.kind==='boss'&&e.T.atlas&&((e.ent&&e.ent.k==='roar')||(e.act&&e.act.skill&&e.act.anim==='roar'&&!e.dead));
@@ -227,7 +226,7 @@ function drawEnt(sc,e,frame){
         if(ra&&typeof roarAura==='function')roarAura(e,S0/2,S0-12,1);}
     }catch(err){}
     ctx=oc;G.cam.x=ox;G.cam.y=oy;G.LW=ow;G.LH=oh;r.tex.needsUpdate=true;}
-  const el=(G.crp&&typeof crpElev==='function'?crpElev(e):0)*U/CT,zz=((e.zoff||0)+(e.dx&&e.dx.y<0?-e.dx.y*5:0))*U/CT;
+  const el=(G.crp&&typeof crpElev==='function'?crpElev(e):0)*U/CT,zz=((e.T&&e.T.fly)?(e.zoff||0)*.4:0)*U/CT;   /* sem pulos: os sprites só deslizam pelo chão (voadores flutuam pouco) */
   r.root.position.set(e.x*U,el,e.y*U);r.me.position.y=zz;if(r.gh)r.gh.position.y=zz;
   const sw=e.kind==='hero'?22:e.kind==='boss'?40:(e.T?e.T.sw:22),sr=(e.T&&e.T.shr)||sw*.62,fl=zz?Math.min(.6,zz*CT/U/220):0,bs=sr*3.1*U/1.3*(1-fl);
   r.bl.scale.set(bs,bs,1);r.bl.material.opacity=Math.min(1,al*(1-fl)*(sc.mood==='dark'?.9:1));
