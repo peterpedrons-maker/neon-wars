@@ -56,7 +56,7 @@ const hex=(s,d)=>{try{const v=parseInt(String(s||'').replace('#','').slice(0,6),
 function buildScene(key){
   const mood=ZONE.room?'room':ZONE.dark?'dark':key==='town'?'town':'field';
   const rnd=rndSeed(11);
-  const sc={key,mood,grp:new T.Group(),houses:[],winMats:[],sources:[],pool:[],glows:[],smoke:[],chimneys:[],fires:[],fireGeos:[],ents:new Map(),labels:new Map(),dist:mood==='room'?17:18,used:0};
+  const sc={key,mood,grp:new T.Group(),houses:[],winMats:[],sources:[],pool:[],glows:[],smoke:[],chimneys:[],fires:[],fireGeos:[],ents:new Map(),labels:new Map(),dist:mood==='room'?12:12.5,used:0};
   const g=sc.grp,add=o=>{g.add(o);return o;};
   S.add(g);
   const aTex=texOf(ATLAS,1),AW=ATLAS.width,AH=ATLAS.height,GWu=ZONE.w*U,GHu=ZONE.h*U;
@@ -64,9 +64,10 @@ function buildScene(key){
   sc.hl=new T.PointLight(0xffb870,0,10,2);add(sc.hl);
   if(mood==='field'){const sh=sc.sun.shadow;sc.sun.castShadow=true;sh.mapSize.set(2048,2048);const c=sh.camera;c.left=-17;c.right=17;c.top=17;c.bottom=-17;c.near=1;c.far=60;sh.bias=-.0006;sh.normalBias=.03;add(sc.sun.target);}
   // ---- chão
+  let dgrid=null;
   if(mood==='room'){
-    const WH=88,H=GROUND.height,W=GROUND.width,ft=texOf(GROUND,1),wt=texOf(GROUND,1);
-    ft.repeat.set(1,(H-WH)/H);ft.offset.set(0,0);wt.repeat.set(1,WH/H);wt.offset.set(0,(H-WH)/H);
+    const WH=88,H=GROUND.height,W=GROUND.width,pr0=false,ft=pr0?texOf(V3.proc.woodFloor({W,H},V3.proc.palMadeira,key.length).canvas,1):texOf(GROUND,1),wt=pr0?V3.proc.woodWall(W,WH,key.length):texOf(GROUND,1);
+    ft.repeat.set(1,(H-WH)/H);ft.offset.set(0,0);if(!pr0){wt.repeat.set(1,WH/H);wt.offset.set(0,(H-WH)/H);}sc.proc=pr0;
     const fl=new T.Mesh(new T.PlaneGeometry(W*U,(H-WH)*U),new T.MeshStandardMaterial({map:ft,roughness:.9}));fl.rotation.x=-Math.PI/2;fl.position.set(W*U/2,0,(WH+(H-WH)/2)*U);add(fl);
     const wh=WH*U/CT,wl=new T.Mesh(new T.PlaneGeometry(W*U,wh),new T.MeshBasicMaterial({map:wt,depthTest:false,depthWrite:false}));wl.position.set(W*U/2,wh/2,WH*U);wl.renderOrder=-10;add(wl);
     const top=new T.Mesh(new T.PlaneGeometry(W*U+10,8),new T.MeshBasicMaterial({color:0x120a06,depthTest:false,depthWrite:false}));top.position.set(W*U/2,wh+4,WH*U);top.renderOrder=-11;add(top);
@@ -75,11 +76,16 @@ function buildScene(key){
     sc.hemi.color.setHex(0xffe6bf);sc.hemi.groundColor.setHex(0x5a4020);
     for(const [px,pz] of[[W*.28,H*.40],[W*.72,H*.40],[W*.5,H*.7]])sc.sources.push({p:new T.Vector3(px*U,2.4,pz*U),c:0xffc070,k:1.3,night:1,still:1,nog:1});
   }else{
-    const procOn=mood==='field'&&V3.proc&&!window.V3_NOPROC;sc.proc=procOn;
-    const gimg=key==='zone_cripta2'?crpFloor:(procOn?V3.proc.ground({W:ZONE.w,H:ZONE.h,WATER,WCW,GROUND},V3.proc.palFloresta,key==='zone1'?5:7):GROUND);
+    const procOn=(mood==='field'||mood==='dark')&&V3.proc&&!window.V3_NOPROC;sc.proc=procOn;
+    dgrid=(procOn&&mood==='dark')?dungeonGrid(key):null;
+    const envP={W:ZONE.w,H:ZONE.h,WATER,WCW,GROUND};
+    let gimg=key==='zone_cripta2'?crpFloor:GROUND;
+    if(procOn&&(mood==='field'||mood==='town'))gimg=V3.proc.ground(envP,V3.proc.palFloresta,key==='zone1'?5:key==='town'?9:7);
+    else if(procOn){const pal=key==='zone_esgoto'?V3.proc.palEsgoto:key==='zone_cripta2'?V3.proc.palCripta2:V3.proc.palCripta;gimg=V3.proc.dungeonFloor(envP,pal,key==='zone_esgoto'?4:key==='zone_cripta2'?6:3);
+      {const x=gimg.canvas.getContext('2d'),S0=gimg.canvas.width/ZONE.w;x.fillStyle='#030409';for(let cy=0;cy<dgrid.rows;cy++)for(let cx=0;cx<dgrid.cols;cx++)if(!dgrid.isF(cx,cy))x.fillRect(Math.floor((dgrid.ox+cx*dgrid.cw)*S0),Math.floor((dgrid.oy+cy*dgrid.ch)*S0),Math.ceil(dgrid.cw*S0)+1,Math.ceil(dgrid.ch*S0)+1);}}
     const pg=procOn?gimg:null,gTex=texOf(pg?pg.canvas:gimg,1);gTex.anisotropy=8;
     const gm=new T.MeshStandardMaterial({map:gTex,roughness:.95});if(mood!=='dark'){gm.bumpMap=gTex;gm.bumpScale=1.2;}
-    const ground=new T.Mesh(new T.PlaneGeometry(GWu,GHu),gm);ground.rotation.x=-Math.PI/2;ground.position.set(GWu/2,0,GHu/2);add(ground);ground.receiveShadow=true;if(pg)add(V3.proc.waterMesh(pg,GWu,GHu));
+    const ground=new T.Mesh(new T.PlaneGeometry(GWu,GHu),gm);ground.rotation.x=-Math.PI/2;ground.position.set(GWu/2,0,GHu/2);add(ground);ground.receiveShadow=true;if(pg&&pg.M&&mood!=='dark')add(V3.proc.waterMesh(pg,GWu,GHu));if(pg&&key==='zone_esgoto')add(V3.proc.waterMesh(pg,GWu,GHu,[.35,.5,.18]));
     if(mood!=='dark'){const far=new T.Mesh(new T.PlaneGeometry(400,400),new T.MeshStandardMaterial({color:0x2c5a22,roughness:1}));far.rotation.x=-Math.PI/2;far.position.set(GWu/2,-.02,GHu/2);add(far);}
   }
   // ---- props do atlas (billboards em pé, mesclados)
@@ -99,19 +105,21 @@ function buildScene(key){
     if(p.t==='flat'){flats.push([p.id,p.x,p.y]);continue;}
     if(key==='town'&&p.id.startsWith('b_'))continue;stand.push([p.id,p.x,p.y]);
     if(key==='town'&&a[2]<=24&&a[3]>=80)lampsP.push([p.x*U,2.3,p.y*U]);}
-  let st0=stand,fl0=flats;if(sc.proc){const rest=V3.proc.forest({ATLAS,ATLAS_J},add,rnd,{stand,flats});st0=rest.stand;fl0=rest.flats;}
+  let st0=stand,fl0=flats;if(sc.proc){const rest=V3.proc.forest({ATLAS,ATLAS_J},add,rnd,{stand,flats},mood==='dark'?'dungeon':mood==='town'?'town':mood==='room'?'indoor':'outdoor');st0=rest.stand;fl0=rest.flats;
+    if(mood==='dark'&&dgrid)V3.proc.walls(add,Object.assign({brickCol:key==='zone_esgoto'?'#2c3a2c':'#2a3340',capCol:key==='zone_esgoto'?'#46563f':'#4a5568',moss:key==='zone_esgoto'?.5:0,radius:key==='zone_cripta2'?1:2},dgrid,{ox:0}));}
   const mf=quads(fl0,true);if(mf){mf.material.polygonOffset=true;mf.material.polygonOffsetFactor=-2;}quads(st0,false);
   {const pos=[],uv=[],idx=[];let n=0;for(const [id,px,py] of stand){const a=ATLAS_J[id];if(!a||a[3]<60)continue;const X=px*U,Z=py*U,rw=Math.min(a[2],100)*U*.55,rd=rw*.5;
     [[-rw,-rd],[rw,-rd],[rw,rd],[-rw,rd]].forEach(([cx,cz],i)=>{pos.push(X+cx,.03,Z+cz+rd*.6);uv.push([0,1,1,0][i],[0,0,1,1][i]);});idx.push(n,n+1,n+2,n,n+2,n+3);n+=4;}
     if(n)add(new T.Mesh(bufGeo(pos,uv,idx,0),new T.MeshBasicMaterial({map:BT,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3,opacity:mood==='dark'?.8:1})));}
   // fogueiras: base + chama animada (4 quadros do atlas)
+  if(sc.proc){for(const p of sc.fires)V3.proc.fire(add,p.x*U,p.y*U,p.small?.7:1,'fire');sc.fires.length=0;}
   for(const p of sc.fires){const b=ATLAS_J.bf0,fi=ATLAS_J.fi0;if(!b||!fi)continue;const X=p.x*U,Z=(p.y+4)*U,pos=[],uv=[],idx=[0,1,2,0,2,3,4,5,6,4,6,7];
     const put=(a,lift,zz)=>{const [sx,sy,sw,sh,ax,ay]=a;[[-ax,ay],[sw-ax,ay],[sw-ax,ay-sh],[-ax,ay-sh]].forEach(([cx,cy],i)=>{pos.push(X+cx*U,Math.max(0,(cy+lift)*U/CT),zz);uv.push((sx+[0,1,1,0][i]*sw)/AW,1-(sy+[0,0,1,1][i]*sh)/AH);});};
     put(b,0,Z);put(fi,18,Z+.02);const geo=bufGeo(pos,uv,idx,1);
     add(new T.Mesh(geo,new T.MeshLambertMaterial({map:aTex,alphaTest:.3,side:T.DoubleSide,emissive:0xffffff,emissiveMap:aTex,emissiveIntensity:.35})));sc.fireGeos.push(geo);}
   // ---- extras por cenário
   if(key==='town')townExtras(sc,add,rnd);
-  if(key==='zone_cripta2')crpExtras(sc,add);
+  if(key==='zone_cripta2')crpExtras(sc,add,sc.proc);
   // ---- luzes
   for(const [x,y,z] of lampsP)sc.sources.push({p:new T.Vector3(x,y,z),c:0xffc878,k:1.5,night:1});
   for(const f of (typeof zoneAutoFx==='function'?zoneAutoFx(ZONE):(ZONE.fx||[]))){
@@ -119,6 +127,7 @@ function buildScene(key){
     else if(f.k==='torch')sc.sources.push({p:new T.Vector3(f.x*U,key==='zone_cripta2'?2.1:1.6,f.y*U+.5),c:0xffa040,k:1.6,night:1,fl:1});
     else if(f.k==='lamp'&&key!=='town')sc.sources.push({p:new T.Vector3(f.x*U,2.2,f.y*U+.5),c:hex(f.col,0xffb050),k:1.5,night:1});
     else if(f.k==='glow'&&f.col)sc.sources.push({p:new T.Vector3(f.x*U,1.3,f.y*U+.5),c:hex(f.col,0xff9a3a),k:1.6,night:.3,fl:1});}
+  if(sc.proc)for(const f of (typeof zoneAutoFx==='function'?zoneAutoFx(ZONE):[]))if(f.k==='torch'||(f.k==='lamp'&&mood==='dark'))V3.proc.fire(add,f.x*U,f.y*U+.45,f.k==='lamp'?.75:1,'torch');
   for(let i=0;i<7;i++){const L=new T.PointLight(0xffc878,0,11,2);add(L);sc.pool.push(L);}
   sc.glows=sc.sources.map(s=>{const sp=new T.Sprite(new T.SpriteMaterial({map:flameTex,blending:T.AdditiveBlending,depthWrite:false,transparent:true,color:s.c}));sp.position.copy(s.p);sp.scale.set(1.3,1.3,1);sp.visible=!s.nog;add(sp);return sp;});
   for(const ch of sc.chimneys)for(let i=0;i<6;i++){const sp=new T.Sprite(new T.SpriteMaterial({map:blobTex(.5),transparent:true,depthWrite:false,color:0xcfcfd4,opacity:0}));add(sp);sc.smoke.push({sp,x:ch.x,y:ch.y,z:ch.z,t:i/6*4});}
@@ -167,8 +176,18 @@ function townExtras(sc,add,rnd){
       fragmentShader:'varying vec2 u;uniform float t;void main(){float r=length(u*vec2(1.,.85));if(r>1.)discard;float a=atan(u.y,u.x);float s=sin(a*4.+r*9.-t*3.)*.5+.5;float s2=sin(a*3.-r*13.+t*2.2)*.5+.5;vec3 c=mix(vec3(.25,.1,.6),vec3(.5,.85,1.),s*s2);float f=smoothstep(1.,.75,r);gl_FragColor=vec4(c*(.5+.9*s)*f+vec3(.9,.8,1.)*pow(max(0.,1.-r*1.6),2.),f*.95);}'});
     const vt=new T.Mesh(new T.PlaneGeometry(3.4,3.9),sc.vm);vt.position.set(0,2.0,.05);pg.add(vt);sc.pl=new T.PointLight(0x9a7aff,1.6,12,2);sc.pl.position.set(0,2.4,1.2);pg.add(sc.pl);}
 }
+
+// grade de "é chão?" das masmorras: Cripta usa a grade do mapa; Catacumbas/Esgoto leem os cômodos (claro = chão, escuro = vazio)
+const gridCache={};
+function dungeonGrid(key){if(gridCache[key])return gridCache[key];let r;
+  if(key==='zone_cripta2'&&ZONE.grid){const gr=ZONE.grid,[TW,TH,OY]=ZONE.cell||[48,45,9];r={rows:gr.length,cols:gr[0].length,isF:(x,y)=>y>=0&&y<gr.length&&x>=0&&x<gr[0].length&&gr[y][x]!=='#',cw:TW,ch:TH,ox:0,oy:OY};}
+  else{const cw=24,cols=Math.ceil(ZONE.w/cw),rows=Math.ceil(ZONE.h/cw),c=cvs(cols,rows),x=c.getContext('2d',{willReadFrequently:true});x.drawImage(GROUND,0,0,cols,rows);const d=x.getImageData(0,0,cols,rows).data,F=new Uint8Array(cols*rows);
+    for(let i=0;i<cols*rows;i++){const l=d[i*4]*.3+d[i*4+1]*.59+d[i*4+2]*.11;F[i]=l>46?1:0;}
+    if(typeof WATER!=='undefined'&&WATER&&WCW)for(let cy=0;cy<rows;cy++)for(let cx=0;cx<cols;cx++)if(WATER[Math.min(cy*6+3,Math.ceil(ZONE.h/4)-1)*WCW+Math.min(cx*6+3,WCW-1)])F[cy*cols+cx]=1;
+    r={rows,cols,isF:(x,y)=>y>=0&&y<rows&&x>=0&&x<cols&&F[y*cols+x]===1,cw,ch:cw,ox:0,oy:0};}
+  return gridCache[key]=r;}
 // ---- Cripta: paredes de tijolo a partir da grade, plataforma e escada
-function crpExtras(sc,add){
+function crpExtras(sc,add,skipWalls){
   const gr=ZONE.grid,[TW,TH,OY]=ZONE.cell||[48,45,9];if(!gr)return;
   const rows=gr.length,cols=gr[0].length,isF=(x,y)=>y>=0&&y<rows&&x>=0&&x<cols&&gr[y][x]!=='#';
   const brick=crTex((x,w,h)=>{x.fillStyle='#16181f';x.fillRect(0,0,w,h);for(let j=0;j<4;j++)for(let i=-1;i<3;i++){const px=i*(w/2)+(j%2?w/4:0)+1,py=j*h/4+2;x.fillStyle=`hsl(228,${6+Math.random()*10}%,${22+Math.random()*14}%)`;x.fillRect(px,py,w/2-3,h/4-4);x.fillStyle='rgba(255,255,255,.07)';x.fillRect(px,py,w/2-3,2);}},128,128);
@@ -182,8 +201,8 @@ function crpExtras(sc,add){
     sq(sp,su,si,sn,[[x0,0,z1],[x1,0,z1],[x1,h,z1],[x0,h,z1]],[[0,0],[1,0],[1,vv],[0,vv]]);sn+=4;
     if(fE){sq(sp,su,si,sn,[[x1,0,z1],[x1,0,z0],[x1,h,z0],[x1,h,z1]],[[0,0],[1,0],[1,vv],[0,vv]]);sn+=4;}
     if(fW){sq(sp,su,si,sn,[[x0,0,z0],[x0,0,z1],[x0,h,z1],[x0,h,z0]],[[0,0],[1,0],[1,vv],[0,vv]]);sn+=4;}}
-  if(sn)add(new T.Mesh(bufGeo(sp,su,si,1),new T.MeshStandardMaterial({map:brick,roughness:.95,side:T.DoubleSide})));
-  if(tn)add(new T.Mesh(bufGeo(tp,tu,ti,1),new T.MeshStandardMaterial({map:slab,roughness:.9,side:T.DoubleSide})));
+  if(sn&&!skipWalls)add(new T.Mesh(bufGeo(sp,su,si,1),new T.MeshStandardMaterial({map:brick,roughness:.95,side:T.DoubleSide})));
+  if(tn&&!skipWalls)add(new T.Mesh(bufGeo(tp,tu,ti,1),new T.MeshStandardMaterial({map:slab,roughness:.9,side:T.DoubleSide})));
   // plataforma elevada (trono do Rei) + escada
   const P=ZONE.crp&&ZONE.crp.plat;if(P){const H=P.elev*U/CT,w=(P.x1-P.x0)*U,d=(P.y1-P.y0)*U;sc.plat={H,x0:P.x0,x1:P.x1,y0:P.y0,y1:P.y1};
     const box=new T.Mesh(new T.BoxGeometry(w,H,d),[0,1,2,3,4,5].map(i=>new T.MeshStandardMaterial({map:i===2?slab:brick,roughness:.9})));box.position.set((P.x0+P.x1)/2*U,H/2,(P.y0+P.y1)/2*U);add(box);
@@ -272,7 +291,7 @@ function render3(){
     bgc=_c1.setHex(0xa9c9e6).lerp(_c2.setHex(0x070b1a),Math.min(1,n*1.1));if(wm>.3)bgc.lerp(_c2.setHex(0xe6a468),(wm-.3)*.8*(1-n));
     fogD=.012+.008*n;
     if(mood==='field'){const th=(typeof ZTHEME!=='undefined'&&G.scene==='dungeon')?ZTHEME[famOf(G.zoneLv)]:null;if(th){hemC=new T.Color(hemC).multiply(_c2.set(th.mul)).getHex();}}
-  }else if(mood==='dark'){n=.9;hemi=G.map==='zone_cripta2'?.95:.7;sunI=.22;hemC=0x7f8cc4;sunC=0x8aa0ff;bgc=_c1.setHex(0x04050a);fogD=.026;}
+  }else if(mood==='dark'){n=.9;hemi=G.map==='zone_cripta2'?.95:.85;sunI=.22;hemC=0x7f8cc4;sunC=0x8aa0ff;bgc=_c1.setHex(0x04050a);fogD=.026;}
   else{n=.45;hemi=1.0;sunI=.35;hemC=0xffe6bf;sunC=0xffd9a0;bgc=_c1.setHex(0x0b0806);fogD=.004;}
   scn.hemi.intensity=hemi;scn.hemi.color.setHex(hemC);scn.sun.intensity=sunI;scn.sun.color.setHex(sunC);
   if(V3.proc)V3.proc.time.value=t;
