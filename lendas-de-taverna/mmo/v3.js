@@ -253,6 +253,7 @@ function entRec(sc,e,S0){let r=sc.ents.get(e);if(r&&r.S0===S0)return r;
   if(r){sc.grp.remove(r.root);r.tex.dispose();}
   const c=cvs(S0,S0),tex=new T.CanvasTexture(c);tex.encoding=T.sRGBEncoding;tex.magFilter=T.NearestFilter;tex.minFilter=T.NearestFilter;tex.generateMipmaps=false;
   const mat=new T.MeshLambertMaterial({map:tex,transparent:true,alphaTest:.3,emissive:0xffffff,emissiveMap:tex,emissiveIntensity:.3,side:T.DoubleSide});
+  if(e.kind==='boss'||e.mini)mat.emissiveIntensity=.7;
   const me=new T.Mesh(geoFor(S0),mat);me.scale.y=1/CT;
   const root=new T.Group();root.add(me);
   let gh=null;if(e.kind==='hero'||e.kind==='mob'||e.kind==='boss'){gh=new T.Mesh(geoFor(S0),new T.MeshBasicMaterial({map:tex,color:e.kind==='hero'?0xffffff:0xffc4c4,transparent:true,opacity:e.kind==='hero'?.5:.45,alphaTest:.3,depthFunc:T.GreaterDepth,depthWrite:false,side:T.DoubleSide}));gh.scale.y=1/CT;gh.renderOrder=5;root.add(gh);}
