@@ -1086,7 +1086,11 @@ async function loadMap(name,zf,af,gf,pf){
 }
 let STAGE2=null,STAGE2_OK=false,BOOTING=0;
 /* carregamento em 2 estágios: o essencial (cidade, classes, NPCs) libera os botões do título; floresta, interiores, monstros e ícones chegam em segundo plano */
-function prepMap(name){useMap(name,true);buildSolids();if(name==='zone_cripta2'){crpPrep(name);return;}buildWater();MAPS[name].nav=buildNav();MAPS[name].water=WATER;MAPS[name].wcw=WCW;MAPS[name].wl=WL;MAPS[name].wsp=WSP;MAPS[name].wrx=WRX;MAPS[name].gx=GCTXB;
+/* pedras grandes também bloqueiam: props de rocha (baixos, largos, acinzentados) sem colisão nos dados ganham um círculo sólido */
+function autoCol(name){const Z=ZONE;if(!Z||Z._ac||name==='town'||name==='zone_cripta2'||Z.room)return;Z._ac=1;const cache={},c=document.createElement('canvas');c.width=c.height=8;const x=c.getContext('2d',{willReadFrequently:true});
+  const isRock=id=>{if(id in cache)return cache[id];const a=ATLAS_J[id];if(!a||a[3]<18||a[3]>70||a[2]<22)return cache[id]=false;x.clearRect(0,0,8,8);x.drawImage(ATLAS,a[0],a[1],a[2],a[3],0,0,8,8);const d=x.getImageData(0,0,8,8).data;let r=0,g=0,b=0,w=0;for(let i=0;i<64;i++){const al=d[i*4+3];r+=d[i*4]*al;g+=d[i*4+1]*al;b+=d[i*4+2]*al;w+=al;}if(!w)return cache[id]=false;r/=w;g/=w;b/=w;const mx=Math.max(r,g,b),sat=(mx-Math.min(r,g,b))/(mx||1);return cache[id]=(sat<.38&&mx>70&&!(g>r+8&&g>b+8));};
+  for(const p of Z.props){if(p.t!=='p'||p.col||!p.id)continue;if(isRock(p.id)){const a=ATLAS_J[p.id];p.col=[[0,-3,Math.max(8,Math.round(a[2]*.34))]];}}}
+function prepMap(name){useMap(name,true);autoCol(name);buildSolids();if(name==='zone_cripta2'){crpPrep(name);return;}buildWater();MAPS[name].nav=buildNav();MAPS[name].water=WATER;MAPS[name].wcw=WCW;MAPS[name].wl=WL;MAPS[name].wsp=WSP;MAPS[name].wrx=WRX;MAPS[name].gx=GCTXB;
   if(name==='zone1'||name==='zone1_gob'||name==='zone_cripta'||name==='zone_esgoto')fixSpawns();else{ZONE.start=freeSpot(ZONE.start[0],ZONE.start[1]);if(ZONE.portal)ZONE.portal.stand=freeSpot(ZONE.portal.stand[0],ZONE.portal.stand[1]);if(ZONE.doors)ZONE.doors.forEach(d=>{const f=freeSpot(d.x,d.y+10);d.sx=f[0];d.sy=f[1];});}}
 
 /* ===== CRIPTA DO REI ESQUECIDO: dungeon linear de salas (mapa pixel art gerado por tools/mmo/cripta2_gen.py) ===== */
@@ -1386,7 +1390,7 @@ function softMagic(kind,v=1){if(!AC||!sfxGain)return;const t=AC.currentTime,k='s
 function coinSynth(v){if(!AC||!sfxGain)return;const t=AC.currentTime;if(lastSfx.coin&&t-lastSfx.coin<.08)return;lastSfx.coin=t;
   const mk=(f,t0,d,g0)=>{const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.setValueAtTime(f,t0);g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(g0,t0+.004);g.gain.exponentialRampToValueAtTime(.0004,t0+d);o.connect(g);g.connect(sfxGain);o.start(t0);o.stop(t0+d+.03);};
   mk(1318,t,.06,.07*v);mk(1976,t+.055,.15,.07*v);}
-function sfx(n,vol=.7,rate=1){if(n==='coin'){coinSynth(Math.min(1,vol*1.4));return;}if(UI_SND[n]){n='ui_click';vol=.45;rate=1;}else if(n==='ui_denied')vol=Math.min(vol,.4);else if(n==='tr_equip'||n==='coin')vol=Math.min(vol,.4);if(!AC||!BUF[n])return;const t=AC.currentTime;if(lastSfx[n]&&t-lastSfx[n]<0.045)return;lastSfx[n]=t;
+function sfx(n,vol=.7,rate=1){if(n==='coin'){coinSynth(Math.min(1,vol*1.4));return;}if(UIS[n]){if(AC&&sfxGain)uiSynth(n,vol);return;}if(UI_SND[n]){n='ui_click';vol=.45;rate=1;}else if(n==='ui_denied')vol=Math.min(vol,.4);else if(n==='tr_equip'||n==='coin')vol=Math.min(vol,.4);if(!AC||!BUF[n])return;const t=AC.currentTime;if(lastSfx[n]&&t-lastSfx[n]<0.045)return;lastSfx[n]=t;
   const s=AC.createBufferSource();s.buffer=BUF[n];s.playbackRate.value=rate*(0.96+Math.random()*.08);const g=AC.createGain();g.gain.value=vol;s.connect(g);g.connect(sfxGain);s.start();}
 /* ===== SOM DA FLORESTA: trilha e ambiente por família da zona (goblin, esqueleto, javali, rato) ===== */
 const ZMUS={goblin:'floresta_goblin',esq:'cripta_esq',javali:'floresta_javali',rato:'esgoto_rato'};
@@ -2109,6 +2113,7 @@ function updateLoot(dt){
   const h=G.hero;
   for(let i=G.loot.length-1;i>=0;i--){const L=G.loot[i];L.t+=dt;
     if(L.t<L.fly){const f=L.t/L.fly;L.x=L.ox+(L.tx-L.ox)*f;L.y=L.oy+(L.ty-L.oy)*f;L.h=Math.sin(f*Math.PI)*26;continue;}
+    if(!L.snd){L.snd=1;dropSynth(L.it.rar);if(L.it.rar>=3){G.shake=Math.max(G.shake||0,L.it.rar>=4?.35:.12);VF.wave&&VF.wave(L.x,L.y,L.it.rar>=4?110:70,RAR[L.it.rar].c,.7,3);}}
     if(L.t<L.fly+L.rest){L.x=L.tx;L.y=L.ty;L.h=0;if(L.it.rar>=1&&Math.random()<dt*(2+L.it.rar*3))VF.pt(L.x+rnd(-7,7),L.y-rnd(4,16),{vy:-rnd(14,30),life:.7,col:RAR[L.it.rar].c,sz:rnd(1.4,2.4)});continue;}
     if(h.state==='ko')continue;
     L.v=Math.min(520,L.v+dt*620);const tx=h.x,ty=h.y-8,dx=tx-L.x,dy=ty-L.y,d=Math.hypot(dx,dy)||1,st=Math.min(d,L.v*dt);
@@ -2496,6 +2501,27 @@ function drawStRow(e,sx,sy){const ids=e.sts?Object.keys(e.sts):[];if(e.kind==='h
 /* ============ SONS SINTETIZADOS: frasco de poção, esquiva, aviso de perigo ============ */
 function synthOK(k,gap){if(!AC||!sfxGain)return false;const t=AC.currentTime;if(lastSfx[k]&&t-lastSfx[k]<gap)return false;lastSfx[k]=t;return true;}
 function noiseBuf(d){const b=AC.createBuffer(1,Math.floor(AC.sampleRate*d),AC.sampleRate),a=b.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=(Math.random()*2-1)*(1-i/a.length);return b;}
+
+/* ===== sons de interface e de drops (sintetizados): cada coisa tem sua voz; itens raros soam cada vez mais "especiais" ===== */
+function tn2(f0,f1,t0,d,g0,type,lp,dest){const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f0,t0);if(f1!==f0)o.frequency.exponentialRampToValueAtTime(Math.max(20,f1),t0+d);g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(g0,t0+.008);g.gain.exponentialRampToValueAtTime(.0001,t0+d);
+  let n=o;if(lp){const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=lp;o.connect(f);n=f;}n.connect(g);g.connect(dest||sfxGain);o.start(t0);o.stop(t0+d+.05);}
+function nz2(t0,d,g0,type,f0,f1,q){const n=AC.createBufferSource();n.buffer=noiseBuf(d);const f=AC.createBiquadFilter();f.type=type||'bandpass';f.frequency.setValueAtTime(f0,t0);if(f1)f.frequency.exponentialRampToValueAtTime(f1,t0+d);f.Q.value=q||1;const g=AC.createGain();g.gain.value=g0;n.connect(f);f.connect(g);g.connect(sfxGain);n.start(t0);}
+const UIS={ui_click:1,ui_confirm:1,ui_denied:1,tr_open:1,tr_close:1,tr_equip:1};
+function uiSynth(n,v){if(!synthOK('ui_'+n,.04))return;const t=AC.currentTime,g=Math.min(1,v||.6);
+  if(n==='ui_click'){tn2(1050,720,t,.045,.16*g,'triangle');tn2(2100,1500,t,.03,.05*g,'sine');}
+  else if(n==='ui_confirm'){tn2(620,620,t,.07,.16*g,'triangle');tn2(930,930,t+.07,.12,.18*g,'triangle');tn2(1860,1860,t+.07,.1,.04*g,'sine');}
+  else if(n==='ui_denied'){tn2(190,150,t,.09,.15*g,'square',700);tn2(160,120,t+.1,.12,.15*g,'square',600);}
+  else if(n==='tr_open'){nz2(t,.22,.1*g,'bandpass',500,2600,1.2);tn2(330,660,t,.18,.1*g,'triangle');tn2(990,1320,t+.1,.12,.05*g,'sine');}
+  else if(n==='tr_close'){nz2(t,.2,.09*g,'bandpass',2200,450,1.2);tn2(520,260,t,.16,.1*g,'triangle');}
+  else if(n==='tr_equip'){nz2(t,.05,.16*g,'highpass',3000);tn2(1320,1320,t,.16,.12*g,'triangle');tn2(1790,1790,t+.02,.14,.08*g,'sine');tn2(220,160,t,.1,.12*g,'sine');}}
+/* drop caindo no chão: quanto mais raro, mais longo e brilhante (comum=tilintar, raro=sino, mágico=acorde, épico=arpejo, único=trovão + coro) */
+function dropSynth(rar){if(!AC||!sfxGain||!synthOK('drop_'+rar,.12))return;const t=AC.currentTime;
+  if(rar<=0){tn2(1500,1100,t,.07,.09,'triangle');tn2(2200,1700,t+.045,.06,.05,'sine');return;}
+  if(rar===1){[784,1175].forEach((f,i)=>tn2(f,f,t+i*.09,.28,.13,'triangle'));nz2(t+.05,.12,.03,'highpass',6000);return;}
+  if(rar===2){[659,880,1319].forEach((f,i)=>{tn2(f,f,t+i*.08,.42,.13,'triangle');tn2(f*2,f*2,t+i*.08,.3,.04,'sine');});nz2(t+.1,.3,.04,'highpass',5500);return;}
+  if(rar===3){[523,659,784,1047,1319].forEach((f,i)=>{tn2(f,f,t+i*.075,.7,.12,'triangle');tn2(f*1.005,f*1.005,t+i*.075,.7,.08,'sine');tn2(f*2,f*2,t+i*.075,.4,.03,'sine');});tn2(98,92,t,.6,.22,'sine',300);nz2(t+.15,.5,.05,'highpass',5000);return;}
+  tn2(55,40,t,1.1,.38,'sine',200);tn2(110,80,t,.9,.2,'sawtooth',400);nz2(t,.35,.12,'lowpass',900,120);
+  [392,523,659,784,1047,1319,1568].forEach((f,i)=>{tn2(f,f,t+.12+i*.07,1.2,.11,'triangle');tn2(f*1.004,f*1.004,t+.12+i*.07,1.2,.07,'sine');tn2(f*3,f*3,t+.12+i*.07,.5,.03,'sine');});nz2(t+.3,.9,.07,'highpass',4500);}
 function potionSynth(){if(!synthOK('pot_s',.3))return;const t=AC.currentTime;
   const tone=(f0,f1,t0,d,g0,type='sine',lp)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f0,t0);o.frequency.exponentialRampToValueAtTime(f1,t0+d);g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(g0,t0+.006);g.gain.exponentialRampToValueAtTime(.0004,t0+d);let n=o;if(lp){const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=lp;o.connect(f);n=f;}n.connect(g);g.connect(sfxGain);o.start(t0);o.stop(t0+d+.02);};
   /* rolha saindo do frasco: estalo seco */
