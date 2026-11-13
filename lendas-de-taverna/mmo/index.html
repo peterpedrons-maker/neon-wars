@@ -3907,7 +3907,7 @@ const DOLLB={
  skrix:{g:'hop',idle:['idle',0],wind:['attack',2],strike:['attack',4],up:['idle',0],down:['attack',4],charge:['attack',4],roar:['summon',4],hurt:['hurt',1],d1:['death',3],d2:['death',10],totem:['totem',3],curse:['curse',4],summon:['summon',4]},
  ratking:{g:'hop',idle:['idle',0],wind:['windup',0],strike:['strike',0],up:['idle',0],down:['strike',0],charge:['strike',0],roar:['swarm',0],hurt:['hurt',0],d1:['death1',0],d2:['death2',0],swarm:['swarm',0],plague:['plague',0],burrow:['burrow',0]}};
 const DOLL_UNDEAD=/^(esq|skel)/,DOLL_HEAVY=/^(ogro|gobchefe|guardiao|golem)/;
-function dollGaitOf(e){if(e.kind==='hero')return 'hop';const T=e.T||{},s=T.sheet||'';if(T.fly)return 'float';if(DOLL_UNDEAD.test(s))return 'glide';if(DOLL_HEAVY.test(s))return 'waddle';return 'hop';}
+function dollGaitOf(e){const T=e.T||{};if(e.kind!=='hero'&&T.fly)return 'float';return 'glide';}   /* estilo Paper Mario: ninguém pula ao andar, todos só deslizam na pose parada */
 /* o.k: idle | move | atk | hurt | skill ; o.p progresso do ataque (0..1) ; o.lunge px ; o.sink 0..1 (escavar) */
 function dollSet(e,o){const d={x:0,y:0,sx:1,sy:1,rot:0,h:0,sink:0},hr=G.hero;let dx=hr?hr.x-e.x:1,dy=hr?hr.y-e.y:0;
   if(e.kind==='hero'){const r=e.row;dx=r===1?-1:r===3?1:0;dy=r===0?-1:r===2?1:0;}
