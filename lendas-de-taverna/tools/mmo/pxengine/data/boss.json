@@ -1,0 +1,455 @@
+{
+ "name": "boss",
+ "canvas": [
+  132,
+  100
+ ],
+ "ground": 92,
+ "nomouth": true,
+ "hip": 24,
+ "tdy": 9,
+ "hdy": 8,
+ "hdy_f": 8,
+ "hx_side": 60,
+ "hx_front": 66,
+ "limbs": {
+  "thigh": 11.0,
+  "shin": 10.0,
+  "upper": 9.0,
+  "fore": 8.0,
+  "r": {
+   "thigh": [
+    4.7,
+    3.8
+   ],
+   "shin": [
+    3.9,
+    3.2
+   ],
+   "upper": [
+    3.9,
+    3.3
+   ],
+   "fore": [
+    3.3,
+    2.9
+   ],
+   "knee": 4.1,
+   "elbow": 3.5,
+   "hand": 3.9
+  },
+  "mat": {
+   "leg": "orc",
+   "arm": "orc",
+   "far_tone": -1
+  }
+ },
+ "equipment": {
+  "pauldron": true,
+  "kneepad": true
+ },
+ "parts": {
+  "head_side": {
+   "anchor": [
+    13,
+    26
+   ],
+   "rows": [
+    "..k..........kk...............",
+    ".kqk........k11k..............",
+    "..kqk..kkkkk1223k.............",
+    "..kqrkkZZZZZZZZZZkk...........",
+    ".krrrqZZZZZZZZ111ZZk..........",
+    "krrrrqqZZZ1111111111k.........",
+    ".krrqqqZ1111222222211k........",
+    "..krqqZ11122222222221k........",
+    "..kZqZ111222222333222k........",
+    "..kZZ1112222333333322k........",
+    "...kZ111222333333332kkkk......",
+    "....kZ111111111111111111k.....",
+    "...kUUU1ZZZZZZZZZZZZZZZZk.....",
+    "...kUUUUUUVVVVVVVWVVVVkk......",
+    "..kUUUUUVVVVVWWWzzzzzVVk......",
+    "..kUUUUUVVVVWWWWWWWWzzzzk.....",
+    "..kUUUUVVVVWWWWWWWW44WWkk.....",
+    "..kUUUVVVVWWWWWWWWWzUUUVVk....",
+    "..kUUUVVVWWWWWUUUUUUUVrVVVk...",
+    "..kUUUVVWWWWWWUUUUVVVVsVVWk...",
+    "...kUVVVWWWWWXUUUVVVVVrrWWWk..",
+    "...kUUVVWWWWXXUUVVVVVrrrWWWXk.",
+    "....kUVVWWWWXXVUUVVWWrrsWXXk..",
+    ".....kVVWWWWXXVVUzzzzzzzXXk...",
+    "......kVVWWWWXVWUWWWWXXXXk....",
+    ".......kkVWWWWWWWWWXXXXXk.....",
+    ".........kkkkkkkkkkkkkkk......",
+    ".............................."
+   ]
+  },
+  "head_front": {
+   "anchor": [
+    12,
+    26
+   ],
+   "rows": [
+    "k..........kk.",
+    "qk........k11k",
+    "kqk....kkk1223",
+    "kqk..kkZZZZZZZ",
+    "kqqkkZZZZZZZZZ",
+    ".kqqZZZZZZ1111",
+    ".kqqqZZZ111122",
+    ".kqqqZZ1112222",
+    "..kqZZ11122222",
+    "..kZZ111222233",
+    "...kZ111222333",
+    "..k11111111111",
+    "..kZZZZZZZZZZZ",
+    "..kUUUUUUVVVVV",
+    "..kUzzzz4VVVWW",
+    "..kUUU4zzzzWWW",
+    "..kUUU44z4WWWW",
+    "..kUUUV44WWWWW",
+    "..kUUVVVWVVVVV",
+    "..kUUVVVVVVVWW",
+    "..kUUVVWVVWWWW",
+    "...kUVrrWVzzzz",
+    "...kUVrrWWWXXX",
+    "....kUrrWWWXXX",
+    ".....kzzzzzzzz",
+    "......kkVWWWWW",
+    "........kkkkkk",
+    ".............."
+   ],
+   "mirror": true
+  },
+  "head_back": {
+   "anchor": [
+    12,
+    24
+   ],
+   "rows": [
+    "k.............",
+    "qk.......kkkkk",
+    "kqk...kkkZZZZZ",
+    "kqk..kZZZZZZZZ",
+    "kqqkkZZZZZZZ1Z",
+    ".kqqZZZZZZZZ11",
+    ".kqqqZZZZ11111",
+    ".kqqqZZZ111112",
+    ".kZqZZZ1111212",
+    ".kZZZZ11112212",
+    ".kZZZ111122212",
+    ".kZZZ111222213",
+    "..kZZ112222213",
+    "..kZZ112222313",
+    "..kUZ1ZZZZZZZZ",
+    "..kUU112222333",
+    "..kUUV11222233",
+    "..kUUVVVW12222",
+    "..kUUVVWWWWWXX",
+    "...kUVVWWWWXXX",
+    "...kUVVWWWWXXX",
+    "....kUVVWWWXXX",
+    ".....kVVWWWWXX",
+    "......kkVWWWWW",
+    "........kkkkkk",
+    ".............."
+   ],
+   "mirror": true
+  },
+  "torso_side": {
+   "anchor": [
+    12,
+    6
+   ],
+   "rows": [
+    ".......kkkkkkkkkk.......",
+    ".....kkZZZZZZZZZZkk.....",
+    "....kZZZZZZZZZZZZZZk....",
+    "...kZZZZZZZZZZZZ1ZZZk...",
+    "..kZZZZZZZZZ11111Z11Zk..",
+    ".kZZZZZZZZIIIIZZ11111Zk.",
+    ".kZZZZZZ1IIIJJIZ222211k.",
+    ".kZZZZZ11IJJKKKZ222221k.",
+    ".kZZZZ111IJKLLKZ332222k.",
+    ".kZZZZ112IKKLLKZ333222k.",
+    ".kZZZ1122ZJKLKZZ333222k.",
+    ".kZZ11122ZZZZZZZ333322k.",
+    ".kZZ1Z122ZZZZZZZ333322k.",
+    "..kZ11122233333333332k..",
+    "...kZ112223333333332k...",
+    "....kZZZZZZZZZZZZZZZk...",
+    ".....kk1222222322kkk....",
+    ".......kkkkkkkkkk......."
+   ]
+  },
+  "torso_front": {
+   "anchor": [
+    13,
+    6
+   ],
+   "rows": [
+    ".......kkkkkkk",
+    ".....kkZZZZZZZ",
+    "....kZZZZZZZZZ",
+    "...kZZZZZZZZZZ",
+    "..kZZZZZZZIIII",
+    ".kZZZZZZZIIIIJ",
+    ".kZ22222222222",
+    "kZZZZZZ1IIJJLK",
+    "kZZZZZ11IIJKKL",
+    "kZZZZ111IJJKKL",
+    "kZZZ11112JJKKL",
+    ".kZZ111222JKKL",
+    ".kZZ1112222233",
+    "..kZZZZZZZZZZZ",
+    "...kZ112222233",
+    "....kZ11222223",
+    ".....kk1122222",
+    ".......kkkkkkk"
+   ],
+   "mirror": true
+  },
+  "torso_back": {
+   "anchor": [
+    13,
+    6
+   ],
+   "rows": [
+    ".......kkkkkkk",
+    ".....kkZZZZZZZ",
+    "....kZZZZZZZZZ",
+    "...kZZZZZZZZZZ",
+    "..kZZZZZZZZZ1Z",
+    ".kZZZZZZZ1111Z",
+    ".kZZZZZZ11111Z",
+    "kZZZZZZ11MMMMZ",
+    "kZZZZZ1MMMMMMZ",
+    "kZZZZMMMMMMMNZ",
+    "kZZZMMMMMNNNNZ",
+    ".kZZMMMMNNNQQZ",
+    ".kZZMMMNNNQQQZ",
+    "..kZMMNNNQQQQZ",
+    "...kZMNNQQQQTZ",
+    "....kZ1NNQQQTZ",
+    ".....kk11NQQQZ",
+    ".......kkkkkkk"
+   ],
+   "mirror": true
+  },
+  "belt_side": {
+   "anchor": [
+    12,
+    2
+   ],
+   "rows": [
+    ".kkkkkkkkkIIIIIkkkkkkkk.",
+    "kgggggggggIKKKIggggggggk",
+    "kfffffffffIKKKIffffffffk",
+    "kfffffffffIKKKIffffffffk",
+    ".kkkkkkkkkIIIIIkkkkkkkk."
+   ]
+  },
+  "belt_front": {
+   "anchor": [
+    13,
+    2
+   ],
+   "rows": [
+    ".kkkkkkkkkkIII",
+    "kggggggggggIKK",
+    "kffffffffffIKK",
+    "kffffffffffIKK",
+    ".kkkkkkkkkkIII"
+   ],
+   "mirror": true
+  },
+  "cloth_side": {
+   "anchor": [
+    10,
+    0
+   ],
+   "rows": [
+    ".keeeeeeeeeeeeeeefffk.",
+    ".keeeeeeeeeeeeffffffk.",
+    ".kegggggggggggggggggk.",
+    ".keeeeefffffffffffffk.",
+    ".keeffffffffffffffggk.",
+    "kffffffffffffffggggggk",
+    "kfffffffffffgggggggggk",
+    "kfffffffgggggggggggggk",
+    "kffffgkkggggggggkggggk",
+    "kfgkkk..kggggggk.kkkgk",
+    ".kk......kggggk.....k.",
+    "..........kggk........"
+   ]
+  },
+  "cloth_front": {
+   "anchor": [
+    12,
+    0
+   ],
+   "rows": [
+    ".keeeeeeeeeee",
+    ".keeeeeeeeeee",
+    ".kegggggggggg",
+    ".keeeeeffffff",
+    ".keefffffffff",
+    "kffffffffffff",
+    "kffffffffffff",
+    "kffffffffgggg",
+    "kffffkkgggggg",
+    "kgkkk..kggggg",
+    ".k......kkggg",
+    "..........kgg"
+   ],
+   "mirror": true
+  },
+  "boot_side": {
+   "anchor": [
+    5,
+    8
+   ],
+   "rows": [
+    ".kkkkkkkkkk.......",
+    "keeeeeeeeeek......",
+    "keeeeeeeeffk......",
+    "kZZZZZZZZZZZk.....",
+    "keeefffffffggkkk..",
+    "kfffffffggggggggk.",
+    "kffffggggggggggggk",
+    "kffggggggggggggggk",
+    "kggggggggggggggggk",
+    ".kkkkkkkkkkkkkkkk."
+   ]
+  },
+  "boot_front": {
+   "anchor": [
+    8,
+    8
+   ],
+   "rows": [
+    "..kkkkkkkkkkk...",
+    ".keeeeeeeffffk..",
+    ".keeeeeffffffk..",
+    "keZZZZZZZZZZZZk.",
+    "keffffffggggggk.",
+    "kfffffggggggggk.",
+    "kffgggggggggggk.",
+    "fggggggggggggggk",
+    "gggggggggggggggk",
+    "kkkkkkkkkkkkkkk."
+   ]
+  },
+  "pauld_side": {
+   "anchor": [
+    8,
+    7
+   ],
+   "rows": [
+    ".......kk.......",
+    "......kZ1k......",
+    ".....kk11kk.....",
+    "...kkZ1132Zkk...",
+    "..kZZ122233ZZk..",
+    ".kZZZZZ111111Zk.",
+    ".kZZZ111122221k.",
+    ".kZZ1112222222k.",
+    ".kZ22222222222k.",
+    ".kZ11222333332k.",
+    ".kZ11222333332k.",
+    "..kZ122233332k..",
+    "...kk122222kk...",
+    ".....kkkkkk....."
+   ]
+  },
+  "pauld_front": {
+   "anchor": [
+    8,
+    7
+   ],
+   "rows": [
+    ".......kk.......",
+    "......kZ1k......",
+    ".....kk11kk.....",
+    "...kkZ1132Zkk...",
+    "..kZZ122233ZZk..",
+    ".kZZZZZ111111Zk.",
+    ".kZZZ111122221k.",
+    ".kZZ1112222222k.",
+    ".kZ22222222222k.",
+    ".kZ11222333332k.",
+    ".kZ11222333332k.",
+    "..kZ122233332k..",
+    "...kk122222kk...",
+    ".....kkkkkk....."
+   ]
+  },
+  "kneepad": {
+   "anchor": [
+    5,
+    5
+   ],
+   "rows": [
+    "....kk.....",
+    "..kk11kk...",
+    ".kZ1233Zk..",
+    "kZZZ11111k.",
+    "kZZ122222k.",
+    "kZ1222332k.",
+    "kZ1223332k.",
+    ".k122333k..",
+    "..kkkkkk...",
+    "..........."
+   ]
+  },
+  "bracer": {
+   "anchor": [
+    3,
+    1
+   ],
+   "rows": [
+    "fffffff",
+    "fffffff",
+    "fffffff",
+    "kkkkkkk"
+   ]
+  },
+  "cleaver": {
+   "anchor": [
+    4,
+    14
+   ],
+   "rows": [
+    ".........................................kkkkkkmnnk.....",
+    "......................................kkkmmmmmmnnnnk....",
+    ".....................................kmmmmmmmmnnnnnnk...",
+    "....................................kmmmmmmmmnnOOnnnnk..",
+    "....................................kmmmmmmOOOOnnnnnnok.",
+    "....................................kmmmOOOOnnnnnnnnok..",
+    "...................................kmmOOmmmnnnnnnnnok...",
+    "...................................kmmmmmmnnnnnnnnok....",
+    "..................................kmmmmmmnnnnnnnnok.....",
+    "..................................kmmmmmnnnnnnnnnk......",
+    "..................................kmmmmnnnnnnnnnok......",
+    "......k..k..k....................kmmmmnnnnnnnnnook......",
+    "..kkkkekkekkekkkkkkkkkkkkkkkkkkkkkmmmnnIIJInnnoookk.....",
+    ".kggggeggeggegggggggggggggggggggggmmnnnIJKKnnooooggk....",
+    ".kffffeffeffefffffffffffffffffffffmnnnnJKLLnoooooffk....",
+    ".keeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeennnnnJKLLooooooeek....",
+    "..kkkkekkekkekkkkkkkkkkkkkkkkkkkkknnnnnnnnoooooookk.....",
+    "......k..k..k.....................knnnnnnooooooook......",
+    "..................................knnnnnoooooooook......",
+    "..................................knnnnoooooooooOOk.....",
+    "...................................knnoooooooooOOOOk....",
+    "...................................knoooooooooOOOOOOk...",
+    "....................................kommoooooOOOOOOOOk..",
+    "....................................kooommmmOOOOOOOOOOk.",
+    "....................................koooooommmmOOOOOOOk.",
+    ".....................................kooooOOOOOmmOOOOk..",
+    "......................................kkkOOOOOOOOOOOk...",
+    ".........................................kkkkkkOOOOk...."
+   ]
+  }
+ }
+}
