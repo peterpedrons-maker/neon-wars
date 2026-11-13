@@ -2085,7 +2085,7 @@ const AT_LV=3;
 function atPoints(){return AT_LV*(SAVE.lv-1)-Object.values(SAVE.at).reduce((a,b)=>a+b,0);}
 function addItem(it,quiet){
   const cur=SAVE.eq[it.slot];let mode='bag';
-  if((SAVE.lf||0)>it.rar&&!(it.rar>=4)&&!(SAVE.autoEq&&catOk(it,cur)&&itemScore(it)>itemScore(cur)+0.01)){const g=itemVal(it);SAVE.gold+=g;floatText(G.hero.x,G.hero.y-60,'+'+g,'#ffd65a',8,.9);sfx('coin',.3);writeSave();return;}
+  if(false&&(SAVE.lf||0)>it.rar&&!(it.rar>=4)&&!(SAVE.autoEq&&catOk(it,cur)&&itemScore(it)>itemScore(cur)+0.01)){const g=itemVal(it);SAVE.gold+=g;floatText(G.hero.x,G.hero.y-60,'+'+g,'#ffd65a',8,.9);sfx('coin',.3);writeSave();return;}
   if(SAVE.autoEq&&catOk(it,cur)&&itemScore(it)>itemScore(cur)+0.01){if(cur&&SAVE.inv.length<24)SAVE.inv.push(cur);else if(cur)sellItem(cur,true);SAVE.eq[it.slot]=it;mode='eq';}
   else if(SAVE.inv.length<24)SAVE.inv.push(it);
   else{const g=itemVal(it);SAVE.gold+=g;mode='sold';floatText(G.hero.x,G.hero.y-64,'+'+g+' ouro','#ffd65a',8,1);}
@@ -2116,6 +2116,7 @@ function updateLoot(dt){
     if(!L.snd){L.snd=1;dropSynth(L.it.rar);if(L.it.rar>=3){G.shake=Math.max(G.shake||0,L.it.rar>=4?.35:.12);VF.wave&&VF.wave(L.x,L.y,L.it.rar>=4?110:70,RAR[L.it.rar].c,.7,3);}}
     if(L.t<L.fly+L.rest){L.x=L.tx;L.y=L.ty;L.h=0;if(L.it.rar>=1&&Math.random()<dt*(2+L.it.rar*3))VF.pt(L.x+rnd(-7,7),L.y-rnd(4,16),{vy:-rnd(14,30),life:.7,col:RAR[L.it.rar].c,sz:rnd(1.4,2.4)});continue;}
     if(h.state==='ko')continue;
+    if(SAVE.inv.length>=24){const cur=SAVE.eq[L.it.slot];if(!(SAVE.autoEq&&catOk(L.it,cur)&&itemScore(L.it)>itemScore(cur)+.01)){L.t=L.fly+L.rest-.01;if(Math.hypot(h.x-L.x,h.y-L.y)<30&&G.t-(G.fullT||-9)>4){G.fullT=G.t;toast('Mochila cheia: venda itens no Mercador',1800);sfx('ui_denied',.5);}continue;}}
     L.v=Math.min(520,L.v+dt*620);const tx=h.x,ty=h.y-8,dx=tx-L.x,dy=ty-L.y,d=Math.hypot(dx,dy)||1,st=Math.min(d,L.v*dt);
     L.x+=dx/d*st;L.y+=dy/d*st;L.h=0;
     if(Math.random()<dt*30)VF.pt(L.x+rnd(-3,3),L.y+rnd(-3,3),{life:.3,col:RAR[L.it.rar].c,sz:2});
@@ -4182,13 +4183,10 @@ function renderPan(){
     if(isEq){html+=`<div class="hxid"><b>${SAVE.name||C.nome}</b><span>${C.nome}${subOf()?' · '+subOf().nome:''} · Nível ${SAVE.lv}</span></div>`;html+=`<div class="pd"><div class="pcol">${['elmo','armadura','luvas','botas'].map(sl).join('')}</div><div class="pc"><canvas id="pdoll"></canvas></div><div class="pcol">${['arma','escudo','amuleto','anel'].map(sl).join('')}</div></div>`;
     html+=`<div class="pcw"><span>PODER DE COMBATE</span><b>${pcFmt(heroPC())}</b></div>`;
     html+=`<div class="stg stl"><div class="s-hp"><span>Vida</span><b>${h.maxhp}</b></div><div class="s-atk"><span>Ataque</span><b>${Math.round(h.pow)}</b></div><div class="s-def"><span>Defesa</span><b>${Math.round(h.def)}</b></div><div class="s-crit"><span>Crítico</span><b>${Math.round(h.crit*100)}%</b></div><div class="s-kb"><span>Empurrão</span><b>${Math.round(knockChance()*100)}%</b></div><div class="s-spd"><span>Velocidade</span><b>${Math.round(h.speed)}</b></div></div>`;
-    html+=`<div class="acts"><button data-a="best">Equipar melhores</button><button data-a="auto" class="${SAVE.autoEq?'g':''}">Auto-equipar: ${SAVE.autoEq?'sim':'não'}</button></div>`;}
+    }
     else{html+=`<div class="mats" style="margin-top:2px">${MATS.map(M=>`<div style="--mc:${M.col}"><img src="${UI}${M.ic}.png"><b>${matN(M.id)}</b></div>`).join('')}</div>`;
     html+=`<div class="qs p"><b>Mochila</b><span>${SAVE.inv.length} / 24</span></div><div class="bag">`+Array.from({length:24},(_,i)=>{const it=SAVE.inv[i];return it?itemCell(it,panSel&&panSel.src==='bag'&&panSel.k===i,'bag:'+i,'cell'):'<div class="cell e"></div>';}).join('')+'</div>';
-    html+=`<div class="qs d"><b>Poção automática</b></div><div class="acts"><button data-a="apot" class="${(SAVE.apot==null?.35:SAVE.apot)>0?'g':''}">Poção automática: ${(SAVE.apot==null?.35:SAVE.apot)>0?'abaixo de '+Math.round((SAVE.apot==null?.35:SAVE.apot)*100)+'% da vida':'desligada'}</button></div>`;
-    const cnt=n=>SAVE.inv.filter(x=>x.rar<=n).length;
-    html+=`<div class="qs d"><b>Filtro de loot</b></div><div class="acts"><button data-a="lf">${(SAVE.lf||0)?'Vende abaixo de '+RAR[SAVE.lf].n:'Guardar tudo'}</button></div>`;
-    html+=`<div class="qs n"><b>Vender em lote</b></div><div class="acts">${[0,1,2].map(n=>`<button data-a="sellb:${n}" style="color:${RAR[n].c}" ${cnt(n)?'':'disabled'}>${n?'Até ':'Só '}${RAR[n].n}s (${cnt(n)})</button>`).join('')}</div>`;}
+    html+=`<div class="acts"><button data-a="sortbag">Ordenar</button></div><div class="sub" style="padding:6px 4px">Para vender, fale com o Mercador (Bram). Poção automática e auto-equipar ficam em Atalhos.</div>`;}
     B.innerHTML=html;if(isEq)drawDoll();
     B.querySelectorAll('[data-c]').forEach(e=>e.onclick=ev=>{ev.stopPropagation();const c=e.dataset.c;if(c==='none')return;const [src,k]=c.split(':');const nk=src==='bag'?+k:k;if(panSel&&panSel.src===src&&panSel.k===nk)panSel=null;else panSel={src,k:nk};sfx('ui_click',.5);renderPan();});
     B.querySelectorAll('[data-a]').forEach(e=>e.onclick=()=>panAct(e.dataset.a));
@@ -4247,6 +4245,7 @@ function panAct(a){
   else if(a==='sell'&&it&&panSel.src==='bag'){SAVE.inv.splice(panSel.k,1);sellItem(it);panSel=null;}
   else if(a==='unequip'&&it&&panSel.src==='eq'){if(SAVE.inv.length>=24){sfx('ui_denied');toast('Mochila cheia',1000);return;}SAVE.inv.push(it);delete SAVE.eq[it.slot];panSel=null;sfx('ui_click');recalcHero(true);}
   else if(a==='best'){let n=0;for(let i=SAVE.inv.length-1;i>=0;i--){const x=SAVE.inv[i],cur=SAVE.eq[x.slot];if(catOk(x,cur)&&itemScore(x)>itemScore(cur)+.01){SAVE.inv.splice(i,1);if(cur)SAVE.inv.push(cur);SAVE.eq[x.slot]=x;n++;}}if(n){sfx('tr_equip',.8);recalcHero(true);}else sfx('ui_denied');panSel=null;}
+  else if(a==='sortbag'){SAVE.inv.sort((x,y)=>(y.rar-x.rar)||((y.ilvl||0)-(x.ilvl||0))||String(x.slot).localeCompare(String(y.slot)));panSel=null;sfx('ui_click');}
   else if(a==='sellc'){let g=0,n=0;SAVE.inv=SAVE.inv.filter(x=>{if(x.rar===0){g+=itemVal(x);n++;return false;}return true;});SAVE.gold+=g;if(n)sfx('coin',.7);else sfx('ui_denied');panSel=null;}
   else if(a==='auto'){SAVE.autoEq=!SAVE.autoEq;sfx('ui_click');}
   else if(a==='apot'){const L=[.35,.5,.7,0],i=L.indexOf(SAVE.apot==null?.35:SAVE.apot);SAVE.apot=L[(i+1)%L.length];sfx('ui_click');}
@@ -4551,6 +4550,9 @@ function winTip(){
   }
 }
 /* Locais (atalho na barra da cidade) */
+function setHtml(){const ap=SAVE.apot==null?.35:SAVE.apot;return `<div class="sec-h"><span>Ajustes de combate</span></div>
+  <div class="wr"><img class="ic" src="${UI}health-potion.png"><div class="tx"><b>Poção automática</b><span>${ap>0?'Bebe quando a vida cai abaixo de '+Math.round(ap*100)+'%':'Desligada: você bebe a poção manualmente'}</span></div><button class="gb" data-a="set:apot">${ap>0?Math.round(ap*100)+'%':'NÃO'}</button></div>
+  <div class="wr"><img class="ic" src="${UI}anvil.png"><div class="tx"><b>Equipar melhor automaticamente</b><span>Ao pegar um item claramente melhor, o herói já o equipa</span></div><button class="gb" data-a="set:auto">${SAVE.autoEq?'SIM':'NÃO'}</button></div>`;}
 function winLocais(){
   $('wtt').textContent='Atalhos';
   let h='<div class="sub">Toque em um lugar e o herói vai sozinho até lá.</div>';
@@ -4559,7 +4561,7 @@ function winLocais(){
   h+=`<div class="wr"><img class="ic" src="${UI}scroll-unfurled.png"><div class="tx"><b>Capitão Ruvel</b><span>Missões e encomendas do dia</span></div><button class="gb" data-a="goto:cap">IR</button></div>`;
   T.doors.forEach(d=>{h+=`<div class="wr"><img class="ic" src="${UI}${d.ic}.png"><div class="tx"><b>${d.nm}</b><span>${desc[d.id]}</span></div><button class="gb" data-a="goto:door:${d.id}">IR</button></div>`;});
   h+=`<div class="wr"><img class="ic" src="${UI}greek-temple.png"><div class="tx"><b>Portal das Dungeons</b><span>Entrar nas dungeons</span></div><button class="gb" data-a="goto:portal">IR</button></div>`;
-  $('wbody').innerHTML=h;
+  h+=setHtml();$('wbody').innerHTML=h;
 }
 /* Mercador */
 function restock(free){const L=Math.max(1,Math.round(SAVE.lv*.9+2));G.shop=[];for(let i=0;i<5;i++)G.shop.push(genItem(L+rint(0,2),i>=3?1:0,i>=2?14:0));}
@@ -4815,6 +4817,7 @@ function winLeilao(){
 function winAct(a){
   if(socAct(a))return;
   const [k,v]=a.split(':');
+  if(k==='set'){if(v==='apot'){const L=[.35,.5,.7,0],i=L.indexOf(SAVE.apot==null?.35:SAVE.apot);SAVE.apot=L[(i+1)%L.length];}else SAVE.autoEq=!SAVE.autoEq;sfx('ui_click');writeSave();winLocais();return;}
   if(k==='leave'){closeWin();G.wp={x:ZONE.exit.x,y:ZONE.exit.y+10};return;}
   if(k==='goto'&&v.startsWith('door')){closeWin();const id=a.split(':')[2],d=ZONE.doors.find(x=>x.id===id);if(d){G.wp={x:d.x,y:d.y-2,target:{kind:'door',id:d.id,room:d.room}};}sfx('ui_confirm',.6);return;}
   if(k==='goto'){closeWin();const t=v==='portal'?{kind:'portal'}:G.npcs.find(n=>n.id===v);G.wp=v==='portal'?{x:ZONE.portal.stand[0],y:ZONE.portal.stand[1],target:t}:{x:t.x,y:t.y+8,target:t};sfx('ui_confirm',.6);return;}
