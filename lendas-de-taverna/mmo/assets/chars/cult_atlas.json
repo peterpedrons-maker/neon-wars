@@ -1,1 +1,1 @@
-{"w": 64, "h": 76, "ax": 32, "ay": 73, "cols": 4, "anims": {"idle": [0], "hurt": [1], "attack": [2], "death": [3]}}
+{"w": 87, "h": 76, "ax": 43, "ay": 73, "cols": 4, "anims": {"idle": [0], "hurt": [1], "attack": [2], "death": [3]}}
