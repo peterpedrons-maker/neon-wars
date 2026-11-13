@@ -1080,7 +1080,7 @@ function anchorOf(img,cx,cy,cw,ch){
   for(let y=0;y<ch;y++)for(let xx=0;xx<cw;xx++)if(d[(y*cw+xx)*4+3]>10){if(xx<minx)minx=xx;if(xx>maxx)maxx=xx;if(y>maxy)maxy=y;}
   return maxx<0?{x:cw/2,y:ch-4}:{x:(minx+maxx)/2,y:maxy};
 }
-async function loadAtlasBoss(name){const [img,meta]=await Promise.all([loadImg('assets/chars/'+name+'_atlas.png'),fetch('assets/chars/'+name+'_atlas.json').then(r=>r.json())]);SHEETS[name]={atlasImg:img,meta};}
+async function loadAtlasBoss(name){const px=location.search.indexOf('pxmobs')>=0&&['cult','guardac','espectro','gargula','zumbi'].indexOf(name)>=0?'_px':'';const [img,meta]=await Promise.all([loadImg('assets/chars/'+name+px+'_atlas.png'),fetch('assets/chars/'+name+px+'_atlas.json').then(r=>r.json())]);SHEETS[name]={atlasImg:img,meta};}
 async function loadSheet(name,atkKind){
   const b='assets/chars/';const walk=await loadImg(b+name+'__walk.png'),hurt=await loadImg(b+name+'__hurt.png');
   let atk=null,cell=64,frames=6;
