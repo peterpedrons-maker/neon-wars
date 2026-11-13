@@ -35,12 +35,10 @@ P.pelvis={bounds:[[-.65,-.75,-.5],[.65,.4,.55]],shift:[0,0,0],cell:.03,groups:{
 // --- membros ---
 function sleeve(x,y,z,L,r0,r1){return cap(x,y,z,0,0,0,0,L,0,r0,r1);}
 P.uarm={bounds:[[-.4,-.1,-.45],[.4,1.0,.35]],cell:.028,groups:{
- cloth:(x,y,z)=>sleeve(x,y,z,.9,.15,.12),
  plate:(x,y,z)=>{let d=shell(cap(x,y,z,0,.15,0,0,.6,0,.19,.17),.035);d=smax(d,-(z+.1),.03);let e=shell(ell(x,y,z,0,.9,0,.2,.2,.19),.035);e=smax(e,-(y-.95)*0-(-(y-.92)),.03);d=Math.min(d,e);
   d=smin(d,cap(x,y,z,0,.92,-.12,0,1.0,-.38,.07,.012),.03);return d;},
  trim:(x,y,z)=>Math.min(torus(x,y-.15,z,0,0,0,.195,.02),torus(x,y-.6,z,0,0,0,.18,.02))}};
 P.farm={bounds:[[-.4,-.1,-.35],[.4,.95,.4]],cell:.026,groups:{
- cloth:(x,y,z)=>sleeve(x,y,z,.85,.12,.1),
  plate:(x,y,z)=>{let d=shell(cap(x,y,z,0,.08,0,0,.8,0,.14,.18),.032);d=smax(d,-(z+.08),.03);d=smin(d,cap(x,y,z,0,.1,.16,0,.7,.19,.02,.02),.03);
   for(const sg of[-1,1])d=smin(d,cap(x,y,z,sg*.17,.74,-.02,sg*.27,.88,-.06,.05,.01),.025);return d;},
  trim:(x,y,z)=>Math.min(torus(x,y-.08,z,0,0,0,.15,.018),torus(x,y-.8,z,0,0,0,.19,.02))}};
@@ -61,11 +59,9 @@ P.relaxHand={bounds:[[-.3,-.2,-.2],[.3,.5,.3]],cell:.018,groups:{
   d=Math.min(d,smin(cap(x,y,z,.09,.05,0,.15,.14,.05,.034,.028),cap(x,y,z,.15,.14,.05,.14,.2,.1,.028,.02),.015));return d;},
  trim:(x,y,z)=>Math.min(torus(x,y+.2,z,0,0,0,.13,.015),ell(x,y,z,0,.28,.04,.2,.012,.012))}};
 P.thigh={bounds:[[-.4,-.1,-.4],[.4,1.1,.55]],cell:.03,groups:{
- cloth:(x,y,z)=>sleeve(x,y,z,.95,.18,.15),
  plate:(x,y,z)=>{let d=shell(cap(x,y,z,0,.1,0,0,.8,0,.22,.19),.035);d=smax(d,-(z+.04),.03);let k=shell(ell(x,y,z,0,.97,.06,.18,.17,.18),.035);k=smax(k,-(y-1.0)*0-(-(y-.95)),.03);d=Math.min(d,k);d=smin(d,cap(x,y,z,0,.97,.18,0,1.0,.44,.07,.012),.03);return d;},
  trim:(x,y,z)=>Math.min(torus(x,y-.1,z,0,0,0,.225,.02),torus(x,y-.8,z,0,0,0,.195,.02))}};
 P.shin={bounds:[[-.4,-.1,-.4],[.4,1.1,.45]],cell:.03,groups:{
- cloth:(x,y,z)=>sleeve(x,y,z,.95,.15,.12),
  plate:(x,y,z)=>{let d=shell(cap(x,y,z,0,.08,0,0,.88,0,.19,.15),.035);d=smax(d,-(z+.05),.03);d=smin(d,cap(x,y,z,0,.1,.18,0,.8,.2,.025,.02),.03);return d;},
  trim:(x,y,z)=>Math.min(torus(x,y-.08,z,0,0,0,.195,.02),torus(x,y-.88,z,0,0,0,.155,.022))}};
 P.boot={bounds:[[-.35,-.3,-.35],[.35,.25,.9]],cell:.028,groups:{   // origem no tornozelo, z+ = ponta
