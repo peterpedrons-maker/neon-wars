@@ -1,0 +1,152 @@
+<!doctype html><meta charset=utf-8><body style="margin:0;background:#3a5c78">
+<canvas id=c width=240 height=260 style="width:720px;height:780px;image-rendering:pixelated"></canvas>
+<script src="../three.min.js"></script>
+<script>
+const W=240,H=260,cv=document.getElementById('c');
+const R=new THREE.WebGLRenderer({canvas:cv,antialias:false,alpha:true,preserveDrawingBuffer:true});R.setSize(W,H,false);R.setPixelRatio(1);R.setClearColor(0,0);
+const scene=new THREE.Scene();
+const cam=new THREE.PerspectiveCamera(32,W/H,.1,100);
+const TILT=47*Math.PI/180;
+function placeCam(x,z){const d=9.2,ty=1.45;cam.position.set(x,ty+d*Math.sin(TILT),z+d*Math.cos(TILT));cam.lookAt(x,ty,z);}
+// luz + gradiente toon
+const gd=new THREE.DataTexture(new Uint8Array([40,40,40,255, 120,120,120,255, 200,200,200,255, 255,255,255,255]),4,1,THREE.RGBAFormat);gd.minFilter=gd.magFilter=THREE.NearestFilter;gd.needsUpdate=true;
+scene.add(new THREE.AmbientLight(0x6a6aa0,.9));
+const sun=new THREE.DirectionalLight(0xfff0e0,1.15);sun.position.set(-4,8,5);scene.add(sun);
+const rimL=new THREE.DirectionalLight(0x7aa0ff,.5);rimL.position.set(5,3,-6);scene.add(rimL);
+const mats={};
+function M(c,em){const k=c+(em||'');return mats[k]||(mats[k]=new THREE.MeshToonMaterial({color:c,gradientMap:gd,emissive:em||0x000000,side:THREE.DoubleSide}));}
+const outMat=new THREE.ShaderMaterial({side:THREE.BackSide,uniforms:{t:{value:.03},col:{value:new THREE.Color(0x0a0618)}},vertexShader:'uniform float t;void main(){gl_Position=projectionMatrix*modelViewMatrix*vec4(position+normal*t,1.);}',fragmentShader:'uniform vec3 col;void main(){gl_FragColor=vec4(col,1.);}'});
+function mesh(geo,mat,outline=true,t){const m=new THREE.Mesh(geo,mat);if(outline){const o=new THREE.Mesh(geo,outMat);m.add(o);}return m;}
+const C={robe:0x6430b8,robeD:0x3a1878,robeL:0x9a60f0,gold:0xf0b830,red:0xc02840,skin:0xb08050,steel:0x94b4e0,void:0x08040e};
+const G=new THREE.Group();scene.add(G);   // posicao/rumo no mundo
+const body=new THREE.Group();G.add(body);   // pelvis
+const PELV=1.15;body.position.y=PELV;
+// ---- saia: paineis com molas ----
+const panels=[];const NP=10;
+for(let i=0;i<NP;i++){
+  const th=i/NP*Math.PI*2;const geo=new THREE.CylinderGeometry(.40,.72,1.02,3,1,true,th-.05,Math.PI*2/NP+.1);geo.translate(0,-.51,0);
+  const pv=new THREE.Group();pv.position.y=-.05;body.add(pv);
+  const m=mesh(geo,M(i%2?C.robe:C.robeD));pv.add(m);
+  const trim=new THREE.Mesh(new THREE.CylinderGeometry(.705,.725,.09,3,1,true,th-.05,Math.PI*2/NP+.1),M(C.gold));trim.position.y=-.97;pv.add(trim);
+  panels.push({g:pv,th,ax:0,az:0,vx:0,vz:0});
+}
+// ---- tronco ----
+const spine=new THREE.Group();body.add(spine);
+const chest=new THREE.Group();chest.position.y=.5;spine.add(chest);
+const torso=mesh(new THREE.SphereGeometry(.5,14,10),M(C.robe));torso.scale.set(1,1.15,.78);torso.position.y=-.15;chest.add(torso);
+const belt=mesh(new THREE.CylinderGeometry(.41,.43,.16,10,1,true),M(C.gold));belt.position.y=-.55;spine.add(belt);
+const gem=mesh(new THREE.SphereGeometry(.07,8,6),M(C.red,0x601020),false);gem.position.set(0,-.55,.43);spine.add(gem);
+const sashG=new THREE.Group();sashG.position.set(.1,-.55,.4);spine.add(sashG);
+const sash=mesh(new THREE.BoxGeometry(.13,.7,.03),M(C.red));sash.position.y=-.35;sashG.add(sash);
+// ---- cabeca/capuz ----
+const neck=new THREE.Group();neck.position.y=.52;chest.add(neck);
+const head=new THREE.Group();head.position.y=.12;neck.add(head);
+const hood=mesh(new THREE.SphereGeometry(.46,14,12),M(C.robe));hood.scale.set(1,1.1,1.08);hood.position.y=.2;head.add(hood);
+const peak=mesh(new THREE.ConeGeometry(.3,.62,8),M(C.robe));peak.position.set(0,.74,-.12);peak.rotation.x=-.5;head.add(peak);
+const face=new THREE.Mesh(new THREE.SphereGeometry(.34,12,10),M(C.void));face.scale.set(.95,1.1,.55);face.position.set(0,.2,.34);head.add(face);
+const rim=mesh(new THREE.TorusGeometry(.33,.07,6,16),M(C.robeL));rim.position.set(0,.2,.4);rim.scale.set(1,1.15,1);head.add(rim);
+const eyeM=new THREE.MeshBasicMaterial({color:0xff3a4a});const eyes=[];
+for(const x of[-.12,.12]){const e=new THREE.Mesh(new THREE.SphereGeometry(.055,8,6),eyeM);e.scale.set(1.2,.8,.6);e.position.set(x,.24,.55);head.add(e);eyes.push(e);}
+const tail=new THREE.Group();tail.position.set(0,.45,-.38);head.add(tail);const tailM=mesh(new THREE.ConeGeometry(.15,.5,6),M(C.robe));tailM.position.y=-.2;tailM.rotation.x=.2;tail.add(tailM);
+// ---- bracos ----
+function arm(side){
+  const sh=new THREE.Group();sh.position.set(side*.55,.3,0);chest.add(sh);
+  const cap=mesh(new THREE.SphereGeometry(.22,10,8),M(C.robe));sh.add(cap);
+  const up=mesh(new THREE.CylinderGeometry(.17,.21,.62,8,1,true),M(C.robe));up.position.y=-.31;sh.add(up);
+  const el=new THREE.Group();el.position.y=-.62;sh.add(el);
+  const ej=mesh(new THREE.SphereGeometry(.17,8,6),M(C.robe));el.add(ej);
+  const sl=new THREE.Group();el.add(sl);const fore=mesh(new THREE.CylinderGeometry(.2,.3,.6,8,1,true),M(C.robeD));fore.position.y=-.3;sl.add(fore);
+  const hand=mesh(new THREE.SphereGeometry(.13,8,6),M(C.skin));hand.position.y=-.64;el.add(hand);
+  return {sh,el,sl,hand};
+}
+const AR=arm(1),AL=arm(-1);   // direito segura a adaga, esquerdo o orbe
+const dag=new THREE.Group();dag.position.y=-.64;dag.rotation.x=Math.PI/2;AR.el.add(dag);
+const blade=mesh(new THREE.BoxGeometry(.07,.62,.025),M(C.steel),true);blade.position.y=.38;dag.add(blade);
+const guard=mesh(new THREE.BoxGeometry(.3,.05,.06),M(C.gold));guard.position.y=.05;dag.add(guard);
+const pom=mesh(new THREE.SphereGeometry(.07,8,6),M(C.red,0x601020),false);pom.position.y=-.1;dag.add(pom);
+const orbG=new THREE.Group();AL.el.add(orbG);orbG.position.set(0,-.8,.2);
+const orb=new THREE.Mesh(new THREE.SphereGeometry(.2,12,10),new THREE.MeshBasicMaterial({color:0xe8c0ff}));orbG.add(orb);
+const halo=new THREE.Mesh(new THREE.SphereGeometry(.3,12,10),new THREE.MeshBasicMaterial({color:0x7a40d0,transparent:true,opacity:.45,depthWrite:false}));orbG.add(halo);
+// ---- pes ----
+const feet=[0,1].map(i=>{const f=mesh(new THREE.SphereGeometry(.2,10,8),M(0x5e3a24));f.scale.set(.9,.55,1.5);f.position.set((i?.2:-.2),.12,0);G.add(f);return f;});
+// ---- chao ----
+const tex=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');x.fillStyle='#46546a';x.fillRect(0,0,64,64);x.fillStyle='#4b5a72';x.fillRect(2,2,60,60);x.fillStyle='#424f66';x.fillRect(0,0,64,2);x.fillRect(0,0,2,64);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(24,24);t.magFilter=THREE.NearestFilter;return t;})();
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(60,60),new THREE.MeshBasicMaterial({map:tex}));ground.rotation.x=-Math.PI/2;scene.add(ground);
+const shadow=new THREE.Mesh(new THREE.CircleGeometry(.75,16),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.35,depthWrite:false}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.01;G.add(shadow);
+// ---- utilitarios ----
+const sm=t=>t*t*(3-2*t),lerp=(a,b,t)=>a+(b-a)*t;
+function spline(keys,t){ // keys: [[t,{..}],..] Hermite com tempos irregulares
+  const ts=keys.map(k=>k[0]);if(t<=ts[0])return {...keys[0][1]};if(t>=ts[ts.length-1])return {...keys[keys.length-1][1]};
+  let i=0;while(ts[i+1]<t)i++;const h=ts[i+1]-ts[i],u=(t-ts[i])/h,out={};
+  for(const k in keys[0][1]){const v=j=>keys[j][1][k];const tan=j=>{const a=Math.max(j-1,0),b=Math.min(j+1,ts.length-1);return b==a?0:(v(b)-v(a))/(ts[b]-ts[a])};
+    const m0=tan(i)*h,m1=tan(i+1)*h,u2=u*u,u3=u2*u;out[k]=(2*u3-3*u2+1)*v(i)+(u3-2*u2+u)*m0+(-2*u3+3*u2)*v(i+1)+(u3-u2)*m1;}
+  return out;}
+// poses-chave do ataque (x=rot em x dos ombros etc.)
+const P0={lean:0,twist:0,shR:-.5,elR:-.9,shL:-.5,elL:-.9,lunge:0,hx:0,orb:.5,dip:0,hy:0};
+const ATK=[[0,P0],[.12,{...P0,lean:-.1,twist:-.15,shR:-.2,elR:-1.1,shL:-.2,dip:.08,hx:.08,orb:.6}],[.3,{...P0,lean:-.3,twist:-.5,shR:-2.5,elR:-1.0,shL:-1.1,elL:-1.2,dip:.04,hx:-.12,orb:1.3,hy:-.2}],[.42,{...P0,lean:-.34,twist:-.58,shR:-2.8,elR:-.8,shL:-1.3,elL:-1.2,dip:.02,hx:-.16,orb:1.8,hy:-.25}],
+  [.5,{...P0,lean:.1,twist:.2,shR:-2.0,elR:-.5,shL:-1.6,elL:-.7,lunge:.25,hx:.05,orb:1.9,dip:.05,hy:.1}],[.58,{...P0,lean:.5,twist:.55,shR:-1.2,elR:-.2,shL:-1.55,elL:-.2,lunge:.55,hx:.18,orb:2.1,dip:.1,hy:.3}],
+  [.72,{...P0,lean:.6,twist:.6,shR:-.9,elR:-.2,shL:-1.45,elL:-.25,lunge:.62,hx:.15,orb:1.0,dip:.08,hy:.3}],[.9,{...P0,lean:.2,twist:.2,shR:-.6,elR:-.7,shL:-.8,elL:-.8,lunge:.3,orb:.5,hy:.1}],[1.1,{...P0,lean:-.03,lunge:.05}],[1.3,P0]];
+const HURT=[[0,P0],[.06,{...P0,lean:-.55,twist:-.15,hx:-.45,shR:-.1,shL:.1,elR:-.3,elL:-.3,dip:.18,lunge:-.25,hy:.1}],[.2,{...P0,lean:-.62,hx:-.5,shR:.3,shL:.3,dip:.1,lunge:-.4}],[.45,{...P0,lean:-.3,hx:-.2,lunge:-.2,dip:.04}],[.7,{...P0,lean:-.05,lunge:-.02}],[.85,P0]];
+// ---- simulacao ----
+const S={x:0,z:0,yaw:0,spd:0,ph:0,w:0,vx:0,vz:0,ax:0,az:0,t:0,anim:'idle',at:0,dead:0,orbFly:null,last:null};
+const fwd=()=>[Math.sin(S.yaw),Math.cos(S.yaw)];
+function step(dt,cmd){
+  // cmd: {move:0..1,yawTo,anim,at,dead}
+  S.t+=dt;
+  const targetSpd=cmd.move*2.1;S.spd+=(targetSpd-S.spd)*Math.min(1,dt*8);
+  if(cmd.yawTo!==undefined){let d=cmd.yawTo-S.yaw;d=Math.atan2(Math.sin(d),Math.cos(d));S.yaw+=d*Math.min(1,dt*(cmd.turn||9));}
+  const [fx,fz]=fwd(),nvx=fx*S.spd,nvz=fz*S.spd;S.ax=(nvx-S.vx)/dt;S.az=(nvz-S.vz)/dt;S.vx=nvx;S.vz=nvz;
+  S.w=Math.min(1,S.spd/1.6);S.ph+=dt*S.spd*3.2;   // fase da passada proporcional a velocidade
+  pose(cmd,dt);
+}
+let tm=0;
+function pose(cmd,dt){
+  const w=S.w,ph=S.ph,t=S.t;let k=P0;
+  if(cmd.anim==='attack')k=spline(ATK,cmd.at);else if(cmd.anim==='hurt')k=spline(HURT,cmd.at);
+  const [fx,fz]=fwd();let px=S.x+fx*k.lunge,pz=S.z+fz*k.lunge;
+  S.x+=S.vx*dt;S.z+=S.vz*dt;
+  G.position.set(S.x+fx*k.lunge,0,S.z+fz*k.lunge);G.rotation.y=S.yaw;
+  // respiracao
+  const br=Math.sin(t*4.2),bob=Math.abs(Math.sin(ph))*.1*w;
+  let dead=cmd.dead||0;
+  body.position.y=PELV+.03*br*(1-w)-bob*.9-k.dip-.45*sm(Math.min(1,dead*1.6))*0;
+  body.rotation.set(0,0,Math.sin(ph)*.05*w);
+  spine.rotation.set(.1*w+.04*br*(1-w)+k.lean,k.twist*.6-Math.sin(ph)*.12*w,Math.sin(ph)*.04*w);
+  chest.rotation.set(.03*br*(1-w),k.twist*.4+Math.sin(ph)*.05*w,0);
+  neck.rotation.set(-.05*br*(1-w)+k.hx*.5,0,0);head.rotation.set(k.hx*.5+(-.08*w),-k.twist*.8+Math.sin(ph)*.1*w+k.hy,Math.sin(t*1.7)*.03*(1-w));
+  tail.rotation.set(.3+Math.sin(ph*2+1)*.35*w+Math.sin(t*3)*.06+(-S.az*.02),0,0);
+  // bracos: balanco + poses
+  const sw=Math.sin(ph)*.45*w;
+  AR.sh.rotation.set(k.shR-sw*.7,0,-.12);AR.el.rotation.set(k.elR,0,0);AR.sh.rotation.z=-.18;
+  AL.sh.rotation.set(k.shL+sw*.7+Math.sin(t*3.1)*.04*(1-w),0,.18);AL.el.rotation.set(k.elL,0,0);
+  AR.el.rotation.x=k.elR+Math.sin(ph+1)*.12*w;AL.el.rotation.x=k.elL+Math.sin(ph+2)*.1*w;
+  // mangas seguem (rotacao atrasada)
+  AR.sl.rotation.x=-(AR.el.rotation.x*.25)+Math.sin(t*5)*.05;AL.sl.rotation.x=-(AL.el.rotation.x*.25)+Math.sin(t*5+1)*.05;
+  dag.rotation.x=Math.PI/2+(k.shR<-1.8?.5:0);
+  orbG.scale.setScalar(k.orb*(.9+.1*Math.sin(t*14)));orbG.visible=k.orb>.4;
+  eyes.forEach(e=>{e.scale.y=(cmd.anim==='hurt'||dead>0)?.12:(Math.sin(t*1.3)>.97?.1:.8);});
+  // pes (passada)
+  for(let i=0;i<2;i++){const p=ph+i*Math.PI,z=Math.sin(p)*.5*w,lift=Math.max(0,Math.cos(p))*.22*w;feet[i].position.set((i?.22:-.22),.1+lift,z+(.1*(1-w)*(i?1:-1)*.2));feet[i].rotation.x=-Math.cos(p)*.5*w;}
+  // saia: mola por painel
+  const fl=[fx,fz],rt=[fz,-fx];
+  const accF=-(S.ax*fl[0]+S.az*fl[1]),accR=-(S.ax*rt[0]+S.az*rt[1]);
+  panels.forEach((p,i)=>{const c=Math.cos(p.th),s=Math.sin(p.th);   // 0 = frente (+z local)
+    const legPush=[0,1].map(j=>{const z=Math.sin(ph+j*Math.PI)*.5*w,sx=(j?.22:-.22);const dx=Math.sin(p.th)*.7-sx,dz=Math.cos(p.th)*.7-z;return z*Math.exp(-(dx*dx+dz*dz)*2.2)});
+    let tx=(accF*c+accR*0)*.012*c+(legPush[0]+legPush[1])*1.1*c*.9+k.lunge*.5*(-c)*0+(-k.lean*.6*c);
+    let tz=accR*.012*s+(legPush[0]+legPush[1])*.5*s;
+    tx+=Math.sin(t*2.5+i)*.02;
+    const kk=70,cc=7;p.vx+=((tx-p.ax)*kk-p.vx*cc)*dt;p.ax+=p.vx*dt;p.vz+=((tz-p.az)*kk-p.vz*cc)*dt;p.az+=p.vz*dt;
+    p.g.rotation.set(p.ax*Math.cos(p.th)+0,0,-p.az*Math.sin(p.th)*0);p.g.rotation.x=p.ax*c;p.g.rotation.z=p.az*s*-1+p.ax*s*0;});
+  sashG.rotation.x=Math.sin(ph*2)*.2*w+(-accF*.01);sashG.rotation.z=Math.sin(ph)*.1*w;
+  // morte: tomba para tras
+  if(dead>0){const q=sm(Math.min(1,dead));G.rotation.x=0;body.parent.rotation.order='YXZ';G.rotation.x=-q*1.5;G.position.y=q*.5;
+    if(dead>1)G.position.y=.5+.06*Math.exp(-(dead-1)*6)*Math.sin((dead-1)*22);}
+  else {G.rotation.x=0;G.position.y=0;}
+  placeCam(G.position.x,G.position.z);
+  ground.position.set(Math.round(G.position.x),0,Math.round(G.position.z));
+  tex.offset.set(0,0);
+  R.render(scene,cam);
+}
+window.sim={step,S,R,cv,reset(){S.x=S.z=S.yaw=S.spd=S.ph=S.w=S.vx=S.vz=S.ax=S.az=S.t=0;},grab(){return cv.toDataURL('image/png');}};
+placeCam(0,0);pose({anim:'idle',at:0},.05);
+</script>
