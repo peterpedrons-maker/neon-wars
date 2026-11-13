@@ -380,6 +380,10 @@ function overlay2D(h,list){
   if(lbl.length){lbl.sort((a,b)=>b.y-a.y);const placed=[];ctx.textAlign='center';
     for(const l of lbl){const fs=Math.max(8,7.5*l.s*k);ctx.font='700 '+fs+'px Rubik,sans-serif';const w=ctx.measureText(l.t).width+4*k;let y=l.y*k,nn=0;while(nn<8&&placed.some(o=>l.x*k-w/2<o.x+o.w&&l.x*k+w/2>o.x&&y-fs<o.y+fs+2&&y+2>o.y-fs)){y-=fs+2;nn++;}placed.push({x:l.x*k-w/2,w,y});
       ctx.lineWidth=2.4*k;ctx.lineJoin='round';ctx.strokeStyle='rgba(10,6,10,.95)';ctx.strokeText(l.t,l.x*k,y);ctx.fillStyle=l.r>=1?l.c:'#d8d2c0';ctx.fillText(l.t,l.x*k,y);}}
+  // Trevas do Rei Esquecido: só enxerga ao redor do herói e do chefe
+  if(G.darkT>0){const k2=k,fade=Math.min(1,G.darkT/1.2,(16-G.darkT)/1.2+.2);ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='rgba(2,2,8,'+(.9*fade)+')';ctx.fillRect(0,0,cvEl.width,cvEl.height);ctx.globalCompositeOperation='destination-out';
+    const hole=(e,R)=>{const s=pxScale(e.x,e.y),p=toScreen(e.x,e.y,20),rr=R*s*k2,g=ctx.createRadialGradient(p[0]*k2,p[1]*k2,rr*.25,p[0]*k2,p[1]*k2,rr);g.addColorStop(0,'rgba(0,0,0,'+fade+')');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(p[0]*k2-rr,p[1]*k2-rr,rr*2,rr*2);};
+    hole(h,120);if(G.boss&&!G.boss.dead)hole(G.boss,95);for(const m of G.mobs)if(m.orb&&!m.dead)hole(m,34);ctx.restore();}
   // escudo, bônus, barra de conjuração e seta do portal
   const hel=(G.crp&&typeof crpElev==='function'?crpElev(h):0);
   if(h.shield>0){const st=Math.max(0,Math.min(1,h.shield/Math.max(1,h.maxhp*.35)));if(h.shield<(V3._sh||0)-1)V3._shHit=.35;V3._sh=h.shield;V3._shHit=Math.max(0,(V3._shHit||0)-1/60);const hit=V3._shHit>0?V3._shHit/.35:0,tm=G.t;
