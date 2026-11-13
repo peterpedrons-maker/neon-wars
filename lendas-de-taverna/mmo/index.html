@@ -1388,12 +1388,14 @@ const lastSfx={};
 const UI_SND={ui_click:1,ui_confirm:1,tr_open:1,tr_close:1};
 /* moeda: um "plim" curto e simples (duas notas), sintetizado — sem o brilho mágico do arquivo antigo */
 /* som grave e macio do ataque básico dos magos (substitui o 'spell_cast' agudo) */
-function softMagic(kind,v=1){if(!AC||!sfxGain)return;const t=AC.currentTime,k='sm_'+kind;if(lastSfx[k]&&t-lastSfx[k]<.09)return;lastSfx[k]=t;
-  const o=AC.createOscillator(),g=AC.createGain(),f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=520;o.type='sine';
-  const f0=kind==='hit'?120:190,f1=kind==='hit'?70:120,d=kind==='hit'?.16:.22;o.frequency.setValueAtTime(f0*(.96+Math.random()*.08),t);o.frequency.exponentialRampToValueAtTime(f1,t+d);
-  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.2*v,t+.012);g.gain.exponentialRampToValueAtTime(.0004,t+d);o.connect(f);f.connect(g);g.connect(sfxGain);o.start(t);o.stop(t+d+.03);
-  const n=AC.createBufferSource(),nb=AC.createBuffer(1,Math.floor(AC.sampleRate*.12),AC.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=(Math.random()*2-1)*(1-i/nd.length);n.buffer=nb;
-  const nf=AC.createBiquadFilter();nf.type='lowpass';nf.frequency.value=700;const ng=AC.createGain();ng.gain.value=.05*v;n.connect(nf);nf.connect(ng);ng.connect(sfxGain);n.start(t);}
+function softMagic(kind,v=1){if(!AC||!sfxGain)return;const t=AC.currentTime,k='sm_'+kind;if(lastSfx[k]&&t-lastSfx[k]<.07)return;lastSfx[k]=t;
+  const tone=(f0,f1,t0,d,g0,type,lp)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f0,t0);o.frequency.exponentialRampToValueAtTime(Math.max(30,f1),t0+d);g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(g0,t0+.012);g.gain.exponentialRampToValueAtTime(.0004,t0+d);let n=o;if(lp){const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=lp;o.connect(f);n=f;}n.connect(g);g.connect(sfxGain);o.start(t0);o.stop(t0+d+.04);};
+  const noise=(t0,d,g0,type,f0,f1)=>{const n=AC.createBufferSource(),nb=AC.createBuffer(1,Math.floor(AC.sampleRate*d),AC.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=(Math.random()*2-1)*(1-i/nd.length);n.buffer=nb;const f=AC.createBiquadFilter();f.type=type;f.frequency.setValueAtTime(f0,t0);if(f1)f.frequency.exponentialRampToValueAtTime(f1,t0+d);const g=AC.createGain();g.gain.value=g0;n.connect(f);f.connect(g);g.connect(sfxGain);n.start(t0);};
+  const r=.97+Math.random()*.06;
+  if(kind==='hit'){   // estouro arcano: cristal que estala + sino curto + sopro grave
+    noise(t,.09,.11*v,'highpass',4200);tone(1900*r,900,t,.2,.09*v,'triangle');tone(2850*r,1500,t,.16,.05*v,'sine');tone(3700*r,2400,t+.01,.1,.03*v,'sine');tone(150,70,t,.14,.12*v,'sine',420);}
+  else{   // lançamento: energia sobe no cajado e é solta num "fiuuu" brilhante
+    tone(420*r,1700,t,.2,.1*v,'sawtooth',2400);tone(630*r,2500,t,.18,.06*v,'triangle');tone(1250*r,3600,t+.04,.14,.04*v,'sine');noise(t,.16,.06*v,'bandpass',1500,5200);tone(110,220,t,.12,.08*v,'sine',380);}}
 function coinSynth(v){if(!AC||!sfxGain)return;const t=AC.currentTime;if(lastSfx.coin&&t-lastSfx.coin<.08)return;lastSfx.coin=t;
   const mk=(f,t0,d,g0)=>{const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.setValueAtTime(f,t0);g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(g0,t0+.004);g.gain.exponentialRampToValueAtTime(.0004,t0+d);o.connect(g);g.connect(sfxGain);o.start(t0);o.stop(t0+d+.03);};
   mk(1318,t,.06,.07*v);mk(1976,t+.055,.15,.07*v);}
@@ -2180,7 +2182,7 @@ function hitMob(m,dmg,crit,fromX,fromY,kf=1){
   else if(die)knock(m,m.x-fromX,m.y-fromY,200*(m.kind==='boss'?.25:1)*Math.min(kf,1.2));
   else if(kf>1.2)knock(m,m.x-fromX,m.y-fromY,(crit?170:120)*(m.kind==='boss'?.25:1)*kf);
   else if(!(m.kbT>0)&&Math.random()<knockChance()*(m.kind==='boss'?.2:1)){knock(m,m.x-fromX,m.y-fromY,(crit?175:135)*(m.kind==='boss'?.25:1)*kf);m.kbT=2.4;m.stun=Math.max(m.stun,.3*knockDownMul()*(m.kind==='boss'?.3:1));floatText(m.x,m.y-(m.kind==='boss'?100:58),knockDownMul()>1.6?'Derrubado':'Empurrão','#e0d8c0',7,.7);}
-  if(G.hero&&hStyle()==='slash'&&!m.__noW&&dist(m,G.hero)<130)wHitSynth(crit,dmg>=m.maxhp*.12);else sfx(crit?'crit':(Math.random()<.5?'hit_0':'hit_1'),.7);
+  if(G.pHit){G.pHit=null;if(crit)sfx('crit',.45);}else if(G.hero&&hStyle()==='slash'&&!m.__noW&&dist(m,G.hero)<130)wHitSynth(crit,dmg>=m.maxhp*.12);else sfx(crit?'crit':(Math.random()<.5?'hit_0':'hit_1'),.7);
   if(die)killMob(m);
 }
 function killMob(m){
@@ -3600,7 +3602,7 @@ function updateProjs(dt){
   for(let i=G.projs.length-1;i>=0;i--){const p=G.projs[i];if(p.delay>0){p.delay-=dt;continue;}
     const t=p.tgt;if(!t||t.dead){G.projs.splice(i,1);continue;}
     const dx=t.x-p.x,dy=(t.y-(t.kind==='boss'?40:16))-p.y,d=Math.hypot(dx,dy),s=p.sp*dt;
-    if(d<=s+4){if(t.demo){t.flash=.15;}else hitMob(t,p.d,p.crit,p.x-dx*4,p.y-dy*4);G.projs.splice(i,1);if(p.kind==='orb')softMagic('hit',.9);else sfx('arrow_hit',.32);const hc={fire:['#ff7a2a','#ffd070'],ice:['#8ae0ff','#fff'],orb:['#8ac8ff','#fff'],dagger:['#dfe6f0','#fff']}[p.style];if(hc){VF.burst(t.x,t.y-16,10,hc,{s0:40,s1:110});VF.glow(t.x,t.y-16,22,hc[0],.25);}continue;}
+    if(d<=s+4){if(t.demo){t.flash=.15;}else{G.pHit=1;hitMob(t,p.d,p.crit,p.x-dx*4,p.y-dy*4);G.pHit=null;}G.projs.splice(i,1);if(p.kind==='orb')softMagic('hit',.9);else sfx('arrow_hit',.32);const hc={fire:['#ff7a2a','#ffd070'],ice:['#8ae0ff','#fff'],orb:['#8ac8ff','#fff'],dagger:['#dfe6f0','#fff']}[p.style];if(hc){VF.burst(t.x,t.y-16,10,hc,{s0:40,s1:110});VF.glow(t.x,t.y-16,22,hc[0],.25);}continue;}
     p.x+=dx/d*s;p.y+=dy/d*s;p.ang=Math.atan2(dy,dx);
     const st=p.style;if(st==='orb'&&Math.random()<.9)VF.pt(p.x+rnd(-2,2),p.y+rnd(-2,2),{life:.3,col:'#8ac8ff',sz:2.4});else if(st==='fire'){VF.pt(p.x+rnd(-2,2),p.y+rnd(-2,2),{vy:-14,life:.35,col:Math.random()<.5?'#ffb050':'#ff5a1a',sz:2.6});}else if(st==='ice'&&Math.random()<.8)VF.pt(p.x,p.y,{life:.3,col:'#bfe8ff',sz:2});else if(st==='dagger'&&Math.random()<.6)VF.pt(p.x,p.y,{life:.2,col:'#fff',sz:1.6});else if(st==='arrow'&&Math.random()<.5)VF.pt(p.x,p.y,{life:.18,col:'#fff6d8',sz:1.4,add:false});}
 }
