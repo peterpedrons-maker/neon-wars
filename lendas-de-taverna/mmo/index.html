@@ -971,7 +971,7 @@ const BOSS_RAT={nome:'Rei dos Ratos',rk:1,atlas:'ratking',rad:26,shr:40,ent:'dro
        {id:'burrow',hp:.7,cd:12.5,warn:1.1,r:60,mult:2.2,st:['atordoado',.6,1,0],wt:2,min:90}]};
 /* Rei Esquecido: kit próprio, nada de investida/rugido/invocação genéricos. Mexe com o que o jogador FAZ: apaga uma habilidade (Esquecimento), repete o golpe onde você foi parar (Eco),
    corta o ar em leque (Fenda do Vazio), protege-se com almas que giram (Coroa de Almas) e, perto do fim, apaga a luz (Trevas). */
-const BOSS_CRIP={...BOSS_ESQ,nome:'Rei Esquecido',atlas:'rei',rad:26,shr:40,hp:2700,atk:13.5,xp:340,gold:[110,190],aura:['#a070ff','#efe0ff'],ent:null,scale:1.1,
+const BOSS_CRIP={...BOSS_ESQ,nome:'Rei Esquecido',atlas:'rei',rad:26,shr:40,hp:2700,atk:13.5,xp:340,gold:[110,190],aura:['#a070ff','#efe0ff'],ent:null,scale:.68,
   msk:[{id:'forget',hp:1,cd:15,warn:1.05,lock:9,wt:3},
        {id:'echo',hp:1,cd:10,warn:1.0,r:62,mult:2.3,st:['abalado',.6,4,0],wt:3,max:420},
        {id:'rift',hp:.85,cd:11,warn:.85,w:46,len:330,mult:2.2,st:['atordoado',.6,1,0],wt:3,min:50},
@@ -1907,7 +1907,8 @@ const varOf=(z,i)=>{const a=FAMV[famOf(z)];return a[((i%a.length)+a.length)%a.le
 /* pc = poder de combate recomendado (calibrado por simulação: PC com o qual o herói de equipamento médio vence o chefe com folga; tools/mmo/sim/pc_calib.cjs + boss.cjs) */
 const DUN=[{id:1,nm:'Floresta dos Goblins',unlock:1,pc:600},{id:2,nm:'Catacumbas de Brumavale',unlock:8,pc:900},{id:3,nm:'Floresta de Brumavale',unlock:13,pc:1200},{id:4,nm:'Esgotos de Brumavale',unlock:18,pc:1400},{id:5,nm:'Cripta do Rei Esquecido',unlock:1,pc:1650},{id:6,nm:'Pântano das Brumas',unlock:22,pc:1900}];
 const dgLv=z=>[1+(z-1)*BAL.zoneLv,8+(z-1)*BAL.zoneLv];   // faixa de nível dos monstros da dungeon z
-function dgUnlocked(z){if(z<=1||z===5)return true;const d=DUN[z-1];return !!(d&&SAVE.dgDone&&SAVE.dgDone[z-1]&&SAVE.lv>=d.unlock);}
+const TEST_UNLOCK=true;   /* TESTE: todas as dungeons e arenas abertas, sem requisito de nível nem de chefe (mude para false para voltar ao normal) */
+function dgUnlocked(z){if(TEST_UNLOCK||z<=1||z===5)return true;const d=DUN[z-1];return !!(d&&SAVE.dgDone&&SAVE.dgDone[z-1]&&SAVE.lv>=d.unlock);}
 function dgRefresh(){let m=1;for(let z=2;z<=DUN.length;z++)if(dgUnlocked(z))m=z;if(m>(SAVE.zoneMax||1)){SAVE.zoneMax=m;chat('Nova dungeon liberada: '+DUN[m-1].nm+'!',4);sfx('levelup',.4);if(G.hero)floatText(G.hero.x,G.hero.y-80,'Nova dungeon!','#8ef08a',9,1.4);}SAVE.zoneMax=Math.max(1,Math.min(DUN.length,SAVE.zoneMax||1));}
 // experiência estilo Cabal: monstro muito abaixo do seu nível rende 1 de XP (chefes mantêm um mínimo)
 const xpGapMul=g=>g<=2?1:g===3?.85:g===4?.7:g===5?.5:g===6?.3:g===7?.15:g===8?.07:0;
@@ -4771,7 +4772,7 @@ function pzGauge(rec,locked){const hpc=heroPC(),r=hpc/rec,col=r>=1?'#5fd36a':r>=
 const arId=z=>{const t=bossDef(z);return t.atlas||(t.rk?null:'gorgash');};
 function pzItems(){
   if(PZ.tab==='d')return DUN.map((d,i)=>{const z=i+1,cur=(SAVE.zone||0)===z&&SAVE.entered,dn=SAVE.dgDone&&SAVE.dgDone[z];return {img:PZD[i].img,hd:'ÁREA '+z,nm:d.nm,lore:PZD[i].lore,unlock:d.unlock,locked:!dgUnlocked(z),st:cur?'● ATUAL':dn?'✔ concluída':'',cur,z};});
-  const L=[];DUN.forEach((d,i)=>{const z=i+1,ok=!!(SAVE.dgDone&&SAVE.dgDone[z])&&SAVE.lv>=d.unlock,r=(SAVE.arena||{})['z'+z];L.push({img:PZD[i].img,hd:'ARENA DO CHEFE',nm:'Arena de '+bossDef(z).nome,lore:d.nm,unlock:d.unlock,locked:!ok,st:r&&r.w?'✔ '+r.w+' vitória'+(r.w>1?'s':''):'',z,arena:1,bl:dgLv(z)[1]});});
+  const L=[];DUN.forEach((d,i)=>{const z=i+1,ok=TEST_UNLOCK||(!!(SAVE.dgDone&&SAVE.dgDone[z])&&SAVE.lv>=d.unlock),r=(SAVE.arena||{})['z'+z];L.push({img:PZD[i].img,hd:'ARENA DO CHEFE',nm:'Arena de '+bossDef(z).nome,lore:d.nm,unlock:d.unlock,locked:!ok,st:r&&r.w?'✔ '+r.w+' vitória'+(r.w>1?'s':''):'',z,arena:1,bl:dgLv(z)[1]});});
   return L;}
 function pzDetail(it){
   if(PZ.tab==='d'){const z=it.z,d=DUN[z-1],I=PZD[z-1],un=!it.locked,lvOkd=SAVE.lv>=d.unlock,prev=DUN[z-2],prevOk=z>=5||!prev||!!(SAVE.dgDone&&SAVE.dgDone[z-1]);
@@ -4781,7 +4782,7 @@ function pzDetail(it){
     h+='<div class="pzh">HABITANTES</div><div class="pzen">'+I.hab.map(e=>`<div class="${e[2].replace('-chefe','')}"><canvas data-k="${un?e[0]:'?'}" width="148" height="112"></canvas><b>${un?e[1]:'???'}</b><i>${un?e[2].toUpperCase():''}</i></div>`).join('')+'</div>';
     return h+`<div class="pzh">EQUIPAMENTO</div><div class="pzeq"><span>Dropa itens de</span><b>${pzTierTxt(z)}</b></div>`;}
   // especiais
-  const ar=SAVE.arena||{},k=it.rush?'rush':'z'+it.z,r=ar[k],lv=SAVE.lv>=it.unlock;const bkey=PZD[it.z-1].hab[PZD[it.z-1].hab.length-1][0];let h='';h+='<div class="pzh">REQUISITOS</div><div class="pzr">'+pzReqRow(lv,'Nível '+it.unlock,`você: ${SAVE.lv} ${lv?'✔':'🔒'}${!lv?' · faltam '+(it.unlock-SAVE.lv):''}`);
+  const ar=SAVE.arena||{},k=it.rush?'rush':'z'+it.z,r=ar[k],lv=TEST_UNLOCK||SAVE.lv>=it.unlock;const bkey=PZD[it.z-1].hab[PZD[it.z-1].hab.length-1][0];let h='';h+='<div class="pzh">REQUISITOS</div><div class="pzr">'+pzReqRow(lv,'Nível '+it.unlock,`você: ${SAVE.lv} ${lv?'✔':'🔒'}${!lv?' · faltam '+(it.unlock-SAVE.lv):''}`);
   if(it.rush){const n=DUN.filter((d,i)=>SAVE.dgDone&&SAVE.dgDone[i+1]).length;h+=pzReqRow(n===DUN.length,'Derrotar os chefes das '+DUN.length+' dungeons',n+' de '+DUN.length+(n===DUN.length?' ✔':' 🔒'));}
   else{const dn=!!(SAVE.dgDone&&SAVE.dgDone[it.z]);h+=pzReqRow(dn,'Derrotar '+bossDef(it.z).nome+' na dungeon',dn?'✔':'🔒');}
   h+='</div>'+pzGauge(it.rush?Math.round(DUN[DUN.length-1].pc*1.1):DUN[it.z-1].pc,it.locked);
