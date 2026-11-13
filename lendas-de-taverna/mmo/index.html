@@ -2174,7 +2174,7 @@ function guardCounter(m){addZone({shape:'circle',x:m.x,y:m.y,r:70,warn:.3,mult:1
 
 /* ===== vozes das criaturas: cada espécie tem seu grunhido de ataque, dor e morte (arquivos mob_<espécie>_<atk|hurt|die>) ===== */
 const MSP={rato:'rato',ratass:'rato',ratarq:'rato',ratalq:'rato',ratking:'rato',javali:'javali',javguer:'javali',javbruto:'javali',javarq:'javali',javmago:'javali',javcap:'javali',goblin:'goblin',gobarq:'goblin',xama:'goblin',skrix:'goblin',botic:'goblin',esq:'esq',esqueleto:'esq',esqmago:'esq',esqfogo:'esq',esqgelo:'esq',morcego:'bat',vamp:'bat',ogro:'ogro'};
-function mobSnd(m,k){if(!AC||!m||!m.T)return;const sp=MSP[m.type]||MSP[m.T.fam]||MSP[m.T.atlas]||(m.kind==='boss'?'ogro':null);if(!sp)return;
+function mobSnd(m,k){if(!AC||!m||!m.T)return;{const cs=CRS[m.T.atlas];if(cs){const h=G.hero,d=h?Math.hypot(h.x-m.x,h.y-m.y):0,v=Math.max(.12,1-d/460);if(v<=.14)return;const t=G.t;if(k==='hurt'){if(t-(m._sh||-9)<.45)return;m._sh=t;}if(k==='atk'){if(t-(m._sa||-9)<.8)return;m._sa=t;}crSynth(cs,k,v,m.elite);return;}}const sp=MSP[m.type]||MSP[m.T.fam]||MSP[m.T.atlas]||(m.kind==='boss'?'ogro':null);if(!sp)return;
   const h=G.hero,d=h?Math.hypot(h.x-m.x,h.y-m.y):0,v=Math.max(.12,1-d/460);if(v<=.14)return;
   const key='mob_'+sp+'_'+k,t=G.t;if(k==='hurt'){if(t-(m._sh||-9)<.45)return;m._sh=t;}if(k==='atk'){if(t-(m._sa||-9)<.8)return;m._sa=t;}
   const big=m.kind==='boss'||m.mini,rate=big&&sp!=='ogro'?.62:(m.elite?.88:1)*(.94+Math.random()*.12);
@@ -2561,6 +2561,36 @@ function wHitSynth(crit,heavy){if(!AC||!sfxGain||!synthOK('whit',.05))return;con
   else if(k==='dagger'){nz2(t,.025,.2,'highpass',5000);ring([3100,4700],.14,.08);tn2(260,160,t,.06,.08,'sine');}
   else{tn2(300,180,t,.09,.16*v,'triangle',900);tn2(900,700,t+.01,.12,.07,'sine');nz2(t,.04,.1,'bandpass',1800,900,1);}
   if(crit){ring([2200,3300,5000],.5,.1);tn2(70,40,t,.28,.3,'sine',200);nz2(t+.02,.18,.06,'highpass',6000);}}
+
+/* ===== vozes das criaturas da Cripta (sintetizadas): cada uma com timbre próprio ===== */
+function crVoice(t0,f0,f1,d,g,fm,vib){const o=AC.createOscillator(),eg=AC.createGain();o.type='sawtooth';o.frequency.setValueAtTime(f0,t0);o.frequency.exponentialRampToValueAtTime(Math.max(25,f1),t0+d);
+  if(vib){const l=AC.createOscillator(),lg=AC.createGain();l.frequency.value=vib[0];lg.gain.value=vib[1];l.connect(lg);lg.connect(o.frequency);l.start(t0);l.stop(t0+d+.05);}
+  eg.gain.setValueAtTime(.0001,t0);eg.gain.exponentialRampToValueAtTime(g,t0+Math.min(.06,d*.25));eg.gain.exponentialRampToValueAtTime(.0004,t0+d);eg.connect(sfxGain);
+  for(const [f,q,gg] of fm){const b=AC.createBiquadFilter();b.type='bandpass';b.frequency.value=f;b.Q.value=q;const gn=AC.createGain();gn.gain.value=gg;o.connect(b);b.connect(gn);gn.connect(eg);}o.start(t0);o.stop(t0+d+.05);}
+function crRing(t0,fs,d,g){fs.forEach((f,i)=>tn2(f*(.99+Math.random()*.02),f*.985,t0,d*(1-i*.18),g/(1+i*.6),'sine'));}
+function crTicks(t0,n,span,g,f0,f1){for(let i=0;i<n;i++)nz2(t0+Math.random()*span,.03,g*(.5+Math.random()*.5),'highpass',f0+Math.random()*(f1-f0));}
+function crSynth(sp,k,v,big){if(!AC||!sfxGain||!synthOK('cr_'+sp+k,.12))return;const t=AC.currentTime,r=.94+Math.random()*.12,V=Math.min(1,v)*(big?1.2:1);
+  if(sp==='cult'){
+    if(k==='hurt'){crVoice(t,230*r,140*r,.26,.2*V,[[800,6,1],[1250,8,.6]]);nz2(t,.12,.05*V,'bandpass',900,400,1);}
+    else if(k==='atk'){crVoice(t,118*r,170*r,.5,.2*V,[[320,6,1],[780,8,.7]],[5,6]);tn2(500*r,1300,t+.12,.34,.07*V,'triangle');tn2(1000*r,2600,t+.14,.3,.04*V,'sine');nz2(t+.1,.3,.04*V,'bandpass',1400,4200,1.5);}
+    else{crVoice(t,200*r,55,.9,.22*V,[[600,5,1],[1000,7,.5]],[4,8]);nz2(t,.5,.05*V,'lowpass',800,150);crRing(t+.35,[3300,5200],.18,.07*V);crRing(t+.55,[2900,4600],.16,.05*V);}}
+  else if(sp==='guarda'){
+    if(k==='hurt'){crTicks(t,6,.14,.2*V,2200,4200);crRing(t,[900,1450,2300],.14,.12*V);tn2(140,80,t,.1,.12*V,'sine');}
+    else if(k==='atk'){nz2(t,.2,.12*V,'bandpass',700,3200,2);crRing(t+.14,[1750,2800,4100],.2,.12*V);tn2(95,60,t+.14,.14,.2*V,'sine',300);crTicks(t,4,.18,.1*V,2500,4500);}
+    else{crTicks(t,16,.7,.22*V,1800,4800);nz2(t,.55,.14*V,'lowpass',1400,200);crRing(t+.05,[800,1300,2100],.3,.12*V);tn2(70,35,t+.25,.35,.25*V,'sine',250);crRing(t+.45,[1500,2400],.2,.07*V);}}
+  else if(sp==='espectro'){
+    if(k==='hurt'){const l=[900*r,520*r];tn2(l[0],l[1],t,.3,.12*V,'sine');tn2(l[0]*1.5,l[1]*1.5,t,.25,.05*V,'triangle');nz2(t,.2,.06*V,'highpass',5200);}
+    else if(k==='atk'){tn2(380*r,980*r,t,.5,.12*V,'sine');tn2(570*r,1470*r,t,.45,.06*V,'triangle');nz2(t+.05,.4,.06*V,'bandpass',900,3800,1.4);}
+    else{for(let i=0;i<3;i++){tn2(720*r*(1-i*.03),180,t+i*.18,.9,(.12-i*.03)*V,'sine');tn2(1080*r,270,t+i*.18,.7,(.05-i*.012)*V,'triangle');}nz2(t,.8,.06*V,'highpass',4200);}}
+  else if(sp==='gargula'){
+    if(k==='hurt'){nz2(t,.14,.2*V,'lowpass',1600,300);crTicks(t+.04,6,.15,.12*V,500,1800);crVoice(t,150*r,95,.22,.15*V,[[500,5,1],[900,6,.5]]);}
+    else if(k==='atk'){crVoice(t,115*r,78*r,.4,.22*V,[[420,5,1],[880,6,.8]],[22,6]);nz2(t+.08,.18,.1*V,'bandpass',300,1000,1.2);nz2(t+.26,.18,.1*V,'bandpass',300,1000,1.2);}
+    else{nz2(t,.55,.22*V,'lowpass',2200,160);tn2(62,34,t,.5,.32*V,'sine',200);crTicks(t+.05,14,.6,.16*V,400,1600);crVoice(t,130*r,60,.5,.12*V,[[450,5,1]]);}}
+  else if(sp==='zumbi'){
+    if(k==='hurt'){crVoice(t,98*r,70*r,.34,.24*V,[[500,5,1],[920,7,.7]],[6,5]);nz2(t,.18,.05*V,'lowpass',700,200);crRing(t+.05,[1900,2500],.12,.06*V);}
+    else if(k==='atk'){crVoice(t,78*r,118*r,.55,.24*V,[[420,5,1],[780,6,.9]],[5,7]);crRing(t+.18,[1900,2450],.22,.09*V);crTicks(t+.1,8,.4,.1*V,1500,3500);}
+    else{crVoice(t,105*r,38,1,.26*V,[[480,5,1],[900,7,.6]],[4,9]);crRing(t+.3,[1900,2450],.3,.09*V);crRing(t+.5,[1750,2300],.26,.07*V);crRing(t+.7,[2000,2600],.2,.05*V);tn2(62,34,t+.4,.4,.26*V,'sine',250);}}}
+const CRS={cult:'cult',guardac:'guarda',espectro:'espectro',gargula:'gargula',zumbi:'zumbi'};
 function potionSynth(){if(!synthOK('pot_s',.3))return;const t=AC.currentTime;
   const tone=(f0,f1,t0,d,g0,type='sine',lp)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f0,t0);o.frequency.exponentialRampToValueAtTime(f1,t0+d);g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(g0,t0+.006);g.gain.exponentialRampToValueAtTime(.0004,t0+d);let n=o;if(lp){const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=lp;o.connect(f);n=f;}n.connect(g);g.connect(sfxGain);o.start(t0);o.stop(t0+d+.02);};
   /* rolha saindo do frasco: estalo seco */
@@ -4975,7 +5005,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
   try{await loadAll();}catch(e){$('title').insertAdjacentHTML('beforeend','<div style="color:#f88">Erro ao carregar: '+e.message+'</div>');console.error(e);return;}
   $('bNew').disabled=false;$('bCont').disabled=false;$('bCont').textContent=_ct;
   if(SAVE)G.zoneLv=clamp(SAVE.zone||1,1,DUN.length);
-  window.__mmo={killMob,spawnBoss,update,isWater,blockedAt,evStart,BUF,AMBS,mobSnd,bossSnd,enterRoom,dgTitle,spawnVamp,spawnSkrix,spawnJavcap,spawnBotic,MOBS,killMob,mkMob,dgUnlocked,dgRefresh,xpGapMul,DUN,stAdd,BAL,openWin,levelUpFx,gainXP,banner,hStyle,wCat,skOk,UNIQUES,getZone:()=>ZONE,petTick,PETS,pb,SETS,setCount,sb,genItem,qEv,qCheck,partyAdd,partyClear,QMAIN,qInit,socRefresh,TALENTS,tfCalc,tlTotal,TL_REQ,TL_TIER,potPrice,SLOTS,recalcHero,AMBEV,ambStart,ambStop,AMBS,zoneMusic,TOD,LIFE,evStart,makeElite,ELMOD,addZone,heroDodge,spawnBossNow:spawnBoss,stAdd,STDEF,applySkillStatus,MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
+  window.__mmo={mobSnd,crSynth,killMob,spawnBoss,update,isWater,blockedAt,evStart,BUF,AMBS,mobSnd,bossSnd,enterRoom,dgTitle,spawnVamp,spawnSkrix,spawnJavcap,spawnBotic,MOBS,killMob,mkMob,dgUnlocked,dgRefresh,xpGapMul,DUN,stAdd,BAL,openWin,levelUpFx,gainXP,banner,hStyle,wCat,skOk,UNIQUES,getZone:()=>ZONE,petTick,PETS,pb,SETS,setCount,sb,genItem,qEv,qCheck,partyAdd,partyClear,QMAIN,qInit,socRefresh,TALENTS,tfCalc,tlTotal,TL_REQ,TL_TIER,potPrice,SLOTS,recalcHero,AMBEV,ambStart,ambStop,AMBS,zoneMusic,TOD,LIFE,evStart,makeElite,ELMOD,addZone,heroDodge,spawnBossNow:spawnBoss,stAdd,STDEF,applySkillStatus,MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
   requestAnimationFrame(frame);
 })();
 
