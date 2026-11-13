@@ -48,8 +48,8 @@ def inside(x,y,pts):
     return c
 SK='UVWX';PL='Z123';BONE='sqr'+'r';LEAT='efgg'
 def part(g,anchor,half=False):return {'anchor':anchor,'rows':g.rows(half),**({'mirror':True} if half else {})}
-boss={'name':'boss','canvas':[132,100],'ground':92,'nomouth':True,'hip':24,'tdy':9,'hdy':8,'hdy_f':8,'hx_side':60,'hx_front':66,
- 'limbs':{'thigh':11.0,'shin':10.0,'upper':9.0,'fore':8.0,'r':{'thigh':[4.7,3.8],'shin':[3.9,3.2],'upper':[3.9,3.3],'fore':[3.3,2.9],'knee':4.1,'elbow':3.5,'hand':3.9},'mat':{'leg':'orc','arm':'orc','far_tone':-1}},
+boss={'name':'boss','canvas':[140,116],'ground':108,'nomouth':True,'hip':33,'tdy':9,'hdy':8,'hdy_f':8,'hx_side':64,'hx_front':70,
+ 'limbs':{'thigh':14.5,'shin':13.5,'upper':9.0,'fore':8.0,'r':{'thigh':[4.7,3.8],'shin':[3.9,3.2],'upper':[3.9,3.3],'fore':[3.3,2.9],'knee':4.1,'elbow':3.5,'hand':3.9},'mat':{'leg':'orc','arm':'orc','far_tone':-1}},
  'equipment':{'pauldron':True,'kneepad':True},'parts':{}}
 P=boss['parts']
 # cabeça de lado (olhando para a direita)
@@ -63,6 +63,7 @@ h.rect(8,11,23,12,'Z');h.line(8,11,23,11,'1')         # aba do elmo
 h.px(19,16,'4');h.px(20,16,'4');h.px(19,17,'z');h.line(16,14,23,15,'z')
 h.poly([(21,23),(24,23),(23,16)],BONE[:3],tone=2);h.px(23,22,'s');h.px(22,19,'s')   # presas
 h.line(16,23,23,23,'z');h.line(15,20,16,24,'U');h.px(17,18,'U');h.px(18,19,'V')
+h.line(17,18,21,19,'R');h.line(17,19,20,20,'S');h.px(15,15,'S');h.px(14,16,'S');h.ell(8,15,2,2.6,'VVWW');h.px(8,15,'U')
 h.outline();P['head_side']=part(h,[13,26])
 f=G(26,28)
 f.ell(12,17,9.5,9.5,SK);f.ell(12,8,9,5.5,PL)
@@ -72,6 +73,7 @@ f.rect(3,11,21,12,'Z');f.line(3,11,21,11,'1')
 f.ell(8,16,2.4,1.9,'4444');f.ell(16,16,2.4,1.9,'4444');f.px(8,16,'z');f.px(16,16,'z');f.line(4,14,10,15,'z');f.line(20,14,14,15,'z')
 f.ell(12,20,4,2.5,'VVWW');f.rect(10,21,14,21,'z');f.line(6,24,18,24,'z')
 f.poly([(6,21),(8,21),(7,27)],BONE[:3],tone=2);f.poly([(16,21),(18,21),(17,27)],BONE[:3],tone=2)
+f.line(5,18,8,19,'R');f.line(19,18,16,19,'R');f.px(6,14,'S');f.px(5,15,'S');f.px(2,15,'V');f.px(22,15,'V')
 f.outline();P['head_front']=part(f,[12,26],True)
 b=G(26,26)
 b.ell(12,15,9.5,9.5,SK);b.ell(12,10,10,8,PL)
@@ -81,9 +83,10 @@ b.outline();P['head_back']=part(b,[12,24],True)
 # tronco
 t=G(24,18);t.ell(12,9,10.5,8.5,PL);t.ell(12,9,8,6.5,PL,bias=.1);t.rect(9,5,15,12,'Z')
 t.ell(12,8,3,3,'IJKL');t.line(5,15,19,15,'Z')
+t.ell(12,2,9,2.5,'efgg');t.px(10,9,'s');t.px(13,9,'s');t.px(11,10,'r')
 t.outline();P['torso_side']=part(t,[12,6])
 tf=G(27,18);tf.ell(13,9,12,8.5,PL);tf.ell(13,8,5,4.5,'IJKL');tf.line(3,6,23,6,'2');tf.line(4,13,22,13,'Z')
-tf.px(13,8,'L');tf.px(12,7,'L');tf.outline();P['torso_front']=part(tf,[13,6],True)
+tf.ell(13,2,11,2.6,'efgg');tf.poly([(10,6),(16,6),(16,11),(10,11)],'rrr',tone=1);tf.px(11,8,'z');tf.px(14,8,'z');tf.px(13,10,'z');tf.outline();P['torso_front']=part(tf,[13,6],True)
 tb=G(27,18);tb.ell(13,9,12,8.5,PL);tb.ell(13,12,9,5,'MNQT');tb.line(13,2,13,16,'Z');tb.outline();P['torso_back']=part(tb,[13,6],True)
 # cinto e saiote de pele
 be=G(24,5);be.rect(1,1,22,3,'f');be.line(1,1,22,1,'g');be.rect(10,0,14,4,'I');be.rect(11,1,13,3,'K');be.outline();P['belt_side']=part(be,[12,2])
