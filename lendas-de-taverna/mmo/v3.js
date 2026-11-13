@@ -108,7 +108,13 @@ function buildScene(key){
     if(key==='town'&&p.id.startsWith('b_'))continue;stand.push([p.id,p.x,p.y]);
     if(key==='town'&&a[2]<=24&&a[3]>=80)lampsP.push([p.x*U,2.3,p.y*U]);}
   if(key==='zone_pantano'&&V3.proc)V3.proc.direct(add,ZONE.props.filter(p=>p.k),sc);
-  let st0=stand,fl0=flats;if(sc.proc){const rest=V3.proc.forest({ATLAS,ATLAS_J},add,rnd,{stand,flats},mood==='dark'?'dungeon':mood==='town'?'town':mood==='room'?'indoor':'outdoor');st0=rest.stand;fl0=rest.flats;
+  if(key==='zone_cripta2'&&V3.proc){   // Cripta: cada prop do atlas vira o modelo certo (nada de adivinhar pela cor)
+    const MAPC=[['prop_barril','barrel',.85],['prop_caixas','crates',1.1],['braseiro','brazier',.9],['pilar','pillar',.8],['prop_potes','pots',.9],['prop_sacos','sacks',1],['prop_altar','altar',1.05],['prop_bau','chest',1.2],['prop_mesa','table',1.1],['prop_prateleira','potshelf',1.0],['prop_jaula','cage',1.05]],pl=ZONE.crp&&ZONE.crp.plat,lift=pl?pl.elev*U/CT:0,list=[],keep=[];
+    for(const p of ZONE.props){const a=ATLAS_J[p.id];if(p.t!=='p'||!a){keep.push(p);continue;}const e=MAPC.find(q=>p.id.startsWith(q[0]));if(!e){keep.push(p);continue;}
+      const it={k:e[1],x:p.x,y:p.y,s:a[3],wf:(a[2]/a[3])/e[2]*(e[1]==='pillar'?1.3:1),fix:1,hk:e[1]==='pillar'?1:.85,lift:/_e$/.test(p.id)?lift:0};list.push(it);
+      if(e[1]==='brazier'){V3.proc.fire(add,p.x*U,p.y*U-.1,.9,'bowl').position.y=it.lift;sc.sources.push({p:new T.Vector3(p.x*U,1.0+it.lift,p.y*U+.3),c:0xffa040,k:1.6,night:1,fl:1});}}
+    V3.proc.direct(add,list,sc);stand.length=0;flats.length=0;}
+    let st0=stand,fl0=flats;if(sc.proc){const rest=V3.proc.forest({ATLAS,ATLAS_J},add,rnd,{stand,flats},mood==='dark'?'dungeon':mood==='town'?'town':mood==='room'?'indoor':'outdoor');st0=rest.stand;fl0=rest.flats;
     if(mood==='dark'&&dgrid)V3.proc.walls(add,Object.assign({brickCol:key==='zone_esgoto'?'#2c3a2c':'#2a3340',capCol:key==='zone_esgoto'?'#46563f':'#4a5568',moss:key==='zone_esgoto'?.5:0,radius:key==='zone_cripta2'?1:2},dgrid,{ox:0}));}
   const mf=quads(fl0,true);if(mf){mf.material.polygonOffset=true;mf.material.polygonOffsetFactor=-2;}quads(st0,false);
   {const pos=[],uv=[],idx=[];let n=0;for(const [id,px,py] of stand){const a=ATLAS_J[id];if(!a||a[3]<60)continue;const X=px*U,Z=py*U,rw=Math.min(a[2],100)*U*.55,rd=rw*.5;
