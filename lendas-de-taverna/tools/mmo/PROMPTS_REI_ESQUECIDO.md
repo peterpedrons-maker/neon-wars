@@ -16,7 +16,15 @@ Grunk, Gorgash, Morvath e o Rei dos Ratos usam variações de investida, rugido 
 Golpe básico: varredura lenta e pesada de arma, sem rugido nem investida.
 
 ## Prompts das poses (uma folha por pose)
-Já temos: **parado** e **levantando (preparando o ataque)**. Envie sempre as duas imagens como referência.
+Versão completa, desde o zero. **Faça primeiro as poses 0A e 0B** (referência do personagem) e use as duas imagens como referência nas demais.
+
+**0A. Parado (idle) — 8 quadros, em loop.** Apenas a respiração do espectro: peito e capa sobem e descem de leve, brilho da coroa e dos olhos pulsando devagar, arma apoiada à frente com as duas mãos.
+**0B. Levantando — 6 quadros.** Do repouso, ele ergue a arma com as duas mãos até acima do ombro, o corpo se inclina para trás, a aura roxa se intensifica; último quadro: postura de ataque pronta.
+
+**Descrição do personagem (cole junto com o bloco fixo na 0A e 0B):**
+> Rei Esquecido: espectro de um rei antigo, alto e magro, esqueleto envolto em armadura de placas escura (vinho/preto, com bordas gastas), ombreiras
+> pontiagudas, coroa de ferro denteada que emite luz roxa, olhos roxos brilhantes, capa esfarrapada que termina em fumaça, uma espada longa e larga
+> de lâmina azul-pálida levemente brilhante. Pixel art 2.5D, vista 3/4 de cima.
 
 **Bloco fixo (cole no começo de TODO prompt):**
 > Use as imagens de referência: o MESMO personagem (Rei Esquecido), mesmas proporções, armadura, coroa, cores, arma e estilo de pintura em pixel art
