@@ -44,13 +44,13 @@ def draw(p):
     hd=ch['hood']
     c.shape(lambda d:(Epoly(d,H,fh,uh,13.4,14.4),poly(d,[loc(H,fh,uh,-13,6),loc(H,fh,uh,0,22),loc(H,fh,uh,13,6)])),ROBE,blur=3.8)
     c.shape(lambda d:strip(d,hd,8,2.5),ROBE,blur=1.6)
-    c.shape(lambda d:Epoly(d,loc(H,fh,uh,0,-.5),fh,uh,8.8,10),VOID,blur=3,light=(0,0))
+    c.shape(lambda d:Epoly(d,loc(H,fh,uh,3,-.5),fh,uh,8.6,10),VOID,blur=3,light=(0,0))
     e=2.1+1.3*p['pulse'];ry=1.8*(1-.85*p['blink'])
     if p['pulse']>=0 and p.get('eyes',1):
-        for x in(-3.8,3.8):
+        for x in(0,6.5):
             c.shape(lambda d:Epoly(d,loc(H,fh,uh,x,.5),fh,uh,e,max(.45,ry)),VOID,flat='#ff3a4a' if p['blink']<.9 else '#6a1a2a')
             if p['blink']<.6:c.shape(lambda d:Epoly(d,loc(H,fh,uh,x-.4,.8),(1,0),(0,-1),.9,.8),VOID,flat='#ffe0e0')
-    c.shape(lambda d:cap(d,loc(H,fh,uh,-3,-8),loc(H,fh,uh,3,-8),1.2+p['jaw']*.18),VOID,flat='#c8a0ff')
+    c.shape(lambda d:cap(d,loc(H,fh,uh,-.5,-8),loc(H,fh,uh,6.5,-8),1.2+p['jaw']*.18),VOID,flat='#c8a0ff')
     c.shape(lambda d:cap(d,loc(H,fh,uh,0,12),loc(H,fh,uh,0,13),1),GOLD,flat='#f0b830')
     arm('F',1)
     hn=s['handF'];wr=p['wa']*D2R
