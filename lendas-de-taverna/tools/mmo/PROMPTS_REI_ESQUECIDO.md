@@ -32,7 +32,8 @@ Versão completa, desde o zero. **Faça primeiro as poses 0A e 0B** (referência
 > tamanho e com os pés na mesma altura em todos os quadros, voltado para a DIREITA, fundo cinza-claro liso (#d9d9d9) sem chão, sem sombra, sem texto,
 > sem moldura, nada cortado nas bordas.
 
-1. **Andando — 8 quadros.** Ciclo lento e majestoso, passos largos, capa balançando, arma arrastando de leve; último quadro volta ao primeiro.
+(REMOVIDO: não existe pose de andar; o jogo desliza a pose parada, estilo Paper Mario.)
+1. ~~Andando — 8 quadros.~~ Ciclo lento e majestoso, passos largos, capa balançando, arma arrastando de leve; último quadro volta ao primeiro.
 2. **Golpe básico — 7 quadros.** Arma para trás, varredura horizontal larga e pesada, rastro roxo, recuperação. O golpe cai no quadro 4.
 3. **Esquecimento — 7 quadros.** Estende o braço livre para frente com o dedo/mão aberta apontando para o alvo; olhos e coroa brilham em roxo;
    uma luz escura sai da mão no quadro 4 e ele fecha a mão devagar, como quem apaga uma memória.
