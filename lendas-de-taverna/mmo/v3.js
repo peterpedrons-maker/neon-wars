@@ -268,7 +268,7 @@ function drawEnt(sc,e,frame){
   const r=entRec(sc,e,S0);r.seen=frame;
   const al=e.dead?Math.max(0,1-Math.max(0,e.deadT-.5)/.6):1;
   const dyn=e.kind==='hero'||e.kind==='boss'||e.flash>0||e.tint||e.shd>0||e.pet||e.elite||(e.dod!=null);
-  const key=e.pet?'':fr[0]+','+fr[1]+','+(e.flash>0?1:0)+','+al.toFixed(2)+','+scale;
+  const dxk=e.dx?Math.round(e.dx.y*2)+','+Math.round(e.dx.rot*60)+','+Math.round(e.dx.sx*40)+','+Math.round(e.dx.sy*40)+','+Math.round(e.dx.x*2):'',key=e.pet?'':fr[0]+','+fr[1]+','+(e.flash>0?1:0)+','+al.toFixed(2)+','+scale+','+dxk;
   if(dyn||key!==r.key){r.key=key;
     const oc=ctx,ox=G.cam.x,oy=G.cam.y,ow=G.LW,oh=G.LH;
     ctx=r.cx;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,S0,S0);ctx.imageSmoothingEnabled=false;
@@ -335,15 +335,16 @@ function render3(){
   S.background=bgc.clone();S.fog=S.fog||new T.FogExp2(0x9fc4e6,.012);S.fog.color.copy(bgc);S.fog.density=fogD;R.toneMappingExposure=1.0+.15*n+(mood==='dark'?.25:0);
   // ---- câmera (segue o centro da câmera do jogo)
   // zoom cinematográfico: a câmera se afasta quando um chefe/mini-chefe chega e acompanha a luta, depois volta ao normal
-  let foc=null,tgtZ=1;
+  let foc=null,tgtZ=1,chan=0;
   {const B=G.boss&&!G.boss.dead?G.boss:null;let M=null,md=1e9;for(const m of G.mobs)if(m.mini&&!m.dead){const d=Math.hypot(m.x-G.hero.x,m.y-G.hero.y);if(d<md&&d<520){md=d;M=m;}}
    foc=B||M;const id=foc&&(foc.id||foc.name||'x')+(foc===B?'B':'M');
    if(id&&id!==camBossId){camBossId=id;camKick=foc===B?3.2:2.4;}else if(!id){camBossId=null;}
    if(camKick>0)camKick-=dt;
-   if(foc){tgtZ=foc===B?1.34:1.22;if(foc.ent||camKick>0)tgtZ+=foc===B?.3:.2;}}
+   if(foc){tgtZ=foc===B?1.34:1.22;if(foc.ent||camKick>0)tgtZ+=foc===B?.3:.2;
+     const ac=foc.act;if(ac&&ac.skill&&ac.t<ac.dur){const wide={rift:.5,charge:.55,zig:.5,leap:.45,dive:.4,echo:.35,spin:.3}[ac.anim];tgtZ+=wide||.22;chan=1;}}}
   zk+=(tgtZ-zk)*Math.min(1,dt*(tgtZ>zk?1.6:.9));
   const asp=cam.aspect,dist=scn.dist*(asp<1?(1+(1-asp)*1.2)*(1+(zk-1)*.7)/(zk):1)*(asp<1?zk:zk);let tx=(G.cam.x+G.LW/2)*U,tz=(G.cam.y+G.LH/2)*U;
-  if(foc&&zk>1.02){const w=Math.min(.45,(zk-1)*.9);tx+=(foc.x*U-tx)*w;tz+=(foc.y*U-tz)*w;}
+  if(foc&&zk>1.02){const w=Math.min(chan?.62:.45,(zk-1)*.9);tx+=(foc.x*U-tx)*w;tz+=(foc.y*U-tz)*w;}
   if(!camT)camT=new T.Vector3(tx,0,tz);camT.x+=(tx-camT.x)*.5;camT.z+=(tz-camT.z)*.5;
   const sh=G.shake>0?G.shake:0;cam.position.set(camT.x+(Math.random()-.5)*sh*.3,.9+Math.sin(TILT)*dist,camT.z-1+Math.cos(TILT)*dist);cam.lookAt(camT.x,.9,camT.z-1);
   if(mood==='field'){scn.sun.position.set(camT.x-9,15,camT.z+7);scn.sun.target.position.set(camT.x,0,camT.z);scn.sun.target.updateMatrixWorld();scn.sun.castShadow=sunI>.35;}
@@ -430,6 +431,14 @@ function overlay2D(h,list){
   if(h.buff&&h.buff.t>0)base(h.x,h.y,()=>{ctx.strokeStyle='rgba(255,170,60,'+(.4+.3*Math.sin(G.t*9))+')';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(0,0,14,6,0,0,7);ctx.stroke();},hel);
   if(h.act&&(h.act.cast||h.act.bow)&&h.act.ch>0&&!h.act.done&&h.state!=='ko')base(h.x,h.y,()=>{const p=Math.min(1,h.act.t/(h.act.ch+.32));ctx.fillStyle='rgba(8,6,12,.88)';ctx.fillRect(-16,-66,32,6);ctx.fillStyle=CHCOL[h.cls];ctx.fillRect(-15,-65,30*p,4);ctx.strokeStyle='#000';ctx.lineWidth=1;ctx.strokeRect(-16.5,-66.5,33,7);},hel);
   if(G.scene==='town'&&!G.room&&!SAVE.entered&&ZONE.portal){const P=ZONE.portal,bob=Math.sin(G.t*5)*3;base(P.x,P.y,()=>{ctx.font='700 14px Rubik,sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#1a0a2a';ctx.strokeText('▼',0,-86+bob);ctx.fillStyle='#e6d2ff';ctx.fillText('▼',0,-86+bob);});}
+  // barra de canalização: toda habilidade de chefe/mini-chefe mostra nome, barra enchendo e um aviso, para o jogador saber o que vem
+  const SKN={forget:'Esquecimento',echo:'Eco',rift:'Fenda do Vazio',crown:'Coroa de Almas',dark:'Trevas',slam:'Pancada no chão',charge:'Investida',roar:'Rugido',leap:'Salto',summon:'Invocação',plague:'Praga',swarm:'Enxame',burrow:'Escavar',totem:'Totem',curse:'Maldição',blink:'Teletransporte',rain:'Chuva de frascos',bounce:'Frasco ricochete',potion:'Poção misteriosa',guard:'Guarda',spin:'Machadada giratória',zig:'Investida em zigue-zague',dive:'Mergulho',screech:'Grito'};
+  for(const e of list){if(!e||e.dead||!e.act||!e.act.skill||(e.kind!=='boss'&&!e.mini))continue;const a=e.act,w=Math.max(.2,a.dur-.45),p=Math.min(1,a.t/w);if(a.t>=a.dur)continue;
+    const sc=(e.T&&e.T.scale)||1,hh=e.kind==='boss'?170*sc+(e.zoff||0):100,nm=SKN[a.anim]||a.anim,pulse=.5+.5*Math.sin(G.t*14);
+    base(e.x,e.y,()=>{const bw=64,y0=-hh-14;ctx.textAlign='center';ctx.font='800 9px Rubik,sans-serif';ctx.lineJoin='round';ctx.lineWidth=3;ctx.strokeStyle='rgba(14,4,4,.97)';
+      if(p<1){ctx.fillStyle='rgba(8,4,8,.9)';ctx.fillRect(-bw/2-2,y0-2,bw+4,10);ctx.fillStyle='#3a1210';ctx.fillRect(-bw/2,y0,bw,6);const g=ctx.createLinearGradient(-bw/2,0,bw/2,0);g.addColorStop(0,'#ff8a2a');g.addColorStop(1,'#ffe060');ctx.fillStyle=g;ctx.fillRect(-bw/2,y0,bw*p,6);ctx.strokeStyle='rgba(255,200,120,'+(.5+.4*pulse)+')';ctx.lineWidth=1;ctx.strokeRect(-bw/2-1.5,y0-1.5,bw+3,9);}
+      ctx.lineWidth=3;ctx.strokeStyle='rgba(14,4,4,.97)';ctx.strokeText(nm,0,y0-6);ctx.fillStyle=p<1?'#ffe9b0':'#ff7a5a';ctx.fillText(nm,0,y0-6);
+      if(p<1){ctx.font='800 15px Rubik,sans-serif';ctx.globalAlpha=.55+.45*pulse;ctx.lineWidth=3;ctx.strokeText('!',-bw/2-10,y0+8);ctx.fillStyle='#ff5a3a';ctx.fillText('!',-bw/2-10,y0+8);ctx.strokeText('!',bw/2+10,y0+8);ctx.fillText('!',bw/2+10,y0+8);ctx.globalAlpha=1;}});}
   // números de combate: cada tipo tem cara própria (dano, crítico, dano recebido, cura, poção, roubo de vida)
   for(const f of G.floats){const sp=toScreen(f.x,f.y,0),a=Math.min(1,f.life/(f.max*.35)),age=f.max-f.life,pp=f.pop&&age<.18?1+(1-age/.18)*.7:1,kd=f.kd||'dmg';
     let fs=f.size*pp*G.K*1.05,X=sp[0]*k,Y=sp[1]*k;
