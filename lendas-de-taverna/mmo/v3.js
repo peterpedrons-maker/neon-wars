@@ -86,7 +86,7 @@ function buildScene(key){
       {const x=gimg.canvas.getContext('2d'),S0=gimg.canvas.width/ZONE.w;x.fillStyle='#030409';for(let cy=0;cy<dgrid.rows;cy++)for(let cx=0;cx<dgrid.cols;cx++)if(!dgrid.isF(cx,cy))x.fillRect(Math.floor((dgrid.ox+cx*dgrid.cw)*S0),Math.floor((dgrid.oy+cy*dgrid.ch)*S0),Math.ceil(dgrid.cw*S0)+1,Math.ceil(dgrid.ch*S0)+1);}}
     const pg=procOn?gimg:null,gTex=texOf(pg?pg.canvas:gimg,1);gTex.anisotropy=8;
     const gm=new T.MeshStandardMaterial({map:gTex,roughness:.95});if(mood!=='dark'){gm.bumpMap=gTex;gm.bumpScale=1.2;}
-    const ground=new T.Mesh(new T.PlaneGeometry(GWu,GHu),gm);ground.rotation.x=-Math.PI/2;ground.position.set(GWu/2,0,GHu/2);add(ground);ground.receiveShadow=true;if(pg&&pg.M&&mood!=='dark'){add(V3.proc.waterMesh(pg,GWu,GHu,key==='zone_pantano'?[.45,.62,.4]:undefined));sc.lifeUpd=V3.proc.waterLife(add,pg,GWu,GHu,key==='zone_pantano'?{slow:.7,opacity:.4}:{});}if(pg&&key==='zone_esgoto'){add(V3.proc.waterMesh(pg,GWu,GHu,[.35,.5,.18]));sc.lifeUpd=V3.proc.waterLife(add,pg,GWu,GHu,{size:1.8,slow:.45,opacity:.45,per:420});}
+    const ground=new T.Mesh(new T.PlaneGeometry(GWu,GHu),gm);ground.rotation.x=-Math.PI/2;ground.position.set(GWu/2,0,GHu/2);add(ground);ground.receiveShadow=true;if(pg&&pg.M&&mood!=='dark'){add(V3.proc.waterMesh(pg,GWu,GHu,key==='zone_pantano'?[.45,.62,.4]:undefined));sc.lifeUpd=V3.proc.waterLife(add,pg,GWu,GHu,key==='zone_pantano'?{slow:.7,opacity:.5,size:1.5}:{opacity:.55,size:1.5,per:280});}if(pg&&key==='zone_esgoto'){add(V3.proc.waterMesh(pg,GWu,GHu,[.35,.5,.18]));sc.lifeUpd=V3.proc.waterLife(add,pg,GWu,GHu,{size:1.8,slow:.45,opacity:.45,per:420});}
     if(mood!=='dark'){const far=new T.Mesh(new T.PlaneGeometry(400,400),new T.MeshStandardMaterial({color:0x2c5a22,roughness:1}));far.rotation.x=-Math.PI/2;far.position.set(GWu/2,-.02,GHu/2);add(far);}
   }
   // ---- props do atlas (billboards em pé, mesclados)
@@ -226,7 +226,7 @@ function entRec(sc,e,S0){let r=sc.ents.get(e);if(r&&r.S0===S0)return r;
   const mat=new T.MeshLambertMaterial({map:tex,transparent:true,alphaTest:.3,emissive:0xffffff,emissiveMap:tex,emissiveIntensity:.3,side:T.DoubleSide});
   const me=new T.Mesh(geoFor(S0),mat);me.scale.y=1/CT;
   const root=new T.Group();root.add(me);
-  let gh=null;if(e.kind==='hero'){gh=new T.Mesh(geoFor(S0),new T.MeshBasicMaterial({map:tex,transparent:true,opacity:.5,alphaTest:.3,depthFunc:T.GreaterDepth,depthWrite:false,side:T.DoubleSide}));gh.scale.y=1/CT;gh.renderOrder=5;root.add(gh);}
+  let gh=null;if(e.kind==='hero'||e.kind==='mob'||e.kind==='boss'){gh=new T.Mesh(geoFor(S0),new T.MeshBasicMaterial({map:tex,color:e.kind==='hero'?0xffffff:0xffc4c4,transparent:true,opacity:e.kind==='hero'?.5:.45,alphaTest:.3,depthFunc:T.GreaterDepth,depthWrite:false,side:T.DoubleSide}));gh.scale.y=1/CT;gh.renderOrder=5;root.add(gh);}
   const bl=new T.Mesh(new T.PlaneGeometry(1.3,.8),new T.MeshBasicMaterial({map:BT,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-4}));bl.rotation.x=-Math.PI/2;bl.position.y=.03;root.add(bl);
   let ring=null;if(e.elite){ring=new T.Mesh(discGeo,new T.MeshBasicMaterial({map:ringTex,color:new T.Color(e.elCol||'#8ec2ff'),transparent:true,blending:T.AdditiveBlending,depthWrite:false,opacity:.6}));ring.rotation.x=-Math.PI/2;ring.position.y=.04;root.add(ring);}
   sc.grp.add(root);r={S0,c,cx:c.getContext('2d'),tex,me,gh,root,bl,ring,seen:0,key:''};sc.ents.set(e,r);return r;}
@@ -382,7 +382,16 @@ function overlay2D(h,list){
       ctx.lineWidth=2.4*k;ctx.lineJoin='round';ctx.strokeStyle='rgba(10,6,10,.95)';ctx.strokeText(l.t,l.x*k,y);ctx.fillStyle=l.r>=1?l.c:'#d8d2c0';ctx.fillText(l.t,l.x*k,y);}}
   // escudo, bônus, barra de conjuração e seta do portal
   const hel=(G.crp&&typeof crpElev==='function'?crpElev(h):0);
-  if(h.shield>0)base(h.x,h.y,()=>{ctx.strokeStyle='rgba(140,200,255,'+(.5+.2*Math.sin(G.t*8))+')';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(0,-18,16,24,0,0,7);ctx.stroke();},hel);
+  if(h.shield>0){const st=Math.max(0,Math.min(1,h.shield/Math.max(1,h.maxhp*.35)));if(h.shield<(V3._sh||0)-1)V3._shHit=.35;V3._sh=h.shield;V3._shHit=Math.max(0,(V3._shHit||0)-1/60);const hit=V3._shHit>0?V3._shHit/.35:0,tm=G.t;
+    base(h.x,h.y,()=>{const R=34,Rx=R*.82,Ry=R*1.12,cy0=-26;ctx.save();ctx.translate(0,cy0);
+      const g=ctx.createRadialGradient(0,0,Ry*.35,0,0,Ry);g.addColorStop(0,'rgba(120,200,255,0)');g.addColorStop(.7,'rgba(110,190,255,'+(.10+.10*st+.3*hit)+')');g.addColorStop(1,'rgba(190,235,255,'+(.40+.25*st+.4*hit)+')');
+      ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(0,0,Rx,Ry,0,0,7);ctx.fill();
+      ctx.save();ctx.beginPath();ctx.ellipse(0,0,Rx,Ry,0,0,7);ctx.clip();ctx.strokeStyle='rgba(200,240,255,'+(.22+.18*st+.4*hit)+')';ctx.lineWidth=.9;const hs=9,ox=(tm*6)%(hs*1.73);
+      for(let yy=-Ry-hs;yy<Ry+hs;yy+=hs*1.5){const row=Math.round((yy+Ry)/(hs*1.5));for(let xx=-Rx-hs*2;xx<Rx+hs*2;xx+=hs*1.73){const cx=xx+(row%2?hs*.87:0)+ox-hs*1.73;ctx.beginPath();for(let k=0;k<6;k++){const an=k*Math.PI/3+Math.PI/6;ctx[k?'lineTo':'moveTo'](cx+Math.cos(an)*hs*.9,yy+Math.sin(an)*hs*.9);}ctx.closePath();ctx.stroke();}}
+      const sw=((tm*.9)%1)*2-1;const sg=ctx.createLinearGradient(-Rx,sw*Ry-12,Rx,sw*Ry+12);sg.addColorStop(0,'rgba(255,255,255,0)');sg.addColorStop(.5,'rgba(255,255,255,'+(.28+.3*hit)+')');sg.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=sg;ctx.fillRect(-Rx,-Ry,Rx*2,Ry*2);ctx.restore();
+      ctx.lineWidth=1.6+hit*2;ctx.strokeStyle='rgba(215,242,255,'+(.75+.25*Math.sin(tm*7)+hit*.4)+')';ctx.shadowColor='#8ac8ff';ctx.shadowBlur=10+hit*14;ctx.beginPath();ctx.ellipse(0,0,Rx,Ry,0,0,7);ctx.stroke();ctx.shadowBlur=0;
+      ctx.lineWidth=1;ctx.strokeStyle='rgba(140,210,255,.5)';ctx.beginPath();ctx.ellipse(0,Ry*.88,Rx*.95,Ry*.18,0,0,7);ctx.stroke();
+      ctx.fillStyle='#e8f8ff';for(let i=0;i<5;i++){const ph=(tm*.6+i*.2)%1,an=i*1.9+tm*.4;ctx.globalAlpha=(1-ph)*.9;ctx.fillRect(Math.cos(an)*Rx*.9-1,Ry*.8-ph*Ry*1.6,2,2);}ctx.globalAlpha=1;ctx.restore();},hel);}
   if(h.buff&&h.buff.t>0)base(h.x,h.y,()=>{ctx.strokeStyle='rgba(255,170,60,'+(.4+.3*Math.sin(G.t*9))+')';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(0,0,14,6,0,0,7);ctx.stroke();},hel);
   if(h.act&&(h.act.cast||h.act.bow)&&h.act.ch>0&&!h.act.done&&h.state!=='ko')base(h.x,h.y,()=>{const p=Math.min(1,h.act.t/(h.act.ch+.32));ctx.fillStyle='rgba(8,6,12,.88)';ctx.fillRect(-16,-66,32,6);ctx.fillStyle=CHCOL[h.cls];ctx.fillRect(-15,-65,30*p,4);ctx.strokeStyle='#000';ctx.lineWidth=1;ctx.strokeRect(-16.5,-66.5,33,7);},hel);
   if(G.scene==='town'&&!G.room&&!SAVE.entered&&ZONE.portal){const P=ZONE.portal,bob=Math.sin(G.t*5)*3;base(P.x,P.y,()=>{ctx.font='700 14px Rubik,sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#1a0a2a';ctx.strokeText('▼',0,-86+bob);ctx.fillStyle='#e6d2ff';ctx.fillText('▼',0,-86+bob);});}

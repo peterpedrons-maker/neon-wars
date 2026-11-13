@@ -46,7 +46,7 @@ P.ground=function(env,pal,seed){
 // ---- modelos 3D mesclados (um por tipo; instanciados)
 function Mesh(){const pos=[],nor=[],col=[];
   return {add(geo,color,m,opt){const g=geo.index?geo.toNonIndexed():geo.clone();g.applyMatrix4(m);g.computeVertexNormals();const p=g.attributes.position.array,n=g.attributes.normal.array,c=new T.Color(color).convertSRGBToLinear(),mo=opt&&opt.moss?new T.Color(0x4a7a30).convertSRGBToLinear():null;
-    for(let i=0;i<p.length;i+=3){pos.push(p[i],p[i+1],p[i+2]);nor.push(n[i],n[i+1],n[i+2]);const sh=.9+hash(Math.round(p[i]*50),Math.round(p[i+1]*50),3)*.2,ao=.72+.28*Math.max(0,Math.min(1,(p[i+1]+.05)/.7));let r=c.r,gg=c.g,b=c.b;
+    for(let i=0;i<p.length;i+=3){pos.push(p[i],p[i+1],p[i+2]);nor.push(n[i],n[i+1],n[i+2]);const sh=.9+hash(Math.round(p[i]*50),Math.round(p[i+1]*50),3)*.2,ao=.68+.42*Math.max(0,Math.min(1,(p[i+1]+.05)/1.0));let r=c.r,gg=c.g,b=c.b;
       if(mo&&n[i+1]>.55){const k=Math.min(1,(n[i+1]-.55)*2.2)*opt.moss;r=r+(mo.r-r)*k;gg=gg+(mo.g-gg)*k;b=b+(mo.b-b)*k;}
       const fa=(opt&&opt.flat)?1:ao;col.push(r*sh*fa,gg*sh*fa,b*sh*fa);}},
     geo(){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('normal',new T.Float32BufferAttribute(nor,3));g.setAttribute('color',new T.Float32BufferAttribute(col,3));return g;}};}
