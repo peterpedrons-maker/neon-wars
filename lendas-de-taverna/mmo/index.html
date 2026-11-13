@@ -3976,7 +3976,9 @@ function pxMobFrame(e,sh){const M=sh.meta,F=(n,i)=>atlasFrame(sh,n,i),N=n=>M.ani
   if(e.dead){dollSet(e,{k:'idle'});return F('death',Math.min(N('death')-1,Math.floor(e.deadT*(M.fps.death||10))));}
   if((e.stun>0||e.stagger>0)&&!(a&&a.skill)){dollSet(e,{k:'hurt'});return F('hurt',e.flash>.07?0:(e.stagger>.5||e.stun>.12?1:2));}
   if(a&&(a.skill||e.state==='atk')){const hit=Math.max(.15,Math.min(.9,a.hit||.5)),imp=M.imp||.55,pp=Math.min(.999,a.t/a.dur),u=pp<hit?pp/hit*imp:imp+(pp-hit)/(1-hit)*(1-imp);dollSet(e,{k:'idle'});return F('attack',Math.min(N('attack')-1,Math.floor(u*N('attack'))));}
-  if(e.state==='walk')dollSet(e,{k:'move',g:DOLLB[e.T.atlas].g});else dollSet(e,{k:'idle'});
+  if(e.state==='walk'&&M.anims.hop){dollSet(e,{k:'move',g:DOLLB[e.T.atlas].g});const hp=e._hp||0,n=N('hop');if(e.dx){e.dx.y=0;e.dx.sx=1;e.dx.sy=1;e.dx.rot=0;}
+    if(hp>.9)return F('hop',0);if(hp<.5)return F('hop',1+Math.min(2,Math.floor(hp/.5*3)));if(hp<.64)return F('hop',4);if(hp<.76)return F('hop',5);}
+  else if(e.state==='walk')dollSet(e,{k:'move',g:DOLLB[e.T.atlas].g});else dollSet(e,{k:'idle'});
   return F('idle',Math.floor((G.t+ph)*(M.fps.idle||8))%N('idle'));}
 function dollBoss(e){const key=e.T.atlas,B=DOLLB[key];if(!B||!SHEETS[key])return null;if(SHEETS[key].meta.imp!==undefined&&!e.ch&&!e.ent)return pxMobFrame(e,SHEETS[key]);const sh=SHEETS[key],pf=(e.fury&&sh.meta.anims['e_'+B.idle[0]])?'e_':'',
   F=n=>{const a=B[n]||B.idle;return atlasFrame(sh,sh.meta.anims[pf+a[0]]?pf+a[0]:a[0],a[1]);},a=e.act,G0=B.g;

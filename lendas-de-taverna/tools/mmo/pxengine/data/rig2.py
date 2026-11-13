@@ -12,7 +12,7 @@ def ease(t,k='io'):
     if k=='out':return 1-(1-t)**3
     if k=='in':return t*t*t
     return t*t*(3-2*t)
-BASE=dict(dx=0,dy=0,lean=0,torso=0,chest=0,neck=0,head=0,grot=0,footB=(-12,0),footF=(12,0),ftB=0,ftF=0,handF=(12,14),handB=(-12,14),wrF=0,wrB=0,shF=0,shB=0,wa=-78,sa=0,pulse=0,jaw=0,flash=0,post=0)
+BASE=dict(dx=0,dy=0,lean=0,torso=0,chest=0,neck=0,head=0,grot=0,footB=(-12,0),footF=(12,0),ftB=0,ftF=0,handF=(12,14),handB=(-12,14),wrF=0,wrB=0,shF=0,shB=0,wa=-78,sa=0,pulse=0,jaw=0,flash=0,post=0,sq=1,blink=0)
 def pose(**k):
     p=dict(BASE);p.update(k);return p
 def sample(keys,t):
@@ -52,6 +52,11 @@ def solve(p):
         sh=S['s'+s_];h=p['hand'+s_];T=(N[0]+h[0]*sc,N[1]+h[1]*sc)
         J,E=ik(sh,T,D['up'],D['fore'],lambda J,sh=sh:J[1]-(J[0]-sh[0])*.2);S['el'+s_]=J;S['wr'+s_]=E
         fo=math.atan2(E[1]-J[1],E[0]-J[0])+p['wr'+s_]*D2R;S['ha'+s_]=fo;S['hand'+s_]=add(E,F(fo),D['hand'])
+    sq=p.get('sq',1)
+    if sq!=1:
+        sx=1/math.sqrt(sq)
+        for k,v in list(S.items()):
+            if isinstance(v,tuple) and len(v)==2 and not k.startswith(('u','f')):S[k]=(GX+(v[0]-GX)*sx,GY+(v[1]-GY)*sq)
     g=p['grot']*D2R
     if g:
         cg,sg=math.cos(g),math.sin(g)
@@ -84,3 +89,25 @@ class Chain:
                 dx,dy=s.pos[i][0]-par[0],s.pos[i][1]-par[1];L=math.hypot(dx,dy) or 1
                 if L>s.seg*1.6:s.pos[i]=(par[0]+dx/L*s.seg*1.6,par[1]+dy/L*s.seg*1.6)
         return list(s.pos)
+
+def sample_spline(keys,t):
+    """spline cubica (Hermite/cardinal) entre poses-chave com tempos irregulares: da arcos e overshoot naturais"""
+    ts=[k[0] for k in keys]
+    if t<=ts[0]:return {k:v for k,v in keys[0][1].items() if not k.startswith('_')}
+    if t>=ts[-1]:return {k:v for k,v in keys[-1][1].items() if not k.startswith('_')}
+    i=max(j for j in range(len(ts)-1) if ts[j]<=t);t0,t1=ts[i],ts[i+1];u=(t-t0)/(t1-t0);h=t1-t0
+    def cmp(name,c=None):
+        def val(j):
+            v=keys[j][1][name];return v if c is None else v[c]
+        p0,p1=val(i),val(i+1)
+        def tan(j):
+            a=max(j-1,0);b=min(j+1,len(ts)-1)
+            return (val(b)-val(a))/(ts[b]-ts[a]) if b!=a else 0
+        m0,m1=tan(i)*h,tan(i+1)*h
+        u2,u3=u*u,u*u*u
+        return (2*u3-3*u2+1)*p0+(u3-2*u2+u)*m0+(-2*u3+3*u2)*p1+(u3-u2)*m1
+    out={}
+    for k,v in keys[0][1].items():
+        if k.startswith('_'):continue
+        out[k]=tuple(cmp(k,c) for c in range(len(v))) if isinstance(v,(tuple,list)) else cmp(k)
+    return out
