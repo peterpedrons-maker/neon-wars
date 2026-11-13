@@ -26,7 +26,7 @@ function surfaceNets(f,mn,mx,cell){
     const chk=(dx,dy,dz,cs)=>{const s1=F[id(x+dx,y+dy,z+dz)]<0;if(s0===s1)return;const q=cs.map(c=>vidx[id(x+c[0],y+c[1],z+c[2])]);if(q.some(v=>v<0))return;if(s0)idx.push(q[0],q[1],q[2],q[0],q[2],q[3]);else idx.push(q[0],q[2],q[1],q[0],q[3],q[2]);};
     chk(1,0,0,[[0,-1,-1],[0,0,-1],[0,0,0],[0,-1,0]]);chk(0,1,0,[[-1,0,-1],[-1,0,0],[0,0,0],[0,0,-1]]);chk(0,0,1,[[-1,-1,0],[0,-1,0],[0,0,0],[-1,0,0]]);}
   return {pos,idx};}
-const COL={bone:[.86,.8,.66],cloth:[.17,.07,.13],plate:[.16,.15,.22],plateW:[.5,.45,.5],trim:[.62,.4,.2],crown:[.24,.24,.3],glow:[1,.62,1],cape:[.22,.1,.32],blade:[.7,.88,.98],bladeE:[1,1,1]};
+const COL={bone:[.74,.68,.55],cloth:[.15,.06,.11],plate:[.15,.09,.13],plateW:[.52,.36,.36],trim:[.62,.4,.2],crown:[.24,.24,.3],glow:[1,.62,1],cape:[.22,.1,.32],blade:[.7,.88,.98],bladeE:[1,1,1]};
 const BIAS={glow:-.012,trim:-.006,crown:-.004,plate:-.004,blade:0,cape:0,bone:0,cloth:.002};
 /* def: {groups:{id:fn},bounds:[[min],[max]],shift:[sx,sy,sz],cell,smoothPairs:[['bone','cloth',.03]]}  fn(x,y,z) em coords de modelagem; shift subtrai p/ coords locais finais */
 function buildGeo(def){
@@ -40,7 +40,7 @@ function buildGeo(def){
     if(idk==='plate'){const wr=clamp(ed*1.4+(vnoise(x*20,y*20,z*20)-.6)*.5,0,1);c=c.map((v,j)=>v+(COL.plateW[j]-v)*wr);}
     else if(idk==='trim')c=c.map(v=>v*(.8+.5*ed));
     else if(idk==='bone'){const k=.88+.12*vnoise(x*25,y*25,z*25);c=c.map(v=>v*k);}
-    else if(idk==='cloth'){const k=.85+.3*vnoise(x*30,y*30,z*30);c=c.map(v=>v*k);}
+    else if(idk==='cloth'){const k=.82+.3*vnoise(x*30,y*30,z*30)+.12*Math.sin(x*140)*Math.sin(y*140)*Math.sin(z*140);c=c.map(v=>v*k);}
     else if(idk==='blade'){c=c.map((v,j)=>v+(COL.bladeE[j]-v)*clamp(ed*1.6,0,1));}
     if(idk!=='glow'&&idk!=='blade'){const k=1-.55*cav;c=c.map(v=>v*k);}
     col[i]=c[0];col[i+1]=c[1];col[i+2]=c[2];m.pos[i]-=sh[0];m.pos[i+1]-=sh[1];m.pos[i+2]-=sh[2];}

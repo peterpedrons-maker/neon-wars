@@ -1,0 +1,14 @@
+<!doctype html><meta charset=utf-8><body style="margin:0;background:#3a5c78">
+<canvas id=c width=450 height=200 style="width:900px;height:400px;image-rendering:pixelated"></canvas>
+<script src="../three.min.js"></script><script src="sdflib.js"></script><script src="parts.js"></script>
+<script>
+const W=450,H=200,R=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:false,alpha:true,preserveDrawingBuffer:true});R.setSize(W,H,false);R.setClearColor(0,0);
+const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(30,W/H,.1,50);cam.position.set(0,.6,4.2);cam.lookAt(0,.2,0);
+const gd=new THREE.DataTexture(new Uint8Array([40,40,40,255,120,120,120,255,200,200,200,255,255,255,255,255]),4,1,THREE.RGBAFormat);gd.minFilter=gd.magFilter=THREE.NearestFilter;gd.needsUpdate=true;
+scene.add(new THREE.AmbientLight(0x707090,.9));const sun=new THREE.DirectionalLight(0xfff0e0,1.1);sun.position.set(-3,5,5);scene.add(sun);const rim=new THREE.DirectionalLight(0x9a70ff,.7);rim.position.set(4,2,-4);scene.add(rim);
+const outMat=new THREE.ShaderMaterial({side:THREE.BackSide,uniforms:{t:{value:.02}},vertexShader:'uniform float t;void main(){gl_Position=projectionMatrix*modelViewMatrix*vec4(position+normal*t,1.);}',fragmentShader:'void main(){gl_FragColor=vec4(.04,.02,.08,1.);}'});
+const mat=new THREE.MeshToonMaterial({color:0xffffff,gradientMap:gd,vertexColors:true});
+const objs=[];[['gripHand',-1.5],['openHand',0],['relaxHand',1.5]].forEach(([k,x])=>{const g=buildGeo(P[k]);const m=new THREE.Mesh(g,mat);m.add(new THREE.Mesh(g,outMat));m.position.set(x,-.2,0);m.scale.setScalar(2.2);scene.add(m);objs.push(m);});
+window.show=(a)=>{objs[0].rotation.set(-.4,a,0);objs[1].rotation.set(-.2,a*.6,0);objs[2].rotation.set(-.2,a*.6,0);R.render(scene,cam);return document.getElementById('c').toDataURL();};
+window.ready=1;
+</script>

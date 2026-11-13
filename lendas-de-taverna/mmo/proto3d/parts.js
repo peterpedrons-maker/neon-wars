@@ -39,13 +39,27 @@ P.uarm={bounds:[[-.4,-.1,-.45],[.4,1.0,.35]],cell:.028,groups:{
  plate:(x,y,z)=>{let d=shell(cap(x,y,z,0,.15,0,0,.6,0,.19,.17),.035);d=smax(d,-(z+.1),.03);let e=shell(ell(x,y,z,0,.9,0,.2,.2,.19),.035);e=smax(e,-(y-.95)*0-(-(y-.92)),.03);d=Math.min(d,e);
   d=smin(d,cap(x,y,z,0,.92,-.12,0,1.0,-.38,.07,.012),.03);return d;},
  trim:(x,y,z)=>Math.min(torus(x,y-.15,z,0,0,0,.195,.02),torus(x,y-.6,z,0,0,0,.18,.02))}};
-P.farm={bounds:[[-.4,-.1,-.35],[.4,1.15,.45]],cell:.028,groups:{
+P.farm={bounds:[[-.4,-.1,-.35],[.4,.95,.4]],cell:.026,groups:{
  cloth:(x,y,z)=>sleeve(x,y,z,.85,.12,.1),
- plate:(x,y,z)=>{let d=shell(cap(x,y,z,0,.08,0,0,.74,0,.15,.2),.035);d=smax(d,-(z+.08),.03);
-  const f=ell(x,y,z,0,.9,.03,.13,.12,.12);let k=Math.min(f,ell(x,y,z,.0,.99,.09,.12,.05,.06));
-  for(const i of[-1,0,1])k=smin(k,cap(x,y,z,i*.065,.95,.1,i*.065,1.0,.17,.04,.02),.03);k=smin(k,cap(x,y,z,.1,.86,.05,.14,.78,.14,.04,.03),.03);
-  return Math.min(d,k);},
- trim:(x,y,z)=>Math.min(torus(x,y-.08,z,0,0,0,.16,.02),torus(x,y-.74,z,0,0,0,.2,.022))}};
+ plate:(x,y,z)=>{let d=shell(cap(x,y,z,0,.08,0,0,.8,0,.14,.18),.032);d=smax(d,-(z+.08),.03);d=smin(d,cap(x,y,z,0,.1,.16,0,.7,.19,.02,.02),.03);
+  for(const sg of[-1,1])d=smin(d,cap(x,y,z,sg*.17,.74,-.02,sg*.27,.88,-.06,.05,.01),.025);return d;},
+ trim:(x,y,z)=>Math.min(torus(x,y-.08,z,0,0,0,.15,.018),torus(x,y-.8,z,0,0,0,.19,.02))}};
+// maos de manopla: punho de empunhadura (eixo y = eixo da espada), mao aberta (dedos +y, palma +z), mao relaxada
+P.gripHand={bounds:[[-.3,-.45,-.3],[.3,.35,.3]],cell:.018,groups:{
+ plate:(x,y,z)=>{let d=rbox(x,y,z,0,0,-.1,.12,.2,.045,.03);d=Math.min(d,shell(cap(x,y,z,0,-.42,-.1,0,-.2,-.1,.12,.16),.03));
+  for(let i=0;i<4;i++){const yi=-.14+i*.09;let t=torus(x,y,z,0,yi,0,.1,.034);t=smax(t,-(z+.075),.012);d=Math.min(d,t);d=Math.min(d,ell(x,y,z,0,yi,.12,.05,.042,.04));}
+  d=Math.min(d,smin(cap(x,y,z,-.1,.22,-.04,.02,.22,.13,.036),cap(x,y,z,.02,.22,.13,.1,.2,.0,.032),.03));return d;},
+ trim:(x,y,z)=>{let d=1e9;for(let i=0;i<4;i++)d=Math.min(d,ell(x,y,z,0,-.14+i*.09,.15,.018,.018,.02));return Math.min(d,torus(x,y+.2,z,0,0,0,.15,.015));}}};
+P.openHand={bounds:[[-.3,-.2,-.2],[.3,.6,.25]],cell:.018,groups:{
+ plate:(x,y,z)=>{let d=rbox(x,y,z,0,.08,0,.095,.1,.03,.025);d=Math.min(d,shell(cap(x,y,z,0,-.2,0,0,-.02,0,.12,.14),.03));
+  for(let i=0;i<4;i++){const xi=(i-1.5)*.052,l=[.34,.4,.38,.3][i];let f=cap(x,y,z,xi,.17,0,xi*1.25,.17+l*.55,.015,.03,.026);f=smin(f,cap(x,y,z,xi*1.25,.17+l*.55,.015,xi*1.4,.17+l,.03,.026,.016),.015);d=Math.min(d,f);}
+  d=Math.min(d,smin(cap(x,y,z,.09,.05,.0,.17,.17,.04,.034,.028),cap(x,y,z,.17,.17,.04,.21,.28,.07,.028,.018),.015));return d;},
+ trim:(x,y,z)=>{let d=1e9;for(let i=0;i<4;i++){const xi=(i-1.5)*.052;d=Math.min(d,ell(x,y,z,xi*1.2,.3,.03,.016,.02,.016));}return d;}}};
+P.relaxHand={bounds:[[-.3,-.2,-.2],[.3,.5,.3]],cell:.018,groups:{
+ plate:(x,y,z)=>{let d=rbox(x,y,z,0,.08,0,.095,.1,.03,.025);d=Math.min(d,shell(cap(x,y,z,0,-.2,0,0,-.02,0,.12,.14),.03));
+  for(let i=0;i<4;i++){const xi=(i-1.5)*.052,c=[.8,1,.95,.75][i];let f=cap(x,y,z,xi,.17,0,xi*1.1,.17+.13,.03*c,.03,.026);f=smin(f,cap(x,y,z,xi*1.1,.3,.03*c,xi*1.15,.3+.05*c,.11*c,.026,.02),.015);d=Math.min(d,f);}
+  d=Math.min(d,smin(cap(x,y,z,.09,.05,0,.15,.14,.05,.034,.028),cap(x,y,z,.15,.14,.05,.14,.2,.1,.028,.02),.015));return d;},
+ trim:(x,y,z)=>Math.min(torus(x,y+.2,z,0,0,0,.13,.015),ell(x,y,z,0,.28,.04,.2,.012,.012))}};
 P.thigh={bounds:[[-.4,-.1,-.4],[.4,1.1,.55]],cell:.03,groups:{
  cloth:(x,y,z)=>sleeve(x,y,z,.95,.18,.15),
  plate:(x,y,z)=>{let d=shell(cap(x,y,z,0,.1,0,0,.8,0,.22,.19),.035);d=smax(d,-(z+.04),.03);let k=shell(ell(x,y,z,0,.97,.06,.18,.17,.18),.035);k=smax(k,-(y-1.0)*0-(-(y-.95)),.03);d=Math.min(d,k);d=smin(d,cap(x,y,z,0,.97,.18,0,1.0,.44,.07,.012),.03);return d;},

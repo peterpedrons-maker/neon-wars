@@ -5,7 +5,7 @@
 const W=300,H=300,cv=document.getElementById('c');
 const R=new THREE.WebGLRenderer({canvas:cv,antialias:false,alpha:true,preserveDrawingBuffer:true});R.setSize(W,H,false);R.setPixelRatio(1);R.setClearColor(0,0);
 const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(32,W/H,.1,100),TILT=47*Math.PI/180;
-const ZQ=new URLSearchParams(location.search).get('zoom');function placeCam(x,z){const d=ZQ?6.2:11.5,ty=ZQ?3.45:2.2;cam.position.set(x,ty+d*Math.sin(TILT),z+d*Math.cos(TILT));cam.lookAt(x,ty,z);}
+const ZQ=new URLSearchParams(location.search).get('zoom');window.CAMO=null;function placeCam(x,z){const co=window.CAMO,d=co?co.d:(ZQ?6.2:12.6),ty=co?co.ty:(ZQ?3.45:2.2);if(co){x+=co.ox;z+=co.oz;}cam.position.set(x,ty+d*Math.sin(TILT),z+d*Math.cos(TILT));cam.lookAt(x,ty,z);}
 const gd=new THREE.DataTexture(new Uint8Array([40,40,40,255,120,120,120,255,200,200,200,255,255,255,255,255]),4,1,THREE.RGBAFormat);gd.minFilter=gd.magFilter=THREE.NearestFilter;gd.needsUpdate=true;
 const amb=new THREE.AmbientLight(0x585a80,.8),sun=new THREE.DirectionalLight(0xfff0e0,1.1),rimL=new THREE.DirectionalLight(0x9a70ff,.7);sun.position.set(-4,8,5);rimL.position.set(5,3,-6);scene.add(amb,sun,rimL);
 const mats={};function M(c,em){const k=c+'_'+(em||0);return mats[k]||(mats[k]=new THREE.MeshToonMaterial({color:c,gradientMap:gd,emissive:em||0,side:THREE.DoubleSide}));}
@@ -32,7 +32,11 @@ const gem=new THREE.Mesh(new THREE.SphereGeometry(.05,6,5),new THREE.MeshBasicMa
 const limbs=new THREE.Group();scene.add(limbs);
 const _x=new THREE.Vector3(),_y=new THREE.Vector3(),_z=new THREE.Vector3(),_m=new THREE.Matrix4(),_d=new THREE.Vector3();
 function placeFrame(m,a,b,fw){_y.subVectors(b,a).normalize();_z.copy(fw).addScaledVector(_y,-fw.dot(_y));if(_z.lengthSq()<1e-6)_z.set(0,0,1);_z.normalize();_x.crossVectors(_y,_z);m.position.copy(a);_m.makeBasis(_x,_y,_z);m.quaternion.setFromRotationMatrix(_m);}
-const armSeg=[0,1].map(()=>{const up=sculpt('uarm'),fo=sculpt('farm');limbs.add(up,fo);return {up,fo};});
+const armSeg=[0,1].map(()=>{const up=sculpt('uarm'),fo=sculpt('farm'),hg=sculpt('gripHand'),ho=sculpt('openHand'),hr=sculpt('relaxHand');limbs.add(up,fo,hg,ho,hr);return {up,fo,hg,ho,hr};});
+function legPath(u,L){u=((u%1)+1)%1;const ST=.6;let z,lift=0,pitch=0;
+  if(u<ST){const t=u/ST;z=L/2-t*L;pitch=t<.12?.35*(1-t/.12):(t>.75?-.55*(t-.75)/.25:0);lift=t>.8?.05*(t-.8)/.2:0;}
+  else{const t=(u-ST)/(1-ST),e=t*t*(3-2*t);z=-L/2+e*L;lift=Math.sin(Math.PI*t)*.3;pitch=-.45*(1-t)+(.35*t*t);}
+  return {z,lift,pitch};}
 const legSeg=[0,1].map(()=>{const th=sculpt('thigh'),sh=sculpt('shin'),ft=sculpt('boot');limbs.add(th,sh,ft);return {th,sh,ft};});
 function ik2(S,T,l1,l2,pole,out){const d=_v1.subVectors(T,S);let L=d.length();const dir=_v2.copy(d).normalize();L=Math.min(L,l1+l2-.001);const a=(l1*l1-l2*l2+L*L)/(2*L),h=Math.sqrt(Math.max(0,l1*l1-a*a));
   const pr=_v3.copy(pole).sub(_v4.copy(dir).multiplyScalar(pole.dot(dir)));if(pr.lengthSq()<1e-6)pr.set(0,0,1);pr.normalize();out.copy(S).addScaledVector(dir,a).addScaledVector(pr,h);return L;}
@@ -106,14 +110,14 @@ function step(dt,cmd){
   DT=dt;S.t+=dt;const t=S.t;
   S.spd+=(cmd.move*1.6-S.spd)*Math.min(1,dt*5);S.ye=0;S.yr=0;
   if(cmd.yawTo!==undefined){let d=cmd.yawTo-S.yaw;d=Math.atan2(Math.sin(d),Math.cos(d));S.ye=d;const dy=d*Math.min(1,dt*(cmd.turn||7));S.yaw+=dy;S.yr=dy/dt;}
-  const [fx,fz]=fwd(),nvx=fx*S.spd,nvz=fz*S.spd;S.ax=(nvx-S.vx)/dt;S.az=(nvz-S.vz)/dt;S.vx=nvx;S.vz=nvz;S.w=Math.min(1,S.spd/1.2);S.ph+=dt*S.spd*2.0;
+  const [fx,fz]=fwd(),nvx=fx*S.spd,nvz=fz*S.spd;S.ax=(nvx-S.vx)/dt;S.az=(nvz-S.vz)/dt;S.vx=nvx;S.vz=nvz;S.w=Math.min(1,S.spd/1.2);S.ph+=dt*S.spd*3.2;
   const dead=cmd.dead||0,alive=Math.max(0,Math.min(1,1-dead*5));
   let k=B;if(dead>0)k=spline(DEATH,dead);else if(cmd.anim&&ANIMS[cmd.anim])k=spline(ANIMS[cmd.anim],cmd.at);
   S.x+=S.vx*dt;S.z+=S.vz*dt;const off=k.lunge+k.back;
   G.position.set(S.x+fx*off,0,S.z+fz*off);G.rotation.y=S.yaw;
   const w=S.w,ph=S.ph,br=Math.sin(t*2.6)*alive,accL=-(S.ax*fx+S.az*fz),accR=-(S.ax*fz+S.az*-fx);
-  const bob=.08*Math.abs(Math.cos(ph))*w;
-  body.position.y=sp('by',PELV+.025*br*(1-w)+bob-Math.min(1.3,k.dip),150,15);body.position.x=sp('bx',.09*Math.sin(ph)*w,100,12);
+  const bob=.07*(.5+.5*Math.cos(2*(ph-.6*PI)))*w;
+  body.position.y=sp('by',PELV+.025*br*(1-w)+bob-Math.min(1.3,k.dip),150,15);body.position.x=sp('bx',-.09*Math.cos(ph-.6*PI)*w,100,12);
   body.rotation.set(0,sp('hip',.14*Math.cos(ph)*w,90,10),sp('hz',Math.sin(ph)*.05*w,90,10));
   spine.rotation.set(sp('sx',k.lean+.05*w+.025*br*(1-w)+Math.max(-.15,Math.min(.15,accL*.01)),80,9),sp('sy',k.twist*.6-.15*Math.cos(ph)*w,70,8),0);
   chest.rotation.set(sp('cx',k.lean*.25,60,7),sp('cy',k.twist*.4,55,6),0);
@@ -125,12 +129,13 @@ function step(dt,cmd){
   // pernas
   G.updateMatrixWorld(true);
   const gl=v=>G.localToWorld(v.clone());
-  const FW=new THREE.Vector3(fx,0,fz);
-  for(let i=0;i<2;i++){const side=i?1:-1,p=ph+i*Math.PI,zs=Math.sin(p)*.5*w,lift=Math.max(0,Math.cos(p))*.32*w;
+  const FW=new THREE.Vector3(fx,0,fz),Lstride=1.18*Math.min(1,S.spd/1.6),zf=[0,0];
+  for(let i=0;i<2;i++){const side=i?1:-1,lp=legPath(ph/(2*PI)+i*.5,Lstride*Math.max(.001,w)),zs=lp.z*w,lift=lp.lift*w;zf[i]=lp.z;
     const hip=body.localToWorld(new THREE.Vector3(side*.25,-.15,0)),foot=gl(new THREE.Vector3(side*.3+body.position.x*.3,.26+lift,zs));
     const kn=new THREE.Vector3();ik2(hip,foot,.95,.95,FW.clone(),kn);
     placeFrame(legSeg[i].th,hip,kn,FW);placeFrame(legSeg[i].sh,kn,foot,FW);
-    legSeg[i].ft.position.copy(foot);legSeg[i].ft.rotation.set(-Math.cos(p)*.35*w,S.yaw,0,'YXZ');legSeg[i].ft.position.y=Math.max(.14,foot.y)-.02;}
+    legSeg[i].ft.position.copy(foot);legSeg[i].ft.rotation.set(-lp.pitch*w,S.yaw,0,'YXZ');legSeg[i].ft.position.y=Math.max(.14,foot.y)-.02;}
+  const swLn=zf[1]/Math.max(.3,Lstride/2||.6),swRn=zf[0]/Math.max(.3,Lstride/2||.6);
   // espada: posicao/rotacao em coords locais de G, com mola leve so no follow-through
   const walkSw={sx:.7,sy:1.35,sz:.15,rx:2.1,ry:-.2,rz:.15};
   const lw=(a,b)=>a*(1-w)+b*w;
@@ -143,9 +148,17 @@ function step(dt,cmd){
   const shW=s=>chest.localToWorld(new THREE.Vector3(s*.8,.55,0));
   for(let i=0;i<2;i++){const side=i?1:-1,S0=shW(side),tgt=new THREE.Vector3();
     if(i===1){tgt.copy(swp);}   // direito segura a espada
-    else{const grip=sword.localToWorld(new THREE.Vector3(0,-.5,0));const lm=Math.max(k.lm,w*1);const free=gl(new THREE.Vector3(k.lx*(1-w)+(-.65)*w,k.ly*(1-w)+(1.6+Math.sin(ph)*.1)*w,k.lz*(1-w)+(Math.sin(ph)*.45)*w));tgt.copy(grip).lerp(free,Math.min(1,lm));}
+    else{const grip=sword.localToWorld(new THREE.Vector3(0,-.5,0));const lm=Math.max(k.lm,w*1);const free=gl(new THREE.Vector3(k.lx*(1-w)+(-.65)*w,k.ly*(1-w)+(1.5+.08*Math.abs(swLn))*w,k.lz*(1-w)+(swLn*.5)*w));tgt.copy(grip).lerp(free,Math.min(1,lm));}
     const el=new THREE.Vector3();POLE.copy(G.localToWorld(new THREE.Vector3(side*.8,-.6,-.2))).sub(G.position);ik2(S0,tgt,.9,.85,POLE,el);
-    placeFrame(armSeg[i].up,S0,el,FW);placeFrame(armSeg[i].fo,el,tgt,FW);}
+    placeFrame(armSeg[i].up,S0,el,FW);placeFrame(armSeg[i].fo,el,tgt,FW);
+    // mao: segura a espada (eixo da espada) ou fica livre (aberta / punho / relaxada conforme a habilidade)
+    const A=armSeg[i],free=(i===0&&Math.max(k.lm,w)>.55);let kind='hg';
+    if(free){const an=cmd.anim;kind=(an==='forget'||an==='crown')?'ho':(an==='dark'?((cmd.at||0)<1.1?'hg':'ho'):'hr');}
+    if(i===0&&dead>0&&dead>.9)kind='hr';
+    const hm={hg:A.hg,ho:A.ho,hr:A.hr};for(const q in hm)hm[q].visible=(q===kind);
+    if(kind==='hg'&&!free){const ax=sword.localToWorld(new THREE.Vector3(0,1,0)).sub(sword.position).normalize(),org=i===1?swp:sword.localToWorld(new THREE.Vector3(0,-.5,0));placeFrame(A.hg,org,org.clone().add(ax),FW);}
+    else if(kind==='hg'){const tp=tgt.clone().sub(el);placeFrame(A.hg,tgt,tgt.clone().add(tp),FW);}
+    else placeFrame(hm[kind],tgt,tgt.clone().add(tgt.clone().sub(el)),FW);}
   // tabardos... capa Verlet no espaco local de G
   const lax=-(S.ax*fx+S.az*fz)*.0,sh=[-1,1].map(s=>chest.localToWorld(new THREE.Vector3(s*.6,.68,-.38)));
   const pLocal=v=>G.worldToLocal(v.clone());
@@ -199,7 +212,7 @@ function step(dt,cmd){
     if(DF.land)DF.q.slerp(new THREE.Quaternion().setFromEuler(new THREE.Euler(-PI/2,S.yaw+PI/2,0,'YXZ')),Math.min(1,dt*8));else DF.q.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(dt*4,0,dt*2)));sword.quaternion.copy(DF.q);sword.position.copy(DF.p);}
   // desintegrar por partes (de cima p/ baixo)
   const dis=(obj,at0)=>{const vis=!(dead>at0);if(obj.visible&&!vis){const p=obj.getWorldPosition(new THREE.Vector3());for(let q=0;q<10;q++)puff(p,new THREE.Vector3((Math.random()-.5)*1.4,.6+Math.random()*1.2,(Math.random()-.5)*1.4),1.3,.9,q%2?0xb070ff:0x8a8098);}obj.visible=vis;};
-  dis(head,2.0);for(const a of armSeg){dis(a.up,2.1);dis(a.fo,2.1);}dis(chest,2.3);dis(body,2.5);for(const l of legSeg){dis(l.th,2.55);dis(l.sh,2.55);dis(l.ft,2.6);}dis(capeM,2.45);
+  dis(head,2.0);for(const a of armSeg){dis(a.up,2.1);dis(a.fo,2.1);dis(a.hg,2.1);dis(a.ho,2.1);dis(a.hr,2.1);}dis(chest,2.3);dis(body,2.5);for(const l of legSeg){dis(l.th,2.55);dis(l.sh,2.55);dis(l.ft,2.6);}dis(capeM,2.45);
   G.rotation.x=0;
   // historico + fantasma
   scene.updateMatrixWorld(true);const o=(hN%RING)*srcMeshes.length*16;srcMeshes.forEach((m,i)=>{m.matrixWorld.toArray(hist,o+i*16);});hN++;
