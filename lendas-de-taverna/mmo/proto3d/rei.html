@@ -5,7 +5,7 @@
 const W=300,H=300,cv=document.getElementById('c');
 const R=new THREE.WebGLRenderer({canvas:cv,antialias:false,alpha:true,preserveDrawingBuffer:true});R.setSize(W,H,false);R.setPixelRatio(1);R.setClearColor(0,0);
 const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(32,W/H,.1,100),TILT=47*Math.PI/180;
-function placeCam(x,z){const d=11.5,ty=2.2;cam.position.set(x,ty+d*Math.sin(TILT),z+d*Math.cos(TILT));cam.lookAt(x,ty,z);}
+const ZQ=new URLSearchParams(location.search).get('zoom');function placeCam(x,z){const d=ZQ?6.2:11.5,ty=ZQ?3.45:2.2;cam.position.set(x,ty+d*Math.sin(TILT),z+d*Math.cos(TILT));cam.lookAt(x,ty,z);}
 const gd=new THREE.DataTexture(new Uint8Array([40,40,40,255,120,120,120,255,200,200,200,255,255,255,255,255]),4,1,THREE.RGBAFormat);gd.minFilter=gd.magFilter=THREE.NearestFilter;gd.needsUpdate=true;
 const amb=new THREE.AmbientLight(0x585a80,.8),sun=new THREE.DirectionalLight(0xfff0e0,1.1),rimL=new THREE.DirectionalLight(0x9a70ff,.7);sun.position.set(-4,8,5);rimL.position.set(5,3,-6);scene.add(amb,sun,rimL);
 const mats={};function M(c,em){const k=c+'_'+(em||0);return mats[k]||(mats[k]=new THREE.MeshToonMaterial({color:c,gradientMap:gd,emissive:em||0,side:THREE.DoubleSide}));}
@@ -222,7 +222,7 @@ function step(dt,cmd){
   ghosts.forEach((g,i)=>{g.visible=gOn>.01&&srcMeshes[i].visible;if(g.visible){mm.fromArray(hist,oi+i*16);g.matrix.multiplyMatrices(tm,mm);}});
   // particulas
   parts.forEach(q=>{if(q.life>0){q.life-=dt;q.s.position.addScaledVector(q.v,dt);const u=Math.max(0,q.life/q.max);q.s.material.opacity=u*.8;q.s.scale.setScalar(q.sz*(1.5-u*.7));if(q.life<=0)q.s.visible=false;}});
-  const camx=sp('cmx',Math.sin(S.yaw)*1.5,30,8),camz=sp('cmz',Math.cos(S.yaw)*1.5,30,8);placeCam(G.position.x+camx,G.position.z+camz);ground.position.set(Math.round(G.position.x),0,Math.round(G.position.z));
+  const camx=ZQ?0:sp('cmx',Math.sin(S.yaw)*1.5,30,8),camz=ZQ?0:sp('cmz',Math.cos(S.yaw)*1.5,30,8);placeCam(G.position.x+camx,G.position.z+camz);ground.position.set(Math.round(G.position.x),0,Math.round(G.position.z));
   R.render(scene,cam);
 }
 window.sim={step,S,R,cv,grab(){return cv.toDataURL('image/png');}};
