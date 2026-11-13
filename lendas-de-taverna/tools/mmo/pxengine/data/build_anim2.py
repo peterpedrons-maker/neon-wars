@@ -94,16 +94,16 @@ def draw_guard(p):
     jw=p['jaw']*D2R
     c.shape(lambda d:Epoly(d,H,fh,uh,10.8,11.4),BONE2,blur=3.2)
     # bochechas
-    for sg in(-1,1):c.shape(lambda d:Epoly(d,loc(H,fh,uh,sg*7+2,-4),fh,uh,2.6,2.2),BONE2,blur=.8)
+    for sg in(-1,1):c.shape(lambda d:Epoly(d,loc(H,fh,uh,sg*7,-4),fh,uh,2.6,2.2),BONE2,blur=.8)
     # mandibula
-    jc=loc(H,fh,uh,1,-9+p['jaw']*-.45)
-    c.shape(lambda d:poly(d,[loc(H,fh,uh,-7,-5),loc(H,fh,uh,8,-5),loc(jc,fh,uh,7,-2.2),loc(jc,fh,uh,-5,-2.2)]),BONE2,blur=1.2)
-    for x in range(-4,8,2):c.shape(lambda d:cap(d,loc(H,fh,uh,x,-5.8),loc(H,fh,uh,x,-9.3-p['jaw']*.45),.9),BONE2,flat='#2a1a14')
-    c.shape(lambda d:cap(d,loc(H,fh,uh,-5,-6),loc(H,fh,uh,8,-6),.9),BONE2,flat='#2a1a14')
-    for ex in(-3.5,5.5):
+    jc=loc(H,fh,uh,0,-9+p['jaw']*-.45)
+    c.shape(lambda d:poly(d,[loc(H,fh,uh,-7,-5),loc(H,fh,uh,7,-5),loc(jc,fh,uh,6,-2.2),loc(jc,fh,uh,-6,-2.2)]),BONE2,blur=1.2)
+    for x in range(-5,6,2):c.shape(lambda d:cap(d,loc(H,fh,uh,x,-5.8),loc(H,fh,uh,x,-9.3-p['jaw']*.45),.9),BONE2,flat='#2a1a14')
+    c.shape(lambda d:cap(d,loc(H,fh,uh,-6,-6),loc(H,fh,uh,6,-6),.9),BONE2,flat='#2a1a14')
+    for ex in(-4.6,4.6):
         c.shape(lambda d:Epoly(d,loc(H,fh,uh,ex,-.5),fh,uh,3.3,3.7),BONE2,flat='#0c060a')
-        c.shape(lambda d:Epoly(d,loc(H,fh,uh,ex+.6,-.7),(1,0),(0,-1),1.4+.7*p['pulse'],1.6+.7*p['pulse']),BONE2,flat='#ff9a30' if p['pulse']<.5 else '#ffe08a')
-    c.shape(lambda d:poly(d,[loc(H,fh,uh,1.2,-3),loc(H,fh,uh,3.8,-3),loc(H,fh,uh,3.2,-6.2),loc(H,fh,uh,1.8,-6.2)]),BONE2,flat='#0c060a')
+        c.shape(lambda d:Epoly(d,loc(H,fh,uh,ex,-.7),(1,0),(0,-1),1.4+.7*p['pulse'],1.6+.7*p['pulse']),BONE2,flat='#ff9a30' if p['pulse']<.5 else '#ffe08a')
+    c.shape(lambda d:poly(d,[loc(H,fh,uh,-1.3,-3),loc(H,fh,uh,1.3,-3),loc(H,fh,uh,.9,-6.2),loc(H,fh,uh,-.9,-6.2)]),BONE2,flat='#0c060a')
     # elmo
     c.shape(lambda d:(Epoly(d,loc(H,fh,uh,0,6.6),fh,uh,12.6,8.6),poly(d,[loc(H,fh,uh,-12.5,6.5),loc(H,fh,uh,12.5,6.5),loc(H,fh,uh,11.5,3),loc(H,fh,uh,-11.5,3)])),STEEL,blur=2.8)
     c.shape(lambda d:poly(d,[loc(H,fh,uh,-1.8,7),loc(H,fh,uh,1.8,7),loc(H,fh,uh,1.2,-3),loc(H,fh,uh,-1.2,-3)]),STEEL,blur=.8)
@@ -239,11 +239,11 @@ def draw_cult(p):
     hd=ch['hood']
     c.shape(lambda d:(Epoly(d,H,fh,uh,13.4,14.4),poly(d,[loc(H,fh,uh,-13,6),loc(H,fh,uh,0,22),loc(H,fh,uh,13,6)])),ROBE,blur=3.8)
     c.shape(lambda d:strip(d,hd,8,2.5),ROBE,blur=1.6)
-    c.shape(lambda d:Epoly(d,loc(H,fh,uh,3,-.5),fh,uh,8.6,10),VOID,blur=3,light=(0,0))
+    c.shape(lambda d:Epoly(d,loc(H,fh,uh,0,-.5),fh,uh,8.8,10),VOID,blur=3,light=(0,0))
     e=2.1+1.3*p['pulse']
-    for x in(0,6.5):
+    for x in(-3.8,3.8):
         c.shape(lambda d:Epoly(d,loc(H,fh,uh,x,.5),fh,uh,e,1.8),VOID,flat='#ff3a4a');c.shape(lambda d:Epoly(d,loc(H,fh,uh,x-.4,.8),(1,0),(0,-1),.9,.8),VOID,flat='#ffe0e0')
-    c.shape(lambda d:cap(d,loc(H,fh,uh,-.5,-8),loc(H,fh,uh,6.5,-8),1.2+p['jaw']*.18),VOID,flat='#c8a0ff')
+    c.shape(lambda d:cap(d,loc(H,fh,uh,-3,-8),loc(H,fh,uh,3,-8),1.2+p['jaw']*.18),VOID,flat='#c8a0ff')
     c.shape(lambda d:cap(d,loc(H,fh,uh,0,12),loc(H,fh,uh,0,13),1),GOLD,flat='#f0b830')
     c.shape(lambda d:cap(d,loc(H,fh,uh,-10,5),loc(H,fh,uh,10,5),1),ROBE,flat='#c8a0ff') if False else None
     # braco da frente + adaga
