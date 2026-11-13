@@ -94,75 +94,99 @@ function spline(keys,t){ // keys: [[t,{..}],..] Hermite com tempos irregulares
     const m0=tan(i)*h,m1=tan(i+1)*h,u2=u*u,u3=u2*u;out[k]=(2*u3-3*u2+1)*v(i)+(u3-2*u2+u)*m0+(-2*u3+3*u2)*v(i+1)+(u3-u2)*m1;}
   return out;}
 // poses-chave do ataque (x=rot em x dos ombros etc.)
-const P0={lean:0,twist:0,shR:-.5,elR:-.9,shL:-.5,elL:-.9,lunge:0,hx:0,orb:.5,dip:0,hy:0};
-const ATK=[[0,P0],[.12,{...P0,lean:-.1,twist:-.15,shR:-.2,elR:-1.1,shL:-.2,dip:.08,hx:.08,orb:.6}],[.3,{...P0,lean:-.3,twist:-.5,shR:-2.5,elR:-1.0,shL:-1.1,elL:-1.2,dip:.04,hx:-.12,orb:1.3,hy:-.2}],[.42,{...P0,lean:-.34,twist:-.58,shR:-2.8,elR:-.8,shL:-1.3,elL:-1.2,dip:.02,hx:-.16,orb:1.8,hy:-.25}],
-  [.5,{...P0,lean:.1,twist:.2,shR:-2.0,elR:-.5,shL:-1.6,elL:-.7,lunge:.25,hx:.05,orb:1.9,dip:.05,hy:.1}],[.58,{...P0,lean:.5,twist:.55,shR:-1.2,elR:-.2,shL:-1.55,elL:-.2,lunge:.55,hx:.18,orb:2.1,dip:.1,hy:.3}],
-  [.72,{...P0,lean:.6,twist:.6,shR:-.9,elR:-.2,shL:-1.45,elL:-.25,lunge:.62,hx:.15,orb:1.0,dip:.08,hy:.3}],[.9,{...P0,lean:.2,twist:.2,shR:-.6,elR:-.7,shL:-.8,elL:-.8,lunge:.3,orb:.5,hy:.1}],[1.1,{...P0,lean:-.03,lunge:.05}],[1.3,P0]];
-const HURT=[[0,P0],[.06,{...P0,lean:-.55,twist:-.15,hx:-.45,shR:-.1,shL:.1,elR:-.3,elL:-.3,dip:.18,lunge:-.25,hy:.1}],[.2,{...P0,lean:-.62,hx:-.5,shR:.3,shL:.3,dip:.1,lunge:-.4}],[.45,{...P0,lean:-.3,hx:-.2,lunge:-.2,dip:.04}],[.7,{...P0,lean:-.05,lunge:-.02}],[.85,P0]];
+const P0={lean:0,twist:0,shR:-.5,elR:-.9,shL:-.5,elL:-.9,lunge:0,hx:0,orb:.5,dip:0,hy:0,back:0,fall:0,sq:1,flail:0};
+const K=(o)=>({...P0,...o});
+const ATK=[[0,P0],
+ [.10,K({lean:-.08,twist:-.12,shR:-.25,elR:-1.15,shL:-.25,dip:.1,hx:.1,orb:.6,sq:.96})],
+ [.22,K({lean:-.22,twist:-.38,shR:-1.4,elR:-1.2,shL:-.7,elL:-1.2,dip:.16,hx:.06,orb:1.0,sq:.92,hy:-.1,lunge:-.08})],
+ [.36,K({lean:-.38,twist:-.62,shR:-2.7,elR:-.9,shL:-1.25,elL:-1.2,dip:.05,hx:-.18,orb:1.7,sq:1.04,hy:-.25,lunge:-.12})],
+ [.44,K({lean:-.42,twist:-.68,shR:-2.9,elR:-.8,shL:-1.35,elL:-1.15,dip:.03,hx:-.2,orb:1.95,sq:1.05,hy:-.28,lunge:-.12})],
+ [.5,K({lean:.0,twist:.1,shR:-2.3,elR:-.6,shL:-1.6,elL:-.8,lunge:.15,hx:.0,orb:2.0,dip:.0,sq:1.08,hy:0})],
+ [.56,K({lean:.55,twist:.6,shR:-1.15,elR:-.15,shL:-1.55,elL:-.15,lunge:.6,hx:.2,orb:2.2,dip:.12,sq:.93,hy:.3})],
+ [.66,K({lean:.7,twist:.66,shR:-.8,elR:-.12,shL:-1.45,elL:-.2,lunge:.7,hx:.2,orb:.8,dip:.1,sq:.97,hy:.35})],
+ [.84,K({lean:.3,twist:.25,shR:-.6,elR:-.7,shL:-.8,elL:-.8,lunge:.38,orb:.5,dip:.04,sq:1.02,hy:.1})],
+ [1.05,K({lean:-.06,lunge:.1,sq:1.01})],[1.3,P0]];
+const HURT=[[0,P0],
+ [.05,K({lean:-.5,twist:-.15,hx:-.45,shR:-.05,shL:.1,elR:-.25,elL:-.3,dip:.2,back:-.22,hy:.12,sq:.9})],
+ [.15,K({lean:-.72,hx:-.55,shR:.35,shL:.35,elR:-.2,elL:-.2,dip:.08,back:-.45,sq:1.05})],
+ [.38,K({lean:-.34,hx:-.2,shR:-.3,shL:-.3,back:-.34,dip:.08,sq:.97})],
+ [.62,K({lean:-.06,hx:-.02,back:-.28,sq:1.01})],[.85,K({back:-.28})]];
+const DEATH=[[0,P0],
+ [.06,K({lean:-.5,twist:-.15,hx:-.5,shR:0,shL:.15,elR:-.2,elL:-.25,dip:.2,back:-.15,sq:.9,hy:.15})],
+ [.16,K({lean:-.7,hx:-.55,shR:.4,shL:.4,elR:-.1,elL:-.1,dip:.1,back:-.4,sq:1.05,orb:.3})],
+ [.34,K({lean:-.4,twist:.25,hx:-.1,shR:-1.1,shL:-1.5,elR:-.6,elL:-.4,dip:.06,back:-.62,sq:1.02,orb:0})],
+ [.52,K({lean:.1,twist:-.2,hx:.15,shR:-.4,shL:-.3,elR:-.5,elL:-.5,dip:.35,back:-.7,sq:.9,orb:0})],
+ [.7,K({lean:.42,twist:0,hx:.4,shR:.1,shL:.1,elR:-.2,elL:-.2,dip:.6,back:-.7,sq:.82,orb:0})],
+ [.86,K({lean:.5,hx:.45,shR:.2,shL:.2,dip:.64,back:-.7,sq:.8,orb:0})],
+ [1.02,K({lean:-.5,hx:-.4,shR:.1,shL:.1,dip:.5,back:-.78,sq:1.0,fall:-.45,orb:0})],
+ [1.22,K({lean:-.7,hx:-.3,shR:.5,shL:.6,elR:-.1,elL:-.1,dip:.2,back:-.95,sq:1.0,fall:-1.57,orb:0})],
+ [1.34,K({lean:-.5,hx:-.1,shR:.6,shL:.7,dip:0,back:-1.0,sq:.9,fall:-1.57,orb:0})],
+ [1.5,K({lean:-.4,hx:0,shR:.9,shL:1.0,dip:0,back:-1.0,sq:1.02,fall:-1.52,orb:0})],
+ [1.8,K({lean:-.3,shR:1.1,shL:1.2,elR:-.05,elL:-.05,back:-1.0,sq:1,fall:-1.57,orb:0})],
+ [2.3,K({lean:-.3,shR:1.2,shL:1.3,elR:-.05,elL:-.05,back:-1.0,sq:1,fall:-1.57,orb:0})]];
 // ---- simulacao ----
-const S={x:0,z:0,yaw:0,spd:0,ph:0,w:0,vx:0,vz:0,ax:0,az:0,t:0,anim:'idle',at:0,dead:0,orbFly:null,last:null};
+const S={x:0,z:0,yaw:0,spd:0,ph:0,w:0,vx:0,vz:0,ax:0,az:0,t:0};
+let DT=.05;const SP={};
+function sp(n,tg,k=140,c=13){const s=SP[n]||(SP[n]={x:tg,v:0});const N=6,h=DT/N;for(let i=0;i<N;i++){s.v+=((tg-s.x)*k-s.v*c)*h;s.x+=s.v*h;}return s.x;}
 const fwd=()=>[Math.sin(S.yaw),Math.cos(S.yaw)];
 function step(dt,cmd){
-  // cmd: {move:0..1,yawTo,anim,at,dead}
-  S.t+=dt;
-  const targetSpd=cmd.move*2.1;S.spd+=(targetSpd-S.spd)*Math.min(1,dt*8);
+  DT=dt;S.t+=dt;
+  const targetSpd=cmd.move*2.1;S.spd+=(targetSpd-S.spd)*Math.min(1,dt*6);
   if(cmd.yawTo!==undefined){let d=cmd.yawTo-S.yaw;d=Math.atan2(Math.sin(d),Math.cos(d));S.yaw+=d*Math.min(1,dt*(cmd.turn||9));}
   const [fx,fz]=fwd(),nvx=fx*S.spd,nvz=fz*S.spd;S.ax=(nvx-S.vx)/dt;S.az=(nvz-S.vz)/dt;S.vx=nvx;S.vz=nvz;
-  S.w=Math.min(1,S.spd/1.6);S.ph+=dt*S.spd*3.2;   // fase da passada proporcional a velocidade
+  S.w=Math.min(1,S.spd/1.6);S.ph+=dt*S.spd*3.1;
   pose(cmd,dt);
 }
-let tm=0;
 function pose(cmd,dt){
-  const w=S.w,ph=S.ph,t=S.t;let k=P0;
-  if(cmd.anim==='attack')k=spline(ATK,cmd.at);else if(cmd.anim==='hurt')k=spline(HURT,cmd.at);
-  const [fx,fz]=fwd();let px=S.x+fx*k.lunge,pz=S.z+fz*k.lunge;
-  S.x+=S.vx*dt;S.z+=S.vz*dt;
-  G.position.set(S.x+fx*k.lunge,0,S.z+fz*k.lunge);G.rotation.y=S.yaw;
-  // respiracao
-  const br=Math.sin(t*4.2),bob=Math.abs(Math.sin(ph))*.1*w;
-  let dead=cmd.dead||0;
-  body.position.y=PELV+.03*br*(1-w)-bob*.9-k.dip-.45*sm(Math.min(1,dead*1.6))*0;
-  body.rotation.set(0,0,Math.sin(ph)*.05*w);
-  spine.rotation.set(.1*w+.04*br*(1-w)+k.lean,k.twist*.6-Math.sin(ph)*.12*w,Math.sin(ph)*.04*w);
-  chest.rotation.set(.03*br*(1-w),k.twist*.4+Math.sin(ph)*.05*w,0);
-  neck.rotation.set(-.05*br*(1-w)+k.hx*.5,0,0);head.rotation.set(k.hx*.5+(-.08*w),-k.twist*.8+Math.sin(ph)*.1*w+k.hy,Math.sin(t*1.7)*.03*(1-w));
-  tail.rotation.set(.3+Math.sin(ph*2+1)*.35*w+Math.sin(t*3)*.06+(-S.az*.02),0,0);
-  // bracos: balanco + poses
-  const sw=Math.sin(ph)*.45*w;
-  AR.sh.rotation.set(k.shR-sw*.7,0,-.12);AR.el.rotation.set(k.elR,0,0);AR.sh.rotation.z=-.18;
-  AL.sh.rotation.set(k.shL+sw*.7+Math.sin(t*3.1)*.04*(1-w),0,.18);AL.el.rotation.set(k.elL,0,0);
-  AR.el.rotation.x=k.elR+Math.sin(ph+1)*.12*w;AL.el.rotation.x=k.elL+Math.sin(ph+2)*.1*w;
-  // mangas seguem (rotacao atrasada)
-  AR.sl.rotation.x=-(AR.el.rotation.x*.25)+Math.sin(t*5)*.05;AL.sl.rotation.x=-(AL.el.rotation.x*.25)+Math.sin(t*5+1)*.05;
-  dag.rotation.x=Math.PI/2+(k.shR<-1.8?.5:0);
-  orbG.scale.setScalar(k.orb*(.9+.1*Math.sin(t*14)));orbG.visible=k.orb>.4;
-  eyes.forEach(e=>{e.scale.y=(cmd.anim==='hurt'||dead>0)?.12:(Math.sin(t*1.3)>.97?.1:.8);});
+  const w=S.w,ph=S.ph,t=S.t;let k=P0;const dead=cmd.dead||0;
+  if(dead>0)k=spline(DEATH,dead);else if(cmd.anim==='attack')k=spline(ATK,cmd.at);else if(cmd.anim==='hurt')k=spline(HURT,cmd.at);
+  const [fx,fz]=fwd();S.x+=S.vx*dt;S.z+=S.vz*dt;
+  const off=k.lunge+k.back;
+  G.position.x=S.x+fx*off;G.position.z=S.z+fz*off;G.rotation.y=S.yaw;
+  const br=Math.sin(t*4.2);
+  const accL=-(S.ax*fx+S.az*fz);                       // aceleracao no eixo do corpo
+  // ---- corpo: peso e passada (alto na passagem, baixo no contato) ----
+  const bob=.1*Math.abs(Math.cos(ph))*w, dip=Math.min(.7,Math.max(0,k.dip));
+  body.position.y=sp('by',PELV+.03*br*(1-w)+bob-dip,160,15);
+  body.position.x=sp('bx',.07*Math.sin(ph)*w,110,13);
+  body.rotation.y=sp('hip',.15*Math.cos(ph)*w,100,11);body.rotation.z=sp('hz',Math.sin(ph)*.06*w,100,11);
+  const sq=sp('sq',k.sq*(1-.04*Math.abs(Math.sin(ph))*w+.025*Math.abs(Math.cos(ph))*w),220,15);G.scale.set(1/Math.sqrt(sq),sq,1/Math.sqrt(sq));
+  const lean=k.lean+.1*w+.04*br*(1-w)+Math.max(-.2,Math.min(.2,accL*.012));
+  spine.rotation.set(sp('sx',lean,90,9),sp('sy',k.twist*.6-.2*Math.cos(ph)*w,80,8),Math.sin(ph)*.04*w);
+  chest.rotation.set(sp('cx',.03*br*(1-w)+k.lean*.3,70,7),sp('cy',k.twist*.4-.08*Math.cos(ph)*w,60,6),sp('cz',-Math.sin(ph)*.05*w,60,6));
+  neck.rotation.set(sp('nx',-.05*br*(1-w)+k.hx*.5,65,6),0,0);
+  head.rotation.set(sp('hx',k.hx*.5-.08*w+Math.abs(Math.sin(ph))*.04*w,55,5),sp('hyy',-k.twist*.8+k.hy+Math.sin(ph)*.1*w,50,5),sp('hzz',Math.sin(t*1.7)*.03*(1-w)+Math.sin(ph)*.05*w,50,5));
+  tail.rotation.set(sp('tl',.3-S.spd*.12+Math.sin(ph*2+1)*.25*w+Math.sin(t*3)*.05+accL*-.015,45,3.6),sp('tlz',Math.sin(ph)*.2*w,40,3.5),0);
+  // ---- bracos com atraso/overshoot ----
+  const sw=Math.sin(ph)*.5*w;
+  AR.sh.rotation.set(sp('shR',k.shR-sw*.8,110,9),0,-.18+sp('shRz',Math.sin(ph)*.06*w,80,8));AR.el.rotation.x=sp('elR',k.elR+Math.sin(ph+1.2)*.15*w,90,8);
+  AL.sh.rotation.set(sp('shL',k.shL+sw*.8+Math.sin(t*3.1)*.04*(1-w),110,9),0,.18+sp('shLz',-Math.sin(ph)*.06*w,80,8));AL.el.rotation.x=sp('elL',k.elL+Math.sin(ph+2.2)*.12*w,90,8);
+  AR.sl.rotation.x=sp('slR',-(k.elR*.3)+Math.sin(t*5)*.05+accL*.01,35,3.4);AL.sl.rotation.x=sp('slL',-(k.elL*.3)+Math.sin(t*5+1)*.05+accL*.01,35,3.4);
+  dag.rotation.x=sp('dag',Math.PI/2+(k.shR<-1.8?.5:0),55,4.5);
+  const orbS=sp('orb',k.orb*(.92+.08*Math.sin(t*14)),120,10);orbG.scale.setScalar(Math.max(.001,orbS));orbG.visible=orbS>.35;
   orbit.forEach((o,i)=>{const a=t*5+i*2.09;o.position.set(Math.cos(a)*.34,Math.sin(a*1.3)*.1,Math.sin(a)*.34);});
-  halos.forEach(h=>{h.scale.setScalar(1+.25*Math.sin(t*9));});
-  // pes (passada)
-  for(let i=0;i<2;i++){const p=ph+i*Math.PI,z=Math.sin(p)*.5*w,lift=Math.max(0,Math.cos(p))*.22*w;feet[i].position.set((i?.22:-.22),.1+lift,z+(.1*(1-w)*(i?1:-1)*.2));feet[i].rotation.x=-Math.cos(p)*.5*w;}
-  // saia: mola por painel
-  const fl=[fx,fz],rt=[fz,-fx];
-  const accF=-(S.ax*fl[0]+S.az*fl[1]),accR=-(S.ax*rt[0]+S.az*rt[1]);
-  panels.forEach((p,i)=>{const c=Math.cos(p.th),s=Math.sin(p.th);   // 0 = frente (+z local)
+  halos.forEach(h=>{h.scale.setScalar(1+.25*Math.sin(t*9));h.visible=!(dead>.1);});
+  const closed=(cmd.anim==='hurt'&&cmd.at<.3)||dead>.04;
+  eyes.forEach(e=>{e.scale.y=closed?.12:(Math.sin(t*1.3)>.97?.1:.8);e.visible=!(dead>1.6);});
+  // ---- pes: passada com calcanhar ----
+  for(let i=0;i<2;i++){const p=ph+i*Math.PI,z=Math.sin(p)*.5*w,lift=Math.max(0,Math.cos(p))*.24*w;feet[i].position.set((i?.22:-.22)+body.position.x*.5,.1+lift,z);feet[i].rotation.x=-Math.cos(p)*.55*w+(Math.sin(p)>.8?.2:0);}
+  // ---- saia: molas por painel ----
+  const [rx_,rz_]=[fz,-fx];const accR=-(S.ax*rx_+S.az*rz_);
+  panels.forEach((p,i)=>{const c=Math.cos(p.th),s=Math.sin(p.th);
     const legPush=[0,1].map(j=>{const z=Math.sin(ph+j*Math.PI)*.5*w,sx=(j?.22:-.22);const dx=Math.sin(p.th)*.7-sx,dz=Math.cos(p.th)*.7-z;return z*Math.exp(-(dx*dx+dz*dz)*2.2)});
-    let tx=(accF*c+accR*0)*.012*c+(legPush[0]+legPush[1])*1.1*c*.9+k.lunge*.5*(-c)*0+(-k.lean*.6*c);
-    let tz=accR*.012*s+(legPush[0]+legPush[1])*.5*s;
-    tx+=Math.sin(t*2.5+i)*.02;
-    const kk=70,cc=7;p.vx+=((tx-p.ax)*kk-p.vx*cc)*dt;p.ax+=p.vx*dt;p.vz+=((tz-p.az)*kk-p.vz*cc)*dt;p.az+=p.vz*dt;
-    p.g.rotation.set(p.ax*Math.cos(p.th)+0,0,-p.az*Math.sin(p.th)*0);p.g.rotation.x=p.ax*c;p.g.rotation.z=p.az*s*-1+p.ax*s*0;});
-  sashG.rotation.x=Math.sin(ph*2)*.2*w+(-accF*.01);sashG.rotation.z=Math.sin(ph)*.1*w;
-  // morte: tomba para tras
-  if(dead>0){const q=sm(Math.min(1,dead));G.rotation.x=0;body.parent.rotation.order='YXZ';G.rotation.x=-q*1.5;G.position.y=q*.5;
-    if(dead>1)G.position.y=.5+.06*Math.exp(-(dead-1)*6)*Math.sin((dead-1)*22);}
-  else {G.rotation.x=0;G.position.y=0;}
+    let tx=accL*.012*c*-1+(legPush[0]+legPush[1])*1.0*c-k.lean*.55*c+S.spd*.1*(-.4-.6*c)*-1+Math.sin(t*2.5+i)*.02;
+    let tz=accR*.012*s*-1+(legPush[0]+legPush[1])*.5*s;
+    const kk=60,cc=6;p.vx+=((tx-p.ax)*kk-p.vx*cc)*dt;p.ax+=p.vx*dt;p.vz+=((tz-p.az)*kk-p.vz*cc)*dt;p.az+=p.vz*dt;
+    p.g.rotation.x=p.ax*c;p.g.rotation.z=-p.az*s*1+(-p.ax*s*.0);});
+  sashG.rotation.x=sp('sa',Math.sin(ph*2)*.2*w-accL*.01,40,3.5);sashG.rotation.z=sp('saz',Math.sin(ph)*.1*w,40,3.5);
+  // ---- queda ----
+  const fall=sp('fall',k.fall,70,9);G.rotation.x=fall;G.position.y=.45*Math.sin(Math.min(1.57,Math.max(0,-fall)))+(dead>1.3?.04*Math.exp(-(dead-1.25)*7)*Math.abs(Math.sin((dead-1.25)*20)):0);
   scene.updateMatrixWorld(true);blade.getWorldPosition(tipV);
-  const hit=cmd.anim==='attack'&&cmd.at>.38&&cmd.at<.8;for(let i=trail.length-1;i>0;i--)trail[i].p.copy(trail[i-1].p);trail[0].p.copy(tipV);trail.forEach((q,i)=>{q.m.position.copy(q.p);q.m.material.opacity=hit?Math.max(0,.75-i*.09):0;q.m.scale.setScalar(1-i*.07);});
+  const hit=cmd.anim==='attack'&&cmd.at>.4&&cmd.at<.85;for(let i=trail.length-1;i>0;i--)trail[i].p.copy(trail[i-1].p);trail[0].p.copy(tipV);trail.forEach((q,i)=>{q.m.position.copy(q.p);q.m.material.opacity=hit?Math.max(0,.75-i*.09):0;q.m.scale.setScalar(1-i*.07);});
   placeCam(G.position.x,G.position.z);
   ground.position.set(Math.round(G.position.x),0,Math.round(G.position.z));
-  tex.offset.set(0,0);
   R.render(scene,cam);
 }
-window.sim={step,S,R,cv,reset(){S.x=S.z=S.yaw=S.spd=S.ph=S.w=S.vx=S.vz=S.ax=S.az=S.t=0;},grab(){return cv.toDataURL('image/png');}};
+window.sim={step,S,R,cv,reset(){S.x=S.z=S.yaw=S.spd=S.ph=S.w=S.vx=S.vz=S.ax=S.az=S.t=0;for(const k in SP)delete SP[k];},grab(){return cv.toDataURL('image/png');}};
 placeCam(0,0);pose({anim:'idle',at:0},.05);
 </script>
