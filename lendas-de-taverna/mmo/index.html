@@ -3972,7 +3972,13 @@ function dollSet(e,o){const d={x:0,y:0,sx:1,sy:1,rot:0,h:0,sink:0},hr=G.hero;let
   else if(o.k==='skill'){d.x=Math.sin(G.t*55)*(o.shake||0);d.sy=1+(o.sy||0);d.sx=1-(o.sy||0)*.6;d.rot=(o.rot||0)*s;d.sink=o.sink||0;}
   else{const b=Math.sin(G.t*3+e.x*.07);d.sy=1+.012*b;d.sx=1-.008*b;}
   e.dx=d;}
-function dollBoss(e){const key=e.T.atlas,B=DOLLB[key];if(!B||!SHEETS[key])return null;const sh=SHEETS[key],pf=(e.fury&&sh.meta.anims['e_'+B.idle[0]])?'e_':'',
+function pxMobFrame(e,sh){const M=sh.meta,F=(n,i)=>atlasFrame(sh,n,i),N=n=>M.anims[n].length,a=e.act,ph=e._pxph===undefined?(e._pxph=Math.random()*9):e._pxph;
+  if(e.dead){dollSet(e,{k:'idle'});return F('death',Math.min(N('death')-1,Math.floor(e.deadT*(M.fps.death||10))));}
+  if((e.stun>0||e.stagger>0)&&!(a&&a.skill)){dollSet(e,{k:'hurt'});return F('hurt',e.flash>.07?0:(e.stagger>.5||e.stun>.12?1:2));}
+  if(a&&(a.skill||e.state==='atk')){const hit=Math.max(.15,Math.min(.9,a.hit||.5)),imp=M.imp||.55,pp=Math.min(.999,a.t/a.dur),u=pp<hit?pp/hit*imp:imp+(pp-hit)/(1-hit)*(1-imp);dollSet(e,{k:'idle'});return F('attack',Math.min(N('attack')-1,Math.floor(u*N('attack'))));}
+  if(e.state==='walk')dollSet(e,{k:'move',g:DOLLB[e.T.atlas].g});else dollSet(e,{k:'idle'});
+  return F('idle',Math.floor((G.t+ph)*(M.fps.idle||8))%N('idle'));}
+function dollBoss(e){const key=e.T.atlas,B=DOLLB[key];if(!B||!SHEETS[key])return null;if(SHEETS[key].meta.imp!==undefined&&!e.ch&&!e.ent)return pxMobFrame(e,SHEETS[key]);const sh=SHEETS[key],pf=(e.fury&&sh.meta.anims['e_'+B.idle[0]])?'e_':'',
   F=n=>{const a=B[n]||B.idle;return atlasFrame(sh,sh.meta.anims[pf+a[0]]?pf+a[0]:a[0],a[1]);},a=e.act,G0=B.g;
   if(e.dead){dollSet(e,{k:'idle'});return F(e.deadT<.35?'d1':'d2');}
   if(e.ch){dollSet(e,{k:'skill',shake:1.2,sy:.03});return F('roar');}
