@@ -8,7 +8,7 @@ const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(32,W/H,.1,100),TIL
 const D=6.2,TY=3.45;cam.position.set(0,TY+D*Math.sin(TILT),D*Math.cos(TILT));cam.lookAt(0,TY,0);
 const gd=new THREE.DataTexture(new Uint8Array([40,40,40,255,120,120,120,255,200,200,200,255,255,255,255,255]),4,1,THREE.RGBAFormat);gd.minFilter=gd.magFilter=THREE.NearestFilter;gd.needsUpdate=true;
 scene.add(new THREE.AmbientLight(0x585a80,.8));const sun=new THREE.DirectionalLight(0xfff0e0,1.1);sun.position.set(-4,8,5);scene.add(sun);const rim=new THREE.DirectionalLight(0x9a70ff,.7);rim.position.set(5,3,-6);scene.add(rim);
-const outMat=new THREE.ShaderMaterial({side:THREE.BackSide,uniforms:{t:{value:.022}},vertexShader:'uniform float t;void main(){gl_Position=projectionMatrix*modelViewMatrix*vec4(position+normal*t,1.);}',fragmentShader:'void main(){gl_FragColor=vec4(.04,.02,.08,1.);}'});
+const outMat=new THREE.ShaderMaterial({side:THREE.BackSide,uniforms:{t:{value:.03}},vertexShader:'uniform float t;void main(){gl_Position=projectionMatrix*modelViewMatrix*vec4(position+normal*t,1.);}',fragmentShader:'void main(){gl_FragColor=vec4(.04,.02,.08,1.);}'});
 // ---------- SDF ----------
 const V=(x,y,z)=>({x,y,z});
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -22,60 +22,83 @@ function rbox(px,py,pz,cx,cy,cz,bx,by,bz,r){const qx=Math.abs(px-cx)-bx,qy=Math.
 function hash(x,y,z){let h=x*374761393+y*668265263+z*2147483647;h=(h^(h>>13))*1274126177;return ((h^(h>>16))&0xffff)/65535;}
 function vnoise(x,y,z){const ix=Math.floor(x),iy=Math.floor(y),iz=Math.floor(z),fx=x-ix,fy=y-iy,fz=z-iz,ux=fx*fx*(3-2*fx),uy=fy*fy*(3-2*fy),uz=fz*fz*(3-2*fz);const L=(a,b,t)=>a+(b-a)*t;
   return L(L(L(hash(ix,iy,iz),hash(ix+1,iy,iz),ux),L(hash(ix,iy+1,iz),hash(ix+1,iy+1,iz),ux),uy),L(L(hash(ix,iy,iz+1),hash(ix+1,iy,iz+1),ux),L(hash(ix,iy+1,iz+1),hash(ix+1,iy+1,iz+1),ux),uy),uz);}
-// ---------- partes do busto do Rei (z+ = frente) ----------
+// ---------- partes do busto do Rei (z+ = frente). Hierarquia: osso/tecido por baixo -> placas por cima -> coroa/espinhos ----------
+const shell=(d,t)=>Math.abs(d)-t;
 function bone(x,y,z){
   const ax=Math.abs(x);
   let d=ell(x,y,z,0,4.25,.02,.31,.37,.35);
-  d=smin(d,ell(ax,y,z,.2,4.12,.2,.1,.09,.1),.09);                       // macas do rosto
-  d=smin(d,rbox(x,y,z,0,3.93,.14,.16,.07,.15,.04),.06);                 // mandibula
-  // dentes: repeticao em x
+  d=smin(d,ell(ax,y,z,.2,4.12,.2,.1,.09,.1),.09);
+  d=smin(d,rbox(x,y,z,0,3.93,.14,.16,.07,.15,.04),.06);
   if(ax<.17){const rx=((x+.3)%.06+.06)%.06-.03;d=smin(d,rbox(rx,y,z,0,3.98,.28,.018,.035,.02,.006),.012);}
-  d=smin(d,cap(x,y,z,0,3.62,0,0,3.95,0,.085),.05);                      // pescoco
-  for(let i=0;i<3;i++)d=smin(d,torus(x,y,z,0,3.68+i*.1,0,.085,.028),.03);// vertebras
-  d=smax(d,-ell(ax,y,z,.125,4.28,.3,.085,.095,.08),.03);                 // orbitas
-  d=smax(d,-ell(x,y,z,0,4.12,.35,.032,.06,.05),.02);                     // nariz
-  d=smax(d,-ell(ax,y,z,.27,4.15,.1,.05,.12,.12),.04);                    // temporas
+  d=smin(d,cap(x,y,z,0,3.62,0,0,3.95,0,.085),.05);
+  for(let i=0;i<3;i++)d=smin(d,torus(x,y,z,0,3.68+i*.1,0,.085,.028),.03);
+  d=smax(d,-ell(ax,y,z,.125,4.28,.3,.085,.095,.08),.03);
+  d=smax(d,-ell(x,y,z,0,4.12,.35,.032,.06,.05),.02);
+  d=smax(d,-ell(ax,y,z,.27,4.15,.1,.05,.12,.12),.04);
   return d;}
 function glow(x,y,z){const ax=Math.abs(x);let d=ell(ax,y,z,.125,4.28,.255,.05,.055,.05);
   for(let i=0;i<7;i++){const a=i/7*Math.PI*2,h=.34+.17*(i%2);d=Math.min(d,ell(x,y,z,Math.sin(a)*.3,4.5+h+.015,Math.cos(a)*.3,.03,.03,.03));}
-  d=Math.min(d,ell(x,y,z,0,3.3,.46,.05,.07,.04));return d;}
+  d=Math.min(d,ell(x,y,z,0,3.12,.5,.05,.07,.04));return d;}
 function crown(x,y,z){let d=torus(x,y,z,0,4.52,0,.31,.032);d=smin(d,torus(x,y,z,0,4.6,0,.3,.022),.03);
   for(let i=0;i<7;i++){const a=i/7*Math.PI*2,h=.34+.17*(i%2),sx=Math.sin(a)*.3,sz=Math.cos(a)*.3;d=smin(d,cap(x,y,z,sx,4.52,sz,sx*1.08,4.52+h,sz*1.08,.05,.01),.025);}return d;}
-function plate(x,y,z){
-  const ax=Math.abs(x),s=x<0?-1:1;
-  // couraça
-  let c=ell(x,y,z,0,2.95,.02,.8,.82,.52);
-  c=smin(c,cap(x,y,z,0,3.5,.46,0,2.3,.48,.075,.04),.07);                // quilha central
-  // bordas em degraus (placas sobrepostas)
-  for(let i=0;i<3;i++)c=smin(c,torus(x,y*1.0,z*.9,0,3.2-i*.28,.1*i*.0,.66-i*.04,.035),.03)*1;
-  // gorjal (colar)
-  let g=ell(x,y,z,0,3.66,.02,.4,.15,.37);g=Math.max(g,-ell(x,y,z,0,3.72,.02,.28,.2,.26));g=smin(g,torus(x,y,z,0,3.78,.0,.36,.03),.04);
-  // gola alta atras
-  let co=ell(x,y,z,0,3.85,-.34,.6,.6,.22);co=Math.max(co,-ell(x,y,z,0,3.85,-.2,.5,.55,.22));
-  for(let i=0;i<5;i++){const px=(i-2)*.24;co=smin(co,cap(x,y,z,px,4.2,-.4,px*1.15,4.65+.08*(i%2),-.45,.07,.012),.03);}
-  // ombreiras em camadas com espinhos
-  let p=1e9;
-  for(const sg of[-1,1]){const px=x*sg;                                   // espelha
-    if(sg*x<0&&Math.abs(x)>.01)continue;
-    let q=ell(px,y,z,.98,3.5,0,.46,.26,.42);q=smin(q,ell(px,y,z,.92,3.7,0,.35,.2,.34),.05);q=smin(q,ell(px,y,z,.86,3.86,0,.24,.15,.25),.05);
-    q=Math.max(q,-ell(px,y,z,.98,3.28,0,.4,.2,.38)*.0-9);
-    for(let i=0;i<3;i++){const t=(i-1)*.28;q=smin(q,cap(px,y,z,1.05+i*.05,3.75,t*.9,1.38+i*.14,4.05+.12*i,t*1.15,.085,.012),.03);}
-    p=Math.min(p,q);}
-  let d=smin(smin(c,g,.07),smin(co,p,.05),.06);
-  d=smin(d,cap(ax,y,z,.98,3.35,0,1.05,2.75,.05,.19,.17),.08);          // braco (inicio)
+// camada 1: roupa de baixo (gibao + mangas + cinto) em tecido escuro
+function cloth(x,y,z){const ax=Math.abs(x);
+  let d=ell(x,y,z,0,2.98,.02,.72,.8,.46);
+  d=smin(d,ell(x,y,z,0,2.35,.0,.55,.35,.38),.1);
+  d=smin(d,cap(x,y,z,0,3.5,0,0,3.7,0,.2),.1);                              // gola de tecido no pescoco
+  d=smin(d,cap(ax,y,z,.98,3.4,0,1.04,2.7,.06,.18,.15),.07);               // manga
+  d+= .005*Math.sin(y*90)*Math.sin(x*70);                                   // trama do tecido
   return d;}
-function noiseAmp(x,y,z){return (vnoise(x*10,y*10,z*10)-.5)*.022+(vnoise(x*30,y*30,z*30)-.5)*.008;}
+// camada 2: placas por cima (cascas finas, com folga ao redor)
+function plate(x,y,z){
+  const ax=Math.abs(x),sg=x<0?-1:1;
+  // peitoral: casca aberta atras e no pescoco
+  let c=shell(ell(x,y,z,0,3.0,.03,.8,.85,.52),.04);
+  c=smax(c,-(z+.12),.04);                                                    // sem costas
+  c=smax(c,y-3.62+Math.abs(x)*.35,.05);                                      // decote do pescoco
+  c=smax(c,-(y-2.62)-Math.abs(x)*.25,.05);                                   // borda de baixo
+  c=smin(c,cap(x,y,z,0,3.5,.46,0,2.7,.5,.07,.045),.04);                    // quilha
+  for(const gx of[-.3,.3])c=smax(c,-(cap(x,y,z,gx,3.45,.5,gx*1.15,2.75,.5,.02)-.0),.012);
+  c=smax(c,-(torus(x,y*1.0,z,0,3.3,0,.55,.014)),.01);
+  // lames da barriga (placas sobrepostas, cada uma mais larga/baixa)
+  for(let i=0;i<4;i++){let l=shell(ell(x,y,z,0,2.62-i*.17,.0,.6+i*.045,.2,.44+i*.03),.03);l=smax(l,-(z+.05),.03);l=smax(l,-(y-(2.7-i*.17)),.02);c=Math.min(c,l);}
+  // gorjal: aneis sobrepostos
+  let g=Math.min(torus(x,y,z,0,3.66,0,.4,.05),torus(x,y,z,0,3.76,0,.34,.045));g=smin(g,shell(ell(x,y,z,0,3.7,0,.42,.14,.38),.035),.03);g=smax(g,-(y-3.9),.03);
+  // ombreiras: 3 laminas sobrepostas, cobrem o ombro e a borda do peitoral
+  let p=1e9;
+  { const px=ax-.0;
+    let q=shell(ell(px,y,z,1.0,3.46,0,.56,.2,.5),.035);q=smax(q,-(y-3.6),.03);
+    let q2=shell(ell(px,y,z,.94,3.64,0,.46,.17,.42),.035);q2=smax(q2,-(y-3.78),.03);let q3=shell(ell(px,y,z,.86,3.82,0,.34,.14,.32),.035);q3=smax(q3,-(y-3.95),.03);
+    q=Math.min(q,q2,q3);
+    for(let i=0;i<2;i++){const t=(i-.5)*.34;q=smin(q,cap(px,y,z,1.1,3.86,t*.7,1.38+i*.04,4.12+.06*i,t*1.2,.095,.02),.025);}
+    p=q;}
+  // braco: braçadeira (casca) sobre a manga
+  let v=shell(cap(ax,y,z,1.0,3.1,.03,1.04,2.75,.06,.2,.17),.035);v=smax(v,y-3.15,.03);
+  let d=Math.min(c,g,p,v);return d;}
+// bordas em bronze gasto + rebites
+function trim(x,y,z){const ax=Math.abs(x);
+  let d=torus(x,y*1.0,z,0,3.66,0,.405,.022);d=Math.min(d,torus(x,y,z,0,3.76,0,.345,.02));
+  const q=shell(ell(x,y,z,0,3.0,.03,.8,.85,.52),.044);
+  for(let i=0;i<9;i++){const a=(i/8-.5)*2.3;d=Math.min(d,ell(x,y,z,Math.sin(a)*.8,3.02-Math.cos(a)*.0-Math.abs(a)*.05,.03+Math.cos(a)*.5,.03,.03,.03)*1);}
+  for(let sg=-1;sg<=1;sg+=2){for(let i=0;i<5;i++){const a=i/4*Math.PI*.7+.2;d=Math.min(d,ell(ax,y,z,.96+Math.cos(a)*.44,3.54+Math.sin(a)*.22,Math.sin(a)*.0+(i-2)*.18,.03,.03,.03));}}
+  d=Math.min(d,torus(x,y,z,0,2.62,0,.62,.02)*1+(z<-.05?9:0));
+  return d;}
+// capa/colarinho de tras (tecido roxo escuro, por baixo das ombreiras)
+function cape(x,y,z){let co=shell(ell(x,y,z,0,3.78,-.3,.62,.62,.2),.03);co=smax(co,z+.08,.03);co=smax(co,y-(4.25+.2*Math.max(0,Math.sin(x*13)))+.0,.02);co=smax(co,-(y-3.1),.03);return co;}
 function field(x,y,z){
-  const b=bone(x,y,z),p=plate(x,y,z)+noiseAmp(x,y,z),cr=crown(x,y,z)+noiseAmp(x,y,z)*.4,gl=glow(x,y,z);
-  let d=smin(b,p,.035);d=Math.min(d,cr,gl);return d;}
-function colorAt(x,y,z){const b=bone(x,y,z),p=plate(x,y,z),cr=crown(x,y,z),gl=glow(x,y,z);const m=Math.min(b,p,cr,gl)+0;
-  if(gl<=m+.012)return [1.0,.62,1.0];
-  const wear=vnoise(x*9,y*9,z*9),wear2=vnoise(x*27,y*27,z*27);
-  if(cr<=m+.006)return [.22,.22,.28].map(v=>v*(.8+.4*wear));
-  if(b<=m+.004&&b<p-.005){const k=.78+.3*wear2;return [.84*k,.78*k,.64*k];}
-  // armadura: escura, com bordas desgastadas mais claras
-  const edge=clamp((vnoise(x*16,y*16,z*16)-.62)*3,0,1);const base=[.14,.09,.16];const lit=[.42,.3,.3];
-  const t=edge*.7+wear2*.08;return base.map((v,i)=>v+(lit[i]-v)*t);}
+  const b=bone(x,y,z),cl=cloth(x,y,z),pl=plate(x,y,z)+(vnoise(x*14,y*14,z*14)-.5)*.007,tr=trim(x,y,z),cr=crown(x,y,z),gl=glow(x,y,z),cp=cape(x,y,z);
+  let d=smin(b,cl,.03);d=Math.min(d,pl,tr,cr,gl,cp);return d;}
+const COL={bone:[.86,.8,.66],cloth:[.17,.07,.13],plate:[.16,.15,.22],plateW:[.5,.45,.5],trim:[.62,.4,.2],crown:[.24,.24,.3],glow:[1,.62,1],cape:[.22,.1,.32]};
+function colorAt(x,y,z,curv){
+  const b=bone(x,y,z),cl=cloth(x,y,z),pl=plate(x,y,z),tr=trim(x,y,z),cr=crown(x,y,z),gl=glow(x,y,z),cp=cape(x,y,z);
+  const arr=[['glow',gl-.012],['trim',tr-.006],['crown',cr-.004],['plate',pl-.004],['cape',cp],['bone',b],['cloth',cl+.002]];arr.sort((a,c)=>a[1]-c[1]);const id=arr[0][0];
+  let c=COL[id].slice();const e=clamp(-curv*.02,0,1),cav=clamp(curv*.02,0,1);   // borda convexa clareia, fenda escurece
+  if(id==='plate'){const wr=clamp(e*1.4+(vnoise(x*20,y*20,z*20)-.6)*.5,0,1);c=c.map((v,i)=>v+(COL.plateW[i]-v)*wr);}
+  else if(id==='trim'){c=c.map(v=>v*(.8+.5*e));}
+  else if(id==='bone'){const k=.88+.12*vnoise(x*25,y*25,z*25);c=c.map(v=>v*k);}
+  else if(id==='cloth'){const k=.85+.3*vnoise(x*30,y*30,z*30);c=c.map(v=>v*k);}
+  if(id!=='glow'){const k=1-.55*cav;c=c.map(v=>v*k);}
+  return c;}
 // ---------- malha (surface nets) ----------
 function surfaceNets(f,mn,mx,cell){
   const nx=Math.ceil((mx[0]-mn[0])/cell)+1,ny=Math.ceil((mx[1]-mn[1])/cell)+1,nz=Math.ceil((mx[2]-mn[2])/cell)+1;
@@ -101,7 +124,7 @@ function build(cell){
   const n=new Float32Array(m.pos.length),col=new Float32Array(m.pos.length),e=.012;
   for(let i=0;i<m.pos.length;i+=3){const x=m.pos[i],y=m.pos[i+1],z=m.pos[i+2];
     let gx=field(x+e,y,z)-field(x-e,y,z),gy=field(x,y+e,z)-field(x,y-e,z),gz=field(x,y,z+e)-field(x,y,z-e);const l=Math.hypot(gx,gy,gz)||1;n[i]=gx/l;n[i+1]=gy/l;n[i+2]=gz/l;
-    const c=colorAt(x,y,z);col[i]=c[0];col[i+1]=c[1];col[i+2]=c[2];}
+    const ce=.03,curv=(field(x+n[i]*ce,y+n[i+1]*ce,z+n[i+2]*ce)+field(x-n[i]*ce,y-n[i+1]*ce,z-n[i+2]*ce)-2*field(x,y,z))/(ce*ce)*.04;const c=colorAt(x,y,z,curv);col[i]=c[0];col[i+1]=c[1];col[i+2]=c[2];}
   g.setAttribute('normal',new THREE.BufferAttribute(n,3));g.setAttribute('color',new THREE.BufferAttribute(col,3));
   return {g,verts:m.pos.length/3,ms:performance.now()-t0};}
 let obj=null;
