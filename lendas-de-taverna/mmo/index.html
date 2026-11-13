@@ -2461,7 +2461,11 @@ function moveTo(e,tx,ty,sp,dt,pf){
   if(e._sc>=.5){const mv=Math.hypot(e.x-e._sx,e.y-e._sy);
     if(mv<sp*.5*.3&&!e.detour&&d>16){const px=-dy/d,py=dx/d,sd=Math.random()<.5?1:-1;e.detour={x:e.x+px*sd*80+dx/d*30,y:e.y+py*sd*80+dy/d*30,t:1.3};}
     e._sx=e.x;e._sy=e.y;e._sc=0;}
-  const s=Math.min(d,sp*dt);e.x+=dx/d*s;e.y+=dy/d*s;e.row=dir4(dx,dy);return s;
+  let spm=sp,rest=false;
+  if(DOLL&&sp<=150&&(e.kind==='hero'||e.kind==='mob'||e.kind==='boss')&&!(e.T&&e.T.fly)&&!e.dash&&!e.ent){   /* miniaturas: anda um pedacinho, salta, pousa, repete */
+    if(G.t-(e._hl||-9)>.25)e._hp=0;e._hl=G.t;const cyc=e.kind==='hero'?.46:e.kind==='boss'?.7:.55;e._hp=((e._hp||0)+dt/cyc)%1;
+    if(e._hp<.5)spm=sp*2;else{spm=0;rest=true;}}
+  const s=Math.min(d,spm*dt);e.x+=dx/d*s;e.y+=dy/d*s;e.row=dir4(dx,dy);return s||(rest?.001:0);
 }
 function nearestMob(from,maxD){let b=null,bd=maxD;for(const m of G.mobs){if(m.dead)continue;const d=dist(from,m);if(d<bd){bd=d;b=m;}}const B=G.boss;if(B&&!B.dead&&!B.ent&&G.phase==='boss'){const d=dist(from,B)-((B.T&&B.T.rad)||14);if(d<maxD&&d-(b?70:0)<bd){bd=d;b=B;}}return b;}
 /* ================= STATUS (buffs e debuffs, como no jogo tático) =================
@@ -3935,7 +3939,7 @@ function entFrame0(e){
 /* ================= PAPER DOLL: poucas poses estáticas + transformações por código (pulinho, balanço, deslize, esmagar/esticar) =================
    Desliga com ?doll=0. Chefes: poses escolhidas dos atlas; mobs/heróis: quadros-chave das planilhas LPC (parado = 1º quadro da caminhada). */
 const DOLL=new URLSearchParams(location.search).get('doll')!=='0';
-const GAIT={hop:{f:.2,h:8,sq:.1,tilt:3.5},waddle:{f:.13,h:2,sq:.03,tilt:7},glide:{f:.1,h:2.5,sq:0,tilt:1.2},float:{f:.12,h:4,sq:0,tilt:2}};
+const GAIT={hop:{f:.2,h:9,sq:.1,tilt:3.5},waddle:{f:.13,h:2,sq:.03,tilt:7},glide:{f:.1,h:2.5,sq:0,tilt:1.2},float:{f:.12,h:4,sq:0,tilt:2}};
 const DOLLB={
  gorgash:{g:'hop',idle:['idle',0],wind:['attack',2],strike:['attack',4],up:['slam',3],down:['slam',6],charge:['charge',2],roar:['roar',4],hurt:['hurt',1],d1:['death',3],d2:['death',7]},
  grunk:{g:'hop',idle:['idle',0],wind:['attack',2],strike:['attack',4],up:['slam',3],down:['slam',6],charge:['charge',2],roar:['roar',3],hurt:['hurt',3],d1:['death',1],d2:['death',2]},
@@ -3956,7 +3960,9 @@ function dollGaitOf(e){const T=e.T||{};if(e.kind!=='hero'&&T.fly)return 'float';
 function dollSet(e,o){const d={x:0,y:0,sx:1,sy:1,rot:0,h:0,sink:0},hr=G.hero;let dx=hr?hr.x-e.x:1,dy=hr?hr.y-e.y:0;
   if(e.kind==='hero'){const r=e.row;dx=r===1?-1:r===3?1:0;dy=r===0?-1:r===2?1:0;}
   const L=Math.hypot(dx,dy)||1;dx/=L;dy/=L;const s=dx>=0?1:-1,g=GAIT[o.g||'hop'],ss=e.kind==='boss'?1.5:e.kind==='hero'?.8:1;
-  if(o.k==='move'){const ph=(e.animT*g.f)%1,h=Math.abs(Math.sin(ph*Math.PI))*g.h*ss,land=ph<.12||ph>.9;d.y=-h;d.h=h;d.sx=land?1+g.sq:1-g.sq*.5;d.sy=land?1-g.sq:1+g.sq*.6;d.rot=Math.sin(ph*6.2832)*g.tilt*Math.PI/180;}
+  if(o.k==='move'){if(o.g==='float'||g===GAIT.float){const ph=(e.animT*g.f)%1,h=Math.abs(Math.sin(ph*Math.PI))*g.h*ss;d.y=-h;d.h=h;d.rot=Math.sin(ph*6.2832)*g.tilt*Math.PI/180;}
+    else{const ph=e._hp||0,H=g.h*ss*1.25;if(ph<.5){const u=ph/.5,sn=Math.sin(u*Math.PI);d.y=-sn*H;d.h=sn*H;d.sx=1-.07*sn;d.sy=1+.1*sn;d.rot=.05*sn*s;}
+      else{const k=(ph-.5)/.14;if(k<1){d.sy=1-.12*(1-k);d.sx=1+.09*(1-k);}else if(ph>.9){const q=(ph-.9)/.1;d.sy=1-.07*q;d.sx=1+.05*q;}}}}
   else if(o.k==='dash'){d.rot=.16*s;d.sy=.97;d.sx=1.04;}
   else if(o.k==='atk'){const p=o.p,lg=o.lunge||0;
     if(p<.35){const k=p/.35;d.x=-dx*lg*.5*k;d.y=-dy*lg*.25*k;d.rot=-.1*k*s;d.sy=1+.03*k;d.sx=1-.02*k;}
@@ -5005,7 +5011,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
   try{await loadAll();}catch(e){$('title').insertAdjacentHTML('beforeend','<div style="color:#f88">Erro ao carregar: '+e.message+'</div>');console.error(e);return;}
   $('bNew').disabled=false;$('bCont').disabled=false;$('bCont').textContent=_ct;
   if(SAVE)G.zoneLv=clamp(SAVE.zone||1,1,DUN.length);
-  window.__mmo={mobSnd,crSynth,killMob,spawnBoss,update,isWater,blockedAt,evStart,BUF,AMBS,mobSnd,bossSnd,enterRoom,dgTitle,spawnVamp,spawnSkrix,spawnJavcap,spawnBotic,MOBS,killMob,mkMob,dgUnlocked,dgRefresh,xpGapMul,DUN,stAdd,BAL,openWin,levelUpFx,gainXP,banner,hStyle,wCat,skOk,UNIQUES,getZone:()=>ZONE,petTick,PETS,pb,SETS,setCount,sb,genItem,qEv,qCheck,partyAdd,partyClear,QMAIN,qInit,socRefresh,TALENTS,tfCalc,tlTotal,TL_REQ,TL_TIER,potPrice,SLOTS,recalcHero,AMBEV,ambStart,ambStop,AMBS,zoneMusic,TOD,LIFE,evStart,makeElite,ELMOD,addZone,heroDodge,spawnBossNow:spawnBoss,stAdd,STDEF,applySkillStatus,MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
+  window.__mmo={entFrame,mobSnd,crSynth,killMob,spawnBoss,update,isWater,blockedAt,evStart,BUF,AMBS,mobSnd,bossSnd,enterRoom,dgTitle,spawnVamp,spawnSkrix,spawnJavcap,spawnBotic,MOBS,killMob,mkMob,dgUnlocked,dgRefresh,xpGapMul,DUN,stAdd,BAL,openWin,levelUpFx,gainXP,banner,hStyle,wCat,skOk,UNIQUES,getZone:()=>ZONE,petTick,PETS,pb,SETS,setCount,sb,genItem,qEv,qCheck,partyAdd,partyClear,QMAIN,qInit,socRefresh,TALENTS,tfCalc,tlTotal,TL_REQ,TL_TIER,potPrice,SLOTS,recalcHero,AMBEV,ambStart,ambStop,AMBS,zoneMusic,TOD,LIFE,evStart,makeElite,ELMOD,addZone,heroDodge,spawnBossNow:spawnBoss,stAdd,STDEF,applySkillStatus,MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
   requestAnimationFrame(frame);
 })();
 
