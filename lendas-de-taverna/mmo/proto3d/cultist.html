@@ -1,13 +1,13 @@
 <!doctype html><meta charset=utf-8><body style="margin:0;background:#3a5c78">
-<canvas id=c width=240 height=260 style="width:720px;height:780px;image-rendering:pixelated"></canvas>
+<canvas id=c width=190 height=205 style="width:760px;height:820px;image-rendering:pixelated"></canvas>
 <script src="../three.min.js"></script>
 <script>
-const W=240,H=260,cv=document.getElementById('c');
+const W=190,H=205,cv=document.getElementById('c');
 const R=new THREE.WebGLRenderer({canvas:cv,antialias:false,alpha:true,preserveDrawingBuffer:true});R.setSize(W,H,false);R.setPixelRatio(1);R.setClearColor(0,0);
 const scene=new THREE.Scene();
 const cam=new THREE.PerspectiveCamera(32,W/H,.1,100);
 const TILT=47*Math.PI/180;
-function placeCam(x,z){const d=9.2,ty=1.45;cam.position.set(x,ty+d*Math.sin(TILT),z+d*Math.cos(TILT));cam.lookAt(x,ty,z);}
+function placeCam(x,z){const d=8.2,ty=1.4;cam.position.set(x,ty+d*Math.sin(TILT),z+d*Math.cos(TILT));cam.lookAt(x,ty,z);}
 // luz + gradiente toon
 const gd=new THREE.DataTexture(new Uint8Array([40,40,40,255, 120,120,120,255, 200,200,200,255, 255,255,255,255]),4,1,THREE.RGBAFormat);gd.minFilter=gd.magFilter=THREE.NearestFilter;gd.needsUpdate=true;
 scene.add(new THREE.AmbientLight(0x6a6aa0,.9));
@@ -15,6 +15,7 @@ const sun=new THREE.DirectionalLight(0xfff0e0,1.15);sun.position.set(-4,8,5);sce
 const rimL=new THREE.DirectionalLight(0x7aa0ff,.5);rimL.position.set(5,3,-6);scene.add(rimL);
 const mats={};
 function M(c,em){const k=c+(em||'');return mats[k]||(mats[k]=new THREE.MeshToonMaterial({color:c,gradientMap:gd,emissive:em||0x000000,side:THREE.DoubleSide}));}
+function Mv(c){const k='v'+c;return mats[k]||(mats[k]=new THREE.MeshToonMaterial({color:c,gradientMap:gd,vertexColors:true,side:THREE.DoubleSide}));}
 const outMat=new THREE.ShaderMaterial({side:THREE.BackSide,uniforms:{t:{value:.03},col:{value:new THREE.Color(0x0a0618)}},vertexShader:'uniform float t;void main(){gl_Position=projectionMatrix*modelViewMatrix*vec4(position+normal*t,1.);}',fragmentShader:'uniform vec3 col;void main(){gl_FragColor=vec4(col,1.);}'});
 function mesh(geo,mat,outline=true,t){const m=new THREE.Mesh(geo,mat);if(outline){const o=new THREE.Mesh(geo,outMat);m.add(o);}return m;}
 const C={robe:0x6430b8,robeD:0x3a1878,robeL:0x9a60f0,gold:0xf0b830,red:0xc02840,skin:0xb08050,steel:0x94b4e0,void:0x08040e};
@@ -22,12 +23,15 @@ const G=new THREE.Group();scene.add(G);   // posicao/rumo no mundo
 const body=new THREE.Group();G.add(body);   // pelvis
 const PELV=1.15;body.position.y=PELV;
 // ---- saia: paineis com molas ----
-const panels=[];const NP=10;
+const panels=[];const NP=14;
+function paint(geo,lo,hi,y0,y1){const p=geo.attributes.position,c=new Float32Array(p.count*3);for(let i=0;i<p.count;i++){const t=Math.max(0,Math.min(1,(p.getY(i)-y0)/(y1-y0)));const k=lo+(hi-lo)*t;c[i*3]=c[i*3+1]=c[i*3+2]=k;}geo.setAttribute('color',new THREE.BufferAttribute(c,3));}
 for(let i=0;i<NP;i++){
-  const th=i/NP*Math.PI*2;const geo=new THREE.CylinderGeometry(.40,.72,1.02,3,1,true,th-.05,Math.PI*2/NP+.1);geo.translate(0,-.51,0);
+  const th=i/NP*Math.PI*2,len=Math.PI*2/NP;const geo=new THREE.CylinderGeometry(.40,.74,1.02,4,5,true,th-.04,len+.08);
+  const pa=geo.attributes.position;for(let v=0;v<pa.count;v++){const x=pa.getX(v),z=pa.getZ(v),y=pa.getY(v),a=Math.atan2(x,z);const fold=1+.07*Math.sin(a*NP*1.0+0)*(y<0?1:0)+.03*Math.sin(y*6+i);pa.setX(v,x*fold);pa.setZ(v,z*fold);if(y<-.45)pa.setY(v,y+.05*Math.sin(i*1.9+a*3)*((-.51-y)<.1?1:0)-.05*(i%3==0));}
+  geo.computeVertexNormals();geo.translate(0,-.51,0);paint(geo,.55,1.08,-1.02,0);
   const pv=new THREE.Group();pv.position.y=-.05;body.add(pv);
-  const m=mesh(geo,M(i%2?C.robe:C.robeD));pv.add(m);
-  const trim=new THREE.Mesh(new THREE.CylinderGeometry(.705,.725,.09,3,1,true,th-.05,Math.PI*2/NP+.1),M(C.gold));trim.position.y=-.97;pv.add(trim);
+  const m=mesh(geo,Mv(i%2?C.robe:0x5a28a8));pv.add(m);
+  const tg=new THREE.CylinderGeometry(.725,.745,.08,4,1,true,th-.04,len+.08);const trim=new THREE.Mesh(tg,M(C.gold));trim.position.y=-.96;pv.add(trim);
   panels.push({g:pv,th,ax:0,az:0,vx:0,vz:0});
 }
 // ---- tronco ----
@@ -36,18 +40,23 @@ const chest=new THREE.Group();chest.position.y=.5;spine.add(chest);
 const torso=mesh(new THREE.SphereGeometry(.5,14,10),M(C.robe));torso.scale.set(1,1.15,.78);torso.position.y=-.15;chest.add(torso);
 const belt=mesh(new THREE.CylinderGeometry(.41,.43,.16,10,1,true),M(C.gold));belt.position.y=-.55;spine.add(belt);
 const gem=mesh(new THREE.SphereGeometry(.07,8,6),M(C.red,0x601020),false);gem.position.set(0,-.55,.43);spine.add(gem);
+const stole=mesh(new THREE.BoxGeometry(.24,.95,.05),M(0x4a1c90));stole.position.set(0,-.22,.42);stole.rotation.x=.12;chest.add(stole);for(const x of[-.12,.12]){const e=new THREE.Mesh(new THREE.BoxGeometry(.035,.97,.06),M(C.gold));e.position.set(x,-.22,.425);e.rotation.x=.12;chest.add(e);}
+const mantle=mesh(new THREE.SphereGeometry(.6,16,8,0,Math.PI*2,0,Math.PI/2),Mv(0x7a3cd0));mantle.scale.set(.92,.4,.7);mantle.position.y=.12;chest.add(mantle);{const g=mantle.geometry;paint(g,.7,1.1,0,.6);}
+const mtrim=mesh(new THREE.TorusGeometry(.6,.03,6,24),M(C.gold),false);mtrim.rotation.x=Math.PI/2;mtrim.scale.set(1,.78,1);mtrim.position.y=.12;chest.add(mtrim);
 const sashG=new THREE.Group();sashG.position.set(.1,-.55,.4);spine.add(sashG);
 const sash=mesh(new THREE.BoxGeometry(.13,.7,.03),M(C.red));sash.position.y=-.35;sashG.add(sash);
 // ---- cabeca/capuz ----
 const neck=new THREE.Group();neck.position.y=.52;chest.add(neck);
 const head=new THREE.Group();head.position.y=.12;neck.add(head);
-const hood=mesh(new THREE.SphereGeometry(.46,14,12),M(C.robe));hood.scale.set(1,1.1,1.08);hood.position.y=.2;head.add(hood);
-const peak=mesh(new THREE.ConeGeometry(.3,.62,8),M(C.robe));peak.position.set(0,.74,-.12);peak.rotation.x=-.5;head.add(peak);
-const face=new THREE.Mesh(new THREE.SphereGeometry(.34,12,10),M(C.void));face.scale.set(.95,1.1,.55);face.position.set(0,.2,.34);head.add(face);
-const rim=mesh(new THREE.TorusGeometry(.33,.07,6,16),M(C.robeL));rim.position.set(0,.2,.4);rim.scale.set(1,1.15,1);head.add(rim);
+const hg=new THREE.SphereGeometry(.47,20,16);{const p=hg.attributes.position;for(let v=0;v<p.count;v++){let x=p.getX(v),y=p.getY(v),z=p.getZ(v);const t=Math.max(0,(y-.1)/.47);z-=t*t*.2;x*=(1-.35*t*t);y+=t*t*.1;if(z>.1&&y<.1){z+=.02;}p.setXYZ(v,x,y,z);}hg.computeVertexNormals();paint(hg,.7,1.1,-.5,.7);}
+const hood=mesh(hg,Mv(C.robe));hood.scale.set(.9,.95,.95);hood.position.y=.2;head.add(hood);
+const peak=new THREE.Group();head.add(peak);
+const face=new THREE.Mesh(new THREE.SphereGeometry(.34,12,10),M(C.void));face.scale.set(.95,1.1,.6);face.position.set(0,.2,.38);head.add(face);
+const rim=mesh(new THREE.TorusGeometry(.33,.09,8,18),M(0x7a3cd0));rim.position.set(0,.2,.4);rim.scale.set(1,1.15,1);head.add(rim);
 const eyeM=new THREE.MeshBasicMaterial({color:0xff3a4a});const eyes=[];
 for(const x of[-.12,.12]){const e=new THREE.Mesh(new THREE.SphereGeometry(.055,8,6),eyeM);e.scale.set(1.2,.8,.6);e.position.set(x,.24,.55);head.add(e);eyes.push(e);}
-const tail=new THREE.Group();tail.position.set(0,.45,-.38);head.add(tail);const tailM=mesh(new THREE.ConeGeometry(.15,.5,6),M(C.robe));tailM.position.y=-.2;tailM.rotation.x=.2;tail.add(tailM);
+const tail=new THREE.Group();tail.position.set(0,.42,-.47);head.add(tail);const tailM=mesh(new THREE.ConeGeometry(.17,.62,8),M(C.robe));tailM.position.y=-.3;tailM.rotation.x=Math.PI-.35;tail.add(tailM);
+const halos=[];for(const x of[-.12,.12]){const hs=new THREE.Mesh(new THREE.SphereGeometry(.1,8,6),new THREE.MeshBasicMaterial({color:0xff2030,transparent:true,opacity:.35,depthWrite:false}));hs.position.set(x,.24,.54);head.add(hs);halos.push(hs);}
 // ---- bracos ----
 function arm(side){
   const sh=new THREE.Group();sh.position.set(side*.55,.3,0);chest.add(sh);
@@ -56,7 +65,7 @@ function arm(side){
   const el=new THREE.Group();el.position.y=-.62;sh.add(el);
   const ej=mesh(new THREE.SphereGeometry(.17,8,6),M(C.robe));el.add(ej);
   const sl=new THREE.Group();el.add(sl);const fore=mesh(new THREE.CylinderGeometry(.2,.3,.6,8,1,true),M(C.robeD));fore.position.y=-.3;sl.add(fore);
-  const hand=mesh(new THREE.SphereGeometry(.13,8,6),M(C.skin));hand.position.y=-.64;el.add(hand);
+  const hand=new THREE.Group();hand.position.y=-.64;el.add(hand);hand.add(mesh(new THREE.SphereGeometry(.13,8,6),M(C.skin)));for(const o of[-.07,0,.07]){const f=mesh(new THREE.CylinderGeometry(.032,.028,.13,5),M(C.skin),false);f.position.set(o,-.1,.06);f.rotation.x=.5;hand.add(f);}const th_=mesh(new THREE.CylinderGeometry(.034,.03,.1,5),M(C.skin),false);th_.position.set(side*.1,-.02,.07);th_.rotation.z=side*.9;hand.add(th_);
   return {sh,el,sl,hand};
 }
 const AR=arm(1),AL=arm(-1);   // direito segura a adaga, esquerdo o orbe
@@ -67,6 +76,9 @@ const pom=mesh(new THREE.SphereGeometry(.07,8,6),M(C.red,0x601020),false);pom.po
 const orbG=new THREE.Group();AL.el.add(orbG);orbG.position.set(0,-.8,.2);
 const orb=new THREE.Mesh(new THREE.SphereGeometry(.2,12,10),new THREE.MeshBasicMaterial({color:0xe8c0ff}));orbG.add(orb);
 const halo=new THREE.Mesh(new THREE.SphereGeometry(.3,12,10),new THREE.MeshBasicMaterial({color:0x7a40d0,transparent:true,opacity:.45,depthWrite:false}));orbG.add(halo);
+const orbit=[0,1,2].map(i=>{const m=new THREE.Mesh(new THREE.SphereGeometry(.05,6,5),new THREE.MeshBasicMaterial({color:0xe8c0ff}));orbG.add(m);return m;});
+const trail=[];for(let i=0;i<9;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(.07,6,5),new THREE.MeshBasicMaterial({color:0xcfe4ff,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending}));scene.add(m);trail.push({m,p:new THREE.Vector3()});}
+const tipV=new THREE.Vector3();
 // ---- pes ----
 const feet=[0,1].map(i=>{const f=mesh(new THREE.SphereGeometry(.2,10,8),M(0x5e3a24));f.scale.set(.9,.55,1.5);f.position.set((i?.2:-.2),.12,0);G.add(f);return f;});
 // ---- chao ----
@@ -125,6 +137,8 @@ function pose(cmd,dt){
   dag.rotation.x=Math.PI/2+(k.shR<-1.8?.5:0);
   orbG.scale.setScalar(k.orb*(.9+.1*Math.sin(t*14)));orbG.visible=k.orb>.4;
   eyes.forEach(e=>{e.scale.y=(cmd.anim==='hurt'||dead>0)?.12:(Math.sin(t*1.3)>.97?.1:.8);});
+  orbit.forEach((o,i)=>{const a=t*5+i*2.09;o.position.set(Math.cos(a)*.34,Math.sin(a*1.3)*.1,Math.sin(a)*.34);});
+  halos.forEach(h=>{h.scale.setScalar(1+.25*Math.sin(t*9));});
   // pes (passada)
   for(let i=0;i<2;i++){const p=ph+i*Math.PI,z=Math.sin(p)*.5*w,lift=Math.max(0,Math.cos(p))*.22*w;feet[i].position.set((i?.22:-.22),.1+lift,z+(.1*(1-w)*(i?1:-1)*.2));feet[i].rotation.x=-Math.cos(p)*.5*w;}
   // saia: mola por painel
@@ -142,6 +156,8 @@ function pose(cmd,dt){
   if(dead>0){const q=sm(Math.min(1,dead));G.rotation.x=0;body.parent.rotation.order='YXZ';G.rotation.x=-q*1.5;G.position.y=q*.5;
     if(dead>1)G.position.y=.5+.06*Math.exp(-(dead-1)*6)*Math.sin((dead-1)*22);}
   else {G.rotation.x=0;G.position.y=0;}
+  scene.updateMatrixWorld(true);blade.getWorldPosition(tipV);
+  const hit=cmd.anim==='attack'&&cmd.at>.38&&cmd.at<.8;for(let i=trail.length-1;i>0;i--)trail[i].p.copy(trail[i-1].p);trail[0].p.copy(tipV);trail.forEach((q,i)=>{q.m.position.copy(q.p);q.m.material.opacity=hit?Math.max(0,.75-i*.09):0;q.m.scale.setScalar(1-i*.07);});
   placeCam(G.position.x,G.position.z);
   ground.position.set(Math.round(G.position.x),0,Math.round(G.position.z));
   tex.offset.set(0,0);
