@@ -489,7 +489,10 @@ def main():
         frames.append(im.convert('RGB'))
     big = [f.resize((W * 2, H * 2), Image.NEAREST) for f in frames]
     big[4 + 6 + 8].save(os.path.join(OUT, 'rei_cripta.png'))
-    pal = big[20].quantize(colors=128, method=Image.MEDIANCUT, dither=Image.NONE)
+    pick = [big[i] for i in (5, 20, 36, 52, 68, 82)]
+    col = Image.new('RGB', (pick[0].width * 3, pick[0].height * 2))
+    for i, p in enumerate(pick): col.paste(p, ((i % 3) * p.width, (i // 3) * p.height))
+    pal = col.quantize(colors=200, method=Image.MEDIANCUT, dither=Image.NONE)
     q = [im.quantize(palette=pal, dither=Image.NONE) for im in big]
     q[0].save(os.path.join(OUT, 'rei_cripta.gif'), save_all=True, append_images=q[1:], duration=80, loop=0, disposal=1)
     # folha de poses
