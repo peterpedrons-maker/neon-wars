@@ -9,13 +9,33 @@ from pxrig import Grid, autoline, line_pts
 PAL = dict(K='#2a1420',
            R='#9a3030', r='#e84820', O='#f08018', L='#f8b060',
            s='#f2c99a', S='#e08c68', p='#f8e0bc', m='#6a3a4a',
-           k='#14101a', w='#ffffff', b='#2e86c8', B='#1c4a98',
+           k='#14101a', w='#ffffff', b='#2e86c8', B='#1c4a98', j='#2e86c8', Z='#fff4b0', z='#ff9a30', Y='#c83010', X='#ffd070', U='#5a46c8', u='#8a78f0', V='#2e2278', F='#f8f0e0', f='#d04040',
            T='#8a2c38', t='#b83c44', M='#5a2836',
            c='#7cc0f0', C='#3a86d0', D='#1c4a98',
            y='#f8b828', o='#e07a18', Q='#f08018', q='#f8b060',
            A='#f6faff', a='#9cb0d2', g='#e8b840', N='#6e4228')
 SEL = {**{k: '#5a2430' for k in 'RrOL'}, **{k: '#7a4050' for k in 'sSpm'}, **{k: '#14101a' for k in 'kwbB'},
-       **{k: '#4a2030' for k in 'TtM'}, **{k: '#14306a' for k in 'cCD'}, **{k: '#5a3010' for k in 'yoQq'}, **{k: '#26324e' for k in 'AagN'}}
+       **{k: '#4a2030' for k in 'TtM'}, **{k: '#14306a' for k in 'cCDj'}, **{k: '#5a3010' for k in 'yoQq'}, **{k: '#26324e' for k in 'AagN'}}
+
+
+def _pal(over):
+    d = dict(PAL); d.update(over); return d
+
+
+PALS = {
+    'warrior': PAL,
+    'mage': _pal(dict(R='#4a3290', r='#8a5ad0', O='#b896f4', L='#e6d4ff', T='#3a2a7a', t='#5e46b8', M='#241a58', c='#fff0a0', C='#f0c040', D='#a07820',
+                      y='#f0e8ff', o='#c8b8f0', Q='#6a3aa0', q='#9a6ad0', j='#4a3a98',
+                      U='#3a3898', u='#6a68d0', V='#22206a', Z='#fff4b0', z='#ff9a30', Y='#c83010', X='#ffd070')),
+    'archer': _pal(dict(R='#5a3418', r='#c0442c', O='#b06a30', L='#e0a868', T='#1c5a30', t='#3a9a48', M='#103a1c', c='#f8f0c0', C='#e8d890', D='#a09050',
+                        y='#d8b060', o='#8a6a30', Q='#6a4228', q='#a07850', j='#d8c890',
+                        U='#3a9a48', u='#6acb60', V='#1c5a30', F='#f8f0e0', f='#d04040')),
+}
+SELS = {
+    'warrior': SEL,
+    'mage': {**SEL, **{k: '#3a2470' for k in 'RrOL'}, **{k: '#1c1450' for k in 'TtM'}, **{k: '#5a3a10' for k in 'cCD'}, **{k: '#1c1450' for k in 'UuVyoQqXj'}, **{k: '#601000' for k in 'ZzY'}},
+    'archer': {**SEL, **{k: '#3a2010' for k in 'RrOL'}, **{k: '#0e3a1c' for k in 'TtMUuV'}, **{k: '#5a4a20' for k in 'cCDyoQqj'}, **{k: '#6a5a50' for k in 'Ff'}},
+}
 
 
 def _row(*segs, n=None):
@@ -94,8 +114,8 @@ BODY_F_BELT = '.oyyyy'
 BODY_F_HEM = '..TTTT'
 BODY_B_TOP = ['.cCCCC', '.cttCC']
 MITT_L = ['pss', 'sss', '.sS']
-BOOT_F = ['bbb', 'QQQ', 'qQQ']
-BOOT_S = ['.bb..', '.QQQq', 'QQQQQ']
+BOOT_F = ['jjj', 'QQQ', 'qQQ']
+BOOT_S = ['.jj..', '.QQQq', 'QQQQQ']
 
 BODY_S = dict(sc='.cCCCCD.', t0='.tttttT.', t1='.ttttTT.', t2='.tttMTT.', belt='.oyyyyo.', hem='..TTTT..')
 
@@ -122,6 +142,128 @@ def sword_rows(hand, ang, length=10):
     return cells, tip
 
 
+
+def staff_rows(hand, ang, length=24, orb=1):
+    """Cajado SEPARADO: cabo na mao, orbe de fogo no topo (orb 0..3 = tamanho do brilho)."""
+    a = math.radians(ang)
+    ux, uy = math.sin(a), math.cos(a)
+    bx, by = hand[0] - ux * 7, hand[1] - uy * 7
+    tip = (hand[0] + ux * (length - 7), hand[1] + uy * (length - 7))
+    cells = {}
+    pts = line_pts(round(bx), round(by), round(tip[0]), round(tip[1]))
+    for i, (x, y) in enumerate(pts):
+        cells[(x, y)] = 'g' if i == 0 else 'N'
+    tx, ty = round(tip[0]), round(tip[1])
+    for dx, dy in ((-1, 0), (1, 0), (0, 1)): cells[(tx + dx, ty + dy)] = 'g'           # garra de ouro
+    ox, oy = round(tip[0] + ux * 3), round(tip[1] + uy * 3)
+    r = {0: 1, 1: 2, 2: 3, 3: 4}[orb]
+    for dy in range(-r, r + 1):
+        for dx in range(-r, r + 1):
+            d = math.hypot(dx, dy)
+            if d <= r + .3:
+                cells[(ox + dx, oy + dy)] = 'Z' if d < r * .45 else 'z' if d < r * .85 else 'Y'
+    return cells, (ox, oy)
+
+
+def bow_rows(center, d, draw=0, arrow=True):
+    """Arco SEPARADO + flecha (apontando para d=(dx,dy) unitario). Retorna cells, ponta da flecha, ponto onde a mao de puxar fica."""
+    dx, dy = d
+    px_, py_ = -dy, dx
+    cells = {}
+    n = 16
+    prev = None
+    top = None; bot = None
+    for i in range(n + 1):
+        t = -1 + 2 * i / n
+        bulge = 3.0 * (1 - t * t)
+        x = center[0] + px_ * t * 8 + dx * bulge
+        y = center[1] + py_ * t * 8 + dy * bulge
+        if prev is not None:
+            for (xx, yy) in line_pts(round(prev[0]), round(prev[1]), round(x), round(y)): cells[(xx, yy)] = 'N'
+        prev = (x, y)
+        if i == 0: top = (x, y)
+        if i == n: bot = (x, y)
+    pull = (center[0] - dx * draw, center[1] - dy * draw)
+    for p0 in (top, bot):
+        for (xx, yy) in line_pts(round(p0[0]), round(p0[1]), round(pull[0]), round(pull[1])): cells.setdefault((xx, yy), 'a')
+    cells[(round(top[0]), round(top[1]))] = 'g'; cells[(round(bot[0]), round(bot[1]))] = 'g'
+    tip = (center[0] + dx * 9, center[1] + dy * 9)
+    if arrow:
+        for (xx, yy) in line_pts(round(pull[0]), round(pull[1]), round(tip[0]), round(tip[1])): cells[(xx, yy)] = 'q'
+        cells[(round(tip[0]), round(tip[1]))] = 'A'
+        cells[(round(tip[0] - dx), round(tip[1] - dy))] = 'A'
+        for k in (0, 1, 2):
+            fx, fy = round(pull[0] + dx * k), round(pull[1] + dy * k)
+            cells[(fx + round(px_), fy + round(py_))] = 'r'; cells[(fx - round(px_), fy - round(py_))] = 'r'
+    return cells, tip, pull
+
+
+def weapon_rows(swd, hxy, view, back=False, bow_center=None):
+    """Roteador de armas. Retorna (cells, tip, behind, mitts2)."""
+    kind = swd.get('kind', 'sword')
+    if kind == 'staff':
+        cells, tip = staff_rows(hxy, swd.get('ang', 180), swd.get('len', 24), swd.get('orb', 1))
+        return cells, tip, False, []
+    if kind == 'bow':
+        c = bow_center or hxy
+        cells, tip, pull = bow_rows(c, swd['dir'], swd.get('draw', 0), swd.get('arrow', True))
+        return cells, tip, (back and swd['dir'][1] < 0), [pull]
+    cells, tip = sword_rows(hxy, swd['ang'], swd.get('len', 12))
+    behind = (back or (185 <= swd['ang'] <= 265)) if view == 'front' else (185 <= swd['ang'] <= 265)
+    return cells, tip, behind, []
+
+
+# ---------------------------------------------------------------- acessorios por classe
+HAT_F = ['..........u', '..........U', '.........uU', '.........uU', '........uUU', '........uUU', '.......uUUU', '.......XXXX', 'VUUUUUUUUUU', '.VVVVVVVVVV']
+
+
+def hat_side():
+    rows = []
+    for k in range(8):
+        w = 2 + (k // 2) * 2 + 2 if k < 6 else 10
+        w = [2, 2, 4, 4, 6, 6, 8, 8][k]
+        start = 11 - w // 2 - int((7 - k) * 0.45)
+        r = ['.'] * 23
+        for i in range(w): r[start + i] = 'u' if i == 0 else 'U'
+        if k == 7:
+            for i in range(w): r[start + i] = 'X'
+        rows.append(''.join(r))
+    rows.append('V' + 'U' * 21 + 'V')
+    rows.append('.' + 'V' * 21 + '.')
+    return rows
+
+
+def cap_head(rows, view):
+    """Boné do arqueiro: recolore o topo do cabelo."""
+    mp = {'R': 'V', 'O': 'U', 'L': 'u', 'r': 'U'}
+    out = []
+    for i, r in enumerate(rows):
+        if i <= 5: r = ''.join(mp.get(c, c) for c in r)
+        elif i == 6: r = ''.join('V' if c in 'ROLr' else c for c in r)
+        out.append(r)
+    return out
+
+
+def cap_head_side(rows):
+    out = cap_head(rows, 'side')
+    r7 = ''.join('V' if c in 'ROLr' else c for c in out[7])
+    out[7] = r7
+    r8 = list(out[8])
+    for i in range(16, min(21, len(r8))):
+        if r8[i] != '.': r8[i] = 'V'
+    out[8] = ''.join(r8)
+    return out
+
+
+def accessory(g, cls, view, hx, hy, back=False):
+    if cls == 'mage':
+        if view == 'side': g.stamp(hat_side(), hx - 1, hy - 4)
+        else: g.stamp(HAT_F, hx, hy - 4, mirror=True, rshade=dict(u='U'))
+    elif cls == 'archer':
+        if view == 'side': g.stamp(['..F', '.Ff', 'Ff.', 'f..'], hx + 4, hy - 3)
+        else: g.stamp(['..F', '.Ff', 'Ff.', 'f..'], hx + 17, hy - 3)
+
+
 def stamp_cells(g, cells):
     for (x, y), c in cells.items(): g.put(x, y, c)
     for (x, y) in list(cells):
@@ -146,14 +288,14 @@ def build_front(p, back=False):
     body_h = tn + 3
     body_top = boot_top - body_h
     my0 = body_top + 2
-    swd = p.get('sw'); tip = None; hxy = None; behind = False
+    cls = p.get('cls', 'warrior')
+    swd = p.get('sw'); tip = None; hxy = None; behind = False; hands2 = []
     if swd:
         side = swd.get('side', 'r')
         al_, ar_ = p.get('al', (0, 0)), p.get('ar', (0, 0))
         hxy = (cx + (7 if side == 'r' else -7) + dx + (ar_ if side == 'r' else al_)[0] + 1, my0 + 1 + (ar_ if side == 'r' else al_)[1])
         if side != 'r': hxy = (hxy[0] - 1, hxy[1])
-        cells, tip = sword_rows(hxy, swd['ang'], swd.get('len', 12))
-        behind = back or (185 <= swd['ang'] <= 265)
+        cells, tip, behind, hands2 = weapon_rows(swd, hxy, 'front', back, (cx + dx + 1, my0 + 3))
         if behind: stamp_cells(g, cells)
     # botas
     g.stamp(BOOT_F, cx - 5 + dx + bl[0], boot_top - bl[1])
@@ -162,26 +304,41 @@ def build_front(p, back=False):
     rows = (BODY_B_TOP if back else BODY_F_TOP) + [BODY_F_MID] * max(0, tn - 2) + [BODY_F_FOLD if tn >= 3 else BODY_F_MID, BODY_F_BELT, BODY_F_HEM]
     rows = rows[:body_h]
     g.stamp(rows, cx - 6 + dx, body_top, mirror=True, rshade=dict(t='T', c='C', y='o'))
+    if cls == 'mage': g.stamp(['.tttttT', 'TTTTTTT'], cx - 7 + dx, boot_top - 1, mirror=True, rshade=dict(t='T'))
     # maos (blocos de pele)
     al, ar = p.get('al', (0, 0)), p.get('ar', (0, 0))
     my = body_top + 2
+    bow = bool(swd and swd.get('kind') == 'bow')
     if not p.get('nomitt'):
-        g.stamp(MITT_L, cx - 9 + dx + al[0], my + al[1])
-        g.stamp([r[::-1] for r in MITT_L], cx + 6 + dx + ar[0], my + ar[1])
+        if not (bow and hands2): g.stamp(MITT_L, cx - 9 + dx + al[0], my + al[1])
+        if not bow: g.stamp([r[::-1] for r in MITT_L], cx + 6 + dx + ar[0], my + ar[1])
     # cabeca
     hx, hy = cx - 11 + dx + p.get('hdx', 0), body_top - 17 + p.get('hdy', 0)
     head = list(HEAD_B if back else HEAD_F)
+    if cls == 'archer': head = cap_head(head, 'front')
     if p.get('face') == 'shout' and not back:
         head[15] = '...sskkksssk'
     if p.get('face') == 'blink' and not back:
         head[10] = 'RrOsskkkssp'; head[11] = 'RrOssssssss'; head[12] = 'ROOssssssss'; head[13] = '.rOssssssss'
     g.stamp(head, hx, hy, mirror=True, rshade=RSH_F)
+    accessory(g, cls, 'front', hx, hy, back)
+    for hp in hands2:
+        for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(hp[0]) + ox, round(hp[1]) + oy, 's')
+    if bow:
+        bc = (cx + dx + 1, my0 + 3)
+        for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(bc[0]) + ox - 1, round(bc[1]) + oy - 1, 's')
     autoline(g)
     # espada separada (por cima do corpo, exceto quando passa atras da cabeca)
     if swd:
         if not behind: stamp_cells(g, cells)
-        for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)):
-            g.put(round(hxy[0]) - 1 + ox, round(hxy[1]) - 1 + oy, 's' if oy == 0 else 'S')
+        if bow:
+            bc = (cx + dx + 1, my0 + 3)
+            for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(bc[0]) - 1 + ox, round(bc[1]) - 1 + oy, 's' if oy == 0 else 'S')
+            for hp in hands2:
+                for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(hp[0]) + ox, round(hp[1]) + oy, 's' if oy == 0 else 'S')
+        else:
+            for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)):
+                g.put(round(hxy[0]) - 1 + ox, round(hxy[1]) - 1 + oy, 's' if oy == 0 else 'S')
     return g, tip, behind
 
 
@@ -196,17 +353,18 @@ def build_side(p):
     body_top = boot_top - body_h
     bk, bf = p.get('bl', (0, 0)), p.get('br', (0, 0))      # pe de tras, pe da frente (dx, lift)
     ab_, af_ = p.get('al', (0, 0)), p.get('ar', (0, 0))
-    swd = p.get('sw'); tip = None; behind = False
+    cls = p.get('cls', 'warrior')
+    swd = p.get('sw'); tip = None; behind = False; hands2 = []
     if swd:
         hxy = (cx + 4 + dx + af_[0] + 1, body_top + 4 + af_[1])
-        cells, tip = sword_rows(hxy, swd['ang'], swd.get('len', 12))
-        behind = 185 <= swd['ang'] <= 265
+        cells, tip, behind, hands2 = weapon_rows(swd, hxy, 'side', False, (hxy[0] + 2, hxy[1]))
         if behind: stamp_cells(g, cells)
     g.stamp(BOOT_S, cx - 6 + dx + bk[0], boot_top - bk[1])
     g.stamp(BOOT_S, cx - 1 + dx + bf[0], boot_top - bf[1])
     rows = [BODY_S['sc'], BODY_S['t0']] + [BODY_S['t1']] * max(0, tn - 2) + [BODY_S['t2'], BODY_S['belt'], BODY_S['hem']]
     rows = rows[:body_h]
     g.stamp(rows, cx - 5 + dx + p.get('bdx', 0), body_top)
+    if cls == 'mage': g.stamp(['.tttttttTT.', 'TTTTTTTTTTT'], cx - 6 + dx + p.get('bdx', 0), boot_top - 1)
     fl = p.get('flut', 0)
     g.stamp(['CC.', '.CD', '..D'], cx - 8 + dx + p.get('bdx', 0) - fl, body_top + fl // 2)
     # braco de tras (so um bloco atras) e da frente
@@ -215,18 +373,25 @@ def build_side(p):
     # cabeca (perfil)
     hx, hy = cx - 11 + dx + p.get('hdx', 0), body_top - 17 + p.get('hdy', 0)
     head = make_head_side('shout' if p.get('face') == 'shout' else 'n', 'closed' if p.get('face') == 'blink' else 'open')
+    if cls == 'archer': head = cap_head_side(head)
     g.stamp(head, hx, hy)
+    accessory(g, cls, 'side', hx, hy)
     if not p.get('nomitt'): g.stamp(['ss', 'sS'], cx + 3 + dx + af[0], body_top + 3 + af[1])
     autoline(g)
     if swd:
         if not behind: stamp_cells(g, cells)
-        g.put(round(hxy[0]) - 1, round(hxy[1]) - 1, 's'); g.put(round(hxy[0]), round(hxy[1]) - 1, 's')
-        g.put(round(hxy[0]) - 1, round(hxy[1]), 'S'); g.put(round(hxy[0]), round(hxy[1]), 'S')
+        bowd = swd.get('kind') == 'bow'
+        mc = (hxy[0] + 2, hxy[1]) if bowd else hxy
+        g.put(round(mc[0]) - 1, round(mc[1]) - 1, 's'); g.put(round(mc[0]), round(mc[1]) - 1, 's')
+        g.put(round(mc[0]) - 1, round(mc[1]), 'S'); g.put(round(mc[0]), round(mc[1]), 'S')
+        for hp in hands2:
+            g.put(round(hp[0]) - 1, round(hp[1]) - 1, 's'); g.put(round(hp[0]), round(hp[1]) - 1, 's')
+            g.put(round(hp[0]) - 1, round(hp[1]), 'S'); g.put(round(hp[0]), round(hp[1]), 'S')
     return g, tip, behind
 
 
-def render(g):
-    return g.render(PAL, SEL)
+def render(g, cls='warrior'):
+    return g.render(PALS[cls], SELS[cls])
 
 
 # ---------------------------------------------------------------- animacoes
@@ -288,15 +453,17 @@ ATK_S = [
 ]
 
 
-def anim(view, kind):
+def anim(view, kind, cls='warrior', ps_override=None):
     out = []
     if kind == 'walk': ps = [walk_params(f, 8, view) for f in range(8)]
     elif kind == 'idle': ps = [idle_params(f, 6, view) for f in range(6)]
     else: ps = ATK_S if view == 'right' else (ATK_B if view == 'up' else ATK_F)
+    if ps_override is not None: ps = ps_override
     for p in ps:
+        p = dict(p, cls=cls)
         if view == 'right': g, tip, bh = build_side(p)
         else: g, tip, bh = build_front(p, back=(view == 'up'))
-        out.append((render(g), tip, bh))
+        out.append((render(g, cls), tip, bh))
     return out
 
 
