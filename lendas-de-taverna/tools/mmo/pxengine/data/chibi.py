@@ -139,7 +139,7 @@ def _no_speckle(rows, top, bot):
 
 # frente: mechas saindo da coroa para baixo/fora
 HEAD_F = _strands(_no_speckle(HEAD_F, 1, 7), [(8, 2), (7, 3), (6, 4), (5, 5), (4, 6), (5, 2), (4, 3), (3, 4)])
-HEAD_B = _strands(_no_speckle(HEAD_B, 1, 12), [(8, 2), (7, 3), (6, 4), (5, 5), (4, 6), (3, 8), (3, 9), (9, 5), (8, 7), (8, 8), (7, 10), (6, 12), (5, 2), (4, 3), (3, 4)])
+HEAD_B = _strands(_no_speckle(HEAD_B, 1, 12), [(8, 3), (7, 4), (6, 5), (5, 6), (3, 9), (3, 10), (9, 8), (9, 9)])
 HEAD_F_UP = HEAD_F[:9] + [HEAD_F[10], HEAD_F[11], HEAD_F[12], HEAD_F[13], HEAD_F[14], HEAD_F[15], '....ssssssS', '....SSSSSSS', '......SSSSS']
 HEAD_S = _strands(_no_speckle([r for r in HEAD_S], 1, 7) if False else HEAD_S,
                   [(8, 2), (7, 3), (6, 4), (5, 5), (4, 6), (3, 8), (2, 10), (12, 2), (11, 3), (10, 4), (9, 5), (8, 6), (7, 8), (6, 10), (5, 12), (4, 3), (3, 4), (3, 6)])
@@ -361,22 +361,21 @@ def weapon_rows(swd, hxy, view, back=False, bow_center=None):
 
 
 # ---------------------------------------------------------------- acessorios por classe
-HAT_F = ['..........u', '..........U', '.........uU', '.........uU', '........uUU', '........uUU', '.......uUUU', '.......XXXX', 'VUUUUUUUUUU', '.VVVVVVVVVV']
+HAT_F = ['............U', '...........uU', '..........uUU', '.........uUUU', '........uUUUU', '.......uUUUUU', '......uUUUUUU', '.....uUUUUUUU', '....uUUUUUUUU', '...XXXXXXXXXX', '..uUUUUUUUUUU', 'uUUUUUUUUUUUU', 'VVVVVVVVVVVVV']
 
 
 def hat_side():
     rows = []
-    for k in range(8):
-        w = 2 + (k // 2) * 2 + 2 if k < 6 else 10
-        w = [2, 2, 4, 4, 6, 6, 8, 8][k]
-        start = 11 - w // 2 - int((7 - k) * 0.45)
-        r = ['.'] * 23
-        for i in range(w): r[start + i] = 'u' if i == 0 else 'U'
-        if k == 7:
-            for i in range(w): r[start + i] = 'X'
+    for k in range(11):
+        w = min(21, 2 + 2 * k)
+        start = 11 - w // 2 - int((10 - k) * 0.5)
+        r = ['.'] * 25
+        for i in range(w): r[start + i + 1] = 'u' if i == 0 else 'U'
+        if k == 9:
+            for i in range(w): r[start + i + 1] = 'X'
         rows.append(''.join(r))
-    rows.append('V' + 'U' * 21 + 'V')
-    rows.append('.' + 'V' * 21 + '.')
+    rows.append('.V' + 'U' * 21 + 'V.')
+    rows.append('..' + 'V' * 21 + '..')
     return rows
 
 
@@ -490,10 +489,9 @@ def helm_head_side(rows):
 
 def accessory2(g, hat, view, hx, hy, back=False):
     if hat == 'wizard':
-        if view == 'side': g.stamp(hat_side(), hx - 1, hy - 4)
+        if view == 'side': g.stamp(hat_side(), hx - 2, hy - 7)
         else:
-            g.stamp(HAT_F, hx, hy - 4, mirror=True, rshade=dict(u='U'))
-            g.put(hx + 10, hy - 1, 'X'); g.put(hx + 11, hy - 1, 'X')
+            g.stamp(HAT_F, hx - 2, hy - 7, mirror=True, rshade=dict(u='U'))
     elif hat == 'cap':
         g.stamp(['..F', '.Ff', 'Ff.', 'f..'], hx + 4, hy - 3) if view == 'side' else g.stamp(['..F', '.Ff', 'Ff.', 'f..'], hx + 17, hy - 3)
     elif hat == 'helm':
@@ -524,9 +522,8 @@ def accessory(g, cls, view, hx, hy, back=False):
             for x in range(hx + 3, hx + 19): g.put(x, hy + 6, 'X')
             g.put(hx + 10, hy + 5, 'G'); g.put(hx + 11, hy + 5, 'G')
     if cls == 'mage':
-        if view == 'side': g.stamp(hat_side(), hx - 1, hy - 4)
-        else: g.stamp(HAT_F, hx, hy - 4, mirror=True, rshade=dict(u='U'))
-        g.put(hx + 10, hy - 1, 'X'); g.put(hx + 11, hy - 1, 'X')
+        if view == 'side': g.stamp(hat_side(), hx - 2, hy - 7)
+        else: g.stamp(HAT_F, hx - 2, hy - 7, mirror=True, rshade=dict(u='U'))
     elif cls == 'archer':
         if view == 'side': g.stamp(['..F', '.Ff', 'Ff.', 'f..'], hx + 4, hy - 3)
         else: g.stamp(['..F', '.Ff', 'Ff.', 'f..'], hx + 17, hy - 3)

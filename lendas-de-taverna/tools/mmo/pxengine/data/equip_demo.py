@@ -8,6 +8,7 @@ from teste_clareira import OUT
 import fx
 
 WS = ['espada_ferro', 'katana', 'cimitarra', 'florete', 'espada_larga', 'machado', 'chamejante', 'montante_real']
+TRAIL = False   # risco de corte so em skills; golpe basico sem risco (decisao do dono)
 COL = {'chamejante': (255, 140, 50)}
 Wd, Hd = 130, 90
 OX, OY = 14, 26
@@ -71,7 +72,7 @@ def run():
                 pass
             b.paste(img.convert('RGB'), (OX, OY), img)
             d = ImageDraw.Draw(b)
-            for j in range(1, len(trail)):
+            for j in (range(1, len(trail)) if TRAIL else []):
                 d.line([trail[j - 1], trail[j]], fill=tc, width=2 if j > len(trail) // 2 else 1)
             if True:
                 ex = 98
