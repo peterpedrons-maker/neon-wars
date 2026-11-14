@@ -592,6 +592,28 @@ def accessory2(g, hat, view, hx, hy, back=False):
             g.stamp(HAT_F, hx - 2, hy - 7, mirror=True, rshade=dict(u='U'))
     elif hat == 'cap':
         g.stamp(['..F', '.Ff', 'Ff.', 'f..'], hx + 4, hy - 3) if view == 'side' else g.stamp(['..F', '.Ff', 'Ff.', 'f..'], hx + 17, hy - 3)
+    elif hat == 'gob_ears':
+        if view == 'side':
+            g.stamp(['s......', 'ss.....', 'sss....', '.sSs...', '..sS...'], hx + 3, hy + 4)
+        else:
+            g.stamp(['s.....', 'ss....', 'sSs...', '.sSSs.', '..sSS.'], hx - 5, hy + 4)
+            g.stamp(['.....s', '....ss', '...sSs', '.sSSs.', '.SSs..'], hx + 21, hy + 4)
+    elif hat == 'boar':
+        if view == 'side':
+            g.stamp(['.sSSs', 'sSSkS', 'sSSSs', '.pSp.'], hx + 18, hy + 9)
+            g.put(hx + 21, hy + 13, 'p'); g.put(hx + 21, hy + 14, 'p')
+            g.stamp(['.rr', 'rRr'], hx + 4, hy - 1)
+        else:
+            g.stamp(['.sSSSSSSs.', 'sSSkSSkSSs', 'sSSSSSSSSs', '.sSSSSSSs.'], hx + 6, hy + 10)
+            g.put(hx + 6, hy + 14, 'p'); g.put(hx + 6, hy + 15, 'p'); g.put(hx + 15, hy + 14, 'p'); g.put(hx + 15, hy + 15, 'p')
+            g.stamp(['.rr', 'rRr'], hx - 1, hy + 1); g.stamp(['rr.', 'rRr'], hx + 20, hy + 1)
+    elif hat == 'rat_ears':
+        if view == 'side':
+            g.stamp(['.rrr.', 'rppSr', 'rppSr', '.rrr.'], hx + 3, hy - 4)
+            g.stamp(['k......', '.kk....'], hx + 19, hy + 11); g.stamp(['.kk', 'k..'], hx + 19, hy + 14)
+        else:
+            g.stamp(['.rrr.', 'rppSr', 'rppSr', '.rrr.'], hx - 1, hy - 3); g.stamp(['.rrr.', 'rSppr', 'rSppr', '.rrr.'], hx + 18, hy - 3)
+            g.stamp(['kk...', '..kk.'], hx - 3, hy + 12); g.stamp(['...kk', '.kk..'], hx + 20, hy + 12)
     elif hat == 'kinghelm':
         if view == 'side':
             for off, h in ((4, 3), (9, 5), (14, 6), (18, 4)):
@@ -950,7 +972,16 @@ HAIRS = {'ruivo': dict(R='#9a3030', r='#e84820', O='#f08018', L='#f8b060'), 'pre
          'castanho': dict(R='#4a2c14', r='#a8602c', O='#7a4a24', L='#b88050'), 'loiro': dict(R='#b89840', r='#e8c870', O='#f8e8a0', L='#fff8d0'),
          'branco': dict(R='#8a90a8', r='#c8d0e0', O='#e8ecf4', L='#ffffff'), 'azul': dict(R='#1c3a8a', r='#3a78e0', O='#4a98f0', L='#a0d0ff'),
          'rosa': dict(R='#a02860', r='#e8509a', O='#f878b8', L='#ffb8dc'), 'verde': dict(R='#1c5a30', r='#3aa850', O='#58c868', L='#a8f0a8')}
+SKINS.update({'goblin': dict(s='#86c050', S='#4e8a30', p='#b0e078'), 'osso': dict(s='#e6deee', S='#8a7aa8', p='#f8f4fc'),
+              'javali': dict(s='#c48c62', S='#8a5a38', p='#e8b890'), 'rato': dict(s='#a4a4b2', S='#6c6c7c', p='#ccccd8'),
+              'zumbi': dict(s='#8cac8a', S='#5a7a68', p='#b0ccae'), 'ogro': dict(s='#b0a862', S='#78703a', p='#d0c886'),
+              'fantasma': dict(s='#c4ecff', S='#6a9ad0', p='#eefaff')})
+HAIRS.update({'g_goblin': dict(R='#4e8a30', r='#86c050', O='#6aa83c', L='#a8dc78'), 'g_osso': dict(R='#8a7aa8', r='#e6deee', O='#c8c0d4', L='#f8f4fc'),
+              'g_javali': dict(R='#3a2214', r='#6a4020', O='#4e2e18', L='#8a5a30'), 'g_rato': dict(R='#5a5a6a', r='#9a9aaa', O='#7a7a8a', L='#c4c4d0'),
+              'g_zumbi': dict(R='#2a3a2c', r='#5a6a50', O='#3a4a3a', L='#7a8a70'), 'g_ogro': dict(R='#1a1408', r='#4a3c18', O='#2c2410', L='#6a5a28'),
+              'g_fantasma': dict(R='#6a9ad0', r='#c4ecff', O='#9ac8f0', L='#f4fcff')})
 EYES = {'azul': dict(b='#2e86c8', B='#1c4a98'), 'verde': dict(b='#38b058', B='#1c6a30'), 'castanho': dict(b='#9a6a38', B='#5a3418'),
+        'oco': dict(b='#ff5050', B='#a01820', w='#14081e'), 'amarelo': dict(b='#f8e040', B='#a08818', w='#2a2a10'), 'brasa': dict(b='#ff8a30', B='#b0400c', w='#1c0c08'),
         'violeta': dict(b='#9a58e0', B='#5a2aa0'), 'vermelho': dict(b='#e84a4a', B='#901c24'), 'dourado': dict(b='#f0c040', B='#a07820')}
 CLOTHES = {'vermelho': dict(T='#8a2c38', t='#b83c44', M='#5a2836'), 'azul': dict(T='#244a9a', t='#3a78d8', M='#162c60'), 'verde': dict(T='#1c5a30', t='#3a9a48', M='#103a1c'),
            'roxo': dict(T='#3a2a7a', t='#5e46b8', M='#241a58'), 'preto': dict(T='#1c1c2a', t='#383850', M='#0c0c18'), 'branco': dict(T='#a89cc0', t='#f4f0fa', M='#7a7098'),
@@ -1031,8 +1062,9 @@ def apply_appearance(p, app):
     q = dict(p)
     if 'hat' in app: q['hat'] = app['hat']
     if 'outfit' in app: q['outfit'] = app['outfit']
+    if app.get('noweapon'): q['sw'] = None; q.pop('sw2', None)
     wid = app.get('weapon')
-    if wid and q.get('sw'):
+    if wid and q.get('sw') and not app.get('noweapon'):
         w = WEAPONS[wid]
         keep = {k: v for k, v in q['sw'].items() if k in ('ang', 'dir', 'draw', 'arrow', 'orb', 'side')}
         base = {k: v for k, v in w.items() if k != 'pal'}
@@ -1159,13 +1191,13 @@ def extra_poses(kind, view):
     if kind == 'cast':
         sw = lambda a: dict(ang=a, len=12, side='r') if view != 'right' else dict(ang=a, len=12)
         return [dict(tn=3, ar=(0, 0), sw=sw(165)), dict(tn=2, ar=(0, -2), al=(0, -1), sw=sw(180), hdy=0),
-                dict(tn=3, ar=(0, -5), al=(0, -5), sw=sw(up), face='angry', hdy=-1), dict(tn=3, ar=(0, -6), al=(0, -6), sw=sw(up), face='shout', hdy=-1, dy=-1),
+                dict(tn=3, ar=(0, -5), al=(0, -5), sw=sw(up), face='shout', hdy=-1), dict(tn=3, ar=(0, -6), al=(0, -6), sw=sw(up), face='shout', hdy=-1, dy=-1),
                 dict(tn=3, ar=(0, -6), al=(0, -6), sw=sw(up), face='shout', hdy=-1, dy=-1), dict(tn=3, ar=(0, -6), al=(0, -6), sw=sw(up), face='shout', hdy=-1, dy=-1),
                 dict(tn=3, ar=(0, -3), al=(0, -3), sw=sw(175), face='shout'), dict(tn=3, ar=(0, 0), sw=sw(165))]
     if kind == 'hurt':
         sw = lambda a: dict(ang=a, len=12, side='r') if view != 'right' else dict(ang=a, len=12)
         return [dict(tn=2, dx=-1, hdx=-1, ar=(-1, 1), al=(1, 1), sw=sw(150), face='hurt'), dict(tn=2, dx=-2, hdx=-2, hdy=1, ar=(-2, 1), al=(2, 1), sw=sw(140), face='hurt'),
-                dict(tn=3, dx=-1, hdx=-1, ar=(-1, 0), sw=sw(150), face='angry'), dict(tn=3, ar=(0, 0), sw=sw(165), face='angry')]
+                dict(tn=3, dx=-1, hdx=-1, ar=(-1, 0), sw=sw(150)), dict(tn=3, ar=(0, 0), sw=sw(165))]
     sw = lambda a: dict(ang=a, len=12, side='r') if view != 'right' else dict(ang=a, len=12)
     return [dict(tn=2, dx=-1, hdx=-1, ar=(-1, 1), sw=sw(150), face='shout'), dict(tn=1, dx=-2, dy=1, hdx=-2, hdy=1, ar=(-2, 2), al=(2, 2), sw=sw(130), face='hurt'),
             dict(tn=1, dx=-3, dy=3, hdx=-3, hdy=3, ar=(-3, 3), al=(3, 2), bl=(-2, 0), br=(2, 0), sw=sw(115), face='shout'),
