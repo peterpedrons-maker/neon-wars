@@ -1,97 +1,102 @@
 <title>Estúdio do Rei</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
-/* Layout: visualizador fixo no topo (celular) / à esquerda (tela larga), controles por parte do corpo embaixo. Tema escuro de bancada, âmbar para o que o usuário mexe. */
-:root{--bg:#f2eee8;--panel:#fffdf9;--panel2:#ece6dc;--line:#d8cfc2;--fg:#231d18;--mute:#7a6e62;--acc:#c2570c;--acc2:#8a3d08;--ok:#2f7d4f;--warn:#b3261e;--key:#1f6f8b;--stage:#2c3a50}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15130f;--panel:#201c17;--panel2:#2a251f;--line:#3a332b;--fg:#f1e9dd;--mute:#a79a8a;--acc:#ff9a3d;--acc2:#ffbd7a;--ok:#6fcf97;--warn:#ff7b72;--key:#6cc3e0;--stage:#2c3a50;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#15130f;--panel:#201c17;--panel2:#2a251f;--line:#3a332b;--fg:#f1e9dd;--mute:#a79a8a;--acc:#ff9a3d;--acc2:#ffbd7a;--ok:#6fcf97;--warn:#ff7b72;--key:#6cc3e0;--stage:#2c3a50;color-scheme:dark}
+/* Tela única: o Rei no topo com alças para tocar e arrastar, painel compacto embaixo, gaveta de ajuste fino. Bancada escura, âmbar = o que o usuário está mexendo, azul = poses. */
+:root{--bg:#f2eee8;--panel:#fffdf9;--panel2:#ece6dc;--line:#d8cfc2;--fg:#231d18;--mute:#7a6e62;--acc:#c2570c;--ok:#2f7d4f;--warn:#b3261e;--key:#1f6f8b;--stage:#2c3a50}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15130f;--panel:#201c17;--panel2:#2a251f;--line:#3a332b;--fg:#f1e9dd;--mute:#a79a8a;--acc:#ff9a3d;--ok:#6fcf97;--warn:#ff7b72;--key:#6cc3e0;--stage:#2c3a50;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15130f;--panel:#201c17;--panel2:#2a251f;--line:#3a332b;--fg:#f1e9dd;--mute:#a79a8a;--acc:#ff9a3d;--ok:#6fcf97;--warn:#ff7b72;--key:#6cc3e0;--stage:#2c3a50;color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font:15px/1.4 "Inter",system-ui,sans-serif;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 40px}
-h1,h2{font-family:"Space Grotesk","Inter",system-ui,sans-serif;margin:0;letter-spacing:-.01em}
-h1{font-size:20px}h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);font-weight:600}
-button{font:inherit;color:inherit;background:var(--panel2);border:1px solid var(--line);border-radius:10px;min-height:42px;padding:0 14px;cursor:pointer}
-button:hover{border-color:var(--acc)}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font:15px/1.35 "Inter",system-ui,sans-serif;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));padding-block:8px;overflow:hidden}
+[hidden]{display:none!important}
+h2{font:600 12px "Space Grotesk","Inter",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);margin:0}
+button{font:inherit;color:inherit;background:var(--panel2);border:1px solid var(--line);border-radius:10px;min-height:40px;padding:0 12px;cursor:pointer;touch-action:manipulation}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 button.on{background:var(--acc);color:#1a0f05;border-color:var(--acc);font-weight:600}
 button.ghost{background:transparent}button.danger{color:var(--warn)}
-.app{max-width:1080px;margin:0 auto;display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
-@media(min-width:900px){.app{grid-template-columns:minmax(0,440px) minmax(0,1fr);align-items:start}.left{position:sticky;top:12px}}
-.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:2px}
-.chip{font-size:12px;color:var(--mute);border:1px solid var(--line);border-radius:999px;padding:3px 10px;white-space:nowrap}
-.stage{position:relative;background:var(--stage);border-radius:14px;overflow:hidden;border:1px solid var(--line);aspect-ratio:1/1;touch-action:none}
-.stage canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
-.cams{position:absolute;right:8px;top:8px;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.cams button{min-height:32px;padding:0 10px;font-size:12px;background:rgba(20,16,12,.62);color:#f1e9dd;border-color:rgba(255,255,255,.18)}
+.app{height:100%;max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.top b{font:600 17px "Space Grotesk","Inter",system-ui,sans-serif}.top button{min-height:34px;padding:0 10px;font-size:13px}@media(max-width:430px){.top b{font-size:15px}.top .chip{display:none}}
+.chip{font-size:12px;color:var(--mute);border:1px solid var(--line);border-radius:999px;padding:2px 10px;white-space:nowrap}
+.stage{position:relative;flex:1 1 0;min-height:130px;background:var(--stage);border-radius:14px;overflow:hidden;border:1px solid var(--line);display:grid;place-items:center;touch-action:none}
+.stage canvas{position:absolute;top:0;left:50%;transform:translateX(-50%);height:100%;max-width:100%;aspect-ratio:1/1;image-rendering:pixelated}
+.cams{position:absolute;left:8px;top:8px;display:flex;gap:5px;flex-wrap:wrap;max-width:60%}
+.cams button{min-height:28px;padding:0 9px;font-size:11px;background:rgba(20,16,12,.62);color:#f1e9dd;border-color:rgba(255,255,255,.18)}
+.hint{position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:12px;color:#dfe8f5;text-shadow:0 1px 2px #000;pointer-events:none;padding:0 10px}
 .load{position:absolute;inset:0;display:grid;place-items:center;text-align:center;background:var(--stage);color:#e8eef7;padding:20px}
-[hidden]{display:none!important}
 .load b{display:block;font-size:16px;margin-bottom:6px}
-.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.bar .grow{flex:1}
-.seg{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+#handles{position:absolute;inset:0;pointer-events:none}
+.hd{position:absolute;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;pointer-events:auto;touch-action:none;background:rgba(255,154,61,.16);border:2px solid rgba(255,214,170,.85);min-height:0;padding:0;display:grid;place-items:center;color:#fff;font-size:10px;font-weight:700;box-shadow:0 0 0 1px rgba(0,0,0,.4)}
+.hd::after{content:"";width:10px;height:10px;border-radius:50%;background:#ffd9ae;box-shadow:0 0 0 1px rgba(0,0,0,.5)}
+.hd.sel{background:rgba(255,154,61,.38);border-color:#ffb056;box-shadow:0 0 0 4px rgba(255,154,61,.35),0 0 18px 6px rgba(255,154,61,.5);animation:pul 1.2s ease-in-out infinite}
+.hd .lb{position:absolute;top:100%;margin-top:3px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:11px;background:rgba(20,16,12,.8);border-radius:6px;padding:1px 6px;display:none}
+.hd.sel .lb{display:block}
+@keyframes pul{50%{box-shadow:0 0 0 7px rgba(255,154,61,.18),0 0 22px 8px rgba(255,154,61,.35)}}
+@media (prefers-reduced-motion:reduce){.hd.sel{animation:none}}
+.dock{display:grid;gap:7px;flex:0 0 auto}
+.bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.bar>*{flex:0 0 auto}.dock .bar{flex-wrap:nowrap}.dock .bar button{min-width:38px;padding:0 8px}.bar .grow{flex:1 1 auto}
+.seg{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
 .seg button{flex:0 0 auto}
-.time{position:relative;margin-top:6px}
-.marks{position:relative;height:26px}
-.mk{position:absolute;top:0;transform:translateX(-50%);min-height:0;width:22px;height:26px;padding:0;border-radius:6px;background:var(--key);border-color:transparent;color:#041218;font-size:11px;font-weight:700}
+.time{position:relative}
+.marks{position:relative;height:24px}
+.mk{position:absolute;top:0;transform:translateX(-50%);min-height:0;width:22px;height:24px;padding:0;border-radius:6px;background:var(--key);border-color:transparent;color:#041218;font-size:11px;font-weight:700}
 .mk.sel{background:var(--acc);color:#1a0f05;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--acc)}
-input[type=range]{width:100%;accent-color:var(--acc);height:30px;margin:0}
-.rd{font-variant-numeric:tabular-nums;font-size:13px;color:var(--mute);text-align:right}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:10px}
-.row{display:grid;gap:4px}
+input[type=range]{width:100%;accent-color:var(--acc);height:28px;margin:0}
+.rd{font-variant-numeric:tabular-nums;font-size:12px;color:var(--mute);text-align:right}
+.sheet{flex:0 0 auto;height:min(34dvh,290px);display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.sheet header{display:flex;gap:6px;padding:8px;border-bottom:1px solid var(--line);overflow-x:auto}
+.sheet header button{flex:0 0 auto;min-height:34px}
+.sheet .pane{overflow:auto;padding:12px;display:grid;gap:12px;align-content:start;flex:1}
+.row{display:grid;gap:3px}
 .row label{display:flex;justify-content:space-between;gap:10px;font-size:14px}
 .row label span{color:var(--mute);font-variant-numeric:tabular-nums}
-.row .hint{display:flex;justify-content:space-between;font-size:11px;color:var(--mute)}
+.row .hn{display:flex;justify-content:space-between;font-size:11px;color:var(--mute)}
 .note{font-size:13px;color:var(--mute)}
-textarea{width:100%;min-height:64px;resize:vertical;background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
-.msgs{display:grid;gap:8px;max-height:260px;overflow:auto}
+textarea{width:100%;min-height:58px;resize:vertical;background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
+.msgs{display:grid;gap:8px;max-height:200px;overflow:auto}
 .m{padding:8px 10px;border-radius:10px;background:var(--panel2);font-size:14px;white-space:pre-wrap}
 .m.u{background:var(--acc);color:#1a0f05;justify-self:end;max-width:92%}
-.sug{display:flex;gap:6px;flex-wrap:wrap}.sug button{min-height:34px;font-size:13px}
+.sug{display:flex;gap:6px;flex-wrap:wrap}.sug button{min-height:32px;font-size:12px}
 .notes{display:grid;gap:6px}.nt{display:flex;gap:8px;align-items:flex-start;font-size:14px;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
 .nt.done{opacity:.55;text-decoration:line-through}.nt .t{color:var(--key);font-variant-numeric:tabular-nums;white-space:nowrap}
 .nt p{margin:0;flex:1}.nt button{min-height:30px;padding:0 8px;font-size:12px}
 .err{color:var(--warn);font-size:13px}
 </style>
 <div class="app">
- <div class="left">
-  <div class="top"><h1>Estúdio do Rei</h1><span class="chip" id="save">pronto</span></div>
-  <div class="stage" id="stage">
-   <canvas id="c" width="300" height="300"></canvas>
-   <div class="cams"><button data-cam="jogo">Jogo</button><button data-cam="lado">Lado</button><button data-cam="frente">Frente</button><button data-cam="cima">Cima</button><button data-cam="perto">Perto</button></div>
-   <div class="load" id="load"><div><b>Esculpindo o Rei…</b><span>leva alguns segundos no celular</span></div></div>
-  </div>
-  <div class="card" style="margin-top:12px">
-   <div class="bar"><button id="play" class="on" aria-label="Tocar ou pausar">⏸ Pausar</button><button id="restart" aria-label="Voltar ao início">⏮</button><button id="loop" class="on">Repetir</button><button id="undo" class="ghost">↶ Desfazer</button></div>
-   <div class="seg" id="speeds"><button data-sp="0.1">0,1×</button><button data-sp="0.25">0,25×</button><button data-sp="0.5">0,5×</button><button data-sp="1" class="on">1×</button><button data-sp="1.5">1,5×</button></div>
-   <div class="time"><div class="marks" id="marks"></div><input type="range" id="scrub" min="0" max="1" step="0.001" value="0" aria-label="Linha do tempo"><div class="rd" id="rd">0,00 s</div></div>
-  </div>
+ <div class="top"><b>Estúdio do Rei</b><span class="chip" id="save">pronto</span><span style="flex:1"></span><button data-sheet="fine" id="bFine">Ajuste fino</button><button data-sheet="chat" id="bChat">Claude</button><button data-sheet="notes" id="bNotes">Notas</button></div>
+ <div class="stage" id="stage">
+  <canvas id="c" width="300" height="300"></canvas>
+  <div id="handles"></div>
+  <div class="cams"><button data-cam="jogo">Jogo</button><button data-cam="lado">Lado</button><button data-cam="frente">Frente</button><button data-cam="cima">Cima</button><button data-cam="perto">Perto</button></div>
+  <div class="hint" id="hint">Toque numa bolinha e arraste para mexer. Arraste o fundo para girar a câmera.</div>
+  <div class="load" id="load"><div><b>Esculpindo o Rei…</b><span>leva alguns segundos no celular</span></div></div>
  </div>
- <div class="right" style="display:grid;gap:14px">
-  <div class="card">
-   <h2>Animação</h2>
-   <div class="seg" id="anims"></div>
+ <div class="dock">
+  <div class="bar"><button id="play" class="on" aria-label="Tocar ou pausar">⏸</button><button id="restart" aria-label="Voltar ao início">⏮</button><button id="loop" class="on" aria-label="Repetir">⟲</button><button id="speed">1×</button><button id="undo" class="ghost">↶</button><span class="grow"></span><button id="addKey">+ Pose</button><button id="delKey" class="danger ghost" aria-label="Apagar pose">✕</button></div>
+  <div class="time"><div class="marks" id="marks"></div><input type="range" id="scrub" min="0" max="1" step="0.001" value="0" aria-label="Linha do tempo"><div class="rd" id="rd">0,00 s</div></div>
+  <div class="seg" id="anims"></div>
+   </div>
+ <div class="sheet" id="sheet" hidden>
+  <header><button data-pane="fine">Ajuste fino</button><button data-pane="chat">Claude</button><button data-pane="notes">Notas</button><span class="grow" style="flex:1"></span><button id="closeSheet" class="ghost">Fechar ✕</button></header>
+  <div class="pane" id="p-fine">
    <div class="note" id="animNote"></div>
-  </div>
-  <div class="card" id="keyCard">
-   <h2>Poses desta animação</h2>
-   <div class="bar"><button id="addKey">+ Pose aqui</button><button id="dupKey" class="ghost">Duplicar</button><button id="delKey" class="danger ghost">Apagar</button><button id="restore" class="ghost">Restaurar original</button></div>
    <div class="row"><label>Momento da pose selecionada <span id="keyT">–</span></label><input type="range" id="keyTime" min="0" max="1" step="0.01"></div>
    <div class="row"><label>Duração da animação <span id="durV">–</span></label><input type="range" id="dur" min="0.4" max="5" step="0.05"></div>
-  </div>
-  <div class="card">
+   <div class="bar"><button id="dupKey" class="ghost">Duplicar pose</button><button id="restore" class="ghost">Restaurar original</button></div>
    <h2>Parte do corpo</h2>
    <div class="seg" id="parts"></div>
    <div id="sliders" style="display:grid;gap:12px"></div>
   </div>
-  <div class="card">
-   <h2>Peça ao Claude</h2>
-   <div class="note">Escreva o que quer mudar. Ele mexe nas poses desta página e você vê na hora. Depois ajuste fino pelos controles.</div>
+  <div class="pane" id="p-chat" hidden>
+   <div class="note">Escreva o que quer mudar. O Claude mexe nas poses desta página e você vê na hora.</div>
    <div class="msgs" id="msgs"></div>
    <div class="sug" id="sug"></div>
    <textarea id="ask" placeholder="Ex.: no golpe, levante mais o braço direito antes de bater, e agache um pouco"></textarea>
    <div class="bar"><button id="send" class="on">Enviar</button><button id="stop" class="ghost" hidden>Parar</button><span class="err" id="askErr"></span></div>
   </div>
-  <div class="card">
-   <h2>Anotações</h2>
-   <div class="note">Pause no quadro estranho e anote. O Claude lê essas notas e corrige.</div>
+  <div class="pane" id="p-notes" hidden>
+   <div class="note">Pause no quadro estranho e anote. O Claude lê as notas e corrige.</div>
    <textarea id="noteText" placeholder="O que está errado neste momento?"></textarea>
    <div class="bar"><button id="addNote">Anotar neste momento</button><button id="copy" class="ghost">Copiar tudo (JSON)</button></div>
    <div class="notes" id="notes"></div>
