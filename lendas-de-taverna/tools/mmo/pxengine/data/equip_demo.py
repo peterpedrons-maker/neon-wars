@@ -50,6 +50,8 @@ def run():
             img = seq[0][0]
             if k >= 3:
                 ov = fx.layer() if False else None
+            d = ImageDraw.Draw(b)
+            d.ellipse([49, OY + 32, 65, OY + 40], fill=(40, 90, 40)); d.ellipse([49, OY + 22, 63, OY + 38], fill=(110, 200, 90), outline=(40, 120, 50))
             b.paste(img.convert('RGB'), (OX, OY), img)
             d = ImageDraw.Draw(b)
             if 2 <= k <= 6:
@@ -57,7 +59,6 @@ def run():
                 for a in range(0, 360, 30):
                     px = OX + 30 + math.cos(math.radians(a + k * 12)) * r; py = OY + 14 + math.sin(math.radians(a + k * 12)) * r * .7
                     d.point([px, py], fill=(255, 245, 160)); d.point([px + 1, py], fill=(255, 220, 90))
-            d.ellipse([59, OY + 32, 75, OY + 40], fill=(40, 90, 40)); d.ellipse([59, OY + 22, 73, OY + 38], fill=(110, 200, 90), outline=(40, 120, 50))
             label(b, (Wd // 2, 3), ('EQUIPANDO: ' if k < 7 else 'EQUIPADO: ') + wid.replace('_', ' ').upper(), (255, 240, 200), center=True)
             frames.append(b)
         # 2) golpe com rastro
@@ -70,18 +71,18 @@ def run():
             trail = trail[-5:]
             if not bh:
                 pass
-            b.paste(img.convert('RGB'), (OX, OY), img)
-            d = ImageDraw.Draw(b)
-            for j in (range(1, len(trail)) if TRAIL else []):
-                d.line([trail[j - 1], trail[j]], fill=tc, width=2 if j > len(trail) // 2 else 1)
             if True:
-                ex = 66
+                ex = 56
                 d.ellipse([ex - 8, OY + 32, ex + 8, OY + 40], fill=(40, 90, 40))
                 d.ellipse([ex - 7, OY + 22, ex + 7, OY + 38], fill=(255, 255, 255) if k in (5, 6) else (110, 200, 90), outline=(40, 120, 50))
                 d.point([ex - 3, OY + 28], fill=(0, 0, 0)); d.point([ex + 2, OY + 28], fill=(0, 0, 0))
                 if k in (6, 7): fx.draw_number(b, ex - 6, OY - 4 - (k - 6) * 3, str(40 + si * 7)) if False else None
+            b.paste(img.convert('RGB'), (OX, OY), img)
+            d = ImageDraw.Draw(b)
+            for j in (range(1, len(trail)) if TRAIL else []):
+                d.line([trail[j - 1], trail[j]], fill=tc, width=2 if j > len(trail) // 2 else 1)
             if k >= 5:
-                label(b, (66, OY + 14 - (k - 5)), str(40 + si * 7), (255, 224, 74), center=True)
+                label(b, (56, OY + 14 - (k - 5)), str(40 + si * 7), (255, 224, 74), center=True)
             label(b, (Wd // 2, 3), wid.replace('_', ' ').upper(), (255, 240, 200), center=True)
             frames.append(b)
     big = [f.resize((Wd * 4, Hd * 4), Image.NEAREST) for f in frames]

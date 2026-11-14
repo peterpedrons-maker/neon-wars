@@ -161,7 +161,7 @@ BODY_S = dict(sc='.cCCCCD.', t0='.tttttT.', t1='.ttttTT.', t2='.tttMTT.', belt='
 
 # ---------------------------------------------------------------- espada (peca separada)
 def sword_rows(hand, ang, length=10, guard=3, wide=False, serrate=False, glow=None, gem=False, shape=None, gstyle='bar'):
-    if shape: return shaped_rows(hand, ang, length, guard, shape, gstyle, glow, gem, serrate)
+    return shaped_rows(hand, ang, length, guard, shape or ('wide' if wide else 'straight'), gstyle, glow, gem, serrate)
     """Retorna Grid proprio da espada (cabo, guarda, lamina) com contorno proprio; hand e ponto de empunhadura (coords globais)."""
     a = math.radians(ang)
     ux, uy = math.sin(a), math.cos(a)
@@ -191,6 +191,8 @@ def sword_rows(hand, ang, length=10, guard=3, wide=False, serrate=False, glow=No
 # perfis de lamina: (largura_meia(t), curvatura em celulas, estilo de guarda)
 def _prof(shape):
     P = {
+        'straight': (lambda t: .45, 0, 'bar'),
+        'wide':    (lambda t: 1.15, 0, 'bar'),
         'broad':   (lambda t: 1.6 if t < .72 else 1.6 - (t - .72) * 5.2, 0, 'cross'),
         'leaf':    (lambda t: 0.4 + 1.6 * math.sin(math.pi * min(1, t * 1.1) ** .8), 0, 'bar'),
         'katana':  (lambda t: .5, 3.2, 'disc'),
@@ -214,9 +216,12 @@ def shaped_rows(hand, ang, length, guard, shape, gstyle, glow, gem, serrate):
         k = (round(x), round(y))
         if over or k not in cells: cells[k] = ch
     # cabo + pomo
-    for d in (-3, -2, -1, 0, 1):
-        put(hand[0] + ux * d, hand[1] + uy * d, 'N')
-    put(hand[0] - ux * 3.4, hand[1] - uy * 3.4, 'g')
+    for yy in range(int(hand[1]) - 6, int(hand[1]) + 7):
+        for xx in range(int(hand[0]) - 6, int(hand[0]) + 7):
+            rx, ry = xx - hand[0], yy - hand[1]
+            sd = rx * ux + ry * uy; td = rx * nx + ry * ny
+            if -3.5 <= sd <= 2.1 and abs(td) <= .55: put(xx, yy, 'N')
+            if -4.4 <= sd < -3.5 and abs(td) <= .55: put(xx, yy, 'g')
     gx, gy = hand[0] + ux * 2, hand[1] + uy * 2
     if shape == 'axe':
         L = length
@@ -232,39 +237,45 @@ def shaped_rows(hand, ang, length, guard, shape, gstyle, glow, gem, serrate):
         for d in (-1, 0):
             put(hand[0] + ux * (L + d) - nx * 1, hand[1] + uy * (L + d) - ny * 1, 'g')
         return cells, tip
-    # guarda
-    if gs == 'bar' or gs == 'cross':
-        gw = guard + (1 if gs == 'cross' else 0)
-        for k in range(-gw, gw + 1): put(gx + nx * k, gy + ny * k, 'g')
-        if gs == 'cross':
-            for k in (-gw, gw): put(gx + nx * k - ux, gy + ny * k - uy, 'g')
-    elif gs == 'disc':
-        for k in (-2, -1, 0, 1, 2): put(gx + nx * k, gy + ny * k, 'g')
-        for k in (-1, 0, 1): put(gx + nx * k + ux, gy + ny * k + uy, 'g'); put(gx + nx * k - ux, gy + ny * k - uy, 'g')
-    elif gs == 'cup':
-        for k in range(-3, 4): put(gx + nx * k, gy + ny * k, 'g')
-        for k in (-3, 3):
-            put(gx + nx * k - ux, gy + ny * k - uy, 'g'); put(gx + nx * k - ux * 2, gy + ny * k - uy * 2, 'g')
-        for k in (-2, -1, 0, 1, 2): put(gx + nx * k - ux * 2.6, gy + ny * k - uy * 2.6, 'g')
-    L = length - 3; s0 = 3
-    last = None
-    for i in range(L + 1):
-        t = i / L; s = s0 + i
-        off = curve * t * t
-        cx_ = hand[0] + ux * s + nx * off; cy_ = hand[1] + uy * s + ny * off
-        w = max(0.0, hw(t))
-        if shape in ('broad', 'great', 'flame', 'katana'): w *= min(1.0, (1 - t) * 5 + .15)
-        W = int(w + .5)
-        for k in range(-W, W + 1):
-            edge = (k == W and W > 0) or (W == 0)
-            put(cx_ + nx * k, cy_ + ny * k, 'a' if (k == W and W >= 1) else 'A')
-        if W == 0: put(cx_ + nx, cy_ + ny, 'a')
-        if shape == 'cleaver' and i == L: pass
-        if serrate and i % 2 == 0: put(cx_ - nx * (W + 1), cy_ - ny * (W + 1), 'a')
-        if glow and i > 3 and i % 3 == 0:
-            sg = (-1 if glow == 'ice' else 1)
-            put(cx_ + nx * (W + 1) * sg, cy_ + ny * (W + 1) * sg, 'Z' if glow != 'dark' else 'z')
-        last = (cx_, cy_)
+    # guarda (amostragem rigida, igual a lamina)
+    for yy in range(int(hand[1]) - 8, int(hand[1]) + 9):
+        for xx in range(int(hand[0]) - 8, int(hand[0]) + 9):
+            rx, ry = xx - hand[0], yy - hand[1]
+            sd = rx * ux + ry * uy; td = rx * nx + ry * ny
+            a_ = abs(td); on = False
+            if gs == 'bar': on = abs(sd - 2) <= .55 and a_ <= guard + .3
+            elif gs == 'cross':
+                gw = guard + 1
+                on = (abs(sd - 2) <= .55 and a_ <= gw + .3) or (a_ >= gw - .6 and a_ <= gw + .3 and 1 <= sd <= 2.6 and False)
+                if abs(sd - 1.2) <= .4 and gw - .8 <= a_ <= gw + .3: on = True
+            elif gs == 'disc': on = abs(sd - 2) <= 1.0 and a_ <= 2.3 and not (abs(sd - 2) < .5 and a_ < .6 and False)
+            elif gs == 'cup':
+                on = (abs(sd + 1.6) <= .55 and a_ <= 3.2) or (2.4 <= a_ <= 3.3 and -1.8 <= sd <= 2.5) or (abs(sd - 2.3) <= .5 and a_ <= 3.3)
+            if on: put(xx, yy, 'g')
+    L = length; s0 = 3
+    lastp = (hand[0] + ux * L, hand[1] + uy * L)
+    # amostragem RIGIDA: cada pixel e testado no sistema local (s ao longo da lamina, t perpendicular):
+    # a espessura nao varia com o angulo, entao a lamina fica solida em todos os quadros.
+    R = int(L + 8)
+    for yy in range(int(hand[1]) - R, int(hand[1]) + R + 1):
+        for xx in range(int(hand[0]) - R, int(hand[0]) + R + 1):
+            rx, ry = xx - hand[0], yy - hand[1]
+            sd = rx * ux + ry * uy; td = rx * nx + ry * ny
+            if sd < s0 - .5 or sd > L + .4: continue
+            tt = (sd - s0) / max(1.0, L - s0)
+            off = curve * tt * tt
+            w = max(0.0, hw(tt))
+            if shape in ('broad', 'great', 'flame', 'katana', 'straight', 'wide', 'leaf'):
+                w *= min(1.0, (L - sd) / 2.2 + .25)
+            cover = w + .55
+            if abs(td - off) > cover: continue
+            edge = (td - off) > max(0.0, w - .35) and w >= .3
+            if shape in ('rapier',): edge = (td - off) > 0.05
+            put(xx, yy, 'a' if edge else 'A')
+            if serrate and int(sd) % 2 == 0 and td - off < -(w + .2): put(xx, yy, 'a')
+            if glow and sd > s0 + 2 and int(sd) % 3 == 0 and abs(abs(td - off) - (w + 1.2)) < .5:
+                put(xx, yy, 'Z' if glow != 'dark' else 'z')
+    last = lastp
     if gem: put(gx + ux * 1.5, gy + uy * 1.5, 'r')
     tip = last
     put(tip[0], tip[1], 'A')
