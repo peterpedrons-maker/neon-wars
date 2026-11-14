@@ -16,7 +16,7 @@ button.on{background:var(--acc);color:#1a0f05;border-color:var(--acc);font-weigh
 button.ghost{background:transparent}button.danger{color:var(--warn)}
 .app{height:100%;max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.top b{font:600 17px "Space Grotesk","Inter",system-ui,sans-serif}.top button{min-height:34px;padding:0 10px;font-size:13px}@media(max-width:430px){.top b{font-size:15px}.top .chip{display:none}}
+.top b{font:600 17px "Space Grotesk","Inter",system-ui,sans-serif}.top button{min-height:34px;padding:0 10px;font-size:13px}@media(max-width:480px){.top b,.top .chip{display:none}.top{justify-content:flex-end}}
 .chip{font-size:12px;color:var(--mute);border:1px solid var(--line);border-radius:999px;padding:2px 10px;white-space:nowrap}
 .stage{position:relative;flex:1 1 0;min-height:130px;background:var(--stage);border-radius:14px;overflow:hidden;border:1px solid var(--line);display:grid;place-items:center;touch-action:none}
 .stage canvas{position:absolute;top:0;left:50%;transform:translateX(-50%);height:100%;max-width:100%;aspect-ratio:1/1;image-rendering:pixelated}
@@ -62,9 +62,12 @@ textarea{width:100%;min-height:58px;resize:vertical;background:var(--panel2);col
 .nt.done{opacity:.55;text-decoration:line-through}.nt .t{color:var(--key);font-variant-numeric:tabular-nums;white-space:nowrap}
 .nt p{margin:0;flex:1}.nt button{min-height:30px;padding:0 8px;font-size:12px}
 .err{color:var(--warn);font-size:13px}
+.evout{display:grid;gap:8px}.score{display:flex;align-items:baseline;gap:8px}.score b{font:700 34px "Space Grotesk","Inter",system-ui,sans-serif}.score.good b{color:var(--ok)}.score.mid b{color:var(--acc)}.score.bad b{color:var(--warn)}
+.pr{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px}.pr .t{color:var(--key);font-variant-numeric:tabular-nums;white-space:nowrap}.pr p{margin:0;flex:1}.pr button{min-height:30px;padding:0 8px;font-size:12px}
+.mt{display:flex;flex-wrap:wrap;gap:6px;font-size:12px;color:var(--mute)}.mt span{border:1px solid var(--line);border-radius:999px;padding:1px 8px}
 </style>
 <div class="app">
- <div class="top"><b>Estúdio do Rei</b><span class="chip" id="save">pronto</span><span style="flex:1"></span><button data-sheet="fine" id="bFine">Ajuste fino</button><button data-sheet="chat" id="bChat">Claude</button><button data-sheet="notes" id="bNotes">Notas</button></div>
+ <div class="top"><b>Estúdio do Rei</b><span class="chip" id="save">pronto</span><span style="flex:1"></span><button data-sheet="fine" id="bFine">Ajuste</button><button data-sheet="chat" id="bChat">Claude</button><button data-sheet="eval" id="bEval">Avaliar</button><button data-sheet="notes" id="bNotes">Notas</button></div>
  <div class="stage" id="stage">
   <canvas id="c" width="300" height="300"></canvas>
   <div id="handles"></div>
@@ -78,7 +81,7 @@ textarea{width:100%;min-height:58px;resize:vertical;background:var(--panel2);col
   <div class="seg" id="anims"></div>
    </div>
  <div class="sheet" id="sheet" hidden>
-  <header><button data-pane="fine">Ajuste fino</button><button data-pane="chat">Claude</button><button data-pane="notes">Notas</button><span class="grow" style="flex:1"></span><button id="closeSheet" class="ghost">Fechar ✕</button></header>
+  <header><button data-pane="fine">Ajuste fino</button><button data-pane="chat">Claude</button><button data-pane="eval">Avaliar</button><button data-pane="notes">Notas</button><span class="grow" style="flex:1"></span><button id="closeSheet" class="ghost">Fechar ✕</button></header>
   <div class="pane" id="p-fine">
    <div class="note" id="animNote"></div>
    <div class="row"><label>Momento da pose selecionada <span id="keyT">–</span></label><input type="range" id="keyTime" min="0" max="1" step="0.01"></div>
@@ -94,6 +97,11 @@ textarea{width:100%;min-height:58px;resize:vertical;background:var(--panel2);col
    <div class="sug" id="sug"></div>
    <textarea id="ask" placeholder="Ex.: no golpe, levante mais o braço direito antes de bater, e agache um pouco"></textarea>
    <div class="bar"><button id="send" class="on">Enviar</button><button id="stop" class="ghost" hidden>Parar</button><span class="err" id="askErr"></span></div>
+  </div>
+  <div class="pane" id="p-eval" hidden>
+   <div class="note">O avaliador mede a animação quadro a quadro: trancos, braço que não alcança, espada atravessando o corpo, pés, preparação do golpe, peso e se o movimento ficou murcho. "Melhorar sozinho" corrige o que dá e você pode desfazer.</div>
+   <div class="bar"><button id="evRun" class="on">Avaliar agora</button><button id="evFix">Melhorar sozinho</button></div>
+   <div id="evOut" class="evout"></div>
   </div>
   <div class="pane" id="p-notes" hidden>
    <div class="note">Pause no quadro estranho e anote. O Claude lê as notas e corrige.</div>
@@ -340,7 +348,7 @@ function spline(keys,t){const ts=keys.map(k=>k[0]);if(t<=ts[0])return{...keys[0]
   for(const k in keys[0][1]){const v=j=>keys[j][1][k];const tan=j=>{const a=Math.max(j-1,0),b=Math.min(j+1,ts.length-1);return b==a?0:(v(b)-v(a))/(ts[b]-ts[a])};const m0=tan(i)*h,m1=tan(i+1)*h,u2=u*u,u3=u2*u;out[k]=(2*u3-3*u2+1)*v(i)+(u3-2*u2+u)*m0+(-2*u3+3*u2)*v(i+1)+(u3-u2)*m1;}return out;}
 let DT=1/30;const SP={};function sp(n,tg,k=140,c=13){const s=SP[n]||(SP[n]={x:tg,v:0});const N=6,h=DT/N;for(let i=0;i<N;i++){s.v+=((tg-s.x)*k-s.v*c)*h;s.x+=s.v*h;}return s.x;}
 // canais: lean twist hx hy dip lunge back | espada: sx sy sz (pos G-local) rx ry rz | mao esquerda: lm (0=segura,1=livre) lx ly lz | fx: glow crownUp
-const B={own:0,lean:0,twist:0,hx:0,hy:0,dip:0,lunge:0,back:0,fall:0,sx:.05,sy:2.35,sz:.62,rx:Math.PI-.18,ry:0,rz:0,lm:0,lx:-.7,ly:1.6,lz:.5,glow:.35,cup:0,fx:0,wob:0,bow:0};
+const B={own:0,lean:0,twist:0,hx:0,hy:0,dip:0,lunge:0,back:0,fall:0,sx:.05,sy:2.8,sz:.62,rx:Math.PI-.18,ry:0,rz:0,lm:0,lx:-.7,ly:1.6,lz:.5,glow:.35,cup:0,fx:0,wob:0,bow:0};
 const K=o=>({...B,...o});
 const PI=Math.PI;
 const CHG=[[0,B],
@@ -439,7 +447,7 @@ function step(dt,cmd){
   for(let i=0;i<2;i++){const side=i?1:-1,S0=shW(side),tgt=new THREE.Vector3();
     if(i===1){tgt.copy(sword.localToWorld(new THREE.Vector3(0,-.12,0)));}   // direito segura a espada
     else{const grip=sword.localToWorld(new THREE.Vector3(0,-.42,0));const lm=Math.max(k.lm,wa*1);const free=gl(new THREE.Vector3(k.lx*(1-wa)+(-.65)*wa,k.ly*(1-wa)+(1.5+.1*Math.abs(swLn)+.2*r*Math.max(0,swLn))*wa,k.lz*(1-wa)+(swLn*(.5+.3*r)*TUNE.armSwing)*wa));tgt.copy(grip).lerp(free,Math.min(1,lm));}
-    const el=new THREE.Vector3();POLE.copy(G.localToWorld(new THREE.Vector3(side*.8,-.6,-.2))).sub(G.position);ik2(S0,tgt,.9,.85,POLE,el);
+    const el=new THREE.Vector3();POLE.copy(G.localToWorld(new THREE.Vector3(side*.8,-.6,-.2))).sub(G.position);const dd=S0.distanceTo(tgt),st=Math.max(1,Math.min(1.14,dd/1.74));ik2(S0,tgt,.9*st,.85*st,POLE,el);armSeg[i].up.scale.y=st;armSeg[i].fo.scale.y=st;
     placeFrame(armSeg[i].up,S0,el,FW);placeFrame(armSeg[i].fo,el,tgt,FW);armTube[i].update(S0,el,tgt,.17,.135,.11,FW);
     // mao: segura a espada (eixo da espada) ou fica livre (aberta / punho / relaxada conforme a habilidade)
     const A=armSeg[i],free=(i===0&&Math.max(k.lm,wa)>.55);let kind='hg';
@@ -514,10 +522,120 @@ function step(dt,cmd){
   // particulas
   parts.forEach(q=>{if(q.life>0){q.life-=dt;q.s.position.addScaledVector(q.v,dt);const u=Math.max(0,q.life/q.max);q.s.material.opacity=u*.8;q.s.scale.setScalar(q.sz*(1.5-u*.7));if(q.life<=0)q.s.visible=false;}});
   placeCam(G.position.x,G.position.z);ground.position.set(Math.round(G.position.x),0,Math.round(G.position.z));
-  R.render(scene,cam);
+  if(!window.NORENDER)R.render(scene,cam);
 }
 function resetRig(){S.x=0;S.z=0;S.spd=0;S.vx=0;S.vz=0;S.ph=0;S.w=0;S.r=0;S.t=0;S.yaw=Math.PI/2;for(const k in SP)delete SP[k];PL.cur[0].set(0,0,0);PL.cur[1].set(0,0,0);PL.stp.forEach(s=>s.on=false);PL.moving=false;PL.st=[false,false];}
-window.sim={step,S,R,cv,grab(){return cv.toDataURL('image/png');}};window.REI={ANIMS,B,spline,TUNE,CAMV,reset:resetRig,S,refs:{G,sword,tip,head,chest,body,armSeg,legSeg,cam}};
+window.sim={step,S,R,cv,grab(){return cv.toDataURL('image/png');}};window.REI={ANIMS,B,spline,TUNE,CAMV,reset:resetRig,S,refs:{G,sword,tip,head,chest,body,armSeg,legSeg,cam}};// ===== Laboratório de animação: mede, avalia e melhora sozinho (usado pelo Claude e pelo botão "Avaliar") =====
+const LAB=(function(){
+const V3=THREE.Vector3,DT=1/30,TOR=1.75,LEG=1.9;
+const NOME={attack:'Golpe',forget:'Esquecimento',echo:'Eco',rift:'Fenda do Vazio',crown:'Coroa de Almas',dark:'Trevas',charge:'Investida',hurt:'Dano',death:'Morte'};
+const DUR={attack:[1.2,2.8],forget:[1.2,2.4],echo:[1.6,3],rift:[1.4,2.8],crown:[1.8,3.2],dark:[2,3.4],charge:[2,3.4],hurt:[.5,1.1],death:[2,3.6]};
+const FORTE={attack:1,rift:1,echo:1,charge:1,hurt:0,death:0,forget:0,crown:0,dark:0};   // tem golpe com antecipação e impacto
+const clone=k=>k.map(([t,p])=>[t,{...p}]);
+const arr=v=>[v.x,v.y,v.z];
+function measure(name,keys){
+  const old=ANIMS[name];ANIMS[name]=keys;window.NORENDER=true;resetRig();
+  const dur=keys[keys.length-1][0],N=Math.ceil(dur/DT)+1,F=[];
+  try{
+    for(let i=0;i<24;i++)step(DT,{move:0,anim:'',yawTo:Math.PI/2});
+    resetRig();for(let i=0;i<6;i++)step(DT,{move:0,anim:'',yawTo:Math.PI/2});
+    for(let i=0;i<N;i++){const at=Math.min(dur,i*DT),cmd=name==='death'?{move:0,yawTo:Math.PI/2,dead:Math.max(.0001,at)}:{move:0,anim:name,at,yawTo:Math.PI/2};
+      step(DT,cmd);
+      const g=sword.localToWorld(new V3(0,-.12,0)),tp=new V3(),hd=new V3(),ch=new V3(),bd=new V3();tip.getWorldPosition(tp);head.getWorldPosition(hd);chest.getWorldPosition(ch);body.getWorldPosition(bd);
+      const lhm=[armSeg[0].hg,armSeg[0].ho,armSeg[0].hr].find(m=>m.visible)||armSeg[0].hr,lh=lhm.position.clone();
+      const shR=chest.localToWorld(new V3(.8,.55,0)),shL=chest.localToWorld(new V3(-.8,.55,0));
+      const hipL=legSeg[0].th.position,hipR=legSeg[1].th.position,fL=legSeg[0].ft.position,fR=legSeg[1].ft.position;
+      F.push({t:at,rh:arr(g),tip:arr(tp),lh:arr(lh),head:arr(hd),chest:arr(ch),hips:arr(bd),fl:arr(fL),fr:arr(fR),
+        reachR:g.distanceTo(shR)/TOR,reachL:lh.distanceTo(shL)/TOR,legL:hipL.distanceTo(fL)/LEG,legR:hipR.distanceTo(fR)/LEG,pose:spline(keys,at)});}
+  }finally{ANIMS[name]=old;window.NORENDER=false;resetRig();}
+  return F;}
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],len=a=>Math.hypot(a[0],a[1],a[2]),dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],mul=(a,k)=>[a[0]*k,a[1]*k,a[2]*k];
+function ptSeg(p,a,b){const ab=sub(b,a),t=Math.max(0,Math.min(1,dot(sub(p,a),ab)/(dot(ab,ab)||1)));return len(sub(p,[a[0]+ab[0]*t,a[1]+ab[1]*t,a[2]+ab[2]*t]));}
+function energia(F){let e=0;for(const k of ['tip','rh','head','hips','lh']){for(let i=1;i<F.length;i++)e+=len(sub(F[i][k],F[i-1][k]));}return e;}
+function evaluate(name,keys,F,ref){
+  F=F||measure(name,keys);const n=F.length,I=[],M={};let pen=0;
+  const add=(tipo,t,msg,w)=>{I.push({tipo,t:+t.toFixed(2),msg});pen+=w;};
+  // 1. saltos de velocidade (trancos) na mão da espada, na ponta e na cabeça
+  const vel=(k)=>F.map((f,i)=>i?mul(sub(f[k],F[i-1][k]),1/DT):[0,0,0]);
+  let tr=0;for(const [k,nm] of [['rh','mão direita'],['tip','ponta da espada'],['head','cabeça'],['hips','quadril']]){const v=vel(k),sp=v.map(len),mx=Math.max(...sp,1);
+    for(let i=2;i<n;i++){const jump=len(sub(v[i],v[i-1]))/mx;if(jump>.5&&len(sub(v[i],v[i-1]))>2.5){tr++;if(tr<=6)add('tranco',F[i].t,'tranco na '+nm+' (muda de velocidade de uma vez)',5);}}}
+  M.trancos=tr;
+  // 2. alcance dos braços e das pernas (peça solta do corpo)
+  const rr=F.filter(f=>f.reachR>1.15||f.reachL>1.15),lg=F.filter(f=>f.legL>1.0||f.legR>1.0);M.alcance_braco=+(rr.length/n*100).toFixed(1);M.perna_esticada=+(lg.length/n*100).toFixed(1);
+  if(rr.length)add('alcance',rr[0].t,'o braço não alcança onde a mão/espada deveria estar ('+rr.length+' quadros): mão se solta do corpo',Math.min(25,rr.length/n*60));
+  if(lg.length)add('perna',lg[0].t,'a perna estica além do limite ('+lg.length+' quadros): pé flutua',Math.min(15,lg.length/n*40));
+  // 3. espada atravessando o corpo / chão
+  let inter=0,firstI=-1,under=0;F.forEach((f,i)=>{let md=9;for(let s=.15;s<=1;s+=.1){const p=[f.rh[0]+(f.tip[0]-f.rh[0])*s,f.rh[1]+(f.tip[1]-f.rh[1])*s,f.rh[2]+(f.tip[2]-f.rh[2])*s];md=Math.min(md,ptSeg(p,f.hips,f.chest));}if(md<.3){inter++;if(firstI<0)firstI=i;}if(f.tip[1]<-.12)under++;});
+  M.espada_no_corpo=inter;if(inter>3)add('colisao',F[firstI].t,'a lâmina atravessa o tronco ('+inter+' quadros)',Math.min(15,inter*.8));
+  if(under>2)add('chao',F.find(f=>f.tip[1]<-.12).t,'a ponta da espada entra no chão',Math.min(10,under));
+  // 4. pés: deslize enquanto apoiados
+  let slide=0,maxs=0;for(const k of ['fl','fr']){for(let i=1;i<n;i++){const a=F[i-1][k],b=F[i][k];if(a[1]<.27&&b[1]<.27){const d=Math.hypot(b[0]-a[0],b[2]-a[2]);slide+=d;maxs=Math.max(maxs,d);}}}
+  M.deslize_pes=+slide.toFixed(2);if(maxs>.09)add('deslize',F[0].t,'o pé desliza no chão (até '+maxs.toFixed(2)+' por quadro)',Math.min(12,maxs*60));
+  // 5. antecipação, impacto e continuação do movimento (só para animações com golpe)
+  const forte=FORTE[name];let ant=null,fol=null,snap=null;
+  if(forte){const v=vel('rh').map(len);let pk=0;v.forEach((x,i)=>{if(x>v[pk])pk=i;});const a0=Math.max(0,pk-6),a1=Math.min(n-1,pk+6),d=sub(F[a1].rh,F[a0].rh),dl=len(d)||1,dn=mul(d,1/dl);
+    let best=0;for(let i=Math.max(0,pk-24);i<pk-2;i++){best=Math.max(best,-dot(sub(F[i].rh,F[pk-3].rh),dn)*-1*-1);}
+    // quanto a mão recuou (contra o golpe) antes de disparar
+    let back=0;for(let i=Math.max(0,pk-30);i<pk-1;i++){back=Math.max(back,dot(sub(F[pk-3].rh,F[i].rh),dn)*-1);}
+    back=Math.max(0,back);ant=Math.min(1,back/.55);
+    let over=0;const fin=F[n-1].rh;for(let i=pk+3;i<n;i++)over=Math.max(over,dot(sub(F[i].rh,F[Math.min(n-1,pk+3)].rh),dn));fol=Math.min(1,over/.5);
+    const act=v.filter(x=>x>.5),meanv=act.reduce((s,x)=>s+x,0)/(act.length||1);snap=v[pk]/(meanv||1);
+    M.antecipacao=+ant.toFixed(2);M.continuacao=+fol.toFixed(2);M.explosao=+snap.toFixed(2);M.pico_vel=+v[pk].toFixed(1);M.t_impacto=+F[pk].t.toFixed(2);
+    if(ant<.5)add('antecipacao',F[Math.max(0,pk-8)].t,'falta preparação antes do golpe: a mão quase não recua (antecipação '+Math.round(ant*100)+'%)',10*(1-ant/.5)+2);
+    if(fol<.4)add('continuacao',F[pk].t,'o golpe para seco no impacto: falta a espada passar do alvo e voltar',8*(1-fol/.4)+1);
+    if(snap<1.9)add('explosao',F[pk].t,'o golpe é lento e uniforme: falta acelerar de repente no impacto',8*(1-snap/1.9)+2);
+    const dips=F.map(f=>f.pose.dip),dmax=Math.max(...dips);M.agachar_max=+dmax.toFixed(2);if(dmax<.12)add('peso',F[pk].t,'falta peso: o corpo quase não afunda no golpe',6);}
+  // 6. higiene das poses
+  const kt=keys.map(k=>k[0]);let gap=9,gi=0;for(let i=1;i<kt.length;i++)if(kt[i]-kt[i-1]<gap){gap=kt[i]-kt[i-1];gi=i;}M.menor_intervalo=+gap.toFixed(2);if(gap<.12)add('colada',kt[gi],'duas poses coladas ('+gap.toFixed(2)+' s)',8);
+  // 7. começo e fim no repouso (menos morte/dano) e duração
+  const p0=keys[0][1],p1=keys[keys.length-1][1];let dif=0;for(const c of ['lean','twist','dip','lunge','back','hx','hy','sx','sy','sz','rx','lx','ly','lz','lm'])dif=Math.max(dif,Math.abs(p0[c]-p1[c]));
+  M.fecha_no_repouso=+dif.toFixed(2);if(name!=='death'&&dif>.08)add('repouso',kt[kt.length-1],'o fim da animação não volta à pose de repouso (diferença '+dif.toFixed(2)+')',8);
+  const dr=DUR[name],dur=kt[kt.length-1];M.duracao=+dur.toFixed(2);if(dr&&(dur<dr[0]||dur>dr[1]))add('duracao',dur,'duração fora do ideal ('+dur.toFixed(1)+'s; o ideal é '+dr[0]+' a '+dr[1]+'s)',5);
+  // 8. expressividade: não vale deixar o movimento murcho só para fugir dos problemas
+  const en=energia(F);M.energia=+en.toFixed(1);if(ref){const r=en/ref.en;M.energia_vs_original=+r.toFixed(2);if(forte&&M.pico_vel&&ref&&ref.pk&&M.pico_vel<ref.pk*.85)add('fraco',F[Math.floor(n/2)].t,'o golpe ficou mais fraco que o original (pico de velocidade '+M.pico_vel+' contra '+ref.pk.toFixed(1)+')',Math.min(15,(1-M.pico_vel/(ref.pk*.85))*40));
+  if(r<.8)add('murcho',F[Math.floor(n/2)].t,'o movimento ficou menor que o original ('+Math.round(r*100)+'% da energia): perdeu expressão',Math.min(30,(1-r/.8)*45));}
+  return {nome:NOME[name]||name,score:Math.max(0,Math.round((100-pen)*10)/10),metricas:M,problemas:I.sort((a,b)=>(a.t||0)-(b.t||0))};}
+// ---------- melhora sozinho ----------
+const CH_MOV=['lean','twist','sx','sy','sz','rx','ry','lunge','lx','ly','lz'];
+function sortKeys(k){k.sort((a,b)=>a[0]-b[0]);return k;}
+function tHygiene(k0,name){const k=clone(k0);for(let i=k.length-2;i>=1;i--)if(k[i+1][0]-k[i][0]<.14)k.splice(i,1);
+  if(name!=='death'){const b=k[0][1],e=k[k.length-1][1];for(const c of Object.keys(e))e[c]=b[c];}return k;}
+function tReach(k0,F,f){const k=clone(k0),rest=k[0][1];const bad=F.filter(x=>x.reachR>1.15||x.reachL>1.15);if(!bad.length)return k;
+  const idx=new Set(bad.map(x=>{let b=0,bd=9;k.forEach(([t],i)=>{const d=Math.abs(t-x.t);if(d<bd){bd=d;b=i;}});return b;}));
+  idx.forEach(i=>{if(i===0||i===k.length-1)return;const p=k[i][1];for(const c of ['sx','sy','sz','lx','ly','lz'])p[c]=rest[c]+(p[c]-rest[c])*f;});return k;}
+function tLeg(k0,F,f){const k=clone(k0),bad=F.filter(x=>x.legL>1.0||x.legR>1.0);if(!bad.length)return k;
+  new Set(bad.map(x=>{let b=0,bd=9;k.forEach(([t],i)=>{const d=Math.abs(t-x.t);if(d<bd){bd=d;b=i;}});return b;})).forEach(i=>{if(i===0||i===k.length-1)return;const p=k[i][1];p.lunge*=f;p.back*=f;p.dip*=Math.max(.8,f);});return k;}
+function tPenetr(k0,F){const k=clone(k0),bad=F.filter(x=>{let md=9;for(let s=.15;s<=1;s+=.1){const p=[x.rh[0]+(x.tip[0]-x.rh[0])*s,x.rh[1]+(x.tip[1]-x.rh[1])*s,x.rh[2]+(x.tip[2]-x.rh[2])*s];md=Math.min(md,ptSeg(p,x.hips,x.chest));}return md<.3;});
+  new Set(bad.map(x=>{let b=0,bd=9;k.forEach(([t],i)=>{const d=Math.abs(t-x.t);if(d<bd){bd=d;b=i;}});return b;})).forEach(i=>{if(i===0||i===k.length-1)return;k[i][1].sz+=.12;k[i][1].sx+=.1;});return k;}
+function tAnticip(k0,F,amt){const k=clone(k0),pk=+(evaluate('x_',k0,F).metricas.t_impacto||0);if(!pk)return k;let j=k.findIndex(([t])=>t>=pk-.05);if(j<1)j=1;
+  // chave de golpe = a primeira que muda forte; antecipação entre a anterior e ela
+  const prev=k[j-1],cur=k[j],gap=cur[0]-prev[0];if(gap<.34)return k;const p=Object.assign({},prev[1]);
+  for(const c of CH_MOV)p[c]=prev[1][c]+(prev[1][c]-cur[1][c])*amt;p.dip=Math.min(1.1,prev[1].dip+.12*amt/.35);k.splice(j,0,[+(prev[0]+gap*.55).toFixed(3),p]);return sortKeys(k);}
+function tFollow(k0,F,amt){const k=clone(k0),pk=+(evaluate('x_',k0,F).metricas.t_impacto||0);if(!pk)return k;let j=k.findIndex(([t])=>t>=pk-.02);if(j<1||j>=k.length-1)return k;
+  const prev=k[j-1],cur=k[j],nxt=k[j+1];const gap=nxt[0]-cur[0];if(gap<.3)return k;const p=Object.assign({},cur[1]);for(const c of CH_MOV)p[c]=cur[1][c]+(cur[1][c]-prev[1][c])*amt;p.fx=Math.max(cur[1].fx||0,.6);
+  k.splice(j+1,0,[+(cur[0]+Math.min(.16,gap*.4)).toFixed(3),p]);return sortKeys(k);}
+function tRetime(k0,F,f){const k=clone(k0),pk=+(evaluate('x_',k0,F).metricas.t_impacto||0);if(!pk)return k;let j=k.findIndex(([t])=>t>=pk-.02);if(j<1)return k;
+  const d=(k[j][0]-k[j-1][0])*(f-1);for(let i=j;i<k.length;i++)k[i][0]=+(k[i][0]+d).toFixed(3);return k;}
+function tSmooth(k0,alpha){const k=clone(k0);for(let i=1;i<k.length-1;i++)for(const c of CH_MOV){const a=k0[i-1][1][c],b=k0[i][1][c],d=k0[i+1][1][c];k[i][1][c]=b+((a+d)/2-b)*alpha;}return k;}
+function tScale(k0,f){return k0.map(([t,p])=>[+(t*f).toFixed(3),{...p}]);}
+function improve(name,keys){
+  const F0=measure(name,keys),e0=evaluate(name,keys,F0),ref={en:energia(F0),pk:e0.metricas.pico_vel||0};let best=tHygiene(keys,name),F=measure(name,best),rep=evaluate(name,best,F,ref);const before=evaluate(name,keys,F0,ref);const log=[];
+  const consider=(label,cand)=>{const F2=measure(name,cand),r2=evaluate(name,cand,F2,ref);if(r2.score>rep.score+.4){log.push(label+': '+rep.score+' → '+r2.score);best=cand;F=F2;rep=r2;return true;}return false;};
+  for(let it=0;it<10;it++){let moved=false;const tp=new Set(rep.problemas.map(p=>p.tipo));
+    if(tp.has('colada')||tp.has('repouso')){moved=consider('arrumar poses e fechar no repouso',tHygiene(best,name))||moved;}
+    if(tp.has('alcance')){for(const f of [.95,.9,.85,.8,.7])if(consider('trazer o braço para dentro do alcance (×'+f+')',tReach(best,F,f))){moved=true;break;}}
+    if(tp.has('perna')){for(const f of [.9,.8,.7,.6])if(consider('reduzir o avanço para o pé não flutuar (×'+f+')',tLeg(best,F,f))){moved=true;break;}}
+    if(tp.has('colisao')){moved=consider('afastar a espada do tronco',tPenetr(best,F))||moved;}
+    if(tp.has('antecipacao')){for(const a of [.35,.6,.9])if(consider('incluir preparação antes do golpe ('+a+')',tAnticip(best,F,a))){moved=true;break;}}
+    if(tp.has('continuacao')){for(const a of [.2,.35,.5])if(consider('incluir continuação depois do impacto ('+a+')',tFollow(best,F,a))){moved=true;break;}}
+    if(tp.has('explosao')){for(const f of [.85,.7,.55])if(consider('acelerar o golpe (tempo ×'+f+')',tRetime(best,F,f))){moved=true;break;}}
+    if(tp.has('tranco')){for(const a of [.2,.35,.5])if(consider('suavizar trancos ('+a+')',tSmooth(best,a))){moved=true;break;}}
+    if(tp.has('duracao')){const dr=DUR[name],d=best[best.length-1][0],target=d<dr[0]?dr[0]:dr[1];if(dr)moved=consider('ajustar a duração para '+target+'s',tScale(best,target/d))||moved;}
+    if(!moved)break;}
+  return {keys:best,antes:before,depois:rep,log};}
+return {measure,evaluate,improve,energia,NOME,DUR,tScale};})();
+
+window.LAB=LAB;
 S.yaw=Math.PI/2;placeCam(0,0);
 
 };
@@ -596,7 +714,7 @@ $('#fixKeys').onclick=()=>{if(isLoco())return;const k=keys();pushHist();for(let 
 $('#restore').onclick=()=>{const o=JSON.parse(orig);if(!o.a[cur])return;pushHist();REI.ANIMS[cur]=o.a[cur];sel=-1;markDirty();render();};
 $('#undo').onclick=()=>{if(!hist.length)return;restoreSnap(hist.pop());sel=-1;markDirty();render();};
 // ---------- gaveta (ajuste fino / Claude / notas) ----------
-let pane='fine';function openSheet(p){pane=p||pane;$('#sheet').hidden=false;$('#hint').hidden=true;['fine','chat','notes'].forEach(n=>{$('#p-'+n).hidden=n!==pane;});$$('#sheet header [data-pane]').forEach(b=>b.classList.toggle('on',b.dataset.pane===pane));$$('[data-sheet]').forEach(b=>b.classList.toggle('on',b.dataset.sheet===pane));}
+let pane='fine';function openSheet(p){pane=p||pane;$('#sheet').hidden=false;$('#hint').hidden=true;['fine','chat','eval','notes'].forEach(n=>{$('#p-'+n).hidden=n!==pane;});$$('#sheet header [data-pane]').forEach(b=>b.classList.toggle('on',b.dataset.pane===pane));$$('[data-sheet]').forEach(b=>b.classList.toggle('on',b.dataset.sheet===pane));}
 $$('[data-sheet]').forEach(b=>b.onclick=()=>{if(!$('#sheet').hidden&&pane===b.dataset.sheet){closeSheet();}else openSheet(b.dataset.sheet);});
 $$('#sheet header [data-pane]').forEach(b=>b.onclick=()=>openSheet(b.dataset.pane));
 function closeSheet(){$('#sheet').hidden=true;$('#hint').hidden=false;$$('[data-sheet]').forEach(b=>b.classList.remove('on'));}$('#closeSheet').onclick=closeSheet;
@@ -648,6 +766,14 @@ function moveDrag(h,e){if(!drag||sel<0)return;const r=REI.refs,pose=keys()[sel][
   else if(h.id==='quadril'){setC('dip',p0.dip+dy*.006);setC('lunge',p0.lunge+dx*.006);}
   t=keys()[sel][0];markDirty();syncSliderValues();}
 function syncSliderValues(){if($('#sheet').hidden||pane!=='fine'||sel<0)return;const P=PARTS.find(x=>x.id===part);if(!P||!P.ch)return;const pose=keys()[sel][1];$$('#sliders .row').forEach((row,i)=>{const c=P.ch[i];if(!c)return;const inp=row.querySelector('input'),sp=row.querySelector('label span'),v=c.deg?pose[c.k]/RAD:pose[c.k];if(inp&&document.activeElement!==inp){inp.value=v;sp.textContent=c.deg?Math.round(v)+'°':(+v).toFixed(2).replace('.',',');}});}
+// ---------- avaliador e melhora automatica ----------
+const MET={antecipacao:'preparação',continuacao:'continuação',explosao:'explosão',agachar_max:'peso',energia_vs_original:'energia',deslize_pes:'pés deslizando',alcance_braco:'braço fora do alcance %',trancos:'trancos'};
+function showEval(r,extra){const o=$('#evOut');o.innerHTML='';const c=r.score>=85?'good':r.score>=65?'mid':'bad';const sc=document.createElement('div');sc.className='score '+c;sc.innerHTML='<b></b><span></span>';sc.querySelector('b').textContent=Math.round(r.score);sc.querySelector('span').textContent='de 100 • '+r.nome+(extra?' • '+extra:'');o.append(sc);
+  const mt=document.createElement('div');mt.className='mt';for(const k in MET){if(r.metricas[k]!==undefined){const e=document.createElement('span');e.textContent=MET[k]+' '+r.metricas[k];mt.append(e);}}o.append(mt);
+  if(!r.problemas.length){const n=document.createElement('div');n.className='note';n.textContent='Nada de errado foi medido. Olhe a animação e me diga se ainda falta algo.';o.append(n);}
+  r.problemas.forEach(p=>{const e=document.createElement('div');e.className='pr';e.innerHTML='<span class="t"></span><p></p>';e.querySelector('.t').textContent=(p.t===''?'':p.t+' s');e.querySelector('p').textContent=p.msg;if(p.t!==''){const go=document.createElement('button');go.textContent='ir';go.onclick=()=>{t=+p.t;playing=false;syncPlay();sel=nearest(t);render();};e.append(go);}o.append(e);});}
+$('#evRun').onclick=()=>{if(isLoco()||!window.LAB){$('#evOut').textContent='Escolha uma animação com poses (Golpe, Investida, Dano…).';return;}showEval(LAB.evaluate(cur,keys()));};
+$('#evFix').onclick=()=>{if(isLoco()||!window.LAB){$('#evOut').textContent='Escolha uma animação com poses.';return;}$('#evOut').textContent='Medindo e melhorando…';setTimeout(()=>{pushHist();const res=LAB.improve(cur,keys());REI.ANIMS[cur]=res.keys;sel=-1;t=0;REI.reset();markDirty();render();showEval(res.depois,'antes '+Math.round(res.antes.score));if(res.log.length){const l=document.createElement('div');l.className='note';l.textContent='O que fiz: '+res.log.join(' • ');$('#evOut').append(l);}},30);};
 // ---------- salvar / carregar (db) ----------
 let DB=null,saving=false;
 async function initDb(){try{const c=window.claude&&await window.claude.use('db');DB=c||null;}catch(e){DB=null;}}

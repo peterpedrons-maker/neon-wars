@@ -16,7 +16,7 @@ button.on{background:var(--acc);color:#1a0f05;border-color:var(--acc);font-weigh
 button.ghost{background:transparent}button.danger{color:var(--warn)}
 .app{height:100%;max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.top b{font:600 17px "Space Grotesk","Inter",system-ui,sans-serif}.top button{min-height:34px;padding:0 10px;font-size:13px}@media(max-width:430px){.top b{font-size:15px}.top .chip{display:none}}
+.top b{font:600 17px "Space Grotesk","Inter",system-ui,sans-serif}.top button{min-height:34px;padding:0 10px;font-size:13px}@media(max-width:480px){.top b,.top .chip{display:none}.top{justify-content:flex-end}}
 .chip{font-size:12px;color:var(--mute);border:1px solid var(--line);border-radius:999px;padding:2px 10px;white-space:nowrap}
 .stage{position:relative;flex:1 1 0;min-height:130px;background:var(--stage);border-radius:14px;overflow:hidden;border:1px solid var(--line);display:grid;place-items:center;touch-action:none}
 .stage canvas{position:absolute;top:0;left:50%;transform:translateX(-50%);height:100%;max-width:100%;aspect-ratio:1/1;image-rendering:pixelated}
@@ -62,9 +62,12 @@ textarea{width:100%;min-height:58px;resize:vertical;background:var(--panel2);col
 .nt.done{opacity:.55;text-decoration:line-through}.nt .t{color:var(--key);font-variant-numeric:tabular-nums;white-space:nowrap}
 .nt p{margin:0;flex:1}.nt button{min-height:30px;padding:0 8px;font-size:12px}
 .err{color:var(--warn);font-size:13px}
+.evout{display:grid;gap:8px}.score{display:flex;align-items:baseline;gap:8px}.score b{font:700 34px "Space Grotesk","Inter",system-ui,sans-serif}.score.good b{color:var(--ok)}.score.mid b{color:var(--acc)}.score.bad b{color:var(--warn)}
+.pr{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px}.pr .t{color:var(--key);font-variant-numeric:tabular-nums;white-space:nowrap}.pr p{margin:0;flex:1}.pr button{min-height:30px;padding:0 8px;font-size:12px}
+.mt{display:flex;flex-wrap:wrap;gap:6px;font-size:12px;color:var(--mute)}.mt span{border:1px solid var(--line);border-radius:999px;padding:1px 8px}
 </style>
 <div class="app">
- <div class="top"><b>Estúdio do Rei</b><span class="chip" id="save">pronto</span><span style="flex:1"></span><button data-sheet="fine" id="bFine">Ajuste fino</button><button data-sheet="chat" id="bChat">Claude</button><button data-sheet="notes" id="bNotes">Notas</button></div>
+ <div class="top"><b>Estúdio do Rei</b><span class="chip" id="save">pronto</span><span style="flex:1"></span><button data-sheet="fine" id="bFine">Ajuste</button><button data-sheet="chat" id="bChat">Claude</button><button data-sheet="eval" id="bEval">Avaliar</button><button data-sheet="notes" id="bNotes">Notas</button></div>
  <div class="stage" id="stage">
   <canvas id="c" width="300" height="300"></canvas>
   <div id="handles"></div>
@@ -78,7 +81,7 @@ textarea{width:100%;min-height:58px;resize:vertical;background:var(--panel2);col
   <div class="seg" id="anims"></div>
    </div>
  <div class="sheet" id="sheet" hidden>
-  <header><button data-pane="fine">Ajuste fino</button><button data-pane="chat">Claude</button><button data-pane="notes">Notas</button><span class="grow" style="flex:1"></span><button id="closeSheet" class="ghost">Fechar ✕</button></header>
+  <header><button data-pane="fine">Ajuste fino</button><button data-pane="chat">Claude</button><button data-pane="eval">Avaliar</button><button data-pane="notes">Notas</button><span class="grow" style="flex:1"></span><button id="closeSheet" class="ghost">Fechar ✕</button></header>
   <div class="pane" id="p-fine">
    <div class="note" id="animNote"></div>
    <div class="row"><label>Momento da pose selecionada <span id="keyT">–</span></label><input type="range" id="keyTime" min="0" max="1" step="0.01"></div>
@@ -94,6 +97,11 @@ textarea{width:100%;min-height:58px;resize:vertical;background:var(--panel2);col
    <div class="sug" id="sug"></div>
    <textarea id="ask" placeholder="Ex.: no golpe, levante mais o braço direito antes de bater, e agache um pouco"></textarea>
    <div class="bar"><button id="send" class="on">Enviar</button><button id="stop" class="ghost" hidden>Parar</button><span class="err" id="askErr"></span></div>
+  </div>
+  <div class="pane" id="p-eval" hidden>
+   <div class="note">O avaliador mede a animação quadro a quadro: trancos, braço que não alcança, espada atravessando o corpo, pés, preparação do golpe, peso e se o movimento ficou murcho. "Melhorar sozinho" corrige o que dá e você pode desfazer.</div>
+   <div class="bar"><button id="evRun" class="on">Avaliar agora</button><button id="evFix">Melhorar sozinho</button></div>
+   <div id="evOut" class="evout"></div>
   </div>
   <div class="pane" id="p-notes" hidden>
    <div class="note">Pause no quadro estranho e anote. O Claude lê as notas e corrige.</div>

@@ -71,7 +71,7 @@ $('#fixKeys').onclick=()=>{if(isLoco())return;const k=keys();pushHist();for(let 
 $('#restore').onclick=()=>{const o=JSON.parse(orig);if(!o.a[cur])return;pushHist();REI.ANIMS[cur]=o.a[cur];sel=-1;markDirty();render();};
 $('#undo').onclick=()=>{if(!hist.length)return;restoreSnap(hist.pop());sel=-1;markDirty();render();};
 // ---------- gaveta (ajuste fino / Claude / notas) ----------
-let pane='fine';function openSheet(p){pane=p||pane;$('#sheet').hidden=false;$('#hint').hidden=true;['fine','chat','notes'].forEach(n=>{$('#p-'+n).hidden=n!==pane;});$$('#sheet header [data-pane]').forEach(b=>b.classList.toggle('on',b.dataset.pane===pane));$$('[data-sheet]').forEach(b=>b.classList.toggle('on',b.dataset.sheet===pane));}
+let pane='fine';function openSheet(p){pane=p||pane;$('#sheet').hidden=false;$('#hint').hidden=true;['fine','chat','eval','notes'].forEach(n=>{$('#p-'+n).hidden=n!==pane;});$$('#sheet header [data-pane]').forEach(b=>b.classList.toggle('on',b.dataset.pane===pane));$$('[data-sheet]').forEach(b=>b.classList.toggle('on',b.dataset.sheet===pane));}
 $$('[data-sheet]').forEach(b=>b.onclick=()=>{if(!$('#sheet').hidden&&pane===b.dataset.sheet){closeSheet();}else openSheet(b.dataset.sheet);});
 $$('#sheet header [data-pane]').forEach(b=>b.onclick=()=>openSheet(b.dataset.pane));
 function closeSheet(){$('#sheet').hidden=true;$('#hint').hidden=false;$$('[data-sheet]').forEach(b=>b.classList.remove('on'));}$('#closeSheet').onclick=closeSheet;
@@ -123,6 +123,14 @@ function moveDrag(h,e){if(!drag||sel<0)return;const r=REI.refs,pose=keys()[sel][
   else if(h.id==='quadril'){setC('dip',p0.dip+dy*.006);setC('lunge',p0.lunge+dx*.006);}
   t=keys()[sel][0];markDirty();syncSliderValues();}
 function syncSliderValues(){if($('#sheet').hidden||pane!=='fine'||sel<0)return;const P=PARTS.find(x=>x.id===part);if(!P||!P.ch)return;const pose=keys()[sel][1];$$('#sliders .row').forEach((row,i)=>{const c=P.ch[i];if(!c)return;const inp=row.querySelector('input'),sp=row.querySelector('label span'),v=c.deg?pose[c.k]/RAD:pose[c.k];if(inp&&document.activeElement!==inp){inp.value=v;sp.textContent=c.deg?Math.round(v)+'°':(+v).toFixed(2).replace('.',',');}});}
+// ---------- avaliador e melhora automatica ----------
+const MET={antecipacao:'preparação',continuacao:'continuação',explosao:'explosão',agachar_max:'peso',energia_vs_original:'energia',deslize_pes:'pés deslizando',alcance_braco:'braço fora do alcance %',trancos:'trancos'};
+function showEval(r,extra){const o=$('#evOut');o.innerHTML='';const c=r.score>=85?'good':r.score>=65?'mid':'bad';const sc=document.createElement('div');sc.className='score '+c;sc.innerHTML='<b></b><span></span>';sc.querySelector('b').textContent=Math.round(r.score);sc.querySelector('span').textContent='de 100 • '+r.nome+(extra?' • '+extra:'');o.append(sc);
+  const mt=document.createElement('div');mt.className='mt';for(const k in MET){if(r.metricas[k]!==undefined){const e=document.createElement('span');e.textContent=MET[k]+' '+r.metricas[k];mt.append(e);}}o.append(mt);
+  if(!r.problemas.length){const n=document.createElement('div');n.className='note';n.textContent='Nada de errado foi medido. Olhe a animação e me diga se ainda falta algo.';o.append(n);}
+  r.problemas.forEach(p=>{const e=document.createElement('div');e.className='pr';e.innerHTML='<span class="t"></span><p></p>';e.querySelector('.t').textContent=(p.t===''?'':p.t+' s');e.querySelector('p').textContent=p.msg;if(p.t!==''){const go=document.createElement('button');go.textContent='ir';go.onclick=()=>{t=+p.t;playing=false;syncPlay();sel=nearest(t);render();};e.append(go);}o.append(e);});}
+$('#evRun').onclick=()=>{if(isLoco()||!window.LAB){$('#evOut').textContent='Escolha uma animação com poses (Golpe, Investida, Dano…).';return;}showEval(LAB.evaluate(cur,keys()));};
+$('#evFix').onclick=()=>{if(isLoco()||!window.LAB){$('#evOut').textContent='Escolha uma animação com poses.';return;}$('#evOut').textContent='Medindo e melhorando…';setTimeout(()=>{pushHist();const res=LAB.improve(cur,keys());REI.ANIMS[cur]=res.keys;sel=-1;t=0;REI.reset();markDirty();render();showEval(res.depois,'antes '+Math.round(res.antes.score));if(res.log.length){const l=document.createElement('div');l.className='note';l.textContent='O que fiz: '+res.log.join(' • ');$('#evOut').append(l);}},30);};
 // ---------- salvar / carregar (db) ----------
 let DB=null,saving=false;
 async function initDb(){try{const c=window.claude&&await window.claude.use('db');DB=c||null;}catch(e){DB=null;}}
