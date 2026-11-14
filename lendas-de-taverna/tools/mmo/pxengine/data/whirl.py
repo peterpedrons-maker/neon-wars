@@ -6,13 +6,13 @@ from PIL import Image, ImageDraw, ImageChops
 import chibi as C
 import teste_clareira as T
 import px2_mobs as M
-from pxrig import Grid
+from pxrig import Grid, autoline
 
 OUT = T.OUT
 W, H = T.W, T.H
 CW = C.W
 R = 17.0
-BODY_Y = 13          # altura do tronco acima do chao (para a orbita)
+BODY_Y = 6          # altura do tronco acima do chao (origem dos bracos e da orbita)
 
 
 def flip(im): return im.transpose(Image.FLIP_LEFT_RIGHT)
@@ -24,7 +24,7 @@ _cache = {}
 def body(view, spin_phase, crouch=False, hop=0):
     k = (view, spin_phase % 2, crouch, hop)
     if k in _cache: return _cache[k]
-    p = dict(tn=2 if crouch else 3, dy=-hop, face='shout')
+    p = dict(tn=2 if crouch else 3, dy=-hop, face='shout', nomitt=True)
     if view == 'right':
         p.update(ar=(3, -1), al=(-2, 0))
         im = C.render(C.build_side(p)[0])
@@ -46,6 +46,44 @@ def sword_img(vx, vy, L, hand):
     cells, tip = C.sword_rows((hand[0] - ox, hand[1] - oy), a, L)
     C.stamp_cells(g, cells)
     return g.render(C.PAL, C.SEL), (ox, oy), (tip[0] + ox, tip[1] + oy)
+
+
+
+def hand_gear(center, rx, rz, L, sword=True, mitt_only_off=False):
+    """Camada do braco da espada: braco ate a mao, espada SAINDO DA MAO (cabo dentro do punho) e punho por cima do cabo.
+    Retorna (img_espada, org, tip) e (img_braco_livre, org). rx,rz = direcao no chao do lado do heroi (projetada na tela)."""
+    ox, oy = int(center[0]) - 40, int(center[1]) - 35
+    c = (center[0] - ox, center[1] - oy)
+    hs = (c[0] + rx * 9.0, c[1] + rz * 4.0)           # mao da espada
+    ho = (c[0] - rx * 8.0, c[1] - rz * 3.5)           # mao livre (lado oposto)
+
+    def arm_cells(p0, p1):
+        cells = {}
+        for (x, y) in C.line_pts(round(p0[0]), round(p0[1]), round(p1[0]), round(p1[1])):
+            cells[(x, y)] = 't'; cells[(x, y + 1)] = 'T' if (x, y + 1) not in cells else cells[(x, y + 1)]
+        return cells
+
+    def mitt_cells(p):
+        cx_, cy_ = round(p[0]), round(p[1])
+        out = {}
+        for dy, row in enumerate(['sss', 'sss', 'sSS']):
+            for dx_, ch in enumerate(row): out[(cx_ - 1 + dx_, cy_ - 1 + dy)] = ch
+        return out
+
+    # braco livre + punho livre
+    go = Grid(80, 70)
+    for (x, y), ch in {**arm_cells((c[0] - rx * 3.5, c[1] - rz * 1.2), ho), **mitt_cells(ho)}.items(): go.put(x, y, ch)
+    autoline(go)
+    off_img = go.render(C.PAL, C.SEL)
+    # braco da espada + espada + punho por cima do cabo
+    gs = Grid(80, 70)
+    for (x, y), ch in {**arm_cells((c[0] + rx * 3.5, c[1] + rz * 1.2), hs), **mitt_cells(hs)}.items(): gs.put(x, y, ch)
+    autoline(gs)
+    a = math.degrees(math.atan2(rx * R, rz * R * .5))
+    cells, tip = C.sword_rows(hs, a, L)
+    C.stamp_cells(gs, cells)
+    for (x, y), ch in mitt_cells(hs).items(): gs.put(x, y, ch)          # a mao fecha por cima do cabo
+    return gs.render(C.PAL, C.SEL), (ox, oy), (tip[0] + ox, tip[1] + oy), off_img
 
 
 def flash(img):
@@ -101,7 +139,7 @@ def render():
         vsel = int(round((theta_deg % 360) / 90.0)) % 4
         view = ['down', 'right', 'up', 'left'][vsel]
         hop = 1 if (spinning and f % 2 == 0) else 0
-        spr = body(view, f, crouch=(kind == 'wind' or kind == 'end'), hop=hop)
+        spr = C.anim('down', 'idle')[f % 6][0] if kind == 'idle' else body(view, f, crouch=(kind == 'wind' or kind == 'end'), hop=hop)
         wob = (1 if f % 2 else -1) if spinning else 0
         X, Y = CX + wob, CY
         # slimes: reacao ao golpe
@@ -134,19 +172,19 @@ def render():
                 T.shadow(im, sx, sy, 9, 3, 70)
                 dyn.append(dict(img=slime_img('idle', s['pal']), x=sx - 9, y=sy - 13, foot=sy))
         dyn.append(dict(img=spr, x=X - CW // 2, y=Y - C.BASE, foot=Y))
-        # --- espada (peca separada) + rastro
+        # --- espada (peca separada) SEMPRE NA MAO: braco -> mao -> cabo
         center = (X, Y - BODY_Y)
-        vx, vy = rx * R, rz * R * .5
-        hand = (center[0] + rx * 4, center[1] + rz * 2)
-        L = max(7.0, math.hypot(vx, vy))
-        front_sword = rz > -0.05
-        sw_img = None
-        if kind in ('spin', 'wind', 'end'):
-            if kind == 'spin':
-                sw_img, sw_org, sw_tip = sword_img(vx, vy, L, hand)
-            else:
-                sw_img, sw_org, sw_tip = sword_img(-R * .7, 3, L * .8, (center[0] - 3, center[1] + 2))
-                front_sword = False
+        if kind == 'spin':
+            vx, vy = rx * R, rz * R * .5
+            L = max(7.0, math.hypot(vx, vy))
+            g_img, g_org, g_tip, off_img = hand_gear(center, rx, rz, L)
+            front_sword = rz > -0.05
+        elif kind in ('wind', 'end'):
+            g_img, g_org, g_tip, off_img = hand_gear(center, -1.0, 0.15, 12.0)
+            front_sword = True
+        else:
+            g_img = None
+        sw_img = g_img; sw_org = g_org if g_img is not None else (0, 0)
         trail_front = Image.new('RGBA', (W, H), (0, 0, 0, 0)); trail_back = Image.new('RGBA', (W, H), (0, 0, 0, 0))
         tf, tb = ImageDraw.Draw(trail_front), ImageDraw.Draw(trail_back)
         if spinning:
@@ -174,11 +212,15 @@ def render():
         im = Image.alpha_composite(im, trail_back)
         if sw_img is not None and not front_sword:
             im.alpha_composite(sw_img, (sw_org[0], sw_org[1]))
+        if sw_img is not None and front_sword:
+            im.alpha_composite(off_img, (sw_org[0], sw_org[1]))   # braco livre atras do corpo
         for o in sorted(list(objs) + dyn, key=lambda o: o['foot']):
             e = o['img'].convert('RGBA')
             im.alpha_composite(e, (int(o['x']), int(o['y']))) if 0 <= o['x'] < W - e.width and 0 <= o['y'] < H - e.height else im.paste(e.convert('RGB'), (int(o['x']), int(o['y'])), e)
         if sw_img is not None and front_sword:
             im.alpha_composite(sw_img, (sw_org[0], sw_org[1]))
+        if sw_img is not None and not front_sword:
+            im.alpha_composite(off_img, (sw_org[0], sw_org[1]))   # braco livre na frente
         im = Image.alpha_composite(im, trail_front)
         out.append(im.convert('RGB'))
     return out

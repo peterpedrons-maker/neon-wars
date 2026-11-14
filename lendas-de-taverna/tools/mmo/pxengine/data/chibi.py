@@ -165,8 +165,9 @@ def build_front(p, back=False):
     # maos (blocos de pele)
     al, ar = p.get('al', (0, 0)), p.get('ar', (0, 0))
     my = body_top + 2
-    g.stamp(MITT_L, cx - 9 + dx + al[0], my + al[1])
-    g.stamp([r[::-1] for r in MITT_L], cx + 6 + dx + ar[0], my + ar[1])
+    if not p.get('nomitt'):
+        g.stamp(MITT_L, cx - 9 + dx + al[0], my + al[1])
+        g.stamp([r[::-1] for r in MITT_L], cx + 6 + dx + ar[0], my + ar[1])
     # cabeca
     hx, hy = cx - 11 + dx + p.get('hdx', 0), body_top - 17 + p.get('hdy', 0)
     head = list(HEAD_B if back else HEAD_F)
@@ -210,12 +211,12 @@ def build_side(p):
     g.stamp(['CC.', '.CD', '..D'], cx - 8 + dx + p.get('bdx', 0) - fl, body_top + fl // 2)
     # braco de tras (so um bloco atras) e da frente
     ab, af = p.get('al', (0, 0)), p.get('ar', (0, 0))
-    g.stamp(['ss', 'sS'], cx - 6 + dx + ab[0], body_top + 3 + ab[1])
+    if not p.get('nomitt'): g.stamp(['ss', 'sS'], cx - 6 + dx + ab[0], body_top + 3 + ab[1])
     # cabeca (perfil)
     hx, hy = cx - 11 + dx + p.get('hdx', 0), body_top - 17 + p.get('hdy', 0)
     head = make_head_side('shout' if p.get('face') == 'shout' else 'n', 'closed' if p.get('face') == 'blink' else 'open')
     g.stamp(head, hx, hy)
-    g.stamp(['ss', 'sS'], cx + 3 + dx + af[0], body_top + 3 + af[1])
+    if not p.get('nomitt'): g.stamp(['ss', 'sS'], cx + 3 + dx + af[0], body_top + 3 + af[1])
     autoline(g)
     if swd:
         if not behind: stamp_cells(g, cells)
