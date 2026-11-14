@@ -49,7 +49,8 @@ function snapshot(){return JSON.stringify({a:REI.ANIMS,t:REI.TUNE});}
 function pushHist(){const now=Date.now();if(now-histT>900){hist.push(snapshot());if(hist.length>30)hist.shift();}histT=now;}
 function restoreSnap(s){const o=JSON.parse(s);for(const n in o.a)REI.ANIMS[n]=o.a[n];Object.assign(REI.TUNE,o.t);}
 function markDirty(){dirty=true;$('#save').textContent='alterado';clearTimeout(markDirty.h);markDirty.h=setTimeout(save,1400);}
-function ensureKey(){if(isLoco())return false;if(sel>=0)return true;const i=nearest(t);if(i>=0){sel=i;return true;}const p=REI.spline(keys(),Math.min(t,dur()));pushHist();const k=keys();let at=k.findIndex(([x])=>x>t);if(at<0)at=k.length;k.splice(at,0,[+t.toFixed(3),{...p}]);sel=at;buildMarks();return true;}
+function nearestWide(tt,w){const k=keys();let b=-1,bd=w;k.forEach(([x],i)=>{const d=Math.abs(x-tt);if(d<bd){bd=d;b=i;}});return b;}
+function ensureKey(){if(isLoco())return false;if(sel>=0)return true;const i=nearestWide(t,.12);if(i>=0){sel=i;return true;}const p=REI.spline(keys(),Math.min(t,dur()));pushHist();const k=keys();let at=k.findIndex(([x])=>x>t);if(at<0)at=k.length;k.splice(at,0,[+t.toFixed(3),{...p}]);sel=at;buildMarks();return true;}
 function setChan(c,v,silent){if(!ensureKey())return;pushHist();const [tt,p]=keys()[sel];p[c]=v;t=tt;playing=false;syncPlay();markDirty();}
 function buildSliders(){const box=$('#sliders');box.innerHTML='';const P=PARTS.find(x=>x.id===part);
   $('#parts').innerHTML='';PARTS.forEach(x=>{const b=document.createElement('button');b.textContent=x.nome;b.className=x.id===part?'on':'';b.onclick=()=>{part=x.id;buildSliders();};$('#parts').append(b);});
@@ -66,6 +67,7 @@ $('#dupKey').onclick=()=>{if(isLoco()||sel<0)return;pushHist();const k=keys(),[t
 $('#delKey').onclick=()=>{if(isLoco()||sel<0||keys().length<=2)return;pushHist();keys().splice(sel,1);sel=-1;markDirty();render();};
 $('#keyTime').addEventListener('input',e=>{if(sel<0)return;pushHist();const k=keys();let v=+e.target.value;if(sel===0)v=0;if(sel===k.length-1)v=Math.max(v,k[sel-1][0]+.05);const lo=sel>0?k[sel-1][0]+.02:0,hi=sel<k.length-1?k[sel+1][0]-.02:99;k[sel][0]=Math.max(lo,Math.min(hi,v));t=k[sel][0];playing=false;syncPlay();markDirty();buildMarks();});
 $('#dur').addEventListener('input',e=>{if(isLoco())return;pushHist();const nd=+e.target.value,od=dur(),f=nd/od;keys().forEach(kk=>kk[0]=+(kk[0]*f).toFixed(3));t*=f;markDirty();buildMarks();});
+$('#fixKeys').onclick=()=>{if(isLoco())return;const k=keys();pushHist();for(let i=k.length-2;i>=1;i--){if(k[i+1][0]-k[i][0]<.12)k.splice(i,1);}sel=-1;markDirty();render();};
 $('#restore').onclick=()=>{const o=JSON.parse(orig);if(!o.a[cur])return;pushHist();REI.ANIMS[cur]=o.a[cur];sel=-1;markDirty();render();};
 $('#undo').onclick=()=>{if(!hist.length)return;restoreSnap(hist.pop());sel=-1;markDirty();render();};
 // ---------- gaveta (ajuste fino / Claude / notas) ----------

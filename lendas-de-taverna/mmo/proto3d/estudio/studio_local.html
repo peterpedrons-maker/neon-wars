@@ -83,7 +83,7 @@ textarea{width:100%;min-height:58px;resize:vertical;background:var(--panel2);col
    <div class="note" id="animNote"></div>
    <div class="row"><label>Momento da pose selecionada <span id="keyT">–</span></label><input type="range" id="keyTime" min="0" max="1" step="0.01"></div>
    <div class="row"><label>Duração da animação <span id="durV">–</span></label><input type="range" id="dur" min="0.4" max="5" step="0.05"></div>
-   <div class="bar"><button id="dupKey" class="ghost">Duplicar pose</button><button id="restore" class="ghost">Restaurar original</button></div>
+   <div class="bar"><button id="dupKey" class="ghost">Duplicar pose</button><button id="restore" class="ghost">Restaurar original</button><button id="fixKeys" class="ghost">Arrumar poses coladas</button></div>
    <h2>Parte do corpo</h2>
    <div class="seg" id="parts"></div>
    <div id="sliders" style="display:grid;gap:12px"></div>
@@ -493,7 +493,7 @@ function step(dt,cmd){
   S.dark=dk;amb.intensity=.95*(1-.78*dk);sun.intensity=1.1*(1-.85*dk);rimL.intensity=.7*(1-.3*dk);darkDisc.material.opacity=.62*dk;darkDisc.position.set(G.position.x,.03,G.position.z);
   if(a==='dark'&&at>.35&&at<1.7){for(let q=0;q<3;q++){const ang=Math.random()*6.28;puff(G.localToWorld(new THREE.Vector3(Math.cos(ang)*(.6+Math.random()*.5),.5+Math.random()*2.5,Math.sin(ang)*.6)),new THREE.Vector3(Math.cos(ang)*(at>1.1?2.5:-.8),.4,Math.sin(ang)*(at>1.1?2.5:-.8)),.8,.9,0x7a40d0);}}
   // rastro da espada
-  scene.updateMatrixWorld(true);tip.getWorldPosition(tipV);const hit=(a==='attack'&&at>.4&&at<1.0)||(a==='rift'&&((at>.4&&at<.7)||(at>.8&&at<1.1)||(at>1.3&&at<1.55)))||(a==='echo'&&at>.5&&at<.75)||(a==='charge'&&at>1.4&&at<1.95);
+  scene.updateMatrixWorld(true);tip.getWorldPosition(tipV);const hit=(k.fx>.15)||(a==='rift'&&((at>.4&&at<.7)||(at>.8&&at<1.1)||(at>1.3&&at<1.55)))||(a==='echo'&&at>.5&&at<.75)||(a==='charge'&&at>1.4&&at<1.95);
   for(let i=trail.length-1;i>0;i--)trail[i].p.copy(trail[i-1].p);trail[0].p.copy(tipV);trail.forEach((q,i)=>{q.m.position.copy(q.p);q.m.material.opacity=hit?Math.max(0,.7-i*.05):0;q.m.scale.setScalar(1.2-i*.07);});
   swGlow.material.opacity=.1+.1*Math.min(1.5,glow)+(a==='attack'&&at>.5&&at<.8?.3:0);
   // morte: coroa e espada soltas, desintegra por partes
@@ -574,7 +574,8 @@ function snapshot(){return JSON.stringify({a:REI.ANIMS,t:REI.TUNE});}
 function pushHist(){const now=Date.now();if(now-histT>900){hist.push(snapshot());if(hist.length>30)hist.shift();}histT=now;}
 function restoreSnap(s){const o=JSON.parse(s);for(const n in o.a)REI.ANIMS[n]=o.a[n];Object.assign(REI.TUNE,o.t);}
 function markDirty(){dirty=true;$('#save').textContent='alterado';clearTimeout(markDirty.h);markDirty.h=setTimeout(save,1400);}
-function ensureKey(){if(isLoco())return false;if(sel>=0)return true;const i=nearest(t);if(i>=0){sel=i;return true;}const p=REI.spline(keys(),Math.min(t,dur()));pushHist();const k=keys();let at=k.findIndex(([x])=>x>t);if(at<0)at=k.length;k.splice(at,0,[+t.toFixed(3),{...p}]);sel=at;buildMarks();return true;}
+function nearestWide(tt,w){const k=keys();let b=-1,bd=w;k.forEach(([x],i)=>{const d=Math.abs(x-tt);if(d<bd){bd=d;b=i;}});return b;}
+function ensureKey(){if(isLoco())return false;if(sel>=0)return true;const i=nearestWide(t,.12);if(i>=0){sel=i;return true;}const p=REI.spline(keys(),Math.min(t,dur()));pushHist();const k=keys();let at=k.findIndex(([x])=>x>t);if(at<0)at=k.length;k.splice(at,0,[+t.toFixed(3),{...p}]);sel=at;buildMarks();return true;}
 function setChan(c,v,silent){if(!ensureKey())return;pushHist();const [tt,p]=keys()[sel];p[c]=v;t=tt;playing=false;syncPlay();markDirty();}
 function buildSliders(){const box=$('#sliders');box.innerHTML='';const P=PARTS.find(x=>x.id===part);
   $('#parts').innerHTML='';PARTS.forEach(x=>{const b=document.createElement('button');b.textContent=x.nome;b.className=x.id===part?'on':'';b.onclick=()=>{part=x.id;buildSliders();};$('#parts').append(b);});
@@ -591,6 +592,7 @@ $('#dupKey').onclick=()=>{if(isLoco()||sel<0)return;pushHist();const k=keys(),[t
 $('#delKey').onclick=()=>{if(isLoco()||sel<0||keys().length<=2)return;pushHist();keys().splice(sel,1);sel=-1;markDirty();render();};
 $('#keyTime').addEventListener('input',e=>{if(sel<0)return;pushHist();const k=keys();let v=+e.target.value;if(sel===0)v=0;if(sel===k.length-1)v=Math.max(v,k[sel-1][0]+.05);const lo=sel>0?k[sel-1][0]+.02:0,hi=sel<k.length-1?k[sel+1][0]-.02:99;k[sel][0]=Math.max(lo,Math.min(hi,v));t=k[sel][0];playing=false;syncPlay();markDirty();buildMarks();});
 $('#dur').addEventListener('input',e=>{if(isLoco())return;pushHist();const nd=+e.target.value,od=dur(),f=nd/od;keys().forEach(kk=>kk[0]=+(kk[0]*f).toFixed(3));t*=f;markDirty();buildMarks();});
+$('#fixKeys').onclick=()=>{if(isLoco())return;const k=keys();pushHist();for(let i=k.length-2;i>=1;i--){if(k[i+1][0]-k[i][0]<.12)k.splice(i,1);}sel=-1;markDirty();render();};
 $('#restore').onclick=()=>{const o=JSON.parse(orig);if(!o.a[cur])return;pushHist();REI.ANIMS[cur]=o.a[cur];sel=-1;markDirty();render();};
 $('#undo').onclick=()=>{if(!hist.length)return;restoreSnap(hist.pop());sel=-1;markDirty();render();};
 // ---------- gaveta (ajuste fino / Claude / notas) ----------
