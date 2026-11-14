@@ -7,6 +7,7 @@ from PIL import Image, ImageDraw
 import teste_clareira as T
 import teste_rei as R
 import chars_dir as D
+import px_hero, px_goblin
 
 W, H, OUT = T.W, T.H, T.OUT
 CYC = 6  # crouch, air, air, air, land, stand
@@ -52,11 +53,11 @@ def clareira(frames=78):
         for o in objs:
             if 'sh' in o: T.shadow(im, *o['sh'])
         dyn = []
-        for w, fn, key, off in [(hero, D.hero_dir, 'h', (20, 42)), (gob, D.goblin_dir, 'g', (20, 33))]:
+        for w, fn in [(hero, px_hero.hero_px), (gob, px_goblin.goblin_px)]:
             x, y, face, pose, air = w.at(f)
-            T.shadow(im, x, y, 8 - air * .3, 3, 80 if air == 0 else 50)
-            sp = fn(face, pose, (f // 3) % 2)
-            dyn.append(dict(img=sp, x=x - off[0], y=y - off[1] - air, foot=y))
+            T.shadow(im, x, y, 7 - air * .3, 2.5, 80 if air == 0 else 50)
+            sp = fn(face, pose, (f // 6) % 2)
+            dyn.append(dict(img=sp, x=x - sp.width // 2, y=y - sp.height + 1 - air, foot=y))
         for i, (x, y, name) in enumerate([(148, 82, 'g'), (218, 78, 'b'), (258, 216, 'o')]):
             s = math.sin((f / 12 + i * .33) * 2 * math.pi)
             sp, cx, fy = sl[(name, int(round(s)))]
@@ -88,8 +89,8 @@ def cripta(frames=72):
         spr = D.rei_dir(face, pose, f)[0]
         ents.append((y, spr, x - 64, y - 114 - air * .5))
         hx, hy, hf, hp, ha = hero.at(f)
-        sd.ellipse([hx - 9, hy - 3, hx + 9, hy + 3], fill=(0, 0, 0, 100))
-        ents.append((hy, D.hero_dir(hf, hp, (f // 3) % 2), hx - 20, hy - 42 - ha))
+        sd.ellipse([hx - 8, hy - 3, hx + 8, hy + 3], fill=(0, 0, 0, 100))
+        hs_ = px_hero.hero_px(hf, hp, (f // 6) % 2); ents.append((hy, hs_, hx - hs_.width // 2, hy - hs_.height + 1 - ha))
         im = Image.alpha_composite(im, sh)
         for _, s, xx, yy in sorted(ents, key=lambda e: e[0]):
             im.alpha_composite(s, (int(xx), int(yy)))
