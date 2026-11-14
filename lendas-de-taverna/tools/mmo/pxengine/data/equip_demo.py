@@ -10,8 +10,8 @@ import fx
 WS = ['espada_ferro', 'katana', 'cimitarra', 'florete', 'espada_larga', 'machado', 'chamejante', 'montante_real']
 TRAIL = False   # risco de corte so em skills; golpe basico sem risco (decisao do dono)
 COL = {'chamejante': (255, 140, 50)}
-Wd, Hd = 130, 90
-OX, OY = 14, 26
+Wd, Hd = 130, 100
+OX, OY = -2, 20
 
 
 def bg():
@@ -57,7 +57,7 @@ def run():
                 for a in range(0, 360, 30):
                     px = OX + 30 + math.cos(math.radians(a + k * 12)) * r; py = OY + 14 + math.sin(math.radians(a + k * 12)) * r * .7
                     d.point([px, py], fill=(255, 245, 160)); d.point([px + 1, py], fill=(255, 220, 90))
-            d.ellipse([91, OY + 22, 107, OY + 30], fill=(40, 90, 40)); d.ellipse([91, OY + 12, 105, OY + 28], fill=(110, 200, 90), outline=(40, 120, 50))
+            d.ellipse([59, OY + 32, 75, OY + 40], fill=(40, 90, 40)); d.ellipse([59, OY + 22, 73, OY + 38], fill=(110, 200, 90), outline=(40, 120, 50))
             label(b, (Wd // 2, 3), ('EQUIPANDO: ' if k < 7 else 'EQUIPADO: ') + wid.replace('_', ' ').upper(), (255, 240, 200), center=True)
             frames.append(b)
         # 2) golpe com rastro
@@ -75,13 +75,13 @@ def run():
             for j in (range(1, len(trail)) if TRAIL else []):
                 d.line([trail[j - 1], trail[j]], fill=tc, width=2 if j > len(trail) // 2 else 1)
             if True:
-                ex = 98
-                d.ellipse([ex - 8, OY + 22, ex + 8, OY + 30], fill=(40, 90, 40))
-                d.ellipse([ex - 7, OY + 12, ex + 7, OY + 28], fill=(255, 255, 255) if k in (5, 6) else (110, 200, 90), outline=(40, 120, 50))
-                d.point([ex - 3, OY + 18], fill=(0, 0, 0)); d.point([ex + 2, OY + 18], fill=(0, 0, 0))
+                ex = 66
+                d.ellipse([ex - 8, OY + 32, ex + 8, OY + 40], fill=(40, 90, 40))
+                d.ellipse([ex - 7, OY + 22, ex + 7, OY + 38], fill=(255, 255, 255) if k in (5, 6) else (110, 200, 90), outline=(40, 120, 50))
+                d.point([ex - 3, OY + 28], fill=(0, 0, 0)); d.point([ex + 2, OY + 28], fill=(0, 0, 0))
                 if k in (6, 7): fx.draw_number(b, ex - 6, OY - 4 - (k - 6) * 3, str(40 + si * 7)) if False else None
             if k >= 5:
-                label(b, (98, OY - 6 - (k - 5)), str(40 + si * 7), (255, 224, 74), center=True)
+                label(b, (66, OY + 14 - (k - 5)), str(40 + si * 7), (255, 224, 74), center=True)
             label(b, (Wd // 2, 3), wid.replace('_', ' ').upper(), (255, 240, 200), center=True)
             frames.append(b)
     big = [f.resize((Wd * 4, Hd * 4), Image.NEAREST) for f in frames]
