@@ -191,7 +191,7 @@ def sword_rows(hand, ang, length=10, guard=3, wide=False, serrate=False, glow=No
 # perfis de lamina: (largura_meia(t), curvatura em celulas, estilo de guarda)
 def _prof(shape):
     P = {
-        'straight': (lambda t: .62, 0, 'bar'),
+        'straight': (lambda t: .85, 0, 'bar'),
         'wide':    (lambda t: 1.3, 0, 'bar'),
         'broad':   (lambda t: 1.6 if t < .72 else 1.6 - (t - .72) * 5.2, 0, 'cross'),
         'leaf':    (lambda t: 0.4 + 1.6 * math.sin(math.pi * min(1, t * 1.1) ** .8), 0, 'bar'),
@@ -840,7 +840,7 @@ METAL = {'aco': dict(U='#9aa8c0', u='#d8e4f4', V='#4a5468', Q='#5a6478', q='#9aa
 # armas: params (forma) + pal (cores). Troca de arma = trocar o id.
 WEAPONS = {
     # espadas
-    'espada_ferro': dict(kind='sword', len=11, guard=2, pal=dict(A='#c0c8d0', a='#7c8898', g='#8a6a3a', N='#4a3020')),
+    'espada_ferro': dict(kind='sword', len=12, guard=2, pal=dict(A='#e6eef6', a='#8190a8', g='#8a6a3a', N='#4a3020')),
     'espada_aco': dict(kind='sword', len=13, guard=3, pal=dict(A='#f6faff', a='#9cb0d2', g='#e8b840', N='#6e4228')),
     'espada_longa': dict(kind='sword', len=16, guard=3, pal=dict(A='#eef4ff', a='#8aa0c8', g='#c8a040', N='#4a3020')),
     'montante': dict(kind='sword', len=17, guard=4, wide=True, pal=dict(A='#e0e8f0', a='#8890a8', g='#a0a0b0', N='#3a2a20')),
@@ -978,13 +978,13 @@ ATK_S = [
     dict(tn=3, sw=dict(ang=105, len=12), ar=(1, 0)),
     dict(tn=2, hdx=-1, bdx=-1, ar=(-1, -1), al=(1, 0), sw=dict(ang=150, len=12)),
     dict(tn=3, hdx=-2, bdx=-1, hdy=0, dx=-1, ar=(-2, -3), al=(2, 0), sw=dict(ang=205, len=12), face='shout'),
-    dict(tn=3, hdx=-3, bdx=-2, dx=-2, ar=(-2, -5), al=(3, 0), sw=dict(ang=235, len=12)),
-    dict(tn=3, hdx=-1, bdx=-1, dx=-1, ar=(0, -5), al=(2, 0), sw=dict(ang=190, len=12), face='shout'),
-    dict(tn=3, hdx=2, bdx=1, dx=1, ar=(3, -2), al=(-1, 0), sw=dict(ang=120, len=12), face='shout'),
-    dict(tn=2, dy=1, hdx=4, bdx=2, dx=3, ar=(5, 1), al=(-2, 0), bl=(-2, 0), br=(2, 0), sw=dict(ang=85, len=12), face='shout'),
+    dict(tn=3, hdx=-3, bdx=-2, dx=-2, ar=(-3, 2), al=(3, 0), sw=dict(ang=258, len=12)),
+    dict(tn=3, hdx=-3, bdx=-2, dx=-2, ar=(-3, 3), al=(3, 0), sw=dict(ang=272, len=12), face='shout'),
+    dict(tn=3, hdx=2, bdx=1, dx=1, ar=(1, -3), al=(-1, 0), sw=dict(ang=165, len=12), face='shout'),
+    dict(tn=2, dy=1, hdx=4, bdx=2, dx=3, ar=(4, -1), al=(-2, 0), bl=(-2, 0), br=(2, 0), sw=dict(ang=128, len=12), face='shout'),
     dict(tn=2, dy=1, hdx=4, bdx=2, dx=3, ar=(5, 1), al=(-2, 0), bl=(-2, 0), br=(2, 0), sw=dict(ang=88, len=12)),
-    dict(tn=3, hdx=2, bdx=1, dx=2, ar=(3, 1), al=(-1, 0), bl=(-1, 0), br=(1, 0), sw=dict(ang=112, len=12)),
-    dict(tn=3, hdx=1, bdx=0, dx=1, ar=(1, -1), sw=dict(ang=122, len=12)),
+    dict(tn=3, hdx=2, bdx=1, dx=2, ar=(4, 1), al=(-1, 0), bl=(-1, 0), br=(1, 0), sw=dict(ang=92, len=12)),
+    dict(tn=3, hdx=1, bdx=0, dx=1, ar=(1, 0), sw=dict(ang=112, len=12)),
 ]
 
 
