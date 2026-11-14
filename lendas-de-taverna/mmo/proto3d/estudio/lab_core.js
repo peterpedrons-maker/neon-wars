@@ -18,7 +18,9 @@ function measure(name,keys){
       const lhm=[armSeg[0].hg,armSeg[0].ho,armSeg[0].hr].find(m=>m.visible)||armSeg[0].hr,lh=lhm.position.clone();
       const shR=chest.localToWorld(new V3(.8,.55,0)),shL=chest.localToWorld(new V3(-.8,.55,0));
       const hipL=legSeg[0].th.position,hipR=legSeg[1].th.position,fL=legSeg[0].ft.position,fR=legSeg[1].ft.position;
-      F.push({t:at,rh:arr(g),tip:arr(tp),lh:arr(lh),head:arr(hd),chest:arr(ch),hips:arr(bd),fl:arr(fL),fr:arr(fR),
+      const pen=(()=>{let mx=0;const chk=(v,rx,rz)=>{const l=chest.worldToLocal(v.clone());if(l.y>-.85&&l.y<1.05){const ex=l.x/rx,d=Math.hypot(ex,l.z/rz);mx=Math.max(mx,1-d);}};
+        for(const i of [0,1]){const S0=i?shR:shL,el=armSeg[i].fo.position,hand=i?g:lh;chk(el,.55,.45);chk(S0.clone().lerp(el,.55),.52,.42);chk(el.clone().lerp(hand,.45),.52,.42);chk(hand,.66,.55);}return mx;})();
+      F.push({pen,t:at,rh:arr(g),tip:arr(tp),lh:arr(lh),head:arr(hd),chest:arr(ch),hips:arr(bd),fl:arr(fL),fr:arr(fR),
         reachR:g.distanceTo(shR)/TOR,reachL:lh.distanceTo(shL)/TOR,legL:hipL.distanceTo(fL)/LEG,legR:hipR.distanceTo(fR)/LEG,pose:spline(keys,at)});}
   }finally{ANIMS[name]=old;window.NORENDER=false;resetRig();}
   return F;}
@@ -37,6 +39,7 @@ function evaluate(name,keys,F,ref){
   const rr=F.filter(f=>f.reachR>1.15||f.reachL>1.15),lg=F.filter(f=>f.legL>1.0||f.legR>1.0);M.alcance_braco=+(rr.length/n*100).toFixed(1);M.perna_esticada=+(lg.length/n*100).toFixed(1);
   if(rr.length)add('alcance',rr[0].t,'o braço não alcança onde a mão/espada deveria estar ('+rr.length+' quadros): mão se solta do corpo',Math.min(25,rr.length/n*60));
   if(lg.length)add('perna',lg[0].t,'a perna estica além do limite ('+lg.length+' quadros): pé flutua',Math.min(15,lg.length/n*40));
+  const pb=F.filter(f=>f.pen>.1);M.braco_no_corpo=pb.length;if(pb.length>1)add('braco_no_corpo',pb[0].t,'o braço/mão atravessa o tronco ('+pb.length+' quadros)',Math.min(25,pb.length*1.2));
   // 3. espada atravessando o corpo / chão
   let inter=0,firstI=-1,under=0;F.forEach((f,i)=>{let md=9;for(let s=.15;s<=1;s+=.1){const p=[f.rh[0]+(f.tip[0]-f.rh[0])*s,f.rh[1]+(f.tip[1]-f.rh[1])*s,f.rh[2]+(f.tip[2]-f.rh[2])*s];md=Math.min(md,ptSeg(p,f.hips,f.chest));}if(md<.3){inter++;if(firstI<0)firstI=i;}if(f.tip[1]<-.12)under++;});
   M.espada_no_corpo=inter;if(inter>3)add('colisao',F[firstI].t,'a lâmina atravessa o tronco ('+inter+' quadros)',Math.min(15,inter*.8));

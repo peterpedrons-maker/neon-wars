@@ -20,6 +20,18 @@ rep("window.sim={step,S,R,cv,grab(){return cv.toDataURL('image/png');}};","funct
 rep("placeCam(0,0);","S.yaw=Math.PI/2;placeCam(0,0);")
 rep("sx:.05,sy:2.35,sz:.62","sx:.05,sy:2.8,sz:.62")
 rep("ik2(S0,tgt,.9,.85,POLE,el);","const dd=S0.distanceTo(tgt),st=Math.max(1,Math.min(1.14,dd/1.74));ik2(S0,tgt,.9*st,.85*st,POLE,el);armSeg[i].up.scale.y=st;armSeg[i].fo.scale.y=st;")
+# bug: dis() religava todas as maos (o punho no cabo ficava visivel dentro do tronco)
+rep("for(const q in hm)hm[q].visible=(q===kind);","for(const q in hm){hm[q].userData.hide=(q!==kind);hm[q].visible=(q===kind);}")
+rep("obj.visible=vis;};","obj.visible=vis&&!obj.userData.hide;};")
+
+# colisao: braco/mao/cotovelo nao atravessam o tronco (elipse em torno do eixo quadril-peito, coordenadas do peito)
+rep("  const shW=s=>chest.localToWorld(new THREE.Vector3(s*.8,.55,0));","""  const shW=s=>chest.localToWorld(new THREE.Vector3(s*.8,.55,0));
+  const pushOut=(v,rx,rz)=>{const l=chest.worldToLocal(v.clone());if(l.y>-.85&&l.y<1.05){let ex=l.x/rx,ez=l.z/rz,d=Math.hypot(ex,ez);if(d<1){const zE=rz*Math.sqrt(Math.max(0,1-ex*ex));l.z=l.z>=-.15*rz?zE:-zE;return chest.localToWorld(l);}}return v;};
+  {const g0=sword.localToWorld(new THREE.Vector3(0,-.12,0)),g1=pushOut(g0,.76,.64);if(g1!==g0){sword.position.add(g1.clone().sub(g0));sword.updateMatrixWorld(true);}}""")
+rep("    const el=new THREE.Vector3();POLE.copy(G.localToWorld(new THREE.Vector3(side*.8,-.6,-.2))).sub(G.position);","    if(i===0){const t2=pushOut(tgt,.76,.64);tgt.copy(t2);}\n    const el=new THREE.Vector3();POLE.copy(G.localToWorld(new THREE.Vector3(side*.8,-.6,-.2))).sub(G.position);")
+rep("armSeg[i].up.scale.y=st;armSeg[i].fo.scale.y=st;","""for(let it=0;it<3;it++){const m1=S0.clone().lerp(el,.55),m2=el.clone().lerp(tgt,.45);let mv=false;for(const [pt,k] of [[el,1],[m1,1.8],[m2,1.8]]){const q=pushOut(pt,.6,.5);if(q!==pt){const dl=q.clone().sub(pt);if(dl.lengthSq()>1e-6){el.add(dl.multiplyScalar(k));mv=true;}}}if(!mv)break;}
+    armSeg[i].up.scale.y=S0.distanceTo(el)/.9;armSeg[i].fo.scale.y=el.distanceTo(tgt)/.85;""")
+
 rep("const hit=(a==='attack'&&at>.4&&at<1.0)||","const hit=(k.fx>.15)||")
 body=body.replace("const W=300,H=300,cv=document.getElementById('c');","const W=300,H=300,cv=document.getElementById('c');")
 libs=open(D+'sdflib.js').read()+'\n'+open(D+'parts.js').read()
