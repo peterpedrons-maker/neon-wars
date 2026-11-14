@@ -966,8 +966,8 @@ ATK_F = [   # frente (espada na mao direita da tela, golpe de cima-direita para 
     dict(tn=3, dy=1, hdy=1, ar=(-1, -1), al=(0, 1), sw=dict(ang=300, len=12, side='r'), face='shout'),
     dict(tn=2, dy=2, hdy=1, ar=(-3, 2), al=(0, 0), bl=(-1, 0), br=(2, 0), sw=dict(ang=350, len=12, side='r'), face='shout'),
     dict(tn=2, dy=2, hdy=1, ar=(-4, 2), al=(0, 0), bl=(-1, 0), br=(2, 0), sw=dict(ang=345, len=12, side='r')),
-    dict(tn=3, dy=1, ar=(-2, 1), sw=dict(ang=10, len=12, side='r')),
-    dict(tn=3, ar=(0, 0), sw=dict(ang=150, len=12, side='r')),
+    dict(tn=3, dy=1, ar=(-2, 0), sw=dict(ang=60, len=12, side='r')),
+    dict(tn=3, ar=(0, 0), sw=dict(ang=140, len=12, side='r')),
 ]
 ATK_B = [dict(q) for q in ATK_F]
 for _i, _a in {5: 195, 6: 172, 7: 168, 8: 160, 9: 150}.items():
@@ -982,9 +982,9 @@ ATK_S = [
     dict(tn=3, hdx=-1, bdx=-1, dx=-1, ar=(0, -5), al=(2, 0), sw=dict(ang=190, len=12), face='shout'),
     dict(tn=3, hdx=2, bdx=1, dx=1, ar=(3, -2), al=(-1, 0), sw=dict(ang=120, len=12), face='shout'),
     dict(tn=2, dy=1, hdx=4, bdx=2, dx=3, ar=(5, 1), al=(-2, 0), bl=(-2, 0), br=(2, 0), sw=dict(ang=85, len=12), face='shout'),
-    dict(tn=2, dy=1, hdx=4, bdx=2, dx=3, ar=(5, 2), al=(-2, 0), bl=(-2, 0), br=(2, 0), sw=dict(ang=60, len=12)),
-    dict(tn=3, hdx=2, bdx=1, dx=2, ar=(3, 1), al=(-1, 0), bl=(-1, 0), br=(1, 0), sw=dict(ang=75, len=12)),
-    dict(tn=3, hdx=1, bdx=0, dx=1, ar=(1, 0), sw=dict(ang=100, len=12)),
+    dict(tn=2, dy=1, hdx=4, bdx=2, dx=3, ar=(5, 1), al=(-2, 0), bl=(-2, 0), br=(2, 0), sw=dict(ang=88, len=12)),
+    dict(tn=3, hdx=2, bdx=1, dx=2, ar=(3, 1), al=(-1, 0), bl=(-1, 0), br=(1, 0), sw=dict(ang=112, len=12)),
+    dict(tn=3, hdx=1, bdx=0, dx=1, ar=(1, -1), sw=dict(ang=122, len=12)),
 ]
 
 
