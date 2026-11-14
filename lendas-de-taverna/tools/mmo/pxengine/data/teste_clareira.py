@@ -289,6 +289,102 @@ def hero(pose='idle', t=0):
     return img
 
 
+
+ORG = [C(c) for c in ['#6a2412', '#b8481c', '#e8742a', '#ffa04e', '#ffd08a']]
+HAIRR = [C(c) for c in ['#3e1208', '#7a2410', '#b8401a', '#e06a26', '#ff9a48']]
+SKIN = [C(c) for c in ['#a8634a', '#d08a68', '#f0b48c', '#ffd2ac', '#ffe8d0']]
+SCARF = [C(c) for c in ['#1a2d6a', '#2b52b0', '#4a82e8', '#86b8ff', '#c4e0ff']]
+PANTS = [C(c) for c in ['#2a1a2e', '#4a3040', '#6a4a52', '#8a6a66', '#a88a80']]
+STEEL = [C(c) for c in ['#4a5a7c', '#8296b8', '#c0d0ea', '#eef4ff', '#ffffff']]
+
+
+def limb(img, p0, p1, r0, r1, ramp):
+    px = img.load(); w, h = img.size
+    x0, y0 = p0; x1, y1 = p1
+    L = math.hypot(x1 - x0, y1 - y0) or 1
+    ux, uy = (x1 - x0) / L, (y1 - y0) / L
+    rm = max(r0, r1) + 1
+    for y in range(max(0, int(min(y0, y1) - rm)), min(h, int(max(y0, y1) + rm) + 2)):
+        for x in range(max(0, int(min(x0, x1) - rm)), min(w, int(max(x0, x1) + rm) + 2)):
+            t = min(1, max(0, ((x + .5 - x0) * ux + (y + .5 - y0) * uy) / L))
+            cx = x0 + (x1 - x0) * t; cy = y0 + (y1 - y0) * t; r = r0 + (r1 - r0) * t
+            dx, dy = x + .5 - cx, y + .5 - cy
+            d = math.hypot(dx, dy)
+            if d <= r:
+                l = (dx * -.6 + dy * -.8) / r * .55 + .28 + bay(x, y) * .16
+                i = 4 if l > .66 else 3 if l > .36 else 2 if l > .0 else 1
+                if d > r - 1 and (dx * .6 + dy * .8) > 0: i = 1
+                px[x, y] = ramp[i]
+
+
+def sword(img, hand, ang, length, r0, r1, ramp, guard=8, gcol=None, grip=None):
+    a = math.radians(ang); ux, uy = math.cos(a), math.sin(a); nx, ny = -uy, ux
+    d = ImageDraw.Draw(img)
+    hx, hy = hand
+    gx, gy = hx + ux * 2, hy + uy * 2
+    line(d, (hx - ux * 4, hy - uy * 4), (hx, hy), grip or BROWN[1], 2)
+    d.point([round(hx - ux * 5), round(hy - uy * 5)], fill=gcol or C('#e8c050'))
+    limb(img, (gx + ux, gy + uy), (hx + ux * length, hy + uy * length), r0, r1, ramp)
+    line(d, (gx - nx * guard / 2, gy - ny * guard / 2), (gx + nx * guard / 2, gy + ny * guard / 2), gcol or C('#e8c050'), 2)
+    return (hx + ux * length, hy + uy * length)
+
+
+def hero2(pose='idle', t=0, flutter=0):
+    """Heroi v2 (volumetrico). Canvas 56x46, pes em (18,42)."""
+    P = {'idle': dict(dy=t, lean=0, hr=(27, 33), sa=72), 'wind': dict(dy=1, lean=-1, hr=(25, 20), sa=-100),
+         'strike': dict(dy=0, lean=2, hr=(31, 28), sa=-4), 'recover': dict(dy=0, lean=1, hr=(29, 31), sa=40),
+         'hop': dict(dy=-5, lean=0, hr=(27, 27), sa=60), 'land': dict(dy=2, lean=0, hr=(27, 35), sa=75)}[pose]
+    dy, lean = P['dy'], P['lean']
+    img = Image.new('RGBA', (56, 46), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    cx = 18
+    tuck = pose == 'hop'
+    for lx in (cx - 4, cx + 4):
+        blob(img, lx, 37 - (3 if tuck else 0) + (1 if pose == 'land' else 0), 2.8, 4.6, PANTS, flat=.9, jit=.03)
+        blob(img, lx + (0 if lx < cx else 1), 41 - (3 if tuck else 0), 3.4, 2.3, BROWN, flat=.6, jit=.03)
+    # torso, cinto e lenco
+    blob(img, cx + lean * .5, 30 + dy, 7.6, 8, ORG, flat=.85, jit=.04)
+    d.rectangle([cx - 7 + lean // 2, 33 + dy, cx + 7 + lean // 2, 33 + dy], fill=BROWN[1])
+    d.rectangle([cx - 1 + lean // 2, 33 + dy, cx + 1 + lean // 2, 34 + dy], fill=C('#ffd05a'))
+    blob(img, cx + lean * .5, 23 + dy, 7.8, 3.2, SCARF, flat=.95, jit=.03)
+    fl = [(0, 0), (1, 1), (2, 1), (1, 0)][flutter % 4]
+    for k in range(5):
+        px_ = cx - 8 - k + (fl[0] if k > 1 else 0); py_ = 24 + dy + k // 2 + (fl[1] if k > 1 else 0)
+        d.rectangle([px_, py_, px_ + 1, py_ + 1], fill=SCARF[2 if k < 3 else 1])
+    # braco esquerdo
+    limb(img, (cx - 8 + lean * .5, 26 + dy), (cx - 9 + lean * .5, 32 + dy), 2.4, 2.0, ORG)
+    blob(img, cx - 9 + lean * .5, 33 + dy, 1.9, 1.9, SKIN, edge=False)
+    # cabeca
+    hx_ = cx + lean
+    blob(img, hx_, 14 + dy, 8.4, 7.6, SKIN, flat=.95, jit=.03)
+    blob(img, hx_, 9.5 + dy, 9.4, 6.8, HAIRR, flat=.18, jit=.1, seed=4)
+    for sx in (-8.4, 8.4):
+        blob(img, hx_ + sx, 14 + dy, 2.2, 4.6, HAIRR, flat=.95, jit=.06, seed=5)
+    for x in range(int(hx_) - 7, int(hx_) + 8):
+        if x % 3 != 1: d.point([x, 12 + dy], fill=HAIRR[2 if x % 2 else 1])
+    d.point([int(hx_) - 5, 13 + dy], fill=HAIRR[1]); d.point([int(hx_) + 5, 13 + dy], fill=HAIRR[1])
+    for ex in (-3, 3):
+        d.rectangle([hx_ + ex - 1, 15 + dy, hx_ + ex, 17 + dy], fill=INK); d.point([hx_ + ex - 1, 15 + dy], fill=C('#8a6aa8'))
+        d.point([hx_ + ex, 15 + dy], fill=C('#ffffff')) if False else None
+    d.point([hx_ - 3, 15 + dy], fill=C('#5a3a6a')); d.point([hx_ + 3, 15 + dy], fill=C('#5a3a6a'))
+    for ex in (-5, 5): d.point([hx_ + ex, 18 + dy], fill=C('#f08a8a'))
+    d.point([hx_, 19 + dy], fill=SKIN[0])
+    # braco direito + espada
+    sh = (cx + 7 + lean * .5, 26 + dy)
+    hand = P['hr']
+    limb(img, sh, hand, 2.5, 2.1, ORG)
+    tip = sword(img, hand, P['sa'], 17, 1.5, .5, STEEL, 7)
+    blob(img, hand[0], hand[1], 2.0, 2.0, SKIN, edge=False)
+    img = outline(img, INK)
+    if pose == 'strike':
+        d2 = ImageDraw.Draw(img)
+        for k in range(-70, 28, 3):
+            a = math.radians(k)
+            x = 23 + math.cos(a) * 22; y = 26 + math.sin(a) * 20
+            d2.point([round(x), round(y)], fill=C('#ffffff')); d2.point([round(x - 1), round(y + 1)], fill=C('#bfe8ff'))
+    return img
+
+
 def goblin(pose='idle', t=0):
     img = Image.new('RGBA', (40, 36), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
@@ -456,7 +552,7 @@ def render_frame(f, bg, wm, objs, cache):
     dyn = []
     HX, HY, GX, GY = 188, 186, 226, 188
     shadow(im, HX, HY, 8, 3); shadow(im, GX, GY, 8, 3)
-    dyn.append(dict(img=cache['h'][(hp[0], hp[1])], x=HX - 14, y=HY - 32, foot=HY))
+    dyn.append(dict(img=cache['h'][(hp[0], hp[1])], x=HX - 18, y=HY - 42, foot=HY))
     dyn.append(dict(img=cache['g'][(gp[0], gp[1])], x=GX - 14 + (3 if gp[0] == 'hurt' and cyc < 12 else 1 if gp[0] == 'hurt' else 0), y=GY - 32, foot=GY))
     # slimes
     for i, (x, y, ramp, name) in enumerate([(148, 82, SLIME_G, 'g'), (218, 78, SLIME_B, 'b'), (258, 216, SLIME_O, 'o')]):
@@ -483,7 +579,7 @@ def main():
     objs = objects()
     cache = {'w': {}, 'h': {}, 'g': {}, 's': {}, 'n': number('27')}
     for p, t in [('idle', 0), ('idle', 1), ('wind', 0), ('strike', 0), ('recover', 0)]:
-        cache['h'][(p, t)] = hero(p, t)
+        cache['h'][(p, t)] = hero2(p, t)
     for p, t in [('idle', 0), ('idle', 1), ('hurt', 0)]:
         cache['g'][(p, t)] = goblin(p, t)
     for name, r in [('g', SLIME_G), ('b', SLIME_B), ('o', SLIME_O)]:
@@ -496,10 +592,10 @@ def main():
     q = [im.quantize(palette=pal, dither=Image.NONE) for im in big]
     q[0].save(os.path.join(OUT, 'clareira.gif'), save_all=True, append_images=q[1:], duration=90, loop=0, disposal=1)
     # folha de sprites ampliada (4x)
-    sh = Image.new('RGB', (44 * 5 + 40 * 3 + 60, 40), (60, 120, 50))
+    sh = Image.new('RGB', (56 * 5 + 40 * 3 + 60, 48), (60, 120, 50))
     x = 2
     for k in [('idle', 0), ('idle', 1), ('wind', 0), ('strike', 0), ('recover', 0)]:
-        put(sh, cache['h'][k], x, 2); x += 44
+        put(sh, cache['h'][k], x, 2); x += 56
     for k in [('idle', 0), ('idle', 1), ('hurt', 0)]:
         put(sh, cache['g'][k], x, 2); x += 40
     for n in 'gbo':
