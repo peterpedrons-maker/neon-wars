@@ -592,7 +592,19 @@ def accessory2(g, hat, view, hx, hy, back=False):
             g.stamp(HAT_F, hx - 2, hy - 7, mirror=True, rshade=dict(u='U'))
     elif hat == 'cap':
         g.stamp(['..F', '.Ff', 'Ff.', 'f..'], hx + 4, hy - 3) if view == 'side' else g.stamp(['..F', '.Ff', 'Ff.', 'f..'], hx + 17, hy - 3)
+    elif hat == 'ogre':
+        if view == 'side':
+            g.stamp(['.A', 'AA'], hx + 17, hy + 12); g.stamp(['A.', 'AA', '.A'], hx + 5, hy - 2); g.put(hx + 14, hy + 8, 'k'); g.put(hx + 15, hy + 8, 'k')
+        else:
+            g.stamp(['..A', '.AA', 'AAA', 'AA.'], hx - 2, hy - 4); g.stamp(['A..', 'AA.', 'AAA', '.AA'], hx + 22, hy - 4)
+            [g.put(hx + 5, hy + 15 - k, 'A') for k in range(2)]; [g.put(hx + 16, hy + 15 - k, 'A') for k in range(2)]
+            for x in range(hx + 5, hx + 9): g.put(x, hy + 9, 'k')
+            for x in range(hx + 13, hx + 17): g.put(x, hy + 9, 'k')
     elif hat == 'gob_ears':
+        if view == 'side':
+            g.stamp(['.sS', 'sSS', '.sS'], hx + 19, hy + 9)
+        else:
+            g.stamp(['sS', 'sS', '.s'], hx + 10, hy + 10); g.stamp(['Ss', 'Ss', 's.'], hx + 11, hy + 10)
         if view == 'side':
             g.stamp(['s......', 'ss.....', 'sss....', '.sSs...', '..sS...'], hx + 3, hy + 4)
         else:
@@ -668,11 +680,12 @@ def arm_cells(p0, p1, thick=2):
 
 # ---------------------------------------------------------------- roupas (outfit): cota de malha / manto completo
 def outfit_pass(g, outfit, view, cx, body_top, boot_top, dx=0, bdx=0, back=False, al=(0, 0), ar=(0, 0)):
-    if outfit == 'mail' and _REI:
-        if view == 'side': g.stamp(['..i..', '.iuUV', 'iuUUV', 'uUUVV', '.UVV.'], cx - 5 + dx + bdx, body_top - 1)
+    if outfit == 'mail' and (_REI or _BULK):
+        _t = (lambda rows: rows) if _REI else (lambda rows: [r.replace('i', 'u') for r in rows])
+        if view == 'side': g.stamp(_t(['..i..', '.iuUV', 'iuUUV', 'uUUVV', '.UVV.']), cx - 5 + dx + bdx, body_top - 1)
         else:
-            g.stamp(['..i.', '.iuU', 'iuUU', 'uUUV', '.UVV'], cx - 13 + dx, body_top - 1)
-            g.stamp(['.i..', 'Uui.', 'UUui', 'VUUu', 'VVU.'], cx + 9 + dx, body_top - 1)
+            g.stamp(_t(['..i.', '.iuU', 'iuUU', 'uUUV', '.UVV']), cx - 13 + dx, body_top - 1)
+            g.stamp(_t(['.i..', 'Uui.', 'UUui', 'VUUu', 'VVU.']), cx + 9 + dx, body_top - 1)
     if outfit == 'mail':
         # textura de cota de malha (xadrez de 2 tons) + ombreiras + saiote de malha
         for y in range(body_top + 1, boot_top):
@@ -772,6 +785,7 @@ def draw_bow_layer(g, info, mode):
 
 
 _REI = False
+_BULK = False
 _T = 0
 
 
@@ -979,7 +993,7 @@ SKINS.update({'goblin': dict(s='#86c050', S='#4e8a30', p='#b0e078'), 'osso': dic
 HAIRS.update({'g_goblin': dict(R='#4e8a30', r='#86c050', O='#6aa83c', L='#a8dc78'), 'g_osso': dict(R='#8a7aa8', r='#e6deee', O='#c8c0d4', L='#f8f4fc'),
               'g_javali': dict(R='#3a2214', r='#6a4020', O='#4e2e18', L='#8a5a30'), 'g_rato': dict(R='#5a5a6a', r='#9a9aaa', O='#7a7a8a', L='#c4c4d0'),
               'g_zumbi': dict(R='#2a3a2c', r='#5a6a50', O='#3a4a3a', L='#7a8a70'), 'g_ogro': dict(R='#1a1408', r='#4a3c18', O='#2c2410', L='#6a5a28'),
-              'g_fantasma': dict(R='#6a9ad0', r='#c4ecff', O='#9ac8f0', L='#f4fcff')})
+              'g_ogro_b': dict(R='#6e6a34', r='#b0a862', O='#948c4a', L='#c8c07e'), 'g_fantasma': dict(R='#6a9ad0', r='#c4ecff', O='#9ac8f0', L='#f4fcff')})
 EYES = {'azul': dict(b='#2e86c8', B='#1c4a98'), 'verde': dict(b='#38b058', B='#1c6a30'), 'castanho': dict(b='#9a6a38', B='#5a3418'),
         'oco': dict(b='#ff5050', B='#a01820', w='#14081e'), 'amarelo': dict(b='#f8e040', B='#a08818', w='#2a2a10'), 'brasa': dict(b='#ff8a30', B='#b0400c', w='#1c0c08'),
         'violeta': dict(b='#9a58e0', B='#5a2aa0'), 'vermelho': dict(b='#e84a4a', B='#901c24'), 'dourado': dict(b='#f0c040', B='#a07820')}
@@ -1062,6 +1076,7 @@ def apply_appearance(p, app):
     q = dict(p)
     if 'hat' in app: q['hat'] = app['hat']
     if 'outfit' in app: q['outfit'] = app['outfit']
+    if 'tn_off' in app: q['tn'] = max(1, q.get('tn', 3) + app['tn_off'])
     if app.get('noweapon'): q['sw'] = None; q.pop('sw2', None)
     wid = app.get('weapon')
     if wid and q.get('sw') and not app.get('noweapon'):
@@ -1206,7 +1221,7 @@ def extra_poses(kind, view):
 
 
 def anim(view, kind, cls='warrior', ps_override=None, appearance=None, dense=1):
-    global _REI, _T
+    global _REI, _T, _BULK
     out = []
     over = None
     if appearance:
@@ -1221,7 +1236,7 @@ def anim(view, kind, cls='warrior', ps_override=None, appearance=None, dense=1):
     else: ps = ATK_S if view == 'right' else (ATK_B if view == 'up' else ATK_F)
     if kind not in ('walk', 'idle') and dense > 1 and ps_override is None: ps = densify(ps, dense)
     if ps_override is not None: ps = ps_override
-    _REI = (cls == 'rei')
+    _REI = (cls == 'rei'); _BULK = bool(appearance and appearance.get('bulk'))
     for _i, p in enumerate(ps):
         _T = _i
         p = dict(p, cls=cls)

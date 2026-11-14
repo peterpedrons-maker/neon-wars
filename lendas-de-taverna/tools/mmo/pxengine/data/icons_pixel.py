@@ -75,6 +75,32 @@ def slot(icon, rar='comum', size=20):
     return im
 
 
+STARS = {'comum': 1, 'incomum': 2, 'raro': 3, 'epico': 4, 'lendario': 5}
+
+
+def cell(icon, rar='comum', size=18, pc=None, up=0, arrow=None):
+    """celula de item como no jogo: moldura/fundo da raridade, icone, estrelas (topo), PC (embaixo), +N de melhoria e seta comparativa"""
+    import pxfont
+    a, b = RAR[rar]; ha = tuple(int(a[i:i + 2], 16) for i in (1, 3, 5)); hb = tuple(int(b[i:i + 2], 16) for i in (1, 3, 5))
+    im = Image.new('RGBA', (size, size), (0, 0, 0, 0)); px = im.load()
+    for y in range(size):
+        for x in range(size):
+            t = (x + y) / (2 * size)
+            bgc = tuple(int(13 + (c - 13) * .22 * (1 - t)) for c in ha) + (255,)
+            px[x, y] = hb + (255,) if (x in (0, size - 1) or y in (0, size - 1)) else (ha + (255,) if (x in (1, size - 2) or y in (1, size - 2)) else bgc)
+    for (x, y) in ((0, 0), (size - 1, 0), (0, size - 1), (size - 1, size - 1)): px[x, y] = (0, 0, 0, 0)
+    if icon is not None:
+        ic = icon.crop((1, 1, 15, 15)); im.alpha_composite(ic, ((size - 14) // 2, (size - 14) // 2 - 1))
+        for k in range(STARS[rar]): px[2 + k * 2, 2] = (255, 214, 74, 255)
+        if pc is not None:
+            t = pc if isinstance(pc, str) else str(pc)
+            pxfont.text(im, (size - 2 - pxfont.width(t), size - 7), t, (255, 236, 170), False, True)
+        if up: pxfont.text(im, (size - 2 - pxfont.width('+%d' % up), 3), '+%d' % up, (140, 255, 160))
+        if arrow == 'up': px[size - 4, 3] = (90, 255, 120, 255); px[size - 5, 4] = (90, 255, 120, 255); px[size - 3, 4] = (90, 255, 120, 255)
+        if arrow == 'dn': px[size - 4, 4] = (255, 90, 90, 255); px[size - 5, 3] = (255, 90, 90, 255); px[size - 3, 3] = (255, 90, 90, 255)
+    return im
+
+
 def get(name, pot=None):
     if name == 'potion': return from_art(ART['potion'], POT[pot or 'red'])
     if name in ART: return from_art(ART[name])

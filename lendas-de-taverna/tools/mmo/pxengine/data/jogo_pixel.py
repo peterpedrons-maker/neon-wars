@@ -5,6 +5,7 @@ import math, os, random
 from PIL import Image, ImageDraw
 import chibi as C
 import icons_pixel as IC
+import beast as BE
 import pxfont
 
 
@@ -15,12 +16,12 @@ NW, NH, SC = 130, 282, 3
 GOLD = (200, 160, 74); GOLD_D = (110, 80, 40); BG = (16, 14, 28); CREAM = (240, 226, 190)
 
 ENEMY = {
-    'goblin': dict(cls='warrior', skin='goblin', hair='g_goblin', eyes='amarelo', hat='gob_ears', outfit='cloth', clothes='bronze', weapon='facao'),
+    'goblin': dict(cls='warrior', skin='goblin', hair='g_goblin', eyes='amarelo', hat='gob_ears', outfit='cloth', clothes='bronze', weapon='facao', tn_off=-1),
     'esqueleto': dict(cls='warrior', skin='osso', hair='g_osso', eyes='oco', hat='none', outfit='mail', metal='ferro', clothes='preto', weapon='espada_ferro'),
     'javali': dict(cls='warrior', skin='javali', hair='g_javali', eyes='brasa', hat='boar', outfit='cloth', clothes='bronze', weapon='machado'),
     'rato': dict(cls='warrior', skin='rato', hair='g_rato', eyes='oco', hat='rat_ears', outfit='cloth', clothes='preto', weapon='adaga_ferro'),
     'zumbi': dict(cls='warrior', skin='zumbi', hair='g_zumbi', eyes='oco', hat='none', outfit='cloth', clothes='verde', noweapon=1),
-    'ogro': dict(cls='warrior', skin='ogro', hair='g_ogro', eyes='brasa', hat='none', outfit='mail', metal='ferro', clothes='bronze', weapon='maca_ferro'),
+    'ogro': dict(cls='warrior', skin='ogro', hair='g_ogro_b', eyes='brasa', hat='ogre', outfit='mail', metal='ferro', clothes='bronze', weapon='maca_ferro', tn_off=2, bulk=1),
     'cultista': dict(cls='mage', skin='palida', hair='g_zumbi', eyes='oco', hat='hood', outfit='robe', clothes='preto', weapon='cajado_caveira'),
     'heroi': dict(cls='warrior', hat='helm', outfit='mail', metal='aco', clothes='aco', weapon='espada_aco'),
     'guarda': dict(cls='warrior', skin='goblin', hair='g_goblin', eyes='amarelo', hat='gob_ears', outfit='mail', metal='aco', clothes='aco', weapon='espada_ferro'),
@@ -32,6 +33,8 @@ _cache = {}
 
 def spr(name, kind='idle', view='down', dense=2):
     k = (name, kind, view)
+    if k not in _cache and name in ('rato', 'javali', 'lobo'):
+        _cache[k] = [f[0] for f in BE.anim(name, kind if kind in ('idle', 'walk', 'attack', 'hurt', 'death') else 'idle', view, dense)]
     if k not in _cache:
         ap = ENEMY[name]; _cache[k] = [f[0] for f in C.anim(view, kind, ap['cls'], None, ap, dense=dense)]
     return _cache[k]
@@ -95,52 +98,55 @@ def tag(im, x, y, txt, col=CREAM): label(im, (x, y), txt, col, center=True)
 
 
 # ------------------------------------------------------------------ cenarios
-def tree(d, x, y, r=11):
-    d.rectangle([x - 2, y - 2, x + 2, y + 8], fill=(80, 52, 30)); d.line([x - 2, y - 2, x - 2, y + 8], fill=(110, 76, 44))
-    for (dx, dy, rr, col) in ((0, -8, r, (30, 92, 44)), (-r // 2, -3, r - 3, (36, 108, 50)), (r // 2, -3, r - 3, (30, 92, 44)), (-2, -12, r - 4, (60, 150, 70))):
+def tree(d, x, y, r=17):
+    d.rectangle([x - 4, y - 4, x + 4, y + 12], fill=(80, 52, 30)); d.line([x - 4, y - 4, x - 4, y + 12], fill=(110, 76, 44)); d.line([x + 4, y - 4, x + 4, y + 12], fill=(54, 34, 20))
+    for (dx, dy, rr, col) in ((0, -12, r, (30, 92, 44)), (-r // 2, -4, r - 4, (36, 108, 50)), (r // 2, -4, r - 4, (30, 92, 44)), (-3, -18, r - 6, (60, 150, 70)), (4, -9, r - 8, (46, 120, 56))):
         d.ellipse([x + dx - rr, y + dy - rr, x + dx + rr, y + dy + rr], fill=col, outline=(18, 60, 30))
-    d.ellipse([x - 6, y - 14, x - 1, y - 10], fill=(110, 190, 90))
+    d.ellipse([x - 9, y - 22, x - 2, y - 15], fill=(110, 190, 90)); d.ellipse([x + 3, y - 14, x + 7, y - 10], fill=(90, 170, 80))
 
 
-def house(d, x, y, w=36, h=26, roof=(160, 56, 48)):
+def house(d, x, y, w=52, h=36, roof=(160, 56, 48)):
     d.rectangle([x, y, x + w, y + h], fill=(206, 186, 150), outline=(80, 56, 36))
-    for yy in range(y + 4, y + h, 7): d.line([x + 1, yy, x + w - 1, yy], fill=(184, 162, 126))
-    d.polygon([(x - 4, y), (x + w // 2, y - 16), (x + w + 4, y)], fill=roof, outline=(70, 24, 24))
-    for k in range(3): d.line([x - 2 + k * 2, y - 2 - k * 4, x + w + 2 - k * 2, y - 2 - k * 4], fill=tuple(max(0, c - 30) for c in roof))
-    d.rectangle([x + w // 2 - 4, y + h - 12, x + w // 2 + 4, y + h], fill=(90, 56, 30), outline=(50, 30, 16))
-    for wx in (x + 4, x + w - 11):
-        d.rectangle([wx, y + 6, wx + 7, y + 14], fill=(250, 214, 110), outline=(80, 56, 36)); d.line([wx + 3, y + 6, wx + 3, y + 14], fill=(80, 56, 36))
+    for yy in range(y + 5, y + h, 8): d.line([x + 1, yy, x + w - 1, yy], fill=(184, 162, 126))
+    for xx in range(x + 7, x + w, 13): d.line([xx, y + 1, xx, y + h - 1], fill=(120, 86, 56))
+    d.polygon([(x - 6, y), (x + w // 2, y - 24), (x + w + 6, y)], fill=roof, outline=(70, 24, 24))
+    for k in range(5): d.line([x - 4 + k * 2, y - 2 - k * 4, x + w + 4 - k * 2, y - 2 - k * 4], fill=tuple(max(0, c - 34) for c in roof))
+    d.rectangle([x + w - 12, y - 22, x + w - 6, y - 10], fill=(110, 100, 112), outline=(60, 54, 66))
+    d.rectangle([x + w // 2 - 6, y + h - 18, x + w // 2 + 6, y + h], fill=(90, 56, 30), outline=(50, 30, 16)); d.point([x + w // 2 + 3, y + h - 9], fill=(240, 200, 90))
+    for wx in (x + 5, x + w - 17):
+        d.rectangle([wx, y + 8, wx + 11, y + 22], fill=(250, 214, 110), outline=(80, 56, 36)); d.line([wx + 5, y + 8, wx + 5, y + 22], fill=(80, 56, 36)); d.line([wx, y + 15, wx + 11, y + 15], fill=(80, 56, 36))
 
 
 def lamp(d, x, y):
-    d.rectangle([x - 1, y - 18, x + 1, y], fill=(40, 40, 54)); d.rectangle([x - 3, y - 24, x + 3, y - 18], fill=(255, 210, 110), outline=(60, 50, 40)); d.rectangle([x - 4, y - 26, x + 4, y - 24], fill=(40, 40, 54))
+    d.rectangle([x - 1, y - 30, x + 1, y], fill=(40, 40, 54)); d.rectangle([x - 4, y - 38, x + 4, y - 30], fill=(255, 210, 110), outline=(60, 50, 40)); d.rectangle([x - 6, y - 41, x + 6, y - 38], fill=(40, 40, 54)); d.rectangle([x - 3, y - 2, x + 3, y + 1], fill=(60, 60, 76))
 
 
 def well(d, x, y):
-    d.ellipse([x - 13, y - 4, x + 13, y + 8], fill=(120, 116, 130), outline=(50, 46, 60)); d.ellipse([x - 10, y - 2, x + 10, y + 5], fill=(30, 40, 70))
-    for px in (x - 11, x + 10): d.rectangle([px, y - 22, px + 2, y], fill=(86, 56, 30))
-    d.polygon([(x - 15, y - 20), (x, y - 30), (x + 15, y - 20)], fill=(150, 72, 44), outline=(70, 30, 20))
+    d.ellipse([x - 20, y - 6, x + 20, y + 12], fill=(120, 116, 130), outline=(50, 46, 60)); d.ellipse([x - 15, y - 3, x + 15, y + 8], fill=(30, 40, 70))
+    for px in (x - 17, x + 15): d.rectangle([px, y - 34, px + 3, y], fill=(86, 56, 30))
+    d.polygon([(x - 22, y - 30), (x, y - 46), (x + 22, y - 30)], fill=(150, 72, 44), outline=(70, 30, 20))
+    for k in range(4): d.line([x - 18 + k * 3, y - 31 - k * 3, x + 18 - k * 3, y - 31 - k * 3], fill=(120, 54, 34))
+    d.line([x, y - 30, x, y - 12], fill=(200, 190, 170))
 
 
 def town(f=0):
     im = Image.new('RGBA', (NW, NH), (66, 130, 66, 255)); d = ImageDraw.Draw(im)
     random.seed(4)
     for _ in range(260): x, y = random.randint(0, NW), random.randint(0, NH); d.point([x, y], fill=(84, 154, 78) if (x + y) % 2 else (54, 112, 56))
-    for y in range(0, NH, 10):                                           # estrada de pedra
-        for x in range(34 + (y // 10 % 2) * 6 - 6, 98, 12):
-            d.rectangle([x, y, x + 10, y + 8], fill=(150 + (x * 7 + y) % 20, 144 + (x + y * 3) % 18, 150 + (x * 3) % 16), outline=(104, 100, 112))
-    house(d, 4, 44, 34, 26); house(d, 92, 56, 34, 26, roof=(60, 96, 150)); house(d, 8, 112, 30, 22, roof=(150, 110, 40))
-    tree(d, 14, 168); tree(d, 118, 150); tree(d, 112, 214); tree(d, 10, 224, 9)
-    for fx, fy in ((22, 98), (28, 100), (104, 108), (110, 112), (16, 196), (100, 190)):
-        d.rectangle([fx, fy, fx + 1, fy + 1], fill=random.choice([(240, 90, 120), (250, 220, 90), (150, 120, 240)]))
-    lamp(d, 38, 128); lamp(d, 92, 128); lamp(d, 38, 214); lamp(d, 92, 214)
-    d.rectangle([40, 140, 90, 150], fill=(34, 30, 44), outline=(14, 10, 22)); label(im, (65, 141), 'ZONA SEGURA', GOLD, center=True)
-    label(im, (65, 118), 'Entre no portal', CREAM, center=True)
-    well(d, 66, 196)
-    for (nm, x, y, n, col) in (('guarda', 100, 170, 'Capitao Ruvel', (180, 230, 140)), ('mercador', 40, 96, 'Mercador', GOLD), ('aldeao', 90, 106, 'Aldeao', CREAM)):
-        shadow(im, x, y, 9, 3); put(im, spr(nm, 'idle', 'down')[(f // 2) % 12], (x, y)); tag(im, x, y - 38, n, col)
-    shadow(im, 62, 228); put(im, spr('heroi', 'idle', 'up')[(f // 2) % 12], (62, 228)); tag(im, 62, 190, 'Teste Nv.1', (120, 220, 255))
-    hud(im, 'BRUMAVALE', msgs=['[Sistema] Bem-vindo a Brumavale!'])
+    for y in range(0, NH, 14):                                           # estrada de pedra (pedras grandes como no jogo)
+        for x in range(26 + (y // 14 % 2) * 9 - 9, 104, 18):
+            d.rectangle([x, y, x + 16, y + 12], fill=(150 + (x * 7 + y) % 20, 144 + (x + y * 3) % 18, 150 + (x * 3) % 16), outline=(104, 100, 112))
+    house(d, -4, 56, 50, 34); house(d, 86, 44, 50, 34, roof=(60, 96, 150))
+    tree(d, 14, 180, 17); tree(d, 118, 236, 15)
+    for fx, fy in ((22, 118), (28, 120), (104, 100), (110, 104), (16, 216), (106, 190)): d.rectangle([fx, fy, fx + 2, fy + 2], fill=random.choice([(240, 90, 120), (250, 220, 90), (150, 120, 240)]))
+    lamp(d, 28, 136); lamp(d, 102, 136); lamp(d, 28, 232); lamp(d, 102, 232)
+    d.rectangle([32, 150, 98, 162], fill=(34, 30, 44), outline=(14, 10, 22)); label(im, (65, 153), 'ZONA SEGURA', GOLD, center=True)
+    label(im, (65, 130), 'Entre no portal', CREAM, center=True)
+    well(d, 62, 204)
+    for (nm, x, y, n, col) in (('guarda', 98, 186, 'Capitao Ruvel', (180, 230, 140)), ('mercador', 36, 124, 'Mercador', GOLD), ('aldeao', 94, 118, 'Aldeao', CREAM)):
+        shadow(im, x, y, 9, 3); put(im, spr(nm, 'idle', 'down')[(f // 2) % 12], (x, y)); tag(im, x, y - 40, n, col)
+    shadow(im, 70, 244); put(im, spr('heroi', 'idle', 'up')[(f // 2) % 12], (70, 244)); tag(im, 70, 202, 'Teste Nv.1', (120, 220, 255))
+    hud(im, 'BRUMAVALE', msgs=['Bem-vindo, Teste!'])
     return im
 
 
@@ -164,8 +170,8 @@ def forest(f=0):
     for _ in range(320): x, y = random.randint(0, NW), random.randint(0, NH); d.point([x, y], fill=(64, 134, 66) if (x + y) % 2 else (40, 92, 48))
     for y in range(0, NH, 3):
         x0 = 52 + int(10 * math.sin(y * .05)); d.rectangle([x0, y, x0 + 26, y + 2], fill=(150, 124, 86) if (y // 3) % 3 else (136, 110, 76))
-    for (x, y, r) in ((12, 70, 12), (112, 66, 12), (20, 120, 11), (110, 130, 11), (8, 190, 12), (118, 200, 12), (30, 90, 9), (96, 96, 9)): tree(d, x, y, r)
-    for x, y in ((40, 160), (84, 150), (60, 210)): d.ellipse([x - 5, y - 2, x + 5, y + 3], fill=(130, 126, 140), outline=(70, 66, 84))
+    for (x, y, r) in ((6, 88, 19), (122, 80, 19), (4, 170, 19), (124, 190, 19), (14, 250, 17)): tree(d, x, y, r)
+    for x, y in ((38, 150), (92, 140), (66, 232)): d.ellipse([x - 7, y - 3, x + 7, y + 4], fill=(130, 126, 140), outline=(70, 66, 84))
     return im
 
 
@@ -182,7 +188,7 @@ def scene_fight(kind='crypt', f=0, hero=('idle', 0), mobs=(), nums=(), flash=Non
         shadow(im, x, y + 1); put(im, s, (x, y))
         if hpf is not None: mini_hp(im, x, y - 36, hpf)
     for (x, y, t, c) in nums: label(im, (x, y), t, c, center=True)
-    hud(im, 'CRIPTA' if kind == 'crypt' else 'FLORESTA', hp=hp, msgs=msgs or ['[Sistema] Voce entrou na Cripta.'])
+    hud(im, 'CRIPTA' if kind == 'crypt' else 'FLORESTA', hp=hp, msgs=msgs or ['Voce entrou na Cripta.'])
     return im
 
 
@@ -195,9 +201,10 @@ def menu_char():
         label(im, (x0 + 20, 42), t[:9], GOLD if on else CREAM, center=True)
     label(im, (65, 58), 'TESTE', GOLD, center=True); label(im, (65, 67), 'Guerreiro - Nivel 1', (160, 150, 140), center=True)
     left = [('helm', 'incomum'), ('armor', 'raro'), ('gloves', 'comum'), ('boots', 'incomum')]; right = [('espada_aco', 'raro'), ('shield', 'raro'), ('amulet', 'lendario'), ('ring', 'epico')]
-    for i, (n, r) in enumerate(left): im.alpha_composite(IC.slot(IC.get(n), r), (8, 80 + i * 24))
-    for i, (n, r) in enumerate(right): im.alpha_composite(IC.slot(IC.get(n), r), (102, 80 + i * 24))
-    d.rectangle([32, 78, 98, 172], fill=(18, 14, 30), outline=GOLD_D)
+    pcs = {'helm': 24, 'armor': 61, 'gloves': 9, 'boots': 17, 'espada_aco': 88, 'shield': 52, 'amulet': 143, 'ring': 96}
+    for i, (n, r) in enumerate(left): im.alpha_composite(IC.cell(IC.get(n), r, 19, pcs[n], 0, 'up' if i % 2 == 0 else None), (7, 80 + i * 23))
+    for i, (n, r) in enumerate(right): im.alpha_composite(IC.cell(IC.get(n), r, 19, pcs[n], 3 if i == 0 else 0, None), (104, 80 + i * 23))
+    d.rectangle([30, 78, 100, 170], fill=(18, 14, 30), outline=GOLD_D)
     shadow(im, 65, 150, 14, 4, 120); put(im, spr('heroi', 'idle', 'down')[0].resize((144, 128), Image.NEAREST) if False else spr('heroi', 'idle', 'down')[0], (65, 148))
     im.alpha_composite(spr('heroi', 'idle', 'down')[0].crop((16, 0, 56, 44)).resize((80, 88), Image.NEAREST), (25, 82)) if False else None
     d.rectangle([8, 176, 122, 192], fill=(34, 26, 14), outline=GOLD); label(im, (14, 181), 'PODER DE COMBATE', CREAM); label(im, (116, 180), '147', GOLD, center=False) if False else label(im, (104, 181), '147', GOLD)
@@ -216,17 +223,22 @@ def menu_bag():
         x0 = 4 + i * 40; d.rectangle([x0, 40, x0 + 40, 52], fill=(34, 28, 52) if on else (18, 14, 30), outline=GOLD_D)
         if on: d.line([x0, 52, x0 + 40, 52], fill=GOLD)
         label(im, (x0 + 20, 42), t[:9], GOLD if on else CREAM, center=True)
-    items = [('espada_ferro', 'comum'), ('katana', 'epico'), ('machado', 'incomum'), ('cajado_arcano', 'epico'), ('arco_longo', 'raro'), ('helm', 'incomum'), ('armor', 'raro'), ('shield', 'raro'), ('gloves', 'comum'), ('boots', 'incomum'),
-             ('ring', 'epico'), ('amulet', 'lendario'), ('potion:red', 'comum'), ('potion:red', 'comum'), ('potion:blue', 'comum'), ('potion:green', 'incomum'), ('scroll', 'comum'), ('gem', 'raro'), ('bone', 'comum'), ('bone', 'comum'),
-             ('leather', 'comum'), ('herb', 'comum'), ('ore', 'incomum'), ('key', 'epico'), ('chest', 'raro'), ('coin', 'comum'), ('martelo_sagrado', 'lendario'), ('espada_chamas', 'lendario')]
-    for i in range(35):
-        x = 6 + (i % 5) * 23; y = 58 + (i // 5) * 23
-        ic = None; r = 'comum'
-        if i < len(items): n, r = items[i]; ic = IC.get(*(n.split(':') if ':' in n else (n,)))
-        im.alpha_composite(IC.slot(ic, r, 21), (x, y))
-    label(im, (8, 222), 'MOCHILA 28/100', CREAM); im.alpha_composite(IC.get('coin').crop((2, 2, 14, 14)), (82, 220)); label(im, (96, 222), '1.240', GOLD)
-    d.rectangle([8, 236, 62, 252], fill=(34, 26, 14), outline=GOLD); label(im, (35, 241), 'ORGANIZAR', CREAM, center=True)
-    d.rectangle([68, 236, 122, 252], fill=(34, 26, 14), outline=GOLD_D); label(im, (95, 241), 'VENDER', (150, 140, 120), center=True)
+    for i, (ic, v, c) in enumerate((('coin', '1240', GOLD), ('gem', '12', (120, 210, 255)), ('amulet', '3', (200, 140, 255)))):
+        x0 = 6 + i * 39; d.rectangle([x0, 57, x0 + 36, 69], fill=(18, 14, 30), outline=GOLD_D)
+        im.alpha_composite(IC.get(ic).crop((2, 2, 14, 14)), (x0 + 1, 57)); label(im, (x0 + 15, 61), v, c)
+    d.polygon([(8, 76), (11, 73), (14, 76), (11, 79)], fill=GOLD); label(im, (18, 73), 'MOCHILA', GOLD); label(im, (120 - pxfont.width('28/100'), 73), '28/100', (150, 140, 130)); d.line([7, 82, 121, 82], fill=GOLD_D)
+    items = [('espada_ferro', 'comum', 31, 0, None), ('katana', 'epico', 212, 0, 'up'), ('machado', 'incomum', 74, 0, None), ('cajado_arcano', 'epico', 188, 2, 'dn'), ('arco_longo', 'raro', 129, 0, None), ('helm', 'incomum', 24, 0, 'up'),
+             ('armor', 'raro', 91, 1, None), ('shield', 'raro', 77, 0, 'dn'), ('gloves', 'comum', 12, 0, None), ('boots', 'incomum', 29, 0, 'up'), ('ring', 'epico', 160, 0, None), ('amulet', 'lendario', 305, 0, 'up'),
+             ('potion:red', 'comum', None, 0, None), ('potion:red', 'comum', None, 0, None), ('potion:blue', 'comum', None, 0, None), ('potion:green', 'incomum', None, 0, None), ('scroll', 'comum', None, 0, None), ('gem', 'raro', None, 0, None),
+             ('bone', 'comum', None, 0, None), ('bone', 'comum', None, 0, None), ('leather', 'comum', None, 0, None), ('herb', 'comum', None, 0, None), ('ore', 'incomum', None, 0, None), ('key', 'epico', None, 0, None),
+             ('chest', 'raro', None, 0, None), ('coin', 'comum', None, 0, None), ('martelo_sagrado', 'lendario', 410, 0, 'up'), ('espada_chamas', 'lendario', 388, 4, None)]
+    for i in range(48):
+        x = 7 + (i % 6) * 19; y = 86 + (i // 6) * 19
+        if i < len(items):
+            n, r, pc, up, ar = items[i]; ic = IC.get(*(n.split(':') if ':' in n else (n,)))
+            im.alpha_composite(IC.cell(ic, r, 18, pc, up, ar), (x, y))
+        else:
+            d.rectangle([x, y, x + 17, y + 17], fill=(14, 12, 20), outline=(34, 30, 44))
     return im
 
 
@@ -234,8 +246,8 @@ def save_png(im, name): im.convert('RGB').resize((NW * SC, NH * SC), Image.NEARE
 
 
 def roster():
-    names = ['goblin', 'esqueleto', 'javali', 'rato', 'zumbi', 'ogro', 'cultista', 'guarda']
-    Wc = 38; fr = []
+    names = ['goblin', 'ogro', 'esqueleto', 'zumbi', 'cultista', 'rato', 'javali', 'lobo']
+    Wc = 42; fr = []
     for fidx in range(24):
         im = Image.new('RGBA', (Wc * len(names), 36 * 3 + 10), (40, 52, 44, 255)); d = ImageDraw.Draw(im)
         for i, n in enumerate(names):
@@ -258,7 +270,7 @@ def fight_gif():
         nums = [(44, 150 - (ph - 10) * 2, '38', (255, 224, 74))] if 10 <= ph <= 20 else []
         dead = f >= 40 and ph >= 14
         mobs = [('esqueleto', 44, 150, 'down', 'idle', f, .6 if f < 40 else .25), ('cultista', 86, 140, 'down', 'idle', f + 3, 1.0), ('zumbi', 66, 120, 'down', 'walk', f, 1.0), ('esqueleto', 100, 168, 'down', 'idle', f + 5, .9)]
-        frames.append(scene_fight('crypt', f, (hk, hi, 56, 196), mobs, nums, flash, ['[Sistema] Voce entrou na Cripta.', '[Aviso] Esqueleto atingido!']))
+        frames.append(scene_fight('crypt', f, (hk, hi, 56, 196), mobs, nums, flash, ['Voce entrou na Cripta.', '[Aviso] Esqueleto!']))
     big = [x.convert('RGB').resize((NW * SC, NH * SC), Image.NEAREST) for x in frames]
     p = big[0].quantize(colors=220, method=Image.MEDIANCUT, dither=Image.NONE); q = [b.quantize(palette=p, dither=Image.NONE) for b in big]
     q[0].save(os.path.join(OUT, 'jogo_pixel_combate.gif'), save_all=True, append_images=q[1:], duration=60, loop=0, disposal=1)
@@ -268,6 +280,6 @@ if __name__ == '__main__':
     save_png(town(), 'jogo_pixel_cidade.png'); save_png(menu_char(), 'jogo_pixel_personagem.png'); save_png(menu_bag(), 'jogo_pixel_mochila.png')
     mobs = [('esqueleto', 44, 150, 'down', 'idle', 0, .6), ('cultista', 86, 140, 'down', 'idle', 3, 1.0), ('zumbi', 66, 118, 'down', 'idle', 0, 1.0), ('esqueleto', 100, 170, 'down', 'idle', 2, .9)]
     save_png(scene_fight('crypt', 0, ('idle', 0, 56, 206), mobs, [(44, 112, '38', (255, 224, 74)), (86, 100, '21', (255, 224, 74))]), 'jogo_pixel_cripta.png')
-    mobs2 = [('goblin', 40, 130, 'down', 'idle', 0, 1.0), ('goblin', 88, 120, 'down', 'idle', 4, .7), ('javali', 66, 160, 'down', 'idle', 2, 1.0), ('rato', 100, 180, 'down', 'idle', 6, 1.0)]
-    save_png(scene_fight('forest', 0, ('idle', 0, 52, 210), mobs2, msgs=['[Sistema] Voce entrou na Floresta.']), 'jogo_pixel_floresta.png')
+    mobs2 = [('goblin', 40, 130, 'down', 'idle', 0, 1.0), ('ogro', 88, 118, 'down', 'idle', 4, .7), ('javali', 62, 164, 'right', 'idle', 2, 1.0), ('rato', 98, 184, 'down', 'idle', 6, 1.0), ('lobo', 34, 188, 'right', 'idle', 3, 1.0)]
+    save_png(scene_fight('forest', 0, ('idle', 0, 52, 210), mobs2, msgs=['Voce entrou na Floresta.']), 'jogo_pixel_floresta.png')
     roster(); fight_gif(); print('ok')
