@@ -80,6 +80,7 @@ HEAD_B = [
     'RrOOOOOOOOO', '.ROOOOOOOOO', '..RrOOOOOOO', '...RROOOOOO', '.....RSSSSS', '......SSSSS']
 # CABECA LATERAL (olhando para a direita) 21x18, construida como a frontal: cabelo bob + franja + mecha lateral + rosto redondo
 def make_head_side(mouth='n', eyes='open', look='n'):
+    _eyes_v = eyes; eyes = 'open' if eyes in ('open', 'angry', 'sad', 'happy', 'hurt', 'dead') else eyes
     o = -1 if look == 'up' else (1 if look == 'down' else 0)
     Wd, Hd = 21, 18
     bounds = [(4, 16), (2, 18), (1, 19), (1, 19), (0, 19), (0, 19), (0, 19), (0, 19), (0, 19), (0, 19), (0, 19), (0, 20), (0, 20), (1, 19), (1, 19), (2, 19), (4, 18), (6, 16)]
@@ -127,7 +128,74 @@ def make_head_side(mouth='n', eyes='open', look='n'):
         for c in range(13, 19): g[16][c] = 'S'
     for c in range(8, 14): g[17][c] = 'S'
     for c in range(14, 17): g[16][c] = 'S' if g[16][c] == 's' else g[16][c]
+    if _eyes_v in ('happy', 'hurt', 'dead', 'angry', 'sad'):
+        for rr_ in range(10 + o, 14 + o):
+            for c in range(14, 17): g[rr_][c] = 's'
+        K = lambda r_, c_: g[r_ + o].__setitem__(c_, 'k')
+        if _eyes_v == 'happy': K(10, 15); K(11, 14); K(11, 16)
+        elif _eyes_v == 'hurt': K(10, 14); K(11, 15); K(12, 14); K(11, 16)
+        elif _eyes_v == 'dead': K(10, 14); K(10, 16); K(11, 15); K(12, 14); K(12, 16)
+        else:                                                    # angry / sad: olho aberto + sobrancelha
+            for dc, ch in enumerate('kkk'): g[10 + o][14 + dc] = ch
+            for dc, ch in enumerate('wwb'): g[11 + o][14 + dc] = ch
+            for dc, ch in enumerate('wbb'): g[12 + o][14 + dc] = ch
+            for dc, ch in enumerate('sbB'): g[13 + o][14 + dc] = ch
+            if _eyes_v == 'angry': g[9 + o][14] = 'k'; g[9 + o][15] = 'k'; g[10 + o][13] = 'k'
+            else: g[9 + o][15] = 'k'; g[9 + o][16] = 'k'; g[10 + o][17] = 'k'; g[14 + o][14] = 'b'
+    if mouth == 'smile':
+        for c in (16, 17, 18, 19): g[15 + o][c] = 's'
+        for c in (16, 17, 18): g[15 + o][c] = 'k'
+        g[14 + o][19] = 'k'; g[14 + o][15] = 'k'
+    elif mouth == 'frown':
+        for c in (16, 17, 18, 19): g[15 + o][c] = 's'
+        for c in (17, 18): g[14 + o][c] = 'k'
+        g[15 + o][16] = 'k'; g[15 + o][19] = 'k'
+    elif mouth == 'o':
+        for c in (16, 17, 18, 19): g[15 + o][c] = 's'
+        for c in (17, 18):
+            g[14 + o][c] = 'k'; g[15 + o][c] = 'k'; g[16 + o][c] = 'k'
     return [''.join(r) for r in g]
+
+
+FACES = {'n': ('n', 'open'), 'shout': ('shout', 'open'), 'blink': ('n', 'closed'), 'happy': ('smile', 'happy'), 'angry': ('frown', 'angry'),
+         'hurt': ('shout', 'hurt'), 'surprised': ('o', 'open'), 'sad': ('frown', 'sad'), 'dead': ('n', 'dead'), 'smirk': ('smile', 'open')}
+
+
+def face_front(head, face):
+    """expressoes de frente (metade esquerda 11 col, espelhada): olhos nas colunas 5-7 linhas 10-13, boca linha 15"""
+    h = [list(r) for r in head]
+    def K(r, c, ch='k'):
+        if 0 <= r < len(h) and 0 <= c < len(h[r]): h[r][c] = ch
+    def clear_eye():
+        for r in range(10, 14):
+            for c in range(5, 8): h[r][c] = 's'
+    if face == 'shout': h[15] = list('...sskkksssk')
+    elif face == 'blink': h[10] = list('RrOsskkkssp'); h[11] = list('RrOssssssss'); h[12] = list('ROOssssssss'); h[13] = list('.rOssssssss')
+    elif face == 'happy':
+        clear_eye(); K(10, 6); K(11, 5); K(11, 7)
+        for c in (8, 9, 10): K(15, c)
+        K(14, 7)
+    elif face == 'smirk':
+        for c in (9, 10): K(15, c)
+        K(14, 8)
+    elif face == 'angry':
+        K(9, 4); K(9, 5); K(9, 6); K(10, 7, 'k')
+        for c in (9, 10): K(15, c)
+        K(16, 8)
+    elif face == 'hurt':
+        clear_eye(); K(10, 5); K(11, 6); K(12, 5); K(11, 7)
+        h[15] = list('...sskkksssk'); K(16, 9); K(16, 10)
+    elif face == 'surprised':
+        K(9, 5); K(9, 6); K(8, 6, 's')
+        K(15, 9); K(15, 10); K(16, 9); K(16, 10); K(14, 9); K(14, 10)
+    elif face == 'sad':
+        K(9, 6); K(9, 7); K(10, 4, 'k'); K(14, 5, 'b')
+        for c in (9, 10): K(15, c)
+        K(16, 8)
+    elif face == 'dead':
+        clear_eye(); K(10, 5); K(10, 7); K(11, 6); K(12, 5); K(12, 7)
+        for c in (9, 10): K(15, c)
+    return [''.join(r) for r in h]
 
 
 HEAD_S = make_head_side()
@@ -772,10 +840,8 @@ def build_front(p, back=False):
     if hat == 'cap': head = cap_head(head, 'front')
     elif hat == 'hood': head = hood_head(head, 'front')
     elif hat in ('helm', 'kinghelm'): head = helm_head(head, 'back' if back else 'front')
-    if p.get('face') == 'shout' and not back:
-        head[15] = '...sskkksssk'
-    if p.get('face') == 'blink' and not back:
-        head[10] = 'RrOsskkkssp'; head[11] = 'RrOssssssss'; head[12] = 'ROOssssssss'; head[13] = '.rOssssssss'
+    if p.get('face', 'n') != 'n' and not back:
+        head = face_front(head, p['face'])
     g.stamp(head, hx, hy, mirror=True, rshade=RSH_F)
     accessory2(g, hat, 'front', hx, hy, back)
     post_accessory(g, cls, 'front', cx, body_top, dx, back)
@@ -840,7 +906,7 @@ def build_side(p):
     if not p.get('nomitt') and not bowinfo: g.stamp(['ss', 'sS'], cx - 6 + dx + ab[0], body_top + 3 + ab[1])
     # cabeca (perfil)
     hx, hy = cx - 11 + dx + p.get('hdx', 0), body_top - 17 + p.get('hdy', 0)
-    head = make_head_side('shout' if p.get('face') == 'shout' else 'n', 'closed' if p.get('face') == 'blink' else 'open', p.get('look', 'n'))
+    head = make_head_side(*FACES.get(p.get('face', 'n'), ('n', 'open')), p.get('look', 'n'))
     hat = p.get('hat', DEFAULT_HAT[cls]); outfit = p.get('outfit', DEFAULT_OUTFIT[cls])
     if hat == 'cap': head = cap_head_side(head)
     elif hat == 'hood': head = hood_head_side(head)
@@ -1053,36 +1119,75 @@ ATK_S = [
 ]
 
 
+def _lerp_ang(a, b, t):
+    d = ((b - a + 180) % 360) - 180
+    return (a + d * t) % 360
+
+
+def interp_pose(a, b, t):
+    out = {}
+    for k in set(a) | set(b):
+        va, vb = a.get(k), b.get(k)
+        if va is None or vb is None: out[k] = va if va is not None else vb; continue
+        if k in ('sw', 'sw2') and isinstance(va, dict) and isinstance(vb, dict):
+            d = dict(va)
+            if 'ang' in va and 'ang' in vb: d['ang'] = _lerp_ang(va['ang'], vb['ang'], t)
+            if 'len' in va and 'len' in vb: d['len'] = va['len'] + (vb['len'] - va['len']) * t
+            for kk in ('draw',):
+                if kk in va and kk in vb: d[kk] = va[kk] + (vb[kk] - va[kk]) * t
+            out[k] = d
+        elif isinstance(va, (int, float)) and isinstance(vb, (int, float)): out[k] = int(round(va + (vb - va) * t))
+        elif isinstance(va, (tuple, list)) and isinstance(vb, (tuple, list)) and len(va) == len(vb) and all(isinstance(x, (int, float)) for x in va + vb):
+            out[k] = tuple(int(round(x + (y - x) * t)) for x, y in zip(va, vb))
+        else: out[k] = va if t < .5 else vb
+    return out
+
+
+def densify(ps, k=2):
+    """k-1 poses interpoladas entre cada par: animacao com k vezes mais quadros (mais fluida)"""
+    if k <= 1: return list(ps)
+    out = []
+    for i in range(len(ps) - 1):
+        for j in range(k): out.append(interp_pose(ps[i], ps[i + 1], j / k))
+    out.append(dict(ps[-1]))
+    return out
+
+
 def extra_poses(kind, view):
     """conjurar (bracos e espada para o alto), dano (recuo) e morte (desaba) - valem para qualquer personagem com espada"""
     up = 188
     if kind == 'cast':
         sw = lambda a: dict(ang=a, len=12, side='r') if view != 'right' else dict(ang=a, len=12)
         return [dict(tn=3, ar=(0, 0), sw=sw(165)), dict(tn=2, ar=(0, -2), al=(0, -1), sw=sw(180), hdy=0),
-                dict(tn=3, ar=(0, -5), al=(0, -5), sw=sw(up), face='shout', hdy=-1), dict(tn=3, ar=(0, -6), al=(0, -6), sw=sw(up), face='shout', hdy=-1, dy=-1),
+                dict(tn=3, ar=(0, -5), al=(0, -5), sw=sw(up), face='angry', hdy=-1), dict(tn=3, ar=(0, -6), al=(0, -6), sw=sw(up), face='shout', hdy=-1, dy=-1),
                 dict(tn=3, ar=(0, -6), al=(0, -6), sw=sw(up), face='shout', hdy=-1, dy=-1), dict(tn=3, ar=(0, -6), al=(0, -6), sw=sw(up), face='shout', hdy=-1, dy=-1),
                 dict(tn=3, ar=(0, -3), al=(0, -3), sw=sw(175), face='shout'), dict(tn=3, ar=(0, 0), sw=sw(165))]
     if kind == 'hurt':
         sw = lambda a: dict(ang=a, len=12, side='r') if view != 'right' else dict(ang=a, len=12)
-        return [dict(tn=2, dx=-1, hdx=-1, ar=(-1, 1), al=(1, 1), sw=sw(150), face='shout'), dict(tn=2, dx=-2, hdx=-2, hdy=1, ar=(-2, 1), al=(2, 1), sw=sw(140), face='shout'),
-                dict(tn=3, dx=-1, hdx=-1, ar=(-1, 0), sw=sw(150)), dict(tn=3, ar=(0, 0), sw=sw(165))]
+        return [dict(tn=2, dx=-1, hdx=-1, ar=(-1, 1), al=(1, 1), sw=sw(150), face='hurt'), dict(tn=2, dx=-2, hdx=-2, hdy=1, ar=(-2, 1), al=(2, 1), sw=sw(140), face='hurt'),
+                dict(tn=3, dx=-1, hdx=-1, ar=(-1, 0), sw=sw(150), face='angry'), dict(tn=3, ar=(0, 0), sw=sw(165), face='angry')]
     sw = lambda a: dict(ang=a, len=12, side='r') if view != 'right' else dict(ang=a, len=12)
-    return [dict(tn=2, dx=-1, hdx=-1, ar=(-1, 1), sw=sw(150), face='shout'), dict(tn=1, dx=-2, dy=1, hdx=-2, hdy=1, ar=(-2, 2), al=(2, 2), sw=sw(130), face='shout'),
+    return [dict(tn=2, dx=-1, hdx=-1, ar=(-1, 1), sw=sw(150), face='shout'), dict(tn=1, dx=-2, dy=1, hdx=-2, hdy=1, ar=(-2, 2), al=(2, 2), sw=sw(130), face='hurt'),
             dict(tn=1, dx=-3, dy=3, hdx=-3, hdy=3, ar=(-3, 3), al=(3, 2), bl=(-2, 0), br=(2, 0), sw=sw(115), face='shout'),
             dict(tn=0, dx=-3, dy=5, hdx=-3, hdy=5, ar=(-3, 4), al=(3, 3), bl=(-3, 0), br=(3, 0), sw=sw(100), face='shout'),
-            dict(tn=0, dx=-3, dy=7, hdx=-3, hdy=6, ar=(-3, 5), al=(3, 4), bl=(-3, 0), br=(3, 0), sw=sw(95)), dict(tn=0, dx=-3, dy=7, hdx=-3, hdy=6, ar=(-3, 5), al=(3, 4), bl=(-3, 0), br=(3, 0), sw=sw(92))]
+            dict(tn=0, dx=-3, dy=7, hdx=-3, hdy=6, ar=(-3, 5), al=(3, 4), bl=(-3, 0), br=(3, 0), sw=sw(95)), dict(tn=0, dx=-3, dy=7, hdx=-3, hdy=6, ar=(-3, 5), al=(3, 4), bl=(-3, 0), br=(3, 0), sw=sw(92), face='dead')]
 
 
-def anim(view, kind, cls='warrior', ps_override=None, appearance=None):
+def anim(view, kind, cls='warrior', ps_override=None, appearance=None, dense=1):
     global _REI, _T
     out = []
     over = None
     if appearance:
         cls = appearance.get('cls', cls); over = make_palette(appearance)
-    if kind == 'walk': ps = [walk_params(f, 8, view) for f in range(8)]
-    elif kind == 'idle': ps = [idle_params(f, 6, view) for f in range(6)]
+    if kind == 'walk': ps = [walk_params(f, 8 * dense, view) for f in range(8 * dense)]
+    elif kind == 'idle':
+        ps = [idle_params(f, 6 * dense, view) for f in range(6 * dense)]
+        if dense > 1:
+            for _k in (len(ps) - 3, len(ps) - 2): ps[_k] = dict(ps[_k], face='blink')
+            for _k in range(len(ps)): ps[_k]['hdy'] = -1 if (_k % len(ps)) in (len(ps) // 2 - 1, len(ps) // 2) else 0
     elif kind in ('cast', 'hurt', 'death'): ps = extra_poses(kind, view)
     else: ps = ATK_S if view == 'right' else (ATK_B if view == 'up' else ATK_F)
+    if kind not in ('walk', 'idle') and dense > 1 and ps_override is None: ps = densify(ps, dense)
     if ps_override is not None: ps = ps_override
     _REI = (cls == 'rei')
     for _i, p in enumerate(ps):
