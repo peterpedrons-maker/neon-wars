@@ -13,7 +13,7 @@ PAL = dict(K='#2a1420',
            T='#8a2c38', t='#b83c44', M='#5a2836',
            c='#7cc0f0', C='#3a86d0', D='#1c4a98',
            y='#f8b828', o='#e07a18', Q='#f08018', q='#f8b060',
-           A='#f6faff', a='#9cb0d2', g='#e8b840', N='#6e4228')
+           A='#f6faff', a='#9cb0d2', g='#e8b840', N='#6e4228', G='#fff0a0')
 SEL = {**{k: '#5a2430' for k in 'RrOL'}, **{k: '#7a4050' for k in 'sSpm'}, **{k: '#14101a' for k in 'kwbB'},
        **{k: '#4a2030' for k in 'TtM'}, **{k: '#14306a' for k in 'cCDj'}, **{k: '#5a3010' for k in 'yoQq'}, **{k: '#26324e' for k in 'AagN'}}
 
@@ -31,9 +31,15 @@ PALS = {
                         y='#d8b060', o='#8a6a30', Q='#6a4228', q='#a07850', j='#d8c890',
                         U='#3a9a48', u='#6acb60', V='#1c5a30', F='#f8f0e0', f='#d04040')),
 }
+PALS['rogue'] = _pal(dict(R='#1a1a28', r='#4a4a68', O='#34344a', L='#6a6a90', T='#2e2e44', t='#4a4a68', M='#1a1a28', c='#ff7a6a', C='#d03a3a', D='#8a1c24',
+                          y='#c8c8d8', o='#8a8aa0', Q='#2a2a3a', q='#4a4a60', j='#d03a3a', U='#3a3a52', u='#5c5c7c', V='#1a1a28'))
+PALS['cleric'] = _pal(dict(R='#b89840', r='#e8c870', O='#f8e8a0', L='#fff8d0', T='#a89cc0', t='#f4f0fa', M='#7a7098', c='#fff0a0', C='#f0c040', D='#a07820',
+                           y='#f0c040', o='#c89020', Q='#b89868', q='#d8c088', j='#f4f0fa', U='#f0c040', u='#fff0a0', V='#a07820', X='#ffd070'))
 SELS = {
     'warrior': SEL,
     'mage': {**SEL, **{k: '#3a2470' for k in 'RrOL'}, **{k: '#1c1450' for k in 'TtM'}, **{k: '#5a3a10' for k in 'cCD'}, **{k: '#1c1450' for k in 'UuVyoQqXj'}, **{k: '#601000' for k in 'ZzY'}},
+    'rogue': {**SEL, **{k: '#0c0c18' for k in 'RrOLUuV'}, **{k: '#14141f' for k in 'TtM'}, **{k: '#4a0c14' for k in 'cCD'}, **{k: '#2a2a3a' for k in 'yoQqj'}},
+    'cleric': {**SEL, **{k: '#6a5420' for k in 'RrOL'}, **{k: '#5a5078' for k in 'TtM'}, **{k: '#6a4a10' for k in 'cCDyoQqUuV'}},
     'archer': {**SEL, **{k: '#3a2010' for k in 'RrOL'}, **{k: '#0e3a1c' for k in 'TtMUuV'}, **{k: '#5a4a20' for k in 'cCDyoQqj'}, **{k: '#6a5a50' for k in 'Ff'}},
 }
 
@@ -127,7 +133,7 @@ BODY_S = dict(sc='.cCCCCD.', t0='.tttttT.', t1='.ttttTT.', t2='.tttMTT.', belt='
 
 
 # ---------------------------------------------------------------- espada (peca separada)
-def sword_rows(hand, ang, length=10):
+def sword_rows(hand, ang, length=10, guard=3):
     """Retorna Grid proprio da espada (cabo, guarda, lamina) com contorno proprio; hand e ponto de empunhadura (coords globais)."""
     a = math.radians(ang)
     ux, uy = math.sin(a), math.cos(a)
@@ -139,7 +145,7 @@ def sword_rows(hand, ang, length=10):
         if d < 2: cells[(x, y)] = 'N'
         elif d == 2:
             nx, ny = -uy, ux
-            for k in (-3, -2, -1, 0, 1, 2, 3): cells[(round(x + nx * k), round(y + ny * k))] = 'g'
+            for k in range(-guard, guard + 1): cells[(round(x + nx * k), round(y + ny * k))] = 'g'
         else:
             cells[(x, y)] = 'A'
             ox, oy = (1, 0) if abs(uy) >= abs(ux) else (0, 1)
@@ -176,14 +182,14 @@ def bow_rows(center, d, draw=0, arrow=True):
     dx, dy = d
     px_, py_ = -dy, dx
     cells = {}
-    n = 16
+    n = 22
     prev = None
     top = None; bot = None
     for i in range(n + 1):
         t = -1 + 2 * i / n
-        bulge = 3.0 * (1 - t * t)
-        x = center[0] + px_ * t * 8 + dx * bulge
-        y = center[1] + py_ * t * 8 + dy * bulge
+        bulge = 4.0 * (1 - t * t)
+        x = center[0] + px_ * t * 11 + dx * bulge
+        y = center[1] + py_ * t * 11 + dy * bulge
         if prev is not None:
             for (xx, yy) in line_pts(round(prev[0]), round(prev[1]), round(x), round(y)): cells[(xx, yy)] = 'N'
         prev = (x, y)
@@ -193,7 +199,7 @@ def bow_rows(center, d, draw=0, arrow=True):
     for p0 in (top, bot):
         for (xx, yy) in line_pts(round(p0[0]), round(p0[1]), round(pull[0]), round(pull[1])): cells.setdefault((xx, yy), 'a')
     cells[(round(top[0]), round(top[1]))] = 'g'; cells[(round(bot[0]), round(bot[1]))] = 'g'
-    tip = (center[0] + dx * 9, center[1] + dy * 9)
+    tip = (center[0] + dx * 11, center[1] + dy * 11)
     if arrow:
         for (xx, yy) in line_pts(round(pull[0]), round(pull[1]), round(tip[0]), round(tip[1])): cells[(xx, yy)] = 'q'
         cells[(round(tip[0]), round(tip[1]))] = 'A'
@@ -202,6 +208,22 @@ def bow_rows(center, d, draw=0, arrow=True):
             fx, fy = round(pull[0] + dx * k), round(pull[1] + dy * k)
             cells[(fx + round(px_), fy + round(py_))] = 'r'; cells[(fx - round(px_), fy - round(py_))] = 'r'
     return cells, tip, pull
+
+
+def mace_rows(hand, ang, length=15):
+    """Maca SEPARADA: cabo de madeira e cabeca de ouro com espinhos."""
+    a = math.radians(ang)
+    ux, uy = math.sin(a), math.cos(a)
+    tip = (hand[0] + ux * (length - 3), hand[1] + uy * (length - 3))
+    cells = {}
+    for (x, y) in line_pts(round(hand[0] - ux * 3), round(hand[1] - uy * 3), round(tip[0]), round(tip[1])): cells[(x, y)] = 'N'
+    cx, cy = round(tip[0] + ux * 2), round(tip[1] + uy * 2)
+    for dy in (-2, -1, 0, 1, 2):
+        for dx in (-2, -1, 0, 1, 2):
+            if abs(dx) + abs(dy) <= 3: cells[(cx + dx, cy + dy)] = 'g'
+    cells[(cx - 1, cy - 1)] = 'G'; cells[(cx, cy - 1)] = 'G'; cells[(cx - 1, cy)] = 'G'
+    cells[(cx + 1, cy + 1)] = 'N'; cells[(cx + 2, cy)] = 'A'; cells[(cx - 3, cy)] = 'A'; cells[(cx, cy - 3)] = 'A'; cells[(cx, cy + 3)] = 'A'
+    return cells, (cx, cy)
 
 
 def weapon_rows(swd, hxy, view, back=False, bow_center=None):
@@ -214,7 +236,10 @@ def weapon_rows(swd, hxy, view, back=False, bow_center=None):
         c = bow_center or hxy
         cells, tip, pull = bow_rows(c, swd['dir'], swd.get('draw', 0), swd.get('arrow', True))
         return cells, tip, (back and swd['dir'][1] < 0), [pull]
-    cells, tip = sword_rows(hxy, swd['ang'], swd.get('len', 12))
+    if kind == 'mace':
+        cells, tip = mace_rows(hxy, swd['ang'], swd.get('len', 15))
+        return cells, tip, (185 <= swd['ang'] <= 265), []
+    cells, tip = sword_rows(hxy, swd['ang'], swd.get('len', 12), 1 if kind == 'dagger' else 3)
     behind = (back or (185 <= swd['ang'] <= 265)) if view == 'front' else (185 <= swd['ang'] <= 265)
     return cells, tip, behind, []
 
@@ -280,7 +305,34 @@ def post_accessory(g, cls, view, cx, body_top, dx=0, back=False):
         g.put(x, y, 'o')
 
 
+def hood_head(rows, view):
+    """Capuz do ladino: cobre topo e laterais do cabelo."""
+    mp = {'R': 'V', 'O': 'U', 'L': 'u', 'r': 'U'}
+    out = []
+    for i, r in enumerate(rows):
+        if i <= 6: r = ''.join(mp.get(c, c) for c in r)
+        elif view == 'front' and i <= 14: r = ''.join(mp.get(c, c) if k < 3 else c for k, c in enumerate(r))
+        out.append(r)
+    return out
+
+
+def hood_head_side(rows):
+    mp = {'R': 'V', 'O': 'U', 'L': 'u', 'r': 'U'}
+    out = []
+    for i, r in enumerate(rows):
+        if i <= 15: r = ''.join(mp.get(c, c) for c in r)
+        out.append(r)
+    return out
+
+
 def accessory(g, cls, view, hx, hy, back=False):
+    if cls == 'cleric':
+        if view == 'side':
+            for x in range(hx + 9, hx + 19): g.put(x, hy + 6, 'X')
+            g.put(hx + 18, hy + 5, 'G')
+        else:
+            for x in range(hx + 3, hx + 19): g.put(x, hy + 6, 'X')
+            g.put(hx + 10, hy + 5, 'G'); g.put(hx + 11, hy + 5, 'G')
     if cls == 'mage':
         if view == 'side': g.stamp(hat_side(), hx - 1, hy - 4)
         else: g.stamp(HAT_F, hx, hy - 4, mirror=True, rshade=dict(u='U'))
@@ -288,6 +340,15 @@ def accessory(g, cls, view, hx, hy, back=False):
     elif cls == 'archer':
         if view == 'side': g.stamp(['..F', '.Ff', 'Ff.', 'f..'], hx + 4, hy - 3)
         else: g.stamp(['..F', '.Ff', 'Ff.', 'f..'], hx + 17, hy - 3)
+
+
+def arm_cells(p0, p1, thick=2):
+    """Braco de manga (t/T) ligando ombro -> mao; a mao e desenhada por cima."""
+    cells = {}
+    for (x, y) in line_pts(round(p0[0]), round(p0[1]), round(p1[0]), round(p1[1])):
+        cells[(x, y)] = 't'
+        if thick > 1: cells.setdefault((x, y + 1), 'T')
+    return cells
 
 
 def stamp_cells(g, cells):
@@ -331,7 +392,7 @@ def build_front(p, back=False):
     rows = (BODY_B_TOP if back else BODY_F_TOP) + [BODY_F_MID] * max(0, tn - 2) + [BODY_F_FOLD if tn >= 3 else BODY_F_MID, BODY_F_BELT, BODY_F_HEM]
     rows = rows[:body_h]
     g.stamp(rows, cx - 6 + dx, body_top, mirror=True, rshade=dict(t='T', c='C', y='o'))
-    if cls == 'mage': g.stamp(['.tttttT', 'CTCTCTC'], cx - 7 + dx, boot_top - 1, mirror=True, rshade=dict(t='T'))
+    if cls in ('mage', 'cleric'): g.stamp(['.tttttT', 'CTCTCTC'], cx - 7 + dx, boot_top - 1, mirror=True, rshade=dict(t='T'))
     # maos (blocos de pele)
     al, ar = p.get('al', (0, 0)), p.get('ar', (0, 0))
     my = body_top + 2
@@ -343,6 +404,7 @@ def build_front(p, back=False):
     hx, hy = cx - 11 + dx + p.get('hdx', 0), body_top - 17 + p.get('hdy', 0)
     head = list(HEAD_B if back else (HEAD_F_UP if p.get('look') == 'up' else HEAD_F))
     if cls == 'archer': head = cap_head(head, 'front')
+    if cls == 'rogue': head = hood_head(head, 'front')
     if p.get('face') == 'shout' and not back:
         head[15] = '...sskkksssk'
     if p.get('face') == 'blink' and not back:
@@ -354,8 +416,16 @@ def build_front(p, back=False):
         for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(hp[0]) + ox, round(hp[1]) + oy, 's')
     if bow:
         bc = (cx + dx + 1, my0 + 3)
+        Sr, Sl = (cx + 5 + dx, my0 - 1), (cx - 4 + dx, my0 - 1)
+        for (x, y), ch in {**arm_cells(Sr, bc), **(arm_cells(Sl, hands2[0]) if hands2 else {})}.items(): g.put(x, y, ch)
         for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(bc[0]) + ox - 1, round(bc[1]) + oy - 1, 's')
     autoline(g)
+    sw2 = p.get('sw2')
+    if sw2:
+        h2 = (cx - 7 + dx + al[0], my + 1 + al[1])
+        c2, t2 = sword_rows(h2, sw2['ang'], sw2.get('len', 8), 1)
+        stamp_cells(g, c2)
+        for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(h2[0]) - 1 + ox, round(h2[1]) - 1 + oy, 's' if oy == 0 else 'S')
     # espada separada (por cima do corpo, exceto quando passa atras da cabeca)
     if swd:
         if not behind: stamp_cells(g, cells)
@@ -383,9 +453,17 @@ def build_side(p):
     ab_, af_ = p.get('al', (0, 0)), p.get('ar', (0, 0))
     cls = p.get('cls', 'warrior')
     swd = p.get('sw'); tip = None; behind = False; hands2 = []
+    bow_arms = None
     if swd:
         hxy = (cx + 4 + dx + af_[0] + 1, body_top + 4 + af_[1])
-        cells, tip, behind, hands2 = weapon_rows(swd, hxy, 'side', False, (hxy[0] + 2, hxy[1]))
+        bc = (hxy[0] + 2, hxy[1])
+        if swd.get('kind') == 'bow':
+            bend_ = p.get('bend', 0)
+            S = (cx + 1 + dx + p.get('bdx', 0) - bend_ * .9, body_top + 1.5)       # ombro
+            d_ = swd['dir']
+            bc = (S[0] + d_[0] * 10, S[1] + d_[1] * 10)                               # mao do arco: braco ESTICADO na linha da mira
+            bow_arms = S
+        cells, tip, behind, hands2 = weapon_rows(swd, hxy, 'side', False, bc)
         if behind: stamp_cells(g, cells)
     pre_accessory(g, cls, 'side', cx, body_top, dx, p.get('bdx', 0))
     g.stamp(BOOT_S, cx - 6 + dx + bk[0], boot_top - bk[1])
@@ -396,24 +474,35 @@ def build_side(p):
     for ri, row in enumerate(rows):
         off = -int(round(bend * (len(rows) - 1 - ri) / max(1, len(rows) - 1)))
         g.stamp([row], cx - 5 + dx + p.get('bdx', 0) + off, body_top + ri)
-    if cls == 'mage': g.stamp(['.tttttttTT.', 'CTCTCTCTCTC'], cx - 6 + dx + p.get('bdx', 0), boot_top - 1)
+    if cls in ('mage', 'cleric'): g.stamp(['.tttttttTT.', 'CTCTCTCTCTC'], cx - 6 + dx + p.get('bdx', 0), boot_top - 1)
     fl = p.get('flut', 0)
     g.stamp(['CC.', '.CD', '..D'], cx - 8 + dx + p.get('bdx', 0) - fl, body_top + fl // 2)
     # braco de tras (so um bloco atras) e da frente
     ab, af = p.get('al', (0, 0)), p.get('ar', (0, 0))
-    if not p.get('nomitt'): g.stamp(['ss', 'sS'], cx - 6 + dx + ab[0], body_top + 3 + ab[1])
+    if not p.get('nomitt') and not bow_arms: g.stamp(['ss', 'sS'], cx - 6 + dx + ab[0], body_top + 3 + ab[1])
     # cabeca (perfil)
     hx, hy = cx - 11 + dx + p.get('hdx', 0), body_top - 17 + p.get('hdy', 0)
     head = make_head_side('shout' if p.get('face') == 'shout' else 'n', 'closed' if p.get('face') == 'blink' else 'open', p.get('look', 'n'))
     if cls == 'archer': head = cap_head_side(head)
+    if cls == 'rogue': head = hood_head_side(head)
     g.stamp(head, hx, hy)
     accessory(g, cls, 'side', hx, hy)
-    if not p.get('nomitt'): g.stamp(['ss', 'sS'], cx + 3 + dx + af[0], body_top + 3 + af[1])
+    if not p.get('nomitt') and not bow_arms: g.stamp(['ss', 'sS'], cx + 3 + dx + af[0], body_top + 3 + af[1])
+    if bow_arms:
+        for (x, y), ch in {**arm_cells(bow_arms, bc), **(arm_cells((bow_arms[0] - 1, bow_arms[1] + 1), hands2[0]) if hands2 else {})}.items(): g.put(x, y, ch)
+        for (mx, my_) in [bc] + list(hands2):
+            for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(mx) - 1 + ox, round(my_) - 1 + oy, 's' if oy == 0 else 'S')
     autoline(g)
+    sw2 = p.get('sw2')
+    if sw2:
+        h2 = (cx - 4 + dx + ab[0], body_top + 4 + ab[1])
+        c2, t2 = sword_rows(h2, sw2['ang'], sw2.get('len', 8), 1)
+        stamp_cells(g, c2)
+        for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(h2[0]) - 1 + ox, round(h2[1]) - 1 + oy, 's' if oy == 0 else 'S')
     if swd:
         if not behind: stamp_cells(g, cells)
         bowd = swd.get('kind') == 'bow'
-        mc = (hxy[0] + 2, hxy[1]) if bowd else hxy
+        mc = bc if bowd else hxy
         g.put(round(mc[0]) - 1, round(mc[1]) - 1, 's'); g.put(round(mc[0]), round(mc[1]) - 1, 's')
         g.put(round(mc[0]) - 1, round(mc[1]), 'S'); g.put(round(mc[0]), round(mc[1]), 'S')
         for hp in hands2:

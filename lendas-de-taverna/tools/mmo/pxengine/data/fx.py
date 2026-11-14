@@ -250,3 +250,50 @@ def converge(ov, tx, ty, f, k, n=10, R=30, col=(255, 150, 60)):
         t = ((f * .6 + i * 1.3) % 8) / 8.0
         x = tx + math.cos(a) * r0 * (1 - t); y = ty + math.sin(a) * r0 * (1 - t) * .8
         ImageDraw.Draw(ov).rectangle([x, y, x + 1, y + 1], fill=col + (int(60 + 195 * t * k),))
+
+
+def slash_x(ov, cx, cy, k, r=11, col=(255, 255, 255)):
+    """Corte em X (2 diagonais) que aparece e some em ~4 quadros."""
+    a = max(0, 255 - k * 70)
+    dr = ImageDraw.Draw(ov)
+    t = min(1.0, (k + 1) / 2.0)
+    for sx in (-1, 1):
+        dr.line([cx - sx * r * t, cy - r * t, cx + sx * r * t, cy + r * t], fill=col + (a,), width=2 if k < 2 else 1)
+        dr.line([cx - sx * r * t * .7, cy - r * t * .7 + 1, cx + sx * r * t * .7, cy + r * t * .7 + 1], fill=(160, 120, 255, a // 2), width=1)
+
+
+def smoke_puff(ov, cx, cy, k, col=(70, 40, 100), n=6):
+    rnd = random.Random(int(cx) % 50)
+    for i in range(n):
+        a = i * math.tau / n + rnd.random()
+        r = 3 + k * 3.5
+        dither_ellipse(ov, cx + math.cos(a) * r, cy - 6 + math.sin(a) * r * .6 - k * 1.5, 5 + k, 4 + k * .6, col, max(0, 210 - k * 28))
+
+
+def pillar(ov, cx, ytop, ybot, w, f, a=140, col=(255, 230, 130)):
+    px = ov.load()
+    for y in range(max(0, int(ytop)), min(H, int(ybot))):
+        t = (y - ytop) / max(1, ybot - ytop)
+        ww = w * (.55 + .45 * t) + math.sin(f * .6 + y * .2) * .8
+        for x in range(int(cx - ww), int(cx + ww) + 1):
+            if 0 <= x < W:
+                e = abs(x - cx) / max(ww, 1)
+                if B4[y & 3][x & 3] / 16 < (1 - e * .9) * .75: px[x, y] = (col[0], col[1], col[2], int(a * (.4 + .6 * t)))
+    dr = ImageDraw.Draw(ov)
+    dr.line([cx, ytop, cx, ybot], fill=(255, 250, 220, 170))
+
+
+def plus(ov, x, y, col, a=255):
+    dr = ImageDraw.Draw(ov)
+    for dx, dy in ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)): dr.point([x + dx, y + dy], fill=col + (a,))
+
+
+def hp_bar(im, x, y, frac, w=24):
+    dr = ImageDraw.Draw(im)
+    dr.rectangle([x - 1, y - 1, x + w, y + 3], fill=(20, 12, 24))
+    dr.rectangle([x, y, x + w - 1, y + 2], fill=(70, 20, 30))
+    n = int((w) * max(0, min(1, frac)))
+    if n > 0:
+        col = (80, 220, 110) if frac > .5 else (240, 190, 60) if frac > .25 else (230, 70, 60)
+        dr.rectangle([x, y, x + n - 1, y + 2], fill=col)
+        dr.line([x, y, x + n - 1, y], fill=(255, 255, 255, 120))
