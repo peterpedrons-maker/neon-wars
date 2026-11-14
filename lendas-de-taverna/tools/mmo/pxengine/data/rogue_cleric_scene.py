@@ -239,6 +239,140 @@ def cleric_heal():
     return frames
 
 
+# ======================================================================= LADINO: LEQUE DE ADAGAS + VENENO
+def dagger_img(ang, over=None, ln=7):
+    from pxrig import Grid
+    g = Grid(26, 26)
+    cells, tip = C.sword_rows((13, 13), ang, ln, 1)
+    C.stamp_cells(g, cells)
+    pal = dict(C.PALS['rogue'])
+    if over: pal.update(over)
+    return g.render(pal, C.sel_for('rogue', pal, over or {}))
+
+
+def rogue_fan():
+    st = fx.Stage(); frames = []
+    HX, HY = 120, 140
+    app = dict(cls='rogue', weapon='adaga_veneno', weapon2='adaga_veneno')
+    pose = [dict(tn=2, sw=dag(100), sw2=dict(ang=80, len=8)),
+            dict(tn=2, hdx=-2, bdx=-1, dx=-1, ar=(-2, -3), sw=dag(215), sw2=dict(ang=215, len=8)),
+            dict(tn=3, hdx=3, bdx=1, dx=3, ar=(5, -1), sw=dag(85), sw2=dict(ang=80, len=8), face='shout'),
+            dict(tn=3, hdx=2, bdx=1, dx=2, ar=(3, 0), sw=dag(95), sw2=dict(ang=80, len=8)),
+            dict(tn=3, sw=dag(100), sw2=dict(ang=80, len=8))]
+    sp = C.anim('right', 'attack', 'rogue', pose, app)
+    over = C.make_palette(app)
+    enemies = [fx.Enemy(250, 120, M.SLIME), fx.Enemy(270, 142, M.SLIME_B), fx.Enemy(248, 166, M.SLIME_O)]
+    targets = [(250, 112), (262, 126), (272, 140), (262, 156), (250, 168)]
+    LAUNCH, FLY = 9, 6
+    poison = {}
+    for j in range(46):
+        back = fx.layer(); front = fx.layer()
+        pi = 0 if j < 4 else 1 if j < 9 else 2 if j < 12 else 3 if j < 15 else 4
+        img, tip, bh = sp[pi]
+        ox, oy = HX - CW // 2, HY - C.BASE
+        if 4 <= j < 9: fx.aura(back, HX, HY - 17, j, (j - 3) / 5.0, col=(90, 220, 90))
+        for i, tg in enumerate(targets):
+            if LAUNCH <= j < LAUNCH + FLY:
+                u = (j - LAUNCH + 1) / float(FLY)
+                sx, sy = ox + 30, oy + 22
+                x = sx + (tg[0] - sx) * u; y = sy + (tg[1] - sy) * u
+                ang = (j * 70 + i * 40) % 360
+                di = dagger_img(ang, over)
+                lay = fx.layer(); lay.paste(di, (int(x) - 13, int(y) - 13)); front = Image.alpha_composite(front, lay)
+                for q in (1, 2):
+                    fx.dither_ellipse(front, x - (tg[0] - sx) / 60.0 * q * 3, y - (tg[1] - sy) / 60.0 * q * 3, 2, 2, (120, 230, 90), 90)
+            if j == LAUNCH + FLY:
+                fx.dust(front, tg[0], tg[1], 0, n=5)
+        if j == LAUNCH + FLY:
+            for e in enemies: e.hit((.4, 0), '14'); poison[id(e)] = j
+        dyn = []
+        for e in enemies:
+            eimg, ex_, ey_, up, ek = e.step()
+            pj = poison.get(id(e))
+            if pj is not None and j - pj < 28:
+                eimg = fx.tint_img(eimg, (90, 200, 70), .45 if (j // 2) % 2 else .3)
+                for q in range(4):
+                    ov = fx.layer(); ImageDraw.Draw(ov).ellipse([ex_ - 4 + q * 3, ey_ - 22 - ((j + q * 5) % 10), ex_ - 2 + q * 3, ey_ - 20 - ((j + q * 5) % 10)], fill=(140, 240, 110, 230))
+                    front = Image.alpha_composite(front, ov)
+                if (j - pj) % 7 == 4: e.hit((0, 0), '8')
+            back = shadow(back, ex_, ey_, 8, 70)
+            dyn.append(dict(img=eimg, x=ex_ - 9, y=ey_ - 13 - up, foot=ey_, ek=ek, ex=ex_, ey=ey_, poison=pj is not None and j - pj < 28))
+        back = shadow(back, HX, HY)
+        dyn.append(dict(img=img, x=ox, y=oy, foot=HY))
+        im = st.compose(j, back, dyn, front)
+        for d in dyn:
+            if 'ek' in d and d['ek'] is not None and d['ek'] >= 1:
+                fx.draw_number(im, d['ex'] + 6, d['ey'] - 28 - d['ek'] * 1.2, '14' if j < LAUNCH + FLY + 3 else '8')
+        frames.append(im)
+    return frames
+
+
+# ======================================================================= CLERIGO: JULGAMENTO DIVINO
+def cleric_judgement():
+    st = fx.Stage(); frames = []
+    HX, HY = 120, 140
+    app = dict(cls='cleric', weapon='martelo_sagrado')
+    pose = [dict(sw=mace(165)), dict(tn=2, ar=(0, -3), al=(1, -3), sw=mace(185)), dict(tn=3, ar=(1, -6), al=(3, -7), sw=mace(190), hdy=-1, face='shout'),
+            dict(tn=3, ar=(5, -2), dx=2, hdx=3, sw=mace(95), face='shout'), dict(tn=3, ar=(5, 0), dx=2, hdx=3, sw=mace(90)), dict(sw=mace(165))]
+    sp = C.anim('right', 'attack', 'cleric', pose, app)
+    TC = (262, 144)
+    enemies = [fx.Enemy(TC[0] - 18, TC[1] - 6, M.SLIME), fx.Enemy(TC[0] + 12, TC[1] - 14, M.SLIME_B), fx.Enemy(TC[0] + 22, TC[1] + 10, M.SLIME_O), fx.Enemy(TC[0] - 8, TC[1] + 12, M.SLIME)]
+    for j in range(52):
+        back = fx.layer(); front = fx.layer(); sh = (0, 0)
+        pi = 0 if j < 3 else 1 if j < 6 else 2 if j < 14 else 3 if j < 17 else 4 if j < 24 else 5
+        img, tip, bh = sp[pi]
+        ox, oy = HX - CW // 2, HY - C.BASE
+        if 4 <= j < 17:
+            k = min(1.0, (j - 4) / 8.0)
+            fx.dither_ellipse(back, HX, HY - 17, 14 + 3 * k, 22, (255, 230, 120), int(40 + 90 * k))
+            if tip: fx.dither_ellipse(front, ox + tip[0], oy + tip[1], 5 + k * 3, 5 + k * 3, (255, 240, 170), 160)
+            fx.converge(front, ox + (tip[0] if tip else 28), oy + (tip[1] if tip else 20), j, k, col=(255, 235, 150))
+        # circulo de luz no alvo (marca)
+        if 8 <= j < 40:
+            a = int(min(1, (j - 8) / 6.0) * 170) if j < 32 else int(max(0, (40 - j) / 8.0) * 170)
+            fx.magic_circle(back, TC[0], TC[1], 46, 20, j * .08, a, col=(255, 224, 120))
+        # feixe de luz do ceu (cai em 3 quadros) + cruz brilhante + anel
+        if 16 <= j < 36:
+            k = j - 16
+            top = max(0, 0 - 0)
+            reach = min(1.0, (k + 1) / 3.0)
+            ybot = TC[1] * reach
+            a = 230 if k < 12 else max(0, int(230 * (1 - (k - 12) / 8.0)))
+            fx.pillar(back, TC[0], 0, ybot, 20 if k < 14 else 14, j, a, col=(255, 240, 170))
+            fx.pillar(front, TC[0], 0, ybot, 8, j, min(255, a + 20), col=(255, 255, 240))
+            if k >= 2:
+                r = 14 + (k % 5) * 2
+                dr = ImageDraw.Draw(front)
+                for (dx, dy) in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    dr.line([TC[0], TC[1] - 6, TC[0] + dx * (r + 8), TC[1] - 6 + dy * (r + 4)], fill=(255, 250, 200, 220), width=2)
+                rx = 8 + (k % 10) * 5
+                ImageDraw.Draw(back).ellipse([TC[0] - rx, TC[1] - rx * .45, TC[0] + rx, TC[1] + rx * .45], outline=(255, 236, 160, max(0, 230 - (k % 10) * 24)), width=2)
+            if k < 3: sh = (1 if j % 2 else -1, 0)
+            for i in range(7):
+                t = ((k * .9 + i * 1.7) % 10) / 10.0
+                fx.plus(front, TC[0] + math.sin(i * 2.3) * 16, TC[1] - 4 - t * 40, (255, 240, 150), int(255 * (1 - t)))
+        if j == 18:
+            for e in enemies:
+                v = (e.x0 - TC[0], e.y0 - TC[1]); L = math.hypot(*v) or 1
+                e.hit((v[0] / L * .6, v[1] / L * .6), '72')
+        dyn = []
+        for e in enemies:
+            eimg, ex_, ey_, up, ek = e.step()
+            back = shadow(back, ex_, ey_, 8, 70)
+            dyn.append(dict(img=eimg, x=ex_ - 9, y=ey_ - 13 - up, foot=ey_, ek=ek, ex=ex_, ey=ey_))
+            if 20 <= j < 36:   # estrelas de atordoamento
+                for q in range(3):
+                    a_ = j * .5 + q * 2.1
+                    fx.plus(front, ex_ + math.cos(a_) * 7, ey_ - 22 + math.sin(a_) * 2.5, (255, 224, 80), 255)
+        back = shadow(back, HX, HY)
+        dyn.append(dict(img=img, x=ox, y=oy, foot=HY))
+        im = st.compose(j, back, dyn, front, shake=sh)
+        for d in dyn:
+            if 'ek' in d and d['ek'] is not None and d['ek'] >= 1: fx.draw_number(im, d['ex'] + 6, d['ey'] - 28 - d['ek'] * 1.2, '72')
+        frames.append(im)
+    return frames
+
+
 def save(frames, name, scale=2, dur=70):
     big = [f.convert('RGB').resize((W * scale, H * scale), Image.NEAREST) for f in frames]
     n = len(big); pick = [big[i * n // 6] for i in range(6)]
@@ -250,7 +384,5 @@ def save(frames, name, scale=2, dur=70):
 
 
 if __name__ == '__main__':
-    save(rogue_basic(), 'ladino_basico.gif'); print('lb')
-    save(rogue_shadow(), 'ladino_sombrio.gif'); print('ls')
-    save(cleric_basic(), 'clerigo_basico.gif'); print('cb')
-    save(cleric_heal(), 'clerigo_cura.gif'); print('cc')
+    save(rogue_fan(), 'ladino_leque_veneno.gif'); print('lf')
+    save(cleric_judgement(), 'clerigo_julgamento.gif'); print('cj')
