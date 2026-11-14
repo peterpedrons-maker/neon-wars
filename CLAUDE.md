@@ -80,3 +80,4 @@ Grunk (goblin), Morvath (esqueleto), Gorgash (ogro), Rei dos Ratos, **Rei Esquec
 - Capacete do guerreiro: elmo de verdade com cabelo visível por baixo (nunca parecer cabelo prateado de lado).
 - **Armas mudam de FORMATO, não só de cor (decisão do dono):** `WEAPONS` em `chibi.py` tem `shape` (broad, leaf, katana, scimitar, rapier, cleaver, flame, great, axe) e `gstyle` (bar, cross, disc, cup); gerador `shaped_rows`. Exemplos: espada_larga, katana, cimitarra, florete, facao, chamejante, montante_real, machado. Falta fazer o mesmo para cajados (cabeças diferentes), arcos, adagas e maças.
 - Pendente: chapéu do mago ainda parece só uma ponta sobre cabelo lilás; fazer chapéu de bico com aba larga de verdade.
+- Demo de equipar/trocar arma e usar o golpe: `equip_demo.py` → `equip_demo_troca_arma.gif` (inventário com ícones, brilho ao equipar, golpe com rastro na cor da lâmina, slime atingido com número de dano).
