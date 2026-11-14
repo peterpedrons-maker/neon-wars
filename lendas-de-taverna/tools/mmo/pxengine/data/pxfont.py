@@ -20,12 +20,12 @@ def norm(s):
     return ''.join(c for c in unicodedata.normalize('NFD', s.upper()) if unicodedata.category(c) != 'Mn')
 
 
-def width(s): return max(0, sum(2 if c == ' ' else 4 for c in norm(s)) - 1)
+def width(s, k=1): return max(0, sum(2 if c == ' ' else 4 for c in norm(s)) - 1) * k
 
 
-def text(im, xy, s, col=(240, 226, 190), center=False, shadow=True):
+def text(im, xy, s, col=(240, 226, 190), center=False, shadow=True, k=1):
     s = norm(s); x, y = xy
-    if center: x -= width(s) // 2
+    if center: x -= width(s, k) // 2
     d = ImageDraw.Draw(im)
     def draw(ox, oy, c):
         cx = x
@@ -34,7 +34,10 @@ def text(im, xy, s, col=(240, 226, 190), center=False, shadow=True):
             rows = G.get(ch, G['?'])
             for ry, r in enumerate(rows):
                 for rx, p in enumerate(r):
-                    if p == '#': d.point([cx + rx + ox, y + ry + oy], fill=tuple(c) + (255,) if im.mode == 'RGBA' else tuple(c))
-            cx += 4
+                    if p == '#':
+                        fc = tuple(c) + (255,) if im.mode == 'RGBA' else tuple(c)
+                        if k == 1: d.point([cx + rx + ox, y + ry + oy], fill=fc)
+                        else: d.rectangle([cx + rx * k + ox * k, y + ry * k + oy * k, cx + rx * k + ox * k + k - 1, y + ry * k + oy * k + k - 1], fill=fc)
+            cx += 4 * k
     if shadow: draw(0, 1, (12, 8, 18))
     draw(0, 0, col)

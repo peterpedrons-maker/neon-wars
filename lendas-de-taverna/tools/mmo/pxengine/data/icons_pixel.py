@@ -91,10 +91,14 @@ def cell(icon, rar='comum', size=18, pc=None, up=0, arrow=None):
     for (x, y) in ((0, 0), (size - 1, 0), (0, size - 1), (size - 1, size - 1)): px[x, y] = (0, 0, 0, 0)
     if icon is not None:
         ic = icon.crop((1, 1, 15, 15)); im.alpha_composite(ic, ((size - 14) // 2, (size - 14) // 2 - 1))
-        for k in range(STARS[rar]): px[2 + k * 2, 2] = (255, 214, 74, 255)
+        for k in range(STARS[rar]):
+            sx_ = 4 + k * 4
+            for (ox, oy) in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)):
+                if 0 <= sx_ + ox < size and 0 <= 3 + oy < size: px[sx_ + ox, 3 + oy] = (255, 222, 90, 255) if (ox, oy) != (0, 0) else (255, 250, 190, 255)
         if pc is not None:
             t = pc if isinstance(pc, str) else str(pc)
             pxfont.text(im, (size - 2 - pxfont.width(t), size - 7), t, (255, 236, 170), False, True)
+            pxfont.text(im, (size - 2 - pxfont.width(t) - 9, size - 7), 'PC', (176, 150, 100), False, True)
         if up: pxfont.text(im, (size - 2 - pxfont.width('+%d' % up), 3), '+%d' % up, (140, 255, 160))
         if arrow == 'up': px[size - 4, 3] = (90, 255, 120, 255); px[size - 5, 4] = (90, 255, 120, 255); px[size - 3, 4] = (90, 255, 120, 255)
         if arrow == 'dn': px[size - 4, 4] = (255, 90, 90, 255); px[size - 5, 3] = (255, 90, 90, 255); px[size - 3, 3] = (255, 90, 90, 255)
