@@ -18,8 +18,8 @@ SEL = {**{k: '#5a2430' for k in 'RrOL'}, **{k: '#7a4050' for k in 'sSpm'}, **{k:
        **{k: '#4a2030' for k in 'TtM'}, **{k: '#14306a' for k in 'cCDj'}, **{k: '#5a3010' for k in 'yoQq'}, **{k: '#26324e' for k in 'AagN'}}
 
 
-DEFAULT_HAT = {'warrior': 'none', 'mage': 'wizard', 'archer': 'cap', 'rogue': 'hood', 'cleric': 'circlet'}
-DEFAULT_OUTFIT = {'warrior': 'cloth', 'mage': 'robe', 'archer': 'cloth', 'rogue': 'cloth', 'cleric': 'robe'}
+DEFAULT_HAT = {'rei': 'kinghelm', 'warrior': 'none', 'mage': 'wizard', 'archer': 'cap', 'rogue': 'hood', 'cleric': 'circlet'}
+DEFAULT_OUTFIT = {'rei': 'mail', 'warrior': 'cloth', 'mage': 'robe', 'archer': 'cloth', 'rogue': 'cloth', 'cleric': 'robe'}
 
 
 def _pal(over):
@@ -39,11 +39,22 @@ PALS['rogue'] = _pal(dict(R='#1a1a28', r='#4a4a68', O='#34344a', L='#6a6a90', T=
                           y='#c8c8d8', o='#8a8aa0', Q='#2a2a3a', q='#4a4a60', j='#d03a3a', U='#3a3a52', u='#5c5c7c', V='#1a1a28'))
 PALS['cleric'] = _pal(dict(R='#b89840', r='#e8c870', O='#f8e8a0', L='#fff8d0', T='#a89cc0', t='#f4f0fa', M='#7a7098', c='#fff0a0', C='#f0c040', D='#a07820',
                            y='#f0c040', o='#c89020', Q='#b89868', q='#d8c088', j='#f4f0fa', U='#f0c040', u='#fff0a0', V='#a07820', X='#ffd070'))
+
+PALS['rei'] = _pal(dict(s='#e2daee', S='#8a7aa8', p='#f6f2fb', m='#6a5a88',
+                        R='#0e0a1a', r='#2e2648', O='#1c1630', L='#4e4478',
+                        w='#1a0c2c', b='#c878ff', B='#7a30c0', k='#0c0618',
+                        T='#1e1a34', t='#3c3458', M='#0c0a16',
+                        c='#ecc0ff', C='#b060f0', D='#6a2aa8',
+                        U='#3c3460', u='#7468a8', V='#1c1830',
+                        y='#7a6eb0', o='#2e2650', Q='#3e3668', q='#6a5ea0', j='#6a2aa8', X='#d4a444',
+                        A='#d8f4ff', a='#6ab0e4', g='#2a2c44', N='#1c1830', G='#ecc0ff',
+                        e='#161024', E='#2a1e44', H='#43306a', P='#b060f0', W='#ecc0ff', I='#4a4272', i='#8a7eb8', J='#1c1830', v='#d878ff', Z='#ecc0ff', z='#b060f0', Y='#6a2aa8'))
 SELS = {
     'warrior': SEL,
     'mage': {**SEL, **{k: '#3a2470' for k in 'RrOL'}, **{k: '#1c1450' for k in 'TtM'}, **{k: '#5a3a10' for k in 'cCD'}, **{k: '#1c1450' for k in 'UuVyoQqXj'}, **{k: '#601000' for k in 'ZzY'}},
     'rogue': {**SEL, **{k: '#0c0c18' for k in 'RrOLUuV'}, **{k: '#14141f' for k in 'TtM'}, **{k: '#4a0c14' for k in 'cCD'}, **{k: '#2a2a3a' for k in 'yoQqj'}},
     'cleric': {**SEL, **{k: '#6a5420' for k in 'RrOL'}, **{k: '#5a5078' for k in 'TtM'}, **{k: '#6a4a10' for k in 'cCDyoQqUuV'}},
+    'rei': {**SEL, **{k: '#08040e' for k in 'RrOLTtMUuVyoQqeEHIiJ'}, **{k: '#3e3458' for k in 'sSpm'}, **{k: '#2a0a50' for k in 'cCDjPWvZzY'}, **{k: '#3a2808' for k in 'X'}, **{k: '#1c4a78' for k in 'AaG'}},
     'archer': {**SEL, **{k: '#3a2010' for k in 'RrOL'}, **{k: '#0e3a1c' for k in 'TtMUuV'}, **{k: '#5a4a20' for k in 'cCDyoQqj'}, **{k: '#6a5a50' for k in 'Ff'}},
 }
 
@@ -418,7 +429,10 @@ QUIVER_S = ['.r.r.', '.F.F.', '.q.q.', 'QQQQQ', 'QqqQQ', 'QqqQQ', 'QqqQQ', '.QQQ
 
 
 def pre_accessory(g, cls, view, cx, body_top, dx=0, bdx=0, back=False):
-    """Itens desenhados ANTES do corpo (ficam atras): aljava do arqueiro."""
+    """Itens desenhados ANTES do corpo (ficam atras): aljava do arqueiro; capa do Rei."""
+    if cls == 'rei':
+        if not back: rei_cape(g, view, cx, body_top, dx, bdx)
+        return
     if cls != 'archer': return
     if view == 'side': g.stamp(QUIVER_S, cx - 11 + dx + bdx, body_top - 3)
     elif back: g.stamp(QUIVER_S, cx - 10 + dx, body_top - 3)
@@ -426,7 +440,10 @@ def pre_accessory(g, cls, view, cx, body_top, dx=0, bdx=0, back=False):
 
 
 def post_accessory(g, cls, view, cx, body_top, dx=0, back=False):
-    """Itens por cima do corpo: tira da aljava."""
+    """Itens por cima do corpo: tira da aljava; capa do Rei vista de costas."""
+    if cls == 'rei':
+        if back and view != 'side': rei_cape(g, view, cx, body_top, dx, 0, over=True)
+        return
     if cls != 'archer' or view == 'side': return
     for i in range(9):
         x = cx - 5 + dx + i; y = body_top + 1 + i // 2
@@ -507,6 +524,14 @@ def accessory2(g, hat, view, hx, hy, back=False):
             g.stamp(HAT_F, hx - 2, hy - 7, mirror=True, rshade=dict(u='U'))
     elif hat == 'cap':
         g.stamp(['..F', '.Ff', 'Ff.', 'f..'], hx + 4, hy - 3) if view == 'side' else g.stamp(['..F', '.Ff', 'Ff.', 'f..'], hx + 17, hy - 3)
+    elif hat == 'kinghelm':
+        if view == 'side':
+            for off, h in ((4, 3), (9, 5), (14, 6), (18, 4)):
+                for k in range(h):
+                    g.put(hx + off, hy + 1 - k, 'v' if k == h - 1 else 'i'); g.put(hx + off + 1, hy + 1 - k, 'I')
+            for x in range(hx + 3, hx + 20): g.put(x, hy + 2, 'i' if x % 3 else 'v')
+        else:
+            g.stamp(['..........v', '..........i', '......v...I', '......i..iI', '..v...I..II', '..i..iI.iII', 'iIiIiIIIIII'], hx, hy - 5, mirror=True, rshade=dict(i='I'))
     elif hat == 'helm':
         if view == 'side': g.stamp(['..f.', '.ffF', 'fFF.', 'F...'], hx - 2, hy - 3)
         else: g.stamp(['.ff', 'ffF', 'fFF'], hx + 9, hy - 5, mirror=True)
@@ -553,6 +578,11 @@ def arm_cells(p0, p1, thick=2):
 
 # ---------------------------------------------------------------- roupas (outfit): cota de malha / manto completo
 def outfit_pass(g, outfit, view, cx, body_top, boot_top, dx=0, bdx=0, back=False, al=(0, 0), ar=(0, 0)):
+    if outfit == 'mail' and _REI:
+        if view == 'side': g.stamp(['..i..', '.iuUV', 'iuUUV', 'uUUVV', '.UVV.'], cx - 5 + dx + bdx, body_top - 1)
+        else:
+            g.stamp(['..i.', '.iuU', 'iuUU', 'uUUV', '.UVV'], cx - 13 + dx, body_top - 1)
+            g.stamp(['.i..', 'Uui.', 'UUui', 'VUUu', 'VVU.'], cx + 9 + dx, body_top - 1)
     if outfit == 'mail':
         # textura de cota de malha (xadrez de 2 tons) + ombreiras + saiote de malha
         for y in range(body_top + 1, boot_top):
@@ -651,6 +681,35 @@ def draw_bow_layer(g, info, mode):
         for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(m[0]) - 1 + ox, round(m[1]) - 1 + oy, 's' if oy == 0 else 'S')
 
 
+_REI = False
+_T = 0
+
+
+def rei_cape(g, view, cx, body_top, dx=0, bdx=0, over=False):
+    """Capa rasgada do Rei com chamas roxas na barra. over=True: de costas, a capa fica POR CIMA do corpo."""
+    T = _T; hem = body_top + 8
+    if view == 'side':
+        for y in range(body_top - 1, hem + 1):
+            k = (y - body_top + 1) / (hem - body_top + 1)
+            x1 = cx + 1 + dx + bdx; x0 = int(cx - 3 + dx + bdx - 3 - k * 9)
+            for x in range(x0, x1 + 1):
+                g.put(x, y, 'H' if x == x0 or y == body_top - 1 else ('E' if (x + y) % 4 else 'e'))
+        xs = range(int(cx - 15 + dx + bdx), int(cx - 2 + dx + bdx))
+    else:
+        for y in range(body_top - 1, hem + 1):
+            k = (y - body_top + 1) / (hem - body_top + 1); hw = int(7 + k * 4)
+            for x in range(cx - hw + dx, cx + hw + dx + 1):
+                u = (x - cx - dx) / max(1, hw)
+                g.put(x, y, 'H' if abs(u) > .85 or y == body_top - 1 else ('E' if u < 0 else 'e'))
+        if over:
+            for y in range(body_top + 1, hem): g.put(cx + dx, y, 'H')
+        xs = range(cx - 11 + dx, cx + 12 + dx)
+    for x in xs:                                                 # chamas roxas subindo da barra (so nas laterais: pernas livres)
+        if view != 'side' and abs(x - cx - dx) < 5: continue
+        h = 1 + int(2 + 2 * math.sin(T * .9 + x * 1.1))
+        for k in range(h): g.put(x, hem - k + 1, 'W' if k == h - 1 else ('P' if k > 0 else 'Y'))
+
+
 def stamp_cells(g, cells):
     for (x, y), c in cells.items(): g.put(x, y, c)
     for (x, y) in list(cells):
@@ -712,7 +771,7 @@ def build_front(p, back=False):
     hat = p.get('hat', DEFAULT_HAT[cls]); outfit = p.get('outfit', DEFAULT_OUTFIT[cls])
     if hat == 'cap': head = cap_head(head, 'front')
     elif hat == 'hood': head = hood_head(head, 'front')
-    elif hat == 'helm': head = helm_head(head, 'back' if back else 'front')
+    elif hat in ('helm', 'kinghelm'): head = helm_head(head, 'back' if back else 'front')
     if p.get('face') == 'shout' and not back:
         head[15] = '...sskkksssk'
     if p.get('face') == 'blink' and not back:
@@ -785,7 +844,7 @@ def build_side(p):
     hat = p.get('hat', DEFAULT_HAT[cls]); outfit = p.get('outfit', DEFAULT_OUTFIT[cls])
     if hat == 'cap': head = cap_head_side(head)
     elif hat == 'hood': head = hood_head_side(head)
-    elif hat == 'helm': head = helm_head_side(head)
+    elif hat in ('helm', 'kinghelm'): head = helm_head_side(head)
     g.stamp(head, hx, hy)
     accessory2(g, hat, 'side', hx, hy)
     if not p.get('nomitt') and not bowinfo: g.stamp(['ss', 'sS'], cx + 3 + dx + af[0], body_top + 3 + af[1])
@@ -858,6 +917,7 @@ WEAPONS = {
     'chamejante': dict(kind='sword', len=16, guard=3, shape='flame', glow='fire', pal=dict(A='#ffd060', a='#e04818', g='#6a1c10', N='#2a1008', Z='#fff0a0', z='#ff6a20')),
     'montante_real': dict(kind='sword', len=18, guard=4, shape='great', gem=True, pal=dict(A='#eef2fa', a='#7c88a8', g='#e8b840', N='#3a2a20')),
     'machado': dict(kind='sword', len=16, guard=1, shape='axe', pal=dict(A='#c8d0dc', a='#6a7488', g='#7a5a30', N='#5a3a20')),
+    'espada_rei': dict(kind='sword', len=18, guard=3, shape='great', gstyle='cross', glow='ice', pal=dict(A='#d8f4ff', a='#6ab0e4', g='#2a2c44', N='#1c1830', Z='#ffffff')),
     # cajados
     'cajado_fogo': dict(kind='staff', len=24, orb=1, pal=dict(Z='#fff4b0', z='#ff9a30', Y='#c83010', N='#6e4228', g='#e8b840')),
     'cajado_gelo': dict(kind='staff', len=24, orb=1, pal=dict(Z='#ffffff', z='#58c8f0', Y='#2a68c0', N='#4a5a78', g='#c8d8f0')),
@@ -993,16 +1053,40 @@ ATK_S = [
 ]
 
 
+def extra_poses(kind, view):
+    """conjurar (bracos e espada para o alto), dano (recuo) e morte (desaba) - valem para qualquer personagem com espada"""
+    up = 188
+    if kind == 'cast':
+        sw = lambda a: dict(ang=a, len=12, side='r') if view != 'right' else dict(ang=a, len=12)
+        return [dict(tn=3, ar=(0, 0), sw=sw(165)), dict(tn=2, ar=(0, -2), al=(0, -1), sw=sw(180), hdy=0),
+                dict(tn=3, ar=(0, -5), al=(0, -5), sw=sw(up), face='shout', hdy=-1), dict(tn=3, ar=(0, -6), al=(0, -6), sw=sw(up), face='shout', hdy=-1, dy=-1),
+                dict(tn=3, ar=(0, -6), al=(0, -6), sw=sw(up), face='shout', hdy=-1, dy=-1), dict(tn=3, ar=(0, -6), al=(0, -6), sw=sw(up), face='shout', hdy=-1, dy=-1),
+                dict(tn=3, ar=(0, -3), al=(0, -3), sw=sw(175), face='shout'), dict(tn=3, ar=(0, 0), sw=sw(165))]
+    if kind == 'hurt':
+        sw = lambda a: dict(ang=a, len=12, side='r') if view != 'right' else dict(ang=a, len=12)
+        return [dict(tn=2, dx=-1, hdx=-1, ar=(-1, 1), al=(1, 1), sw=sw(150), face='shout'), dict(tn=2, dx=-2, hdx=-2, hdy=1, ar=(-2, 1), al=(2, 1), sw=sw(140), face='shout'),
+                dict(tn=3, dx=-1, hdx=-1, ar=(-1, 0), sw=sw(150)), dict(tn=3, ar=(0, 0), sw=sw(165))]
+    sw = lambda a: dict(ang=a, len=12, side='r') if view != 'right' else dict(ang=a, len=12)
+    return [dict(tn=2, dx=-1, hdx=-1, ar=(-1, 1), sw=sw(150), face='shout'), dict(tn=1, dx=-2, dy=1, hdx=-2, hdy=1, ar=(-2, 2), al=(2, 2), sw=sw(130), face='shout'),
+            dict(tn=1, dx=-3, dy=3, hdx=-3, hdy=3, ar=(-3, 3), al=(3, 2), bl=(-2, 0), br=(2, 0), sw=sw(115), face='shout'),
+            dict(tn=0, dx=-3, dy=5, hdx=-3, hdy=5, ar=(-3, 4), al=(3, 3), bl=(-3, 0), br=(3, 0), sw=sw(100), face='shout'),
+            dict(tn=0, dx=-3, dy=7, hdx=-3, hdy=6, ar=(-3, 5), al=(3, 4), bl=(-3, 0), br=(3, 0), sw=sw(95)), dict(tn=0, dx=-3, dy=7, hdx=-3, hdy=6, ar=(-3, 5), al=(3, 4), bl=(-3, 0), br=(3, 0), sw=sw(92))]
+
+
 def anim(view, kind, cls='warrior', ps_override=None, appearance=None):
+    global _REI, _T
     out = []
     over = None
     if appearance:
         cls = appearance.get('cls', cls); over = make_palette(appearance)
     if kind == 'walk': ps = [walk_params(f, 8, view) for f in range(8)]
     elif kind == 'idle': ps = [idle_params(f, 6, view) for f in range(6)]
+    elif kind in ('cast', 'hurt', 'death'): ps = extra_poses(kind, view)
     else: ps = ATK_S if view == 'right' else (ATK_B if view == 'up' else ATK_F)
     if ps_override is not None: ps = ps_override
-    for p in ps:
+    _REI = (cls == 'rei')
+    for _i, p in enumerate(ps):
+        _T = _i
         p = dict(p, cls=cls)
         if appearance: p = apply_appearance(p, appearance)
         if view == 'right': g, tip, bh = build_side(p)

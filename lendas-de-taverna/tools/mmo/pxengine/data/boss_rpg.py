@@ -136,7 +136,7 @@ def hud(im, st, channel):
     d.ellipse([83, 266, 91, 274], fill=(210, 40, 70)); d.rectangle([85, 263, 89, 266], fill=(230, 200, 160))
     d.rectangle([100, 265, 108, 273], fill=(120, 220, 255))
     for i, m in enumerate(st.msgs[-2:]): label(im, (3, 242 + i * 9 - 2) if False else (38, 250 + i * 0), '', (0, 0, 0))
-    for i, m in enumerate(st.msgs[-2:]): label(im, (3, 207 + i * 9), m[:23], (230, 220, 190) if 'Aviso' not in m else (255, 190, 120))
+    m = st.msgs[-1]; label(im, (40, 249), m[:16], (230, 220, 190) if 'Aviso' not in m else (255, 190, 120))
     if channel:
         name, k = channel
         d.rectangle([BOSS_FEET[0] - 25, 63, BOSS_FEET[0] + 24, 68], fill=(18, 10, 30), outline=(190, 120, 255)); d.rectangle([BOSS_FEET[0] - 24, 64, BOSS_FEET[0] - 24 + int(48 * k), 67], fill=(200, 120, 255))
