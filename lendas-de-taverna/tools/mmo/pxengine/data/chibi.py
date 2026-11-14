@@ -498,6 +498,12 @@ QUIVER_S = ['.r.r.', '.F.F.', '.q.q.', 'QQQQQ', 'QqqQQ', 'QqqQQ', 'QqqQQ', '.QQQ
 
 def pre_accessory(g, cls, view, cx, body_top, dx=0, bdx=0, back=False):
     """Itens desenhados ANTES do corpo (ficam atras): aljava do arqueiro; capa do Rei."""
+    if _WINGS:
+        for sg in ((-1, 1) if view != 'side' else (-1,)):
+            for i in range(16):
+                x = cx + dx + sg * (5 + i) if view != 'side' else cx + dx + bdx - 2 - i
+                yt = int(body_top + 1 - i * .95 - (3 if i > 10 else 0)); yb = int(body_top + 8 - i * .25)
+                for y in range(yt, yb + 1): g.put(x, y, 'S' if (y == yt or i % 5 == 0) else 'M')
     if cls == 'rei':
         if not back: rei_cape(g, view, cx, body_top, dx, bdx)
         return
@@ -601,6 +607,8 @@ def accessory2(g, hat, view, hx, hy, back=False):
             for x in range(hx + 5, hx + 9): g.put(x, hy + 9, 'k')
             for x in range(hx + 13, hx + 17): g.put(x, hy + 9, 'k')
     elif hat == 'gob_ears':
+        for x in range(hx + 1, hx + (19 if view == 'side' else 21)): g.put(x, hy + 4, 'T'); g.put(x, hy + 5, 'M')
+        g.stamp(['TT', 'TM', '.M'], hx + (0 if view == 'side' else 20), hy + 5)
         if view == 'side':
             g.stamp(['.sS', 'sSS', '.sS'], hx + 19, hy + 9)
         else:
@@ -698,6 +706,12 @@ def outfit_pass(g, outfit, view, cx, body_top, boot_top, dx=0, bdx=0, back=False
             g.stamp(['.uuU', 'uUUUV', '.UVVV'], cx - 10 + dx, body_top + 1)
             g.stamp(['Uuu.', 'VUUUu', 'VVVU.'], cx + 6 + dx, body_top + 1)
             g.stamp(['UuUuUV'], cx - 6 + dx, boot_top - 1, mirror=True)
+    elif outfit == 'ribs' and view != 'side':
+        for y in range(body_top + 2, boot_top - 1, 2):
+            for x in range(cx - 5 + dx, cx + 5 + dx):
+                if g.get(x, y) in 'tT': g.put(x, y, 'M')
+        for y in range(body_top + 1, boot_top - 1):
+            if g.get(cx + dx, y) in 'tTM': g.put(cx + dx, y, 'M')
     elif outfit == 'robe':
         # manto completo: cobre as botas, mangas largas, listra dourada
         if view == 'side':
@@ -785,6 +799,7 @@ def draw_bow_layer(g, info, mode):
 
 
 _REI = False
+_WINGS = False
 _BULK = False
 _T = 0
 
@@ -986,18 +1001,18 @@ HAIRS = {'ruivo': dict(R='#9a3030', r='#e84820', O='#f08018', L='#f8b060'), 'pre
          'castanho': dict(R='#4a2c14', r='#a8602c', O='#7a4a24', L='#b88050'), 'loiro': dict(R='#b89840', r='#e8c870', O='#f8e8a0', L='#fff8d0'),
          'branco': dict(R='#8a90a8', r='#c8d0e0', O='#e8ecf4', L='#ffffff'), 'azul': dict(R='#1c3a8a', r='#3a78e0', O='#4a98f0', L='#a0d0ff'),
          'rosa': dict(R='#a02860', r='#e8509a', O='#f878b8', L='#ffb8dc'), 'verde': dict(R='#1c5a30', r='#3aa850', O='#58c868', L='#a8f0a8')}
-SKINS.update({'goblin': dict(s='#86c050', S='#4e8a30', p='#b0e078'), 'osso': dict(s='#e6deee', S='#8a7aa8', p='#f8f4fc'),
+SKINS.update({'pedra': dict(s='#a8acb8', S='#6a6e80', p='#d0d4e0'), 'goblin': dict(s='#86c050', S='#4e8a30', p='#b0e078'), 'osso': dict(s='#e6deee', S='#8a7aa8', p='#f8f4fc'),
               'javali': dict(s='#c48c62', S='#8a5a38', p='#e8b890'), 'rato': dict(s='#a4a4b2', S='#6c6c7c', p='#ccccd8'),
               'zumbi': dict(s='#8cac8a', S='#5a7a68', p='#b0ccae'), 'ogro': dict(s='#b0a862', S='#78703a', p='#d0c886'),
               'fantasma': dict(s='#c4ecff', S='#6a9ad0', p='#eefaff')})
-HAIRS.update({'g_goblin': dict(R='#4e8a30', r='#86c050', O='#6aa83c', L='#a8dc78'), 'g_osso': dict(R='#8a7aa8', r='#e6deee', O='#c8c0d4', L='#f8f4fc'),
+HAIRS.update({'g_pedra': dict(R='#4a4e60', r='#9a9eb0', O='#7a7e90', L='#c0c4d4'), 'g_goblin': dict(R='#4e8a30', r='#86c050', O='#6aa83c', L='#a8dc78'), 'g_osso': dict(R='#8a7aa8', r='#e6deee', O='#c8c0d4', L='#f8f4fc'),
               'g_javali': dict(R='#3a2214', r='#6a4020', O='#4e2e18', L='#8a5a30'), 'g_rato': dict(R='#5a5a6a', r='#9a9aaa', O='#7a7a8a', L='#c4c4d0'),
               'g_zumbi': dict(R='#2a3a2c', r='#5a6a50', O='#3a4a3a', L='#7a8a70'), 'g_ogro': dict(R='#1a1408', r='#4a3c18', O='#2c2410', L='#6a5a28'),
               'g_ogro_b': dict(R='#6e6a34', r='#b0a862', O='#948c4a', L='#c8c07e'), 'g_fantasma': dict(R='#6a9ad0', r='#c4ecff', O='#9ac8f0', L='#f4fcff')})
 EYES = {'azul': dict(b='#2e86c8', B='#1c4a98'), 'verde': dict(b='#38b058', B='#1c6a30'), 'castanho': dict(b='#9a6a38', B='#5a3418'),
         'oco': dict(b='#ff5050', B='#a01820', w='#14081e'), 'amarelo': dict(b='#f8e040', B='#a08818', w='#2a2a10'), 'brasa': dict(b='#ff8a30', B='#b0400c', w='#1c0c08'),
         'violeta': dict(b='#9a58e0', B='#5a2aa0'), 'vermelho': dict(b='#e84a4a', B='#901c24'), 'dourado': dict(b='#f0c040', B='#a07820')}
-CLOTHES = {'vermelho': dict(T='#8a2c38', t='#b83c44', M='#5a2836'), 'azul': dict(T='#244a9a', t='#3a78d8', M='#162c60'), 'verde': dict(T='#1c5a30', t='#3a9a48', M='#103a1c'),
+CLOTHES = {'osso': dict(T='#8a7aa8', t='#e6deee', M='#4a3c68'), 'vermelho': dict(T='#8a2c38', t='#b83c44', M='#5a2836'), 'azul': dict(T='#244a9a', t='#3a78d8', M='#162c60'), 'verde': dict(T='#1c5a30', t='#3a9a48', M='#103a1c'),
            'roxo': dict(T='#3a2a7a', t='#5e46b8', M='#241a58'), 'preto': dict(T='#1c1c2a', t='#383850', M='#0c0c18'), 'branco': dict(T='#a89cc0', t='#f4f0fa', M='#7a7098'),
            'dourado': dict(T='#a07828', t='#e8b840', M='#6a4a14'), 'aco': dict(T='#4a5468', t='#9aa8c0', M='#2e3648'), 'bronze': dict(T='#6a3c20', t='#b87840', M='#40220e'),
            'laranja': dict(T='#a84a14', t='#e87a24', M='#6a2c0c')}
@@ -1077,6 +1092,8 @@ def apply_appearance(p, app):
     if 'hat' in app: q['hat'] = app['hat']
     if 'outfit' in app: q['outfit'] = app['outfit']
     if 'tn_off' in app: q['tn'] = max(1, q.get('tn', 3) + app['tn_off'])
+    if app.get('arms_fwd'):
+        q['ar'] = (3, -2) if q.get('view') == 'right' else (0, -4); q['al'] = (3, -2) if q.get('view') == 'right' else (0, -4)
     if app.get('noweapon'): q['sw'] = None; q.pop('sw2', None)
     wid = app.get('weapon')
     if wid and q.get('sw') and not app.get('noweapon'):
@@ -1221,7 +1238,7 @@ def extra_poses(kind, view):
 
 
 def anim(view, kind, cls='warrior', ps_override=None, appearance=None, dense=1):
-    global _REI, _T, _BULK
+    global _REI, _T, _BULK, _WINGS
     out = []
     over = None
     if appearance:
@@ -1236,10 +1253,10 @@ def anim(view, kind, cls='warrior', ps_override=None, appearance=None, dense=1):
     else: ps = ATK_S if view == 'right' else (ATK_B if view == 'up' else ATK_F)
     if kind not in ('walk', 'idle') and dense > 1 and ps_override is None: ps = densify(ps, dense)
     if ps_override is not None: ps = ps_override
-    _REI = (cls == 'rei'); _BULK = bool(appearance and appearance.get('bulk'))
+    _REI = (cls == 'rei'); _BULK = bool(appearance and appearance.get('bulk')); _WINGS = bool(appearance and appearance.get('wings'))
     for _i, p in enumerate(ps):
         _T = _i
-        p = dict(p, cls=cls)
+        p = dict(p, cls=cls, view=view)
         if appearance: p = apply_appearance(p, appearance)
         if view == 'right': g, tip, bh = build_side(p)
         else: g, tip, bh = build_front(p, back=(view == 'up'))

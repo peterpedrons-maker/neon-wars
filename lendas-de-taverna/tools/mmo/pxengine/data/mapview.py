@@ -46,7 +46,7 @@ class MapV:
 
     def render(self, cam, chars=(), shadow=True):
         """cam = centro da camera em coords do mapa; chars = [(sprite RGBA 72x64, mapx, mapy)] (pes do sprite em (36,38))"""
-        cx, cy = cam[0] // 2, cam[1] // 2
+        cx, cy = int(cam[0]) // 2, int(cam[1]) // 2
         x0, y0 = int(cx - NW // 2), int(cy - NH // 2)
         world = Image.new('RGBA', (NW, NH), (20, 20, 30, 255))
         world.paste(self.ground.crop((x0, y0, x0 + NW, y0 + NH)), (0, 0))
@@ -63,7 +63,7 @@ class MapV:
                 fi, ax, ay = self.frame(p['id']); px, py = p['x'] // 2 - ax - x0, p['y'] // 2 - ay - y0
                 if -fi.width < px < NW and -fi.height < py < NH: world.alpha_composite(fi, (px, py))
             else:
-                spr_, mx, my = p; fx, fy = mx // 2 - x0, my // 2 - y0
+                spr_, mx, my = p; fx, fy = int(mx) // 2 - x0, int(my) // 2 - y0
                 if shadow:
                     ov = Image.new('RGBA', (NW, NH), (0, 0, 0, 0)); ImageDraw.Draw(ov).ellipse([fx - 9, fy - 2, fx + 9, fy + 3], fill=(0, 0, 0, 90)); world.alpha_composite(ov)
                 world.alpha_composite(spr_, (fx - 36, fy - 38))

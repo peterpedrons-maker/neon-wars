@@ -6,6 +6,7 @@ from PIL import Image, ImageDraw
 import chibi as C
 import icons_pixel as IC
 import beast as BE
+import creature as CRE
 import pxfont
 
 
@@ -17,10 +18,11 @@ GOLD = (200, 160, 74); GOLD_D = (110, 80, 40); BG = (16, 14, 28); CREAM = (240, 
 
 ENEMY = {
     'goblin': dict(cls='warrior', skin='goblin', hair='g_goblin', eyes='amarelo', hat='gob_ears', outfit='cloth', clothes='bronze', weapon='facao', tn_off=-1),
-    'esqueleto': dict(cls='warrior', skin='osso', hair='g_osso', eyes='oco', hat='none', outfit='mail', metal='ferro', clothes='preto', weapon='espada_ferro'),
+    'esqueleto': dict(cls='warrior', skin='osso', hair='g_osso', eyes='oco', hat='none', outfit='ribs', clothes='osso', metal='ferro', weapon='espada_ferro'),
+    'gargula': dict(cls='warrior', skin='pedra', hair='g_pedra', eyes='brasa', hat='ogre', outfit='cloth', clothes='preto', noweapon=1, bulk=1, wings=1),
     'javali': dict(cls='warrior', skin='javali', hair='g_javali', eyes='brasa', hat='boar', outfit='cloth', clothes='bronze', weapon='machado'),
     'rato': dict(cls='warrior', skin='rato', hair='g_rato', eyes='oco', hat='rat_ears', outfit='cloth', clothes='preto', weapon='adaga_ferro'),
-    'zumbi': dict(cls='warrior', skin='zumbi', hair='g_zumbi', eyes='oco', hat='none', outfit='cloth', clothes='verde', noweapon=1),
+    'zumbi': dict(cls='warrior', skin='zumbi', hair='g_zumbi', eyes='oco', hat='none', outfit='cloth', clothes='verde', noweapon=1, arms_fwd=1),
     'ogro': dict(cls='warrior', skin='ogro', hair='g_ogro_b', eyes='brasa', hat='ogre', outfit='mail', metal='ferro', clothes='bronze', weapon='maca_ferro', tn_off=2, bulk=1),
     'cultista': dict(cls='mage', skin='palida', hair='g_zumbi', eyes='oco', hat='hood', outfit='robe', clothes='preto', weapon='cajado_caveira'),
     'heroi': dict(cls='warrior', hat='helm', outfit='mail', metal='aco', clothes='aco', weapon='espada_aco'),
@@ -33,6 +35,8 @@ _cache = {}
 
 def spr(name, kind='idle', view='down', dense=2):
     k = (name, kind, view)
+    if k not in _cache and name in ('slime', 'morcego', 'espectro'):
+        _cache[k] = [f[0] for f in CRE.anim(name, kind if kind in ('idle', 'walk', 'attack', 'hurt', 'death') else 'idle', view, dense)]
     if k not in _cache and name in ('rato', 'javali', 'lobo'):
         _cache[k] = [f[0] for f in BE.anim(name, kind if kind in ('idle', 'walk', 'attack', 'hurt', 'death') else 'idle', view, dense)]
     if k not in _cache:
@@ -246,7 +250,7 @@ def save_png(im, name): im.convert('RGB').resize((NW * SC, NH * SC), Image.NEARE
 
 
 def roster():
-    names = ['goblin', 'ogro', 'esqueleto', 'zumbi', 'cultista', 'rato', 'javali', 'lobo']
+    names = ['goblin', 'ogro', 'esqueleto', 'zumbi', 'cultista', 'gargula', 'rato', 'javali', 'lobo', 'slime', 'morcego', 'espectro']
     Wc = 42; fr = []
     for fidx in range(24):
         im = Image.new('RGBA', (Wc * len(names), 36 * 3 + 10), (40, 52, 44, 255)); d = ImageDraw.Draw(im)
