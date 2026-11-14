@@ -191,8 +191,8 @@ def sword_rows(hand, ang, length=10, guard=3, wide=False, serrate=False, glow=No
 # perfis de lamina: (largura_meia(t), curvatura em celulas, estilo de guarda)
 def _prof(shape):
     P = {
-        'straight': (lambda t: .45, 0, 'bar'),
-        'wide':    (lambda t: 1.15, 0, 'bar'),
+        'straight': (lambda t: .62, 0, 'bar'),
+        'wide':    (lambda t: 1.3, 0, 'bar'),
         'broad':   (lambda t: 1.6 if t < .72 else 1.6 - (t - .72) * 5.2, 0, 'cross'),
         'leaf':    (lambda t: 0.4 + 1.6 * math.sin(math.pi * min(1, t * 1.1) ** .8), 0, 'bar'),
         'katana':  (lambda t: .5, 3.2, 'disc'),
@@ -265,8 +265,10 @@ def shaped_rows(hand, ang, length, guard, shape, gstyle, glow, gem, serrate):
             tt = (sd - s0) / max(1.0, L - s0)
             off = curve * tt * tt
             w = max(0.0, hw(tt))
-            if shape in ('broad', 'great', 'flame', 'katana', 'straight', 'wide', 'leaf'):
-                w *= min(1.0, (L - sd) / 2.2 + .25)
+            if shape in ('broad', 'great', 'flame', 'katana', 'leaf'):
+                w *= min(1.0, (L - sd) / 1.6 + .4)        # ponta em losango curto
+            elif shape in ('straight', 'wide'):
+                w *= min(1.0, (L - sd) / 0.9 + .55)       # espada reta: largura cheia ate quase a ponta
             cover = w + .55
             if abs(td - off) > cover: continue
             edge = (td - off) > max(0.0, w - .35) and w >= .3
