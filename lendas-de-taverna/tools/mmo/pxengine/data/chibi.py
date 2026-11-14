@@ -120,6 +120,29 @@ def make_head_side(mouth='n', eyes='open', look='n'):
 
 
 HEAD_S = make_head_side()
+
+
+def _strands(rows, pts, ch='r', only='O'):
+    g = [list(r) for r in rows]
+    for (x, y) in pts:
+        if 0 <= y < len(g) and 0 <= x < len(g[y]) and g[y][x] in only: g[y][x] = ch
+    return [''.join(r) for r in g]
+
+
+def _no_speckle(rows, top, bot):
+    out = []
+    for i, r in enumerate(rows):
+        if top <= i <= bot: r = r[0] + r[1:].replace('r', 'O') if False else ''.join('O' if (c == 'r' and 3 <= k) else c for k, c in enumerate(r))
+        out.append(r)
+    return out
+
+
+# frente: mechas saindo da coroa para baixo/fora
+HEAD_F = _strands(_no_speckle(HEAD_F, 1, 7), [(8, 2), (7, 3), (6, 4), (5, 5), (4, 6), (5, 2), (4, 3), (3, 4)])
+HEAD_B = _strands(_no_speckle(HEAD_B, 1, 12), [(8, 2), (7, 3), (6, 4), (5, 5), (4, 6), (3, 8), (3, 9), (9, 5), (8, 7), (8, 8), (7, 10), (6, 12), (5, 2), (4, 3), (3, 4)])
+HEAD_F_UP = HEAD_F[:9] + [HEAD_F[10], HEAD_F[11], HEAD_F[12], HEAD_F[13], HEAD_F[14], HEAD_F[15], '....ssssssS', '....SSSSSSS', '......SSSSS']
+HEAD_S = _strands(_no_speckle([r for r in HEAD_S], 1, 7) if False else HEAD_S,
+                  [(8, 2), (7, 3), (6, 4), (5, 5), (4, 6), (3, 8), (2, 10), (12, 2), (11, 3), (10, 4), (9, 5), (8, 6), (7, 8), (6, 10), (5, 12), (4, 3), (3, 4), (3, 6)])
 HEAD_F_UP = HEAD_F[:9] + [HEAD_F[10], HEAD_F[11], HEAD_F[12], HEAD_F[13], HEAD_F[14], HEAD_F[15], '....ssssssS', '....SSSSSSS', '......SSSSS']
 MOUTH_F_OPEN = '...sskkksssk'[:11]
 # ---------------------------------------------------------------- CORPO / MAOS / BOTAS
@@ -336,25 +359,50 @@ def hood_head_side(rows):
 
 
 def helm_head(rows, view):
-    """Elmo de aco: recolore o topo + protetores de bochecha (frente)."""
-    out = cap_head(rows, view)
-    for i in range(7, 14):
-        r = out[i]
-        out[i] = ''.join({'R': 'V', 'O': 'U', 'r': 'U'}.get(c, c) if k < 2 else c for k, c in enumerate(r))
-    for i in (7, 8, 9, 10):
-        r = list(out[i])
-        if len(r) > 10 and r[10] in 'sp': r[10] = 'u'          # protetor de nariz
-        out[i] = ''.join(r)
-    return out
+    """Elmo de aco: cupula + aba, protetor de bochecha/nariz (frente) e nuca; o cabelo aparece embaixo."""
+    mp = {'R': 'V', 'O': 'U', 'L': 'u', 'r': 'U'}
+    out = []
+    back = view == 'back'
+    for i, r in enumerate(rows):
+        if back and i <= 9: r = ''.join(mp.get(c, c) for c in r)
+        elif back and i == 10: r = ''.join('V' if c in 'ROLr' else c for c in r)
+        elif not back and i <= 5: r = ''.join(mp.get(c, c) for c in r)
+        elif not back and i == 6: r = ''.join('V' if c in 'ROLr' else c for c in r)
+        elif not back and 7 <= i <= 12: r = ''.join({'R': 'V', 'O': 'U', 'r': 'U'}.get(c, c) if k < 2 else c for k, c in enumerate(r))
+        out.append(r)
+    if not back:
+        for i in (7, 8, 9, 10):
+            r = list(out[i])
+            if len(r) > 10 and r[10] in 'sp': r[10] = 'u'                      # protetor de nariz
+            out[i] = ''.join(r)
+    # rebites e brilho da cupula
+    g = [list(r) for r in out]
+    for (x, y) in ((4, 3), (8, 3)): g[y][x] = 'u'
+    g[1][5] = g[1][6] = g[2][4] = 'u'
+    return [''.join(r) for r in g]
 
 
 def helm_head_side(rows):
-    out = hood_head_side(rows)
-    for i in (9, 10, 11):
-        r = list(out[i])
-        if len(r) > 17: r[17] = 'u'
-        out[i] = ''.join(r)
-    return out
+    """Elmo de lado: cupula cobre topo e costas ate a orelha; aba; protetor de bochecha; cabelo aparece na nuca."""
+    mp = {'R': 'V', 'O': 'U', 'L': 'u', 'r': 'U'}
+    g = [list(r) for r in rows]
+    for y, r in enumerate(g):
+        for x, c in enumerate(r):
+            if c not in mp: continue
+            if y <= 7 or (8 <= y <= 12 and x <= 12):
+                g[y][x] = mp[c]
+    # aba (faixa escura na linha 7) e rebites
+    for x, c in enumerate(g[7]):
+        if c in 'UuV': g[7][x] = 'V'
+    for x in (4, 9, 14): g[4][x] = 'u'
+    for x in (4, 5, 6, 7): g[1][x] = 'u'
+    g[2][5] = 'u'
+    # protetor de bochecha (placa na frente da orelha) e de nariz
+    for y in (9, 10, 11, 12):
+        for x in (11, 12): g[y][x] = 'U' if x == 11 else 'V'
+    for y in (8, 9, 10):
+        if g[y][17] in 'sp': g[y][17] = 'u'
+    return [''.join(r) for r in g]
 
 
 def accessory2(g, hat, view, hx, hy, back=False):
@@ -438,6 +486,78 @@ def outfit_pass(g, outfit, view, cx, body_top, boot_top, dx=0, bdx=0, back=False
             for y in range(body_top + 2, boot_top + 2): g.put(cx - 1 + dx, y, 'C'); g.put(cx + dx, y, 'C')
 
 
+# ================================================================ HIERARQUIA DE CAMADAS (arco): o que aparece e o que fica escondido
+def bow_vertical(center, toward, draw, arrow, span=7):
+    """Arco visto de frente/costas: limbos VERTICAIS (arco de perfil para a camera). toward=+1 mira p/ camera, -1 para longe."""
+    cells = {}; n = 14; prev = None; top = bot = None
+    for i in range(n + 1):
+        t = -1 + 2 * i / n
+        x = center[0] + 2.2 * (1 - t * t); y = center[1] + t * span
+        if prev is not None:
+            for (xx, yy) in line_pts(round(prev[0]), round(prev[1]), round(x), round(y)): cells[(xx, yy)] = 'N'
+        prev = (x, y)
+        if i == 0: top = (x, y)
+        if i == n: bot = (x, y)
+    pull = (center[0] - 2, center[1] - toward * draw)
+    for p0 in (top, bot):
+        for (xx, yy) in line_pts(round(p0[0]), round(p0[1]), round(pull[0]), round(pull[1])): cells.setdefault((xx, yy), 'a')
+    cells[(round(top[0]), round(top[1]))] = 'g'; cells[(round(bot[0]), round(bot[1]))] = 'g'
+    tip = (center[0] - 1, center[1] + toward * 5)
+    if arrow:
+        for (xx, yy) in line_pts(round(pull[0]), round(pull[1]), round(tip[0]), round(tip[1])): cells[(xx, yy)] = 'q'
+        cells[(round(tip[0]), round(tip[1]))] = 'A'; cells[(round(tip[0]), round(tip[1] + toward))] = 'A'
+        cells[(round(pull[0]) + 1, round(pull[1]))] = 'r'; cells[(round(pull[0]) - 1, round(pull[1]))] = 'r'
+    return cells, tip, pull
+
+
+def bow_front_geom(swd, back, cx, dx, my0, body_top):
+    """Frente/costas. 'carry' = arco horizontal na frente da barriga com as DUAS maos (de costas fica escondido, so as pontas aparecem).
+    'aim' = braco do arco para a camera/para longe, mao da corda no rosto; de costas o arco fica ATRAS do corpo (so a ponta
+    do arco e da flecha aparecem acima da cabeca e o cotovelo da corda sai de lado)."""
+    mode = swd.get('mode', 'aim'); span = swd.get('span', 11)
+    if mode == 'carry':
+        c = (cx + dx + 1, my0 + 2)
+        cells, tip, pull = bow_rows(c, (0, 1), 0, False, 8)
+        mitts = [(c[0] - 3, c[1]), (c[0] + 3, c[1])]
+        arms = {**arm_cells((cx + dx - 5, my0 - 1), mitts[0]), **arm_cells((cx + dx + 5, my0 - 1), mitts[1])}
+        return dict(cells=cells, tip=tip, behind=back, mitts=mitts, arms=arms, front_cells=[])
+    toward = -1 if back else 1
+    draw = swd.get('draw', 0); arrow = swd.get('arrow', True)
+    sp = min(span, 7)
+    c = (cx + dx + 1, body_top - 15) if back else (cx + dx + 2, my0 + 3)
+    cells, tip, pull = bow_vertical(c, toward, draw, arrow, sp)
+    mitts = [c, pull]
+    arms = {**arm_cells((cx + dx + 5, my0 - 1), c), **arm_cells((cx + dx - 4, my0 - 1), pull)}
+    fc = []
+    if back:
+        fc = [(cx + dx + 6, my0, 't'), (cx + dx + 7, my0, 't'), (cx + dx + 7, my0 + 1, 'T'), (cx + dx + 6, my0 + 1, 'T')]
+    return dict(cells=cells, tip=tip, behind=back, mitts=mitts, arms=arms, front_cells=fc)
+
+
+def bow_side_geom(swd, cx, dx, bdx, bend, body_top):
+    mode = swd.get('mode', 'aim')
+    S = (cx + 1 + dx + bdx - bend * .9, body_top + 1.5)
+    if mode == 'carry':
+        c = (cx + dx + bdx + 8, body_top + 5)
+        cells, tip, pull = bow_rows(c, (1, 0), 0, False, int(swd.get('span', 11) * .8))
+        mitts = [(c[0] - 1, c[1]), (c[0] - 1, c[1] + 3)]
+        arms = {**arm_cells(S, mitts[0]), **arm_cells((S[0] - 1, S[1] + 1), mitts[1])}
+        return dict(cells=cells, tip=tip, behind=False, mitts=mitts, arms=arms, front_cells=[])
+    d = swd['dir']; bc = (S[0] + d[0] * 10, S[1] + d[1] * 10)
+    cells, tip, pull = bow_rows(bc, d, swd.get('draw', 0), swd.get('arrow', True), swd.get('span', 11))
+    arms = {**arm_cells(S, bc), **arm_cells((S[0] - 1, S[1] + 1), pull)}
+    return dict(cells=cells, tip=tip, behind=False, mitts=[bc, pull], arms=arms, front_cells=[])
+
+
+def draw_bow_layer(g, info, mode):
+    """mode: 'behind' (antes do corpo: arco inteiro atras), 'arms' (bracos+maos, antes do contorno), 'post' (arco + maos por cima)."""
+    if mode in ('behind', 'arms'):
+        for (x, y), ch in info['arms'].items(): g.put(x, y, ch)
+    if mode in ('behind', 'post'): stamp_cells(g, info['cells'])
+    for m in info['mitts']:
+        for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(m[0]) - 1 + ox, round(m[1]) - 1 + oy, 's' if oy == 0 else 'S')
+
+
 def stamp_cells(g, cells):
     for (x, y), c in cells.items(): g.put(x, y, c)
     for (x, y) in list(cells):
@@ -464,14 +584,19 @@ def build_front(p, back=False):
     my0 = body_top + 2
     cls = p.get('cls', 'warrior')
     hat = p.get('hat', DEFAULT_HAT[cls]); outfit = p.get('outfit', DEFAULT_OUTFIT[cls])
-    swd = p.get('sw'); tip = None; hxy = None; behind = False; hands2 = []
+    swd = p.get('sw'); tip = None; hxy = None; behind = False; hands2 = []; bowinfo = None
     if swd:
         side = swd.get('side', 'r')
         al_, ar_ = p.get('al', (0, 0)), p.get('ar', (0, 0))
         hxy = (cx + (7 if side == 'r' else -7) + dx + (ar_ if side == 'r' else al_)[0] + 1, my0 + 1 + (ar_ if side == 'r' else al_)[1])
         if side != 'r': hxy = (hxy[0] - 1, hxy[1])
-        cells, tip, behind, hands2 = weapon_rows(swd, hxy, 'front', back, (cx + dx + 1, my0 + 3))
-        if behind: stamp_cells(g, cells)
+        if swd.get('kind') == 'bow':
+            bowinfo = bow_front_geom(swd, back, cx, dx, my0, body_top)
+            cells, tip, behind, hands2 = bowinfo['cells'], bowinfo['tip'], bowinfo['behind'], bowinfo['mitts']
+            if behind: draw_bow_layer(g, bowinfo, 'behind')
+        else:
+            cells, tip, behind, hands2 = weapon_rows(swd, hxy, 'front', back, (cx + dx + 1, my0 + 3))
+            if behind: stamp_cells(g, cells)
     pre_accessory(g, cls, 'front', cx, body_top, dx, 0, back)
     # botas
     g.stamp(BOOT_F, cx - 5 + dx + bl[0], boot_top - bl[1])
@@ -485,16 +610,16 @@ def build_front(p, back=False):
     al, ar = p.get('al', (0, 0)), p.get('ar', (0, 0))
     my = body_top + 2
     bow = bool(swd and swd.get('kind') == 'bow')
-    if not p.get('nomitt'):
-        if not (bow and hands2): g.stamp(MITT_L, cx - 9 + dx + al[0], my + al[1])
-        if not bow: g.stamp([r[::-1] for r in MITT_L], cx + 6 + dx + ar[0], my + ar[1])
+    if not p.get('nomitt') and not bow:
+        g.stamp(MITT_L, cx - 9 + dx + al[0], my + al[1])
+        g.stamp([r[::-1] for r in MITT_L], cx + 6 + dx + ar[0], my + ar[1])
     # cabeca
     hx, hy = cx - 11 + dx + p.get('hdx', 0), body_top - 17 + p.get('hdy', 0)
     head = list(HEAD_B if back else (HEAD_F_UP if p.get('look') == 'up' else HEAD_F))
     hat = p.get('hat', DEFAULT_HAT[cls]); outfit = p.get('outfit', DEFAULT_OUTFIT[cls])
     if hat == 'cap': head = cap_head(head, 'front')
     elif hat == 'hood': head = hood_head(head, 'front')
-    elif hat == 'helm': head = helm_head(head, 'front')
+    elif hat == 'helm': head = helm_head(head, 'back' if back else 'front')
     if p.get('face') == 'shout' and not back:
         head[15] = '...sskkksssk'
     if p.get('face') == 'blink' and not back:
@@ -502,13 +627,9 @@ def build_front(p, back=False):
     g.stamp(head, hx, hy, mirror=True, rshade=RSH_F)
     accessory2(g, hat, 'front', hx, hy, back)
     post_accessory(g, cls, 'front', cx, body_top, dx, back)
-    for hp in hands2:
-        for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(hp[0]) + ox, round(hp[1]) + oy, 's')
-    if bow:
-        bc = (cx + dx + 1, my0 + 3)
-        Sr, Sl = (cx + 5 + dx, my0 - 1), (cx - 4 + dx, my0 - 1)
-        for (x, y), ch in {**arm_cells(Sr, bc), **(arm_cells(Sl, hands2[0]) if hands2 else {})}.items(): g.put(x, y, ch)
-        for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(bc[0]) + ox - 1, round(bc[1]) + oy - 1, 's')
+    if bowinfo:
+        for (x, y, ch) in bowinfo['front_cells']: g.put(x, y, ch)
+        if not behind: draw_bow_layer(g, bowinfo, 'arms')
     autoline(g)
     sw2 = p.get('sw2')
     if sw2:
@@ -518,13 +639,10 @@ def build_front(p, back=False):
         for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(h2[0]) - 1 + ox, round(h2[1]) - 1 + oy, 's' if oy == 0 else 'S')
     # espada separada (por cima do corpo, exceto quando passa atras da cabeca)
     if swd:
-        if not behind: stamp_cells(g, cells)
-        if bow:
-            bc = (cx + dx + 1, my0 + 3)
-            for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(bc[0]) - 1 + ox, round(bc[1]) - 1 + oy, 's' if oy == 0 else 'S')
-            for hp in hands2:
-                for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(hp[0]) + ox, round(hp[1]) + oy, 's' if oy == 0 else 'S')
+        if bowinfo:
+            if not behind: draw_bow_layer(g, bowinfo, 'post')
         else:
+            if not behind: stamp_cells(g, cells)
             for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)):
                 g.put(round(hxy[0]) - 1 + ox, round(hxy[1]) - 1 + oy, 's' if oy == 0 else 'S')
     return g, tip, behind
@@ -544,18 +662,15 @@ def build_side(p):
     cls = p.get('cls', 'warrior')
     hat = p.get('hat', DEFAULT_HAT[cls]); outfit = p.get('outfit', DEFAULT_OUTFIT[cls])
     swd = p.get('sw'); tip = None; behind = False; hands2 = []
-    bow_arms = None
+    bowinfo = None
     if swd:
         hxy = (cx + 4 + dx + af_[0] + 1, body_top + 4 + af_[1])
-        bc = (hxy[0] + 2, hxy[1])
         if swd.get('kind') == 'bow':
-            bend_ = p.get('bend', 0)
-            S = (cx + 1 + dx + p.get('bdx', 0) - bend_ * .9, body_top + 1.5)       # ombro
-            d_ = swd['dir']
-            bc = (S[0] + d_[0] * 10, S[1] + d_[1] * 10)                               # mao do arco: braco ESTICADO na linha da mira
-            bow_arms = S
-        cells, tip, behind, hands2 = weapon_rows(swd, hxy, 'side', False, bc)
-        if behind: stamp_cells(g, cells)
+            bowinfo = bow_side_geom(swd, cx, dx, p.get('bdx', 0), p.get('bend', 0), body_top)
+            cells, tip, behind, hands2 = bowinfo['cells'], bowinfo['tip'], False, bowinfo['mitts']
+        else:
+            cells, tip, behind, hands2 = weapon_rows(swd, hxy, 'side', False, (hxy[0] + 2, hxy[1]))
+            if behind: stamp_cells(g, cells)
     pre_accessory(g, cls, 'side', cx, body_top, dx, p.get('bdx', 0))
     g.stamp(BOOT_S, cx - 6 + dx + bk[0], boot_top - bk[1])
     g.stamp(BOOT_S, cx - 1 + dx + bf[0], boot_top - bf[1])
@@ -570,7 +685,7 @@ def build_side(p):
     g.stamp(['CC.', '.CD', '..D'], cx - 8 + dx + p.get('bdx', 0) - fl, body_top + fl // 2)
     # braco de tras (so um bloco atras) e da frente
     ab, af = p.get('al', (0, 0)), p.get('ar', (0, 0))
-    if not p.get('nomitt') and not bow_arms: g.stamp(['ss', 'sS'], cx - 6 + dx + ab[0], body_top + 3 + ab[1])
+    if not p.get('nomitt') and not bowinfo: g.stamp(['ss', 'sS'], cx - 6 + dx + ab[0], body_top + 3 + ab[1])
     # cabeca (perfil)
     hx, hy = cx - 11 + dx + p.get('hdx', 0), body_top - 17 + p.get('hdy', 0)
     head = make_head_side('shout' if p.get('face') == 'shout' else 'n', 'closed' if p.get('face') == 'blink' else 'open', p.get('look', 'n'))
@@ -580,11 +695,8 @@ def build_side(p):
     elif hat == 'helm': head = helm_head_side(head)
     g.stamp(head, hx, hy)
     accessory2(g, hat, 'side', hx, hy)
-    if not p.get('nomitt') and not bow_arms: g.stamp(['ss', 'sS'], cx + 3 + dx + af[0], body_top + 3 + af[1])
-    if bow_arms:
-        for (x, y), ch in {**arm_cells(bow_arms, bc), **(arm_cells((bow_arms[0] - 1, bow_arms[1] + 1), hands2[0]) if hands2 else {})}.items(): g.put(x, y, ch)
-        for (mx, my_) in [bc] + list(hands2):
-            for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(mx) - 1 + ox, round(my_) - 1 + oy, 's' if oy == 0 else 'S')
+    if not p.get('nomitt') and not bowinfo: g.stamp(['ss', 'sS'], cx + 3 + dx + af[0], body_top + 3 + af[1])
+    if bowinfo: draw_bow_layer(g, bowinfo, 'arms')
     autoline(g)
     sw2 = p.get('sw2')
     if sw2:
@@ -593,14 +705,12 @@ def build_side(p):
         stamp_cells(g, c2)
         for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(h2[0]) - 1 + ox, round(h2[1]) - 1 + oy, 's' if oy == 0 else 'S')
     if swd:
-        if not behind: stamp_cells(g, cells)
-        bowd = swd.get('kind') == 'bow'
-        mc = bc if bowd else hxy
-        g.put(round(mc[0]) - 1, round(mc[1]) - 1, 's'); g.put(round(mc[0]), round(mc[1]) - 1, 's')
-        g.put(round(mc[0]) - 1, round(mc[1]), 'S'); g.put(round(mc[0]), round(mc[1]), 'S')
-        for hp in hands2:
-            g.put(round(hp[0]) - 1, round(hp[1]) - 1, 's'); g.put(round(hp[0]), round(hp[1]) - 1, 's')
-            g.put(round(hp[0]) - 1, round(hp[1]), 'S'); g.put(round(hp[0]), round(hp[1]), 'S')
+        if bowinfo: draw_bow_layer(g, bowinfo, 'post')
+        else:
+            if not behind: stamp_cells(g, cells)
+            mc = hxy
+            g.put(round(mc[0]) - 1, round(mc[1]) - 1, 's'); g.put(round(mc[0]), round(mc[1]) - 1, 's')
+            g.put(round(mc[0]) - 1, round(mc[1]), 'S'); g.put(round(mc[0]), round(mc[1]), 'S')
     return g, tip, behind
 
 

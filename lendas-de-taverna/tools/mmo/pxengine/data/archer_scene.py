@@ -17,12 +17,13 @@ DIRS = {'right': (1, 0), 'down': (0, 1), 'left': (-1, 0), 'up': (0, -1)}
 def flip(im): return im.transpose(Image.FLIP_LEFT_RIGHT)
 
 
-def bow(d, draw, arrow=True): return dict(kind='bow', dir=d, draw=draw, arrow=arrow)
+def bow(d, draw, arrow=True, mode='aim'): return dict(kind='bow', dir=d, draw=draw, arrow=arrow, mode=mode)
 
 
 def shot_table(d):
     """8 poses do tiro: braco do arco esticado, mao da corda puxa ate o rosto, solta, volta."""
     return [
+        dict(sw=bow(d, 0, False, 'carry')),
         dict(sw=bow(d, 2)),
         dict(sw=bow(d, 4), hdx=-1),
         dict(sw=bow(d, 6), hdx=-1, bdx=-1, dx=-1),
@@ -31,6 +32,7 @@ def shot_table(d):
         dict(sw=bow(d, 0, False), hdx=1, dx=1),
         dict(sw=bow(d, -1, False), hdx=1, dx=1),
         dict(sw=bow(d, 2, False)),
+        dict(sw=bow(d, 0, False, 'carry')),
     ]
 
 
