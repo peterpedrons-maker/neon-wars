@@ -191,7 +191,7 @@ def sword_rows(hand, ang, length=10, guard=3, wide=False, serrate=False, glow=No
 # perfis de lamina: (largura_meia(t), curvatura em celulas, estilo de guarda)
 def _prof(shape):
     P = {
-        'straight': (lambda t: .85, 0, 'bar'),
+        'straight': (lambda t: 1.0, 0, 'bar'),
         'wide':    (lambda t: 1.3, 0, 'bar'),
         'broad':   (lambda t: 1.6 if t < .72 else 1.6 - (t - .72) * 5.2, 0, 'cross'),
         'leaf':    (lambda t: 0.4 + 1.6 * math.sin(math.pi * min(1, t * 1.1) ** .8), 0, 'bar'),
@@ -877,6 +877,11 @@ WEAPONS = {
     'maca_dourada': dict(kind='mace', len=15, pal=dict(g='#e8b840', G='#fff0a0', N='#6e4228', A='#fff4c8')),
     'martelo_sagrado': dict(kind='mace', len=16, pal=dict(g='#f8f0e0', G='#ffffff', N='#a07828', A='#fff0a0')),
 }
+
+
+for _w in WEAPONS.values():                      # espadas mais longas e imponentes (cabeca grande pede arma grande)
+    if _w['kind'] == 'sword' and not _w.get('_scaled'):
+        _w['len'] = round(_w['len'] * 1.3); _w['_scaled'] = True
 
 
 def make_palette(app):
