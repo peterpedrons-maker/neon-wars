@@ -40,7 +40,7 @@ HEAD_B = [
 # CABECA LATERAL (olhando para a direita) 21x18, construida como a frontal: cabelo bob + franja + mecha lateral + rosto redondo
 def make_head_side(mouth='n', eyes='open'):
     Wd, Hd = 21, 18
-    bounds = [(6, 14), (4, 16), (3, 17), (2, 18), (1, 19), (1, 19), (0, 19), (0, 19), (0, 19), (0, 19), (0, 19), (0, 20), (0, 20), (1, 19), (1, 19), (2, 18), (4, 17), (6, 14)]
+    bounds = [(4, 16), (2, 18), (1, 19), (1, 19), (0, 19), (0, 19), (0, 19), (0, 19), (0, 19), (0, 19), (0, 19), (0, 20), (0, 20), (1, 19), (1, 19), (2, 19), (4, 18), (6, 16)]
     hair_end = [99, 99, 99, 99, 99, 99, 99, 99, 13, 12, 12, 12, 12, 11, 10, 9, 7, -1]
     g = [['.'] * Wd for _ in range(Hd)]
     for r in range(Hd):
@@ -153,7 +153,7 @@ def build_front(p, back=False):
         hxy = (cx + (7 if side == 'r' else -7) + dx + (ar_ if side == 'r' else al_)[0] + 1, my0 + 1 + (ar_ if side == 'r' else al_)[1])
         if side != 'r': hxy = (hxy[0] - 1, hxy[1])
         cells, tip = sword_rows(hxy, swd['ang'], swd.get('len', 12))
-        behind = (not back) and 185 <= swd['ang'] <= 265
+        behind = back or (185 <= swd['ang'] <= 265)
         if behind: stamp_cells(g, cells)
     # botas
     g.stamp(BOOT_F, cx - 5 + dx + bl[0], boot_top - bl[1])
@@ -181,7 +181,7 @@ def build_front(p, back=False):
         if not behind: stamp_cells(g, cells)
         for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)):
             g.put(round(hxy[0]) - 1 + ox, round(hxy[1]) - 1 + oy, 's' if oy == 0 else 'S')
-    return g, tip
+    return g, tip, behind
 
 
 def build_side(p):
@@ -206,6 +206,8 @@ def build_side(p):
     rows = [BODY_S['sc'], BODY_S['t0']] + [BODY_S['t1']] * max(0, tn - 2) + [BODY_S['t2'], BODY_S['belt'], BODY_S['hem']]
     rows = rows[:body_h]
     g.stamp(rows, cx - 5 + dx + p.get('bdx', 0), body_top)
+    fl = p.get('flut', 0)
+    g.stamp(['CC.', '.CD', '..D'], cx - 8 + dx + p.get('bdx', 0) - fl, body_top + fl // 2)
     # braco de tras (so um bloco atras) e da frente
     ab, af = p.get('al', (0, 0)), p.get('ar', (0, 0))
     g.stamp(['ss', 'sS'], cx - 6 + dx + ab[0], body_top + 3 + ab[1])
@@ -219,7 +221,7 @@ def build_side(p):
         if not behind: stamp_cells(g, cells)
         g.put(round(hxy[0]) - 1, round(hxy[1]) - 1, 's'); g.put(round(hxy[0]), round(hxy[1]) - 1, 's')
         g.put(round(hxy[0]) - 1, round(hxy[1]), 'S'); g.put(round(hxy[0]), round(hxy[1]), 'S')
-    return g, tip
+    return g, tip, behind
 
 
 def render(g):
@@ -241,6 +243,7 @@ def walk_params(f, n=8, view='down'):
         p['bl'] = (round(c * 3), round(max(0, -s) * 2)); p['br'] = (round(-c * 3), round(max(0, s) * 2))
         p['al'] = (round(c * 2), 0); p['ar'] = (round(-c * 2), 0)
     p['sw'] = dict(ang=165, len=11, side='r') if view != 'right' else dict(ang=100, len=11)
+    p['flut'] = int(round(max(0, c) * 2))
     return p
 
 
@@ -265,6 +268,11 @@ ATK_F = [   # frente (espada na mao direita da tela, golpe de cima-direita para 
     dict(tn=3, dy=1, ar=(-2, 1), sw=dict(ang=10, len=12, side='r')),
     dict(tn=3, ar=(0, 0), sw=dict(ang=150, len=12, side='r')),
 ]
+ATK_B = [dict(q) for q in ATK_F]
+for _i, _a in {5: 195, 6: 172, 7: 168, 8: 160, 9: 150}.items():
+    ATK_B[_i]['sw'] = dict(ang=_a, len=12, side='r')
+for _i in (5, 6, 7, 8):
+    ATK_B[_i]['ar'] = (int(round(ATK_F[_i]['ar'][0] * .5)), -2)
 ATK_S = [
     dict(tn=3, sw=dict(ang=105, len=12), ar=(1, 0)),
     dict(tn=2, hdx=-1, bdx=-1, ar=(-1, -1), al=(1, 0), sw=dict(ang=150, len=12)),
@@ -283,11 +291,11 @@ def anim(view, kind):
     out = []
     if kind == 'walk': ps = [walk_params(f, 8, view) for f in range(8)]
     elif kind == 'idle': ps = [idle_params(f, 6, view) for f in range(6)]
-    else: ps = ATK_S if view == 'right' else ATK_F
+    else: ps = ATK_S if view == 'right' else (ATK_B if view == 'up' else ATK_F)
     for p in ps:
-        if view == 'right': g, tip = build_side(p)
-        else: g, tip = build_front(p, back=(view == 'up'))
-        out.append((render(g), tip))
+        if view == 'right': g, tip, bh = build_side(p)
+        else: g, tip, bh = build_front(p, back=(view == 'up'))
+        out.append((render(g), tip, bh))
     return out
 
 
@@ -297,7 +305,7 @@ def sheet(path, zoom=4):
         rows.append(anim(view, 'walk')); rows.append(anim(view, 'attack'))
     S = Image.new('RGBA', (W * 10, H * len(rows)), (58, 110, 48, 255))
     for r, row in enumerate(rows):
-        for i, (im, tip) in enumerate(row): S.alpha_composite(im, (i * W, r * H))
+        for i, (im, tip, bh) in enumerate(row): S.alpha_composite(im, (i * W, r * H))
     S.resize((S.width * zoom, S.height * zoom), Image.NEAREST).convert('RGB').save(path)
 
 

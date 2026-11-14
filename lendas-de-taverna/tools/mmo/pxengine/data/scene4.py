@@ -22,7 +22,7 @@ def sprites(face, kind):
     if k not in _c:
         view = 'right' if face in ('right', 'left') else face
         res = C.anim(view, kind)
-        if face == 'left': res = [(flip(i), (CW - 1 - t[0], t[1]) if t else None) for i, t in res]
+        if face == 'left': res = [(flip(i), (CW - 1 - t[0], t[1]) if t else None, b) for i, t, b in res]
         _c[k] = res
     return _c[k]
 
@@ -87,7 +87,7 @@ def render():
         im.paste(cache[ph].convert('RGB'), (0, 0), cache[ph])
         for o in objs:
             if 'sh' in o: T.shadow(im, *o['sh'])
-        spr, tip = fr['spr']
+        spr, tip, behind = fr['spr']
         ox, oy = fr['pos'][0] - CW // 2, fr['pos'][1] - C.BASE
         T.shadow(im, fr['pos'][0], fr['pos'][1], 9, 3, 90)
         dyn = [dict(img=spr, x=ox, y=oy, foot=fr['pos'][1])]
@@ -105,24 +105,31 @@ def render():
             sx, sy = s[1]
             T.shadow(im, sx, sy, 9, 3, 70)
             dyn.append(dict(img=slime_img('idle'), x=sx - 9, y=sy - 13, foot=sy))
-        tips.append((ox + tip[0], oy + tip[1]) if (fr.get('key') is not None and tip) else None)
+        tips.append(((ox + tip[0], oy + tip[1]), behind) if (fr.get('key') is not None and tip) else None)
+        def trail(draw_behind):
+            pts = [p for p in tips[-7:] if p][-5:]
+            if len(pts) < 3: return
+            P_ = [pts[0][0]] + [p[0] for p in pts] + [pts[-1][0]]
+            flags = [p[1] for p in pts]
+            smp = []; fl = []
+            for a_ in range(1, len(P_) - 2):
+                p0, p1, p2, p3 = P_[a_ - 1], P_[a_], P_[a_ + 1], P_[a_ + 2]
+                for u in [k / 6 for k in range(6)]:
+                    smp.append(tuple(.5 * ((2 * p1[c]) + (-p0[c] + p2[c]) * u + (2 * p0[c] - 5 * p1[c] + 4 * p2[c] - p3[c]) * u * u + (-p0[c] + 3 * p1[c] - 3 * p2[c] + p3[c]) * u ** 3) for c in (0, 1)))
+                    fl.append(flags[min(a_ - 1, len(flags) - 1)] or flags[min(a_, len(flags) - 1)])
+            smp.append(P_[-2]); fl.append(flags[-1])
+            for q in range(len(smp) - 1):
+                if fl[q] != draw_behind: continue
+                t_ = q / max(1, len(smp) - 2)
+                col = (255, 255, 255) if t_ > .55 else (170, 220, 255) if t_ > .25 else (110, 170, 240)
+                d.line([smp[q], smp[q + 1]], fill=col, width=1 + int(t_ * 2))
+        d = ImageDraw.Draw(im)
+        show_trail = fr.get('key') is not None and fr['key'] >= 4
+        if show_trail: trail(True)                      # parte do rastro ATRAS do personagem
         for o in sorted(list(objs) + dyn, key=lambda o: o['foot']):
             T.put(im, o['img'], o['x'], o['y'])
         d = ImageDraw.Draw(im)
-        if fr.get('key') is not None and fr['key'] >= 4:
-            pts = [p for p in tips[-7:] if p][-5:]
-            if len(pts) >= 3:
-                smp = []
-                P_ = [pts[0]] + pts + [pts[-1]]
-                for a in range(1, len(P_) - 2):
-                    p0, p1, p2, p3 = P_[a - 1], P_[a], P_[a + 1], P_[a + 2]
-                    for u in [k / 6 for k in range(6)]:
-                        smp.append(tuple(.5 * ((2 * p1[c]) + (-p0[c] + p2[c]) * u + (2 * p0[c] - 5 * p1[c] + 4 * p2[c] - p3[c]) * u * u + (-p0[c] + 3 * p1[c] - 3 * p2[c] + p3[c]) * u ** 3) for c in (0, 1)))
-                smp.append(pts[-1])
-                for q in range(len(smp) - 1):
-                    t_ = q / max(1, len(smp) - 2)
-                    col = (255, 255, 255) if t_ > .55 else (170, 220, 255) if t_ > .25 else (110, 170, 240)
-                    d.line([smp[q], smp[q + 1]], fill=col, width=1 + int(t_ * 2))
+        if show_trail: trail(False)                     # parte do rastro NA FRENTE
         if fr.get('hit') is not None and fr['hit'] < 4:
             sl = s[1]
             cx, cy = sl[0], sl[1] - 8
