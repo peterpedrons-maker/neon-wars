@@ -58,7 +58,8 @@ HEAD_B = [
     'ROOOOOOOOOO', 'ROOrOOOOrOO', 'ROOOOOOOOOO', 'ROOOOOOOOOO', 'ROOOOOOOrOO', 'ROOOOOOOOOO',
     'RrOOOOOOOOO', '.ROOOOOOOOO', '..RrOOOOOOO', '...RROOOOOO', '.....RSSSSS', '......SSSSS']
 # CABECA LATERAL (olhando para a direita) 21x18, construida como a frontal: cabelo bob + franja + mecha lateral + rosto redondo
-def make_head_side(mouth='n', eyes='open'):
+def make_head_side(mouth='n', eyes='open', look='n'):
+    o = -1 if look == 'up' else (1 if look == 'down' else 0)
     Wd, Hd = 21, 18
     bounds = [(4, 16), (2, 18), (1, 19), (1, 19), (0, 19), (0, 19), (0, 19), (0, 19), (0, 19), (0, 19), (0, 19), (0, 20), (0, 20), (1, 19), (1, 19), (2, 19), (4, 18), (6, 16)]
     hair_end = [99, 99, 99, 99, 99, 99, 99, 99, 13, 12, 12, 12, 12, 11, 10, 9, 7, -1]
@@ -68,8 +69,10 @@ def make_head_side(mouth='n', eyes='open'):
         for c in range(l, rr + 1):
             g[r][c] = 'O' if c <= hair_end[r] else 's'
     # franja irregular sobre a testa (linha 8) e pontas
-    for c, ch in zip(range(14, 20), 'OsOssO'): g[8][c] = ch
-    for c in range(14, 20): g[9][c] = 's'
+    for c, ch in zip(range(14, 20), 'OsOssO'): g[8 + o][c] = ch
+    for c in range(14, 20): g[9 + o][c] = 's'
+    if o == -1:
+        for c in range(14, 20): g[8][c] = 's'
     # aro escuro do cabelo (topo e costas)
     for r in range(Hd):
         cols = [c for c in range(Wd) if g[r][c] == 'O']
@@ -86,25 +89,28 @@ def make_head_side(mouth='n', eyes='open'):
     g[6][8] = 'r'; g[7][15] = 'r'; g[9][3] = 'r'; g[10][2] = 'r'; g[12][4] = 'r'; g[13][6] = 'r'; g[9][12] = 'r'; g[10][12] = 'r'; g[11][12] = 'r'
     # olho grande (3x4), bochecha, boca, nariz, queixo
     if eyes == 'open':
-        for dc, ch in enumerate('kkk'): g[10][14 + dc] = ch
-        for dc, ch in enumerate('wwb'): g[11][14 + dc] = ch
-        for dc, ch in enumerate('wbb'): g[12][14 + dc] = ch
-        for dc, ch in enumerate('sbB'): g[13][14 + dc] = ch
+        for dc, ch in enumerate('kkk'): g[10 + o][14 + dc] = ch
+        for dc, ch in enumerate('wwb'): g[11 + o][14 + dc] = ch
+        for dc, ch in enumerate('wbb'): g[12 + o][14 + dc] = ch
+        for dc, ch in enumerate('sbB'): g[13 + o][14 + dc] = ch
     else:
-        for dc in range(3): g[11][14 + dc] = 'k'
-    g[14][13] = 'S'; g[14][14] = 'S'
-    g[11][20] = 'p'; g[12][20] = 'S'
+        for dc in range(3): g[11 + o][14 + dc] = 'k'
+    g[14 + o][13] = 'S'; g[14 + o][14] = 'S'
+    g[11 + o][20] = 'p'; g[12 + o][20] = 'S'
     if mouth == 'n':
-        g[15][16] = 'k'; g[15][17] = 'k'
+        g[15 + o][16] = 'k'; g[15 + o][17] = 'k'
     else:
-        for c in range(15, 19): g[15][c] = 'k'
-        g[16][16] = 'k'; g[16][17] = 'k'
+        for c in range(15, 19): g[15 + o][c] = 'k'
+        g[16 + o][16] = 'k'; g[16 + o][17] = 'k'
+    if o == -1:
+        for c in range(13, 19): g[16][c] = 'S'
     for c in range(8, 14): g[17][c] = 'S'
     for c in range(14, 17): g[16][c] = 'S' if g[16][c] == 's' else g[16][c]
     return [''.join(r) for r in g]
 
 
 HEAD_S = make_head_side()
+HEAD_F_UP = HEAD_F[:9] + [HEAD_F[10], HEAD_F[11], HEAD_F[12], HEAD_F[13], HEAD_F[14], HEAD_F[15], '....ssssssS', '....SSSSSSS', '......SSSSS']
 MOUTH_F_OPEN = '...sskkksssk'[:11]
 # ---------------------------------------------------------------- CORPO / MAOS / BOTAS
 BODY_F_TOP = ['.cCCCC', '.ttttt']                      # (metade; 6 col)  lenco + peito
@@ -255,10 +261,30 @@ def cap_head_side(rows):
     return out
 
 
+QUIVER_S = ['.r.r.', '.F.F.', '.q.q.', 'QQQQQ', 'QqqQQ', 'QqqQQ', 'QqqQQ', '.QQQ.']
+
+
+def pre_accessory(g, cls, view, cx, body_top, dx=0, bdx=0, back=False):
+    """Itens desenhados ANTES do corpo (ficam atras): aljava do arqueiro."""
+    if cls != 'archer': return
+    if view == 'side': g.stamp(QUIVER_S, cx - 11 + dx + bdx, body_top - 3)
+    elif back: g.stamp(QUIVER_S, cx - 10 + dx, body_top - 3)
+    else: g.stamp(['r.r', 'F.F'], cx - 10 + dx, body_top - 3)
+
+
+def post_accessory(g, cls, view, cx, body_top, dx=0, back=False):
+    """Itens por cima do corpo: tira da aljava."""
+    if cls != 'archer' or view == 'side': return
+    for i in range(9):
+        x = cx - 5 + dx + i; y = body_top + 1 + i // 2
+        g.put(x, y, 'o')
+
+
 def accessory(g, cls, view, hx, hy, back=False):
     if cls == 'mage':
         if view == 'side': g.stamp(hat_side(), hx - 1, hy - 4)
         else: g.stamp(HAT_F, hx, hy - 4, mirror=True, rshade=dict(u='U'))
+        g.put(hx + 10, hy - 1, 'X'); g.put(hx + 11, hy - 1, 'X')
     elif cls == 'archer':
         if view == 'side': g.stamp(['..F', '.Ff', 'Ff.', 'f..'], hx + 4, hy - 3)
         else: g.stamp(['..F', '.Ff', 'Ff.', 'f..'], hx + 17, hy - 3)
@@ -297,6 +323,7 @@ def build_front(p, back=False):
         if side != 'r': hxy = (hxy[0] - 1, hxy[1])
         cells, tip, behind, hands2 = weapon_rows(swd, hxy, 'front', back, (cx + dx + 1, my0 + 3))
         if behind: stamp_cells(g, cells)
+    pre_accessory(g, cls, 'front', cx, body_top, dx, 0, back)
     # botas
     g.stamp(BOOT_F, cx - 5 + dx + bl[0], boot_top - bl[1])
     g.stamp(BOOT_F, cx + 2 + dx + br[0], boot_top - br[1])
@@ -304,7 +331,7 @@ def build_front(p, back=False):
     rows = (BODY_B_TOP if back else BODY_F_TOP) + [BODY_F_MID] * max(0, tn - 2) + [BODY_F_FOLD if tn >= 3 else BODY_F_MID, BODY_F_BELT, BODY_F_HEM]
     rows = rows[:body_h]
     g.stamp(rows, cx - 6 + dx, body_top, mirror=True, rshade=dict(t='T', c='C', y='o'))
-    if cls == 'mage': g.stamp(['.tttttT', 'TTTTTTT'], cx - 7 + dx, boot_top - 1, mirror=True, rshade=dict(t='T'))
+    if cls == 'mage': g.stamp(['.tttttT', 'CTCTCTC'], cx - 7 + dx, boot_top - 1, mirror=True, rshade=dict(t='T'))
     # maos (blocos de pele)
     al, ar = p.get('al', (0, 0)), p.get('ar', (0, 0))
     my = body_top + 2
@@ -314,7 +341,7 @@ def build_front(p, back=False):
         if not bow: g.stamp([r[::-1] for r in MITT_L], cx + 6 + dx + ar[0], my + ar[1])
     # cabeca
     hx, hy = cx - 11 + dx + p.get('hdx', 0), body_top - 17 + p.get('hdy', 0)
-    head = list(HEAD_B if back else HEAD_F)
+    head = list(HEAD_B if back else (HEAD_F_UP if p.get('look') == 'up' else HEAD_F))
     if cls == 'archer': head = cap_head(head, 'front')
     if p.get('face') == 'shout' and not back:
         head[15] = '...sskkksssk'
@@ -322,6 +349,7 @@ def build_front(p, back=False):
         head[10] = 'RrOsskkkssp'; head[11] = 'RrOssssssss'; head[12] = 'ROOssssssss'; head[13] = '.rOssssssss'
     g.stamp(head, hx, hy, mirror=True, rshade=RSH_F)
     accessory(g, cls, 'front', hx, hy, back)
+    post_accessory(g, cls, 'front', cx, body_top, dx, back)
     for hp in hands2:
         for (ox, oy) in ((0, 0), (1, 0), (0, 1), (1, 1)): g.put(round(hp[0]) + ox, round(hp[1]) + oy, 's')
     if bow:
@@ -359,12 +387,16 @@ def build_side(p):
         hxy = (cx + 4 + dx + af_[0] + 1, body_top + 4 + af_[1])
         cells, tip, behind, hands2 = weapon_rows(swd, hxy, 'side', False, (hxy[0] + 2, hxy[1]))
         if behind: stamp_cells(g, cells)
+    pre_accessory(g, cls, 'side', cx, body_top, dx, p.get('bdx', 0))
     g.stamp(BOOT_S, cx - 6 + dx + bk[0], boot_top - bk[1])
     g.stamp(BOOT_S, cx - 1 + dx + bf[0], boot_top - bf[1])
     rows = [BODY_S['sc'], BODY_S['t0']] + [BODY_S['t1']] * max(0, tn - 2) + [BODY_S['t2'], BODY_S['belt'], BODY_S['hem']]
     rows = rows[:body_h]
-    g.stamp(rows, cx - 5 + dx + p.get('bdx', 0), body_top)
-    if cls == 'mage': g.stamp(['.tttttttTT.', 'TTTTTTTTTTT'], cx - 6 + dx + p.get('bdx', 0), boot_top - 1)
+    bend = p.get('bend', 0)
+    for ri, row in enumerate(rows):
+        off = -int(round(bend * (len(rows) - 1 - ri) / max(1, len(rows) - 1)))
+        g.stamp([row], cx - 5 + dx + p.get('bdx', 0) + off, body_top + ri)
+    if cls == 'mage': g.stamp(['.tttttttTT.', 'CTCTCTCTCTC'], cx - 6 + dx + p.get('bdx', 0), boot_top - 1)
     fl = p.get('flut', 0)
     g.stamp(['CC.', '.CD', '..D'], cx - 8 + dx + p.get('bdx', 0) - fl, body_top + fl // 2)
     # braco de tras (so um bloco atras) e da frente
@@ -372,7 +404,7 @@ def build_side(p):
     if not p.get('nomitt'): g.stamp(['ss', 'sS'], cx - 6 + dx + ab[0], body_top + 3 + ab[1])
     # cabeca (perfil)
     hx, hy = cx - 11 + dx + p.get('hdx', 0), body_top - 17 + p.get('hdy', 0)
-    head = make_head_side('shout' if p.get('face') == 'shout' else 'n', 'closed' if p.get('face') == 'blink' else 'open')
+    head = make_head_side('shout' if p.get('face') == 'shout' else 'n', 'closed' if p.get('face') == 'blink' else 'open', p.get('look', 'n'))
     if cls == 'archer': head = cap_head_side(head)
     g.stamp(head, hx, hy)
     accessory(g, cls, 'side', hx, hy)

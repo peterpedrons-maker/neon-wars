@@ -103,12 +103,17 @@ def basic():
 
 def rain():
     st = fx.Stage(); frames = []
-    HX, HY = 120, 168
-    TC = (262, 172)
+    HX, HY = 120, 130
+    TC = (262, 134)
     ang = (0.55, -0.83)
-    aim = [dict(sw=bow(ang, 1)), dict(sw=bow(ang, 2), hdx=-1), dict(sw=bow(ang, 4), hdx=-1, bdx=-1, dx=-1),
-           dict(sw=bow(ang, 6), hdx=-2, bdx=-1, dx=-1, tn=2, face='shout'), dict(sw=bow(ang, 7), hdx=-2, bdx=-2, dx=-2, tn=2, face='shout'),
-           dict(sw=bow(ang, 0, False), hdx=1, dx=1), dict(sw=bow(ang, -1, False), hdx=1, dx=1), dict(sw=bow(ang, 0, False))]
+    aim = [dict(sw=bow(ang, 1)),
+           dict(sw=bow(ang, 2), hdx=-2, bend=1, look='up', dx=-1),
+           dict(sw=bow(ang, 4), hdx=-4, bend=3, look='up', dx=-1, bl=(-2, 0), br=(2, 0), tn=3),
+           dict(sw=bow(ang, 6), hdx=-6, bend=4, look='up', dx=-2, bl=(-3, 0), br=(2, 0), tn=2, face='shout'),
+           dict(sw=bow(ang, 7), hdx=-7, bend=5, look='up', dx=-2, bl=(-3, 0), br=(3, 0), tn=2, face='shout'),
+           dict(sw=bow(ang, 0, False), hdx=-4, bend=3, look='up', dx=-1, bl=(-2, 0), br=(2, 0)),
+           dict(sw=bow(ang, -1, False), hdx=-2, bend=2, look='up'),
+           dict(sw=bow(ang, 0, False))]
     spr = C.anim('right', 'attack', 'archer', aim)
     rnd = random.Random(11)
     enemies = [fx.Enemy(TC[0] - 24, TC[1] - 2, M.SLIME), fx.Enemy(TC[0] + 8, TC[1] - 12, M.SLIME_B), fx.Enemy(TC[0] + 26, TC[1] + 8, M.SLIME_O), fx.Enemy(TC[0] - 6, TC[1] + 12, M.SLIME)]

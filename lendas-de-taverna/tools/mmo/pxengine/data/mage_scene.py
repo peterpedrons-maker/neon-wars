@@ -67,6 +67,10 @@ DIRS = {'right': (1, 0), 'down': (0, 1), 'left': (-1, 0), 'up': (0, -1)}
 HOLD = [2, 2, 2, 2, 2, 2, 2, 3]
 
 
+# sequencia da conjuracao: (pose, quadros, intensidade da aura inicial -> final)
+CHAN = [(0, 3, 0.0, 0.0), (1, 4, 0.2, 0.35), (2, 7, 0.4, 0.85), (3, 5, 0.9, 1.0), (4, 2, 1.0, 0.7), (5, 2, 0.6, 0.4), (6, 2, 0.3, 0.2), (7, 4, 0.1, 0.0)]
+
+
 def basic():
     st = fx.Stage(); frames = []
     CX, CY = 170, 150
@@ -74,49 +78,48 @@ def basic():
     for face in ('right', 'down', 'left', 'up'):
         d = DIRS[face]
         cast = sprite_set('right', face, CAST_S); idle = idle_staff('right', face)
-        ex, ey = CX + d[0] * 62, CY + d[1] * 38
-        en = fx.Enemy(ex, ey)
-        seq = []
-        for f in range(4): seq.append(('idle', f))
-        for k, h in enumerate(HOLD):
-            for t in range(h): seq.append(('cast', k, t))
-        for f in range(16): seq.append(('post', f))
-        launch = None; impact = None
-        for j, s in enumerate(seq):
-            if s[0] == 'cast' and s[1] == 4 and s[2] == 0: launch = j
-        T_FLY = 6
-        impact = launch + T_FLY
+        en = fx.Enemy(CX + d[0] * 66, CY + d[1] * 40)
+        seq = [('idle', f, 0.0) for f in range(3)]
+        for pi, n, k0, k1 in CHAN:
+            for t in range(n): seq.append(('cast', pi, k0 + (k1 - k0) * (t / max(1, n - 1)), t))
+        for f in range(14): seq.append(('post', f, 0.0))
+        launch = next(j for j, s in enumerate(seq) if s[0] == 'cast' and s[1] == 4 and s[3] == 0)
+        FLY = 6
+        impact = launch + FLY
         orb_start = None
         for j, s in enumerate(seq):
-            back = fx.layer(); front = fx.layer(); dyn = []
-            if s[0] == 'idle' or s[0] == 'post': spr = idle[(j) % 6]
+            back = fx.layer(); front = fx.layer(); sh = (0, 0)
+            if s[0] in ('idle', 'post'): spr = idle[j % 6]
             else: spr = cast[s[1]]
             img, tip, behind = spr
-            ox, oy = CX - CW // 2, CY - C.BASE
-            hero = dict(img=img, x=ox, y=oy, foot=CY)
-            # brilho no orbe e bola de fogo
+            wob = (1 if (j % 2) else 0) if (s[0] == 'cast' and s[1] in (2, 3)) else 0       # tremor de energia
+            ox, oy = CX - CW // 2 + (wob if s[0] == 'cast' and s[1] == 3 else 0), CY - C.BASE
+            k = s[2] if s[0] == 'cast' else 0.0
+            if k > 0: fx.aura(back, CX, CY - 17, j, k)                                        # AURA VERMELHA atras do corpo
             if tip and s[0] == 'cast':
-                orb = (ox + tip[0], oy + tip[1]); fx.disc(front, orb[0], orb[1], 5 + (1 if s[1] == 3 else 0), (255, 140, 40), 90)
-                fx.embers(front, orb[0], orb[1], j, n=5, spread=6, rise=14)
-                if s[1] == 4 and s[2] == 0: orb_start = orb
-            if launch is not None and orb_start is None and j >= launch:
-                pass
-            sh = (0, 0)
-            if launch is not None and launch <= j < impact and orb_start:
-                u = (j - launch + 1) / T_FLY
+                orb = (ox + tip[0], oy + tip[1])
+                rr = 4 + int(k * 5) + (1 if j % 2 else 0)
+                fx.dither_ellipse(front, orb[0], orb[1], rr + 3, rr + 3, (255, 90, 40), int(80 + 100 * k))
+                fx.disc(front, orb[0], orb[1], rr - 1, (255, 170, 60), 150)
+                fx.embers(front, orb[0], orb[1], j, n=6, spread=8, rise=16)
+                if s[1] in (1, 2, 3): fx.converge(front, orb[0], orb[1], j, k)
+                if s[1] == 4 and s[3] == 0:
+                    orb_start = orb; fx.disc(front, orb[0], orb[1], 9, (255, 240, 200), 200)       # clarao ao lancar
+            if launch <= j < impact and orb_start:
+                u = (j - launch + 1) / float(FLY)
                 tx, ty = en.x0, en.y0 - 8
                 px, py = orb_start[0] + (tx - orb_start[0]) * u, orb_start[1] + (ty - orb_start[1]) * u
                 vec = (tx - orb_start[0], ty - orb_start[1]); L = math.hypot(*vec) or 1
-                fx.fireball(front, px, py, 4, j, (vec[0] / L, vec[1] / L), tail=9)
+                fx.fireball(front, px, py, 5, j, (vec[0] / L, vec[1] / L), tail=11)
             if j == impact: en.hit((d[0] if d[0] else 0.0, d[1] if d[1] else 0.0), '31')
-            if impact is not None and impact <= j < impact + 8:
+            if impact <= j < impact + 8:
                 fx.explosion(back, front, en.x0, en.y0, j - impact, R=14, seed=3)
                 if j - impact < 2: sh = (1 if j % 2 else -1, 0)
             eimg, ex_, ey_, up, ek = en.step()
-            T.shadow_img = None
             dyn_e = dict(img=eimg, x=ex_ - 9, y=ey_ - 13 - up, foot=ey_)
             shd = fx.layer(); ImageDraw.Draw(shd).ellipse([ex_ - 8, ey_ - 2, ex_ + 8, ey_ + 3], fill=(0, 0, 0, 70)); back = Image.alpha_composite(shd, back)
             hs = fx.layer(); ImageDraw.Draw(hs).ellipse([CX - 9, CY - 2, CX + 9, CY + 3], fill=(0, 0, 0, 90)); back = Image.alpha_composite(hs, back)
+            hero = dict(img=img, x=ox, y=oy, foot=CY)
             im = st.compose(gi, back, [hero, dyn_e], front, shake=sh)
             if ek is not None and ek >= 1:
                 fx.draw_number(im, ex_ + 6, ey_ - 26 - ek * 1.2, '31')
@@ -127,8 +130,8 @@ def basic():
 # ------------------------------------------------------------------ SKILL: CHUVA DE METEOROS
 def meteors():
     st = fx.Stage(); frames = []
-    HX, HY = 120, 168
-    TC = (262, 170)
+    HX, HY = 120, 130
+    TC = (262, 134)
     side = sprite_set('right', 'right', CAST_S)
     # poses de canalizacao (ambas as maos ao alto)
     chan = []
@@ -158,6 +161,10 @@ def meteors():
             a = int(min(1, (j - 2) / 6.0) * 200) if j < 36 else int(max(0, (44 - j) / 8.0) * 200)
             fx.magic_circle(back, TC[0], TC[1], 44, 20, j * .12, a)
             if j < 40: fx.dither_ellipse(back, TC[0], TC[1], 40, 17, (255, 120, 40), 40 + int(25 * math.sin(j * .5)))
+        # AURA VERMELHA do mago enquanto canaliza
+        if 2 <= j < 17:
+            kk = min(1.0, (j - 2) / 9.0) if j < 13 else max(0.0, 1 - (j - 13) / 4.0)
+            fx.aura(back, HX, HY - 17, j, kk)
         # brilho do orbe + aura enquanto canaliza
         if tip and 2 <= j < 14:
             orb = (ox + tip[0], oy + tip[1])

@@ -223,3 +223,30 @@ def dust(ov, x, y, k, n=5):
         a = i * 1.3 + .7
         r = 2 + k * 2
         ImageDraw.Draw(ov).rectangle([x + math.cos(a) * r, y + math.sin(a) * r * .5 - k, x + math.cos(a) * r + 1, y + math.sin(a) * r * .5 - k + 1], fill=(210, 190, 150, max(0, 220 - k * 55)))
+
+
+def aura(ov, cx, cy, f, k, col=(255, 64, 40), h=22):
+    """Aura vermelha pulsante em volta do corpo (k 0..1 = intensidade): halo tracejado + chamas subindo."""
+    pulse = .5 + .5 * math.sin(f * .8)
+    r = 13 + 6 * k + pulse * 2
+    dither_ellipse(ov, cx, cy, r, h + 4 * k + pulse * 2, col, int(55 + 70 * k))
+    dither_ellipse(ov, cx, cy, r * .66, (h + 2) * .85, (255, 130, 60), int(40 + 80 * k * (.6 + .4 * pulse)))
+    dr = ImageDraw.Draw(ov)
+    rnd = random.Random(7)
+    for i in range(int(6 + 8 * k)):
+        a = i * 2.4 + rnd.random() * 2
+        t = ((f * .9 + i * 1.9) % 12) / 12.0
+        x = cx + math.cos(a) * r * (.6 + .5 * (1 - t)) * (1 if i % 2 else -1) * .8
+        y = cy + h * .7 - t * (h * 1.7)
+        c = (255, 90 + int(120 * t), 40, int(255 * (1 - t)))
+        dr.rectangle([x, y, x + 1, y + 2 if t < .5 else y + 1], fill=c)
+
+
+def converge(ov, tx, ty, f, k, n=10, R=30, col=(255, 150, 60)):
+    """Particulas de energia convergindo para o orbe."""
+    rnd = random.Random(3)
+    for i in range(n):
+        a = rnd.uniform(0, math.tau); r0 = R * rnd.uniform(.7, 1.1)
+        t = ((f * .6 + i * 1.3) % 8) / 8.0
+        x = tx + math.cos(a) * r0 * (1 - t); y = ty + math.sin(a) * r0 * (1 - t) * .8
+        ImageDraw.Draw(ov).rectangle([x, y, x + 1, y + 1], fill=col + (int(60 + 195 * t * k),))
