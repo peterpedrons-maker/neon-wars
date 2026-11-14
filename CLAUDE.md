@@ -36,3 +36,11 @@ Grunk (goblin), Morvath (esqueleto), Gorgash (ogro), Rei dos Ratos, **Rei Esquec
 - Trabalhar na branch `claude/test-game-new-repo-ja24p9`; para publicar: PR → merge (squash) na `main` (o Pages só publica a `main`). Conflitos de squash: `git merge origin/main` e `git checkout --ours`.
 - O proxy do ambiente bloqueia o site publicado; não dá para conferir o deploy daqui, dizer isso ao dono.
 - Testes: Chromium headless com `--use-angle=swiftshader`; servidor `python3 -m http.server 8760` na raiz do repo.
+
+## Direção pixel art top-down (em teste, `lendas-de-taverna/mmo/proto_pixel/`)
+- O dono quer **refazer o gráfico do jogo em pixel art top-down estilo 16 bits (SNES/NES)**, por código, com nível coerente (não precisa ser super elaborado). Referência: clareira com árvores, água e trilha de pedras enviada pelo dono.
+- **Personagens andam de verdade**: ciclo de 4 poses (contato, passagem, contato oposto, passagem), braços em oposição às pernas, corpo sobe 1px na passagem. **Nada de saltinhos** (isso vale só para criaturas sem pernas, como o slime, que pula). Isso substitui a regra do "estilo miniatura" para o pixel art.
+- **Arma é peça separada** da mão do personagem (contorno próprio, nunca fundida ao corpo); balança junto com o braço.
+- Proporções de RPG 16 bits: cabeça ~1/3 da altura, cabeça de formato natural (nada de capacete/cúpula), 4 direções (frente, costas, lado; esquerda = espelho), rampas de 3–4 tons com troca de matiz (sombra mais fria, luz mais quente), **contorno seletivo** (escuro da própria cor, não preto puro).
+- Ferramentas: `tools/mmo/pxengine/data/pxrig.py` (monta sprite por partes), `px2_hero.py`, `px2_mobs.py` (goblin/slime), `pxtool.py` (editor em grade/verificador), `andar2.py` (cena de teste). O Rei Esquecido ainda precisa ser refeito neste estilo (hoje é o mockup antigo `teste_rei.py`).
+- Pesquisa feita: tutoriais de ciclo de andar em pixel art (4 frames, bob de 1px) e de contorno seletivo/hue shifting (Lospec, Slynyrd). O site slynyrd.com é bloqueado pelo proxy.
