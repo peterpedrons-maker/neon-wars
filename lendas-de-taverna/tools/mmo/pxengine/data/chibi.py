@@ -37,30 +37,54 @@ HEAD_B = [
     '....RRRRRRR', '..RROOOOOOO', '.ROOLLOOOOO', '.ROOLOOOOOO', 'RROOOOOOOOO', 'ROOOOOOOOOO',
     'ROOOOOOOOOO', 'ROOrOOOOrOO', 'ROOOOOOOOOO', 'ROOOOOOOOOO', 'ROOOOOOOrOO', 'ROOOOOOOOOO',
     'RrOOOOOOOOO', '.ROOOOOOOOO', '..RrOOOOOOO', '...RROOOOOO', '.....RSSSSS', '......SSSSS']
-# CABECA LATERAL (olhando para a direita) 20x18
-HEAD_S = [
-    _row(('.', 4), ('R', 8), ('.', 8), n=20),
-    _row(('.', 2), ('R', 2), ('O', 9), ('R', 1), ('.', 6), n=20),
-    _row(('.', 1), ('R', 1), ('O', 2), ('L', 2), ('O', 8), ('r', 1), ('.', 5), n=20),
-    _row(('.', 1), ('R', 1), ('O', 2), ('L', 1), ('O', 10), ('R', 1), ('.', 4), n=20),
-    _row(('R', 2), ('O', 13), ('r', 1), ('.', 4), n=20),
-    _row(('R', 1), ('O', 16), ('r', 1), ('.', 2), n=20),
-    _row(('R', 1), ('O', 4), ('r', 1), ('O', 12), ('R', 1), ('.', 1), n=20),
-    _row(('R', 1), ('O', 2), ('r', 1), ('O', 11), ('r', 1), ('O', 2), ('r', 1), ('.', 1), n=20),
-    _row(('R', 1), ('O', 10), ('r', 1), ('s', 6), ('.', 2), n=20),
-    _row(('R', 1), ('O', 10), ('r', 1), ('s', 7), ('.', 1), n=20),
-    _row(('R', 1), ('O', 10), ('r', 1), ('s', 2), ('k', 3), ('s', 3), n=20),
-    _row(('R', 1), ('O', 10), ('r', 1), ('s', 2), ('w', 2), ('b', 1), ('s', 3), n=20),
-    _row(('R', 1), ('O', 10), ('r', 1), ('s', 2), ('w', 1), ('b', 2), ('s', 3), n=20),
-    _row(('.', 1), ('R', 1), ('O', 9), ('r', 1), ('s', 3), ('b', 1), ('B', 1), ('s', 3), n=20),
-    _row(('.', 2), ('R', 1), ('O', 8), ('r', 1), ('s', 2), ('S', 2), ('s', 3), ('p', 1), n=20),
-    _row(('.', 3), ('R', 1), ('O', 7), ('r', 1), ('s', 4), ('k', 2), ('s', 1), ('.', 1), n=20),
-    _row(('.', 4), ('R', 1), ('O', 6), ('r', 1), ('s', 5), ('S', 2), ('.', 1), n=20),
-    _row(('.', 5), ('R', 1), ('r', 3), ('S', 7), ('.', 4), n=20),
-]
-HEAD_S = [r + '.' for r in HEAD_S]
-HEAD_S[12] = HEAD_S[12][:-1] + 'S'
-HEAD_S[11] = HEAD_S[11][:-1] + 'p'
+# CABECA LATERAL (olhando para a direita) 21x18, construida como a frontal: cabelo bob + franja + mecha lateral + rosto redondo
+def make_head_side(mouth='n', eyes='open'):
+    Wd, Hd = 21, 18
+    bounds = [(6, 14), (4, 16), (3, 17), (2, 18), (1, 19), (1, 19), (0, 19), (0, 19), (0, 19), (0, 19), (0, 19), (0, 20), (0, 20), (1, 19), (1, 19), (2, 18), (4, 17), (6, 14)]
+    hair_end = [99, 99, 99, 99, 99, 99, 99, 99, 13, 12, 12, 12, 12, 11, 10, 9, 7, -1]
+    g = [['.'] * Wd for _ in range(Hd)]
+    for r in range(Hd):
+        l, rr = bounds[r]
+        for c in range(l, rr + 1):
+            g[r][c] = 'O' if c <= hair_end[r] else 's'
+    # franja irregular sobre a testa (linha 8) e pontas
+    for c, ch in zip(range(14, 20), 'OsOssO'): g[8][c] = ch
+    for c in range(14, 20): g[9][c] = 's'
+    # aro escuro do cabelo (topo e costas)
+    for r in range(Hd):
+        cols = [c for c in range(Wd) if g[r][c] == 'O']
+        if not cols: continue
+        g[r][cols[0]] = 'R'
+        if r == 0:
+            for c in cols: g[r][c] = 'R'
+        if r == 1:
+            for c in cols[:2] + cols[-2:]: g[r][c] = 'R'
+        if r in (2, 3) and len(cols) > 1: g[r][cols[1]] = 'R'
+        if r in (13, 14, 15, 16): g[r][cols[-1]] = 'R'
+    # luz e acentos do cabelo
+    g[2][4] = 'L'; g[2][5] = 'L'; g[3][4] = 'L'
+    g[6][8] = 'r'; g[7][15] = 'r'; g[9][3] = 'r'; g[10][2] = 'r'; g[12][4] = 'r'; g[13][6] = 'r'; g[9][12] = 'r'; g[10][12] = 'r'; g[11][12] = 'r'
+    # olho grande (3x4), bochecha, boca, nariz, queixo
+    if eyes == 'open':
+        for dc, ch in enumerate('kkk'): g[10][14 + dc] = ch
+        for dc, ch in enumerate('wwb'): g[11][14 + dc] = ch
+        for dc, ch in enumerate('wbb'): g[12][14 + dc] = ch
+        for dc, ch in enumerate('sbB'): g[13][14 + dc] = ch
+    else:
+        for dc in range(3): g[11][14 + dc] = 'k'
+    g[14][13] = 'S'; g[14][14] = 'S'
+    g[11][20] = 'p'; g[12][20] = 'S'
+    if mouth == 'n':
+        g[15][16] = 'k'; g[15][17] = 'k'
+    else:
+        for c in range(15, 19): g[15][c] = 'k'
+        g[16][16] = 'k'; g[16][17] = 'k'
+    for c in range(8, 14): g[17][c] = 'S'
+    for c in range(14, 17): g[16][c] = 'S' if g[16][c] == 's' else g[16][c]
+    return [''.join(r) for r in g]
+
+
+HEAD_S = make_head_side()
 MOUTH_F_OPEN = '...sskkksssk'[:11]
 # ---------------------------------------------------------------- CORPO / MAOS / BOTAS
 BODY_F_TOP = ['.cCCCC', '.ttttt']                      # (metade; 6 col)  lenco + peito
@@ -187,10 +211,7 @@ def build_side(p):
     g.stamp(['ss', 'sS'], cx - 6 + dx + ab[0], body_top + 3 + ab[1])
     # cabeca (perfil)
     hx, hy = cx - 11 + dx + p.get('hdx', 0), body_top - 17 + p.get('hdy', 0)
-    head = list(HEAD_S)
-    if p.get('face') == 'shout': head[15] = _row(('.', 3), ('R', 1), ('O', 7), ('r', 1), ('s', 3), ('k', 3), ('s', 1), ('.', 1), n=20)
-    if p.get('face') == 'blink':
-        head[10] = _row(('R', 1), ('O', 10), ('r', 1), ('s', 8), n=20); head[11] = head[10]; head[12] = head[10]; head[13] = _row(('.', 1), ('R', 1), ('O', 9), ('r', 1), ('s', 8), n=20)
+    head = make_head_side('shout' if p.get('face') == 'shout' else 'n', 'closed' if p.get('face') == 'blink' else 'open')
     g.stamp(head, hx, hy)
     g.stamp(['ss', 'sS'], cx + 3 + dx + af[0], body_top + 3 + af[1])
     autoline(g)
