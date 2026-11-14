@@ -160,7 +160,8 @@ BODY_S = dict(sc='.cCCCCD.', t0='.tttttT.', t1='.ttttTT.', t2='.tttMTT.', belt='
 
 
 # ---------------------------------------------------------------- espada (peca separada)
-def sword_rows(hand, ang, length=10, guard=3, wide=False, serrate=False, glow=None, gem=False):
+def sword_rows(hand, ang, length=10, guard=3, wide=False, serrate=False, glow=None, gem=False, shape=None, gstyle='bar'):
+    if shape: return shaped_rows(hand, ang, length, guard, shape, gstyle, glow, gem, serrate)
     """Retorna Grid proprio da espada (cabo, guarda, lamina) com contorno proprio; hand e ponto de empunhadura (coords globais)."""
     a = math.radians(ang)
     ux, uy = math.sin(a), math.cos(a)
@@ -186,6 +187,88 @@ def sword_rows(hand, ang, length=10, guard=3, wide=False, serrate=False, glow=No
         cells[(gx, gy)] = 'r'
     return cells, tip
 
+
+# perfis de lamina: (largura_meia(t), curvatura em celulas, estilo de guarda)
+def _prof(shape):
+    P = {
+        'broad':   (lambda t: 1.6 if t < .72 else 1.6 - (t - .72) * 5.2, 0, 'cross'),
+        'leaf':    (lambda t: 0.4 + 1.6 * math.sin(math.pi * min(1, t * 1.1) ** .8), 0, 'bar'),
+        'katana':  (lambda t: .5, 3.2, 'disc'),
+        'scimitar': (lambda t: .5 + 1.5 * min(1, t / .6) if t < .8 else 2 - (t - .8) * 8, 3.5, 'bar'),
+        'rapier':  (lambda t: 0.0, 0, 'cup'),
+        'cleaver': (lambda t: 1.3, 0.8, 'none'),
+        'flame':   (lambda t: 0.9 + .8 * math.sin(t * 17) * (1 - t * .6), 0, 'cross'),
+        'great':   (lambda t: 2.1, 0, 'cross'),
+        'axe':     (None, 0, 'none'),
+    }
+    return P[shape]
+
+
+def shaped_rows(hand, ang, length, guard, shape, gstyle, glow, gem, serrate):
+    """Armas com SILHUETA propria (nao so cor): lamina larga, curva, florete, facao, chamejante, montante, machado."""
+    a = math.radians(ang); ux, uy = math.sin(a), math.cos(a); nx, ny = -uy, ux
+    hw, curve, gs = _prof(shape)
+    gs = gstyle if gstyle != 'bar' else gs
+    cells = {}
+    def put(x, y, ch, over=True):
+        k = (round(x), round(y))
+        if over or k not in cells: cells[k] = ch
+    # cabo + pomo
+    for d in (-3, -2, -1, 0, 1):
+        put(hand[0] + ux * d, hand[1] + uy * d, 'N')
+    put(hand[0] - ux * 3.4, hand[1] - uy * 3.4, 'g')
+    gx, gy = hand[0] + ux * 2, hand[1] + uy * 2
+    if shape == 'axe':
+        L = length
+        for d in range(-3, L): put(hand[0] + ux * d, hand[1] + uy * d, 'N')
+        put(hand[0] - ux * 3.4, hand[1] - uy * 3.4, 'g')
+        for j in range(0, 6):                         # cabeca do machado (crescente) de um lado do cabo
+            sd = L - 7 + j
+            reach = [2, 3, 4, 4, 3, 2][j]
+            for k in range(1, reach + 1):
+                put(hand[0] + ux * sd + nx * k, hand[1] + uy * sd + ny * k, 'a' if k == reach else 'A')
+            put(hand[0] + ux * sd, hand[1] + uy * sd, 'g')
+        tip = (hand[0] + ux * (L - 1), hand[1] + uy * (L - 1))
+        for d in (-1, 0):
+            put(hand[0] + ux * (L + d) - nx * 1, hand[1] + uy * (L + d) - ny * 1, 'g')
+        return cells, tip
+    # guarda
+    if gs == 'bar' or gs == 'cross':
+        gw = guard + (1 if gs == 'cross' else 0)
+        for k in range(-gw, gw + 1): put(gx + nx * k, gy + ny * k, 'g')
+        if gs == 'cross':
+            for k in (-gw, gw): put(gx + nx * k - ux, gy + ny * k - uy, 'g')
+    elif gs == 'disc':
+        for k in (-2, -1, 0, 1, 2): put(gx + nx * k, gy + ny * k, 'g')
+        for k in (-1, 0, 1): put(gx + nx * k + ux, gy + ny * k + uy, 'g'); put(gx + nx * k - ux, gy + ny * k - uy, 'g')
+    elif gs == 'cup':
+        for k in range(-3, 4): put(gx + nx * k, gy + ny * k, 'g')
+        for k in (-3, 3):
+            put(gx + nx * k - ux, gy + ny * k - uy, 'g'); put(gx + nx * k - ux * 2, gy + ny * k - uy * 2, 'g')
+        for k in (-2, -1, 0, 1, 2): put(gx + nx * k - ux * 2.6, gy + ny * k - uy * 2.6, 'g')
+    L = length - 3; s0 = 3
+    last = None
+    for i in range(L + 1):
+        t = i / L; s = s0 + i
+        off = curve * t * t
+        cx_ = hand[0] + ux * s + nx * off; cy_ = hand[1] + uy * s + ny * off
+        w = max(0.0, hw(t))
+        if shape in ('broad', 'great', 'flame', 'katana'): w *= min(1.0, (1 - t) * 5 + .15)
+        W = int(w + .5)
+        for k in range(-W, W + 1):
+            edge = (k == W and W > 0) or (W == 0)
+            put(cx_ + nx * k, cy_ + ny * k, 'a' if (k == W and W >= 1) else 'A')
+        if W == 0: put(cx_ + nx, cy_ + ny, 'a')
+        if shape == 'cleaver' and i == L: pass
+        if serrate and i % 2 == 0: put(cx_ - nx * (W + 1), cy_ - ny * (W + 1), 'a')
+        if glow and i > 3 and i % 3 == 0:
+            sg = (-1 if glow == 'ice' else 1)
+            put(cx_ + nx * (W + 1) * sg, cy_ + ny * (W + 1) * sg, 'Z' if glow != 'dark' else 'z')
+        last = (cx_, cy_)
+    if gem: put(gx + ux * 1.5, gy + uy * 1.5, 'r')
+    tip = last
+    put(tip[0], tip[1], 'A')
+    return cells, tip
 
 
 def staff_rows(hand, ang, length=24, orb=1):
@@ -272,7 +355,7 @@ def weapon_rows(swd, hxy, view, back=False, bow_center=None):
     if kind == 'mace':
         cells, tip = mace_rows(hxy, swd['ang'], swd.get('len', 15))
         return cells, tip, (185 <= swd['ang'] <= 265), []
-    cells, tip = sword_rows(hxy, swd['ang'], swd.get('len', 12), swd.get('guard', 1 if kind == 'dagger' else 3), swd.get('wide', False), swd.get('serrate', False), swd.get('glow'), swd.get('gem', False))
+    cells, tip = sword_rows(hxy, swd['ang'], swd.get('len', 12), swd.get('guard', 1 if kind == 'dagger' else 3), swd.get('wide', False), swd.get('serrate', False), swd.get('glow'), swd.get('gem', False), swd.get('shape'), swd.get('gstyle', 'bar'))
     behind = (back or (185 <= swd['ang'] <= 265)) if view == 'front' else (185 <= swd['ang'] <= 265)
     return cells, tip, behind, []
 
@@ -756,6 +839,15 @@ WEAPONS = {
     'espada_gelo': dict(kind='sword', len=14, guard=3, glow='ice', pal=dict(A='#e8fcff', a='#58c8f0', g='#3a78c8', N='#244a7a', Z='#ffffff')),
     'espada_sombria': dict(kind='sword', len=14, guard=3, glow='dark', serrate=True, pal=dict(A='#b080ff', a='#3a2070', g='#1a1030', N='#0c0818', z='#d8b0ff')),
     'serra_cruel': dict(kind='sword', len=12, guard=2, serrate=True, wide=True, pal=dict(A='#d8d0c0', a='#7a6a58', g='#5a3a20', N='#2a1a10')),
+    # formatos novos (silhueta diferente, nao so cor)
+    'espada_larga': dict(kind='sword', len=14, guard=3, shape='broad', pal=dict(A='#e8eef8', a='#8c9cb8', g='#b89040', N='#4a3020')),
+    'katana': dict(kind='sword', len=15, guard=2, shape='katana', pal=dict(A='#f4f8ff', a='#8a9ab8', g='#2a2a3a', N='#6a1c24')),
+    'cimitarra': dict(kind='sword', len=14, guard=2, shape='scimitar', pal=dict(A='#f0e8c8', a='#a89058', g='#c8a030', N='#5a2a18')),
+    'florete': dict(kind='sword', len=17, guard=3, shape='rapier', pal=dict(A='#f4f8ff', a='#8a9ab8', g='#e8b840', N='#4a2030')),
+    'facao': dict(kind='sword', len=12, guard=2, shape='cleaver', pal=dict(A='#c8c0b0', a='#6a6050', g='#5a3a20', N='#3a2418')),
+    'chamejante': dict(kind='sword', len=16, guard=3, shape='flame', glow='fire', pal=dict(A='#ffd060', a='#e04818', g='#6a1c10', N='#2a1008', Z='#fff0a0', z='#ff6a20')),
+    'montante_real': dict(kind='sword', len=18, guard=4, shape='great', gem=True, pal=dict(A='#eef2fa', a='#7c88a8', g='#e8b840', N='#3a2a20')),
+    'machado': dict(kind='sword', len=16, guard=1, shape='axe', pal=dict(A='#c8d0dc', a='#6a7488', g='#7a5a30', N='#5a3a20')),
     # cajados
     'cajado_fogo': dict(kind='staff', len=24, orb=1, pal=dict(Z='#fff4b0', z='#ff9a30', Y='#c83010', N='#6e4228', g='#e8b840')),
     'cajado_gelo': dict(kind='staff', len=24, orb=1, pal=dict(Z='#ffffff', z='#58c8f0', Y='#2a68c0', N='#4a5a78', g='#c8d8f0')),
