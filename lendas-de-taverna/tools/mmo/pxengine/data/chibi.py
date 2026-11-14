@@ -499,11 +499,22 @@ QUIVER_S = ['.r.r.', '.F.F.', '.q.q.', 'QQQQQ', 'QqqQQ', 'QqqQQ', 'QqqQQ', '.QQQ
 def pre_accessory(g, cls, view, cx, body_top, dx=0, bdx=0, back=False):
     """Itens desenhados ANTES do corpo (ficam atras): aljava do arqueiro; capa do Rei."""
     if _WINGS:
+        from PIL import Image as _I, ImageDraw as _D
+        flap = int(round(2 * math.sin(_T * .8)))
         for sg in ((-1, 1) if view != 'side' else (-1,)):
-            for i in range(16):
-                x = cx + dx + sg * (5 + i) if view != 'side' else cx + dx + bdx - 2 - i
-                yt = int(body_top + 1 - i * .95 - (3 if i > 10 else 0)); yb = int(body_top + 8 - i * .25)
-                for y in range(yt, yb + 1): g.put(x, y, 'S' if (y == yt or i % 5 == 0) else 'M')
+            sx0 = cx + dx + sg * 5 if view != 'side' else cx + dx + bdx - 1
+            sd = sg if view != 'side' else -1
+            S0 = (sx0, body_top + 2)
+            P1 = (sx0 + sd * 19, body_top - 12 - flap); P2 = (sx0 + sd * 22, body_top - 3 - flap); P3 = (sx0 + sd * 16, body_top + 5); P4 = (sx0 + sd * 8, body_top + 8)
+            mid = lambda a, b, k=3: ((a[0] + b[0]) / 2 - sd * 2, (a[1] + b[1]) / 2 + k)
+            poly = [S0, P1, mid(P1, P2), P2, mid(P2, P3), P3, mid(P3, P4), P4]
+            m = _I.new('L', (W, H), 0); _D.Draw(m).polygon(poly, fill=255); mp = m.load()
+            for yy in range(H):
+                for xx in range(W):
+                    if mp[xx, yy]: g.put(xx, yy, 't')
+            for P in (P1, P2, P3):
+                for (x, y) in line_pts(round(S0[0]), round(S0[1]), round(P[0]), round(P[1])): g.put(x, y, 's')
+            g.put(round(P1[0]), round(P1[1]), 's'); g.put(round(P1[0]) - sd, round(P1[1]) + 1, 's')
     if cls == 'rei':
         if not back: rei_cape(g, view, cx, body_top, dx, bdx)
         return

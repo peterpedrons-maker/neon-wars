@@ -31,29 +31,31 @@ def bar(d, x, y, w, frac, col, h=5):
 
 def hud(im, zone=None, hp=1.0, msgs=(), boss=None, quest=True):
     d = ImageDraw.Draw(im)
-    panel(d, (4, 4, 84, 32))
-    d.rectangle([7, 7, 27, 27], fill=(50, 26, 26), outline=GOLD)
-    im.alpha_composite(spr('heroi')[0].crop((20, 6, 52, 26)).resize((20, 20), Image.NEAREST), (7, 7))
-    T(im, (31, 8), 'TESTE', CREAM, k=1); bar(d, 31, 17, 50, hp, (210, 50, 50), 6); T(im, (56, 18), '135/135', (255, 230, 230))
-    d.ellipse([4, 22, 14, 32], fill=(210, 160, 50), outline=(120, 80, 20)); T(im, (9, 24), '1', (40, 24, 8), True)
-    panel(d, (46, 33, 84, 41), fill=(18, 14, 28), studs=False); T(im, (49, 35), 'PC 147', GOLD)
+    panel(d, (4, 4, 98, 40))
+    d.rectangle([8, 8, 34, 34], fill=(50, 26, 26), outline=GOLD)
+    im.alpha_composite(spr('heroi')[0].crop((20, 6, 52, 26)).resize((25, 25), Image.NEAREST), (9, 9))
+    T(im, (38, 9), 'TESTE', CREAM); bar(d, 38, 18, 56, hp, (210, 50, 50), 8); T(im, (66, 20), '135/135', (255, 236, 236), True)
+    T(im, (38, 30), 'PC 147', GOLD)
+    d.ellipse([5, 28, 19, 42], fill=(210, 160, 50), outline=(120, 80, 20)); T(im, (12, 32), '1', (40, 24, 8), True)
     if zone:
-        T(im, (172, 6), zone, GOLD, True)
-        panel(d, (150, 14, 192, 56)); d.rectangle([153, 17, 189, 53], fill=(10, 10, 22))
-        for (x0, y0, x1, y1) in ((158, 26, 184, 32), (168, 34, 175, 50)): d.rectangle([x0, y0, x1, y1], fill=(38, 34, 60))
-        d.rectangle([170, 38, 172, 40], fill=(255, 220, 90))
+        T(im, (168, 4), zone, GOLD, True)
+        panel(d, (146, 12, 191, 57)); d.rectangle([149, 15, 188, 54], fill=(10, 10, 22))
+        for (x0, y0, x1, y1) in ((154, 27, 183, 33), (165, 35, 173, 51)): d.rectangle([x0, y0, x1, y1], fill=(38, 34, 60))
+        d.rectangle([168, 40, 170, 42], fill=(255, 220, 90))
     if quest:
-        panel(d, (128, 60, 192, 96), fill=(16, 14, 28)); T(im, (133, 64), 'MISSOES', GOLD); T(im, (133, 72), 'Primeiros', CREAM); T(im, (133, 79), 'passos', CREAM); T(im, (133, 87), '0/8 mortos', (140, 255, 160))
-    for i, t in enumerate(('PERS', 'HABIL', 'DIARIO', 'SOCIAL')):
-        y = 236 + i * 26; panel(d, (166, y, 191, y + 22), fill=(20, 16, 34)); d.rectangle([172, y + 3, 185, y + 13], fill=(34, 28, 52)); T(im, (179, y + 15), t, CREAM, True)
-    for i, m in enumerate(list(msgs)[-3:]): T(im, (6, 346 + i * 8), m, CREAM if 'Aviso' not in m else (255, 190, 120))
-    d.ellipse([8, 296, 66, 354], outline=GOLD_D, fill=(22, 16, 30, 160)); d.ellipse([27, 315, 47, 335], fill=GOLD, outline=GOLD_D)
-    panel(d, (14, 376, 181, 417), fill=(16, 12, 26))
-    for i in range(6):
-        x = 19 + i * 27; d.rectangle([x, 381, x + 24, 412], fill=(22, 16, 34), outline=GOLD if i in (0, 4, 5) else GOLD_D)
-    im.alpha_composite(IC.get('espada_aco'), (23, 389)); T(im, (46 + 0, 383), '2', DIM); T(im, (73, 383), '3', DIM); T(im, (76, 400), 'NV5', DIM); T(im, (103, 400), 'NV10', DIM)
-    im.alpha_composite(IC.get('potion', 'red'), (126, 389)); T(im, (146, 383), 'P', GOLD); T(im, (172, 405), '2', CREAM, True)
-    im.alpha_composite(IC.get('boots'), (153, 389))
+        panel(d, (120, 62, 191, 100), fill=(16, 14, 28)); T(im, (126, 67), 'MISSOES', GOLD); T(im, (126, 77), 'Primeiros', CREAM); T(im, (126, 85), 'passos', CREAM); T(im, (186 - pxfont.width('0/8'), 85), '0/8', (140, 255, 160))
+    for i, (t, ic) in enumerate((('PERS', 'helm'), ('HABIL', 'espada_aco'), ('DIARIO', 'scroll'), ('SOCIAL', 'ring'))):
+        y = 220 + i * 36; panel(d, (160, y, 191, y + 32), fill=(20, 16, 34)); im.alpha_composite(IC.get(ic).crop((1, 1, 15, 15)), (168, y + 3)); T(im, (176, y + 22), t, CREAM, True)
+    ov = Image.new('RGBA', im.size, (0, 0, 0, 0)); od = ImageDraw.Draw(ov); od.rectangle([4, 338, 128, 368], fill=(8, 6, 16, 150)); im.alpha_composite(ov)
+    for i, m in enumerate(list(msgs)[-3:]): T(im, (8, 341 + i * 9), m, CREAM if 'Aviso' not in m else (255, 190, 120))
+    d.ellipse([8, 266, 66, 324], outline=GOLD_D, fill=(22, 16, 30)); d.ellipse([26, 284, 48, 306], fill=GOLD, outline=GOLD_D)
+    panel(d, (8, 374, 187, 419), fill=(16, 12, 26))
+    for i, (key, ic, lock) in enumerate((('1', 'espada_aco', ''), ('2', None, 'NV5'), ('3', None, 'NV10'), ('P', 'potion', ''), ('E', 'boots', ''))):
+        x = 22 + i * 30; d.rectangle([x, 379, x + 27, 413], fill=(22, 16, 34), outline=GOLD if ic else GOLD_D)
+        T(im, (x + 3, 382), key, GOLD if ic else DIM)
+        if ic: im.alpha_composite((IC.get('potion', 'red') if ic == 'potion' else IC.get(ic)).crop((1, 1, 15, 15)), (x + 7, 392))
+        if lock: T(im, (x + 14, 398), lock, DIM, True)
+    T(im, (22 + 3 * 30 + 24, 405), '2', CREAM, True)
     if boss:
         T(im, (97, 3), boss[0], CREAM, True, 2); d.rectangle([4, 14, 190, 21], fill=(14, 8, 16), outline=GOLD); d.rectangle([5, 15, 5 + int(184 * boss[1]), 20], fill=(205, 40, 40))
 
@@ -109,8 +111,8 @@ def cell_row(im, items, x0, y0, cols=6, rows=8, pitch=28):
         x = x0 + (i % cols) * pitch; y = y0 + (i // cols) * pitch
         if i < len(items):
             n, r, pc, up, ar = items[i]; ic = IC.get(*(n.split(':') if ':' in n else (n,)))
-            im.alpha_composite(IC.cell(ic, r, 26, pc, up, ar), (x, y))
-        else: d.rectangle([x, y, x + 25, y + 25], fill=(14, 12, 20), outline=(34, 30, 44))
+            im.alpha_composite(IC.cell(ic, r, 29, pc, up, ar), (x, y))
+        else: d.rectangle([x, y, x + 28, y + 28], fill=(14, 12, 20), outline=(34, 30, 44))
 
 
 def tabs(im, d, on):
@@ -125,9 +127,9 @@ def menu_char():
     im = Image.new('RGBA', (NW, NH), (12, 10, 20, 255)); d = ImageDraw.Draw(im); tabs(im, d, 0)
     T(im, (97, 82), 'TESTE', GOLD, True, 2); T(im, (97, 96), 'Guerreiro - Nivel 1', DIM, True)
     left = [('helm', 'incomum', 24, 0, 'up'), ('armor', 'raro', 61, 0, None), ('gloves', 'comum', 9, 0, None), ('boots', 'incomum', 17, 0, 'up')]; right = [('espada_aco', 'raro', 88, 3, None), ('shield', 'raro', 52, 0, None), ('amulet', 'lendario', 143, 0, 'up'), ('ring', 'epico', 96, 0, None)]
-    for i, (n, r, pc, up, ar) in enumerate(left): im.alpha_composite(IC.cell(IC.get(n), r, 26, pc, up, ar), (10, 112 + i * 34))
-    for i, (n, r, pc, up, ar) in enumerate(right): im.alpha_composite(IC.cell(IC.get(n), r, 26, pc, up, ar), (159, 112 + i * 34))
-    d.rectangle([42, 108, 152, 244], fill=(18, 14, 30), outline=GOLD_D)
+    for i, (n, r, pc, up, ar) in enumerate(left): im.alpha_composite(IC.cell(IC.get(n), r, 29, pc, up, ar), (8, 108 + i * 35))
+    for i, (n, r, pc, up, ar) in enumerate(right): im.alpha_composite(IC.cell(IC.get(n), r, 29, pc, up, ar), (158, 108 + i * 35))
+    d.rectangle([42, 106, 154, 244], fill=(18, 14, 30), outline=GOLD_D)
     hs = spr('heroi', 'idle', 'down')[0]; bb = hs.getbbox(); big = hs.crop(bb).resize(((bb[2] - bb[0]) * 2, (bb[3] - bb[1]) * 2), Image.NEAREST)
     ov = Image.new('RGBA', (NW, NH), (0, 0, 0, 0)); ImageDraw.Draw(ov).ellipse([62, 224, 132, 238], fill=(0, 0, 0, 120)); im.alpha_composite(ov); im.alpha_composite(big, (97 - big.width // 2, 232 - big.height))
     d.rectangle([10, 252, 184, 274], fill=(34, 26, 14), outline=GOLD); T(im, (18, 259), 'PODER DE COMBATE', CREAM); T(im, (176, 258), '147', GOLD, True, 2) if False else T(im, (150, 258), '147', GOLD, False, 2)
@@ -148,7 +150,7 @@ def menu_bag():
              ('potion:red', 'comum', None, 0, None), ('potion:red', 'comum', None, 0, None), ('potion:blue', 'comum', None, 0, None), ('potion:green', 'incomum', None, 0, None), ('scroll', 'comum', None, 0, None), ('gem', 'raro', None, 0, None),
              ('bone', 'comum', None, 0, None), ('bone', 'comum', None, 0, None), ('leather', 'comum', None, 0, None), ('herb', 'comum', None, 0, None), ('ore', 'incomum', None, 0, None), ('key', 'epico', None, 0, None),
              ('chest', 'raro', None, 0, None), ('coin', 'comum', None, 0, None), ('martelo_sagrado', 'lendario', 410, 0, 'up'), ('espada_chamas', 'lendario', 388, 4, None)]
-    cell_row(im, items, 10, 128, 6, 9, 29)
+    cell_row(im, items, 9, 128, 6, 8, 30)
     return im
 
 

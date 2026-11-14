@@ -78,8 +78,11 @@ def slot(icon, rar='comum', size=20):
 STARS = {'comum': 1, 'incomum': 2, 'raro': 3, 'epico': 4, 'lendario': 5}
 
 
-def cell(icon, rar='comum', size=18, pc=None, up=0, arrow=None):
-    """celula de item como no jogo: moldura/fundo da raridade, icone, estrelas (topo), PC (embaixo), +N de melhoria e seta comparativa"""
+STAR5 = ['..#..', '.###.', '#####', '.###.', '.#.#.']
+
+
+def cell(icon, rar='comum', size=29, pc=None, up=0, arrow=None):
+    """celula de item como no jogo, em FAIXAS que nao se sobrepoem: estrelas 5x5 (topo) | icone 14px (meio) | 'PC' + numero 3x7 (embaixo)"""
     import pxfont
     a, b = RAR[rar]; ha = tuple(int(a[i:i + 2], 16) for i in (1, 3, 5)); hb = tuple(int(b[i:i + 2], 16) for i in (1, 3, 5))
     im = Image.new('RGBA', (size, size), (0, 0, 0, 0)); px = im.load()
@@ -90,18 +93,20 @@ def cell(icon, rar='comum', size=18, pc=None, up=0, arrow=None):
             px[x, y] = hb + (255,) if (x in (0, size - 1) or y in (0, size - 1)) else (ha + (255,) if (x in (1, size - 2) or y in (1, size - 2)) else bgc)
     for (x, y) in ((0, 0), (size - 1, 0), (0, size - 1), (size - 1, size - 1)): px[x, y] = (0, 0, 0, 0)
     if icon is not None:
-        ic = icon.crop((1, 1, 15, 15)); im.alpha_composite(ic, ((size - 14) // 2, (size - 14) // 2 - 1))
+        ic = icon.crop((1, 1, 15, 15)); im.alpha_composite(ic, ((size - 14) // 2, 8))
         for k in range(STARS[rar]):
-            sx_ = 4 + k * 4
-            for (ox, oy) in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)):
-                if 0 <= sx_ + ox < size and 0 <= 3 + oy < size: px[sx_ + ox, 3 + oy] = (255, 222, 90, 255) if (ox, oy) != (0, 0) else (255, 250, 190, 255)
+            for ry, row in enumerate(STAR5):
+                for rx, ch in enumerate(row):
+                    if ch == '#': px[3 + k * 5 + rx, 2 + ry] = (255, 232, 110, 255) if ry != 1 else (255, 250, 190, 255)
         if pc is not None:
             t = pc if isinstance(pc, str) else str(pc)
-            pxfont.text(im, (size - 2 - pxfont.width(t), size - 7), t, (255, 236, 170), False, True)
-            pxfont.text(im, (size - 2 - pxfont.width(t) - 9, size - 7), 'PC', (176, 150, 100), False, True)
-        if up: pxfont.text(im, (size - 2 - pxfont.width('+%d' % up), 3), '+%d' % up, (140, 255, 160))
-        if arrow == 'up': px[size - 4, 3] = (90, 255, 120, 255); px[size - 5, 4] = (90, 255, 120, 255); px[size - 3, 4] = (90, 255, 120, 255)
-        if arrow == 'dn': px[size - 4, 4] = (255, 90, 90, 255); px[size - 5, 3] = (255, 90, 90, 255); px[size - 3, 3] = (255, 90, 90, 255)
+            tw = pxfont.width(t); pxfont.text(im, (size - 3 - tw, size - 9), t, (255, 236, 170), False, True, 1, True)
+            pxfont.text(im, (size - 3 - tw - 9, size - 9), 'PC', (176, 150, 100), False, True, 1, True)
+        if up: pxfont.text(im, (size - 3 - pxfont.width('+%d' % up), 9), '+%d' % up, (140, 255, 160), False, True, 1, True)
+        if arrow == 'up':
+            for (ox, oy) in ((0, 0), (-1, 1), (1, 1), (-2, 2), (-1, 2), (0, 2), (1, 2), (2, 2)): px[5 + ox, 9 + oy] = (90, 255, 120, 255)
+        if arrow == 'dn':
+            for (ox, oy) in ((-2, 0), (-1, 0), (0, 0), (1, 0), (2, 0), (-1, 1), (0, 1), (1, 1), (0, 2)): px[5 + ox, 9 + oy] = (255, 90, 90, 255)
     return im
 
 

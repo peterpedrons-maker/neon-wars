@@ -23,7 +23,7 @@ def norm(s):
 def width(s, k=1): return max(0, sum(2 if c == ' ' else 4 for c in norm(s)) - 1) * k
 
 
-def text(im, xy, s, col=(240, 226, 190), center=False, shadow=True, k=1):
+def text(im, xy, s, col=(240, 226, 190), center=False, shadow=True, k=1, tall=False):
     s = norm(s); x, y = xy
     if center: x -= width(s, k) // 2
     d = ImageDraw.Draw(im)
@@ -32,6 +32,7 @@ def text(im, xy, s, col=(240, 226, 190), center=False, shadow=True, k=1):
         for ch in s:
             if ch == ' ': cx += 2; continue
             rows = G.get(ch, G['?'])
+            if tall: rows = [rows[0], rows[1], rows[1], rows[2], rows[3], rows[3], rows[4]]
             for ry, r in enumerate(rows):
                 for rx, p in enumerate(r):
                     if p == '#':
