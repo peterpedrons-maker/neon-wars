@@ -194,7 +194,8 @@ def side_pose(p, sc=None):
     sh = (P[0] + up[0] * TORSO_ * .86, P[1] + up[1] * TORSO_ * .86)
     j['sh'] = sh
     hl = lean * .35 + p.get('head', 0)
-    j['head'] = (chest[0] + math.sin(math.radians(hl)) * 5.4 * SC + .4, chest[1] - math.cos(math.radians(hl)) * 5.4 * SC)
+    ho = p.get('hoff', 5.4 * SC)
+    j['head'] = (chest[0] + math.sin(math.radians(hl)) * ho + .4, chest[1] - math.cos(math.radians(hl)) * ho)
     for name, (a, fx) in (('n', p['na']), ('f', p['fa'])):
         el = add(sh, v(0, a, UARM_))
         ha = add(el, v(0, a + fx, FARM_))
@@ -335,7 +336,7 @@ ATK = [
 ]
 
 
-def spring_chain(base_pts_per_frame, seg, damp=.78, k=.32, drag=(0, 0), loops=4):
+def spring_chain(base_pts_per_frame, seg, damp=.78, k=.32, drag=(0, 0), loops=4, grav=.8):
     """base_pts_per_frame: lista (por quadro) da ancora. Retorna lista (por quadro) de cadeias com atraso."""
     n = len(base_pts_per_frame)
     pts = [(base_pts_per_frame[0][0] - seg * (i + 1), base_pts_per_frame[0][1]) for i in range(2)]
@@ -350,7 +351,7 @@ def spring_chain(base_pts_per_frame, seg, damp=.78, k=.32, drag=(0, 0), loops=4)
                 p = pts[i]; q = prev[i]
                 anchor = chain[-1]
                 vel = ((p[0] - q[0]) * damp, (p[1] - q[1]) * damp)
-                tx, ty = anchor[0] - seg + drag[0], anchor[1] + .8 + drag[1]
+                tx, ty = anchor[0] - seg * .6 + drag[0], anchor[1] + grav + drag[1]
                 np_ = (p[0] + vel[0] + (tx - p[0]) * k, p[1] + vel[1] + (ty - p[1]) * k)
                 # mantem comprimento
                 dx, dy = np_[0] - anchor[0], np_[1] - anchor[1]
