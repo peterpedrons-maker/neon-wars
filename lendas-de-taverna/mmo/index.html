@@ -846,6 +846,8 @@ const $=id=>document.getElementById(id);
 const rnd=(a,b)=>a+Math.random()*(b-a), rint=(a,b)=>Math.floor(rnd(a,b+1)), pick=a=>a[Math.floor(Math.random()*a.length)];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+function runSt(h,m,dt){if(!h.run&&m>=RUNM)h.run=true;else if(h.run&&m<RUNM-.14)h.run=false;h.rk=(h.rk||0)+((h.run?1:0)-(h.rk||0))*Math.min(1,dt*7);return h.rk;}
+function dir4h(row,dx,dy){const ax=Math.abs(dx),ay=Math.abs(dy);if((row===1||row===3)&&ay<ax*1.3&&ax>0)return dx>0?3:1;if((row===0||row===2)&&ax<ay*1.3&&ay>0)return dy>0?2:0;return dir4(dx,dy);}
 function dir4(dx,dy){return Math.abs(dx)>Math.abs(dy)?(dx>0?3:1):(dy>0?2:0);}
 const BAG_MAX=100;   /* espaço da mochila */
 const SAVE_KEY='hb_mmo_save_v1';
@@ -2466,7 +2468,7 @@ function moveTo(e,tx,ty,sp,dt,pf){
     e._sx=e.x;e._sy=e.y;e._sc=0;}
   let spm=sp,rest=false;
   if(DOLL&&sp<=150&&(e.kind==='hero'||e.kind==='mob'||e.kind==='boss')&&!(e.T&&e.T.fly)&&!e.dash&&!e.ent){   /* miniaturas: anda um pedacinho, salta, pousa, repete */
-    if(G.t-(e._hl||-9)>.25)e._hp=0;e._hl=G.t;const cyc=e.kind==='hero'?(e.run?.36:.46):e.kind==='boss'?.7:.55;e._hp=((e._hp||0)+dt/cyc)%1;
+    if(G.t-(e._hl||-9)>.25)e._hp=0;e._hl=G.t;const cyc=e.kind==='hero'?(.46-.1*(e.rk||0)):e.kind==='boss'?.7:.55;e._hp=((e._hp||0)+dt/cyc)%1;
     if(e._hp<.5)spm=sp*2;else{spm=0;rest=true;}}
   const s=Math.min(d,spm*dt);e.x+=dx/d*s;e.y+=dy/d*s;e.row=dir4(dx,dy);return s||(rest?.001:0);
 }
@@ -2883,7 +2885,7 @@ function updateHero(dt){
   else tgt=nearestMob(h,h.rng*1.05);
   h.tg=tgt;
   let moved=0;
-  if(jm){h.run=G.joy.m>=RUNM;moved=moveTo(h,h.x+G.joy.x*60,h.y+G.joy.y*60,hSpd(h)*(h.run?RUN:Math.max(.35,G.joy.m)),dt);h.row=dir4(G.joy.x,G.joy.y);}else h.run=false;
+  if(jm){const rk=runSt(h,G.joy.m,dt),b=Math.max(.35,G.joy.m);moved=moveTo(h,h.x+G.joy.x*60,h.y+G.joy.y*60,hSpd(h)*(b+(RUN-b)*rk),dt);h.row=dir4h(h.row,G.joy.x,G.joy.y);}else{h.run=false;h.rk=0;}
   if(!G.auto&&G.castReq>=0&&h.cd<=0)manualCast();
   if(tgt&&!jm){
     const d=Math.max(0,dist(h,tgt)-((tgt.T&&tgt.T.rad)||0)),want=h.rng*(h.rng>60?.9:.8);   // alcance medido da borda do corpo
@@ -2901,7 +2903,7 @@ function updateHero(dt){
     else if(G.crp){const R=ZONE.crp.route,C=G.crp;C.wt=(C.wt||0)+dt;while(C.wi<R.length-1&&(dist(h,{x:R[C.wi][0],y:R[C.wi][1]})<30||C.wt>7)){C.wi++;C.wt=0;}moved=moveTo(h,R[C.wi][0],R[C.wi][1],hSpd(h)*.9,dt,1);}
     else{G.wpT-=dt;if(!G.wanderP||G.wpT<=0||dist(h,G.wanderP)<8){G.wanderP={x:ZONE.spawns[rint(0,ZONE.spawns.length-1)][0],y:ZONE.spawns[rint(0,ZONE.spawns.length-1)][1]};G.wpT=6;}moved=moveTo(h,G.wanderP.x,G.wanderP.y,hSpd(h)*.7,dt);}
   }
-  if(moved){h.state='walk';h.animT+=dt*(h.speed/70)*(h.run?RUN:1);collide(h);stepFx(h,dt);if(h.run)runFx(h,dt);if(Math.floor(h.animT*2.6)!==h.lastStep){h.lastStep=Math.floor(h.animT*2.6);}}else h.state='idle';
+  if(moved){h.state='walk';h.animT+=dt*(h.speed/70)*(1+(RUN-1)*(h.rk||0));collide(h);stepFx(h,dt);if(h.run)runFx(h,dt);if(Math.floor(h.animT*2.6)!==h.lastStep){h.lastStep=Math.floor(h.animT*2.6);}}else h.state='idle';
 }
 function updateMob(m,dt){
   const h=G.hero;
@@ -3694,7 +3696,7 @@ function exitRoom(){
 }
 function updateTown(dt){
   const h=G.hero;h.flash=0;h.kvx=h.kvy=0;let moved=0;
-  if(G.joy.m>0&&!G.winOpen){G.wp=null;h.run=G.joy.m>=RUNM;moved=moveTo(h,h.x+G.joy.x*60,h.y+G.joy.y*60,hSpd(h)*(h.run?RUN*1.1:1.15*G.joy.m),dt);h.row=dir4(G.joy.x,G.joy.y);collide(h);}else h.run=false;
+  if(G.joy.m>0&&!G.winOpen){G.wp=null;const rk=runSt(h,G.joy.m,dt),b=1.15*G.joy.m;moved=moveTo(h,h.x+G.joy.x*60,h.y+G.joy.y*60,hSpd(h)*(b+(RUN*1.1-b)*rk),dt);h.row=dir4h(h.row,G.joy.x,G.joy.y);collide(h);}else{h.run=false;h.rk=0;}
   if(G.wp&&!G.winOpen){
     const t=G.wp.target;
     if(t&&t.kind==='npc'&&dist(h,t)<(t.r||40)){G.wp=null;interact(t);}
@@ -3706,7 +3708,7 @@ function updateTown(dt){
     if(nr&&nr.k!=='npc'){
       if(G.doorArm&&moved&&!G.winOpen&&!G.roomBusy){G.doorArm=false;G.wp=null;sfx('ui_confirm',.6);if(nr.k==='door')enterRoom(nr.d.room,nr.d.id);else interact({kind:'portal'});}}
     else if(!nr)G.doorArm=true;}
-  if(moved){h.state='walk';h.animT+=dt*(h.speed/70)*(h.run?RUN:1);stepFx(h,dt);if(h.run)runFx(h,dt);}else h.state='idle';
+  if(moved){h.state='walk';h.animT+=dt*(h.speed/70)*(1+(RUN-1)*(h.rk||0));stepFx(h,dt);if(h.run)runFx(h,dt);}else h.state='idle';
   if(!G.room)lifeUpdate(dt);
   if(h.hp<h.maxhp)h.hp=Math.min(h.maxhp,h.hp+h.maxhp*.2*dt);
   for(const n of G.npcs){const d=dist(h,n);n.row=d<150?dir4(h.x-n.x,h.y-n.y):n.row0;}
@@ -3966,7 +3968,7 @@ function dollSet(e,o){const d={x:0,y:0,sx:1,sy:1,rot:0,h:0,sink:0},hr=G.hero;let
   if(e.kind==='hero'){const r=e.row;dx=r===1?-1:r===3?1:0;dy=r===0?-1:r===2?1:0;}
   const L=Math.hypot(dx,dy)||1;dx/=L;dy/=L;const s=dx>=0?1:-1,g=GAIT[o.g||'hop'],ss=e.kind==='boss'?1.5:e.kind==='hero'?.8:1;
   if(o.k==='move'){if(o.g==='float'||g===GAIT.float){const ph=(e.animT*g.f)%1,h=Math.abs(Math.sin(ph*Math.PI))*g.h*ss;d.y=-h;d.h=h;d.rot=Math.sin(ph*6.2832)*g.tilt*Math.PI/180;}
-    else{const ph=e._hp||0,H=g.h*ss*1.25;if(ph<.5){const u=ph/.5,sn=Math.sin(u*Math.PI);const rn=e.run?1.2:1;d.y=-sn*H*rn;d.h=sn*H*rn;d.sx=1-.07*sn;d.sy=1+.1*sn;d.rot=.05*sn*s+(e.run?.08*s:0);}
+    else{const ph=e._hp||0,H=g.h*ss*1.25;if(ph<.5){const u=ph/.5,sn=Math.sin(u*Math.PI);const rn=1+.2*(e.rk||0);d.y=-sn*H*rn;d.h=sn*H*rn;d.sx=1-.07*sn;d.sy=1+.1*sn;d.rot=.05*sn*s+(.08*s*(e.rk||0));}
       else{const k=(ph-.5)/.14;if(k<1){d.sy=1-.12*(1-k);d.sx=1+.09*(1-k);}else if(ph>.9){const q=(ph-.9)/.1;d.sy=1-.07*q;d.sx=1+.05*q;}}}}
   else if(o.k==='dash'){d.rot=.16*s;d.sy=.97;d.sx=1.04;}
   else if(o.k==='atk'){const p=o.p,lg=o.lunge||0;

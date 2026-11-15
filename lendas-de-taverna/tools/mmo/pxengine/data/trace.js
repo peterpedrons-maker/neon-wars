@@ -23,7 +23,7 @@ const mode = process.argv[2] || 'farm', secs = +(process.argv[3] || 40), pow = +
       __mmo.update(1 / 60);
       if (i % 2) continue;
       const h = G.hero;
-      const F = { t: o1(G.t), ph: G.phase, hero: { ...prim(h, ['x', 'y', 'row', 'state', 'animT', 'hp', 'maxhp', 'flash', 'hurtT', 'inv', 'cd', 'run']), act: h.act ? prim(h.act, ['t', 'dur', 'hit', 'done']) : null, dod: h.dod ? prim(h.dod, ['t', 'dur', 'dx', 'dy', 'type']) : null }, mobs: [], zones: [], mp: [], pr: [], fl: [], loot: [] };
+      const F = { t: o1(G.t), ph: G.phase, hero: { ...prim(h, ['x', 'y', 'row', 'state', 'animT', 'hp', 'maxhp', 'flash', 'hurtT', 'inv', 'cd', 'run', 'rk']), act: h.act ? prim(h.act, ['t', 'dur', 'hit', 'done']) : null, dod: h.dod ? prim(h.dod, ['t', 'dur', 'dx', 'dy', 'type']) : null }, mobs: [], zones: [], mp: [], pr: [], fl: [], loot: [] };
       for (const m of G.mobs) { if (!m.__id) m.__id = nid++; F.mobs.push({ id: m.__id, ...prim(m, ['x', 'y', 'row', 'state', 'animT', 'hp', 'maxhp', 'flash', 'dead', 'deadT', 'name', 'elite', 'flipX']), atlas: m.T && m.T.atlas, fam: m.T && m.T.fam, boss: m === G.boss ? 1 : 0, act: m.act ? prim(m.act, ['t', 'dur', 'done']) : null }); }
       for (const z of G.zones) F.zones.push(prim(z, ['shape', 'x', 'y', 'r', 'a', 'w', 'len', 'warn', 't', 'done', 'col', 'pc', 'ang', 'arc', 'r0', 'r1']));
       for (const q of (G.mprojs || [])) F.mp.push(prim(q, ['x', 'y', 'vx', 'vy', 'col', 'r', 'kind']));
