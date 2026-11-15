@@ -20,7 +20,7 @@ def darker(c, k): return tuple(max(0, int(v * k)) for v in c)
 
 class Cv:
     def __init__(s):
-        s.reg = np.full((H, W), -1, int); s.names = []; s.det = []; s.far = np.zeros((H, W), bool)
+        s.reg = np.full((H, W), -1, int); s.names = []; s.det = []; s.far = np.zeros((H, W), bool); s.ord = np.zeros((H, W), int); s.n = 0
 
     def rid(s, n):
         if n not in s.names: s.names.append(n)
@@ -29,7 +29,7 @@ class Cv:
     def ell(s, cx, cy, rx, ry, reg='body', far=False):
         r = s.rid(reg); ys, xs = np.mgrid[0:H, 0:W]
         m = ((xs + .5 - cx) / rx) ** 2 + ((ys + .5 - cy) / ry) ** 2 <= 1
-        s.reg[m] = r
+        s.reg[m] = r; s.n += 1; s.ord[m] = s.n
         if far: s.far[m] = True
 
     def cap(s, x0, y0, x1, y1, r0, r1, reg='body', far=False):
@@ -37,7 +37,7 @@ class Cv:
         px, py = xs + .5 - x0, ys + .5 - y0; dx, dy = x1 - x0, y1 - y0; L2 = dx * dx + dy * dy or 1
         t = np.clip((px * dx + py * dy) / L2, 0, 1); rr = r0 + (r1 - r0) * t
         m = (px - t * dx) ** 2 + (py - t * dy) ** 2 <= rr ** 2
-        s.reg[m] = r
+        s.reg[m] = r; s.n += 1; s.ord[m] = s.n
         if far: s.far[m] = True
 
     def dot(s, x, y, col): s.det.append((int(round(x)), int(round(y)), col))
@@ -53,6 +53,11 @@ class Cv:
         base = .22 * (1 - 2 * (ys - y0) / max(1, y1 - y0))
         v = (.6 * gx + .8 * gy) / (mag + 1e-6) * np.clip(mag * 5, 0, 1) + base
         tone = np.where(v > .3, 2, np.where(v < -.22, 0, 1))
+        contact = np.zeros((H, W), bool)
+        if getattr(s, 'contact', True):
+            for dx, dy in ((1, 0), (0, 1), (-1, 0), (0, -1)):
+                nr = np.roll(np.roll(s.reg, -dy, 0), -dx, 1); no = np.roll(np.roll(s.ord, -dy, 0), -dx, 1)
+                contact |= (s.reg >= 0) & (nr >= 0) & (nr != s.reg) & (no > s.ord) & ~s.far
         img = Image.new('RGBA', (W, H), (0, 0, 0, 0)); px = img.load()
         for y in range(H):
             for x in range(W):
@@ -61,6 +66,7 @@ class Cv:
                 n = s.names[r]
                 if n in flat: px[x, y] = flat[n] + (255,); continue
                 t = int(tone[y, x]) - (1 if s.far[y, x] else 0)
+                if contact[y, x]: t = 0
                 px[x, y] = ramps[n][max(0, t)] + (255,)
         # contorno unico, seletivo (escuro da cor do vizinho)
         for y in range(H):
