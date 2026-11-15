@@ -30,19 +30,19 @@ def bar(d, x, y, w, frac, col, h=5):
 
 
 def hud(im, zone=None, hp=1.0, msgs=(), boss=None, quest=True):
-    d = ImageDraw.Draw(im)
-    panel(d, (4, 4, 98, 40))
-    d.rectangle([8, 8, 34, 34], fill=(50, 26, 26), outline=GOLD)
-    im.alpha_composite(spr('heroi')[0].crop((20, 6, 52, 26)).resize((25, 25), Image.NEAREST), (9, 9))
-    T(im, (38, 9), 'TESTE', CREAM); bar(d, 38, 18, 56, hp, (210, 50, 50), 8); T(im, (66, 20), '135/135', (255, 236, 236), True)
-    T(im, (38, 30), 'PC 147', GOLD)
-    d.ellipse([5, 28, 19, 42], fill=(210, 160, 50), outline=(120, 80, 20)); T(im, (12, 32), '1', (40, 24, 8), True)
+    d = ImageDraw.Draw(im); o = 24 if boss else 0
+    panel(d, (4, 4 + o, 98, 40 + o))
+    d.rectangle([8, 8 + o, 34, 34 + o], fill=(50, 26, 26), outline=GOLD)
+    im.alpha_composite(spr('heroi')[0].crop((20, 6, 52, 26)).resize((25, 25), Image.NEAREST), (9, 9 + o))
+    T(im, (38, 9 + o), 'TESTE', CREAM); bar(d, 38, 18 + o, 56, hp, (210, 50, 50), 8); T(im, (66, 20 + o), '%d/135' % round(135 * hp), (255, 236, 236), True)
+    T(im, (38, 30 + o), 'PC 147', GOLD)
+    d.ellipse([5, 28 + o, 19, 42 + o], fill=(210, 160, 50), outline=(120, 80, 20)); T(im, (12, 32 + o), '1', (40, 24, 8), True)
     if zone:
-        T(im, (168, 4), zone, GOLD, True)
-        panel(d, (146, 12, 191, 57)); d.rectangle([149, 15, 188, 54], fill=(10, 10, 22))
-        for (x0, y0, x1, y1) in ((154, 27, 183, 33), (165, 35, 173, 51)): d.rectangle([x0, y0, x1, y1], fill=(38, 34, 60))
-        d.rectangle([168, 40, 170, 42], fill=(255, 220, 90))
-    if quest:
+        T(im, (168, 4 + o), zone, GOLD, True)
+        panel(d, (146, 12 + o, 191, 57 + o)); d.rectangle([149, 15 + o, 188, 54 + o], fill=(10, 10, 22))
+        for (x0, y0, x1, y1) in ((154, 27, 183, 33), (165, 35, 173, 51)): d.rectangle([x0, y0 + o, x1, y1 + o], fill=(38, 34, 60))
+        d.rectangle([168, 40 + o, 170, 42 + o], fill=(255, 220, 90))
+    if quest and not boss:
         panel(d, (120, 62, 191, 100), fill=(16, 14, 28)); T(im, (126, 67), 'MISSOES', GOLD); T(im, (126, 77), 'Primeiros', CREAM); T(im, (126, 85), 'passos', CREAM); T(im, (186 - pxfont.width('0/8'), 85), '0/8', (140, 255, 160))
     for i, (t, ic) in enumerate((('PERS', 'helm'), ('HABIL', 'espada_aco'), ('DIARIO', 'scroll'), ('SOCIAL', 'ring'))):
         y = 220 + i * 36; panel(d, (160, y, 191, y + 32), fill=(20, 16, 34)); im.alpha_composite(IC.get(ic).crop((1, 1, 15, 15)), (168, y + 3)); T(im, (176, y + 22), t, CREAM, True)
@@ -57,7 +57,7 @@ def hud(im, zone=None, hp=1.0, msgs=(), boss=None, quest=True):
         if lock: T(im, (x + 14, 398), lock, DIM, True)
     T(im, (22 + 3 * 30 + 24, 405), '2', CREAM, True)
     if boss:
-        T(im, (97, 3), boss[0], CREAM, True, 2); d.rectangle([4, 14, 190, 21], fill=(14, 8, 16), outline=GOLD); d.rectangle([5, 15, 5 + int(184 * boss[1]), 20], fill=(205, 40, 40))
+        T(im, (97, 3), boss[0], CREAM, True, 1); d.rectangle([4, 11, 190, 20], fill=(14, 8, 16), outline=GOLD); d.rectangle([5, 12, 5 + int(184 * boss[1]), 19], fill=(205, 40, 40)); d.line([5, 12, 5 + int(184 * boss[1]), 12], fill=(255, 130, 110))
 
 
 def mini_hp(im, x, y, frac, w=18):

@@ -59,7 +59,7 @@ def run(frames_n=220):
                         for _ in range(7): parts.append([m.x, m.y - 40, random.uniform(-3, 3), random.uniform(-4, -1), 8, (255, 240, 160)])
                         if m.hp <= 0: m.st = 'dead'; m.t = 0
                         elif m.st != 'dead': m.st = 'hurt'; m.t = 0
-            if H['t'] >= n: H['st'] = 'idle'; H['t'] = 0; H['cd'] = 6
+            if H['t'] >= n - 2: H['st'] = 'idle'; H['t'] = 0; H['cd'] = 0
         else:
             H['cd'] = max(0, H['cd'] - 1)
             if tgt:
@@ -86,7 +86,7 @@ def run(frames_n=220):
                 if m.t == int(ln * .55) and d < m.rng + 24 and H['st'] != 'hurt':
                     H['hp'] = max(.05, H['hp'] - m.dmg); H['st'] = 'hurt'; H['t'] = 0; nums.append([H['x'], H['y'] - 90, str(int(m.dmg * 300)), (255, 120, 110), 0]); shake = (1, 0)
                     for _ in range(6): parts.append([H['x'], H['y'] - 30, random.uniform(-3, 3), random.uniform(-3, -.5), 8, (255, 90, 80)])
-                if m.t >= ln: m.st = 'walk'; m.t = 0; m.cd = 30
+                if m.t >= ln: m.st = 'walk'; m.t = 0; m.cd = 6
             else:
                 m.view = facing(dx, dy)
                 if d > m.rng: m.x += dx / d * m.sp; m.y += dy / d * m.sp; m.t += 1

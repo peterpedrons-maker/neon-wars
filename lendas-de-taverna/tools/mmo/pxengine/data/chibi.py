@@ -645,6 +645,24 @@ def accessory2(g, hat, view, hx, hy, back=False):
         else:
             g.stamp(['.rrr.', 'rppSr', 'rppSr', '.rrr.'], hx - 1, hy - 3); g.stamp(['.rrr.', 'rSppr', 'rSppr', '.rrr.'], hx + 18, hy - 3)
             g.stamp(['kk...', '..kk.'], hx - 3, hy + 12); g.stamp(['...kk', '.kk..'], hx + 20, hy + 12)
+    elif hat == 'gob_shaman':
+        for x in range(hx + 1, hx + (19 if view == 'side' else 21)): g.put(x, hy + 4, 'M')
+        for k, (xx, yy, ch) in enumerate(((10, -6, 'r'), (11, -6, 'r'), (9, -4, 'r'), (12, -4, 'r'), (10, -3, 'R'), (11, -3, 'R'), (10, -2, 'R'), (11, -2, 'R'), (8, -1, 'A'), (13, -1, 'A'))):
+            g.put(hx + xx + (-3 if view == 'side' else 0), hy + yy, ch)
+        if view == 'side': g.stamp(['.sS', 'sSS', '.sS'], hx + 19, hy + 9); g.stamp(['s......', 'ss.....', 'sss....', '.sSs...'], hx + 3, hy + 4)
+        else:
+            g.stamp(['s.....', 'ss....', 'sSs...', '.sSSs.'], hx - 5, hy + 4); g.stamp(['.....s', '....ss', '...sSs', '.sSSs.'], hx + 21, hy + 4)
+            g.stamp(['sS', 'sS', '.s'], hx + 10, hy + 10); g.stamp(['Ss', 'Ss', 's.'], hx + 11, hy + 10)
+    elif hat == 'bandage':
+        for x in range(hx + 2, hx + (18 if view == 'side' else 20)):
+            g.put(x, hy + 3, 'A'); g.put(x, hy + 6 + (x % 2), 'A') if x % 3 else None
+        for k in range(6): g.put(hx + 2 + k * 3, hy + 4, 'a')
+        if view != 'side': g.put(hx + 6, hy + 10, 'k'); g.put(hx + 7, hy + 10, 'k'); g.put(hx + 6, hy + 11, 'k')
+    elif hat == 'rusty_helm':
+        for x in range(hx + 2, hx + (18 if view == 'side' else 20)):
+            for y in range(hy + 1, hy + 5): g.put(x, y, 'U' if y > hy + 1 else 'u')
+        g.put(hx + 8, hy + 3, 'V'); g.put(hx + 12, hy + 4, 'V')
+        for x in range(hx + 2, hx + 20, 4): g.put(x, hy + 4, 'V')
     elif hat == 'kinghelm':
         if view == 'side':
             for off, h in ((4, 3), (9, 5), (14, 6), (18, 4)):
@@ -699,6 +717,13 @@ def arm_cells(p0, p1, thick=2):
 
 # ---------------------------------------------------------------- roupas (outfit): cota de malha / manto completo
 def outfit_pass(g, outfit, view, cx, body_top, boot_top, dx=0, bdx=0, back=False, al=(0, 0), ar=(0, 0)):
+    if outfit == 'cloth' and view != 'side':
+        by_ = boot_top - 2
+        for x in range(cx - 6 + dx, cx + 6 + dx):
+            if g.get(x, by_) in 'tT': g.put(x, by_, 'M')
+        g.put(cx - 1 + dx, by_, 'G'); g.put(cx + dx, by_, 'g')
+        for x in range(cx - 6 + dx, cx + 6 + dx):
+            if g.get(x, boot_top - 1) in 'tT' and (x + dx) % 2: g.put(x, boot_top - 1, 'T')
     if outfit == 'mail' and (_REI or _BULK):
         _t = (lambda rows: rows) if _REI else (lambda rows: [r.replace('i', 'u') for r in rows])
         if view == 'side': g.stamp(_t(['..i..', '.iuUV', 'iuUUV', 'uUUVV', '.UVV.']), cx - 5 + dx + bdx, body_top - 1)
@@ -723,6 +748,8 @@ def outfit_pass(g, outfit, view, cx, body_top, boot_top, dx=0, bdx=0, back=False
                 if g.get(x, y) in 'tT': g.put(x, y, 'M')
         for y in range(body_top + 1, boot_top - 1):
             if g.get(cx + dx, y) in 'tTM': g.put(cx + dx, y, 'M')
+    elif outfit == 'robe' and False:
+        pass
     elif outfit == 'robe':
         # manto completo: cobre as botas, mangas largas, listra dourada
         if view == 'side':
