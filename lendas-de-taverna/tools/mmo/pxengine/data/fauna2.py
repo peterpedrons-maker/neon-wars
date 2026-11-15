@@ -2,6 +2,7 @@
 """FAUNA 2: criaturas bipedes/aladas/vegetais de UMA SO MASSA (mesmo motor do fauna.py): gnoll, homem-rato, harpia, tronco vivo, cogumelo andante, ogrinho."""
 import math
 from fauna import Cv, R, hx, FLAT, PAL, W, H, BASE, anim as _anim, DRAW
+from humano import eye2
 FLAT.update({'metal': hx('#c8d0e0'), 'wood': hx('#7a5230'), 'bone': hx('#e8e2d0')})
 PAL.update({
     'gnoll': dict(body=R('#6a4a22', '#a07a3a', '#d0a860'), belly=R('#a08a60', '#d0bc8a', '#ece0b8'), mane=R('#2e1e0c', '#4e3414', '#6e4c1e'), spot=R('#3e2a10', '#5a3c16', '#7a5424'),
@@ -111,49 +112,88 @@ def ratkin(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_d
     return c.render(PAL['ratkin'], FLAT)
 
 
-# ------------------------------------------------------------------ HARPIA
+# ------------------------------------------------------------------ HARPIA (3 vistas: frente, costas, lado)
 def harpia(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=0, **kw):
     c = Cv(); cx = W // 2; gy = BASE
-    fl = math.sin(ph * 2) * 1.0; by = gy - 22 + bob + math.sin(ph) * 1.5; bx = cx + lunge * .4
-    for sg in (-1, 1):                                                  # asas (um unico bloco com o corpo)
-        c.cap(bx + sg * 3, by - 3, bx + sg * 15, by - 9 - fl * 6, 4.2, 2.0, 'wing', sg < 0)
-        c.cap(bx + sg * 15, by - 9 - fl * 6, bx + sg * 20, by + 1 - fl * 8, 2.4, 1.0, 'wing', sg < 0)
-        c.cap(bx + sg * 4, by + 1, bx + sg * 16, by - 2 - fl * 6, 3.4, 1.4, 'wing', sg < 0)
-    c.ell(bx, by + 2, 5.2, 7.2)
-    c.ell(bx, by + 3.4, 3.4, 4.6, 'belly')
-    c.cap(bx, by + 8, bx - 1.5, by + 15, 2.4, 1.2)                      # cauda/pernas de ave
-    for sg in (-1, 1):
-        c.cap(bx + sg * 2.4, by + 8, bx + sg * 3, gy - 3 - (1 if sg > 0 else 0) * fl, 1.0, .8, 'talon')
-        c.cap(bx + sg * 3, gy - 3, bx + sg * 4.4, gy, 1.2, .5, 'talon')
-    hy = by - 8 + head_dy + lunge * .2
-    c.ell(bx, hy, 4.6, 4.4)
-    c.cap(bx - 4, hy - 2, bx - 5.5, hy + 5, 1.6, .9, 'hair'); c.cap(bx + 4, hy - 2, bx + 5.5, hy + 5, 1.6, .9, 'hair')
-    c.ell(bx, hy - 3.4, 4.6, 2.2, 'hair')
-    c.cap(bx, hy + 1.5, bx + (3 if view == 'right' else 0), hy + 3.4, 1.5, .5, 'beak')
-    for sg in (-1, 1): c.dot(bx + sg * 1.9, hy - .6, hx('#ffe04a') if not squint else hx('#14101c'))
-    if mouth: c.dot(bx, hy + 4.2, hx('#14100c'))
+    fl = math.sin(ph * 2) * 1.0; by = gy - 19 + bob + math.sin(ph) * 1.5; bx = cx + lunge * .4
+    if view == 'right':
+        for sg, far in ((1, True), (-1, False)):                          # asa de tras (perto = na frente) levantada, vista de perfil
+            d = -2 if far else 0
+            c.cap(bx - 1 + d, by - 3, bx - 9 + d, by - 11 - fl * 5, 4.0, 2.0, 'wing', far)
+            c.cap(bx - 9 + d, by - 11 - fl * 5, bx - 17 + d, by - 6 - fl * 7, 2.6, 1.0, 'wing', far)
+            c.cap(bx - 2 + d, by - 1, bx - 14 + d, by - 4 - fl * 5, 3.0, 1.3, 'wing', far)
+        c.ell(bx, by + 2, 4.8, 7.2)                                       # corpo
+        c.ell(bx + 1, by + 3.4, 3.0, 4.6, 'belly')
+        c.cap(bx - 1, by + 8, bx - 4, by + 15, 2.2, 1.0)                  # cauda
+        for dx_, far in ((-1.5, True), (1.2, False)):
+            c.cap(bx + dx_, by + 8, bx + dx_ + 1, gy - 3, 1.1, .8, 'talon', far); c.cap(bx + dx_ + 1, gy - 3, bx + dx_ + 4, gy - .4, 1.2, .5, 'talon', far)
+        hy = by - 8 + head_dy + lunge * .2; hxx = bx + 2 + lunge * .3
+        c.ell(hxx - 1.5, hy + 1.5, 3.4, 5, 'hair')                        # cabelo comprido caindo atras
+        c.ell(hxx, hy, 4.4, 4.4)
+        c.ell(hxx - .6, hy - 3.2, 4.4, 2.2, 'hair')
+        c.cap(hxx + 3, hy + .6, hxx + 8, hy + 2.6, 1.7, .5, 'beak')       # bico a frente
+        eye2(c, hxx + 1.4, hy - 1.4, '#ffe04a', False, squint) if False else (c.dot(hxx + 2, hy - 1, hx('#ffe04a')) if not squint else c.dot(hxx + 2, hy - 1, hx('#14101c')))
+        c.dot(hxx + 2, hy - 2, hx('#14101c')) if not squint else None
+        if mouth: c.dot(hxx + 5, hy + 3.4, hx('#14100c'))
+    else:
+        back = view == 'up'
+        for sg in (-1, 1):
+            c.cap(bx + sg * 3, by - 3, bx + sg * 15, by - 9 - fl * 6, 4.2, 2.0, 'wing', sg < 0)
+            c.cap(bx + sg * 15, by - 9 - fl * 6, bx + sg * 20, by + 1 - fl * 8, 2.4, 1.0, 'wing', sg < 0)
+            c.cap(bx + sg * 4, by + 1, bx + sg * 16, by - 2 - fl * 6, 3.4, 1.4, 'wing', sg < 0)
+        c.ell(bx, by + 2, 5.2, 7.2)
+        if not back: c.ell(bx, by + 3.4, 3.4, 4.6, 'belly')
+        c.cap(bx, by + 8, bx - 1.5 + (math.sin(tail) if back else 0), by + 15, 2.4, 1.2)
+        for sg in (-1, 1):
+            c.cap(bx + sg * 2.4, by + 8, bx + sg * 3, gy - 3, 1.0, .8, 'talon'); c.cap(bx + sg * 3, gy - 3, bx + sg * 4.4, gy, 1.2, .5, 'talon')
+        hy = by - 8 + head_dy + lunge * .2
+        c.ell(bx, hy, 4.6, 4.4)
+        c.cap(bx - 4, hy - 2, bx - 5.5, hy + 5, 1.6, .9, 'hair'); c.cap(bx + 4, hy - 2, bx + 5.5, hy + 5, 1.6, .9, 'hair')
+        c.ell(bx, hy - 3.4, 4.6, 2.2, 'hair')
+        if back: c.ell(bx, hy + 1, 4.6, 4.4, 'hair')
+        else:
+            c.cap(bx, hy + 1.5, bx, hy + 3.8, 1.5, .5, 'beak')
+            for sg in (-1, 1): c.dot(bx + sg * 1.9, hy - .6, hx('#ffe04a') if not squint else hx('#14101c'))
+            if mouth: c.dot(bx, hy + 4.4, hx('#14100c'))
     return c.render(PAL['harpia'], FLAT)
 
 
-# ------------------------------------------------------------------ TRONCO VIVO (treant jovem)
+# ------------------------------------------------------------------ TRONCO VIVO (treant jovem) — frente, costas e LADO diferentes
 def tronco(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=0, **kw):
     c = Cv(); cx = W // 2; gy = BASE
-    bx = cx + lunge * .3; by = gy - 14 + bob
-    for sx, ph0 in ((-5.5, 0), (5.5, math.pi)):
-        lift = max(0, math.sin(ph + ph0)) * 2.4
-        c.cap(bx + sx * .6, by + 7, bx + sx, gy - lift, 3.2, 2.2, 'root'); c.ell(bx + sx, gy - lift - .6, 3.2, 1.5, 'root')
-    c.ell(bx, by, 8, 11)                                                # tronco grosso
-    c.ell(bx, by - 11, 6.4, 2.6, 'bark')
-    for sg in (-1, 1):
-        c.cap(bx + sg * 6, by - 6, bx + sg * 13, by - 13 - sg * math.sin(ph) * 1.5 - (lunge * .2), 2.2, 1.0, 'bark')       # galhos/braços
-        c.cap(bx + sg * 13, by - 13, bx + sg * 15, by - 17, 1.0, .6, 'bark')
-        c.ell(bx + sg * 14, by - 17, 3, 2.6, 'leaf'); c.ell(bx + sg * 9, by - 18, 3.4, 2.8, 'leaf')
-    c.ell(bx, by - 20, 7, 4.2, 'leaf'); c.ell(bx - 4, by - 17, 3.6, 3, 'leaf')
-    for k in range(4): c.dot(bx - 5 + k * 3, by - 5 + (k % 2) * 6, hx('#2a180c')); c.dot(bx - 4 + k * 3, by - 4 + (k % 2) * 6, hx('#2a180c'))
-    ex = 3 if view == 'right' else 0
-    for sg in (-1, 1) if view != 'right' else (1,):
-        c.ell(bx + sg * 3.2 + ex * .5, by - 6, 1.7, 1.7, 'glow') if not squint else c.dot(bx + sg * 3.2, by - 6, hx('#14100c'))
-    c.ell(bx + ex * .5, by - 1, 2.6, 2.0 + (1.5 if mouth else 0), 'glow') if mouth else c.ell(bx + ex * .5, by - 1, 2.6, .9, 'bark')
+    bx = cx + lunge * .3; by = gy - 12 + bob
+    sw = math.sin(ph)
+    if view == 'right':
+        for sx, ph0, far in ((-3, 0, True), (3, math.pi, False)):
+            lift = max(0, math.sin(ph + ph0)) * 2.4
+            c.cap(bx + sx * .5, by + 7, bx + sx * 1.4, gy - lift, 2.8, 2.0, 'root', far); c.ell(bx + sx * 1.4 + 1, gy - lift - .6, 3.2, 1.4, 'root', far)
+        c.cap(bx - 4, by - 7, bx - 11, by - 4 + sw, 2.0, .9, 'bark', True)                 # galho de tras (longe)
+        c.ell(bx - 10, by - 6 + sw, 3.2, 2.6, 'leaf', True)
+        c.ell(bx, by, 5.8, 11)                                          # tronco de perfil (estreito)
+        c.ell(bx + 1, by + 1, 3.4, 8.6, 'bark')                          # casca clara na frente
+        c.cap(bx + 3, by - 7, bx + 11 + lunge * .3, by - 2 - sw * 1.5, 2.2, 1.0, 'bark')   # galho da frente (braco apontando)
+        c.cap(bx + 11 + lunge * .3, by - 2 - sw * 1.5, bx + 14, by - 5, 1.0, .6, 'bark')
+        c.ell(bx + 12, by - 6 - sw, 3.2, 2.6, 'leaf')
+        c.ell(bx - 1, by - 13, 7.4, 4.2, 'leaf'); c.ell(bx - 5, by - 11, 4, 3.2, 'leaf'); c.ell(bx + 4, by - 13.5, 4.4, 3, 'leaf')   # copa assimetrica
+        c.ell(bx + 4.4, by - 6.4, 1.7, 2.0, 'glow') if not squint else c.dot(bx + 4.4, by - 6, hx('#14100c'))
+        c.ell(bx + 4.6, by - 1.4, 1.6, (1.0 + (1.8 if mouth else 0)), 'glow') if mouth else c.cap(bx + 3.6, by - 1, bx + 5.6, by - 1, .8, .6, 'bark')
+        for k in range(3): c.dot(bx - 2 + k * 2, by - 3 + k * 4, hx('#2a180c'))
+    else:
+        back = view == 'up'
+        for sx, ph0 in ((-5.5, 0), (5.5, math.pi)):
+            lift = max(0, math.sin(ph + ph0)) * 2.4
+            c.cap(bx + sx * .6, by + 7, bx + sx, gy - lift, 3.2, 2.2, 'root'); c.ell(bx + sx, gy - lift - .6, 3.2, 1.5, 'root')
+        c.ell(bx, by, 8, 11)
+        c.ell(bx, by - 11, 6.4, 2.6, 'bark')
+        for sg in (-1, 1):
+            c.cap(bx + sg * 6, by - 6, bx + sg * 13, by - 13 - sg * sw * 1.5 - lunge * .2, 2.2, 1.0, 'bark')
+            c.cap(bx + sg * 13, by - 13, bx + sg * 15, by - 17, 1.0, .6, 'bark')
+            c.ell(bx + sg * 14, by - 17, 3, 2.6, 'leaf'); c.ell(bx + sg * 9, by - 18, 3.4, 2.8, 'leaf')
+        c.ell(bx, by - 20, 7, 4.2, 'leaf'); c.ell(bx - 4, by - 17, 3.6, 3, 'leaf')
+        if not back:
+            for sg in (-1, 1): c.ell(bx + sg * 3.2, by - 6, 1.7, 1.7, 'glow') if not squint else c.dot(bx + sg * 3.2, by - 6, hx('#14100c'))
+            c.ell(bx, by - 1, 2.6, 1.0 + (1.8 if mouth else 0), 'glow') if mouth else c.cap(bx - 2, by - 1, bx + 2, by - 1, .8, .6, 'bark')
+        for k in range(4): c.dot(bx - 5 + k * 3, by - 5 + (k % 2) * 6, hx('#2a180c'))
     return c.render(PAL['tronco'], FLAT)
 
 
