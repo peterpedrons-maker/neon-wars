@@ -49,3 +49,6 @@ Músicas `floresta_*` compostas para o jogo e renderizadas com instrumentos reai
 
 ## Monstros LPC (assets/lpc_monsters)
 "[LPC] Monsters" — Charles Sanchez (CharlesGabriel), bagzie e bluecarrot16 — CC-BY-SA 3.0+ ou GPL 3.0+ (morcego: OGA-BY 3.0). https://opengameart.org/content/lpc-monsters . Detalhes em `assets/lpc_monsters/CREDITS.md`.
+
+## Pixelify Sans (fonte da interface pixel art)
+SIL Open Font License 1.1 — Stefie Justprince, via Google Fonts (assets/fonts/PixelifySans-*.ttf).
