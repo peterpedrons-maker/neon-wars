@@ -198,6 +198,44 @@ def face_front(head, face):
     return [''.join(r) for r in h]
 
 
+_FSTYLE = None
+
+
+def apply_face_style(head, style, side=False):
+    """rostos diferentes por personagem (dono: 'todos tem o mesmo rosto'): brute, sly, hollow, cold, fierce."""
+    if not style or style == 'round': return head
+    h = [list(r) for r in head]
+    def P(r, c, ch):
+        if 0 <= r < len(h) and 0 <= c < len(h[r]): h[r][c] = ch
+    def clr(r, c0, c1, ch='s'):
+        for c in range(c0, c1 + 1): P(r, c, ch)
+    if not side:                       # frente (metade esquerda 11 col; espelhada) - olho cols 5-7 linhas 10-13
+        if style == 'brute':
+            clr(10, 5, 7); clr(13, 5, 7); clr(9, 3, 8, 'k'); P(10, 4, 'k'); clr(15, 5, 10, 'k'); P(14, 7, 'w'); P(14, 8, 'w')
+        elif style == 'sly':
+            clr(10, 5, 7); clr(13, 5, 7); P(9, 4, 'k'); P(9, 5, 'k'); P(10, 6, 'k'); clr(15, 6, 10, 'k'); P(16, 7, 'w'); P(16, 9, 'w')
+        elif style == 'hollow':
+            for r in (10, 11, 12): clr(r, 5, 7, 'k')
+            clr(13, 5, 7); P(13, 9, 'k'); clr(15, 5, 10, 'k'); [P(16, c, 'w') for c in (6, 8, 10)]
+        elif style == 'cold':
+            clr(10, 5, 7, 'k'); P(11, 5, 'k'); P(11, 6, 'k'); clr(13, 5, 7); clr(15, 8, 10, 'k')
+        elif style == 'fierce':
+            clr(9, 4, 6, 'k'); P(10, 7, 'k'); clr(15, 8, 10, 'k'); P(16, 9, 'w')
+    else:                              # perfil (21 col) - olho cols 14-16 linhas 10-13, boca linha 15 cols 16-19
+        if style == 'brute':
+            clr(10, 14, 16); clr(13, 14, 16); clr(9, 13, 17, 'k'); clr(15, 15, 19, 'k'); P(14, 17, 'w'); P(14, 18, 'w')
+        elif style == 'sly':
+            clr(10, 14, 16); clr(13, 14, 16); P(9, 14, 'k'); P(9, 15, 'k'); clr(15, 15, 19, 'k'); P(16, 17, 'w'); P(16, 19, 'w')
+        elif style == 'hollow':
+            for r in (10, 11, 12): clr(r, 14, 16, 'k')
+            clr(13, 14, 16); clr(15, 15, 19, 'k'); [P(16, c, 'w') for c in (16, 18)]
+        elif style == 'cold':
+            clr(10, 14, 16, 'k'); P(11, 14, 'k'); P(11, 15, 'k'); clr(13, 14, 16); clr(15, 17, 19, 'k')
+        elif style == 'fierce':
+            clr(9, 13, 15, 'k'); P(10, 16, 'k'); clr(15, 17, 19, 'k'); P(16, 18, 'w')
+    return [''.join(r) for r in h]
+
+
 HEAD_S = make_head_side()
 
 
@@ -303,18 +341,27 @@ def shaped_rows(hand, ang, length, guard, shape, gstyle, glow, gem, serrate):
             if -4.4 <= sd < -3.5 and abs(td) <= .55: put(xx, yy, 'g')
     gx, gy = hand[0] + ux * 2, hand[1] + uy * 2
     if shape == 'axe':
-        L = length
-        for d in range(-3, L): put(hand[0] + ux * d, hand[1] + uy * d, 'N')
-        put(hand[0] - ux * 3.4, hand[1] - uy * 3.4, 'g')
-        for j in range(0, 6):                         # cabeca do machado (crescente) de um lado do cabo
-            sd = L - 7 + j
-            reach = [2, 3, 4, 4, 3, 2][j]
-            for k in range(1, reach + 1):
-                put(hand[0] + ux * sd + nx * k, hand[1] + uy * sd + ny * k, 'a' if k == reach else 'A')
-            put(hand[0] + ux * sd, hand[1] + uy * sd, 'g')
+        # MACHADO com arte propria: cabo grosso (2px) com empunhadura enrolada, pomo, colar de metal, cabeca larga em lua com fio claro,
+        # sombra perto do cabo e espigao atras. Amostragem rigida (espessura igual em qualquer angulo).
+        L = length; R = int(L + 8); H0 = L - 10
+        for yy in range(int(hand[1]) - R, int(hand[1]) + R + 1):
+            for xx in range(int(hand[0]) - R, int(hand[0]) + R + 1):
+                rx, ry = xx - hand[0], yy - hand[1]
+                sd = rx * ux + ry * uy; td = rx * nx + ry * ny
+                if -4.6 <= sd <= L + .4 and abs(td) <= .8:                 # cabo
+                    put(xx, yy, 'N')
+                    if sd < 4.5 and int(math.floor(sd + 9)) % 2 == 0: put(xx, yy, 'g')       # enrolado
+                if -5.2 <= sd < -4.0 and abs(td) <= 1.5: put(xx, yy, 'g')    # pomo
+                if H0 - .2 <= sd <= H0 + 1.0 and abs(td) <= 1.9: put(xx, yy, 'g')   # colar
+                if H0 + .8 <= sd <= L - .4:                                   # cabeca (lua): so de um lado do cabo
+                    u = (sd - (H0 + .8)) / max(1.0, (L - .4) - (H0 + .8))
+                    tmax = 2.4 + 3.6 * math.sin(math.pi * min(1, max(0, u)) ** .85)
+                    if .8 < td <= tmax:
+                        edge = td > tmax - 1.25
+                        put(xx, yy, 'w' if edge and .12 < u < .88 else ('A' if edge or td > tmax * .55 else 'a'))
+                    elif -2.6 <= td < -.8 and .15 < u < .75 and abs(td) <= 2.6 - abs(u - .45) * 4:   # espigao atras
+                        put(xx, yy, 'a')
         tip = (hand[0] + ux * (L - 1), hand[1] + uy * (L - 1))
-        for d in (-1, 0):
-            put(hand[0] + ux * (L + d) - nx * 1, hand[1] + uy * (L + d) - ny * 1, 'g')
         return cells, tip
     # guarda (amostragem rigida, igual a lamina)
     for yy in range(int(hand[1]) - 8, int(hand[1]) + 9):
@@ -617,17 +664,11 @@ def accessory2(g, hat, view, hx, hy, back=False):
             [g.put(hx + 5, hy + 15 - k, 'A') for k in range(2)]; [g.put(hx + 16, hy + 15 - k, 'A') for k in range(2)]
             for x in range(hx + 5, hx + 9): g.put(x, hy + 9, 'k')
             for x in range(hx + 13, hx + 17): g.put(x, hy + 9, 'k')
-    elif hat == 'gobking':                                                   # rei goblin: orelhas + presas + coroa de ossos/espinhos
+    elif hat == 'gobking':                                                   # chefe goblin: orelhas + presas (sem coroa)
         accessory2(g, 'gob_ears', view, hx, hy, back)
-        if view == 'side':
-            for off, h_ in ((4, 3), (9, 5), (14, 6), (18, 4)):
-                for k in range(h_): g.put(hx + off, hy + 1 - k, 'F' if k < h_ - 1 else 'a'); g.put(hx + off + 1, hy + 1 - k, 'a')
-            for x in range(hx + 3, hx + 20): g.put(x, hy + 2, 'N')
-            g.stamp(['F', 'F'], hx + 18, hy + 12)
-        else:
-            g.stamp(['..........a', '..........F', '......a...a', '......F..aF', '..a...F..aF', '..F..aF.aFF', 'NaNaNaNNNNN'], hx, hy - 5, mirror=True)
-            if not back:
-                for sx_ in (hx + 5, hx + 16): [g.put(sx_, hy + 14 - k, 'F') for k in range(3)]
+        if view == 'side': g.stamp(['F', 'F'], hx + 18, hy + 12)
+        elif not back:
+            for sx_ in (hx + 5, hx + 16): [g.put(sx_, hy + 14 - k, 'F') for k in range(3)]
     elif hat == 'gob_ears':
         for x in range(hx + 1, hx + (19 if view == 'side' else 21)): g.put(x, hy + 4, 'T'); g.put(x, hy + 5, 'M')
         g.stamp(['TT', 'TM', '.M'], hx + (0 if view == 'side' else 20), hy + 5)
@@ -942,6 +983,7 @@ def build_front(p, back=False):
     elif hat in ('helm', 'kinghelm'): head = helm_head(head, 'back' if back else 'front')
     if p.get('face', 'n') != 'n' and not back:
         head = face_front(head, p['face'])
+    if not back and p.get('face', 'n') in ('n', 'shout', 'blink'): head = apply_face_style(head, _FSTYLE)
     g.stamp(head, hx, hy, mirror=True, rshade=RSH_F)
     accessory2(g, hat, 'front', hx, hy, back)
     post_accessory(g, cls, 'front', cx, body_top, dx, back)
@@ -1007,6 +1049,7 @@ def build_side(p):
     # cabeca (perfil)
     hx, hy = cx - 11 + dx + p.get('hdx', 0), body_top - 17 + p.get('hdy', 0)
     head = make_head_side(*FACES.get(p.get('face', 'n'), ('n', 'open')), p.get('look', 'n'))
+    if p.get('face', 'n') in ('n', 'shout', 'blink'): head = apply_face_style(head, _FSTYLE, True)
     hat = p.get('hat', DEFAULT_HAT[cls]); outfit = p.get('outfit', DEFAULT_OUTFIT[cls])
     if hat == 'cap': head = cap_head_side(head)
     elif hat == 'hood': head = hood_head_side(head)
@@ -1111,7 +1154,7 @@ WEAPONS = {
     'facao': dict(kind='sword', len=12, guard=2, shape='cleaver', pal=dict(A='#c8c0b0', a='#6a6050', g='#5a3a20', N='#3a2418')),
     'chamejante': dict(kind='sword', len=16, guard=3, shape='flame', glow='fire', pal=dict(A='#ffd060', a='#e04818', g='#6a1c10', N='#2a1008', Z='#fff0a0', z='#ff6a20')),
     'montante_real': dict(kind='sword', len=18, guard=4, shape='great', gem=True, pal=dict(A='#eef2fa', a='#7c88a8', g='#e8b840', N='#3a2a20')),
-    'machado': dict(kind='sword', len=16, guard=1, shape='axe', pal=dict(A='#c8d0dc', a='#6a7488', g='#7a5a30', N='#5a3a20')),
+    'machado': dict(kind='sword', len=18, guard=1, shape='axe', pal=dict(A='#b8c4d4', a='#5a6478', w='#f4f8ff', g='#c89a40', N='#6a4426')),
     'espada_rei': dict(kind='sword', len=18, guard=3, shape='great', gstyle='cross', glow='ice', pal=dict(A='#d8f4ff', a='#6ab0e4', g='#2a2c44', N='#1c1830', Z='#ffffff')),
     # cajados
     'cajado_fogo': dict(kind='staff', len=24, orb=1, pal=dict(Z='#fff4b0', z='#ff9a30', Y='#c83010', N='#6e4228', g='#e8b840')),
@@ -1347,7 +1390,7 @@ def smear_frames(frames, strength=(120, 56)):
 
 
 def anim(view, kind, cls='warrior', ps_override=None, appearance=None, dense=1):
-    global _REI, _T, _BULK, _WINGS
+    global _REI, _T, _BULK, _WINGS, _FSTYLE
     out = []
     over = None
     if appearance:
@@ -1363,6 +1406,7 @@ def anim(view, kind, cls='warrior', ps_override=None, appearance=None, dense=1):
     else: ps = ATK_S if view == 'right' else (ATK_B if view == 'up' else ATK_F)
     if kind not in ('walk', 'run', 'idle') and dense > 1 and ps_override is None: ps = densify(ps, dense)
     if ps_override is not None: ps = ps_override
+    _FSTYLE = appearance.get('face_style') if appearance else None
     _REI = (cls == 'rei'); _BULK = bool(appearance and appearance.get('bulk')); _WINGS = bool(appearance and appearance.get('wings'))
     for _i, p in enumerate(ps):
         _T = _i
