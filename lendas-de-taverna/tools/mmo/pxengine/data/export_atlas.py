@@ -31,6 +31,11 @@ UNITS = {
     'espectro': dict(kind='r', name='espectro'), 'morcego': dict(kind='r', name='morcego'), 'slime': dict(kind='r', name='slime'),
     'rei': dict(kind='c', ap=dict(cls='rei', weapon='espada_rei'), cast=1),
 }
+J.ENEMY.update({
+    'grunk': dict(cls='warrior', skin='goblin', hair='g_goblin', eyes='amarelo', hat='gob_ears', outfit='mail', metal='ferro', clothes='bronze', weapon='machado', tn_off=1, bulk=1),
+    'morvath': dict(cls='warrior', skin='osso', hair='g_osso', eyes='oco', hat='rusty_helm', outfit='mail', clothes='azul', metal='aco', weapon='espada_gelo', tn_off=1, bulk=1),
+})
+UNITS.update({'ogro': dict(kind='e', name='ogro'), 'grunk': dict(kind='e', name='grunk'), 'morvath': dict(kind='e', name='morvath')})
 DENS = {'idle': 2, 'walk': 2, 'run': 2, 'attack': 1, 'hurt': 1, 'death': 1, 'cast': 1}
 
 
