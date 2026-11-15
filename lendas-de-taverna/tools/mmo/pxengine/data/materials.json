@@ -1,26 +1,385 @@
 {
- "ink": [30, 20, 40],
- "light": [-0.55, -0.62, 0.56],
+ "ink": [
+  30,
+  20,
+  40
+ ],
+ "light": [
+  -0.55,
+  -0.62,
+  0.56
+ ],
  "materials": {
-  "skin":  {"ramp": ["#22472a", "#3a7634", "#62ac44", "#9cdc72"], "outline": 0.55},
-  "leat":  {"ramp": ["#3a2216", "#7a4e28", "#b88040"], "outline": 0.5, "texture": "stitch"},
-  "metal": {"ramp": ["#3c4260", "#6c7494", "#a8b2cc", "#e0e8f8"], "outline": 0.45, "spec": true},
-  "cloth": {"ramp": ["#241e38", "#3c3458", "#5a5080"], "outline": 0.5, "texture": "hatch"},
-  "bone":  {"ramp": ["#a89870", "#d8c898", "#f4ecc8"], "outline": 0.55},
-  "white": {"ramp": ["#f4f4ea"], "outline": 0.0},
-  "yell":  {"ramp": ["#c89010", "#ffe040"], "outline": 0.0},
-  "pink":  {"ramp": ["#b86a70", "#e88a8a"], "outline": 0.5},
-  "red":   {"ramp": ["#7a1c28", "#c8383c"], "outline": 0.5},
-  "dark":  {"ramp": ["#1c1424"], "outline": 0.0}
+  "skin": {
+   "ramp": [
+    "#22472a",
+    "#3a7634",
+    "#62ac44",
+    "#9cdc72"
+   ],
+   "outline": 0.55
+  },
+  "leat": {
+   "ramp": [
+    "#3a2216",
+    "#7a4e28",
+    "#b88040"
+   ],
+   "outline": 0.5,
+   "texture": "stitch"
+  },
+  "metal": {
+   "ramp": [
+    "#3c4260",
+    "#6c7494",
+    "#a8b2cc",
+    "#e0e8f8"
+   ],
+   "outline": 0.45,
+   "spec": true
+  },
+  "cloth": {
+   "ramp": [
+    "#241e38",
+    "#3c3458",
+    "#5a5080"
+   ],
+   "outline": 0.5,
+   "texture": "hatch"
+  },
+  "bone": {
+   "ramp": [
+    "#a89870",
+    "#d8c898",
+    "#f4ecc8"
+   ],
+   "outline": 0.55
+  },
+  "white": {
+   "ramp": [
+    "#f4f4ea"
+   ],
+   "outline": 0.0
+  },
+  "yell": {
+   "ramp": [
+    "#c89010",
+    "#ffe040"
+   ],
+   "outline": 0.0
+  },
+  "pink": {
+   "ramp": [
+    "#b86a70",
+    "#e88a8a"
+   ],
+   "outline": 0.5
+  },
+  "red": {
+   "ramp": [
+    "#7a1c28",
+    "#c8383c"
+   ],
+   "outline": 0.5
+  },
+  "dark": {
+   "ramp": [
+    "#1c1424"
+   ],
+   "outline": 0.0
+  },
+  "tan": {
+   "ramp": [
+    "#8a4a30",
+    "#c8805a",
+    "#f0aa80",
+    "#ffd2ac"
+   ],
+   "outline": 0.5
+  },
+  "hair": {
+   "ramp": [
+    "#6a1a10",
+    "#b83018",
+    "#f06a28",
+    "#ffa850"
+   ],
+   "outline": 0.5
+  },
+  "plate": {
+   "ramp": [
+    "#1c3070",
+    "#3060c8",
+    "#58a0ff",
+    "#b8e0ff"
+   ],
+   "outline": 0.45,
+   "spec": true
+  },
+  "gold": {
+   "ramp": [
+    "#8a5a10",
+    "#e0a020",
+    "#ffd84a",
+    "#fff4a0"
+   ],
+   "outline": 0.4
+  },
+  "cape": {
+   "ramp": [
+    "#5a1030",
+    "#a82048",
+    "#e04068",
+    "#ff8aa0"
+   ],
+   "outline": 0.5
+  },
+  "orc": {
+   "ramp": [
+    "#5a2a18",
+    "#a04a28",
+    "#e07a30",
+    "#ffb860"
+   ],
+   "outline": 0.5
+  },
+  "bplate": {
+   "ramp": [
+    "#3a1850",
+    "#7a30b0",
+    "#b868f0",
+    "#e8b8ff"
+   ],
+   "outline": 0.45,
+   "spec": true
+  },
+  "eye": {
+   "ramp": [
+    "#ffe840"
+   ],
+   "outline": 0
+  }
  },
  "glyphs": {
-  "k": ["ink", 0],
-  "a": ["skin", 0], "b": ["skin", 1], "c": ["skin", 2], "d": ["skin", 3],
-  "e": ["leat", 0], "f": ["leat", 1], "g": ["leat", 2],
-  "m": ["metal", 0], "n": ["metal", 1], "o": ["metal", 2], "O": ["metal", 3],
-  "u": ["cloth", 0], "v": ["cloth", 1], "x": ["cloth", 2],
-  "s": ["bone", 0], "q": ["bone", 1], "r": ["bone", 2],
-  "w": ["white", 0], "y": ["yell", 1], "Y": ["yell", 0], "z": ["dark", 0], "p": ["pink", 1], "P": ["pink", 0],
-  "R": ["red", 1], "S": ["red", 0]
+  "k": [
+   "ink",
+   0
+  ],
+  "a": [
+   "skin",
+   0
+  ],
+  "b": [
+   "skin",
+   1
+  ],
+  "c": [
+   "skin",
+   2
+  ],
+  "d": [
+   "skin",
+   3
+  ],
+  "e": [
+   "leat",
+   0
+  ],
+  "f": [
+   "leat",
+   1
+  ],
+  "g": [
+   "leat",
+   2
+  ],
+  "m": [
+   "metal",
+   0
+  ],
+  "n": [
+   "metal",
+   1
+  ],
+  "o": [
+   "metal",
+   2
+  ],
+  "O": [
+   "metal",
+   3
+  ],
+  "u": [
+   "cloth",
+   0
+  ],
+  "v": [
+   "cloth",
+   1
+  ],
+  "x": [
+   "cloth",
+   2
+  ],
+  "s": [
+   "bone",
+   0
+  ],
+  "q": [
+   "bone",
+   1
+  ],
+  "r": [
+   "bone",
+   2
+  ],
+  "w": [
+   "white",
+   0
+  ],
+  "y": [
+   "yell",
+   1
+  ],
+  "Y": [
+   "yell",
+   0
+  ],
+  "z": [
+   "dark",
+   0
+  ],
+  "p": [
+   "pink",
+   1
+  ],
+  "P": [
+   "pink",
+   0
+  ],
+  "R": [
+   "red",
+   1
+  ],
+  "S": [
+   "red",
+   0
+  ],
+  "A": [
+   "tan",
+   0
+  ],
+  "B": [
+   "tan",
+   1
+  ],
+  "C": [
+   "tan",
+   2
+  ],
+  "D": [
+   "tan",
+   3
+  ],
+  "h": [
+   "hair",
+   0
+  ],
+  "i": [
+   "hair",
+   1
+  ],
+  "j": [
+   "hair",
+   2
+  ],
+  "l": [
+   "hair",
+   3
+  ],
+  "E": [
+   "plate",
+   0
+  ],
+  "F": [
+   "plate",
+   1
+  ],
+  "G": [
+   "plate",
+   2
+  ],
+  "H": [
+   "plate",
+   3
+  ],
+  "I": [
+   "gold",
+   0
+  ],
+  "J": [
+   "gold",
+   1
+  ],
+  "K": [
+   "gold",
+   2
+  ],
+  "L": [
+   "gold",
+   3
+  ],
+  "M": [
+   "cape",
+   0
+  ],
+  "N": [
+   "cape",
+   1
+  ],
+  "Q": [
+   "cape",
+   2
+  ],
+  "T": [
+   "cape",
+   3
+  ],
+  "U": [
+   "orc",
+   0
+  ],
+  "V": [
+   "orc",
+   1
+  ],
+  "W": [
+   "orc",
+   2
+  ],
+  "X": [
+   "orc",
+   3
+  ],
+  "Z": [
+   "bplate",
+   0
+  ],
+  "1": [
+   "bplate",
+   1
+  ],
+  "2": [
+   "bplate",
+   2
+  ],
+  "3": [
+   "bplate",
+   3
+  ],
+  "4": [
+   "eye",
+   0
+  ]
  }
 }

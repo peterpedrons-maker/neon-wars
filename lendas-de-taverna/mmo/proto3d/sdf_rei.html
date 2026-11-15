@@ -1,0 +1,138 @@
+<!doctype html><meta charset=utf-8><body style="margin:0;background:#2a3a50">
+<canvas id=c width=300 height=300 style="width:600px;height:600px;image-rendering:pixelated"></canvas>
+<script src="../three.min.js"></script>
+<script>
+const W=300,H=300,cv=document.getElementById('c');
+const R=new THREE.WebGLRenderer({canvas:cv,antialias:false,alpha:true,preserveDrawingBuffer:true});R.setSize(W,H,false);R.setPixelRatio(1);R.setClearColor(0,0);
+const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(32,W/H,.1,100),TILT=47*Math.PI/180;
+const D=6.2,TY=3.45;cam.position.set(0,TY+D*Math.sin(TILT),D*Math.cos(TILT));cam.lookAt(0,TY,0);
+const gd=new THREE.DataTexture(new Uint8Array([40,40,40,255,120,120,120,255,200,200,200,255,255,255,255,255]),4,1,THREE.RGBAFormat);gd.minFilter=gd.magFilter=THREE.NearestFilter;gd.needsUpdate=true;
+scene.add(new THREE.AmbientLight(0x585a80,.8));const sun=new THREE.DirectionalLight(0xfff0e0,1.1);sun.position.set(-4,8,5);scene.add(sun);const rim=new THREE.DirectionalLight(0x9a70ff,.7);rim.position.set(5,3,-6);scene.add(rim);
+const outMat=new THREE.ShaderMaterial({side:THREE.BackSide,uniforms:{t:{value:.03}},vertexShader:'uniform float t;void main(){gl_Position=projectionMatrix*modelViewMatrix*vec4(position+normal*t,1.);}',fragmentShader:'void main(){gl_FragColor=vec4(.04,.02,.08,1.);}'});
+// ---------- SDF ----------
+const V=(x,y,z)=>({x,y,z});
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const smin=(a,b,k)=>{const h=Math.max(k-Math.abs(a-b),0)/k;return Math.min(a,b)-h*h*k*.25;};
+const smax=(a,b,k)=>-smin(-a,-b,k);
+function ell(px,py,pz,cx,cy,cz,rx,ry,rz){const x=(px-cx)/rx,y=(py-cy)/ry,z=(pz-cz)/rz;const k0=Math.sqrt(x*x+y*y+z*z);const k1=Math.sqrt(x*x/(rx*rx)+y*y/(ry*ry)+z*z/(rz*rz));return k1<1e-9?-Math.min(rx,ry,rz):k0*(k0-1)/k1;}
+function cap(px,py,pz,ax,ay,az,bx,by,bz,r0,r1=r0){const pax=px-ax,pay=py-ay,paz=pz-az,bax=bx-ax,bay=by-ay,baz=bz-az;const h=clamp((pax*bax+pay*bay+paz*baz)/(bax*bax+bay*bay+baz*baz),0,1);const dx=pax-bax*h,dy=pay-bay*h,dz=paz-baz*h;return Math.sqrt(dx*dx+dy*dy+dz*dz)-(r0+(r1-r0)*h);}
+function torus(px,py,pz,cx,cy,cz,Rr,r){const x=px-cx,y=py-cy,z=pz-cz;const q=Math.sqrt(x*x+z*z)-Rr;return Math.sqrt(q*q+y*y)-r;}
+function rbox(px,py,pz,cx,cy,cz,bx,by,bz,r){const qx=Math.abs(px-cx)-bx,qy=Math.abs(py-cy)-by,qz=Math.abs(pz-cz)-bz;return Math.sqrt(Math.max(qx,0)**2+Math.max(qy,0)**2+Math.max(qz,0)**2)+Math.min(Math.max(qx,qy,qz),0)-r;}
+// ruido de valor 3D (desgaste)
+function hash(x,y,z){let h=x*374761393+y*668265263+z*2147483647;h=(h^(h>>13))*1274126177;return ((h^(h>>16))&0xffff)/65535;}
+function vnoise(x,y,z){const ix=Math.floor(x),iy=Math.floor(y),iz=Math.floor(z),fx=x-ix,fy=y-iy,fz=z-iz,ux=fx*fx*(3-2*fx),uy=fy*fy*(3-2*fy),uz=fz*fz*(3-2*fz);const L=(a,b,t)=>a+(b-a)*t;
+  return L(L(L(hash(ix,iy,iz),hash(ix+1,iy,iz),ux),L(hash(ix,iy+1,iz),hash(ix+1,iy+1,iz),ux),uy),L(L(hash(ix,iy,iz+1),hash(ix+1,iy,iz+1),ux),L(hash(ix,iy+1,iz+1),hash(ix+1,iy+1,iz+1),ux),uy),uz);}
+// ---------- partes do busto do Rei (z+ = frente). Hierarquia: osso/tecido por baixo -> placas por cima -> coroa/espinhos ----------
+const shell=(d,t)=>Math.abs(d)-t;
+function bone(x,y,z){
+  const ax=Math.abs(x);
+  let d=ell(x,y,z,0,4.25,.02,.31,.37,.35);
+  d=smin(d,ell(ax,y,z,.2,4.12,.2,.1,.09,.1),.09);
+  d=smin(d,rbox(x,y,z,0,3.93,.14,.16,.07,.15,.04),.06);
+  if(ax<.17){const rx=((x+.3)%.06+.06)%.06-.03;d=smin(d,rbox(rx,y,z,0,3.98,.28,.018,.035,.02,.006),.012);}
+  d=smin(d,cap(x,y,z,0,3.62,0,0,3.95,0,.085),.05);
+  for(let i=0;i<3;i++)d=smin(d,torus(x,y,z,0,3.68+i*.1,0,.085,.028),.03);
+  d=smax(d,-ell(ax,y,z,.125,4.28,.3,.085,.095,.08),.03);
+  d=smax(d,-ell(x,y,z,0,4.12,.35,.032,.06,.05),.02);
+  d=smax(d,-ell(ax,y,z,.27,4.15,.1,.05,.12,.12),.04);
+  return d;}
+function glow(x,y,z){const ax=Math.abs(x);let d=ell(ax,y,z,.125,4.28,.255,.05,.055,.05);
+  for(let i=0;i<7;i++){const a=i/7*Math.PI*2,h=.34+.17*(i%2);d=Math.min(d,ell(x,y,z,Math.sin(a)*.3,4.5+h+.015,Math.cos(a)*.3,.03,.03,.03));}
+  d=Math.min(d,ell(x,y,z,0,3.12,.5,.05,.07,.04));return d;}
+function crown(x,y,z){let d=torus(x,y,z,0,4.52,0,.31,.032);d=smin(d,torus(x,y,z,0,4.6,0,.3,.022),.03);
+  for(let i=0;i<7;i++){const a=i/7*Math.PI*2,h=.34+.17*(i%2),sx=Math.sin(a)*.3,sz=Math.cos(a)*.3;d=smin(d,cap(x,y,z,sx,4.52,sz,sx*1.08,4.52+h,sz*1.08,.05,.01),.025);}return d;}
+// camada 1: roupa de baixo (gibao + mangas + cinto) em tecido escuro
+function cloth(x,y,z){const ax=Math.abs(x);
+  let d=ell(x,y,z,0,2.98,.02,.72,.8,.46);
+  d=smin(d,ell(x,y,z,0,2.35,.0,.55,.35,.38),.1);
+  d=smin(d,cap(x,y,z,0,3.5,0,0,3.7,0,.2),.1);                              // gola de tecido no pescoco
+  d=smin(d,cap(ax,y,z,.98,3.4,0,1.04,2.7,.06,.18,.15),.07);               // manga
+  d+= .005*Math.sin(y*90)*Math.sin(x*70);                                   // trama do tecido
+  return d;}
+// camada 2: placas por cima (cascas finas, com folga ao redor)
+function plate(x,y,z){
+  const ax=Math.abs(x),sg=x<0?-1:1;
+  // peitoral: casca aberta atras e no pescoco
+  let c=shell(ell(x,y,z,0,3.0,.03,.8,.85,.52),.04);
+  c=smax(c,-(z+.12),.04);                                                    // sem costas
+  c=smax(c,y-3.62+Math.abs(x)*.35,.05);                                      // decote do pescoco
+  c=smax(c,-(y-2.62)-Math.abs(x)*.25,.05);                                   // borda de baixo
+  c=smin(c,cap(x,y,z,0,3.5,.46,0,2.7,.5,.07,.045),.04);                    // quilha
+  for(const gx of[-.3,.3])c=smax(c,-(cap(x,y,z,gx,3.45,.5,gx*1.15,2.75,.5,.02)-.0),.012);
+  c=smax(c,-(torus(x,y*1.0,z,0,3.3,0,.55,.014)),.01);
+  // lames da barriga (placas sobrepostas, cada uma mais larga/baixa)
+  for(let i=0;i<4;i++){let l=shell(ell(x,y,z,0,2.62-i*.17,.0,.6+i*.045,.2,.44+i*.03),.03);l=smax(l,-(z+.05),.03);l=smax(l,-(y-(2.7-i*.17)),.02);c=Math.min(c,l);}
+  // gorjal: aneis sobrepostos
+  let g=Math.min(torus(x,y,z,0,3.66,0,.4,.05),torus(x,y,z,0,3.76,0,.34,.045));g=smin(g,shell(ell(x,y,z,0,3.7,0,.42,.14,.38),.035),.03);g=smax(g,-(y-3.9),.03);
+  // ombreiras: 3 laminas sobrepostas, cobrem o ombro e a borda do peitoral
+  let p=1e9;
+  { const px=ax-.0;
+    let q=shell(ell(px,y,z,1.0,3.46,0,.56,.2,.5),.035);q=smax(q,-(y-3.6),.03);
+    let q2=shell(ell(px,y,z,.94,3.64,0,.46,.17,.42),.035);q2=smax(q2,-(y-3.78),.03);let q3=shell(ell(px,y,z,.86,3.82,0,.34,.14,.32),.035);q3=smax(q3,-(y-3.95),.03);
+    q=Math.min(q,q2,q3);
+    for(let i=0;i<2;i++){const t=(i-.5)*.34;q=smin(q,cap(px,y,z,1.1,3.86,t*.7,1.38+i*.04,4.12+.06*i,t*1.2,.095,.02),.025);}
+    p=q;}
+  // braco: braçadeira (casca) sobre a manga
+  let v=shell(cap(ax,y,z,1.0,3.1,.03,1.04,2.75,.06,.2,.17),.035);v=smax(v,y-3.15,.03);
+  let d=Math.min(c,g,p,v);return d;}
+// bordas em bronze gasto + rebites
+function trim(x,y,z){const ax=Math.abs(x);
+  let d=torus(x,y*1.0,z,0,3.66,0,.405,.022);d=Math.min(d,torus(x,y,z,0,3.76,0,.345,.02));
+  const q=shell(ell(x,y,z,0,3.0,.03,.8,.85,.52),.044);
+  for(let i=0;i<9;i++){const a=(i/8-.5)*2.3;d=Math.min(d,ell(x,y,z,Math.sin(a)*.8,3.02-Math.cos(a)*.0-Math.abs(a)*.05,.03+Math.cos(a)*.5,.03,.03,.03)*1);}
+  for(let sg=-1;sg<=1;sg+=2){for(let i=0;i<5;i++){const a=i/4*Math.PI*.7+.2;d=Math.min(d,ell(ax,y,z,.96+Math.cos(a)*.44,3.54+Math.sin(a)*.22,Math.sin(a)*.0+(i-2)*.18,.03,.03,.03));}}
+  d=Math.min(d,torus(x,y,z,0,2.62,0,.62,.02)*1+(z<-.05?9:0));
+  return d;}
+// capa/colarinho de tras (tecido roxo escuro, por baixo das ombreiras)
+function cape(x,y,z){let co=shell(ell(x,y,z,0,3.78,-.3,.62,.62,.2),.03);co=smax(co,z+.08,.03);co=smax(co,y-(4.25+.2*Math.max(0,Math.sin(x*13)))+.0,.02);co=smax(co,-(y-3.1),.03);return co;}
+function field(x,y,z){
+  const b=bone(x,y,z),cl=cloth(x,y,z),pl=plate(x,y,z)+(vnoise(x*14,y*14,z*14)-.5)*.007,tr=trim(x,y,z),cr=crown(x,y,z),gl=glow(x,y,z),cp=cape(x,y,z);
+  let d=smin(b,cl,.03);d=Math.min(d,pl,tr,cr,gl,cp);return d;}
+const COL={bone:[.86,.8,.66],cloth:[.17,.07,.13],plate:[.16,.15,.22],plateW:[.5,.45,.5],trim:[.62,.4,.2],crown:[.24,.24,.3],glow:[1,.62,1],cape:[.22,.1,.32]};
+function colorAt(x,y,z,curv){
+  const b=bone(x,y,z),cl=cloth(x,y,z),pl=plate(x,y,z),tr=trim(x,y,z),cr=crown(x,y,z),gl=glow(x,y,z),cp=cape(x,y,z);
+  const arr=[['glow',gl-.012],['trim',tr-.006],['crown',cr-.004],['plate',pl-.004],['cape',cp],['bone',b],['cloth',cl+.002]];arr.sort((a,c)=>a[1]-c[1]);const id=arr[0][0];
+  let c=COL[id].slice();const e=clamp(-curv*.02,0,1),cav=clamp(curv*.02,0,1);   // borda convexa clareia, fenda escurece
+  if(id==='plate'){const wr=clamp(e*1.4+(vnoise(x*20,y*20,z*20)-.6)*.5,0,1);c=c.map((v,i)=>v+(COL.plateW[i]-v)*wr);}
+  else if(id==='trim'){c=c.map(v=>v*(.8+.5*e));}
+  else if(id==='bone'){const k=.88+.12*vnoise(x*25,y*25,z*25);c=c.map(v=>v*k);}
+  else if(id==='cloth'){const k=.85+.3*vnoise(x*30,y*30,z*30);c=c.map(v=>v*k);}
+  if(id!=='glow'){const k=1-.55*cav;c=c.map(v=>v*k);}
+  return c;}
+// ---------- malha (surface nets) ----------
+function surfaceNets(f,mn,mx,cell){
+  const nx=Math.ceil((mx[0]-mn[0])/cell)+1,ny=Math.ceil((mx[1]-mn[1])/cell)+1,nz=Math.ceil((mx[2]-mn[2])/cell)+1;
+  const F=new Float32Array(nx*ny*nz);const id=(x,y,z)=>x+nx*(y+ny*z);
+  for(let z=0;z<nz;z++)for(let y=0;y<ny;y++)for(let x=0;x<nx;x++)F[id(x,y,z)]=f(mn[0]+x*cell,mn[1]+y*cell,mn[2]+z*cell);
+  const vidx=new Int32Array(nx*ny*nz).fill(-1),pos=[];
+  const E=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];const C=[[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]];
+  for(let z=0;z<nz-1;z++)for(let y=0;y<ny-1;y++)for(let x=0;x<nx-1;x++){
+    const v=C.map(c=>F[id(x+c[0],y+c[1],z+c[2])]);let m=0;for(let i=0;i<8;i++)if(v[i]<0)m|=1<<i;if(m===0||m===255)continue;
+    let ax=0,ay=0,az=0,n=0;for(const [a,b] of E){if((v[a]<0)!==(v[b]<0)){const t=v[a]/(v[a]-v[b]);ax+=C[a][0]+(C[b][0]-C[a][0])*t;ay+=C[a][1]+(C[b][1]-C[a][1])*t;az+=C[a][2]+(C[b][2]-C[a][2])*t;n++;}}
+    vidx[id(x,y,z)]=pos.length/3;pos.push(mn[0]+(x+ax/n)*cell,mn[1]+(y+ay/n)*cell,mn[2]+(z+az/n)*cell);}
+  const idx=[];
+  for(let z=1;z<nz-1;z++)for(let y=1;y<ny-1;y++)for(let x=1;x<nx-1;x++){
+    const s0=F[id(x,y,z)]<0;
+    const chk=(dx,dy,dz,cs)=>{const s1=F[id(x+dx,y+dy,z+dz)]<0;if(s0===s1)return;const q=cs.map(c=>vidx[id(x+c[0],y+c[1],z+c[2])]);if(q.some(v=>v<0))return;if(s0)idx.push(q[0],q[1],q[2],q[0],q[2],q[3]);else idx.push(q[0],q[2],q[1],q[0],q[3],q[2]);};
+    chk(1,0,0,[[0,-1,-1],[0,0,-1],[0,0,0],[0,-1,0]]);
+    chk(0,1,0,[[-1,0,-1],[-1,0,0],[0,0,0],[0,0,-1]]);
+    chk(0,0,1,[[-1,-1,0],[0,-1,0],[0,0,0],[-1,0,0]]);}
+  return {pos,idx};}
+function build(cell){
+  const t0=performance.now();const m=surfaceNets(field,[-1.75,2.2,-.9],[1.75,4.95,.85],cell);
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(m.pos,3));g.setIndex(m.idx);
+  const n=new Float32Array(m.pos.length),col=new Float32Array(m.pos.length),e=.012;
+  for(let i=0;i<m.pos.length;i+=3){const x=m.pos[i],y=m.pos[i+1],z=m.pos[i+2];
+    let gx=field(x+e,y,z)-field(x-e,y,z),gy=field(x,y+e,z)-field(x,y-e,z),gz=field(x,y,z+e)-field(x,y,z-e);const l=Math.hypot(gx,gy,gz)||1;n[i]=gx/l;n[i+1]=gy/l;n[i+2]=gz/l;
+    const ce=.03,curv=(field(x+n[i]*ce,y+n[i+1]*ce,z+n[i+2]*ce)+field(x-n[i]*ce,y-n[i+1]*ce,z-n[i+2]*ce)-2*field(x,y,z))/(ce*ce)*.04;const c=colorAt(x,y,z,curv);col[i]=c[0];col[i+1]=c[1];col[i+2]=c[2];}
+  g.setAttribute('normal',new THREE.BufferAttribute(n,3));g.setAttribute('color',new THREE.BufferAttribute(col,3));
+  return {g,verts:m.pos.length/3,ms:performance.now()-t0};}
+let obj=null;
+const info=build(+new URLSearchParams(location.search).get('cell')||.03);
+const mat=new THREE.MeshToonMaterial({color:0xffffff,gradientMap:gd,vertexColors:true});
+obj=new THREE.Mesh(info.g,mat);obj.add(new THREE.Mesh(info.g,outMat));scene.add(obj);
+// brilho (olhos/gemas) sem sombreamento
+const glowMat=new THREE.MeshBasicMaterial({color:0xd890ff,transparent:true,opacity:.0});
+window.sim={info:{verts:info.verts,ms:info.ms},rot(y){obj.rotation.y=y;R.render(scene,cam);},grab(){return cv.toDataURL('image/png');}};
+R.render(scene,cam);
+</script>

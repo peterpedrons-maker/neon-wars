@@ -1,0 +1,48 @@
+<!doctype html><meta charset=utf-8><body style="margin:0;background:#2a3a50">
+<canvas id=c width=300 height=300 style="width:600px;height:600px;image-rendering:pixelated"></canvas>
+<script src="../three.min.js"></script><script src="mixamo/GLTFLoader.js"></script><script src="sdflib.js"></script><script src="parts.js"></script>
+<script>
+const W=300,H=300,cv=document.getElementById('c');
+const R=new THREE.WebGLRenderer({canvas:cv,antialias:false,alpha:true,preserveDrawingBuffer:true});R.setSize(W,H,false);R.setPixelRatio(1);R.setClearColor(0,0);
+const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(32,W/H,.1,100),TILT=47*Math.PI/180;
+function placeCam(x,z){const d=11.5,ty=2.3;cam.position.set(x,ty+d*Math.sin(TILT),z+d*Math.cos(TILT));cam.lookAt(x,ty,z);}
+const gd=new THREE.DataTexture(new Uint8Array([40,40,40,255,120,120,120,255,200,200,200,255,255,255,255,255]),4,1,THREE.RGBAFormat);gd.minFilter=gd.magFilter=THREE.NearestFilter;gd.needsUpdate=true;
+scene.add(new THREE.AmbientLight(0x585a80,.8));const sun=new THREE.DirectionalLight(0xfff0e0,1.1);sun.position.set(-4,8,5);scene.add(sun);const rimL=new THREE.DirectionalLight(0x9a70ff,.7);rimL.position.set(5,3,-6);scene.add(rimL);
+const OUT=new THREE.ShaderMaterial({side:THREE.BackSide,skinning:true,uniforms:{t:{value:.03}},vertexShader:'uniform float t;\n#include <common>\n#include <skinning_pars_vertex>\nvoid main(){\n#include <beginnormal_vertex>\n#include <skinbase_vertex>\n#include <skinnormal_vertex>\n#include <begin_vertex>\n#include <skinning_vertex>\ntransformed+=normalize(objectNormal)*t;gl_Position=projectionMatrix*modelViewMatrix*vec4(transformed,1.);}',fragmentShader:'void main(){gl_FragColor=vec4(.04,.02,.08,1.);}'});
+const outMat=new THREE.ShaderMaterial({side:THREE.BackSide,uniforms:{t:{value:.03}},vertexShader:'uniform float t;void main(){gl_Position=projectionMatrix*modelViewMatrix*vec4(position+normal*t,1.);}',fragmentShader:'void main(){gl_FragColor=vec4(.04,.02,.08,1.);}'});
+const tex=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');x.fillStyle='#3a4258';x.fillRect(0,0,64,64);x.fillStyle='#434c64';x.fillRect(2,2,60,60);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(24,24);t.magFilter=THREE.NearestFilter;return t;})();
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.MeshBasicMaterial({map:tex}));ground.rotation.x=-Math.PI/2;scene.add(ground);
+const root=new THREE.Group();scene.add(root);
+const SC=new THREE.MeshToonMaterial({color:0xffffff,gradientMap:gd,vertexColors:true});
+let mixer,actions={},cur=null,ready=false,bones={},ws=1,crownM,bladeM,hiltM;
+new THREE.GLTFLoader().load('mixamo/Soldier.glb',g=>{
+  const m=g.scene;root.add(m);
+  // medir altura e escalar para o tamanho do Rei (~4.4 unidades)
+  m.updateMatrixWorld(true);const bb=new THREE.Box3().setFromObject(m);ws=4.4/(bb.max.y-bb.min.y);m.scale.setScalar(ws);m.updateMatrixWorld(true);
+  m.traverse(o=>{if(o.isBone)bones[o.name.replace('mixamorig','').replace(':','')]=o;
+    if(o.isSkinnedMesh){const vis=/visor/i.test(o.name)||/visor/i.test(o.material.name);
+      o.material=vis?new THREE.MeshBasicMaterial({color:0xc080ff,skinning:true}):new THREE.MeshToonMaterial({color:0x3a1e2a,gradientMap:gd,skinning:true});
+      o.castShadow=false;if(!vis){const ol=new THREE.SkinnedMesh(o.geometry,OUT);ol.bind(o.skeleton,o.bindMatrix);o.parent.add(ol);ol.frustumCulled=false;}o.frustumCulled=false;}});
+  // coroa esculpida na cabeca; espada esculpida na mao direita (objetos separados do corpo)
+  const cg=buildGeo(P.crown),bg=buildGeo(P.blade),hg=buildGeo(P.hilt);
+  crownM=new THREE.Mesh(cg,SC);crownM.add(new THREE.Mesh(cg,outMat));scene.add(crownM);
+  const bm=new THREE.MeshToonMaterial({color:0xffffff,gradientMap:gd,vertexColors:true,emissive:0x2a5a80});
+  const ob=new THREE.ShaderMaterial({side:THREE.BackSide,uniforms:{t:{value:.03}},vertexShader:'uniform float t;void main(){gl_Position=projectionMatrix*modelViewMatrix*vec4(position+normal*t,1.);}',fragmentShader:'void main(){gl_FragColor=vec4(.2,.5,.9,1.);}'});
+  bladeM=new THREE.Mesh(bg,bm);bladeM.add(new THREE.Mesh(bg,ob));hiltM=new THREE.Mesh(hg,SC);hiltM.add(new THREE.Mesh(hg,outMat));
+  const sw=new THREE.Group();sw.add(bladeM,hiltM);scene.add(sw);window.sword=sw;
+  mixer=new THREE.AnimationMixer(m);g.animations.forEach(a=>{actions[a.name]=mixer.clipAction(a);});
+  window.anims=Object.keys(actions);ready=true;
+});
+const v1=new THREE.Vector3(),q1=new THREE.Quaternion(),qa=new THREE.Quaternion();
+let SW_ROT=[0,0,0],CR_OFF=[.8,.42,0];
+function sync(){
+  const h=bones.Head,rh=bones.RightHand;if(!h||!rh)return;
+  h.getWorldPosition(v1);h.getWorldQuaternion(q1);const up=new THREE.Vector3(0,1,0).applyQuaternion(q1);
+  crownM.position.copy(v1).addScaledVector(up,CR_OFF[1]);crownM.quaternion.copy(q1);crownM.scale.setScalar(CR_OFF[0]);
+  rh.getWorldPosition(v1);sword.position.copy(v1);rh.getWorldQuaternion(q1);sword.quaternion.copy(q1).multiply(qa.setFromEuler(new THREE.Euler(SW_ROT[0],SW_ROT[1],SW_ROT[2])));
+}
+window.sim={ready:()=>ready,anims:()=>window.anims,setSw(a){SW_ROT=a},setCr(a){CR_OFF=a},
+ play(name,fade=.3){const n=actions[name];if(!n)return;if(cur&&cur!==n){cur.fadeOut(fade);}n.reset().fadeIn(fade).play();cur=n;},
+ step(dt,x){mixer.update(dt);root.position.x=x;root.rotation.y=Math.PI/2;sync();placeCam(x,0);ground.position.set(Math.round(x),0,0);R.render(scene,cam);return cv.toDataURL('image/png');},
+ info:()=>({ws,bones:Object.keys(bones).length})};
+</script>

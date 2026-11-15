@@ -1,0 +1,96 @@
+<!doctype html><meta charset=utf-8><body style="margin:0;background:#2a3a50">
+<canvas id=c width=300 height=300 style="width:600px;height:600px;image-rendering:pixelated"></canvas>
+<script src="../three.min.js"></script><script src="mixamo/GLTFLoader.js"></script><script src="sdflib.js"></script><script src="parts.js"></script>
+<script>
+const W=300,H=300,cv=document.getElementById('c');
+const R=new THREE.WebGLRenderer({canvas:cv,antialias:false,alpha:true,preserveDrawingBuffer:true});R.setSize(W,H,false);R.setPixelRatio(1);R.setClearColor(0,0);
+const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(32,W/H,.1,100),TILT=47*Math.PI/180;
+function placeCam(x,z){const d=11.5,ty=2.3;cam.position.set(x,ty+d*Math.sin(TILT),z+d*Math.cos(TILT));cam.lookAt(x,ty,z);}
+const gd=new THREE.DataTexture(new Uint8Array([40,40,40,255,120,120,120,255,200,200,200,255,255,255,255,255]),4,1,THREE.RGBAFormat);gd.minFilter=gd.magFilter=THREE.NearestFilter;gd.needsUpdate=true;
+scene.add(new THREE.AmbientLight(0x585a80,.8));const sun=new THREE.DirectionalLight(0xfff0e0,1.1);sun.position.set(-4,8,5);scene.add(sun);const rimL=new THREE.DirectionalLight(0x9a70ff,.7);rimL.position.set(5,3,-6);scene.add(rimL);
+const outMat=new THREE.ShaderMaterial({side:THREE.BackSide,uniforms:{t:{value:.03}},vertexShader:'uniform float t;void main(){gl_Position=projectionMatrix*modelViewMatrix*vec4(position+normal*t,1.);}',fragmentShader:'void main(){gl_FragColor=vec4(.04,.02,.08,1.);}'});
+const outBlade=new THREE.ShaderMaterial({side:THREE.BackSide,uniforms:{t:{value:.03}},vertexShader:'uniform float t;void main(){gl_Position=projectionMatrix*modelViewMatrix*vec4(position+normal*t,1.);}',fragmentShader:'void main(){gl_FragColor=vec4(.2,.5,.9,1.);}'});
+const tex=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');x.fillStyle='#3a4258';x.fillRect(0,0,64,64);x.fillStyle='#434c64';x.fillRect(2,2,60,60);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(24,24);t.magFilter=THREE.NearestFilter;return t;})();
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.MeshBasicMaterial({map:tex}));ground.rotation.x=-Math.PI/2;scene.add(ground);
+const SCULPT=new THREE.MeshToonMaterial({color:0xffffff,gradientMap:gd,vertexColors:true});
+const GEO={};for(const k in P)GEO[k]=buildGeo(P[k]);
+function sculpt(k,mat){const m=new THREE.Mesh(GEO[k],mat||SCULPT);m.add(new THREE.Mesh(GEO[k],outMat));scene.add(m);return m;}
+function makeTube(R1,SEG,base){const N=(2*R1+1),pos=new Float32Array(N*SEG*3),col=new Float32Array(N*SEG*3),idx=[];
+  for(let r=0;r<N-1;r++)for(let a=0;a<SEG;a++){const a2=(a+1)%SEG,i0=r*SEG+a,i1=r*SEG+a2,i2=(r+1)*SEG+a,i3=(r+1)*SEG+a2;idx.push(i0,i2,i1,i1,i2,i3);}
+  for(let r=0;r<N;r++)for(let a=0;a<SEG;a++){const k=.8+.3*hash(r,a,7)+.12*Math.sin(r*2.2)*Math.sin(a*1.9),i=(r*SEG+a)*3;col[i]=base[0]*k;col[i+1]=base[1]*k;col[i+2]=base[2]*k;}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('normal',new THREE.BufferAttribute(new Float32Array(N*SEG*3),3));g.setAttribute('color',new THREE.BufferAttribute(col,3));g.setIndex(idx);
+  const m=new THREE.Mesh(g,SCULPT);scene.add(m);m.add(new THREE.Mesh(g,outMat));m.frustumCulled=false;m.children[0].frustumCulled=false;
+  const P=new THREE.Vector3(),T=new THREE.Vector3(),n1=new THREE.Vector3(),n2=new THREE.Vector3(),Q=new THREE.Vector3();
+  function herm(a,b,ta,tb,t){const t2=t*t,t3=t2*t;return P.set(0,0,0).addScaledVector(a,2*t3-3*t2+1).addScaledVector(ta,t3-2*t2+t).addScaledVector(b,-2*t3+3*t2).addScaledVector(tb,t3-t2);}
+  m.update=(A,B,C,rA,rB,rC,fw)=>{const tA=B.clone().sub(A),tB=C.clone().sub(A).multiplyScalar(.5),tC=C.clone().sub(B);let ri=0;
+    for(let s=0;s<2;s++){const p0=s?B:A,p1=s?C:B,t0=s?tB:tA,t1=s?tC:tB,r0=s?rB:rA,r1=s?rC:rB;
+      for(let j=(s?1:0);j<=R1;j++){const t=j/R1;const c=herm(p0,p1,t0,t1,t).clone();const c2=herm(p0,p1,t0,t1,Math.min(1,t+.02)),c1=herm(p0,p1,t0,t1,Math.max(0,t-.02));T.copy(c2).sub(c1).normalize();
+        n1.copy(fw).addScaledVector(T,-fw.dot(T));if(n1.lengthSq()<1e-6)n1.set(0,0,1);n1.normalize();n2.crossVectors(T,n1);
+        const rr=(r0+(r1-r0)*(t*t*(3-2*t)))*(1+.05*Math.sin(t*3.14));
+        for(let a=0;a<SEG;a++){const th=a/SEG*Math.PI*2,cx=Math.cos(th),sy=Math.sin(th),i=(ri*SEG+a)*3;Q.copy(n1).multiplyScalar(cx).addScaledVector(n2,sy);
+          pos[i]=c.x+Q.x*rr;pos[i+1]=c.y+Q.y*rr;pos[i+2]=c.z+Q.z*rr;g.attributes.normal.array[i]=Q.x;g.attributes.normal.array[i+1]=Q.y;g.attributes.normal.array[i+2]=Q.z;}
+        ri++;}}
+    g.attributes.position.needsUpdate=true;g.attributes.normal.needsUpdate=true;};
+  return m;}
+
+const CLOTHC=[.15,.06,.11];
+const M3={pelvis:sculpt('pelvis'),chest:sculpt('chest'),head:sculpt('head'),crown:sculpt('crown'),boot:[sculpt('boot'),sculpt('boot')],thigh:[sculpt('thigh'),sculpt('thigh')],shin:[sculpt('shin'),sculpt('shin')],uarm:[sculpt('uarm'),sculpt('uarm')],farm:[sculpt('farm'),sculpt('farm')],grip:sculpt('gripHand'),relax:sculpt('relaxHand'),
+  tubeA:[makeTube(10,14,CLOTHC),makeTube(10,14,CLOTHC)],tubeL:[makeTube(10,14,CLOTHC),makeTube(10,14,CLOTHC)]};
+const sword=new THREE.Group();scene.add(sword);
+const bladeM=new THREE.Mesh(GEO.blade,new THREE.MeshToonMaterial({color:0xffffff,gradientMap:gd,vertexColors:true,emissive:0x2a5a80}));bladeM.add(new THREE.Mesh(GEO.blade,outBlade));sword.add(bladeM);sword.add(sculpt('hilt'));
+
+const eyeM=new THREE.MeshBasicMaterial({color:0xc080ff}),eyes=[-.125,.125].map(x=>{const e=new THREE.Mesh(new THREE.SphereGeometry(.045,6,5),eyeM);scene.add(e);return e;});
+// capa (tecido Verlet em espaco do mundo)
+const CC=7,CR=8,cw=1.3,ch=.42,cloth=[];for(let r=0;r<CR;r++)for(let c=0;c<CC;c++){const p=new THREE.Vector3();cloth.push({p,o:p.clone()});}
+const cgeo=new THREE.PlaneGeometry(1,1,CC-1,CR-1);{const col=new Float32Array(CC*CR*3);for(let r=0;r<CR;r++)for(let c=0;c<CC;c++){const t=r/(CR-1),i=r*CC+c;col[i*3]=.3-.1*t+.35*t*t;col[i*3+1]=.2-.12*t+.05*t*t;col[i*3+2]=.34+.45*t;}cgeo.setAttribute('color',new THREE.BufferAttribute(col,3));}
+const capeM=new THREE.Mesh(cgeo,new THREE.MeshToonMaterial({color:0x8a6aa8,gradientMap:gd,vertexColors:true,side:THREE.DoubleSide}));capeM.frustumCulled=false;capeM.add(new THREE.Mesh(cgeo,outMat));capeM.children[0].frustumCulled=false;scene.add(capeM);
+let mixer,actions={},cur=null,ready=false,B={},ws=1,root=new THREE.Group();scene.add(root);let capeInit=false;
+new THREE.GLTFLoader().load('mixamo/Soldier.glb',g=>{
+  const m=g.scene;root.add(m);m.updateMatrixWorld(true);const bb=new THREE.Box3().setFromObject(m);ws=4.4/(bb.max.y-bb.min.y);m.scale.setScalar(ws);
+  m.traverse(o=>{if(o.isBone)B[o.name.replace('mixamorig','').replace(':','')]=o;if(o.isSkinnedMesh)o.visible=false;});
+  mixer=new THREE.AnimationMixer(m);g.animations.forEach(a=>{actions[a.name]=mixer.clipAction(a);});window.anims=Object.keys(actions);ready=true;});
+const V=n=>{const v=new THREE.Vector3();B[n].getWorldPosition(v);return v;};
+const _x=new THREE.Vector3(),_y=new THREE.Vector3(),_z=new THREE.Vector3(),_m=new THREE.Matrix4();
+function frame(m,o,yv,fw){_y.copy(yv).normalize();_z.copy(fw).addScaledVector(_y,-fw.dot(_y));if(_z.lengthSq()<1e-6)_z.set(0,0,1);_z.normalize();_x.crossVectors(_y,_z);m.position.copy(o);_m.makeBasis(_x,_y,_z);m.quaternion.setFromRotationMatrix(_m);}
+function seg(m,a,b,fw,L0,xs=1){frame(m,a,b.clone().sub(a),fw);const l=a.distanceTo(b);m.scale.set(xs,l/L0,xs);}
+const CFG={headUp:.1,headS:1,chestF:.41,swRot:[-1.3,0,0],swOff:[0,0,0]};
+const clamp1=(x,a,b)=>Math.max(a,Math.min(b,x));
+function sync(dt){
+  const hips=V('Hips'),neck=V('Neck'),head=V('Head'),lA=V('LeftArm'),rA=V('RightArm'),lE=V('LeftForeArm'),rE=V('RightForeArm'),lH=V('LeftHand'),rH=V('RightHand'),
+        lU=V('LeftUpLeg'),rU=V('RightUpLeg'),lK=V('LeftLeg'),rK=V('RightLeg'),lF=V('LeftFoot'),rF=V('RightFoot'),lT=V('LeftToeBase'),rT=V('RightToeBase');
+  const up=neck.clone().sub(hips).normalize(),right=rA.clone().sub(lA).normalize(),fw=new THREE.Vector3().crossVectors(up,right).normalize();
+  const FW=fw.clone();
+  // torso / quadril / cabeca (pecas rigidas esculpidas presas ao movimento do esqueleto)
+  const tl=hips.distanceTo(neck),sw=lA.distanceTo(rA),ts=tl/1.35;
+  frame(M3.chest,hips.clone().lerp(neck,CFG.chestF),up,fw);M3.chest.scale.set(sw/1.6,ts,ts);
+  frame(M3.pelvis,hips.clone(),up,fw);M3.pelvis.scale.setScalar(ts);
+  const hq=new THREE.Quaternion();B.Head.getWorldQuaternion(hq);const hup=new THREE.Vector3(0,1,0).applyQuaternion(hq),hfw=new THREE.Vector3(0,0,1).applyQuaternion(hq);
+  const hp=head.clone().addScaledVector(hup,CFG.headUp*ws);frame(M3.head,hp,hup,hfw);M3.head.scale.setScalar(CFG.headS*ts);
+  frame(M3.crown,hp.clone().addScaledVector(hup,.47*ts),hup,hfw);M3.crown.scale.setScalar(CFG.headS*ts);
+  eyes.forEach((e,i)=>{e.position.copy(hp).addScaledVector(hup,.15*ts).addScaledVector(hfw,.25*ts).addScaledVector(new THREE.Vector3(1,0,0).applyQuaternion(hq),(i?.125:-.125)*ts);e.scale.setScalar(ts);});
+  // bracos e pernas: pecas por segmento + tubos de tecido macios
+  const arms=[[lA,lE,lH],[rA,rE,rH]],legs=[[lU,lK,lF,lT],[rU,rK,rF,rT]];
+  for(let i=0;i<2;i++){const [a,e,h]=arms[i];seg(M3.uarm[i],a,e,FW,.9);seg(M3.farm[i],e,h,FW,.85);M3.tubeA[i].update(a,e,h,.17*ts,.135*ts,.11*ts,FW);
+    const [u,k,f,t]=legs[i];seg(M3.thigh[i],u,k,FW,.95);seg(M3.shin[i],k,f,FW,.95);M3.tubeL[i].update(u.clone().add(new THREE.Vector3(0,.12*ts,0)),k,f,.21*ts,.16*ts,.13*ts,FW);
+    const td=t.clone().sub(f);td.y=0;if(td.lengthSq()<1e-6)td.copy(FW);frame(M3.boot[i],f.clone().add(new THREE.Vector3(0,-.05*ts,0)),new THREE.Vector3(0,1,0),td);M3.boot[i].scale.setScalar(ts);}
+  // espada (objeto separado): presa a mao direita, empunhada pelos punhos esculpidos
+  const rq=new THREE.Quaternion();B.RightHand.getWorldQuaternion(rq);const sq=new THREE.Quaternion().setFromEuler(new THREE.Euler(...CFG.swRot));
+  sword.quaternion.copy(rq).multiply(sq);sword.position.copy(rH).add(new THREE.Vector3(...CFG.swOff).applyQuaternion(sword.quaternion));sword.scale.setScalar(ts*.95);sword.updateMatrixWorld(true);
+  const ax=new THREE.Vector3(0,1,0).applyQuaternion(sword.quaternion),gp=sword.localToWorld(new THREE.Vector3(0,-.15,0));frame(M3.grip,gp,ax,FW);M3.grip.scale.setScalar(ts*.95);
+  frame(M3.relax,lH.clone(),lH.clone().sub(lE),FW);M3.relax.scale.setScalar(ts);
+  // capa
+  const aL=lA.clone().addScaledVector(up,.15*ts).addScaledVector(fw,-.38*ts),aR=rA.clone().addScaledVector(up,.15*ts).addScaledVector(fw,-.38*ts);
+  if(!capeInit){capeInit=true;for(let r=0;r<CR;r++)for(let c=0;c<CC;c++){const n=cloth[r*CC+c],q=aL.clone().lerp(aR,c/(CC-1)).addScaledVector(up,-r*ch*ts/1.0);n.p.copy(q).addScaledVector(fw,-.02*r);n.o.copy(n.p);}}
+  for(let c=0;c<CC;c++){const q=aL.clone().lerp(aR,c/(CC-1));cloth[c].p.copy(q);cloth[c].o.copy(q);}
+  for(let r=1;r<CR;r++)for(let c=0;c<CC;c++){const n=cloth[r*CC+c],v=n.p.clone().sub(n.o).multiplyScalar(.965);n.o.copy(n.p);n.p.add(v).addScaledVector(new THREE.Vector3(0,-14*ts,0),dt*dt);}
+  for(let it=0;it<5;it++){for(let r=0;r<CR;r++)for(let c=0;c<CC;c++){const a=cloth[r*CC+c];
+    if(c<CC-1)cn(a,cloth[r*CC+c+1],cw/(CC-1)*(1+r*.07)*ts,r===0);if(r<CR-1)cn(a,cloth[(r+1)*CC+c],ch*ts,false);}
+    for(let r=1;r<CR;r++)for(let c=0;c<CC;c++){const n=cloth[r*CC+c].p,rel=n.clone().sub(hips),d=rel.dot(fw);if(rel.y>-1.3*ts&&d>-.34*ts)n.addScaledVector(fw,-.34*ts-d);if(n.y<.04)n.y=.04;}}
+  function cn(a,b,L,pin){const d=b.p.clone().sub(a.p),l=d.length()||1e-6,df=(l-L)/l;if(pin)b.p.addScaledVector(d,-df);else{a.p.addScaledVector(d,df*.5);b.p.addScaledVector(d,-df*.5);}}
+  for(let r=0;r<CR;r++)for(let c=0;c<CC;c++){const q=cloth[r*CC+c].p,i=r*CC+c;cgeo.attributes.position.setXYZ(i,q.x,q.y,q.z);}
+  cgeo.attributes.position.needsUpdate=true;cgeo.computeVertexNormals();
+}
+window.sim={ready:()=>ready,anims:()=>window.anims,cfg:CFG,
+ play(name,fade=.3){const n=actions[name];if(!n)return;if(cur&&cur!==n)cur.fadeOut(fade);n.reset().fadeIn(fade).play();cur=n;},
+ step(dt,x){mixer.update(dt);root.position.x=x;root.rotation.y=Math.PI/2;root.updateMatrixWorld(true);sync(dt);placeCam(x,0);ground.position.set(Math.round(x),0,0);R.render(scene,cam);return cv.toDataURL('image/png');}};
+</script>
