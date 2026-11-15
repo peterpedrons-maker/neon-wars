@@ -1207,15 +1207,15 @@ def run_params(f, n=8, view='down'):
     ph = 2 * math.pi * f / n
     s = math.sin(ph); c = math.cos(ph)
     air = abs(s) > .7                      # fase de voo
-    p = dict(dy=-2 if air else 0, tn=3 if air else 2, hdy=1 if not air else 0)
+    p = dict(dy=-round(abs(s) * 2), tn=3, hdy=0)   # bob suave (sem trocar altura do tronco = sem piscar)
     if view in ('down', 'up'):
-        p['bl'] = (0, round(max(0, s) * 5)); p['br'] = (0, round(max(0, -s) * 5))
-        p['al'] = (0, round(c * 4)); p['ar'] = (0, round(-c * 4))
+        p['bl'] = (0, round(max(0, s) * 4)); p['br'] = (0, round(max(0, -s) * 4))
+        p['al'] = (0, round(c * 3)); p['ar'] = (0, round(-c * 3))
         p['hdx'] = 0; p['bdx'] = 0
     else:
         p['bl'] = (round(c * 8), round(max(0, -s) * 5)); p['br'] = (round(-c * 8), round(max(0, s) * 5))
         p['al'] = (round(-c * 6), -1); p['ar'] = (round(c * 6), -1)
-        p['bdx'] = 2; p['hdx'] = 3; p['dx'] = 1
+        p['bdx'] = 2; p['hdx'] = 2; p['dx'] = 1
     base = 150 if view != 'right' else 238   # lamina para tras ao correr
     p['sw'] = dict(ang=base + int(round(8 * s)), len=11, side='r')
     p['flut'] = 2 + int(round(max(0, c) * 2))

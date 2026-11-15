@@ -69,7 +69,7 @@ def himg(h, F):
     if h.get('dod'): return AP.tint(AP.img('h', 'walk', v, int(h.get('animT', 0) * 24) % 16), (180, 220, 255), .35)
     if st == 'atk':
         u = min(.999, a.get('t', 0) / max(.01, a.get('dur', .5))); return AP.img('h', 'attack', v, int(u * len(AP.seq('h', 'attack', v))))
-    if st == 'walk' and h.get('run'): return AP.img('h', 'run', v, int(h.get('animT', 0) * 20.8) % 16)
+    if st == 'walk' and h.get('run'): return AP.img('h', 'run', v, int(h.get('animT', 0) * 14) % 16)
     if st == 'walk': return AP.img('h', 'walk', v, int(h.get('animT', 0) * 20.8) % 16)
     return AP.img('h', 'idle', v, int(F['t'] * 10) % 12)
 
