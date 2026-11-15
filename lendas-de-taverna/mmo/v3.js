@@ -270,7 +270,7 @@ function drawEnt(sc,e,frame){
   const hp=e.kind==='hero'?G.hero:null;
   let fr=null,scale=1,S0;
   if(e.pet){fr=[0,0,128,128,64,116];scale=1;S0=128;}
-  else{fr=entFrame(e);if(!fr)return;scale=e.kind==='boss'?e.T.scale:(e.sc||1);S0=Math.max(128,Math.ceil(Math.max(fr[3],fr[4])*scale*1.5/64)*64);}
+  else{fr=entFrame(e);if(!fr)return;scale=e.kind==='boss'?(typeof bsc==='function'?bsc(e):e.T.scale):(typeof msc==='function'?msc(e):(e.sc||1));S0=Math.max(128,Math.ceil(Math.max(fr[3],fr[4])*scale*1.5/64)*64);}
   const r=entRec(sc,e,S0);r.seen=frame;
   const al=e.dead?Math.max(0,1-Math.max(0,e.deadT-.5)/.6):1;
   const dyn=e.kind==='hero'||e.kind==='boss'||e.flash>0||e.tint||e.shd>0||e.pet||e.elite||(e.dod!=null);

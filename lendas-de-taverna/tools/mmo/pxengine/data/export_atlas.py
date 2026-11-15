@@ -35,6 +35,12 @@ J.ENEMY.update({
     'grunk': dict(cls='warrior', skin='goblin', hair='g_goblin', eyes='amarelo', hat='gob_ears', outfit='mail', metal='ferro', clothes='bronze', weapon='machado', tn_off=1, bulk=1),
     'morvath': dict(cls='warrior', skin='osso', hair='g_osso', eyes='oco', hat='rusty_helm', outfit='mail', clothes='azul', metal='aco', weapon='espada_gelo', tn_off=1, bulk=1),
 })
+UNITS.update({
+    'n_guarda': dict(kind='c', ap=dict(cls='warrior', hat='helm', outfit='mail', metal='aco', clothes='azul', weapon='espada_ferro')),
+    'n_pov_f': dict(kind='e', name='aldeao'),
+    'n_ladino_b': dict(kind='c', ap=dict(cls='rogue', weapon='adaga_ferro', clothes='verde')),
+    'n_bardo': dict(kind='c', ap=dict(cls='mage', hat='none', outfit='robe', clothes='vermelho', hair='preto', weapon='cajado_natureza')),
+})
 UNITS.update({'ogro': dict(kind='e', name='ogro'), 'grunk': dict(kind='e', name='grunk'), 'morvath': dict(kind='e', name='morvath')})
 DENS = {'idle': 2, 'walk': 2, 'run': 2, 'attack': 1, 'hurt': 1, 'death': 1, 'cast': 1}
 
