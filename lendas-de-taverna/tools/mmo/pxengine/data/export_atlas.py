@@ -42,7 +42,7 @@ UNITS.update({
     'n_bardo': dict(kind='c', ap=dict(cls='mage', hat='none', outfit='robe', clothes='vermelho', hair='preto', weapon='cajado_natureza')),
 })
 UNITS.update({
-    'goblin': dict(kind='m', spec='goblin'), 'grunk': dict(kind='m', spec='grunk'), 'goblin_x': dict(kind='m', spec='goblin_x'), 'sapador': dict(kind='m', spec='goblin_sapador'),
+    'goblin': dict(kind='m', spec='goblin'), 'grunk': dict(kind='c', ap=dict(cls='warrior', skin='goblin', hair='g_goblin', eyes='brasa', hat='gobking', outfit='mail', metal='ferro', clothes='bronze', weapon='machado', tn_off=2, bulk=1)), 'goblin_x': dict(kind='m', spec='goblin_x'), 'sapador': dict(kind='m', spec='goblin_sapador'),
     'carnical': dict(kind='m', spec='carnical'), 'mumia': dict(kind='m', spec='mumia'), 'necro': dict(kind='m', spec='necro'), 'cav_caido': dict(kind='m', spec='cav_caido'),
     'ogro_lenhador': dict(kind='m', spec='ogro_lenhador'), 'afogado': dict(kind='m', spec='afogado'), 'bandido': dict(kind='m', spec='bandido'),
     'ladrao': dict(kind='m', spec='ladrao_esgoto'), 'cult_lodo': dict(kind='m', spec='cultista_lodo'),
