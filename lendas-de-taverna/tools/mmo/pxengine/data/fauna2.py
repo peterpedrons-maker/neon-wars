@@ -116,9 +116,9 @@ def harpia(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_d
     c = Cv(); cx = W // 2; gy = BASE
     fl = math.sin(ph * 2) * 1.0; by = gy - 22 + bob + math.sin(ph) * 1.5; bx = cx + lunge * .4
     for sg in (-1, 1):                                                  # asas (um unico bloco com o corpo)
-        c.cap(bx + sg * 3, by - 3, bx + sg * 15, by - 9 - fl * 6, 3.0, 1.2, 'wing', sg < 0)
-        c.cap(bx + sg * 15, by - 9 - fl * 6, bx + sg * 19, by - 1 - fl * 8, 1.4, .6, 'wing', sg < 0)
-        c.cap(bx + sg * 4, by, bx + sg * 15, by - 2 - fl * 6, 2.4, 1.0, 'wing', sg < 0)
+        c.cap(bx + sg * 3, by - 3, bx + sg * 15, by - 9 - fl * 6, 4.2, 2.0, 'wing', sg < 0)
+        c.cap(bx + sg * 15, by - 9 - fl * 6, bx + sg * 20, by + 1 - fl * 8, 2.4, 1.0, 'wing', sg < 0)
+        c.cap(bx + sg * 4, by + 1, bx + sg * 16, by - 2 - fl * 6, 3.4, 1.4, 'wing', sg < 0)
     c.ell(bx, by + 2, 5.2, 7.2)
     c.ell(bx, by + 3.4, 3.4, 4.6, 'belly')
     c.cap(bx, by + 8, bx - 1.5, by + 15, 2.4, 1.2)                      # cauda/pernas de ave
