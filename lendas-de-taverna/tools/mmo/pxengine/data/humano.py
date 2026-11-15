@@ -109,7 +109,7 @@ def draw(S, view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, head_dy=0, **kw
         if S.get('eye2'): c.dot(ex + 2, ey, hx(S['eye2']))
         if S.get('scar'): c.dot(ex - 1, ey + 1.5, hx('#8a3a3a')); c.dot(ex, ey + 2.5, hx('#8a3a3a'))
         if mouth and not S.get('mask'): [c.dot(hxx + hr * .5 + q, hy + hr * .55, hx('#2a1018')) for q in range(0, 3)]
-        if S.get('tusks'): c.cap(hxx + hr * .6, hy + hr * .6, hxx + hr * .7, hy + hr * .1, .8, .5, 'bone')
+        if S.get('tusks'): c.cap(hxx + hr * .55, hy + hr * .62, hxx + hr * .66, hy + hr * .62 - 3.4, .9, .5, 'bone')
     else:
         back = view == 'up'; bx = cx
         if S.get('cape') and S.get('has_cape', 1) and back: c.ell(bx, by + 1, w + 2.4, ty + 4.2, 'cape')
@@ -167,7 +167,7 @@ def draw(S, view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, head_dy=0, **kw
             elif not S.get('mask'): c.dot(bx, hh + hr * .6, hx('#4a2a2a'))
             if S.get('open_mouth'): [c.dot(bx + q, hh + hr * .6 + r, hx('#2a1018')) for q in range(-1, 2) for r in (0, 1)]
             if S.get('tusks'):
-                for sg in (-1, 1): c.cap(bx + sg * 3.2, hh + hr * .6, bx + sg * 3.8, hh + hr * .1, .8, .5, 'bone')
+                for sg in (-1, 1): c.cap(bx + sg * hr * .6, hh + hr * .6, bx + sg * hr * .66, hh + hr * .6 - 3.2, .9, .5, 'bone')
             if S.get('eyeG'):
                 pass
     details(c, S, view, bx, by, hy, hr, w, ty, view == 'up', ph)
@@ -188,6 +188,12 @@ def details(c, S, view, bx, by, hh, hr, w, ty, back, ph):
         if view != 'right': c.dot(bx, yb, hx('#e8c040')); c.dot(bx + 1, yb, hx('#e8c040'))
     if S.get('strap') and view != 'up':
         for k in range(8): c.dot((bx - w * .7 + k * 1.5) if view != 'right' else (bx - 2 + k * .7), by - ty * .8 + k * 1.1, hx(S.get('strap_c', '#3a2418')))
+    if S.get('crown'):
+        cc = hx(S.get('crown_c', '#e8e2d0')); px_ = bx - 1 if view == 'right' else bx; n_ = 5 if view != 'right' else 4
+        for k in range(n_):
+            xx = px_ + (k - (n_ - 1) / 2) * (hr * 2 * .8 / (n_ - 1)); hgt = 2 + (1 if k in (1, 2, 3) else 0)
+            for r in range(int(hgt)): c.dot(xx, hh - hr - 1 - r + 1, cc)
+        for q in range(int(-hr * .8), int(hr * .8) + 1): c.dot(px_ + q, hh - hr + 1, hx(S.get('crown_band', '#8a7a50')))
     if S.get('feathers'):
         cols = [hx(q) for q in S.get('feather_c', ['#d83a3a', '#e8c040', '#3aa0d8'])]
         px_ = bx - 1 if view == 'right' else bx
@@ -250,6 +256,8 @@ def details(c, S, view, bx, by, hh, hr, w, ty, back, ph):
 
 
 SPECS = {
+ 'grunk': dict(skin='#6e9e3e', ears=1, nose=3.0, hair='#2a1a10', hair_style=None, cloth='#5a3a28', cloth2='#8a5a34', pants='#3a2a20', boots='#2a1a12', weapon='axe', wlen=16, wang=-.85, eye='#ff5030', eye_hi=0,
+         head=8.2, torso=6.8, torso_h=6.6, leg=5.4, bulk=3.4, tusks=1, pads=1, metal2='#8a6a4a', cape='#4a2a18', belt=1, strap=1, strap_c='#2a1a10', scar=1, crown=1, crown_c='#efe6cc', bones=1, tunic=1, rivets=1, blade='#a8a8b8'),
  'goblin': dict(skin='#7aae48', ears=1, nose=2.4, hair='#3a2a18', hair_style='tuft', cloth='#7a5030', cloth2='#a07a40', pants='#5a4a30', boots='#3a2a1a', weapon='club', wlen=11, wang=-.9, eye='#f0e040', head=7.8, torso=4.0, torso_h=4.6, leg=4.8, tunic=1, belt=1, strap=1, strap_c='#4a3020', eye_hi=1, scar=1),
  'goblin_x': dict(skin='#6a9a58', ears=1, nose=2.2, cloth='#4a2a5a', cloth2='#8a3a6a', pants='#3a2a3a', boots='#2a1a2a', weapon='staff', wlen=15, wang=-1.2, wang_f=-1.4, eye='#ff6a40', head=7.8, torso=4.2, torso_h=4.6, leg=4.8, feathers=1, warpaint=1, bones=1, tunic=1, belt=1, belt_c='#6a2a5a', skull=1, eye_hi=0, paint_c='#f0e8d0', robe=0, hair='#2a1a30', hair_style='tuft'),
  'bandido': dict(skin=SKIN['pele'], hair='#3a2a20', hair_style='fringe', bandana=1, mask=1, cloth='#7a5a38', cloth2='#b02a2a', pants='#3a3430', boots='#2a2420', weapon='dagger', wlen=9, scar=1, eye='#2a3a5a', tunic=1, sleeves=1, head=7.2, belt=1, strap=1, torso=5.2),
