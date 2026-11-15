@@ -68,7 +68,7 @@ def draw(S, view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, head_dy=0, **kw
             l_ = lift(p0); sw = math.cos(ph + p0) * 3.0
             c.cap(bx + lx, by + ty - 1, bx + lx + sw * .6, gy - 2.2 - l_, 2.1 + big * .25, 1.8, 'pants', far)
             c.cap(bx + lx + sw * .6, gy - 3 - l_, bx + lx + sw + 1.2, gy - .6 - l_, 2.0, 1.7, 'boots', far); c.ell(bx + lx + sw + 2.2, gy - 1.2 - l_, 2.3, 1.3, 'boots', far)
-        c.ell(bx - .5, by, w, ty + 1.0, 'cloth')
+        c.ell(bx - .5, by - ty * .25, w, ty * .8 + .6, 'cloth'); c.ell(bx - .3, by + ty * .55, w * .78, ty * .55 + .6, 'cloth')
         if S.get('robe'): c.ell(bx - .5, by + ty + leg * .35, w + 2.6, leg * .55 + 1.5, 'cloth')
         if S.get('belly'): c.ell(bx + .5, by + 1, w * .75, ty * .7, 'belly')
         if S.get('tunic'): c.ell(bx, by + ty * .7, w + .6, 2.2, 'cloth2')
@@ -116,7 +116,7 @@ def draw(S, view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, head_dy=0, **kw
         for sx, p0 in ((-2.6, 0), (2.6, math.pi)):
             l_ = lift(p0)
             c.cap(bx + sx, by + ty - 1, bx + sx, gy - 2.6 - l_, 2.1 + big * .25, 1.8, 'pants'); c.cap(bx + sx, gy - 3.4 - l_, bx + sx, gy - .5 - l_, 2.1, 1.9, 'boots'); c.ell(bx + sx, gy - 1 - l_, 2.5, 1.3, 'boots')
-        c.ell(bx, by, w + 1.0, ty + 1.0, 'cloth')
+        c.ell(bx, by - ty * .25, w + 1.0, ty * .8 + .6, 'cloth'); c.ell(bx, by + ty * .55, (w + 1.0) * .8, ty * .55 + .6, 'cloth')
         if S.get('robe'): c.ell(bx, by + ty + leg * .35, w + 3.2, leg * .55 + 1.5, 'cloth')
         if S.get('belly') and not back: c.ell(bx, by + 1, w * .8, ty * .7, 'belly')
         if S.get('tunic'): c.ell(bx, by + ty * .7, w + 1.4, 2.2, 'cloth2')
@@ -188,6 +188,19 @@ def details(c, S, view, bx, by, hh, hr, w, ty, back, ph):
         if view != 'right': c.dot(bx, yb, hx('#e8c040')); c.dot(bx + 1, yb, hx('#e8c040'))
     if S.get('strap') and view != 'up':
         for k in range(8): c.dot((bx - w * .7 + k * 1.5) if view != 'right' else (bx - 2 + k * .7), by - ty * .8 + k * 1.1, hx(S.get('strap_c', '#3a2418')))
+    if S.get('feathers'):
+        cols = [hx(q) for q in S.get('feather_c', ['#d83a3a', '#e8c040', '#3aa0d8'])]
+        px_ = bx - 1 if view == 'right' else bx
+        for k, col in enumerate(cols):
+            a = -1.9 + k * .62 if view != 'right' else -2.3 + k * .5
+            for r in range(3, 9): c.dot(px_ + math.cos(a) * r, hh - hr * .55 + math.sin(a) * r, col); c.dot(px_ + math.cos(a) * r + 1, hh - hr * .55 + math.sin(a) * r, col)
+    if S.get('warpaint') and not back:
+        col = hx(S.get('paint_c', '#e8e0d0'))
+        if view == 'right': [c.dot(bx + 4 + k, hh + 2 + (k % 2), col) for k in range(3)]
+        else:
+            for sg in (-1, 1): [c.dot(bx + sg * (2 + k), hh + 2.6 + (k % 2), col) for k in range(3)]
+    if S.get('bones') and not back:
+        for k in range(-2, 3): c.dot(bx + k * 1.4 - (1 if view == 'right' else 0), by - ty + 3 + abs(k) * .5, hx('#e8e2d0'))
     if S.get('stripes'):
         col = hx(S.get('stripe_c', '#8a7a54'))
         if view == 'right':
@@ -237,6 +250,8 @@ def details(c, S, view, bx, by, hh, hr, w, ty, back, ph):
 
 
 SPECS = {
+ 'goblin': dict(skin='#7aae48', ears=1, nose=2.4, hair='#3a2a18', hair_style='tuft', cloth='#7a5030', cloth2='#a07a40', pants='#5a4a30', boots='#3a2a1a', weapon='club', wlen=11, wang=-.9, eye='#f0e040', head=7.8, torso=4.0, torso_h=4.6, leg=4.8, tunic=1, belt=1, strap=1, strap_c='#4a3020', eye_hi=1, scar=1),
+ 'goblin_x': dict(skin='#6a9a58', ears=1, nose=2.2, cloth='#4a2a5a', cloth2='#8a3a6a', pants='#3a2a3a', boots='#2a1a2a', weapon='staff', wlen=15, wang=-1.2, wang_f=-1.4, eye='#ff6a40', head=7.8, torso=4.2, torso_h=4.6, leg=4.8, feathers=1, warpaint=1, bones=1, tunic=1, belt=1, belt_c='#6a2a5a', skull=1, eye_hi=0, paint_c='#f0e8d0', robe=0, hair='#2a1a30', hair_style='tuft'),
  'bandido': dict(skin=SKIN['pele'], hair='#3a2a20', hair_style='fringe', bandana=1, mask=1, cloth='#7a5a38', cloth2='#b02a2a', pants='#3a3430', boots='#2a2420', weapon='dagger', wlen=9, scar=1, eye='#2a3a5a', tunic=1, sleeves=1, head=7.2, belt=1, strap=1, torso=5.2),
  'carnical': dict(skin='#86a860', hair='#2a3a22', hair_style='wild', cloth='#6a5a48', cloth2='#4a3a2e', pants='#3a3a3a', boots='#2a2a2a', eye='#e8d040', eye_hi=0, stoop=3, arms_fwd=1, head=7.6, torso=4.8, scar=1, ribs=1, sockets=1, stitch=1, rags=1, tunic=1, open_mouth=1),
  'mumia': dict(skin='#dccfa6', wraps=1, cloth='#d0c49c', wrap='#e6dab4', cloth2='#bcb088', pants='#c8bc94', boots='#b8ac84', eye='#40e8a0', eye_hi=0, arms_fwd=1, head=7.4, bulk=.6, stripes=1, stripe_c='#8a7a54', head_stripes=1, torso=5.2, sleeves=1),

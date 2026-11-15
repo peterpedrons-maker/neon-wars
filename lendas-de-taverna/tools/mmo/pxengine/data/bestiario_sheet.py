@@ -28,8 +28,8 @@ def spr(k, view):
 
 
 def card(nm, k, bg):
-    c = Image.new('RGBA', (60, 106), bg); d = ImageDraw.Draw(c); d.rectangle([0, 0, 59, 105], outline=(120, 100, 60, 255))
-    for view, yb in (('right', 56), ('down', 102)):
+    c = Image.new('RGBA', (60, 156), bg); d = ImageDraw.Draw(c); d.rectangle([0, 0, 59, 155], outline=(120, 100, 60, 255))
+    for view, yb in (('right', 50), ('down', 101), ('up', 152)):
         im = spr(k, view); b = im.getbbox()
         if not b: continue
         b = im.crop(b); c.alpha_composite(b, (30 - b.width // 2, yb - b.height))
@@ -37,7 +37,7 @@ def card(nm, k, bg):
 
 
 for key, (title, items) in AREAS.items():
-    n = len(items); S = Image.new('RGBA', (64 * n + 4, 126), (24, 18, 32, 255))
+    n = len(items); S = Image.new('RGBA', (64 * n + 4, 176), (24, 18, 32, 255))
     pxfont.text(S, (4, 3), title, (255, 214, 120))
     for i, (nm, k) in enumerate(items): S.alpha_composite(card(nm, k, (52, 70, 56, 255)), (4 + i * 64, 14))
     S.resize((S.width * 4, S.height * 4), Image.NEAREST).save(f'{OUTD}/bestiario_{key}.png'); print(key)
