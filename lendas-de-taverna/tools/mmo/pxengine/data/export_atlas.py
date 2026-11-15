@@ -17,23 +17,23 @@ VIEWS = {'d': 'down', 'u': 'up', 's': 'right'}
 HERO = dict(cls='warrior', hat='helm', outfit='mail', metal='aco', clothes='aco', weapon='espada_aco')
 UNITS = {
     'h_guerreiro': dict(kind='c', ap=HERO, run=1),
-    'h_mago': dict(kind='c', ap=dict(cls='mage', weapon='cajado_arcano'), run=1),
-    'h_ladino': dict(kind='c', ap=dict(cls='rogue', weapon='adaga_veneno', weapon2='adaga_veneno'), run=1),
+    'h_mago': dict(kind='c', ap=dict(cls='mage', weapon='cajado_arcano', face_style='cold'), run=1),
+    'h_ladino': dict(kind='c', ap=dict(cls='rogue', weapon='adaga_veneno', weapon2='adaga_veneno', face_style='sly'), run=1),
     'h_clerigo': dict(kind='c', ap=dict(cls='cleric', weapon='maca_ferro'), run=1),
     'h_arqueiro': dict(kind='c', ap=dict(cls='archer', weapon='arco_curto'), run=1),
     'h_bardo': dict(kind='c', ap=dict(cls='mage', weapon='cajado_natureza', hair='castanho', clothes='verde'), run=1),
     'goblin': dict(kind='e', name='goblin'), 'goblin_x': dict(kind='e', name='goblin_x'),
     'esqueleto': dict(kind='e', name='esqueleto'),
-    'esqmago': dict(kind='c', ap=dict(cls='mage', skin='osso', hair='g_osso', eyes='oco', hat='hood', outfit='robe', clothes='azul', weapon='cajado_gelo')),
-    'guarda_c': dict(kind='c', ap=dict(cls='warrior', skin='osso', hair='g_osso', eyes='oco', hat='rusty_helm', outfit='mail', clothes='osso', metal='ferro', weapon='maca_ferro', bulk=1)),
+    'esqmago': dict(kind='c', ap=dict(cls='mage', face_style='hollow', skin='osso', hair='g_osso', eyes='oco', hat='hood', outfit='robe', clothes='azul', weapon='cajado_gelo')),
+    'guarda_c': dict(kind='c', ap=dict(cls='warrior', face_style='hollow', skin='osso', hair='g_osso', eyes='oco', hat='rusty_helm', outfit='mail', clothes='osso', metal='ferro', weapon='maca_ferro', bulk=1)),
     'cultista': dict(kind='e', name='cultista'), 'gargula': dict(kind='e', name='gargula'), 'zumbi': dict(kind='e', name='zumbi'),
     'javali': dict(kind='b', name='javali'), 'rato': dict(kind='b', name='rato'),
     'espectro': dict(kind='r', name='espectro'), 'morcego': dict(kind='r', name='morcego'), 'slime': dict(kind='r', name='slime'),
     'rei': dict(kind='c', ap=dict(cls='rei', weapon='espada_rei'), cast=1),
 }
 J.ENEMY.update({
-    'grunk': dict(cls='warrior', skin='goblin', hair='g_goblin', eyes='amarelo', hat='gob_ears', outfit='mail', metal='ferro', clothes='bronze', weapon='machado', tn_off=1, bulk=1),
-    'morvath': dict(cls='warrior', skin='osso', hair='g_osso', eyes='oco', hat='rusty_helm', outfit='mail', clothes='azul', metal='aco', weapon='espada_gelo', tn_off=1, bulk=1),
+    'grunk': dict(cls='warrior', skin='goblin', hair='g_goblin', eyes='brasa', hat='gobking', outfit='mail', metal='ferro', clothes='bronze', weapon='machado', tn_off=2, bulk=1, face_style='brute'),
+    'morvath': dict(cls='warrior', skin='osso', hair='g_osso', eyes='oco', hat='rusty_helm', outfit='mail', clothes='azul', metal='aco', weapon='espada_gelo', tn_off=1, bulk=1, face_style='hollow'),
 })
 UNITS.update({
     'n_guarda': dict(kind='c', ap=dict(cls='warrior', hat='helm', outfit='mail', metal='aco', clothes='azul', weapon='espada_ferro')),
@@ -42,7 +42,7 @@ UNITS.update({
     'n_bardo': dict(kind='c', ap=dict(cls='mage', hat='none', outfit='robe', clothes='vermelho', hair='preto', weapon='cajado_natureza')),
 })
 UNITS.update({
-    'goblin': dict(kind='m', spec='goblin'), 'grunk': dict(kind='c', ap=dict(cls='warrior', skin='goblin', hair='g_goblin', eyes='brasa', hat='gobking', outfit='mail', metal='ferro', clothes='bronze', weapon='machado', tn_off=2, bulk=1)), 'goblin_x': dict(kind='m', spec='goblin_x'), 'sapador': dict(kind='m', spec='goblin_sapador'),
+    'goblin': dict(kind='m', spec='goblin'), 'grunk': dict(kind='c', ap=dict(cls='warrior', skin='goblin', hair='g_goblin', eyes='brasa', hat='gobking', outfit='mail', metal='ferro', clothes='bronze', weapon='machado', tn_off=2, bulk=1, face_style='brute')), 'goblin_x': dict(kind='m', spec='goblin_x'), 'sapador': dict(kind='m', spec='goblin_sapador'),
     'carnical': dict(kind='m', spec='carnical'), 'mumia': dict(kind='m', spec='mumia'), 'necro': dict(kind='m', spec='necro'), 'cav_caido': dict(kind='m', spec='cav_caido'),
     'ogro_lenhador': dict(kind='m', spec='ogro_lenhador'), 'afogado': dict(kind='m', spec='afogado'), 'bandido': dict(kind='m', spec='bandido'),
     'ladrao': dict(kind='m', spec='ladrao_esgoto'), 'cult_lodo': dict(kind='m', spec='cultista_lodo'),
