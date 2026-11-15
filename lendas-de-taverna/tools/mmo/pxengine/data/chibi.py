@@ -1202,6 +1202,26 @@ def walk_params(f, n=8, view='down'):
     return p
 
 
+def run_params(f, n=8, view='down'):
+    """CORRER: passada longa, fase aerea (os dois pes no ar), tronco inclinado, bracos bombeando, arma para tras."""
+    ph = 2 * math.pi * f / n
+    s = math.sin(ph); c = math.cos(ph)
+    air = abs(s) > .7                      # fase de voo
+    p = dict(dy=-2 if air else 0, tn=3 if air else 2, hdy=1 if not air else 0)
+    if view in ('down', 'up'):
+        p['bl'] = (0, round(max(0, s) * 5)); p['br'] = (0, round(max(0, -s) * 5))
+        p['al'] = (0, round(c * 4)); p['ar'] = (0, round(-c * 4))
+        p['hdx'] = 0; p['bdx'] = 0
+    else:
+        p['bl'] = (round(c * 8), round(max(0, -s) * 5)); p['br'] = (round(-c * 8), round(max(0, s) * 5))
+        p['al'] = (round(-c * 6), -1); p['ar'] = (round(c * 6), -1)
+        p['bdx'] = 2; p['hdx'] = 3; p['dx'] = 1
+    base = 150 if view != 'right' else 238   # lamina para tras ao correr
+    p['sw'] = dict(ang=base + int(round(8 * s)), len=11, side='r')
+    p['flut'] = 2 + int(round(max(0, c) * 2))
+    return p
+
+
 def idle_params(f, n=6, view='down'):
     s = math.sin(2 * math.pi * f / n)
     p = dict(tn=3 if s > -.3 else 3, hdy=0, dy=0)
@@ -1322,6 +1342,7 @@ def anim(view, kind, cls='warrior', ps_override=None, appearance=None, dense=1):
     if appearance:
         cls = appearance.get('cls', cls); over = make_palette(appearance)
     if kind == 'walk': ps = [walk_params(f, 8 * dense, view) for f in range(8 * dense)]
+    elif kind == 'run': ps = [run_params(f, 8 * dense, view) for f in range(8 * dense)]
     elif kind == 'idle':
         ps = [idle_params(f, 6 * dense, view) for f in range(6 * dense)]
         if dense > 1:
@@ -1329,7 +1350,7 @@ def anim(view, kind, cls='warrior', ps_override=None, appearance=None, dense=1):
             for _k in range(len(ps)): ps[_k]['hdy'] = -1 if (_k % len(ps)) in (len(ps) // 2 - 1, len(ps) // 2) else 0
     elif kind in ('cast', 'hurt', 'death'): ps = extra_poses(kind, view)
     else: ps = ATK_S if view == 'right' else (ATK_B if view == 'up' else ATK_F)
-    if kind not in ('walk', 'idle') and dense > 1 and ps_override is None: ps = densify(ps, dense)
+    if kind not in ('walk', 'run', 'idle') and dense > 1 and ps_override is None: ps = densify(ps, dense)
     if ps_override is not None: ps = ps_override
     _REI = (cls == 'rei'); _BULK = bool(appearance and appearance.get('bulk')); _WINGS = bool(appearance and appearance.get('wings'))
     for _i, p in enumerate(ps):

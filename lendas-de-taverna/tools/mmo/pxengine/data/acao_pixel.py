@@ -12,7 +12,7 @@ from teste_clareira import OUT
 NW, NH, SC = MV.NW, MV.NH, 2
 HAPP = dict(cls='warrior', hat='helm', outfit='mail', metal='aco', clothes='aco', weapon='espada_aco')
 RAPP = dict(cls='rei', weapon='espada_rei')
-DENS = {'idle': 2, 'walk': 2, 'attack': 1, 'hurt': 1, 'cast': 1, 'death': 1}
+DENS = {'idle': 2, 'walk': 2, 'run': 2, 'attack': 1, 'hurt': 1, 'cast': 1, 'death': 1}
 _S = {}
 
 
