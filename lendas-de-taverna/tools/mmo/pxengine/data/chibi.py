@@ -617,6 +617,17 @@ def accessory2(g, hat, view, hx, hy, back=False):
             [g.put(hx + 5, hy + 15 - k, 'A') for k in range(2)]; [g.put(hx + 16, hy + 15 - k, 'A') for k in range(2)]
             for x in range(hx + 5, hx + 9): g.put(x, hy + 9, 'k')
             for x in range(hx + 13, hx + 17): g.put(x, hy + 9, 'k')
+    elif hat == 'gobking':                                                   # rei goblin: orelhas + presas + coroa de ossos/espinhos
+        accessory2(g, 'gob_ears', view, hx, hy, back)
+        if view == 'side':
+            for off, h_ in ((4, 3), (9, 5), (14, 6), (18, 4)):
+                for k in range(h_): g.put(hx + off, hy + 1 - k, 'F' if k < h_ - 1 else 'a'); g.put(hx + off + 1, hy + 1 - k, 'a')
+            for x in range(hx + 3, hx + 20): g.put(x, hy + 2, 'N')
+            g.stamp(['F', 'F'], hx + 18, hy + 12)
+        else:
+            g.stamp(['..........a', '..........F', '......a...a', '......F..aF', '..a...F..aF', '..F..aF.aFF', 'NaNaNaNNNNN'], hx, hy - 5, mirror=True)
+            if not back:
+                for sx_ in (hx + 5, hx + 16): [g.put(sx_, hy + 14 - k, 'F') for k in range(3)]
     elif hat == 'gob_ears':
         for x in range(hx + 1, hx + (19 if view == 'side' else 21)): g.put(x, hy + 4, 'T'); g.put(x, hy + 5, 'M')
         g.stamp(['TT', 'TM', '.M'], hx + (0 if view == 'side' else 20), hy + 5)

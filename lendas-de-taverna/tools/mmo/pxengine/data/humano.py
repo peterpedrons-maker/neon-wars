@@ -63,24 +63,32 @@ def draw(S, view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, head_dy=0, **kw
     lift = lambda p0: max(0, math.sin(ph + p0)) * 2.4
     if view == 'right':
         bx = cx - 1 + lunge * .4
+        c.cur = 'cape'
         if S.get('cape') and S.get('has_cape', 1): c.cap(bx - 3, by - ty + 1, bx - 7, gy - 4 + math.sin(ph) * .8, 3.4, 4.4, 'cape')
+        c.cur = 'legs'
         for lx, p0, far in ((-1.6, 0, True), (1.4, math.pi, False)):
             l_ = lift(p0); sw = math.cos(ph + p0) * 3.0
             c.cap(bx + lx, by + ty - 1, bx + lx + sw * .6, gy - 2.2 - l_, 2.1 + big * .25, 1.8, 'pants', far)
             c.cap(bx + lx + sw * .6, gy - 3 - l_, bx + lx + sw + 1.2, gy - .6 - l_, 2.0, 1.7, 'boots', far); c.ell(bx + lx + sw + 2.2, gy - 1.2 - l_, 2.3, 1.3, 'boots', far)
+        c.cur = 'torso'
         c.ell(bx - .5, by - ty * .25, w, ty * .8 + .6, 'cloth'); c.ell(bx - .3, by + ty * .55, w * .78, ty * .55 + .6, 'cloth')
         if S.get('robe'): c.ell(bx - .5, by + ty + leg * .35, w + 2.6, leg * .55 + 1.5, 'cloth')
+        if S.get('chest'): c.ell(bx + .6, by - ty * .15, w * .62, ty * .55, 'metal2')
         if S.get('belly'): c.ell(bx + .5, by + 1, w * .75, ty * .7, 'belly')
         if S.get('tunic'): c.ell(bx, by + ty * .7, w + .6, 2.2, 'cloth2')
+        c.cur = 'pad'
         if S.get('pads'): c.ell(bx - 1, by - ty + 1.2, 3.4 + big * .4, 2.8, 'metal2')
         if S.get('wraps'):
             for k in range(-2, 3): c.ell(bx + k * 1.8, by + k % 2, 1.0, ty * .95, 'wrap')
+        c.cur = 'arm'
         ax = -.55 + (lunge * .04) - math.sin(ph) * .2
         sx_, sy_ = bx + 1.5, by - ty + 2
         hx_, hy2 = sx_ + math.cos(ax + .7) * 6.8, sy_ + math.sin(ax + .7) * 6.8 + 1.6
-        c.cap(sx_, sy_, hx_, hy2, 1.9 + big * .2, 1.7, 'cloth2' if S.get('sleeves') else 'cloth'); c.ell(hx_, hy2, 1.9, 1.9, 'body')
+        c.cap(sx_, sy_, hx_, hy2, 1.9 + big * .2, 1.7, S.get('arm_reg') or ('cloth2' if S.get('sleeves') else 'cloth')); c.ell(hx_, hy2, 1.9, 1.9, 'body')
+        c.cur = 'weapon'
         if S.get('weapon'): weapon(c, hx_, hy2, S.get('wang', -.95) + lunge * .03, S.get('wlen', 10), S['weapon'])
         # cabeça
+        c.cur = 'head:'
         hxx = bx + 1.2 + lunge * .3
         if S.get('hair_back'): c.ell(hxx - 2.6, hy + 1.6, hr * .8, hr * .95, 'hair')
         if S.get('hood'): c.ell(hxx - 1.2, hy - .4, hr + 1.4, hr + 1.2, 'hood'); c.cap(hxx - 5, hy + 1, hxx - 7, hy + 6, 2.4, 1.4, 'hood')
@@ -112,24 +120,33 @@ def draw(S, view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, head_dy=0, **kw
         if S.get('tusks'): c.cap(hxx + hr * .55, hy + hr * .62, hxx + hr * .66, hy + hr * .62 - 3.4, .9, .5, 'bone')
     else:
         back = view == 'up'; bx = cx
+        c.cur = 'cape'
         if S.get('cape') and S.get('has_cape', 1) and back: c.ell(bx, by + 1, w + 2.4, ty + 4.2, 'cape')
+        c.cur = 'legs'
         for sx, p0 in ((-2.6, 0), (2.6, math.pi)):
             l_ = lift(p0)
             c.cap(bx + sx, by + ty - 1, bx + sx, gy - 2.6 - l_, 2.1 + big * .25, 1.8, 'pants'); c.cap(bx + sx, gy - 3.4 - l_, bx + sx, gy - .5 - l_, 2.1, 1.9, 'boots'); c.ell(bx + sx, gy - 1 - l_, 2.5, 1.3, 'boots')
+        c.cur = 'torso'
         c.ell(bx, by - ty * .25, w + 1.0, ty * .8 + .6, 'cloth'); c.ell(bx, by + ty * .55, (w + 1.0) * .8, ty * .55 + .6, 'cloth')
         if S.get('robe'): c.ell(bx, by + ty + leg * .35, w + 3.2, leg * .55 + 1.5, 'cloth')
+        if S.get('chest') and not back: c.ell(bx, by - ty * .15, w * .66, ty * .55, 'metal2')
         if S.get('belly') and not back: c.ell(bx, by + 1, w * .8, ty * .7, 'belly')
         if S.get('tunic'): c.ell(bx, by + ty * .7, w + 1.4, 2.2, 'cloth2')
+        c.cur = 'pad'
         if S.get('pads'):
             for sg in (-1, 1): c.ell(bx + sg * (w - .4), by - ty + 1.4, 3.4 + big * .4, 2.8, 'metal2')
         if S.get('wraps'):
             for k in range(-2, 3): c.ell(bx, by + k * 1.9, w, 1.0, 'wrap')
         if S.get('cape') and S.get('has_cape', 1) and back: pass
+        c.cur = 'arm'
         for sg in (-1, 1):
             sx_, sy_ = bx + sg * (w + .2), by - ty + 2; ex_, ey_ = sx_ + sg * 1.6, sy_ + 6.8
             if S.get('arms_fwd') and not back: ex_, ey_ = sx_ + sg * .6, sy_ + 4
-            c.cap(sx_, sy_, ex_, ey_, 1.9 + big * .2, 1.7, 'cloth2' if S.get('sleeves') else 'cloth'); c.ell(ex_, ey_ + .4, 1.9, 1.9, 'body')
+            c.cap(sx_, sy_, ex_, ey_, 1.9 + big * .25, 1.7 + big * .15, S.get('arm_reg') or ('cloth2' if S.get('sleeves') else 'cloth')); c.ell(ex_, ey_ + .6, 1.9 + big * .3, 1.9 + big * .3, 'body')
+            if S.get('bracers'): c.dot(ex_ - 1, ey_ - 1, hx('#3a2a1a')); c.dot(ex_, ey_ - 1, hx('#3a2a1a')); c.dot(ex_ + 1, ey_ - 1, hx('#3a2a1a'))
+        c.cur = 'weapon'
         if S.get('weapon'): weapon(c, bx + w + 2, by + 3, S.get('wang_f', -1.3), S.get('wlen', 10), S['weapon'])
+        c.cur = 'head:'
         hh = hy
         if S.get('hair_back') or S.get('hair') and back: c.ell(bx, hh + 1.2, hr + .4, hr + .6, 'hair') if back else c.ell(bx, hh - 1, hr + .6, hr + .4, 'hair')
         if S.get('hood'): c.ell(bx, hh - .2, hr + 1.4, hr + 1.2, 'hood'); c.cap(bx, hh + hr - 1, bx, hh + hr + 3, 3, 1.6, 'hood')
@@ -256,8 +273,8 @@ def details(c, S, view, bx, by, hh, hr, w, ty, back, ph):
 
 
 SPECS = {
- 'grunk': dict(skin='#6e9e3e', ears=1, nose=3.0, hair='#2a1a10', hair_style=None, cloth='#5a3a28', cloth2='#8a5a34', pants='#3a2a20', boots='#2a1a12', weapon='axe', wlen=16, wang=-.85, eye='#ff5030', eye_hi=0,
-         head=8.2, torso=6.8, torso_h=6.6, leg=5.4, bulk=3.4, tusks=1, pads=1, metal2='#8a6a4a', cape='#4a2a18', belt=1, strap=1, strap_c='#2a1a10', scar=1, crown=1, crown_c='#efe6cc', bones=1, tunic=1, rivets=1, blade='#a8a8b8'),
+ 'grunk': dict(skin='#6e9e3e', arm_reg='body', chest=1, ears=1, nose=3.0, hair='#2a1a10', hair_style=None, cloth='#5a3a28', cloth2='#8a5a34', pants='#7a6a52', boots='#2a1a12', weapon='axe', wlen=16, wang=-.85, eye='#ff5030', eye_hi=0,
+         head=7.8, torso=6.6, torso_h=6.2, leg=7.2, bulk=3.2, bracers=1, tusks=1, pads=1, metal2='#8a6a4a', cape='#4a2a18', belt=1, strap=1, strap_c='#2a1a10', scar=1, crown=1, crown_c='#efe6cc', bones=1, tunic=1, rivets=1, blade='#a8a8b8'),
  'goblin': dict(skin='#7aae48', ears=1, nose=2.4, hair='#3a2a18', hair_style='tuft', cloth='#7a5030', cloth2='#a07a40', pants='#5a4a30', boots='#3a2a1a', weapon='club', wlen=11, wang=-.9, eye='#f0e040', head=7.8, torso=4.0, torso_h=4.6, leg=4.8, tunic=1, belt=1, strap=1, strap_c='#4a3020', eye_hi=1, scar=1),
  'goblin_x': dict(skin='#6a9a58', ears=1, nose=2.2, cloth='#4a2a5a', cloth2='#8a3a6a', pants='#3a2a3a', boots='#2a1a2a', weapon='staff', wlen=15, wang=-1.2, wang_f=-1.4, eye='#ff6a40', head=7.8, torso=4.2, torso_h=4.6, leg=4.8, feathers=1, warpaint=1, bones=1, tunic=1, belt=1, belt_c='#6a2a5a', skull=1, eye_hi=0, paint_c='#f0e8d0', robe=0, hair='#2a1a30', hair_style='tuft'),
  'bandido': dict(skin=SKIN['pele'], hair='#3a2a20', hair_style='fringe', bandana=1, mask=1, cloth='#7a5a38', cloth2='#b02a2a', pants='#3a3430', boots='#2a2420', weapon='dagger', wlen=9, scar=1, eye='#2a3a5a', tunic=1, sleeves=1, head=7.2, belt=1, strap=1, torso=5.2),

@@ -20,16 +20,22 @@ def darker(c, k): return tuple(max(0, int(v * k)) for v in c)
 
 class Cv:
     def __init__(s):
-        s.reg = np.full((H, W), -1, int); s.names = []; s.det = []; s.far = np.zeros((H, W), bool); s.ord = np.zeros((H, W), int); s.n = 0
+        s.reg = np.full((H, W), -1, int); s.names = []; s.det = []; s.far = np.zeros((H, W), bool); s.ord = np.zeros((H, W), int); s.n = 0; s.part = np.full((H, W), -1, int); s.cur = None; s.pn = []
 
     def rid(s, n):
         if n not in s.names: s.names.append(n)
         return s.names.index(n)
 
+    def pid(s, r):
+        if s.cur is None: return r
+        nm = s.cur + s.names[r] if s.cur.endswith(':') else s.cur
+        if nm not in s.pn: s.pn.append(nm)
+        return 1000 + s.pn.index(nm)
+
     def ell(s, cx, cy, rx, ry, reg='body', far=False):
         r = s.rid(reg); ys, xs = np.mgrid[0:H, 0:W]
         m = ((xs + .5 - cx) / rx) ** 2 + ((ys + .5 - cy) / ry) ** 2 <= 1
-        s.reg[m] = r; s.n += 1; s.ord[m] = s.n
+        s.reg[m] = r; s.n += 1; s.ord[m] = s.n; s.part[m] = s.pid(r)
         if far: s.far[m] = True
 
     def cap(s, x0, y0, x1, y1, r0, r1, reg='body', far=False):
@@ -37,7 +43,7 @@ class Cv:
         px, py = xs + .5 - x0, ys + .5 - y0; dx, dy = x1 - x0, y1 - y0; L2 = dx * dx + dy * dy or 1
         t = np.clip((px * dx + py * dy) / L2, 0, 1); rr = r0 + (r1 - r0) * t
         m = (px - t * dx) ** 2 + (py - t * dy) ** 2 <= rr ** 2
-        s.reg[m] = r; s.n += 1; s.ord[m] = s.n
+        s.reg[m] = r; s.n += 1; s.ord[m] = s.n; s.part[m] = s.pid(r)
         if far: s.far[m] = True
 
     def dot(s, x, y, col): s.det.append((int(round(x)), int(round(y)), col))
@@ -56,8 +62,8 @@ class Cv:
         contact = np.zeros((H, W), bool)
         if getattr(s, 'contact', True):
             for dx, dy in ((1, 0), (0, 1), (-1, 0), (0, -1)):
-                nr = np.roll(np.roll(s.reg, -dy, 0), -dx, 1); no = np.roll(np.roll(s.ord, -dy, 0), -dx, 1)
-                contact |= (s.reg >= 0) & (nr >= 0) & (nr != s.reg) & (no > s.ord) & ~s.far
+                nr = np.roll(np.roll(s.part, -dy, 0), -dx, 1); no = np.roll(np.roll(s.ord, -dy, 0), -dx, 1)
+                contact |= (s.part >= 0) & (nr >= 0) & (nr != s.part) & (no > s.ord) & ~s.far
         img = Image.new('RGBA', (W, H), (0, 0, 0, 0)); px = img.load()
         for y in range(H):
             for x in range(W):
