@@ -840,6 +840,7 @@ body.bossbar #zname{top:calc(92px + env(safe-area-inset-top))!important}
    2D canvas, retrato. Mundo pré-renderizado (zone1_ground.png) + atlas de
    props do pack Pixel Crawler (Anokolisa) + personagens LPC.
    ========================================================================= */
+const MOVE=1.25; // multiplicador de velocidade de ANDAR (heroi e mobs), alem do TEMPO; 1 = original
 const $=id=>document.getElementById(id);
 const rnd=(a,b)=>a+Math.random()*(b-a), rint=(a,b)=>Math.floor(rnd(a,b+1)), pick=a=>a[Math.floor(Math.random()*a.length)];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -1868,7 +1869,7 @@ function heroStatsInto(h){
   h.maxhp=Math.round((C.hp*(1+.15*(L-1))+g.hp+ATV.vit*A.vit)*(E.vigor>0?1.2:1));
   h.pow=C.atk*(1+.12*(L-1))+g.atk+atkFromAttrs(A)+(E.forca>0?elixPow():0);
   h.def=C.def+L*.8+g.def+(E.defesa>0?elixDef():0);h.kbG=g.kb||0;h.kdG=g.kd||0;
-  h.speed=C.speed*(1+g.spd/100);h.rng=hRng(C);h.aspd=C.aspd;h.crit=C.crit+g.crit/100+Math.floor((A.sor||0)/ATV.sorN)*.01;subApply(h);
+  h.speed=C.speed*MOVE*(1+g.spd/100);h.rng=hRng(C);h.aspd=C.aspd;h.crit=C.crit+g.crit/100+Math.floor((A.sor||0)/ATV.sorN)*.01;subApply(h);
   h.maxhp=Math.round(h.maxhp*(1+tf('hp')+sb('hp')));h.pow*=1+tf('atk')+sb('atk')+pb('atk');h.def*=1+tf('def')+sb('def');h.speed*=1+tf('spd')+sb('spd');h.aspd=h.aspd/(1+tf('aspd')+sb('aspd'));h.crit+=tf('crit')+sb('crit');
 }
 /* dificuldade: o nível do monstro sobe com a profundidade na floresta (0 na entrada → 1 no fim da estrada) e +5 por zona */
@@ -2425,7 +2426,7 @@ function agileFlee(m,h,d,dt){const T=m.T,L=d||1,ax=(m.x-h.x)/L,ay=(m.y-h.y)/L,bx
   if(d<72&&m.hopCd<=0&&!m.dash){const cx=ZONE.w/2-m.x,cy=ZONE.h/2-m.y,cl=Math.hypot(cx,cy)||1;let dx=ax*.55+cx/cl*.45,dy=ay*.55+cy/cl*.45;const dl=Math.hypot(dx,dy)||1;dx/=dl;dy/=dl;
     m.dash={dx:dx*135,dy:dy*135,t:0,dur:.24,p:0};m.hopCd=3;VF.puff(m.x,m.y,5,['#a89878','#6a5a48'],{r:12,up:14,sz:1.4,a:.6});VF.wave(m.x,m.y,30,'#8ad24a',.3,3);return;}
   m.strT=(m.strT||0)-dt;if(m.strT<=0){m.strT=rnd(.7,1.4);m.strS=Math.random()<.5?-1:1;}
-  const sp=T.speed*(m.spdMul||1)*stMul(m,'spd')*1.2;moveTo(m,m.x+ax*60-ay*m.strS*50,m.y+ay*60+ax*m.strS*50,sp,dt);collide(m,6);
+  const sp=T.speed*MOVE*(m.spdMul||1)*stMul(m,'spd')*1.2;moveTo(m,m.x+ax*60-ay*m.strS*50,m.y+ay*60+ax*m.strS*50,sp,dt);collide(m,6);
   if(Math.hypot(m.x-bx,m.y-by)<sp*dt*.4){m.strS=-(m.strS||1);m.strT=rnd(.7,1.4);}}   /* encurralado: troca de lado */
 /* ===== caminhos: grade de navegação + A* para contornar água, árvores e pedras ao perseguir um alvo ===== */
 let NAV=null;const NC=12;
@@ -2951,9 +2952,9 @@ function updateMob(m,dt){
   if(!ko&&d<aggro&&(m.kind==='boss'||G.phase==='farm'||G.phase==='boss')&&mobSkillStart(m,d,dt))return;
   if(!ko&&d<aggro&&(m.kind==='boss'||G.phase==='farm'||G.phase==='boss')){
     m.row=dir4(h.x-m.x,h.y-m.y);
-    if(m.sts&&stHas(m,'medo')){moveTo(m,m.x+(m.x-h.x),m.y+(m.y-h.y),T.speed*(m.spdMul||1)*stMul(m,'spd')*1.1,dt);m.state='walk';m.animT+=dt*(T.speed/46);collide(m,6);m.wx=m.x;m.wy=m.y;}
-    else if(T.ranged&&d<(T.kite||50)&&!(m.sts&&stHas(m,'preso'))){if(T.agile)agileFlee(m,h,d,dt);else moveTo(m,m.x+(m.x-h.x),m.y+(m.y-h.y),T.speed*(m.spdMul||1)*stMul(m,'spd')*.9,dt);m.state='walk';m.animT+=dt*(T.speed/46)*(T.agile?.55:1);collide(m,6);m.wx=m.x;m.wy=m.y;if(m.cd<=0){m.act={t:0,dur:T.dur||.6,done:false};m.cd=T.aspd*(m.aspdMul||1);m.row=dir4(h.x-m.x,h.y-m.y);}}
-    else if(d>T.rng*.85){if(m.sts&&stHas(m,'preso'))m.state='idle';else{const s=moveTo(m,h.x,h.y,T.speed*(m.spdMul||1)*stMul(m,'spd'),dt,1);m.state='walk';m.animT+=dt*(T.speed/46);collide(m,6);m.wx=m.x;m.wy=m.y;}}
+    if(m.sts&&stHas(m,'medo')){moveTo(m,m.x+(m.x-h.x),m.y+(m.y-h.y),T.speed*MOVE*(m.spdMul||1)*stMul(m,'spd')*1.1,dt);m.state='walk';m.animT+=dt*(T.speed*MOVE/46);collide(m,6);m.wx=m.x;m.wy=m.y;}
+    else if(T.ranged&&d<(T.kite||50)&&!(m.sts&&stHas(m,'preso'))){if(T.agile)agileFlee(m,h,d,dt);else moveTo(m,m.x+(m.x-h.x),m.y+(m.y-h.y),T.speed*MOVE*(m.spdMul||1)*stMul(m,'spd')*.9,dt);m.state='walk';m.animT+=dt*(T.speed*MOVE/46)*(T.agile?.55:1);collide(m,6);m.wx=m.x;m.wy=m.y;if(m.cd<=0){m.act={t:0,dur:T.dur||.6,done:false};m.cd=T.aspd*(m.aspdMul||1);m.row=dir4(h.x-m.x,h.y-m.y);}}
+    else if(d>T.rng*.85){if(m.sts&&stHas(m,'preso'))m.state='idle';else{const s=moveTo(m,h.x,h.y,T.speed*MOVE*(m.spdMul||1)*stMul(m,'spd'),dt,1);m.state='walk';m.animT+=dt*(T.speed*MOVE/46);collide(m,6);m.wx=m.x;m.wy=m.y;}}
     else{m.state='idle';if(m.cd<=0){m.act={t:0,dur:T.dur||.6,done:false};m.cd=T.aspd*(m.aspdMul||1);m.row=dir4(h.x-m.x,h.y-m.y);mobSnd(m,'atk');}}
   }else{
     m.wt-=dt;if(m.wt<=0){m.wt=rnd(1.5,4);m.wvx=rnd(-1,1)*14;m.wvy=rnd(-1,1)*10;if(Math.random()<.4){m.wvx=m.wvy=0;}}
