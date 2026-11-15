@@ -337,8 +337,9 @@ def shaped_rows(hand, ang, length, guard, shape, gstyle, glow, gem, serrate):
         for xx in range(int(hand[0]) - 6, int(hand[0]) + 7):
             rx, ry = xx - hand[0], yy - hand[1]
             sd = rx * ux + ry * uy; td = rx * nx + ry * ny
-            if -3.5 <= sd <= 2.1 and abs(td) <= .55: put(xx, yy, 'N')
-            if -4.4 <= sd < -3.5 and abs(td) <= .55: put(xx, yy, 'g')
+            if -3.5 <= sd <= 2.1 and abs(td) <= .7:
+                put(xx, yy, 'g' if (int(math.floor(sd + 9)) % 2 == 0 and sd < 1.2) else 'N')      # empunhadura enrolada
+            if -5.0 <= sd < -3.4 and abs(td) <= 1.3 - abs(sd + 4.2) * .5: put(xx, yy, 'g')    # pomo redondo
     gx, gy = hand[0] + ux * 2, hand[1] + uy * 2
     if shape == 'axe':
         # MACHADO com arte propria: cabo grosso (2px) com empunhadura enrolada, pomo, colar de metal, cabeca larga em lua com fio claro,
@@ -369,7 +370,7 @@ def shaped_rows(hand, ang, length, guard, shape, gstyle, glow, gem, serrate):
             rx, ry = xx - hand[0], yy - hand[1]
             sd = rx * ux + ry * uy; td = rx * nx + ry * ny
             a_ = abs(td); on = False
-            if gs == 'bar': on = abs(sd - 2) <= .55 and a_ <= guard + .3
+            if gs == 'bar': on = abs(sd - 2.1) <= .8 and a_ <= guard + .6
             elif gs == 'cross':
                 gw = guard + 1
                 on = (abs(sd - 2) <= .55 and a_ <= gw + .3) or (a_ >= gw - .6 and a_ <= gw + .3 and 1 <= sd <= 2.6 and False)
@@ -394,12 +395,20 @@ def shaped_rows(hand, ang, length, guard, shape, gstyle, glow, gem, serrate):
             if shape in ('broad', 'great', 'flame', 'katana', 'leaf'):
                 w *= min(1.0, (L - sd) / 1.6 + .4)        # ponta em losango curto
             elif shape in ('straight', 'wide'):
-                w *= min(1.0, (L - sd) / 0.9 + .55)       # espada reta: largura cheia ate quase a ponta
+                w *= min(1.0, (L - sd) / 2.6 + .25)       # ponta afilada (3 px), largura cheia antes disso
             cover = w + .55
             if abs(td - off) > cover: continue
-            edge = (td - off) > max(0.0, w - .35) and w >= .3
-            if shape in ('rapier',): edge = (td - off) > 0.05
-            put(xx, yy, 'a' if edge else 'A')
+            tdo = td - off
+            lit = 1 if (-nx - ny) > 0 else -1             # lado voltado para a luz (cima-esquerda)
+            rel = tdo * lit
+            edge_lit = rel > max(0.0, w - .55) and w >= .3
+            edge_sh = (-rel) > max(0.0, w - .55) and w >= .3
+            ch = 'A'
+            if edge_sh: ch = 'a'
+            elif edge_lit: ch = 'w' if shape not in ('rapier',) else 'A'
+            if shape in ('rapier',): ch = 'a' if tdo > 0.05 else 'A'
+            if w >= 1.3 and abs(tdo) < .45 and s0 + 2 < sd < L - 3 and shape not in ('flame',): ch = 'a' if ch == 'A' else ch   # friso central
+            put(xx, yy, ch)
             if serrate and int(sd) % 2 == 0 and td - off < -(w + .2): put(xx, yy, 'a')
             if glow and sd > s0 + 2 and int(sd) % 3 == 0 and abs(abs(td - off) - (w + 1.2)) < .5:
                 put(xx, yy, 'Z' if glow != 'dark' else 'z')
@@ -410,8 +419,8 @@ def shaped_rows(hand, ang, length, guard, shape, gstyle, glow, gem, serrate):
     return cells, tip
 
 
-def staff_rows(hand, ang, length=24, orb=1):
-    """Cajado SEPARADO: cabo na mao, orbe de fogo no topo (orb 0..3 = tamanho do brilho)."""
+def staff_rows(hand, ang, length=24, orb=1, head='orb'):
+    """Cajado SEPARADO: haste grossa com faixas de metal, cabeca propria (orb/crystal/ring/leaf/skull)."""
     a = math.radians(ang)
     ux, uy = math.sin(a), math.cos(a)
     bx, by = hand[0] - ux * 7, hand[1] - uy * 7
@@ -419,16 +428,47 @@ def staff_rows(hand, ang, length=24, orb=1):
     cells = {}
     pts = line_pts(round(bx), round(by), round(tip[0]), round(tip[1]))
     for i, (x, y) in enumerate(pts):
-        cells[(x, y)] = 'g' if i == 0 else 'N'
+        band = (i == 0 or i % 7 == 3)
+        cells[(x, y)] = 'g' if band else 'N'
+        cells.setdefault((x + 1, y), 'g' if band else 'N')                                  # haste mais grossa
     tx, ty = round(tip[0]), round(tip[1])
-    for dx, dy in ((-1, 0), (1, 0), (0, 1)): cells[(tx + dx, ty + dy)] = 'g'           # garra de ouro
+    for dx, dy in ((-1, 0), (1, 0), (0, 1), (2, 0)): cells[(tx + dx, ty + dy)] = 'g'      # garra de metal
     ox, oy = round(tip[0] + ux * 3), round(tip[1] + uy * 3)
     r = {0: 1, 1: 2, 2: 3, 3: 4}[orb]
+    def put(x, y, c): cells[(x, y)] = c
+    if head == 'crystal':
+        for dy in range(-4, 5):
+            hw = 3 - abs(dy) * 3 // 4 if dy < 0 else 3 - dy * 3 // 4
+            for dx in range(-max(hw, 0), max(hw, 0) + 1):
+                put(ox + dx, oy + dy - 1, 'Z' if (dx < 0 and dy < 1 and abs(dx) <= 1) else 'z' if dx <= 0 else 'Y')
+        put(ox, oy - 6, 'Z')
+        return cells, (ox, oy)
+    if head == 'skull':
+        for dy in range(-3, 3):
+            for dx in range(-3, 4):
+                if (dx * dx) / 11.0 + (dy + .5) ** 2 / 9.0 <= 1.05:
+                    put(ox + dx, oy + dy, 'g' if dx + dy < 0 else 'N' if dx + dy > 2 else 'Z')
+        for dx in (-2, 1): put(ox + dx, oy - 1, 'Y'); put(ox + dx + 1, oy - 1, 'Y')      # orbitas
+        put(ox, oy + 1, 'N'); put(ox - 1, oy + 3, 'g'); put(ox + 1, oy + 3, 'g')
+        put(ox - 1, oy - 1, 'z'); put(ox + 2, oy - 1, 'z')                               # brilho verde nos olhos
+        return cells, (ox, oy)
     for dy in range(-r, r + 1):
         for dx in range(-r, r + 1):
             d = math.hypot(dx, dy)
             if d <= r + .3:
                 cells[(ox + dx, oy + dy)] = 'Z' if d < r * .45 else 'z' if d < r * .85 else 'Y'
+    if head == 'ring':
+        for t in range(0, 360, 20):
+            put(round(ox + math.cos(math.radians(t)) * (r + 2)), round(oy + math.sin(math.radians(t)) * (r + 2)), 'g')
+    elif head == 'leaf':
+        for sx in (-1, 1):
+            for k in range(1, 4):
+                put(ox + sx * (r + k - 1), oy + r - k + 1 - (1 if k == 3 else 0), 'Y' if k < 3 else 'z')
+            put(ox + sx * (r + 1), oy + r + 1, 'Y')
+    elif head == 'flame':
+        for k, dx in enumerate((-2, 0, 2)):
+            for h_ in range(2 + (k == 1) * 2):
+                put(ox + dx, oy - r - 1 - h_, 'z' if h_ == 0 else 'Y' if h_ == 1 else 'Z')
     return cells, (ox, oy)
 
 
@@ -465,19 +505,43 @@ def bow_rows(center, d, draw=0, arrow=True, span=11):
     return cells, tip, pull
 
 
-def mace_rows(hand, ang, length=15):
-    """Maca SEPARADA: cabo de madeira e cabeca de ouro com espinhos."""
+def mace_rows(hand, ang, length=15, head='flanged'):
+    """Maca SEPARADA: haste grossa com empunhadura enrolada e pomo; cabeca propria (flanged/ball/hammer)."""
     a = math.radians(ang)
     ux, uy = math.sin(a), math.cos(a)
     tip = (hand[0] + ux * (length - 3), hand[1] + uy * (length - 3))
     cells = {}
-    for (x, y) in line_pts(round(hand[0] - ux * 3), round(hand[1] - uy * 3), round(tip[0]), round(tip[1])): cells[(x, y)] = 'N'
-    cx, cy = round(tip[0] + ux * 2), round(tip[1] + uy * 2)
-    for dy in (-2, -1, 0, 1, 2):
-        for dx in (-2, -1, 0, 1, 2):
-            if abs(dx) + abs(dy) <= 3: cells[(cx + dx, cy + dy)] = 'g'
-    cells[(cx - 1, cy - 1)] = 'G'; cells[(cx, cy - 1)] = 'G'; cells[(cx - 1, cy)] = 'G'
-    cells[(cx + 1, cy + 1)] = 'N'; cells[(cx + 2, cy)] = 'A'; cells[(cx - 3, cy)] = 'A'; cells[(cx, cy - 3)] = 'A'; cells[(cx, cy + 3)] = 'A'
+    pts = line_pts(round(hand[0] - ux * 4), round(hand[1] - uy * 4), round(tip[0]), round(tip[1]))
+    for i, (x, y) in enumerate(pts):
+        band = i % 3 == 1 and i < 6
+        cells[(x, y)] = 'g' if band else 'N'
+        cells.setdefault((x + 1, y), 'g' if band else 'N')
+    x0, y0 = pts[0]
+    cells[(x0, y0)] = 'g'; cells[(x0 - 1, y0)] = 'g'; cells[(x0, y0 + 1)] = 'g'            # pomo
+    cx, cy = round(tip[0] + ux * 3), round(tip[1] + uy * 3)
+    def put(x, y, c): cells[(x, y)] = c
+    if head == 'hammer':
+        for dy in range(-3, 4):
+            for dx in range(-5, 6):
+                if abs(dx) + abs(dy) * 1.4 <= 6.2 and abs(dy) <= 3:
+                    put(cx + dx, cy + dy, 'G' if (dy < 0 and dx < 2) else 'g' if dy <= 1 else 'N')
+        for dy in (-3, 3):
+            for dx in (-4, 4): put(cx + dx, cy + dy, 'A')
+        put(cx, cy, 'A')
+        return cells, (cx, cy)
+    r = 3
+    for dy in range(-r, r + 1):
+        for dx in range(-r, r + 1):
+            d = math.hypot(dx, dy)
+            if d <= r + .35:
+                put(cx + dx, cy + dy, 'G' if (dx + dy < -2) else 'g' if (dx + dy < 2) else 'N')
+    if head == 'flanged':                                                   # aletas de ferro (4 pontas + linhas)
+        for dx, dy in ((0, -4), (0, 4), (-4, 0), (4, 0)): put(cx + dx, cy + dy, 'A')
+        for dx, dy in ((-3, -3), (3, -3), (-3, 3), (3, 3)): put(cx + dx, cy + dy, 'g')
+        put(cx, cy, 'N'); put(cx - 1, cy - 1, 'A')
+    else:                                                                   # bola com espinhos
+        for dx, dy in ((0, -5), (0, 5), (-5, 0), (5, 0), (-3, -3), (3, -3), (-3, 3), (3, 3)): put(cx + dx, cy + dy, 'A')
+        put(cx - 1, cy - 1, 'G'); put(cx, cy - 1, 'G')
     return cells, (cx, cy)
 
 
@@ -485,14 +549,14 @@ def weapon_rows(swd, hxy, view, back=False, bow_center=None):
     """Roteador de armas. Retorna (cells, tip, behind, mitts2)."""
     kind = swd.get('kind', 'sword')
     if kind == 'staff':
-        cells, tip = staff_rows(hxy, swd.get('ang', 180), swd.get('len', 24), swd.get('orb', 1))
+        cells, tip = staff_rows(hxy, swd.get('ang', 180), swd.get('len', 24), swd.get('orb', 1), swd.get('head', 'orb'))
         return cells, tip, False, []
     if kind == 'bow':
         c = bow_center or hxy
         cells, tip, pull = bow_rows(c, swd['dir'], swd.get('draw', 0), swd.get('arrow', True), swd.get('span', 11))
         return cells, tip, (back and swd['dir'][1] < 0), [pull]
     if kind == 'mace':
-        cells, tip = mace_rows(hxy, swd['ang'], swd.get('len', 15))
+        cells, tip = mace_rows(hxy, swd['ang'], swd.get('len', 15), swd.get('head', 'flanged'))
         return cells, tip, (185 <= swd['ang'] <= 265), []
     cells, tip = sword_rows(hxy, swd['ang'], swd.get('len', 12), swd.get('guard', 1 if kind == 'dagger' else 3), swd.get('wide', False), swd.get('serrate', False), swd.get('glow'), swd.get('gem', False), swd.get('shape'), swd.get('gstyle', 'bar'))
     behind = (back or (185 <= swd['ang'] <= 265)) if view == 'front' else (185 <= swd['ang'] <= 265)
@@ -1157,11 +1221,11 @@ WEAPONS = {
     'machado': dict(kind='sword', len=18, guard=1, shape='axe', pal=dict(A='#b8c4d4', a='#5a6478', w='#f4f8ff', g='#c89a40', N='#6a4426')),
     'espada_rei': dict(kind='sword', len=18, guard=3, shape='great', gstyle='cross', glow='ice', pal=dict(A='#d8f4ff', a='#6ab0e4', g='#2a2c44', N='#1c1830', Z='#ffffff')),
     # cajados
-    'cajado_fogo': dict(kind='staff', len=24, orb=1, pal=dict(Z='#fff4b0', z='#ff9a30', Y='#c83010', N='#6e4228', g='#e8b840')),
-    'cajado_gelo': dict(kind='staff', len=24, orb=1, pal=dict(Z='#ffffff', z='#58c8f0', Y='#2a68c0', N='#4a5a78', g='#c8d8f0')),
-    'cajado_arcano': dict(kind='staff', len=26, orb=2, pal=dict(Z='#ffe0ff', z='#c060f0', Y='#6a2aa0', N='#3a2050', g='#a070d0')),
-    'cajado_natureza': dict(kind='staff', len=24, orb=1, pal=dict(Z='#e8ffd0', z='#58c858', Y='#2a7a30', N='#5a3a20', g='#78a848')),
-    'cajado_caveira': dict(kind='staff', len=24, orb=1, pal=dict(Z='#fff8e0', z='#a8e060', Y='#4a7a20', N='#2a2018', g='#d8d0b8')),
+    'cajado_fogo': dict(kind='staff', head='flame', len=24, orb=1, pal=dict(Z='#fff4b0', z='#ff9a30', Y='#c83010', N='#6e4228', g='#e8b840')),
+    'cajado_gelo': dict(kind='staff', head='crystal', len=24, orb=1, pal=dict(Z='#ffffff', z='#58c8f0', Y='#2a68c0', N='#4a5a78', g='#c8d8f0')),
+    'cajado_arcano': dict(kind='staff', head='ring', len=26, orb=2, pal=dict(Z='#ffe0ff', z='#c060f0', Y='#6a2aa0', N='#3a2050', g='#a070d0')),
+    'cajado_natureza': dict(kind='staff', head='leaf', len=24, orb=1, pal=dict(Z='#e8ffd0', z='#58c858', Y='#2a7a30', N='#5a3a20', g='#78a848')),
+    'cajado_caveira': dict(kind='staff', head='skull', len=24, orb=1, pal=dict(Z='#fff8e0', z='#a8e060', Y='#4a7a20', N='#2a2018', g='#d8d0b8')),
     # arcos
     'arco_curto': dict(kind='bow', span=10, pal=dict(N='#8a5a30', a='#e8e0c8', g='#c8a060')),
     'arco_longo': dict(kind='bow', span=13, pal=dict(N='#6e4228', a='#e8e0c8', g='#8a6a3a')),
@@ -1171,9 +1235,9 @@ WEAPONS = {
     'adaga_ferro': dict(kind='dagger', len=8, guard=1, pal=dict(A='#d8e0e8', a='#7c8898', g='#8a6a3a', N='#3a2418')),
     'adaga_veneno': dict(kind='dagger', len=8, guard=1, glow='ice', pal=dict(A='#c8f0a0', a='#48b848', g='#2a6a30', N='#1a2a18', Z='#e8ffb0')),
     'adaga_sangue': dict(kind='dagger', len=9, guard=1, serrate=True, pal=dict(A='#ffb0a8', a='#c02a30', g='#4a1018', N='#2a0c10')),
-    'maca_ferro': dict(kind='mace', len=15, pal=dict(g='#9aa0b0', G='#d8e0f0', N='#4a3020', A='#c8d0e0')),
-    'maca_dourada': dict(kind='mace', len=15, pal=dict(g='#e8b840', G='#fff0a0', N='#6e4228', A='#fff4c8')),
-    'martelo_sagrado': dict(kind='mace', len=16, pal=dict(g='#f8f0e0', G='#ffffff', N='#a07828', A='#fff0a0')),
+    'maca_ferro': dict(kind='mace', head='flanged', len=15, pal=dict(g='#9aa0b0', G='#d8e0f0', N='#4a3020', A='#c8d0e0')),
+    'maca_dourada': dict(kind='mace', head='ball', len=15, pal=dict(g='#e8b840', G='#fff0a0', N='#6e4228', A='#fff4c8')),
+    'martelo_sagrado': dict(kind='mace', head='hammer', len=17, pal=dict(g='#f8f0e0', G='#ffffff', N='#a07828', A='#fff0a0')),
 }
 
 
