@@ -4,9 +4,9 @@ from pxrig import Grid, autoline
 from PIL import Image
 OUT = '/home/user/neon-wars/lendas-de-taverna/mmo/proto_pixel'
 GROUPS = {
- 'espadas': ['espada_ferro', 'espada_aco', 'espada_longa', 'montante', 'espada_larga', 'katana', 'cimitarra', 'florete', 'facao', 'espada_dourada', 'espada_chamas', 'espada_gelo'],
- 'impacto': ['machado', 'maca_ferro', 'maca_dourada', 'martelo_sagrado', 'serra_cruel', 'adaga_ferro', 'adaga_veneno', 'adaga_sangue'],
- 'magia_arco': ['cajado_fogo', 'cajado_gelo', 'cajado_arcano', 'cajado_natureza', 'cajado_caveira', 'arco_curto', 'arco_longo', 'arco_elfico', 'arco_osso'],
+ 'guerreiro': ['espada_ferro', 'espada_aco', 'espada_longa', 'montante', 'machado', 'martelo_guerra', 'espada_chamas', 'espada_gelo'],
+ 'ladino_cle_bardo': ['adaga_ferro', 'adaga_veneno', 'adaga_sangue', 'espada_curta', 'maca_ferro', 'maca_dourada', 'martelo_sagrado', 'florete'],
+ 'magia_arco': ['cajado_fogo', 'cajado_gelo', 'cajado_arcano', 'cajado_natureza', 'cajado_caveira', 'cetro_arcano', 'arco_curto', 'arco_longo', 'arco_elfico', 'arco_osso'],
 }
 def solo(w, N=36):
     sp = C.WEAPONS[w]; kind = sp['kind']; pal = dict(IC.IP); pal.update(w='#ffffff', Z='#fff4b0', z='#ff9a30', r='#d03a48'); pal.update(sp['pal'])
