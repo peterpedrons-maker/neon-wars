@@ -960,6 +960,31 @@ MOBS.cult={nome:'Cultista',atlas:'cult',fam:'esq',ranged:'bolt',col:'#c070ff',fi
 MOBS.guarda={nome:'Guarda-Caveira',atlas:'guardac',fam:'esq',fire:.55,dur:.85,hp:158,atk:10,xp:34,gold:[6,13],speed:34,aggro:130,rng:30,aspd:1.5,sw:20,st:['abalado',.25,3,0]};
 MOBS.espectro={nome:'Espectro',atlas:'espectro',fam:'esq',fly:14,fire:.55,dur:.8,hp:88,atk:12,xp:32,gold:[5,12],speed:60,aggro:170,rng:28,aspd:1.3,sw:18,st:['gelado',.4,3,0]};
 MOBS.gargula={nome:'Gárgula',atlas:'gargula',fam:'esq',fire:.5,dur:.8,hp:132,atk:12,xp:36,gold:[6,14],speed:52,aggro:150,rng:28,aspd:1.4,sw:22,st:['sangramento',.25,4,.02]};
+
+/* BESTIÁRIO NOVO (sprites pixel art próprios, sem variantes "mago/arqueiro" de bicho). `cx` = chave do atlas em assets/chars/cx_<chave>_atlas.png; `sheet` = LPC de reserva enquanto o atlas carrega. */
+Object.assign(MOBS,{
+  sapador:{nome:'Goblin Sapador',sheet:'goblin',cx:'sapador',fam:'goblin',hp:52,atk:11,xp:21,gold:[3,9],speed:66,aggro:150,rng:22,aspd:1.1,sw:18,st:['queimadura',.3,4,.02]},
+  cogumelo:{nome:'Cogumelo Andante',sheet:'goblin',cx:'cogumelo',fam:'goblin',hp:112,atk:7,xp:24,gold:[3,8],speed:30,aggro:110,rng:22,aspd:1.5,sw:18,st:['veneno',.4,5,.02]},
+  aranha:{nome:'Aranha-da-Mata',sheet:'goblin',cx:'aranha',fam:'goblin',hp:60,atk:9,xp:22,gold:[3,9],speed:62,aggro:150,rng:22,aspd:1.0,sw:18,st:['veneno',.35,5,.02]},
+  lobo:{nome:'Lobo Selvagem',sheet:'javali',cx:'lobo',fam:'javali',hp:84,atk:10,xp:26,gold:[4,10],speed:70,aggro:170,rng:24,aspd:1.1,sw:20,st:['sangramento',.25,4,.02]},
+  carnical:{nome:'Carniçal',sheet:'esqueleto',cx:'carnical',fam:'esq',hp:122,atk:9,xp:28,gold:[4,10],speed:38,aggro:130,rng:24,aspd:1.4,sw:18,st:['veneno',.4,5,.02]},
+  necro:{nome:'Necromante Aprendiz',sheet:'esqmago',cx:'necro',nfr:7,fire:.65,dur:.9,ranged:'bolt',glow:'#b070ff',col:'#b070ff',fam:'esq',hp:78,atk:11,xp:30,gold:[4,11],speed:38,aggro:170,rng:135,aspd:2.4,sw:18,st:['enfraquecido',.3,6,0]},
+  cavcaido:{nome:'Cavaleiro Caído',sheet:'esqueleto',cx:'cav_caido',fam:'esq',hp:190,atk:11,xp:36,gold:[5,12],speed:32,aggro:120,rng:28,aspd:1.6,sw:20,st:['abalado',.25,3,0]},
+  mumia:{nome:'Múmia',sheet:'esqueleto',cx:'mumia',fam:'esq',hp:150,atk:9,xp:30,gold:[4,11],speed:30,aggro:120,rng:24,aspd:1.5,sw:18,st:['maldicao',.3,5,.02]},
+  ogrinho:{nome:'Ogrinho',sheet:'javali',cx:'ogrinho',fam:'javali',hp:112,atk:9,xp:28,gold:[4,10],speed:54,aggro:130,rng:24,aspd:1.4,sw:20,st:['atordoado',.1,1,0]},
+  ogrolenhador:{nome:'Ogro Lenhador',sheet:'javali',cx:'ogro_lenhador',fam:'javali',hp:230,atk:13,xp:44,gold:[6,14],speed:38,aggro:130,rng:28,aspd:1.8,sw:24,st:['atordoado',.2,1,0]},
+  gnoll:{nome:'Gnoll',sheet:'javali',cx:'gnoll',fam:'javali',hp:100,atk:10,xp:30,gold:[4,11],speed:58,aggro:140,rng:28,aspd:1.3,sw:20,st:['sangramento',.3,4,.02]},
+  tronco:{nome:'Tronco Vivo',sheet:'javali',cx:'tronco',fam:'javali',hp:210,atk:9,xp:38,gold:[5,12],speed:28,aggro:110,rng:26,aspd:1.8,sw:22,st:['abalado',.25,3,0]},
+  harpia:{nome:'Harpia',sheet:'javali',cx:'harpia',fam:'javali',fly:14,hp:72,atk:9,xp:28,gold:[4,10],speed:72,aggro:170,rng:24,aspd:1.2,sw:18,st:['sangramento',.3,4,.02]},
+  bandido:{nome:'Bandido',sheet:'javali',cx:'bandido',fam:'javali',hp:88,atk:10,xp:27,gold:[6,14],speed:60,aggro:140,rng:24,aspd:1.1,sw:18,st:['sangramento',.3,4,.02]},
+  homemrato:{nome:'Homem-Rato',sheet:'rato',cx:'ratkin',fam:'rato',hp:56,atk:6,xp:16,gold:[2,6],speed:62,aggro:130,rng:26,aspd:1.1,sw:16,st:['veneno',.35,5,.015]},
+  ladrao:{nome:'Ladrão de Esgoto',sheet:'rato',cx:'ladrao',fam:'rato',hp:48,atk:7,xp:16,gold:[4,10],speed:84,aggro:130,rng:22,aspd:.9,sw:16,st:['sangramento',.35,4,.02]},
+  cultlodo:{nome:'Cultista do Lodo',sheet:'esqmago',cx:'cult_lodo',nfr:7,fire:.65,dur:.9,ranged:'bolt',glow:'#7ae04a',col:'#7ae04a',fam:'rato',hp:66,atk:8,xp:20,gold:[3,9],speed:40,aggro:170,rng:130,aspd:2.4,sw:16,st:['veneno',.5,6,.02]},
+  sapo:{nome:'Sapo-do-Esgoto',sheet:'rato',cx:'sapo',fam:'rato',hp:96,atk:8,xp:20,gold:[3,9],speed:46,aggro:120,rng:30,aspd:1.4,sw:18,st:['veneno',.4,5,.02]},
+  cobra:{nome:'Cobra',sheet:'rato',cx:'cobra',fam:'rato',hp:54,atk:8,xp:18,gold:[3,8],speed:60,aggro:130,rng:24,aspd:1.0,sw:16,st:['veneno',.55,6,.02]},
+  barata:{nome:'Barata Gigante',sheet:'rato',cx:'barata',fam:'rato',hp:40,atk:4,xp:12,gold:[1,4],speed:88,aggro:110,rng:18,aspd:.9,sw:14,st:['veneno',.25,4,.015]},
+  afogado:{nome:'Afogado',sheet:'rato',cx:'afogado',fam:'rato',hp:150,atk:8,xp:24,gold:[3,9],speed:30,aggro:110,rng:24,aspd:1.6,sw:18,st:['gelado',.3,3,0]}
+});
 MOBS.zumbi={nome:'Zumbi Sineiro',atlas:'zumbi',fam:'esq',fire:.5,dur:.9,hp:196,atk:9,xp:34,gold:[6,13],speed:28,aggro:120,rng:26,aspd:1.7,sw:22,st:['veneno',.5,6,.02]};
 const MOB_SKRIX={nome:'Xamã Skrix',atlas:'skrix',rad:16,shr:28,fam:'goblin',aura:['#7ae04a','#c8ff8a'],noElite:1,hp:520,atk:8,xp:150,gold:[40,80],speed:56,aggro:260,rng:34,aspd:1.7,sw:26,dur:.8,fire:.55,st:['sangramento',.25,4,.02],
   msk:[{id:'totem',hp:1,cd:10,warn:.95,wt:3,max:320},{id:'curse',hp:1,cd:13,warn:1.0,wt:2,max:280},{id:'summon',hp:.75,cd:22,warn:1.1,wt:4},{id:'blink',hp:.35,cd:99,warn:.7,once:1,wt:9}]};
@@ -1925,7 +1950,7 @@ function makeElite(m,tier){
   return m;
 }
 /* FAMÍLIA por zona: cada zona tem um único tipo de inimigo (muda a cada zona); multiplicadores mantêm a força média de antes */
-const FAMV={crip:['guarda','cult','espectro','gargula','zumbi','guarda','cult','espectro','zumbi','gargula'],goblin:['goblin','goblin','gobarq','xama','goblin'],esq:['esq','esq','esqmago','morcego','esqfogo','esqgelo'],javali:['javali','javali','javbruto','javali'],rato:['rato','rato','ratass','rato']};
+const FAMV={crip:['guarda','cult','espectro','gargula','zumbi','guarda','cult','espectro','zumbi','gargula'],goblin:['goblin','goblin','sapador','xama','cogumelo','aranha','lobo','goblin'],esq:['esq','carnical','esq','necro','cavcaido','esqmago','mumia','morcego','carnical','aranha'],javali:['javali','ogrinho','javali','gnoll','ogrolenhador','bandido','tronco','javbruto','harpia','lobo'],rato:['rato','homemrato','rato','ladrao','cultlodo','sapo','ratass','cobra','barata','afogado']};
 const varOf=(z,i)=>{const a=(typeof G!=='undefined'&&G.map==='zone_cripta2'&&z===5)?FAMV.crip:FAMV[famOf(z)];return a[((i%a.length)+a.length)%a.length];};
 /* progressão definida: 4 dungeons, uma após a outra. Para entrar na seguinte é preciso derrotar o chefe da anterior e ter o nível mínimo. */
 /* pc = poder de combate recomendado (calibrado por simulação: PC com o qual o herói de equipamento médio vence o chefe com folga; tools/mmo/sim/pc_calib.cjs + boss.cjs) */
@@ -2190,7 +2215,7 @@ function knockDownMul(){const g=(G.hero&&G.hero.kdG)||0;return 1+Math.min(2,(KD_
 function guardCounter(m){addZone({shape:'circle',x:m.x,y:m.y,r:70,warn:.3,mult:1.5,st:['abalado',.5,3,0],src:m,shake:.5,pc:'#ffd070'});VF.ringw(m.x,m.y,50,'#ffd070',.35,5);VF.sparks(m.x,m.y-24,10,['#ffd070','#fff'],{s0:60,s1:160});floatText(m.x,m.y-84,'Contra-ataque!','#ffd070',9,.9);}
 
 /* ===== vozes das criaturas: cada espécie tem seu grunhido de ataque, dor e morte (arquivos mob_<espécie>_<atk|hurt|die>) ===== */
-const MSP={rato:'rato',ratass:'rato',ratarq:'rato',ratalq:'rato',ratking:'rato',javali:'javali',javguer:'javali',javbruto:'javali',javarq:'javali',javmago:'javali',javcap:'javali',goblin:'goblin',gobarq:'goblin',xama:'goblin',skrix:'goblin',botic:'goblin',esq:'esq',esqueleto:'esq',esqmago:'esq',esqfogo:'esq',esqgelo:'esq',morcego:'bat',vamp:'bat',ogro:'ogro'};
+const MSP={rato:'rato',ratass:'rato',ratarq:'rato',ratalq:'rato',ratking:'rato',javali:'javali',javguer:'javali',javbruto:'javali',javarq:'javali',javmago:'javali',javcap:'javali',goblin:'goblin',gobarq:'goblin',xama:'goblin',skrix:'goblin',botic:'goblin',esq:'esq',esqueleto:'esq',esqmago:'esq',esqfogo:'esq',esqgelo:'esq',morcego:'bat',vamp:'bat',ogro:'ogro',sapador:'goblin',cogumelo:'goblin',aranha:'rato',lobo:'javali',carnical:'esq',necro:'esq',cavcaido:'esq',mumia:'esq',ogrinho:'ogro',ogrolenhador:'ogro',gnoll:'javali',tronco:'ogro',harpia:'bat',bandido:'goblin',homemrato:'rato',ladrao:'rato',cultlodo:'esq',sapo:'rato',cobra:'rato',barata:'rato',afogado:'esq'};
 function mobSnd(m,k){if(!AC||!m||!m.T)return;{const cs=CRS[m.T.atlas];if(cs){const h=G.hero,d=h?Math.hypot(h.x-m.x,h.y-m.y):0,v=Math.max(.12,1-d/460);if(v<=.14)return;const t=G.t;if(k==='hurt'){if(t-(m._sh||-9)<.45)return;m._sh=t;}if(k==='atk'){if(t-(m._sa||-9)<.8)return;m._sa=t;}crSynth(cs,k,v,m.elite);return;}}const sp=MSP[m.type]||MSP[m.T.fam]||MSP[m.T.atlas]||(m.kind==='boss'?'ogro':null);if(!sp)return;
   const h=G.hero,d=h?Math.hypot(h.x-m.x,h.y-m.y):0,v=Math.max(.12,1-d/460);if(v<=.14)return;
   const key='mob_'+sp+'_'+k,t=G.t;if(k==='hurt'){if(t-(m._sh||-9)<.45)return;m._sh=t;}if(k==='atk'){if(t-(m._sa||-9)<.8)return;m._sa=t;}
@@ -3964,9 +3989,9 @@ const CXS={},CXP={};
 const CXMAP={goblin:'goblin',gobarq:'goblin',xama:'goblin_x',esqueleto:'esqueleto',esqmago:'esqmago',esqfogo:'esqueleto',esqgelo:'esqueleto',javali:'javali',javguer:'javali',javbruto:'javali',javarq:'javali',javmago:'javali',rato:'rato',ratass:'rato',ratarq:'rato',ratalq:'rato',cult:'cultista',guardac:'guarda_c',grunk:'grunk',morvath:'morvath',gorgash:'ogro',ratking:'rato',skrix:'goblin_x',vamp:'morcego',javcap:'javali',botic:'rato',espectro:'espectro',gargula:'gargula',zumbi:'zumbi',bat:'morcego',rei:'rei'};
 const CXHERO={guerreiro:'h_guerreiro',mago:'h_mago',ladino:'h_ladino',clerigo:'h_clerigo',arqueiro:'h_arqueiro',bardo:'h_bardo'};
 function cxLoad(k){if(!CXON||!k)return null;if(!CXP[k])CXP[k]=Promise.all([loadImg('assets/chars/cx_'+k+'_atlas.png'),fetch('assets/chars/cx_'+k+'_atlas.json').then(r=>r.json())]).then(([img,meta])=>{CXS[k]={atlasImg:img,meta};}).catch(()=>{CXS[k]=null;});return CXP[k];}
-function cxZone(zlv){const f=famOf(zlv),L=f==='goblin'?['goblin','goblin_x']:f==='esq'?['esqueleto','esqmago','guarda_c','cultista','gargula','zumbi','espectro','morcego']:f==='rato'?['rato']:['javali'];if(zlv===5)L.push('rei');L.push(CXHERO[SAVE.cls]);for(const k of L)cxLoad(k);}
+function cxZone(zlv){const f=famOf(zlv),L=f==='goblin'?['goblin','goblin_x','sapador','cogumelo','aranha','lobo']:f==='esq'?['esqueleto','esqmago','guarda_c','cultista','gargula','zumbi','espectro','morcego','carnical','necro','cav_caido','mumia','aranha']:f==='rato'?['rato','ratkin','ladrao','cult_lodo','sapo','cobra','barata','afogado']:['javali','ogrinho','ogro_lenhador','gnoll','bandido','tronco','harpia','lobo'];if(zlv===5)L.push('rei');L.push(CXHERO[SAVE.cls]);for(const k of L)cxLoad(k);}
 const CXNPC={guarda:'n_guarda',pov_f:'n_pov_f',ladino_b:'n_ladino_b',bardo:'n_bardo'};
-function cxKeyOf(e){if(e.kind==='hero')return CXHERO[SAVE.cls];if(e.kind==='npc'||e.kind==='vill')return e.pet?null:CXNPC[e.sh];const T=e.T;return T?CXMAP[T.atlas||T.sheet]:null;}
+function cxKeyOf(e){if(e.kind==='hero')return CXHERO[SAVE.cls];if(e.kind==='npc'||e.kind==='vill')return e.pet?null:CXNPC[e.sh];const T=e.T;return T?(T.cx||CXMAP[T.atlas||T.sheet]):null;}
 function cxStill(cls,view,i){const k=CXHERO[cls],sh=k&&CXS[k];if(!CXON||!k)return null;if(!sh){if(sh===undefined)cxLoad(k);return null;}const M=sh.meta,l=M.anims['idle_'+(view||'d')],q=l[(i|0)%l.length];return {img:sh.atlasImg,sx:(q%M.cols)*M.w,sy:((q/M.cols)|0)*M.h,w:M.w,h:M.h,ax:M.ax,ay:M.ay};}
 /* combate legível: inimigos corpo a corpo atacam de uns 6 px mais longe, assim ficam em volta do herói em vez de por cima dele */
 for(const k in MOBS){const T=MOBS[k];if(!T.ranged&&!T.totem&&T.rng>=18&&T.rng<=30&&!T._rg){T.rng+=6;T._rg=1;}}

@@ -5,10 +5,10 @@ Leia antes de criar qualquer inimigo. Regras do dono: inimigos combinam com o **
 ## Áreas atuais (chefe → inimigos)
 | Área | Chefe / mini | Inimigos (✔ no jogo, ○ esboço pronto, … ideia) |
 |---|---|---|
-| Floresta dos Goblins | Grunk / Xamã Skrix + Totem | ✔ goblin, ✔ goblin arqueiro, ✔ xamã · ○ cogumelo andante, ○ aranha-da-mata, ○ lobo selvagem · … goblin sapador (explode), … goblin ladrão |
-| Catacumbas | Morvath / Morcego-Vampiro | ✔ esqueleto, ✔ esq. mago/fogo/gelo, ✔ morcego · ○ carniçal, ○ cavaleiro caído, ○ múmia, ○ necromante aprendiz, ○ aranha-das-tumbas |
-| Floresta de Brumavale | Gorgash (ogro) / Presa-de-Ferro (javali) | ✔ javali selvagem, ✔ javali bruto · ○ ogrinho, ○ gnoll, ○ tronco vivo, ○ harpia, ○ bandido, ○ lobo · … ogro lenhador |
-| Esgotos | Rei dos Ratos / Boticário Podre | ✔ rato gigante, ✔ rato assassino · ○ homem-rato, ○ sapo-do-esgoto, ○ cobra, ○ lodo (slime), ○ barata gigante, ○ afogado · … ladrão de esgoto, … cultista do lodo |
+| Floresta dos Goblins | Grunk / Xamã Skrix + Totem | ✔ goblin, ✔ xamã · ✔ cogumelo andante, ✔ aranha-da-mata, ✔ lobo selvagem, ✔ goblin sapador · … goblin sapador (explode), … goblin ladrão |
+| Catacumbas | Morvath / Morcego-Vampiro | ✔ esqueleto, ✔ esq. mago/fogo/gelo, ✔ morcego · ✔ carniçal, ✔ cavaleiro caído, ✔ múmia, ✔ necromante aprendiz, ✔ aranha |
+| Floresta de Brumavale | Gorgash (ogro) / Presa-de-Ferro (javali) | ✔ javali selvagem, ✔ javali bruto · ✔ ogrinho, ✔ gnoll, ✔ tronco vivo, ✔ harpia, ✔ bandido, ✔ lobo, ✔ ogro lenhador |
+| Esgotos | Rei dos Ratos / Boticário Podre | ✔ rato gigante, ✔ rato assassino, ✔ homem-rato, ✔ sapo-do-esgoto, ✔ cobra, ✔ barata gigante, ✔ afogado, ✔ ladrão de esgoto, ✔ cultista do lodo · ○ lodo (slime) |
 | Cripta do Rei Esquecido | Rei Esquecido | ✔ guarda-caveira, cultista, espectro, gárgula, zumbi sineiro |
 | Pântano das Brumas | (goblins emprestados) | … a definir (sapo, cobra, sanguessuga, fogo-fátuo, troll do pântano, lagarto-homem) |
 
