@@ -37,6 +37,13 @@ def weapon(c, x, y, ang, L, kind, reg_w='wood', reg_m='metal'):
 
 
 
+def eye2(c, x, y, col, hi=True, squint=False):
+    x, y = int(round(x)), int(round(y)); col = hx(col)
+    for dx in (0, 1):
+        for dy in (0, 1): c.dot(x + dx, y + dy, col if not squint or dy else hx('#14101c'))
+    if hi and not squint: c.dot(x, y, hx('#ffffff'))
+
+
 def build(spec):
     S = spec; P = {}
     for k in ('skin', 'hair', 'cloth', 'cloth2', 'pants', 'boots', 'hood', 'metal2', 'belly', 'wrap', 'ear'):
@@ -62,6 +69,7 @@ def draw(S, view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, head_dy=0, **kw
             c.cap(bx + lx, by + ty - 1, bx + lx + sw * .6, gy - 2.2 - l_, 2.1 + big * .25, 1.8, 'pants', far)
             c.cap(bx + lx + sw * .6, gy - 3 - l_, bx + lx + sw + 1.2, gy - .6 - l_, 2.0, 1.7, 'boots', far); c.ell(bx + lx + sw + 2.2, gy - 1.2 - l_, 2.3, 1.3, 'boots', far)
         c.ell(bx - .5, by, w, ty + 1.0, 'cloth')
+        if S.get('robe'): c.ell(bx - .5, by + ty + leg * .35, w + 2.6, leg * .55 + 1.5, 'cloth')
         if S.get('belly'): c.ell(bx + .5, by + 1, w * .75, ty * .7, 'belly')
         if S.get('tunic'): c.ell(bx, by + ty * .7, w + .6, 2.2, 'cloth2')
         if S.get('pads'): c.ell(bx - 1, by - ty + 1.2, 3.4 + big * .4, 2.8, 'metal2')
@@ -87,6 +95,9 @@ def draw(S, view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, head_dy=0, **kw
                 a = -2.7 + k * .42; L_ = hr + 1.6 + (k % 2) * 1.2; c.cap(hxx + math.cos(a) * hr * .6, hy + math.sin(a) * hr * .6 - .5, hxx + math.cos(a) * L_, hy + math.sin(a) * L_, 1.9, .7, 'hair')
         if S.get('hair_style') in ('mohawk',):
             for k in range(5): c.cap(hxx - 3 + k * 1.6, hy - hr + .8, hxx - 3.6 + k * 1.7, hy - hr - 3 - (k % 2), 1.3, .5, 'hair')
+        if S.get('hair_style') == 'weeds':
+            c.ell(hxx - .5, hy - hr * .55, hr * .9, hr * .5, 'hair')
+            for k in range(3): c.cap(hxx - 3 - k * 1.6, hy - 1, hxx - 4 - k * 2.0 + math.sin(ph + k) * .6, hy + hr + 4 + k, 1.3, .6, 'hair')
         if S.get('hair_style') == 'fringe': c.ell(hxx + .4, hy - hr * .62, hr * .9, hr * .46, 'hair')
         if S.get('hair_style') == 'tuft': c.cap(hxx, hy - hr + 1, hxx + 2, hy - hr - 3.2, 1.8, .6, 'hair')
         if S.get('horns'): c.cap(hxx - 1.5, hy - hr + 1.5, hxx - 3, hy - hr - 4.4, 1.7, .5, 'horn'); c.cap(hxx + 3.5, hy - hr + 1.6, hxx + 4.4, hy - hr - 3.6, 1.5, .5, 'horn')
@@ -94,7 +105,7 @@ def draw(S, view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, head_dy=0, **kw
         if S.get('bandana'): c.ell(hxx - .2, hy - hr * .55, hr * .98, 1.9, 'cloth2'); c.cap(hxx - hr + .5, hy - hr * .55, hxx - hr - 3, hy - hr * .2 + math.sin(ph) * 1.5, 1.0, .4, 'cloth2')
         if S.get('hat'): c.ell(hxx, hy - hr * .72, hr + 3.2, 1.6, 'cloth2'); c.ell(hxx + .3, hy - hr - 2, hr * .66, 3.6, 'cloth2')
         ex, ey = hxx + hr * .5, hy - .6
-        col = S.get('eye', '#14101c'); c.dot(ex, ey, hx(col) if not squint else hx('#14101c')); c.dot(ex, ey - 1, hx('#ffffff')) if not squint and S.get('eye_hi', 1) else None
+        col = S.get('eye', '#14101c'); eye2(c, ex, ey - .5, col, S.get('eye_hi', 1), squint)
         if S.get('eye2'): c.dot(ex + 2, ey, hx(S['eye2']))
         if S.get('scar'): c.dot(ex - 1, ey + 1.5, hx('#8a3a3a')); c.dot(ex, ey + 2.5, hx('#8a3a3a'))
         if mouth and not S.get('mask'): [c.dot(hxx + hr * .5 + q, hy + hr * .55, hx('#2a1018')) for q in range(0, 3)]
@@ -106,6 +117,7 @@ def draw(S, view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, head_dy=0, **kw
             l_ = lift(p0)
             c.cap(bx + sx, by + ty - 1, bx + sx, gy - 2.6 - l_, 2.1 + big * .25, 1.8, 'pants'); c.cap(bx + sx, gy - 3.4 - l_, bx + sx, gy - .5 - l_, 2.1, 1.9, 'boots'); c.ell(bx + sx, gy - 1 - l_, 2.5, 1.3, 'boots')
         c.ell(bx, by, w + 1.0, ty + 1.0, 'cloth')
+        if S.get('robe'): c.ell(bx, by + ty + leg * .35, w + 3.2, leg * .55 + 1.5, 'cloth')
         if S.get('belly') and not back: c.ell(bx, by + 1, w * .8, ty * .7, 'belly')
         if S.get('tunic'): c.ell(bx, by + ty * .7, w + 1.4, 2.2, 'cloth2')
         if S.get('pads'):
@@ -132,6 +144,10 @@ def draw(S, view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, head_dy=0, **kw
                 a = -2.9 + k * .52; L_ = hr + 1.6 + (k % 2) * 1.2; c.cap(bx + math.cos(a) * hr * .6, hh + math.sin(a) * hr * .6 - .5, bx + math.cos(a) * L_, hh + math.sin(a) * L_, 1.9, .7, 'hair')
         if S.get('hair_style') == 'mohawk':
             for k in range(5): c.cap(bx, hh - hr + 1 + k * 1.2, bx, hh - hr - 3 - (k % 2) + k * 1.2, 1.2, .5, 'hair') if False else c.cap(bx - 1 + k * .5, hh - hr + 1, bx - 1 + k * .5, hh - hr - 3 - (k % 2), 1.2, .5, 'hair')
+        if S.get('hair_style') == 'weeds':
+            c.ell(bx, hh - hr * .5, hr, hr * .55, 'hair')
+            for sg in (-1, 1):
+                for k in range(2): c.cap(bx + sg * (hr - .6 + k * 1.6), hh, bx + sg * (hr + .4 + k * 1.8), hh + hr + 3 + k * 1.5 + math.sin(ph + k + sg) * .6, 1.4, .6, 'hair')
         if S.get('hair_style') == 'fringe' and not back: c.ell(bx, hh - hr * .56, hr * .98, hr * .5, 'hair')
         if S.get('hair_style') == 'fringe' and back: c.ell(bx, hh, hr, hr * .98, 'hair')
         if S.get('hair_style') == 'tuft': c.cap(bx, hh - hr + 1, bx + 1.5, hh - hr - 3.2, 1.8, .6, 'hair')
@@ -142,8 +158,7 @@ def draw(S, view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, head_dy=0, **kw
         if not back:
             col = S.get('eye', '#14101c')
             for sg in (-1, 1):
-                c.dot(bx + sg * hr * .42, hh - .6 + (1 if S.get('hood') else 0), hx(col) if not squint else hx('#14101c'))
-                if not squint and S.get('eye_hi', 1): c.dot(bx + sg * hr * .42, hh - 1.6 + (1 if S.get('hood') else 0), hx('#ffffff'))
+                eye2(c, bx + sg * hr * .42 - (1 if sg < 0 else 0), hh - 1.2 + (1 if S.get('hood') else 0), col, S.get('eye_hi', 1), squint)
             if S.get('snout'): c.ell(bx, hh + hr * .5, 3.2, 2.5, 'body')
             if S.get('nose'): c.ell(bx, hh + 1.8, S['nose'], S['nose'] * .85, 'body')
             if S.get('mask'): c.ell(bx, hh + hr * .66, hr * .78, hr * .3, 'cloth2')
@@ -222,16 +237,16 @@ def details(c, S, view, bx, by, hh, hr, w, ty, back, ph):
 
 
 SPECS = {
- 'bandido': dict(skin=SKIN['pele'], hair='#3a2a20', hair_style='fringe', bandana=1, mask=1, cloth='#7a5a38', cloth2='#a02a2a', pants='#3a3430', boots='#2a2420', weapon='dagger', wlen=9, scar=1, eye='#2a3a5a', tunic=1, sleeves=1, head=7.2, belt=1, strap=1, torso=5.2),
+ 'bandido': dict(skin=SKIN['pele'], hair='#3a2a20', hair_style='fringe', bandana=1, mask=1, cloth='#7a5a38', cloth2='#b02a2a', pants='#3a3430', boots='#2a2420', weapon='dagger', wlen=9, scar=1, eye='#2a3a5a', tunic=1, sleeves=1, head=7.2, belt=1, strap=1, torso=5.2),
  'carnical': dict(skin='#86a860', hair='#2a3a22', hair_style='wild', cloth='#6a5a48', cloth2='#4a3a2e', pants='#3a3a3a', boots='#2a2a2a', eye='#e8d040', eye_hi=0, stoop=3, arms_fwd=1, head=7.6, torso=4.8, scar=1, ribs=1, sockets=1, stitch=1, rags=1, tunic=1, open_mouth=1),
  'mumia': dict(skin='#dccfa6', wraps=1, cloth='#d0c49c', wrap='#e6dab4', cloth2='#bcb088', pants='#c8bc94', boots='#b8ac84', eye='#40e8a0', eye_hi=0, arms_fwd=1, head=7.4, bulk=.6, stripes=1, stripe_c='#8a7a54', head_stripes=1, torso=5.2, sleeves=1),
- 'necro': dict(skin=SKIN['palida'], hood='#3a2a50', cloth='#2e2248', cloth2='#5a4a86', pants='#2a2040', boots='#1a1428', weapon='staff', wlen=15, wang=-1.2, wang_f=-1.4, eye='#e03a5a', eye_hi=0, head=7.2, torso=4.8, sleeves=1, tunic=1, belt=1, belt_c='#6a2a5a', skull=1, scar=0),
+ 'necro': dict(skin='#1c1626', robe=1, hood='#3a2a50', cloth='#2e2248', cloth2='#5a4a86', pants='#2a2040', boots='#1a1428', weapon='staff', wlen=15, wang=-1.2, wang_f=-1.4, eye='#e03a5a', eye_hi=0, head=7.2, torso=4.8, sleeves=1, tunic=1, belt=1, belt_c='#6a2a5a', skull=1, scar=0),
  'cav_caido': dict(skin=SKIN['osso'], helm=1, metal2='#8a92a8', cloth='#6a7288', cloth2='#a8b0c4', pants='#3a4050', boots='#2a2e3a', weapon='sword', wlen=14, wang=-1.0, pads=1, eye='#60b0ff', eye_hi=0, bulk=1.8, head=7.4, torso=5.8, sleeves=1, cape='#4a2a3a', visor=1, plume=1, plume_c='#b83040', rivets=1, belt=1, belt_c='#2a2e3a'),
  'goblin_sapador': dict(skin=SKIN['goblin'], ears=1, nose=1.8, hair='#4a3a20', hair_style='tuft', cloth='#8a5a30', cloth2='#c8a040', pants='#4a3a2a', boots='#3a2a1a', weapon='bomb', eye='#f0d040', eye_hi=1, head=7.0, torso=4.8, leg=5.2, tunic=1, bandana=1, belt=1, strap=1, strap_c='#6a2a18'),
  'ogro_lenhador': dict(skin=SKIN['ogro'], tusks=1, horns=1, hair='#3a2a1a', hair_style='tuft', cloth='#a85030', cloth2='#7a3a20', pants='#4a3a2a', boots='#3a2a20', belly='#98b85c', weapon='axe', wlen=13, wang=-.9, eye='#f0d040', head=8.0, torso=6.4, torso_h=6.0, leg=6.0, bulk=2.2, tunic=1, scar=1, belt=1),
- 'afogado': dict(skin=SKIN['afogado'], hair='#2a4a40', hair_style='wild', cloth='#3a5a6a', cloth2='#2a4a5a', pants='#2a3a4a', boots='#1a2a3a', eye='#e0f0ff', eye_hi=0, arms_fwd=1, stoop=2, head=7.6, torso=4.8, tunic=1, sockets=1, rags=1),
- 'ladrao_esgoto': dict(skin=SKIN['pele'], hair='#5a3a20', hair_style='fringe', bandana=1, hat=1, mask=1, cloth='#2e4a34', cloth2='#4a6a3a', pants='#2a2a2a', boots='#1a1a1a', weapon='dagger', wlen=10, eye='#e8e050', eye_hi=0, head=7.0, torso=4.6, sleeves=1, belt=1, strap=1),
- 'cultista_lodo': dict(skin=SKIN['palida'], hood='#3a5a2a', hood_point=1, cloth='#2a4a1e', cloth2='#6a9a3a', pants='#2a4a1e', boots='#1a2a14', weapon='staff', wlen=15, wang=-1.2, wang_f=-1.4, eye='#a0ff60', eye_hi=0, head=7.2, torso=5.0, sleeves=1, tunic=1, belt=1, belt_c='#7ac03a', skull=1),
+ 'afogado': dict(skin='#7aa8ac', hair='#1e4a38', hair_style='weeds', belly='#a8c8c0', cloth='#3a5a6a', cloth2='#2a4a5a', pants='#2a3a4a', boots='#1a2a3a', eye='#e0f0ff', eye_hi=0, arms_fwd=1, stoop=2, head=7.6, torso=4.8, tunic=1, sockets=1, rags=1, bulk=.8),
+ 'ladrao_esgoto': dict(skin='#c89a78', hair='#5a3a20', hair_style='fringe', bandana=1, hat=1, mask=1, cloth='#2e4a34', cloth2='#4a6a3a', pants='#2a2a2a', boots='#1a1a1a', weapon='dagger', wlen=10, eye='#e8e050', eye_hi=0, head=7.0, torso=4.6, sleeves=1, belt=1, strap=1),
+ 'cultista_lodo': dict(skin='#14200e', robe=1, hood='#3a5a2a', hood_point=1, cloth='#2a4a1e', cloth2='#6a9a3a', pants='#2a4a1e', boots='#1a2a14', weapon='staff', wlen=15, wang=-1.2, wang_f=-1.4, eye='#a0ff60', eye_hi=0, head=7.2, torso=5.0, sleeves=1, tunic=1, belt=1, belt_c='#7ac03a', skull=1),
 }
 for k, S in SPECS.items(): S.setdefault('has_cape', 1)
 
