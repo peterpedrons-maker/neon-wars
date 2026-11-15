@@ -1181,6 +1181,7 @@ async function loadAll(){
     loadMap('town','assets/town.json','assets/town_atlas.json','assets/town_ground.png','assets/town_atlas.png')];
   for(const [k,c] of Object.entries(CLASSES))core.push(loadSheet(k,c.atk_==='cast'?'spellcast':c.atk_));
   for(const k of ['bardo','guardiao','mago','guarda','pov_f','ladino_b','clerigo','ladino'])if(!SHEETS[k])core.push(loadSheet(k,null));
+  if(typeof SAVE!=='undefined'&&SAVE&&SAVE.cls)core.push(cxLoad(CXHERO[SAVE.cls]));
   await Promise.all(core);
   prepMap('town');useMap('town');
   STAGE2=(async()=>{
@@ -1976,7 +1977,7 @@ function enterDungeon(zlv,opts){
   zlv=clamp(zlv||1,1,DUN.length);if(!dgUnlocked(zlv)&&!(opts&&opts.arena)){sfx('ui_denied');return;}
   if(whenReady(()=>enterDungeon(zlv,opts)))return;
   const hp0=G.hero&&G.hero.maxhp?G.hero.hp/G.hero.maxhp:1;
-  closeWin();if(G.scene==='town')PFX.boost=1;
+  closeWin();if(G.scene==='town')PFX.boost=1;cxZone(zlv);
   fadeTo(()=>{
     G.scene='dungeon';useMap(zoneMap(zlv));G.zoneLv=zlv;SAVE.zone=zlv;SAVE.entered=true;G.auto=true;
     const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;h.state='idle';h.act=null;h.kvx=h.kvy=0;h.sk=Array(14).fill(0);h.potCd=0;{const f_=freeSpot(ZONE.start[0],ZONE.start[1]);h.x=f_[0];h.y=f_[1];}h._lx=h.x;h._ly=h.y;
@@ -3741,8 +3742,8 @@ const flashC=document.createElement('canvas');
 function drawSprite(e,fr,scale,flash,alpha){
   if(e.dx&&DOLL)return drawPaper(e,fr,scale,flash,alpha);
   const [img,sx,sy,sw,sh,ax,ay]=fr;
-  if(e.T&&e.T.atlas&&!e.T.totem){   // sprite de chefe com espelhamento horizontal (olha para o herói)
-    const h=G.hero;if(h){if(h.x<e.x-10)e.flipX=true;else if(h.x>e.x+10)e.flipX=false;}
+  if(fr[8]||(e.T&&e.T.atlas&&!e.T.totem)){   // sprite de chefe com espelhamento horizontal (olha para o herói); quadros pixel-art (fr[8]) espelham pela direção (fr[7])
+    if(fr[8])e.flipX=!!fr[7];else{const h=G.hero;if(h){if(h.x<e.x-10)e.flipX=true;else if(h.x>e.x+10)e.flipX=false;}}
     if(e.flipX){const px=Math.round(e.x-G.cam.x),y=Math.round(e.y-G.cam.y-ay*scale);if(alpha<1)ctx.globalAlpha=alpha;ctx.save();ctx.translate(px,0);ctx.scale(-1,1);
       if(flash||e.tint){flashC.width=sw;flashC.height=sh;const f=flashC.getContext('2d');f.clearRect(0,0,sw,sh);f.drawImage(img,sx,sy,sw,sh,0,0,sw,sh);f.globalCompositeOperation='source-atop';f.fillStyle=flash?'rgba(255,236,230,.72)':e.tint;f.fillRect(0,0,sw,sh);f.globalCompositeOperation='source-over';ctx.drawImage(flashC,0,0,sw,sh,Math.round(-ax*scale),y,sw*scale,sh*scale);}
       else ctx.drawImage(img,sx,sy,sw,sh,Math.round(-ax*scale),y,sw*scale,sh*scale);
@@ -3929,6 +3930,29 @@ function batFrame(e){const sh=SHEETS.bat;
   if(e.stun>0)return atlasFrame(sh,'hurt',e.flash>.07?0:1);
   if(e.state==='atk'&&e.act)return atlasFrame(sh,'bite',Math.min(5,Math.floor(e.act.t/e.act.dur*6)));
   return atlasFrame(sh,'fly',Math.floor((G.t*12+e.animT*3))%6);}
+/* ================= PIXEL ART (chibi): atlas gerado por tools/mmo/pxengine/data/export_atlas.py =================
+   Cada unidade tem anims <anim>_<vista> (idle/walk/run/attack/hurt/death/cast; vistas d=frente, u=costas, s=lado direito; esquerda = espelho em drawSprite via fr[7]).
+   Andam de verdade (ciclo de passos), sem o "pulinho" do paper doll. Desliga com ?cx=0. */
+const CXON=new URLSearchParams(location.search).get('cx')!=='0';
+const CXS={},CXP={};
+const CXMAP={goblin:'goblin',gobarq:'goblin',xama:'goblin_x',esqueleto:'esqueleto',esqmago:'esqmago',esqfogo:'esqueleto',esqgelo:'esqueleto',javali:'javali',javguer:'javali',javbruto:'javali',javarq:'javali',javmago:'javali',rato:'rato',ratass:'rato',ratarq:'rato',ratalq:'rato',cult:'cultista',guardac:'guarda_c',espectro:'espectro',gargula:'gargula',zumbi:'zumbi',bat:'morcego',rei:'rei'};
+const CXHERO={guerreiro:'h_guerreiro',mago:'h_mago',ladino:'h_ladino',clerigo:'h_clerigo',arqueiro:'h_arqueiro',bardo:'h_bardo'};
+function cxLoad(k){if(!CXON||!k)return null;if(!CXP[k])CXP[k]=Promise.all([loadImg('assets/chars/cx_'+k+'_atlas.png'),fetch('assets/chars/cx_'+k+'_atlas.json').then(r=>r.json())]).then(([img,meta])=>{CXS[k]={atlasImg:img,meta};}).catch(()=>{CXS[k]=null;});return CXP[k];}
+function cxZone(zlv){const f=famOf(zlv),L=f==='goblin'?['goblin','goblin_x']:f==='esq'?['esqueleto','esqmago','guarda_c','cultista','gargula','zumbi','espectro','morcego']:f==='rato'?['rato']:['javali'];if(zlv===5)L.push('rei');L.push(CXHERO[SAVE.cls]);for(const k of L)cxLoad(k);}
+function cxKeyOf(e){if(e.kind==='hero')return CXHERO[SAVE.cls];const T=e.T;return T?CXMAP[T.atlas||T.sheet]:null;}
+function bsc(e){const k=CXON&&cxKeyOf(e);return k&&CXS[k]?1:e.T.scale;}
+function cxFrame(e){if(!CXON||(e.kind!=='hero'&&e.kind!=='mob'&&e.kind!=='boss'))return null;const k=cxKeyOf(e);if(!k)return null;const sh=CXS[k];if(!sh){if(sh===undefined)cxLoad(k);return null;}
+  const M=sh.meta,r=e.row===0?'u':e.row===2||e.row===undefined?'d':'s',mir=e.row===1,a=e.act;
+  const L=n=>(M.anims[n+'_'+r]||M.anims['idle_'+r]),A=(n,i)=>{const l=L(n),q=l[Math.max(0,Math.min(l.length-1,i|0))];return [sh.atlasImg,(q%M.cols)*M.w,((q/M.cols)|0)*M.h,M.w,M.h,M.ax,M.ay,mir?1:0,1];},
+    AL=(n,i)=>{const l=L(n).length;return A(n,((Math.floor(i)%l)+l)%l);};
+  if(e.kind==='hero'&&e.state==='ko')return A('death',9);
+  if(e.dead)return A('death',Math.floor(e.deadT*L('death').length/.8));
+  if(e.dod)return AL('run',(e.dod.t||0)*30);
+  if(e.state==='hurt'||e.stun>0||(e.stagger>0&&!(a&&a.skill)))return A('hurt',e.flash>.07?1:2);
+  if(a&&(e.state==='atk'||a.skill)){const p=Math.min(.999,a.t/a.dur),hit=Math.max(.15,Math.min(.9,a.hit||.5)),imp=.6,u=p<hit?p/hit*imp:imp+(p-hit)/(1-hit)*(1-imp),nm=(a.cast||a.skill)?'cast':'attack';return A(nm,u*L(nm).length);}
+  if(e.ch)return A('cast',3+(Math.floor(G.t*8)%2));
+  if(e.state==='walk'){const run=e.kind==='hero'&&(e.rk||0)>.5;return AL(run?'run':'walk',e.animT*(run?14:e.kind==='hero'?20.8:14));}
+  return AL('idle',(G.t+(e._cxp||(e._cxp=Math.random()*9)))*10);}
 function entFrame0(e){
   if(e.kind==='hero'&&PXH&&SAVE.cls==='guerreiro'&&SHEETS.pxhero)return pxHeroFrame(e);
   if(e.T&&e.T.atlas){if(e.T.atlas==='skrix')return skrixFrame(e);if(e.T.atlas==='morvath')return morvathFrame(e);if(e.T.atlas==='gorgash')return gorgashFrame(e);if(e.T.atlas==='ratking')return ratkingFrame(e);if(e.T.atlas==='totem')return totemFrame(e);if(e.T.atlas==='vamp')return vampFrame(e);if(e.T.atlas==='bat')return batFrame(e);if(e.kind==='boss')return grunkFrame(e);}
@@ -4031,7 +4055,7 @@ function dollBat(e){const k=e.T.atlas,sh=SHEETS[k];if(!sh)return null;const a=e.
   if(e.dead||e.ch||e.stun>0||e.stagger>0||(a&&(a.skill||e.state==='atk')))return null;
   const p=(k==='vamp'&&e.fury)?'e_':'',nm=sh.meta.anims[p+'fly']?p+'fly':'fly',n=sh.meta.anims[nm].length,mv=e.state==='walk',cyc=mv?1.1:1.9,ph=((G.t+e.x*.013)%cyc)/cyc,fw=mv?.5:.3,i=ph<fw?Math.floor(ph/fw*n)%n:0;
   dollSet(e,{k:'idle'});e.dx.y=Math.sin(G.t*3+e.x*.05)*(mv?1.5:2.5);e.dx.rot=Math.sin(G.t*2+e.x*.03)*.03;return atlasFrame(sh,nm,i);}
-function entFrame(e){e.dx=null;e.glowF=-1;
+function entFrame(e){e.dx=null;e.glowF=-1;{const f=cxFrame(e);if(f)return f;}
   if(DOLL&&(e.kind==='boss'||e.kind==='mob'||e.kind==='hero')){let fr=null;
     if((e.T&&(e.T.atlas==='bat'||e.T.atlas==='vamp'))&&e.kind!=='hero'){fr=dollBat(e);if(fr)return fr;e.dx=null;return entFrame0(e);}
     if(e.kind==='hero'&&PXH&&SAVE.cls==='guerreiro'&&SHEETS.pxhero){fr=entFrame0(e);if(e.state==='walk')dollSet(e,{k:'move',g:'hop'});else if(e.state==='idle')dollSet(e,{k:'idle'});return fr;}
@@ -4161,7 +4185,7 @@ function render(){
       if(a[3]>=60&&a[2]>=24){castShadow(ATLAS,a[0],a[1],a[2],a[3],a[4],a[5],1,X,Y,.26*nA,a[3]>=100?.9:.75);contactShadow(X,Y-1,Math.min(26,a[2]*.3),.28*nA);}
       else contactShadow(X,Y-1,Math.min(20,a[2]*.45+3),.3*nA);}
     for(const it of list){const e=it.e;if(!e||e.dead||e.kind==='vill'&&false)continue;if(!e||e.kind===undefined)continue;const X=e.x-cx,Y=e.y-cy-(G.crp?crpElev(e):0);if(X<-60||X>G.LW+60||Y<-30||Y>G.LH+120)continue;
-      const fr=entFrame(e),sc=e.kind==='boss'?e.T.scale:1,sw=e.kind==='hero'?22:e.kind==='boss'?40:(e.T?e.T.sw:22),al=e.hide?0:e.dead?Math.max(0,1-Math.max(0,e.deadT-.5)/.6):1;
+      const fr=entFrame(e),sc=e.kind==='boss'?bsc(e):1,sw=e.kind==='hero'?22:e.kind==='boss'?40:(e.T?e.T.sw:22),al=e.hide?0:e.dead?Math.max(0,1-Math.max(0,e.deadT-.5)/.6):1;
       {const sr=(e.T&&e.T.shr)||sw*.62,zz=(e.zoff||0)+(e.dx&&e.dx.y<0?-e.dx.y*5:0),fl=zz?Math.min(.55,zz/220):0,big=(e.T&&e.T.shr)?1.45:1;contactShadow(X,Y,sr*(1-fl),Math.min(.8,.36*nA*al*big*(1-fl)));if(!(e.T&&e.T.fly))castShadow(fr[0],fr[1],fr[2],fr[3],fr[4],fr[5],fr[6],sc,X,Y,.3*nA*al,1);}}}
   let heroDrawn=false;
   for(const it of list){
@@ -4176,7 +4200,7 @@ function render(){
       if(heroDrawn&&p.t==='p'&&a[3]>=60&&p.y>h.y&&px<hb[2]&&px+a[2]>hb[0]&&py<hb[3]&&py+a[3]>hb[1])occl=true;
       if(p.t==='p'&&a[3]>=60)for(const q of ents)if(!q.o&&p.y>q.e.y&&px<q.b[2]&&px+a[2]>q.b[0]&&py<q.b[3]&&py+a[3]>q.b[1])q.o=true;
     }else{const e=it.e;if(e.pet){drawPet(e,e.x-cx,e.y-cy);continue;}
-      const sc=e.kind==='boss'?e.T.scale:(e.sc||1),sw=e.kind==='hero'?22:e.kind==='boss'?40:(e.T?e.T.sw:22);
+      const sc=e.kind==='boss'?bsc(e):(e.sc||1),sw=e.kind==='hero'?22:e.kind==='boss'?40:(e.T?e.T.sw:22);
       const sxx=e.x-cx,syy=e.y-cy;
       if(e.elite&&!e.dead){const p=.5+.5*Math.sin(G.t*4+e.x);ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.28+.14*p;ctx.fillStyle=e.elCol;ctx.beginPath();ctx.ellipse(sxx,syy,sw*.8+3*p,7+1.5*p,0,0,7);ctx.fill();ctx.globalAlpha=.5;ctx.strokeStyle=e.elCol;ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(sxx,syy,sw*.8+3*p,7+1.5*p,0,0,7);ctx.stroke();const gd=e.tier==='gold',R0=gd?30:24,gr=ctx.createRadialGradient(sxx,syy-16,2,sxx,syy-16,R0+3*p);gr.addColorStop(0,e.elCol+(gd?'aa':'88'));gr.addColorStop(.55,e.elCol+'44');gr.addColorStop(1,e.elCol+'00');ctx.globalAlpha=.55+.35*p;ctx.fillStyle=gr;ctx.fillRect(sxx-R0-6,syy-16-R0-6,2*R0+12,2*R0+12);
         ctx.globalAlpha=.9;ctx.fillStyle=gd?'#fff2b0':'#d8ecff';for(let i=0;i<(gd?3:2);i++){const a=G.t*2.2+i*6.283/(gd?3:2)+e.x;ctx.fillRect(Math.round(sxx+Math.cos(a)*(R0*.62)-1),Math.round(syy-16+Math.sin(a)*(R0*.38)-1),2,2);}
