@@ -102,47 +102,49 @@ def leg(c, x, hipy, foot_y, sw, lift, r0, r1, reg, far, foot='hoof'):
 def javali(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=0, **kw):
     c = Cv(); cx = W // 2; gy = BASE
     if view == 'right':
-        bx, by = cx - 3 + lunge * .4, gy - 11 + bob
-        for i, (lx, ph0, far) in enumerate(((-7, 0, True), (6, math.pi, True), (-6, math.pi, False), (7, 0, False))):
-            lift = max(0, math.sin(ph + ph0)) * 2.4; sw = math.cos(ph + ph0) * 2.2
-            leg(c, bx + lx, by + 3, gy, sw, lift, 2.3, 1.7, 'body', far)
-        c.ell(bx - 5, by + .5, 6.3, 5.6)                           # garupa
-        c.ell(bx + 1, by - .5, 8.5, 6.2)                           # tronco
-        c.ell(bx + 5.5, by - 1.8, 6, 6.4)                          # ombro alto (cernelha)
-        c.ell(bx + 1, by + 3.5, 6.5, 2.8, 'belly')
-        c.cap(bx + 8, by - 1, bx + 14.5 + lunge * .4, by + 1.5 + head_dy, 5.4, 4.2)            # pescoco -> cabeca (continuo)
-        c.cap(bx + 14, by + 2 + head_dy, bx + 19.5 + lunge * .5, by + 3.5 + head_dy, 3.1, 2.5, 'snout')   # focinho
-        c.cap(bx + 12, by - 4.5 + head_dy, bx + 11.2, by - 7.8 + head_dy, 1.9, 1.0, 'mane')   # orelha
-        c.cap(bx - 11, by - 1.5, bx - 14, by - 3 + math.sin(tail) * 1.2, 1.0, .6, 'mane')     # rabo
-        for k in range(8):                                          # crina eriçada
-            x = bx - 8 + k * 2.2; c.cap(x, by - 5.5 - (1 if 2 < k < 6 else 0), x + .4, by - 8 - (1.3 if 2 < k < 6 else 0), 1.0, .5, 'mane')
-        c.cap(bx + 16.5 + lunge * .5, by + 5.5 + head_dy, bx + 18.5 + lunge * .5, by + 2.6 + head_dy, .8, .6, 'tusk')
-        ex, ey = bx + 14 + lunge * .4, by - 1.5 + head_dy
-        c.dot(ex, ey, hx('#ff8a30') if not squint else hx('#14100c')); c.dot(ex - 1, ey, hx('#14100c')) if False else None
-        c.dot(bx + 20 + lunge * .5, by + 2 + head_dy, hx('#14100c')); c.dot(bx + 19, by + 2 + head_dy, hx('#14100c'))
+        bx, by = cx - 3 + lunge * .4, gy - 12 + bob
+        for i, (lx, ph0, far) in enumerate(((-7, 0, True), (6.5, math.pi, True), (-6, math.pi, False), (7, 0, False))):
+            lift = max(0, math.sin(ph + ph0)) * 2.6; sw = math.cos(ph + ph0) * 2.4
+            leg(c, bx + lx, by + 3.5, gy, sw, lift, 1.9, 1.35, 'body', far)
+        c.ell(bx - 6.5, by + 1.2, 5.2, 4.6)                         # garupa mais baixa e estreita
+        c.ell(bx - .5, by - .2, 8.8, 5.9)                           # tronco
+        c.ell(bx + 5, by - 2.4, 6.2, 7.0)                           # cernelha ALTA (silhueta de javali: ombro alto, traseiro baixo)
+        c.ell(bx + .5, by + 3.3, 6.4, 2.6, 'belly')
+        c.cap(bx + 8, by - 1.5, bx + 14.5 + lunge * .4, by + 2.2 + head_dy, 5.6, 4.0)           # pescoco grosso descendo para a cabeca
+        c.cap(bx + 14, by + 3 + head_dy, bx + 20.5 + lunge * .5, by + 5 + head_dy, 3.0, 2.3, 'snout')   # focinho longo e baixo
+        c.ell(bx + 21 + lunge * .5, by + 5.2 + head_dy, 1.6, 2.0, 'snout')                        # disco do focinho
+        c.cap(bx + 11.5, by - 3 + head_dy, bx + 10.2, by - 7.4 + head_dy, 2.1, 1.0, 'mane')         # orelha em pe
+        c.cap(bx - 11, by - 2, bx - 14.5, by - 4 + math.sin(tail) * 1.4, 1.0, .5, 'mane')           # rabo fino
+        for k in range(9):                                                                           # crina eriçada (crista contínua)
+            x = bx - 9 + k * 2.1; top = by - 5.6 - (1.8 if 3 <= k <= 6 else 0) - (1.2 if k in (4, 5) else 0)
+            c.cap(x, top + 1, x + .5, top - 2.2, 1.1, .5, 'mane')
+        c.cap(bx + 16.8 + lunge * .5, by + 6.8 + head_dy, bx + 19.2 + lunge * .5, by + 3.4 + head_dy, .9, .6, 'tusk')  # presa curva
+        ex, ey = bx + 13.2 + lunge * .4, by - .6 + head_dy
+        c.dot(ex, ey, hx('#ff8a30') if not squint else hx('#14100c')); c.dot(ex + 1, ey, hx('#14100c')) if not squint else None
+        c.dot(bx + 21.5 + lunge * .5, by + 4.6 + head_dy, hx('#14100c'))
         if mouth:
-            for q in range(4): c.dot(bx + 15.5 + q + lunge * .5, by + 5.2 + head_dy, hx('#14100c'))
+            for q in range(5): c.dot(bx + 16 + q + lunge * .5, by + 7 + head_dy, hx('#14100c'))
     else:
-        back = view == 'up'; bx = cx; by = gy - 11 + bob
+        back = view == 'up'; bx = cx; by = gy - 12 + bob
         for sx, ph0 in ((-5.5, 0), (5.5, math.pi)):
-            lift = max(0, math.sin(ph + ph0)) * 2.4
-            leg(c, bx + sx, by + 3, gy, 0, lift, 2.4, 1.9, 'body', False)
-        c.ell(bx, by + 1, 9.5, 6.8)
-        c.ell(bx, by + 3.2, 6, 3, 'belly') if not back else None
-        for k in range(-3, 4): c.cap(bx + k * 2.4, by - 5.5, bx + k * 2.4, by - 8.5 + (1 if abs(k) > 2 else 0), 1.0, .5, 'mane')
+            lift = max(0, math.sin(ph + ph0)) * 2.6
+            leg(c, bx + sx, by + 3.5, gy, 0, lift, 2.1, 1.6, 'body', False)
+        c.ell(bx, by + 1, 9.2, 6.8)
+        c.ell(bx, by + 3.4, 5.6, 2.8, 'belly') if not back else None
+        for k in range(-4, 5): c.cap(bx + k * 2.1, by - 5, bx + k * 2.1 + .3, by - 8.8 + (1.2 if abs(k) > 2 else 0), 1.0, .5, 'mane')
         hy = by - 1 + head_dy + (lunge * .3 if not back else 0)
-        c.ell(bx, hy, 7.4, 6.4)
-        for sg in (-1, 1): c.cap(bx + sg * 5.8, hy - 5, bx + sg * 6.6, hy - 8.2, 1.9, 1.0, 'mane')
+        c.ell(bx, hy, 7.2, 6.2)
+        for sg in (-1, 1): c.cap(bx + sg * 5.4, hy - 4.6, bx + sg * 6.2, hy - 8.4, 2.0, 1.0, 'mane')
         if back:
-            c.cap(bx, by + 6, bx + math.sin(tail) * 1.5, by + 9, .9, .5, 'mane')
+            c.cap(bx, by + 6, bx + math.sin(tail) * 1.5, by + 9.5, .9, .5, 'mane')
         else:
-            c.ell(bx, hy + 3.2, 4.2, 3.2, 'snout')
+            c.ell(bx, hy + 3.4, 4.2, 3.1, 'snout')
             for sg in (-1, 1):
-                c.cap(bx + sg * 4.4, hy + 4, bx + sg * 5.6, hy + 1, .8, .6, 'tusk')
-                c.dot(bx + sg * 3.6, hy - 1.5, hx('#ff8a30') if not squint else hx('#14100c'))
-                c.dot(bx + sg * 1.1, hy + 3, hx('#14100c'))
+                c.cap(bx + sg * 4.2, hy + 5, bx + sg * 5.8, hy + 1.2, .9, .6, 'tusk')
+                c.dot(bx + sg * 3.6, hy - 1.5, hx('#ff8a30') if not squint else hx('#14100c')); c.dot(bx + sg * 2.6, hy - 1.5, hx('#14100c')) if not squint else None
+                c.dot(bx + sg * 1.1, hy + 3.2, hx('#14100c'))
             if mouth:
-                for q in range(-2, 3): c.dot(bx + q, hy + 6, hx('#14100c'))
+                for q in range(-2, 3): c.dot(bx + q, hy + 6.4, hx('#14100c'))
     return c.render(PAL['javali'], FLAT)
 
 
