@@ -5,7 +5,7 @@ Vistas: d (frente), u (costas), s (lado direito; esquerda = espelho em tempo de 
 Uso: python3 export_atlas.py [chave ...]"""
 import json, math, os, sys
 from PIL import Image
-import chibi as C, beast as BE, creature as CRE
+import chibi as C, beast as BE, creature as CRE, fauna as FA
 import jogo_pixel as J
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '..', 'mmo', 'assets', 'chars')
@@ -77,7 +77,7 @@ def frames(u, kind, view):
     if kind in ('run',): kk = 'walk'
     if kind == 'cast': kk = 'attack'
     if k == 'e': return J.spr(u['name'], kk, view, d)
-    if k == 'b': return [f[0] for f in BE.anim(u['name'], kk, view, d)]
+    if k == 'b': return [f[0] for f in FA.anim(u['name'], kk, view, d)]
     return [f[0] for f in CRE.anim(u['name'], kk, view, d)]
 
 
