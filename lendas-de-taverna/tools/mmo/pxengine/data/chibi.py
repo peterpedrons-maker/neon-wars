@@ -994,10 +994,30 @@ def build_side(p):
     return g, tip, behind
 
 
+RIM = True
+SMEAR = True
+
+
+def shade_pass(img):
+    """luz de cima-esquerda: o 1o pixel interno ao lado do contorno fica mais claro em cima/esquerda e mais escuro embaixo/direita (volume sem dither)"""
+    import numpy as np
+    a = np.asarray(img, dtype=np.float32).copy(); al = a[..., 3] > 0
+    pad = np.pad(al, 1, constant_values=False)
+    edge = al & ~(pad[:-2, 1:-1] & pad[2:, 1:-1] & pad[1:-1, :-2] & pad[1:-1, 2:])
+    pe = np.pad(edge, 1, constant_values=False)
+    inner = al & ~edge
+    lit = inner & (pe[:-2, 1:-1] | pe[1:-1, :-2])
+    dark = inner & (pe[2:, 1:-1] | pe[1:-1, 2:]) & ~lit
+    for m, k, add in ((lit, 1.14, (10, 8, 0)), (dark, .86, (0, 0, 6))):
+        for c in range(3): a[..., c] = np.where(m, np.clip(a[..., c] * k + add[c], 0, 255), a[..., c])
+    return Image.fromarray(a.astype('uint8'), 'RGBA')
+
+
 def render(g, cls='warrior', over=None):
     pal = dict(PALS[cls])
     if over: pal.update(over)
-    return g.render(pal, sel_for(cls, pal, over or {}))
+    im = g.render(pal, sel_for(cls, pal, over or {}))
+    return shade_pass(im) if RIM else im
 
 # ================================================================ APARENCIA E EQUIPAMENTOS (tudo e DADO: troca em tempo de execucao)
 def darken(h, k=.5):
@@ -1139,17 +1159,18 @@ def sel_for(cls, pal, over):
 def walk_params(f, n=8, view='down'):
     ph = 2 * math.pi * f / n
     s = math.sin(ph); c = math.cos(ph)
-    up = abs(s)
-    p = dict(dy=-1 if up > .7 else 0, tn=3, hdy=0 if up < .7 else 0)
+    contact = abs(c) > .86; passing = abs(s) > .86
+    p = dict(dy=-1 if passing else 0, tn=2 if contact else 3, hdy=1 if contact else 0)
     if view in ('down', 'up'):
-        p['bl'] = (0, max(0, s) * 2.2); p['br'] = (0, max(0, -s) * 2.2)
-        p['bl'] = (0, round(p['bl'][1])); p['br'] = (0, round(p['br'][1]))
-        p['al'] = (0, round(c * 1.2)); p['ar'] = (0, round(-c * 1.2))
-        p['hdx'] = 0
+        p['bl'] = (0, round(max(0, s) * 3)); p['br'] = (0, round(max(0, -s) * 3))
+        p['al'] = (0, round(c * 2)); p['ar'] = (0, round(-c * 2))
+        p['hdx'] = 0; p['bdx'] = 0
     else:
-        p['bl'] = (round(c * 3), round(max(0, -s) * 2)); p['br'] = (round(-c * 3), round(max(0, s) * 2))
-        p['al'] = (round(c * 2), 0); p['ar'] = (round(-c * 2), 0)
-    p['sw'] = dict(ang=165, len=11, side='r') if view != 'right' else dict(ang=100, len=11)
+        p['bl'] = (round(c * 5), round(max(0, -s) * 3)); p['br'] = (round(-c * 5), round(max(0, s) * 3))
+        p['al'] = (round(c * 3), 0); p['ar'] = (round(-c * 3), 0)
+        p['bdx'] = 1; p['hdx'] = 1 if contact else 0
+    base = 165 if view != 'right' else 100
+    p['sw'] = dict(ang=base + int(round(6 * s)), len=11, side='r')
     p['flut'] = int(round(max(0, c) * 2))
     return p
 
@@ -1248,6 +1269,25 @@ def extra_poses(kind, view):
             dict(tn=0, dx=-3, dy=7, hdx=-3, hdy=6, ar=(-3, 5), al=(3, 4), bl=(-3, 0), br=(3, 0), sw=sw(95)), dict(tn=0, dx=-3, dy=7, hdx=-3, hdy=6, ar=(-3, 5), al=(3, 4), bl=(-3, 0), br=(3, 0), sw=sw(92), face='dead')]
 
 
+def smear_frames(frames, strength=(120, 56)):
+    """rastro de movimento sutil (nao e o risco agressivo): pixels CLAROS da lamina do quadro anterior que ficaram vazios agora entram translucidos"""
+    import numpy as np
+    out = []; arrs = [np.asarray(f[0], dtype=np.uint8) for f in frames]
+    for i, f in enumerate(frames):
+        cur = arrs[i].copy()
+        for back, al in zip((1, 2), strength):
+            if i - back < 0: continue
+            prev = arrs[i - back]
+            lum = prev[..., :3].astype(np.int32).sum(axis=2) / 3
+            m = (prev[..., 3] > 0) & (cur[..., 3] == 0) & (lum > 175)
+            if back == 2:
+                m &= (arrs[i - 1][..., 3] == 0)
+            for c in range(3): cur[..., c] = np.where(m, prev[..., c], cur[..., c])
+            cur[..., 3] = np.where(m, al, cur[..., 3])
+        out.append((Image.fromarray(cur, 'RGBA'), f[1], f[2]))
+    return out
+
+
 def anim(view, kind, cls='warrior', ps_override=None, appearance=None, dense=1):
     global _REI, _T, _BULK, _WINGS
     out = []
@@ -1272,6 +1312,7 @@ def anim(view, kind, cls='warrior', ps_override=None, appearance=None, dense=1):
         if view == 'right': g, tip, bh = build_side(p)
         else: g, tip, bh = build_front(p, back=(view == 'up'))
         out.append((render(g, cls, over), tip, bh))
+    if kind == 'attack' and dense > 1 and SMEAR: out = smear_frames(out)
     return out
 
 

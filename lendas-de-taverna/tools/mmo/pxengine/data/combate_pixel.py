@@ -144,6 +144,7 @@ def run(frames_n=220):
             sh = Image.new('RGBA', (NW, NH), (0, 0, 0, 255)); sh.alpha_composite(im, shake); im = sh
         frames.append(im)
     big = [x.convert('RGB').resize((NW * SC, NH * SC), Image.NEAREST) for x in frames]
+    import vid; print('mp4', vid.mp4(big, os.path.join(OUT, 'combate_pixel.mp4'), 18))
     p = big[0].quantize(colors=240, method=Image.MEDIANCUT, dither=Image.NONE); q = [b.quantize(palette=p, dither=Image.NONE) for b in big]
     q[0].save(os.path.join(OUT, 'combate_pixel.gif'), save_all=True, append_images=q[1:], duration=55, loop=0, disposal=1)
     return len(q), big
