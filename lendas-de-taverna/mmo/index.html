@@ -2871,6 +2871,16 @@ function mobSkillStart(m,d,dt){const list=m.T.msk||MSK[m.kind==='boss'?'boss':m.
   else addZone({shape:'circle',x:h.x,y:h.y,r:pick.r,warn:pick.warn,mult:pick.mult,st:pick.st,src:m});
   return true;}
 function hSpd(h){if(stHas(h,'preso')||stHas(h,'atordoado'))return 0;return h.speed*(h.buff&&h.buff.t>0?1+h.buff.spd:1)*stMul(h,'spd');}
+/* ATACAR ANDANDO (dono: o personagem 'engasgava' parando para atacar). Penalidade de velocidade enquanto ataca: corpo a corpo básico ×.9; à distância básico ×.6;
+   habilidade ×.4; habilidade canalizada (segurar/carregar) ×.2 — assim o ranged não foge para sempre. */
+const AMV={melee:.9,ranged:.6,skill:.4,chan:.2};
+function heroMoveWhileAct(h,dt){
+  const a=h.act;if(!a||h.state==='ko')return;const ranged=h.rng>60,sk=a.sk>=0,pen=sk?((a.ch>0&&a.t<a.ch)?AMV.chan:AMV.skill):(ranged?AMV.ranged:AMV.melee);
+  let mv=0;
+  if(!G.auto&&G.joy.m>0){mv=moveTo(h,h.x+G.joy.x*60,h.y+G.joy.y*60,hSpd(h)*Math.max(.35,G.joy.m)*pen,dt);}
+  else if(G.auto&&!ranged&&!sk){const t=h.tg;if(t&&!t.dead){const d=Math.max(0,dist(h,t)-((t.T&&t.T.rad)||0));if(d>h.rng*.8)mv=moveTo(h,t.x,t.y,hSpd(h)*pen,dt,1);}}
+  if(mv){collide(h);h.animT+=dt*(h.speed/70);stepFx(h,dt);}
+}
 function updateHero(dt){
   const h=G.hero;
   h.flash=Math.max(0,h.flash-dt);for(let i=0;i<14;i++)if(h.sk[i]>0)h.sk[i]=Math.max(0,h.sk[i]-dt);
@@ -2889,7 +2899,8 @@ function updateHero(dt){
   if(h.act){h.act.t+=dt;h.state='atk';
     {const a=h.act;if(a.cast&&a.ch>0&&a.t<a.ch+.3&&Math.random()<dt*45){const ang=Math.random()*6.283,r=rnd(24,38);VF.pt(h.x+Math.cos(ang)*r,h.y-14+Math.sin(ang)*r*.6,{vx:-Math.cos(ang)*r*2.5,vy:-Math.sin(ang)*r*1.5,life:.38,col:CHCOL[h.cls],sz:2.2});}}
     if(!h.act.done&&h.act.t>=h.act.dur*h.act.hit){h.act.done=true;heroHitMoment(h);}
-    if(h.act.t>=h.act.dur){h.act=null;h.state='idle';}
+    if(h.act&&h.act.t>=h.act.dur){h.act=null;h.state='idle';}
+    if(h.act)heroMoveWhileAct(h,dt);   // ataca ANDANDO: o ataque básico quase não reduz a velocidade; habilidades/disparos reduzem (anti-kite infinito)
     return;}
   if(G.zones.length&&!h.act&&heroAvoidZone(h,dt))return;
   let tgt=null;const bs=G.boss;const jm=!G.auto&&G.joy.m>0;
@@ -2906,6 +2917,7 @@ function updateHero(dt){
     else if(d>Math.max(want,h.rng*.95)&&(G.auto||G.wp)){ if(G.auto)moved=moveTo(h,tgt.x,tgt.y,hSpd(h),dt,1);}   // já está no alcance de ataque: fica parado (não empurra o chefe)
     else if(d<=h.rng){h.row=dir4(tgt.x-h.x,tgt.y-h.y);}
   }
+  else if(tgt&&jm&&h.cd<=0){const d=Math.max(0,dist(h,tgt)-((tgt.T&&tgt.T.rad)||0));if(d<=h.rng+1.5)startHeroAttack(h,tgt);}   // manual: ataca sem precisar parar de andar
   // loot: pegar o que está perto
   updateLoot(dt);
   if(!moved&&G.wp){moved=moveTo(h,G.wp.x,G.wp.y,hSpd(h),dt,1);if(dist(h,G.wp)<4)G.wp=null;}
@@ -2947,6 +2959,7 @@ function updateMob(m,dt){
   m.cd-=dt;const T=m.T,d=dist(m,h),ko=h.state==='ko';
   if(m.tpT!==undefined&&!ko&&d<T.aggro&&G.phase!=='end'){m.tpT-=dt;if(m.tpT<=0&&d>70&&!m.act){m.tpT=rnd(5,8);const a=Math.random()*6.283,f=freeSpot(h.x+Math.cos(a)*34,h.y+Math.sin(a)*24);VF.glow(m.x,m.y-14,30,'#c08aff',.4);VF.burst(m.x,m.y-10,12,['#c08aff','#fff'],{s0:30,s1:90});m.x=f[0];m.y=f[1];m.wx=m.x;m.wy=m.y;VF.glow(m.x,m.y-14,34,'#c08aff',.45);VF.wave(m.x,m.y,40,'#c08aff',.4,3);m.cd=Math.min(m.cd,.35);}}
   if(m.act){m.act.t+=dt;m.state='atk';
+    if(m.kind==='mob'&&!m.act.skill&&!m.mini&&!ko&&!T.ranged&&d>T.rng*.7&&!(m.sts&&stHas(m,'preso'))){const sl=d<170?slotPt(m,h):h;moveTo(m,sl.x,sl.y,T.speed*MOVE*(m.spdMul||1)*stMul(m,'spd')*.6,dt,1);collide(m,6);m.wx=m.x;m.wy=m.y;m.row=dir4(h.x-m.x,h.y-m.y);}   // inimigo corpo a corpo também persegue enquanto ataca
     if(fxBoss(m)&&m.act.skill)bossSkillFx(m,dt);
     if(m.act.burrow&&m.act.t>=.4&&m.act.fxT!==undefined&&!m.hide)m.hide=true;
     if(m.act.spin&&m.act.spin0!==undefined&&m.act.t>=m.act.spin0&&m.act.t<m.act.spinEnd){
