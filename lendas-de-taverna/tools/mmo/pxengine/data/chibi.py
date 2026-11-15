@@ -353,15 +353,21 @@ def shaped_rows(hand, ang, length, guard, shape, gstyle, glow, gem, serrate):
                     put(xx, yy, 'N')
                     if sd < 4.5 and int(math.floor(sd + 9)) % 2 == 0: put(xx, yy, 'g')       # enrolado
                 if -5.2 <= sd < -4.0 and abs(td) <= 1.5: put(xx, yy, 'g')    # pomo
-                if H0 - .2 <= sd <= H0 + 1.0 and abs(td) <= 1.9: put(xx, yy, 'g')   # colar
-                if H0 + .8 <= sd <= L - .4:                                   # cabeca (lua): so de um lado do cabo
-                    u = (sd - (H0 + .8)) / max(1.0, (L - .4) - (H0 + .8))
-                    tmax = 2.4 + 3.6 * math.sin(math.pi * min(1, max(0, u)) ** .85)
-                    if .8 < td <= tmax:
-                        edge = td > tmax - 1.25
-                        put(xx, yy, 'w' if edge and .12 < u < .88 else ('A' if edge or td > tmax * .55 else 'a'))
-                    elif -2.6 <= td < -.8 and .15 < u < .75 and abs(td) <= 2.6 - abs(u - .45) * 4:   # espigao atras
-                        put(xx, yy, 'a')
+                H1 = L - .2
+                if H0 <= sd <= H1:                                            # soquete de aco: ENVOLVE o cabo (cabo so reaparece acima)
+                    if abs(td) <= 1.7:
+                        put(xx, yy, 'A' if td < -.2 else 'a')
+                        if abs(td) >= 1.2 or sd < H0 + .9 or sd > H1 - .9: put(xx, yy, 'a' if td > 0 else 'A')
+                    u = (sd - H0) / max(1.0, H1 - H0)
+                    r_ = 2 * u - 1                                            # -1 (barba) .. +1 (ponta)
+                    tmax = 1.7 + 6.4 * math.sqrt(max(0.0, 1 - r_ * r_ * .92)) * (1.0 + .12 * (-r_))   # arco convexo cheio (nao triangulo)
+                    if 1.5 < td <= tmax:                                      # lamina macica de aco
+                        d_ = tmax - td
+                        ch = 'w' if d_ < 1.1 and .05 < u < .95 else ('A' if (td > 2.6 or d_ < 2.4) else 'a')
+                        if td < 2.9 and u > .2 and u < .8 and (int(sd) + int(td)) % 2 == 0: ch = 'a'      # sombra junto ao soquete
+                        put(xx, yy, ch)
+                    if -2.9 <= td < -1.6 and .25 < u < .8: put(xx, yy, 'a')   # cabeca de martelo atras (nuca)
+                if L - .2 < sd <= L + 1.4 and abs(td) <= .8: put(xx, yy, 'N')  # topo do cabo sai do soquete
         tip = (hand[0] + ux * (L - 1), hand[1] + uy * (L - 1))
         return cells, tip
     # guarda (amostragem rigida, igual a lamina)
@@ -434,29 +440,38 @@ def staff_rows(hand, ang, length=24, orb=1, head='orb'):
     tx, ty = round(tip[0]), round(tip[1])
     for dx, dy in ((-1, 0), (1, 0), (0, 1), (2, 0)): cells[(tx + dx, ty + dy)] = 'g'      # garra de metal
     ox, oy = round(tip[0] + ux * 3), round(tip[1] + uy * 3)
-    r = {0: 1, 1: 2, 2: 3, 3: 4}[orb]
+    r = {0: 3, 1: 4, 2: 4, 3: 5}[orb]
     def put(x, y, c): cells[(x, y)] = c
+    for dx in (-2, -1, 0, 1, 2, 3): put(tx + dx, ty + (1 if abs(dx - .5) > 2 else 0), 'g')   # colar largo
     if head == 'crystal':
-        for dy in range(-4, 5):
-            hw = 3 - abs(dy) * 3 // 4 if dy < 0 else 3 - dy * 3 // 4
-            for dx in range(-max(hw, 0), max(hw, 0) + 1):
-                put(ox + dx, oy + dy - 1, 'Z' if (dx < 0 and dy < 1 and abs(dx) <= 1) else 'z' if dx <= 0 else 'Y')
-        put(ox, oy - 6, 'Z')
+        for dy in range(-7, 6):
+            hw = max(0, 4 - abs(dy + 1) * 4 // 7) if dy > -7 else 0
+            for dx in range(-hw, hw + 1):
+                put(ox + dx, oy + dy - 1, 'Z' if (dx < 0 and abs(dx) <= 1 and -5 < dy < 2) else 'z' if dx <= 1 else 'Y')
+        for dx in (-5, 5):
+            for dy in range(-1, 4): put(ox + dx, oy + dy, 'g')                              # garras de prata
+        put(ox - 5, oy + 4, 'g'); put(ox + 5, oy + 4, 'g')
         return cells, (ox, oy)
     if head == 'skull':
-        for dy in range(-3, 3):
-            for dx in range(-3, 4):
-                if (dx * dx) / 11.0 + (dy + .5) ** 2 / 9.0 <= 1.05:
-                    put(ox + dx, oy + dy, 'g' if dx + dy < 0 else 'N' if dx + dy > 2 else 'Z')
-        for dx in (-2, 1): put(ox + dx, oy - 1, 'Y'); put(ox + dx + 1, oy - 1, 'Y')      # orbitas
-        put(ox, oy + 1, 'N'); put(ox - 1, oy + 3, 'g'); put(ox + 1, oy + 3, 'g')
-        put(ox - 1, oy - 1, 'z'); put(ox + 2, oy - 1, 'z')                               # brilho verde nos olhos
+        for dy in range(-5, 4):
+            for dx in range(-4, 5):
+                if (dx * dx) / 18.0 + (dy + 1) ** 2 / 20.0 <= 1.0 or (dy >= 2 and abs(dx) <= 2):
+                    put(ox + dx, oy + dy, 'Z' if dx + dy < -2 else 'g' if dx + dy < 3 else 'N')
+        for dx in (-3, 1):
+            for dy in (-2, -1): put(ox + dx, oy + dy, 'Y'); put(ox + dx + 1, oy + dy, 'Y')   # orbitas fundas
+        put(ox - 2, oy - 1, 'z'); put(ox + 2, oy - 1, 'z')
+        put(ox, oy + 1, 'N'); put(ox, oy + 2, 'N')                                      # nariz
+        for dx in (-2, -1, 0, 1, 2): put(ox + dx, oy + 3, 'N' if dx % 2 == 0 else 'g')  # dentes
+        for k in (-1, 1): put(ox + k * 5, oy - 3, 'g'); put(ox + k * 5, oy - 4, 'g')    # chifres
         return cells, (ox, oy)
     for dy in range(-r, r + 1):
         for dx in range(-r, r + 1):
             d = math.hypot(dx, dy)
             if d <= r + .3:
                 cells[(ox + dx, oy + dy)] = 'Z' if d < r * .45 else 'z' if d < r * .85 else 'Y'
+    if head in ('orb', 'flame', 'ring'):
+        for sx in (-1, 1):                                                  # garras que seguram o orbe
+            for k in range(0, r + 2): put(ox + sx * (r + 1 - (k * k) // (2 * r + 2) ) - (1 if sx > 0 else 0) * 0, oy + r - 1 - k, 'g')
     if head == 'ring':
         for t in range(0, 360, 20):
             put(round(ox + math.cos(math.radians(t)) * (r + 2)), round(oy + math.sin(math.radians(t)) * (r + 2)), 'g')
@@ -520,14 +535,14 @@ def mace_rows(hand, ang, length=15, head='flanged'):
     cells[(x0, y0)] = 'g'; cells[(x0 - 1, y0)] = 'g'; cells[(x0, y0 + 1)] = 'g'            # pomo
     cx, cy = round(tip[0] + ux * 3), round(tip[1] + uy * 3)
     def put(x, y, c): cells[(x, y)] = c
-    if head == 'hammer':
-        for dy in range(-3, 4):
-            for dx in range(-5, 6):
-                if abs(dx) + abs(dy) * 1.4 <= 6.2 and abs(dy) <= 3:
-                    put(cx + dx, cy + dy, 'G' if (dy < 0 and dx < 2) else 'g' if dy <= 1 else 'N')
-        for dy in (-3, 3):
-            for dx in (-4, 4): put(cx + dx, cy + dy, 'A')
-        put(cx, cy, 'A')
+    if head == 'hammer':                                                    # cabeca RETANGULAR com faces batedoras
+        for dy in range(-4, 5):
+            for dx in range(-6, 7):
+                if abs(dx) == 6 and abs(dy) >= 3: continue
+                face = abs(dx) >= 5
+                put(cx + dx, cy + dy, 'A' if face else ('G' if dy < -1 else 'g' if dy < 2 else 'N'))
+        for dx in range(-4, 5): put(cx + dx, cy, 'N' if dx % 4 else 'A')           # friso central
+        put(cx - 1, cy - 1, 'G'); put(cx, cy - 1, 'G')
         return cells, (cx, cy)
     r = 3
     for dy in range(-r, r + 1):
@@ -1218,6 +1233,9 @@ WEAPONS = {
     'facao': dict(kind='sword', len=12, guard=2, shape='cleaver', pal=dict(A='#c8c0b0', a='#6a6050', g='#5a3a20', N='#3a2418')),
     'chamejante': dict(kind='sword', len=16, guard=3, shape='flame', glow='fire', pal=dict(A='#ffd060', a='#e04818', g='#6a1c10', N='#2a1008', Z='#fff0a0', z='#ff6a20')),
     'montante_real': dict(kind='sword', len=18, guard=4, shape='great', gem=True, pal=dict(A='#eef2fa', a='#7c88a8', g='#e8b840', N='#3a2a20')),
+    'espada_curta': dict(kind='sword', len=10, guard=2, pal=dict(A='#dfe8f0', a='#7a8aa0', g='#b8863a', N='#4a3020')),
+    'martelo_guerra': dict(kind='mace', head='hammer', len=17, pal=dict(g='#8f98aa', G='#d8e0f0', N='#5a3a22', A='#c8d0e0')),
+    'cetro_arcano': dict(kind='staff', head='ring', len=17, orb=1, pal=dict(Z='#ffe0ff', z='#c060f0', Y='#6a2aa0', N='#e0b050', g='#f0d070')),
     'machado': dict(kind='sword', len=18, guard=1, shape='axe', pal=dict(A='#b8c4d4', a='#5a6478', w='#f4f8ff', g='#c89a40', N='#6a4426')),
     'espada_rei': dict(kind='sword', len=18, guard=3, shape='great', gstyle='cross', glow='ice', pal=dict(A='#d8f4ff', a='#6ab0e4', g='#2a2c44', N='#1c1830', Z='#ffffff')),
     # cajados
