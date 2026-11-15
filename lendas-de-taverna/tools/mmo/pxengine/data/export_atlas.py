@@ -5,7 +5,7 @@ Vistas: d (frente), u (costas), s (lado direito; esquerda = espelho em tempo de 
 Uso: python3 export_atlas.py [chave ...]"""
 import json, math, os, sys
 from PIL import Image
-import chibi as C, beast as BE, creature as CRE, fauna as FA
+import chibi as C, beast as BE, creature as CRE, fauna as FA, fauna2, humano as HM
 import jogo_pixel as J
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '..', 'mmo', 'assets', 'chars')
@@ -40,6 +40,15 @@ UNITS.update({
     'n_pov_f': dict(kind='e', name='aldeao'),
     'n_ladino_b': dict(kind='c', ap=dict(cls='rogue', weapon='adaga_ferro', clothes='verde')),
     'n_bardo': dict(kind='c', ap=dict(cls='mage', hat='none', outfit='robe', clothes='vermelho', hair='preto', weapon='cajado_natureza')),
+})
+UNITS.update({
+    'goblin': dict(kind='m', spec='goblin'), 'goblin_x': dict(kind='m', spec='goblin_x'), 'sapador': dict(kind='m', spec='goblin_sapador'),
+    'carnical': dict(kind='m', spec='carnical'), 'mumia': dict(kind='m', spec='mumia'), 'necro': dict(kind='m', spec='necro'), 'cav_caido': dict(kind='m', spec='cav_caido'),
+    'ogro_lenhador': dict(kind='m', spec='ogro_lenhador'), 'afogado': dict(kind='m', spec='afogado'), 'bandido': dict(kind='m', spec='bandido'),
+    'ladrao': dict(kind='m', spec='ladrao_esgoto'), 'cult_lodo': dict(kind='m', spec='cultista_lodo'),
+    'gnoll': dict(kind='f', name='gnoll'), 'ratkin': dict(kind='f', name='ratkin'), 'harpia': dict(kind='f', name='harpia'), 'tronco': dict(kind='f', name='tronco'),
+    'cogumelo': dict(kind='f', name='cogumelo'), 'ogrinho': dict(kind='f', name='ogrinho'), 'lobo': dict(kind='f', name='lobo'), 'aranha': dict(kind='f', name='aranha'),
+    'cobra': dict(kind='f', name='cobra'), 'sapo': dict(kind='f', name='sapo'), 'barata': dict(kind='f', name='barata'),
 })
 UNITS.update({'ogro': dict(kind='e', name='ogro'), 'grunk': dict(kind='e', name='grunk'), 'morvath': dict(kind='e', name='morvath')})
 DENS = {'idle': 2, 'walk': 2, 'run': 2, 'attack': 1, 'hurt': 1, 'death': 1, 'cast': 1}
@@ -76,6 +85,8 @@ def frames(u, kind, view):
             print('  fallback', kind, view, ex); return [f[0] for f in C.anim(view, 'walk' if kind in ('run',) else 'attack', u['ap']['cls'], None, u['ap'], dense=d)]
     if kind in ('run',): kk = 'walk'
     if kind == 'cast': kk = 'attack'
+    if k == 'm': return [f[0] for f in HM.anim(u['spec'], 'walk' if kk == 'run' else kk, view, d)]
+    if k == 'f': return [f[0] for f in FA.anim(u['name'], 'walk' if kk == 'run' else kk, view, d)]
     if k == 'e': return J.spr(u['name'], kk, view, d)
     if k == 'b': return [f[0] for f in FA.anim(u['name'], kk, view, d)]
     return [f[0] for f in CRE.anim(u['name'], kk, view, d)]
