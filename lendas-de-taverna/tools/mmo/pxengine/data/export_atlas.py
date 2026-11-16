@@ -51,6 +51,7 @@ UNITS.update({
     'cobra': dict(kind='f', name='cobra'), 'sapo': dict(kind='f', name='sapo'), 'barata': dict(kind='f', name='barata'),
 })
 UNITS.update({'ogro': dict(kind='e', name='ogro'), 'grunk': dict(kind='e', name='grunk'), 'morvath': dict(kind='e', name='morvath')})
+ALIAS_CAST_ONLY = False
 DENS = {'idle': 2, 'walk': 2, 'run': 2, 'attack': 1, 'hurt': 1, 'death': 1, 'cast': 1}
 
 
@@ -88,6 +89,9 @@ def frames(u, kind, view):
     kk = kind
     if k == 'c' and u['ap']['cls'] == 'archer':
         return [f[0] for f in C.anim(view, 'walk', 'archer', archer_ps(kind, view), u['ap'], dense=1)]
+    if k == 'c' and kind in ('attack', 'hurt', 'death') and u['ap']['cls'] != 'archer' and not (kind == 'attack' and ALIAS_CAST_ONLY):
+        import chibi_anim2 as N2
+        return [f[0] for f in N2.build(view, kind, u['ap'])]
     if k == 'c':
         if kind == 'cast' and not (u.get('cast') or u['ap']['cls'] in ('mage', 'cleric', 'archer')): kk = 'attack'
         if kind == 'run' and not u.get('run'): kk = 'walk'
@@ -101,6 +105,9 @@ def frames(u, kind, view):
     if k == 'v':
         import minichefes as MC
         return [MC.vamp_img(f[0], view) for f in CRE.anim('morcego', kk, view, d)]
+    if k == 'e' and kind in ('attack', 'hurt', 'death') and u['name'] in J.ENEMY and not u['name'].startswith('n_') and J.ENEMY[u['name']].get('cls') != 'archer':
+        import chibi_anim2 as N2
+        return [f[0] for f in N2.build(view, kind, J.ENEMY[u['name']])]
     if k == 'e': return J.spr(u['name'], kk, view, d)
     if k == 'b': return [f[0] for f in FA.anim(u['name'], kk, view, d)]
     return [f[0] for f in CRE.anim(u['name'], kk, view, d)]
