@@ -199,6 +199,8 @@ def face_front(head, face):
 
 
 _FSTYLE = None
+_HSTYLE = None
+_IN_RESTYLE = False
 
 
 def apply_face_style(head, style, side=False):
@@ -728,7 +730,47 @@ def helm_head_side(rows):
     return [''.join(r) for r in g]
 
 
+def restyle_hair(g, style, view, hx, hy, back):
+    """Troca o PENTEADO (silhueta + cobertura) da cabeca padrao: bald, mohawk, long, spiky, mane. Roda antes do chapeu."""
+    HAIR = 'RrOL'; SK = dict(R='S', r='s', O='s', L='p')
+    x0, x1 = hx - 1, hx + (22 if view != 'side' else 21); y0, y1 = hy, hy + 18
+    cx = hx + 10
+    def hairpix():
+        return [(x, y) for y in range(y0, y1) for x in range(x0, x1 + 1) if g.get(x, y) in HAIR]
+    if style == 'bald':
+        for x, y in hairpix(): g.put(x, y, SK[g.get(x, y)])
+    elif style == 'mohawk':
+        lo, hi = (cx - 2, cx + 2) if view != 'side' else (hx + 6, hx + 12)
+        for x, y in hairpix():
+            if not (lo <= x <= hi) or y > hy + 7: g.put(x, y, SK[g.get(x, y)])
+        for k in range(7):
+            for x in range(lo, hi + 1):
+                if (x - lo + k) % 3 or k < 3: g.put(x, hy - 1 - k + (0 if view != 'side' else 0), 'R' if k % 3 == 2 else 'O')
+    elif style == 'spiky':
+        for k, xx in enumerate(range(x0 + 2, x1 - 1, 3)):
+            for h_ in range(3 + (k % 3)): g.put(xx, hy - 1 - h_, 'O'); g.put(xx + 1, hy - 1 - h_, 'R') if h_ < 2 + (k % 3) else None
+    elif style == 'long':                                                    # cabelo longo: mechas que afinam ate os ombros (nao um bloco)
+        if view == 'side':
+            for y in range(hy + 6, hy + 21):
+                w_ = max(2, 6 - (y - hy - 6) // 3)
+                for x in range(hx + 1, hx + 1 + w_): g.put(x, y, 'R' if x == hx + 1 or y % 4 == 0 else 'O')
+        elif back:
+            for y in range(hy + 10, hy + 22):
+                t_ = (y - hy - 10) // 3
+                for x in range(x0 + 3 + t_, x1 - 2 - t_): g.put(x, y, 'R' if x in (x0 + 3 + t_, x1 - 3 - t_) or y % 4 == 0 else 'O')
+        else:
+            for y in range(hy + 7, hy + 22):
+                t_ = (y - hy - 7) // 4
+                for x in list(range(x0 + 1, x0 + 4 - min(t_, 1))) + list(range(x1 - 3 + min(t_, 1), x1)): g.put(x, y, 'R' if x in (x0 + 1, x1 - 1) else 'O')
+    elif style == 'mane':
+        for k, xx in enumerate(range(hx + 4 if view == 'side' else x0 + 3, (hx + 13 if view == 'side' else x1 - 2), 2)):
+            for h_ in range(3 + (k % 2) * 2): g.put(xx, hy - 1 - h_, 'R' if h_ % 2 else 'O')
+
+
 def accessory2(g, hat, view, hx, hy, back=False):
+    global _IN_RESTYLE
+    if _HSTYLE and not _IN_RESTYLE:
+        _IN_RESTYLE = True; restyle_hair(g, _HSTYLE, view, hx, hy, back); _IN_RESTYLE = False
     if hat == 'wizard':
         if view == 'side': g.stamp(hat_side(), hx - 2, hy - 7)
         else:
@@ -758,8 +800,13 @@ def accessory2(g, hat, view, hx, hy, back=False):
             g.stamp(['...JII','..JII.','.JII..','JII...','II....','JI....'], hx + 20, hy - 4)
             for k, xx in enumerate((6, 8, 10, 12, 14)):
                 for y_ in range(3 + (k % 2) * 2): g.put(hx + xx, hy - 2 - y_, 'W' if y_ == 0 else 'd')
-    elif hat == 'ratking':                                                   # Rei dos Ratos: orelhas grandes + coroa torta de ouro
+    elif hat == 'ratking':                                                   # Rei dos Ratos: orelhas grandes + focinho + bigodes + coroa torta de ouro
         accessory2(g, 'rat_ears', view, hx, hy, back)
+        if view == 'side':
+            g.stamp(['.pppp', 'pPPPPk', '.pppp'], hx + 18, hy + 9); g.stamp(['kkk', '...k'], hx + 20, hy + 12); g.stamp(['ww', '.w'], hx + 18, hy + 14)
+        elif not back:
+            g.stamp(['..pppp..', '.pPPPPp.', '..pkkp..'], hx + 7, hy + 10); g.stamp(['ww', 'w.'], hx + 8, hy + 14); g.stamp(['ww', '.w'], hx + 12, hy + 14)
+            for k in range(4): g.put(hx + 2 - k, hy + 11 + (k % 2), 'k'); g.put(hx + 19 + k, hy + 11 + (k % 2), 'k')
         if view == 'side':
             for k, xx in enumerate((5, 7, 9, 11, 13)): g.put(hx + xx, hy - 3 - (k % 2) * 2, 'E'); g.put(hx + xx, hy - 2, 'E'); g.put(hx + xx, hy - 1, 'H')
             for xx in range(hx + 4, hx + 15): g.put(xx, hy, 'E'); g.put(xx, hy + 1, 'H')
@@ -779,8 +826,10 @@ def accessory2(g, hat, view, hx, hy, back=False):
                 for xx in (hx + 9, hx + 10, hx + 11, hx + 12): g.put(xx, hy + 12, 'E')
                 g.put(hx + 9, hy + 13, 'E'); g.put(hx + 12, hy + 13, 'E')
             for k, xx in enumerate(range(hx + 1, hx + 21, 3)): g.stamp(['II', 'IJ'], xx, hy + 19 + (1 if 0 < k < 6 else 0))
-    elif hat == 'skrix':                                                     # xama Skrix: coroa de penas altas + mascara de caveira
+    elif hat == 'skrix':                                                     # xama Skrix: coroa de penas altas + nariz de gancho + sorriso de presas
         accessory2(g, 'gob_shaman', view, hx, hy, back)
+        if view == 'side': g.stamp(['ss', 'sSs', '.sS', '..s'], hx + 19, hy + 8)
+        elif not back: g.stamp(['ss', 'sS', 'sS', '.s'], hx + 10, hy + 9); g.stamp(['ss', 'Ss', 'Ss', 's.'], hx + 11, hy + 9)
         for k, (xx, h_) in enumerate(((4, 6), (7, 9), (10, 11), (13, 9), (16, 6))):
             for y_ in range(h_): g.put(hx + xx - (4 if view == 'side' else 0), hy - 2 - y_, 'W' if y_ % 4 == 3 else ('r' if y_ % 3 else 'A')); g.put(hx + xx + 1 - (4 if view == 'side' else 0), hy - 2 - y_, 'R')
         if not back and view != 'side':
@@ -795,6 +844,16 @@ def accessory2(g, hat, view, hx, hy, back=False):
             for xx in range(hx - 3, hx + 25): g.put(xx, hy + 1, 'M'); g.put(xx, hy + 2, 'T')
             g.stamp(['.MMMMMMMM.', 'MTTTTTTTTM', 'MTTTTTTTTM'], hx + 6, hy - 3)
             if not back: g.stamp(['IIIJ', '.IIJ', '.IIJ', '..IJ'], hx + 9, hy + 9); g.put(hx + 7, hy + 7, 'W'); g.put(hx + 14, hy + 7, 'W')
+    elif hat == 'presa':                                                     # Capitao Presa-de-Ferro: javali humanoide, focinho + presas de ferro + elmo aberto
+        accessory2(g, 'boar', view, hx, hy, back)
+        if view == 'side':
+            for xx in range(hx + 3, hx + 16): g.put(xx, hy - 1, 'A'); g.put(xx, hy, 'a')
+            g.stamp(['AAAA', 'aaaa'], hx + 4, hy + 1); g.put(hx + 21, hy + 12, 'A'); g.put(hx + 21, hy + 13, 'A'); g.put(hx + 22, hy + 11, 'A')
+        else:
+            for xx in range(hx + 2, hx + 19): g.put(xx, hy - 1, 'A'); g.put(xx, hy, 'a')
+            g.stamp(['AAAAAAAA', 'aaaaaaaa'], hx + 7, hy + 1)
+            if not back:
+                for sx_ in (hx + 6, hx + 15): [g.put(sx_, hy + 15 - k, 'A') for k in range(4)]
     elif hat == 'gob_ears':
         for x in range(hx + 1, hx + (19 if view == 'side' else 21)): g.put(x, hy + 4, 'T'); g.put(x, hy + 5, 'M')
         g.stamp(['TT', 'TM', '.M'], hx + (0 if view == 'side' else 20), hy + 5)
@@ -1524,7 +1583,7 @@ def smear_frames(frames, strength=(120, 56)):
 
 
 def anim(view, kind, cls='warrior', ps_override=None, appearance=None, dense=1):
-    global _REI, _T, _BULK, _WINGS, _FSTYLE
+    global _REI, _T, _BULK, _WINGS, _FSTYLE, _HSTYLE
     out = []
     over = None
     if appearance:
@@ -1541,6 +1600,7 @@ def anim(view, kind, cls='warrior', ps_override=None, appearance=None, dense=1):
     if kind not in ('walk', 'run', 'idle') and dense > 1 and ps_override is None: ps = densify(ps, dense)
     if ps_override is not None: ps = ps_override
     _FSTYLE = appearance.get('face_style') if appearance else None
+    _HSTYLE = appearance.get('hairstyle') if appearance else None
     _REI = (cls == 'rei'); _BULK = bool(appearance and appearance.get('bulk')); _WINGS = bool(appearance and appearance.get('wings'))
     for _i, p in enumerate(ps):
         _T = _i

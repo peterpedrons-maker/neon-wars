@@ -4,11 +4,12 @@ from PIL import Image, ImageDraw
 OUTD = '/home/user/neon-wars/lendas-de-taverna/mmo/proto_pixel'
 U = lambda **ap: dict(kind='c', ap=ap)
 BOSS = {
- 'morvath': U(cls='warrior', skin='osso', hair='g_osso', eyes='azul', hat='morvath', outfit='mail', clothes='azul', metal='aco', weapon='montante', tn_off=1, bulk=1, face_style='hollow'),
- 'gorgash': U(cls='warrior', skin='ogro', hair='g_ogro_b', eyes='brasa', hat='gorgash', outfit='mail', clothes='bronze', metal='ferro', weapon='martelo_guerra', tn_off=2, bulk=1, face_style='brute'),
- 'ratking': U(cls='rogue', skin='rato', hair='g_rato', eyes='vermelho', hat='ratking', outfit='cloth', clothes='roxo', weapon='adaga_sangue', weapon2='adaga_sangue', tn_off=1, face_style='sly'),
- 'skrix': U(cls='mage', skin='goblin', hair='g_goblin', eyes='amarelo', hat='skrix', outfit='robe', clothes='verde', weapon='cajado_caveira', tn_off=-1, face_style='sly'),
- 'boticario': U(cls='mage', skin='palida', hair='preto', eyes='verde', hat='boticario', outfit='robe', clothes='verde', weapon='cajado_natureza', face_style='cold'),
+ 'morvath': U(cls='warrior', skin='osso', hair='branco', hairstyle='long', eyes='azul', hat='morvath', outfit='mail', clothes='azul', metal='aco', weapon='montante', tn_off=1, bulk=1, face_style='hollow'),
+ 'gorgash': U(cls='warrior', skin='ogro', hair='preto', hairstyle='mohawk', eyes='brasa', hat='gorgash', outfit='mail', clothes='bronze', metal='ferro', weapon='martelo_guerra', tn_off=2, bulk=1, face_style='brute'),
+ 'ratking': U(cls='rogue', skin='rato', hair='g_rato', hairstyle='bald', eyes='vermelho', hat='ratking', outfit='cloth', clothes='roxo', weapon='adaga_sangue', weapon2='adaga_sangue', tn_off=1, face_style='sly'),
+ 'skrix': U(cls='mage', skin='goblin', hair='g_goblin', hairstyle='bald', eyes='amarelo', hat='skrix', outfit='robe', clothes='verde', weapon='cajado_caveira', tn_off=-1, face_style='fierce'),
+ 'boticario': U(cls='mage', skin='palida', hair='preto', hairstyle='long', eyes='verde', hat='boticario', outfit='robe', clothes='verde', weapon='cajado_natureza', face_style='cold'),
+ 'presa': U(cls='warrior', skin='javali', hair='g_javali', hairstyle='mane', eyes='brasa', hat='presa', outfit='mail', clothes='bronze', metal='ferro', weapon='machado', tn_off=2, bulk=1, face_style='brute'),
 }
 def spr(k, view):
     return X.frames(BOSS[k], 'idle', view)[0].convert('RGBA')
