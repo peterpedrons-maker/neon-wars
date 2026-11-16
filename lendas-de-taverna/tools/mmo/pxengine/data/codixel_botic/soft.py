@@ -6,7 +6,7 @@ from scipy import ndimage as ndi
 HERE = __import__('os').path.dirname(__import__('os').path.abspath(__file__))
 SRC = Image.open(HERE + '/ref_idle.png').convert('RGBA')
 bb = SRC.getbbox(); SRC = SRC.crop(bb); SW, SH = SRC.size            # 149x153
-FINAL_H = 64; S = FINAL_H / SH; SS = 4                                 # SS = supersample por pixel final
+FINAL_H = int(__import__('os').environ.get('HGT', 58)); S = FINAL_H / SH; SS = 4                                 # SS = supersample por pixel final
 W, H, OX, OY = 390, 230, 150, 25                                       # canvas em coordenadas-fonte (1 px fonte = 1 unidade)
 CW, CH = int(W * S), int(H * S)
 # ---- cor: saturacao 1.3 e paleta fixa de 32 cores
@@ -67,7 +67,7 @@ def fk(pose):
         Wd[b] = Wd[PARENT[b]] @ about(JOINT[b], R(a_) @ Sc(1, s_))
     return Wd
 def render(pose, fx=None, flash=0., shake=(0, 0)):
-    Wd = fk(pose)
+    Wd = fk(pose); LAST_WD.clear(); LAST_WD.update(Wd)
     P = np.stack([PX, PY, np.ones_like(PX)], 0)
     out = np.zeros((3, PX.size))
     for i, b in enumerate(BONES):
@@ -90,10 +90,10 @@ def render(pose, fx=None, flash=0., shake=(0, 0)):
     # moda por bloco
     g4 = grid.reshape(CH, SS, CW, SS).transpose(0, 2, 1, 3).reshape(CH, CW, SS * SS)
     opaque = (g4 >= 0).sum(2)
-    cnt = np.stack([(g4 == k).sum(2) for k in range(len(PAL) + 3)], 2)
+    cnt = np.stack([(g4 == k).sum(2) for k in range(len(PAL) + 5)], 2)
     best = cnt.argmax(2)
     res = np.zeros((CH, CW, 4), np.uint8)
-    pal_ext = np.vstack([PAL, [[36, 26, 46], [184, 168, 144], [90, 70, 100]]])
+    pal_ext = np.vstack([PAL, [[36, 26, 46], [184, 168, 144], [90, 70, 100], [120, 235, 90], [235, 255, 220]]])
     solid = opaque >= 7
     res[solid, :3] = pal_ext[best[solid]]; res[solid, 3] = 255
     # pixels soltos (ruido do skinning): remove os que nao tem vizinho
@@ -103,7 +103,8 @@ def render(pose, fx=None, flash=0., shake=(0, 0)):
         m_ = res[..., 3] > 0; res[m_, :3] = (res[m_, :3] + (255 - res[m_, :3]) * flash).astype(np.uint8)
     if shake != (0, 0): res = np.roll(res, (shake[1], shake[0]), (0, 1))
     return Image.fromarray(res)
-EXTRA_SHADOW, EXTRA_DUST = len(PAL), len(PAL) + 1
+EXTRA_SHADOW, EXTRA_DUST, EXTRA_GLOW, EXTRA_WHITE = len(PAL), len(PAL) + 1, len(PAL) + 3, len(PAL) + 4
+LAST_WD = {}
 def shadow(cx, w, al=0.5):
     def f(grid):
         gx = int((FEET[0] + OX + cx) * S * SS); gy = int((FEET[1] + OY + 2) * S * SS)
@@ -134,3 +135,21 @@ def both(*fs):
 class Spring:
     def __init__(s, k=60., c=7.): s.a = 0.; s.v = 0.; s.k = k; s.c = c
     def step(s, target, dt, kick=0.): s.v += kick; s.v += (-s.k * (s.a - target) - s.c * s.v) * dt; s.a += s.v * dt; return s.a
+
+def tip_point(bone, x, y):
+    """posicao (em pixels da grade 4x) de um ponto da fonte preso a um osso, na pose atual"""
+    p = LAST_WD[bone] @ np.array([x, y, 1.]); return (p[0] + OX) * S * SS, (p[1] + OY) * S * SS
+def sparkles(t, bone='armFl', at=(22, 36), n=9, spread=16, seed=3):
+    """faiscas verdes subindo em volta do frasco (feitas por codigo, nunca no sprite)"""
+    import random
+    def f(grid):
+        rnd = random.Random(seed); cx, cy = tip_point(bone, *at)
+        for i in range(n):
+            a = rnd.random() * 6.28; r = (0.4 + rnd.random()) * spread * S * SS * (0.5 + t)
+            x = cx + math.cos(a) * r; y = cy - abs(math.sin(a)) * r - t * 10 * S * SS
+            sz = 1 + int(rnd.random() * 1.9)
+            for yy in range(sz * SS // 2 + 1):
+                for xx in range(sz * SS // 2 + 1):
+                    px, py = int(x) + xx, int(y) + yy
+                    if 0 <= py < grid.shape[0] and 0 <= px < grid.shape[1] and grid[py, px] < 0: grid[py, px] = EXTRA_GLOW if i % 3 else EXTRA_WHITE
+    return f
