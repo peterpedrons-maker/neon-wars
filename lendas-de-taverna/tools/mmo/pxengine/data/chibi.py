@@ -565,23 +565,33 @@ def mace_rows(hand, ang, length=15, head='flanged'):
 
 
 def wand_rows(hand, ang, length=14):
-    """Varinha SEPARADA: haste fina de madeira com aneis dourados e estrela roxa na ponta."""
+    """Varinha SEPARADA: haste de madeira com empunhadura, aneis dourados e uma estrela roxa GRANDE brilhando na ponta."""
     a = math.radians(ang); ux, uy = math.sin(a), math.cos(a); cells = {}
     def put(x, y, c): cells[(round(x), round(y))] = c
-    for k in range(-4, int(length) - 3):
+    for k in range(-4, int(length) - 4):
         put(hand[0] + ux * k, hand[1] + uy * k, 'N'); put(hand[0] + ux * k + (1 if abs(ux) < abs(uy) else 0), hand[1] + uy * k + (0 if abs(ux) < abs(uy) else 1), 'N')
         if k in (-3, 3): put(hand[0] + ux * k, hand[1] + uy * k, 'g')
-    tx, ty = hand[0] + ux * (length - 3), hand[1] + uy * (length - 3)
-    for dx, dy, c in ((0, 0, 'F'), (-1, 0, 'u'), (1, 0, 'u'), (0, -1, 'u'), (0, 1, 'U'), (-2, 0, 'V'), (2, 0, 'V'), (0, -2, 'F'), (0, 2, 'V')): put(tx + dx, ty + dy, c)
+    tx, ty = hand[0] + ux * (length - 4), hand[1] + uy * (length - 4)
+    STAR = ['...Y...', '..YzY..', '.YzZzY.', 'YzZZZzY', '.YzZzY.', '..YzY..', '...Y...']
+    for r, row in enumerate(STAR):
+        for c, ch in enumerate(row):
+            if ch != '.': put(tx - 3 + c, ty - 3 + r, ch)
     return cells, (tx, ty)
 
 def flute_rows(hand, ang, length=13):
-    """Flauta SEPARADA: tubo de madeira clara com aneis de latao e furos."""
+    """Flauta SEPARADA: tubo grosso (3px) de madeira clara com luz/sombra, aneis de latao, bocal e furos escuros."""
     a = math.radians(ang); ux, uy = math.sin(a), math.cos(a); nx, ny = -uy, ux; cells = {}
     def put(x, y, c): cells[(round(x), round(y))] = c
-    for k in range(-5, int(length) - 4):
-        c0 = 'g' if k in (-5, 0, int(length) - 5) else ('k' if k in (-2, 2, 4, 6) else 'w')
-        for off in (0, 1): put(hand[0] + ux * k + nx * off * .9, hand[1] + uy * k + ny * off * .9, c0 if off == 0 else ('a' if c0 == 'w' else c0))
+    n = int(length) + 1
+    for k in range(-5, n - 4):
+        ring = k in (-5, -4, 0, n - 5)
+        for off, tone in ((-1, 'w'), (0, 'w'), (1, 'a')):
+            c = 'g' if ring else tone
+            put(hand[0] + ux * k + nx * off, hand[1] + uy * k + ny * off, c)
+        if not ring and k in (-2, 2, 3, 5, 6, 8):
+            put(hand[0] + ux * k, hand[1] + uy * k, 'k')                                   # furos
+    for off in (-1, 0, 1): put(hand[0] + ux * (-6) + nx * off, hand[1] + uy * (-6) + ny * off, 'g')   # bocal
+    put(hand[0] + ux * (-4) + nx * 2, hand[1] + uy * (-4) + ny * 2, 'k')                   # embocadura
     return cells, (hand[0] + ux * (length - 4), hand[1] + uy * (length - 4))
 
 def lute_rows(hand, ang, length=11):
@@ -1473,7 +1483,7 @@ METAL = {'aco': dict(U='#9aa8c0', u='#d8e4f4', V='#4a5468', Q='#5a6478', q='#9aa
 
 # armas: params (forma) + pal (cores). Troca de arma = trocar o id.
 WEAPONS = {
-    'varinha': dict(kind='wand', len=14, pal=dict(N='#8a5a34', g='#e0b040', F='#fff4ff', u='#c890ff', U='#8a50e0', V='#4a2a98')),
+    'varinha': dict(kind='wand', len=14, pal=dict(N='#8a5a34', g='#e0b040', Z='#fff4ff', z='#c890ff', Y='#8a50e0')),
     'flauta': dict(kind='flute', len=13, pal=dict(w='#e8c888', a='#b08848', g='#e8b840', k='#2a1810')),
     'cetro_sagrado': dict(kind='staff', head='ring', len=17, pal=dict(N='#e8d8a0', g='#e8b840', Z='#fff4b0', z='#ffd24a', Y='#c08820')),
     'alaude': dict(kind='lute', len=11, ang=120, pal=dict(A='#b5733a', a='#6a3e1c', w='#e0a468', N='#4a2c14', g='#e8b840', k='#1a0e06')),
