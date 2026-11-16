@@ -7,7 +7,10 @@ def _scale(im, k):
     b = im.getbbox(); c = im.crop(b); return c.resize((round(c.width * k), round(c.height * k)), Image.NEAREST)
 
 def vampiro(view, ph=0.0, **kw):
-    a = np.array(CR.draw('morcego', view, ph).convert('RGBA')).astype(int)
+    return vamp_img(CR.draw('morcego', view, ph), view)
+
+def vamp_img(src, view):
+    a = np.array(src.convert('RGBA')).astype(int)
     m = a[..., 3] > 0
     r, g, b = a[..., 0].copy(), a[..., 1].copy(), a[..., 2].copy()
     lum = (r + g + b) / 3

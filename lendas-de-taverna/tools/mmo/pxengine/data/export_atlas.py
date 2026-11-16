@@ -72,6 +72,17 @@ def archer_ps(kind, view):
     return [dict(p, sw=dict(carry)) for p in ps]
 
 
+_BA = lambda **ap: dict(kind='c', ap=ap)
+UNITS.update({
+ 'morvath': _BA(cls='warrior', skin='osso', hair='azul', hairstyle='long', eyes='azul', hat='morvath', outfit='mail', clothes='azul', metal='aco', weapon='montante', tn_off=1, bulk=1, face_style='hollow'),
+ 'gorgash': _BA(cls='warrior', skin='ogro', hair='preto', hairstyle='mohawk', eyes='brasa', hat='gorgash', outfit='mail', clothes='bronze', metal='ferro', weapon='martelo_guerra', tn_off=2, bulk=1, face_style='brute'),
+ 'ratking': _BA(cls='rogue', skin='rato', hair='g_rato', hairstyle='spiky', eyes='vermelho', hat='ratking', outfit='cloth', clothes='roxo', weapon='adaga_sangue', weapon2='adaga_sangue', tn_off=1, face_style='sly'),
+ 'skrix': _BA(cls='mage', skin='goblin', hair='g_goblin', hairstyle='bald', eyes='amarelo', hat='skrix', outfit='robe', clothes='verde', weapon='cajado_caveira', tn_off=-1, face_style='fierce'),
+ 'boticario': _BA(cls='mage', skin='palida', hair='preto', hairstyle='long', eyes='verde', hat='boticario', outfit='robe', clothes='verde', weapon='cajado_natureza', face_style='cold'),
+ 'presa': _BA(cls='warrior', skin='javali', hair='g_javali', hairstyle='mane', eyes='brasa', hat='presa', outfit='mail', clothes='bronze', metal='ferro', weapon='machado', tn_off=2, bulk=1, face_style='brute'),
+ 'vampiro': dict(kind='v'),
+})
+
 def frames(u, kind, view):
     k, d = u['kind'], DENS[kind]
     kk = kind
@@ -87,6 +98,9 @@ def frames(u, kind, view):
     if kind == 'cast': kk = 'attack'
     if k == 'm': return [f[0] for f in HM.anim(u['spec'], 'walk' if kk == 'run' else kk, view, d)]
     if k == 'f': return [f[0] for f in FA.anim(u['name'], 'walk' if kk == 'run' else kk, view, d)]
+    if k == 'v':
+        import minichefes as MC
+        return [MC.vamp_img(f[0], view) for f in CRE.anim('morcego', kk, view, d)]
     if k == 'e': return J.spr(u['name'], kk, view, d)
     if k == 'b': return [f[0] for f in FA.anim(u['name'], kk, view, d)]
     return [f[0] for f in CRE.anim(u['name'], kk, view, d)]
