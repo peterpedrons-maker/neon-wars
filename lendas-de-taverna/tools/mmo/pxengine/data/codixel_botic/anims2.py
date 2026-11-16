@@ -91,7 +91,7 @@ def death(n=22):
          (21, S(sy=1, lL=.1, lR=-.08, th=.14, tfu=-.9, tfl=.5, tbu=.9, tbl=.4, tta=-.1, ttb=-.25), 'out')]
     return make(n, timeline(k), kicks={(1, 'head'): -9, (1, 'armFu'): 7, (1, 'armBu'): -7, (13, 'armFu'): -6, (13, 'armBu'): 6, (13, 'armFl'): -5, (13, 'armBl'): 5, (13, 'head'): 5, (13, 'tailB'): -8}, dust_from=13)
 def build():
-    return {'idle': idle(), 'walk': walk(), 'attack': attack(), 'cast': cast(), 'hurt': hurt(), 'death': death()}
+    return {'idle': idle(16), 'walk': walk(16), 'attack': attack(16), 'cast': cast(), 'hurt': hurt(), 'death': death()}
 if __name__ == '__main__':
     from PIL import Image
     an = build(); cols = 8
@@ -119,3 +119,16 @@ def cast(n=12):                      # levanta o frasco, cabeca para tras, faisc
          (8, S(spk=1.0), 'hold'), (9, S(spk=.8), 'hold'),
          (11, S(dy=0, ang=0, tor=0, tfu=0, tfl=0, tbu=0, tbl=0, th=0, tta=0, ttb=0, spk=0), 'smooth')]
     return make(n, timeline(k))
+
+
+def attack(n=16):                   # mesmos instantes-chave, mais quadros (o jogo toca ~38 qps; poucos quadros = movimento 'travado')
+    k = 1.5 if n >= 16 else 1.0
+    base = [(0, S(), 'lin'),
+         (1, S(dx=-3, dy=3, ang=-.05, sy=.96, tor=-.12, tfu=.6, tfl=.8, tbu=-.3, th=-.08, tta=.2), 'smooth'),
+         (3, S(dx=-8, dy=3, ang=-.14, sy=.95, sx=1.02, tor=-.32, lL=-.3, lR=.25, tfu=1.1, tfl=1.25, tbu=-.5, tbl=-.3, th=-.16, tta=.35, ttb=.5), 'smooth'),
+         (4, S(dx=13, dy=-2, ang=.1, sy=.97, sx=1.06, tor=.22, lL=.5, lR=-.4, tfu=-.7, tfl=-.4, tbu=.5, tbl=.3, th=.06, tta=-.3, ttb=-.5), 'in'),
+         (5, S(dx=14, dy=-1, shx=1), 'hold'), (6, S(shx=0), 'hold'),
+         (8, S(dx=6, dy=0, ang=.08, sy=1, sx=1.02, tor=.15, lL=.2, lR=-.15, tfu=-.5, tfl=-.3, tbu=.2, th=.05, tta=-.1, ttb=-.2), 'smooth'),
+         (10, S(dx=0, ang=0, sx=1, tor=0, lL=0, lR=0, tfu=0, tfl=0, tbu=0, tbl=0, th=0, tta=0, ttb=0), 'smooth')]
+    keys = [(t * k, d, e) for t, d, e in base]
+    return make(n, timeline(keys), kicks={(round(4 * k), 'armFu'): -5, (round(4 * k), 'armFl'): -4, (round(4 * k), 'tailB'): -6, (round(4 * k), 'head'): 3})
