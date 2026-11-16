@@ -24,9 +24,11 @@ UNITS = {
     'h_bardo': dict(kind='c', ap=dict(cls='mage', weapon='alaude', hair='castanho', clothes='verde'), run=1),
     'goblin': dict(kind='e', name='goblin'), 'goblin_x': dict(kind='e', name='goblin_x'),
     'esqueleto': dict(kind='c', ap=dict(cls='warrior', skin='osso', hair='g_osso', eyes='oco', hat='none', outfit='ribs', clothes='osso', metal='ferro', weapon='espada_ferro', face_style='hollow', tn_off=2, shape=dict(skull=1, slim=1, eyeglow='W'))),
-    'esqmago': dict(kind='c', ap=dict(cls='mage', face_style='hollow', skin='osso', hair='g_osso', eyes='oco', hat='hood', outfit='robe', clothes='azul', weapon='cajado_gelo')),
+    'esqmago': dict(kind='c', ap=dict(cls='mage', face_style='hollow', skin='osso', hair='g_osso', hairstyle='bald', eyes='oco', hat='wizard', outfit='robe', clothes='azul', weapon='cajado_gelo', shape=dict(skull=1, eyeglow='W'))),
     'guarda_c': dict(kind='c', ap=dict(cls='warrior', face_style='hollow', skin='osso', hair='g_osso', eyes='oco', hat='rusty_helm', outfit='mail', clothes='osso', metal='ferro', weapon='maca_ferro', bulk=1, shape=dict(shield=1, crest=1, eyeglow='c'), pal=dict(Y='#b02820', X='#e85a3a'))),
-    'cultista': dict(kind='e', name='cultista'), 'gargula': dict(kind='e', name='gargula'), 'zumbi': dict(kind='e', name='zumbi'),
+    'cultista': dict(kind='c', ap=dict(cls='rogue', skin='fantasma', hair='preto', eyes='brasa', hat='hood', outfit='robe', clothes='roxo', weapon='cajado_caveira', face_style='cold', shape=dict(eyeglow='r'), pal=dict())),
+    'gargula': dict(kind='e', name='gargula'),
+    'zumbi': dict(kind='c', ap=dict(cls='warrior', skin='zumbi', hair='g_zumbi', hairstyle='long', eyes='oco', hat='none', outfit='cloth', clothes='verde', noweapon=1, arms_fwd=1, face_style='hollow', hdy_off=2, tn_off=1, shape=dict(slim=1, fists=1))),
     'javali': dict(kind='b', name='javali'), 'rato': dict(kind='b', name='rato'),
     'espectro': dict(kind='r', name='espectro'), 'morcego': dict(kind='r', name='morcego'), 'slime': dict(kind='r', name='slime'),
     'rei': dict(kind='c', ap=dict(cls='rei', weapon='espada_rei'), cast=1),
@@ -98,6 +100,28 @@ ANIMS = {
 }
 for _k, _v in ANIMS.items():
     if _k in UNITS: UNITS[_k]['anim'] = _v
+GEN = {   # (ataque, dano, morte) para inimigos fora do motor chibi
+    'goblin': ('lunge', 'flinch', 'tumble'), 'goblin_x': ('cast', 'stagger', 'dissolve'), 'sapador': ('lunge', 'flinch', 'tumble'), 'bandido': ('lunge', 'flinch', 'fall'),
+    'carnical': ('lunge', 'flinch', 'melt'), 'mumia': ('slam', 'stoic', 'dissolve'), 'necro': ('cast', 'stagger', 'dissolve'), 'cav_caido': ('slam', 'stoic', 'topple'),
+    'ogro_lenhador': ('slam', 'stoic', 'topple'), 'afogado': ('lunge', 'stagger', 'melt'), 'ladrao': ('lunge', 'flinch', 'tumble'), 'cult_lodo': ('cast', 'stagger', 'melt'),
+    'javali': ('pounce', 'flinch', 'flip'), 'rato': ('pounce', 'stagger', 'flip'), 'lobo': ('pounce', 'flinch', 'flip'), 'cobra': ('pounce', 'flinch', 'melt'),
+    'aranha': ('pounce', 'flinch', 'melt'), 'barata': ('pounce', 'flinch', 'melt'), 'sapo': ('pounce', 'stagger', 'melt'), 'gnoll': ('lunge', 'flinch', 'fall'),
+    'ratkin': ('lunge', 'flinch', 'tumble'), 'harpia': ('pounce', 'stagger', 'flip'), 'tronco': ('slam', 'stoic', 'topple'), 'cogumelo': ('cast', 'flinch', 'melt'),
+    'ogrinho': ('slam', 'stoic', 'topple'), 'espectro': ('cast', 'stagger', 'dissolve'), 'morcego': ('pounce', 'stagger', 'flip'), 'slime': ('pounce', 'flinch', 'melt'),
+    'vampiro': ('pounce', 'stagger', 'flip'),
+}
+for _k, _v in GEN.items():
+    if _k in UNITS and UNITS[_k]['kind'] != 'c': UNITS[_k]['gen'] = dict(attack=_v[0], hurt=_v[1], death=_v[2])
+
+# VARIANTES DO HEROI POR ARMA EQUIPADA (o sprite muda com a arma): chave = <heroi>_<variante>; o jogo escolhe por tipo de arma (HVAR em index.html)
+_VAR = {'h_guerreiro_machado': ('h_guerreiro', dict(weapon='machado')), 'h_guerreiro_martelo': ('h_guerreiro', dict(weapon='martelo_guerra')),
+        'h_ladino_espadacurta': ('h_ladino', dict(weapon='espada_curta', weapon2='espada_curta')),
+        'h_mago_cetro': ('h_mago', dict(weapon='cetro_arcano')), 'h_mago_varinha': ('h_mago', dict(weapon='varinha')),
+        'h_clerigo_martelo': ('h_clerigo', dict(weapon='martelo_sagrado')), 'h_clerigo_cetro': ('h_clerigo', dict(weapon='cetro_sagrado')),
+        'h_arqueiro_longo': ('h_arqueiro', dict(weapon='arco_longo')), 'h_bardo_flauta': ('h_bardo', dict(weapon='flauta'))}
+for _k, (_b, _o) in _VAR.items():
+    UNITS[_k] = dict(UNITS[_b], ap=dict(UNITS[_b]['ap'], **_o))
+    if _b in ANIMS: UNITS[_k]['anim'] = ANIMS[_b]
 
 # VARIANTES DO HEROI POR ARMA EQUIPADA (o sprite muda com a arma): chave = <heroi>_<variante>; o jogo escolhe por tipo de arma (HVAR em index.html)
 _VAR = {'h_guerreiro_machado': ('h_guerreiro', dict(weapon='machado')), 'h_guerreiro_martelo': ('h_guerreiro', dict(weapon='martelo_guerra')),
@@ -111,6 +135,14 @@ for _k, (_b, _o) in _VAR.items():
 
 
 def frames(u, kind, view):
+    fr = frames0(u, kind, view)
+    if u.get('gen') and kind in ('attack', 'hurt', 'death'):
+        import genanim as GA
+        st = frames0(u, 'idle', view)[0]
+        return GA.build(kind, fr, view, u['gen'], st)
+    return fr
+
+def frames0(u, kind, view):
     k, d = u['kind'], DENS[kind]
     kk = kind
     if k == 'c' and u['ap']['cls'] == 'archer':
