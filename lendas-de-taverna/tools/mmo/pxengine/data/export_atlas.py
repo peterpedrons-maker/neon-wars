@@ -104,7 +104,7 @@ GEN = {   # (ataque, dano, morte) para inimigos fora do motor chibi
     'goblin': ('lunge', 'flinch', 'tumble'), 'goblin_x': ('cast', 'stagger', 'dissolve'), 'sapador': ('lunge', 'flinch', 'tumble'), 'bandido': ('lunge', 'flinch', 'fall'),
     'carnical': ('lunge', 'flinch', 'melt'), 'mumia': ('slam', 'stoic', 'dissolve'), 'necro': ('cast', 'stagger', 'dissolve'), 'cav_caido': ('slam', 'stoic', 'topple'),
     'ogro_lenhador': ('slam', 'stoic', 'topple'), 'afogado': ('lunge', 'stagger', 'melt'), 'ladrao': ('lunge', 'flinch', 'tumble'), 'cult_lodo': ('cast', 'stagger', 'melt'),
-    'javali': ('pounce', 'flinch', 'flip'), 'rato': ('pounce', 'stagger', 'flip'), 'lobo': ('pounce', 'flinch', 'flip'), 'cobra': ('pounce', 'flinch', 'melt'),
+    'javali': ('pounce', 'flinch', 'collapse'), 'rato': ('pounce', 'stagger', 'flip'), 'lobo': ('pounce', 'flinch', 'collapse'), 'cobra': ('pounce', 'flinch', 'melt'),
     'aranha': ('pounce', 'flinch', 'melt'), 'barata': ('pounce', 'flinch', 'melt'), 'sapo': ('pounce', 'stagger', 'melt'), 'gnoll': ('lunge', 'flinch', 'fall'),
     'ratkin': ('lunge', 'flinch', 'tumble'), 'harpia': ('pounce', 'stagger', 'flip'), 'tronco': ('slam', 'stoic', 'topple'), 'cogumelo': ('cast', 'flinch', 'melt'),
     'ogrinho': ('slam', 'stoic', 'topple'), 'espectro': ('cast', 'stagger', 'dissolve'), 'morcego': ('pounce', 'stagger', 'flip'), 'slime': ('pounce', 'flinch', 'melt'),
