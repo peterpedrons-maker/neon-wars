@@ -95,11 +95,41 @@ def _dissolve(st, t, seed=9):
         if 0 <= yy < hh and 0 <= xx < ww and o[yy, xx, 3] == 0:
             g = int(150 - 60 * min(1, d / 14)); o[yy, xx] = (g, g - 8, g - 4, int(220 * (1 - min(1, d / 15))))
     return Image.fromarray(o)
+def _colscale(im, fs, rs, drop=0):
+    """deforma por colunas (vista de lado, de frente para a direita): a frente (direita) encolhe em altura por fs, a traseira por rs; interpola no meio"""
+    a = np.array(im.convert('RGBA')); bb = _bb(im)
+    if not bb: return im
+    x0, y0, x1, y1 = bb; out = np.zeros_like(a); ww = max(1, x1 - x0 - 1)
+    for x in range(x0, x1):
+        w = (x - x0) / ww; w = w * w * (3 - 2 * w); s = 1 - (rs * (1 - w) + fs * w)
+        col = a[y0:y1, x]; h = y1 - y0; nh = max(1, int(round(h * s)))
+        idx = np.minimum(h - 1, (np.arange(nh) * h / nh).astype(int)); nc = col[idx]
+        top = y1 - nh + drop
+        if top >= 0 and top + nh <= a.shape[0]: out[top:top + nh, x] = nc
+    return Image.fromarray(out)
+def _collapse(st, view, hit):
+    """quadrupede cedendo: patas da FRENTE dobram primeiro, depois as de TRAS, ate deitar de lado"""
+    out = list(hit)
+    if view != 'side':
+        for k in range(1, 13):
+            t = k / 12; e = _ease_in(t); out.append(xf(st, 1 + .35 * e, max(.45, 1 - .55 * e), 0, 0))
+        out[-3] = A2.dust(out[-3], .3, cx=W // 2, n=6)
+        return out
+    seq = []
+    for k in range(1, 5): seq.append((.32 * _ease_out(k / 4), 0.0, 0))                       # frente cede (focinho cai)
+    for k in range(1, 5): seq.append((.32 + .04 * k / 4, .36 * _ease_out(k / 4), 0))         # traseira cede
+    for k in range(1, 5): seq.append((.36 + .04 * k / 4, .36 + .06 * k / 4, 0))              # tomba de lado, acomoda
+    for fs, rs, dr in seq: out.append(_colscale(st, fs, rs, dr))
+    out[3 + 3] = A2.dust(out[3 + 3], .25, cx=W // 2 + 8, n=5)   # patas da frente batem no chao
+    out[3 + 7] = A2.dust(out[3 + 7], .3, cx=W // 2 - 8, n=5)    # traseira bate
+    out[3 + 11] = A2.dust(out[3 + 11], .5, cx=W // 2, n=6)
+    return out
 def death(view, fr, st, style):
     ux, uy = _dirv(view); px, py = _pivot(st); out = _hit(st, ux, uy)
     sgn = -1 if style in ('fall', 'tumble', 'flip') else 1        # cai para tras (longe do golpe) ou para a frente (topple)
     if view != 'side': sgn = -1
-    if style in ('fall', 'topple'):
+    if style == 'collapse': out = _collapse(st, view, out)
+    elif style in ('fall', 'topple'):
         lean = [-2 * sgn, -5 * sgn] if style == 'fall' else [3 * sgn, 6 * sgn]      # antecipacao: inclina o contrario/cede antes de cair
         out += [_ground(R.rotate(st, lean[0], (px, py))), _ground(R.rotate(st, lean[1], (px, py)))]
         for k in range(1, 7):                                                        # gravidade: acelera ate 90
