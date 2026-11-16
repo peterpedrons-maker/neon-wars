@@ -107,28 +107,30 @@ def _colscale(im, fs, rs, drop=0):
         top = y1 - nh + drop
         if top >= 0 and top + nh <= a.shape[0]: out[top:top + nh, x] = nc
     return Image.fromarray(out)
-def _collapse(st, view, hit):
-    """quadrupede cedendo: patas da FRENTE dobram primeiro, depois as de TRAS, ate deitar de lado"""
-    out = list(hit)
-    if view != 'side':
-        for k in range(1, 13):
-            t = k / 12; e = _ease_in(t); out.append(xf(st, 1 + .35 * e, max(.45, 1 - .55 * e), 0, 0))
-        out[-3] = A2.dust(out[-3], .3, cx=W // 2, n=6)
-        return out
+def _quad(kind, view, st, hit):
+    """quadrupede morrendo de verdade (desenhado por pose no motor fauna): as patas da FRENTE dobram e apoiam primeiro,
+    depois a traseira cede, e ele tomba abrindo as quatro pernas; nada de achatar o sprite."""
+    import fauna as FA
+    d = FA.DRAW[kind]; v = {'side': 'right', 'front': 'down', 'back': 'up'}[view]; out = list(hit)
+    def P(**k): return d(v, 0, pose=True, squint=True, mouth=k.pop('mouth', 1), bob=k.pop('bob', 0), **k)
     seq = []
-    for k in range(1, 5): seq.append((.32 * _ease_out(k / 4), 0.0, 0))                       # frente cede (focinho cai)
-    for k in range(1, 5): seq.append((.32 + .04 * k / 4, .36 * _ease_out(k / 4), 0))         # traseira cede
-    for k in range(1, 5): seq.append((.36 + .04 * k / 4, .36 + .06 * k / 4, 0))              # tomba de lado, acomoda
-    for fs, rs, dr in seq: out.append(_colscale(st, fs, rs, dr))
-    out[3 + 3] = A2.dust(out[3 + 3], .25, cx=W // 2 + 8, n=5)   # patas da frente batem no chao
-    out[3 + 7] = A2.dust(out[3 + 7], .3, cx=W // 2 - 8, n=5)    # traseira bate
-    out[3 + 11] = A2.dust(out[3 + 11], .5, cx=W // 2, n=6)
-    return out
+    for i in range(1, 5):                 # frente cede: joelhos dobram e apoiam, focinho desce
+        e = _ease_out(i / 4); seq.append(P(fd=4 * e, fsw=5 * e, bob=1 * e, head_dy=1 * e))
+    for i in range(1, 5):                 # traseira cede, patas de tras escorregam para tras
+        e = _ease_out(i / 4); seq.append(P(fd=4, rd=4 * e, fsw=5, rsw=-5 * e, bob=1 + 2 * e, head_dy=1))
+    for i in range(1, 5):                 # tomba: corpo no chao, as quatro pernas se abrem para fora/para cima
+        e = _ease_out(i / 4); seq.append(P(fd=4 - 2 * e, rd=4 - 2 * e, fsw=5 + 7 * e, rsw=-5 - 7 * e, flift=(8 if kind == 'javali' else 11) * e, rlift=(7 if kind == 'javali' else 10) * e, bob=3 + 2 * e, head_dy=1 + .5 * e, legs_top=i >= 2))
+    imgs = [im.convert('RGBA') for im in seq]
+    imgs[3] = A2.dust(imgs[3], .25, cx=W // 2 + 12, n=5)           # patas da frente apoiam
+    imgs[7] = A2.dust(imgs[7], .3, cx=W // 2 - 10, n=5)            # traseira bate
+    imgs[10] = A2.dust(imgs[10], .45, cx=W // 2, n=6)              # corpo no chao
+    return out + imgs
+
 def death(view, fr, st, style):
     ux, uy = _dirv(view); px, py = _pivot(st); out = _hit(st, ux, uy)
     sgn = -1 if style in ('fall', 'tumble', 'flip') else 1        # cai para tras (longe do golpe) ou para a frente (topple)
     if view != 'side': sgn = -1
-    if style == 'collapse': out = _collapse(st, view, out)
+    if style == 'collapse': out = _quad(KIND[0], view, st, out)
     elif style in ('fall', 'topple'):
         lean = [-2 * sgn, -5 * sgn] if style == 'fall' else [3 * sgn, 6 * sgn]      # antecipacao: inclina o contrario/cede antes de cair
         out += [_ground(R.rotate(st, lean[0], (px, py))), _ground(R.rotate(st, lean[1], (px, py)))]
@@ -167,7 +169,9 @@ def death(view, fr, st, style):
     while len(out) < 15: out.append(out[-1])
     return out[:15]
 
-def build(kind, fr, view, style_set, stand):
+KIND = ['javali']
+def build(kind, fr, view, style_set, stand, name='javali'):
+    KIND[0] = name; view = {'right': 'side', 'down': 'front', 'up': 'back'}.get(view, view)
     st = stand.convert('RGBA'); fr = [f.convert('RGBA') for f in fr]
     if kind == 'attack': return attack(view, fr, st, style_set['attack'])
     if kind == 'hurt': return hurt(view, fr, st, style_set['hurt'])

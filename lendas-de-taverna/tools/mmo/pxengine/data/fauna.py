@@ -111,24 +111,27 @@ def leg(c, x, hipy, foot_y, sw, lift, r0, r1, reg, far, foot='hoof'):
 
 
 # ------------------------------------------------------------------ JAVALI SELVAGEM
-def javali(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=0, **kw):
+def javali(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=0, pose=False, fd=0, rd=0, fsw=0, rsw=0, flift=0, rlift=0, legs_top=False, **kw):
+    m = (fd + rd) / 2; head_dy = head_dy + fd
     c = Cv(); cx = W // 2; gy = BASE
     if view == 'right':
         bx, by = cx - 3 + lunge * .4, gy - 12 + bob
         for i, (lx, ph0, far) in enumerate(((-7, 0, True), (6.5, math.pi, True), (-6, math.pi, False), (7, 0, False))):
-            lift = max(0, math.sin(ph + ph0)) * 2.6; sw = math.cos(ph + ph0) * 2.4
-            leg(c, bx + lx, by + 3.5, gy, sw, lift, 1.9, 1.35, 'body', far)
-        c.ell(bx - 6.5, by + 1.2, 5.2, 4.6)                         # garupa mais baixa e estreita
-        c.ell(bx - .5, by - .2, 8.8, 5.9)                           # tronco
-        c.ell(bx + 5, by - 2.4, 6.2, 7.0)                           # cernelha ALTA (silhueta de javali: ombro alto, traseiro baixo)
-        c.ell(bx + .5, by + 3.3, 6.4, 2.6, 'belly')
-        c.cap(bx + 8, by - 1.5, bx + 14.5 + lunge * .4, by + 2.2 + head_dy, 5.6, 4.0)           # pescoco grosso descendo para a cabeca
+            lift = max(0, math.sin(ph + ph0)) * 2.6; sw = math.cos(ph + ph0) * 2.4; hyl = by + 3.5
+            if pose:
+                fr_ = lx > 0; sw = (fsw if fr_ else rsw) * (.8 if far else 1); lift = (flift if fr_ else rlift) * (.8 if far else 1); hyl = by + 3.5 + (fd if fr_ else rd)
+            leg(c, bx + lx, hyl, gy, sw, lift, 1.9 * (1.3 if pose else 1), 1.35 * (1.3 if pose else 1), 'body', far)
+        c.ell(bx - 6.5, by + 1.2 + rd, 5.2, 4.6)                         # garupa mais baixa e estreita
+        c.ell(bx - .5, by - .2 + m, 8.8, 5.9)                           # tronco
+        c.ell(bx + 5, by - 2.4 + fd, 6.2, 7.0)                           # cernelha ALTA (silhueta de javali: ombro alto, traseiro baixo)
+        c.ell(bx + .5, by + 3.3 + m, 6.4, 2.6, 'belly')
+        c.cap(bx + 8, by - 1.5 + fd, bx + 14.5 + lunge * .4, by + 2.2 + head_dy, 5.6, 4.0)           # pescoco grosso descendo para a cabeca
         c.cap(bx + 14, by + 3 + head_dy, bx + 20.5 + lunge * .5, by + 5 + head_dy, 3.0, 2.3, 'snout')   # focinho longo e baixo
         c.ell(bx + 21 + lunge * .5, by + 5.2 + head_dy, 1.6, 2.0, 'snout')                        # disco do focinho
         c.cap(bx + 11.5, by - 3 + head_dy, bx + 10.2, by - 7.4 + head_dy, 2.1, 1.0, 'mane')         # orelha em pe
-        c.cap(bx - 11, by - 2, bx - 14.5, by - 4 + math.sin(tail) * 1.4, 1.0, .5, 'mane')           # rabo fino
+        c.cap(bx - 11, by - 2 + rd, bx - 14.5, by - 4 + rd + math.sin(tail) * 1.4, 1.0, .5, 'mane')           # rabo fino
         for k in range(9):                                                                           # crina eriçada (crista contínua)
-            x = bx - 9 + k * 2.1; top = by - 5.6 - (1.8 if 3 <= k <= 6 else 0) - (1.2 if k in (4, 5) else 0)
+            x = bx - 9 + k * 2.1; top = by + m * (.4 + .6 * k / 8) - 5.6 - (1.8 if 3 <= k <= 6 else 0) - (1.2 if k in (4, 5) else 0)
             c.cap(x, top + 1, x + .5, top - 2.2, 1.1, .5, 'mane')
         c.cap(bx + 16.8 + lunge * .5, by + 6.8 + head_dy, bx + 19.2 + lunge * .5, by + 3.4 + head_dy, .9, .6, 'tusk')  # presa curva
         ex, ey = bx + 13.2 + lunge * .4, by - .6 + head_dy
@@ -136,11 +139,18 @@ def javali(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_d
         c.dot(bx + 21.5 + lunge * .5, by + 4.6 + head_dy, hx('#14100c'))
         if mouth:
             for q in range(5): c.dot(bx + 16 + q + lunge * .5, by + 7 + head_dy, hx('#14100c'))
+        if pose and legs_top:
+            for i, (lx, ph0, far) in enumerate(((-7, 0, True), (6.5, math.pi, True), (-6, math.pi, False), (7, 0, False))):
+                lift = max(0, math.sin(ph + ph0)) * 2.6; sw = math.cos(ph + ph0) * 2.4; hyl = by + 3.5
+                if pose:
+                    fr_ = lx > 0; sw = (fsw if fr_ else rsw) * (.8 if far else 1); lift = (flift if fr_ else rlift) * (.8 if far else 1); hyl = by + 3.5 + (fd if fr_ else rd)
+                leg(c, bx + lx, hyl, gy, sw, lift, 1.9 * (1.3 if pose else 1), 1.35 * (1.3 if pose else 1), 'body', far)
     else:
         back = view == 'up'; bx = cx; by = gy - 12 + bob
         for sx, ph0 in ((-5.5, 0), (5.5, math.pi)):
-            lift = max(0, math.sin(ph + ph0)) * 2.6
-            leg(c, bx + sx, by + 3.5, gy, 0, lift, 2.1, 1.6, 'body', False)
+            lift = max(0, math.sin(ph + ph0)) * 2.6; swv = 0
+            if pose: lift = flift; swv = (1 if sx > 0 else -1) * fsw
+            leg(c, bx + sx, by + 3.5, gy, swv, lift, 2.1, 1.6, 'body', False)
         c.ell(bx, by + 1, 9.2, 6.8)
         c.ell(bx, by + 3.4, 5.6, 2.8, 'belly') if not back else None
         for k in range(-4, 5): c.cap(bx + k * 2.1, by - 5, bx + k * 2.1 + .3, by - 8.8 + (1.2 if abs(k) > 2 else 0), 1.0, .5, 'mane')
@@ -203,31 +213,41 @@ def rato(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=
 
 
 # ------------------------------------------------------------------ LOBO
-def lobo(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=0, **kw):
+def lobo(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=0, pose=False, fd=0, rd=0, fsw=0, rsw=0, flift=0, rlift=0, legs_top=False, **kw):
+    m = (fd + rd) / 2; head_dy = head_dy + fd
     c = Cv(); cx = W // 2; gy = BASE
     if view == 'right':
         bx, by = cx - 3 + lunge * .4, gy - 13 + bob
         for lx, ph0, far in ((-8, 0, True), (7, math.pi, True), (-7, math.pi, False), (8, 0, False)):
-            lift = max(0, math.sin(ph + ph0)) * 2.6; sw = math.cos(ph + ph0) * 2.6
-            leg(c, bx + lx, by + 2, gy, sw, lift, 1.9, 1.3, 'body', far, 'paw')
-        c.ell(bx - 6, by + .5, 5.6, 5)
-        c.ell(bx + 1, by - .3, 9.2, 5.2)
-        c.ell(bx + 6, by - 1, 5.4, 5.6)
-        c.ell(bx + 1, by + 3, 7, 2.2, 'belly')
-        c.cap(bx + 9, by - 2, bx + 14 + lunge * .4, by - 3 + head_dy, 4.6, 3.8)
+            lift = max(0, math.sin(ph + ph0)) * 2.6; sw = math.cos(ph + ph0) * 2.6; hyl = by + 2
+            if pose:
+                fr_ = lx > 0; sw = (fsw if fr_ else rsw) * (.8 if far else 1); lift = (flift if fr_ else rlift) * (.8 if far else 1); hyl = by + 2 + (fd if fr_ else rd)
+            leg(c, bx + lx, hyl, gy, sw, lift, 1.9 * (1.3 if pose else 1), 1.3 * (1.3 if pose else 1), 'body', far, 'paw')
+        c.ell(bx - 6, by + .5 + rd, 5.6, 5)
+        c.ell(bx + 1, by - .3 + m, 9.2, 5.2)
+        c.ell(bx + 6, by - 1 + fd, 5.4, 5.6)
+        c.ell(bx + 1, by + 3 + m, 7, 2.2, 'belly')
+        c.cap(bx + 9, by - 2 + fd, bx + 14 + lunge * .4, by - 3 + head_dy, 4.6, 3.8)
         c.cap(bx + 14, by - 2.5 + head_dy, bx + 20 + lunge * .5, by - .5 + head_dy, 3.0, 2.0)
         c.cap(bx + 12.5, by - 6 + head_dy, bx + 12, by - 10 + head_dy, 1.7, .8, 'ear')
-        c.cap(bx - 10, by - .5, bx - 18, by + 3 + math.sin(tail) * 2, 2.0, 1.2)
+        c.cap(bx - 10, by - .5 + rd, bx - 18, by + 3 + rd + math.sin(tail) * 2, 2.0, 1.2)
         c.dot(bx + 15, by - 3.5 + head_dy, hx('#ffd030') if not squint else hx('#14101c'))
         c.dot(bx + 21, by - 1 + head_dy, hx('#14101c'))
         if mouth:
             for q in range(5): c.dot(bx + 16 + q + lunge * .5, by + 1.2 + head_dy, hx('#14101c'))
             c.dot(bx + 17, by + 2 + head_dy, hx('#f8f4e8')); c.dot(bx + 19, by + 2 + head_dy, hx('#f8f4e8'))
+        if pose and legs_top:
+            for lx, ph0, far in ((-8, 0, True), (7, math.pi, True), (-7, math.pi, False), (8, 0, False)):
+                lift = max(0, math.sin(ph + ph0)) * 2.6; sw = math.cos(ph + ph0) * 2.6; hyl = by + 2
+                if pose:
+                    fr_ = lx > 0; sw = (fsw if fr_ else rsw) * (.8 if far else 1); lift = (flift if fr_ else rlift) * (.8 if far else 1); hyl = by + 2 + (fd if fr_ else rd)
+                leg(c, bx + lx, hyl, gy, sw, lift, 1.9 * (1.3 if pose else 1), 1.3 * (1.3 if pose else 1), 'body', far, 'paw')
     else:
         back = view == 'up'; bx = cx; by = gy - 13 + bob
         for sx, ph0 in ((-4.5, 0), (4.5, math.pi)):
-            lift = max(0, math.sin(ph + ph0)) * 2.6
-            leg(c, bx + sx, by + 3, gy, 0, lift, 2.0, 1.5, 'body', False, 'paw')
+            lift = max(0, math.sin(ph + ph0)) * 2.6; swv = 0
+            if pose: lift = flift; swv = (1 if sx > 0 else -1) * fsw
+            leg(c, bx + sx, by + 3, gy, swv, lift, 2.0, 1.5, 'body', False, 'paw')
         c.ell(bx, by + 1, 7.6, 6.6)
         hy = by - 3 + head_dy + (lunge * .3 if not back else 0)
         c.ell(bx, hy, 6, 5.4)

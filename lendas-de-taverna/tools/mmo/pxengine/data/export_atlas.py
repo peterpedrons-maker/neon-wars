@@ -139,7 +139,7 @@ def frames(u, kind, view):
     if u.get('gen') and kind in ('attack', 'hurt', 'death'):
         import genanim as GA
         st = frames0(u, 'idle', view)[0]
-        return GA.build(kind, fr, view, u['gen'], st)
+        return GA.build(kind, fr, view, u['gen'], st, u.get('name', 'javali'))
     return fr
 
 def frames0(u, kind, view):
