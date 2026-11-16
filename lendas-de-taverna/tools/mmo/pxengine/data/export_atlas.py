@@ -84,14 +84,29 @@ UNITS.update({
  'vampiro': dict(kind='v'),
 })
 
+# ESTILOS DE ANIMACAO por personagem (chibi_anim3): attack slash|smash|jab|cast, hurt flinch|stagger|stoic, death fall|topple|crumble|dissolve|tumble
+ANIMS = {
+    'h_mago': dict(attack='cast', hurt='stagger'), 'h_ladino': dict(attack='jab', hurt='stagger', death='tumble'), 'h_clerigo': dict(attack='smash'),
+    'esqueleto': dict(attack='jab', hurt='stagger', death='crumble'), 'esqmago': dict(attack='cast', hurt='stagger', death='dissolve'),
+    'guarda_c': dict(attack='smash', hurt='stoic', death='crumble'), 'cultista': dict(attack='cast', hurt='stagger', death='dissolve'),
+    'gargula': dict(attack='jab', hurt='stoic', death='crumble'), 'zumbi': dict(attack='smash', hurt='stoic', death='topple'),
+    'ogro': dict(attack='smash', hurt='stoic', death='topple'), 'grunk': dict(attack='smash', hurt='stoic', death='topple'),
+    'morvath': dict(attack='smash', hurt='stoic', death='crumble'), 'gorgash': dict(attack='smash', hurt='stoic', death='topple'),
+    'ratking': dict(attack='jab', hurt='stagger', death='tumble'), 'skrix': dict(attack='cast', hurt='stagger', death='dissolve'),
+    'presa': dict(attack='smash', hurt='stoic', death='topple'), 'rei': dict(attack='smash', hurt='stoic', death='crumble'),
+}
+for _k, _v in ANIMS.items():
+    if _k in UNITS: UNITS[_k]['anim'] = _v
+
+
 def frames(u, kind, view):
     k, d = u['kind'], DENS[kind]
     kk = kind
     if k == 'c' and u['ap']['cls'] == 'archer':
         return [f[0] for f in C.anim(view, 'walk', 'archer', archer_ps(kind, view), u['ap'], dense=1)]
     if k == 'c' and kind in ('attack', 'hurt', 'death') and u['ap']['cls'] != 'archer' and not (kind == 'attack' and ALIAS_CAST_ONLY):
-        import chibi_anim2 as N2
-        return [f[0] for f in N2.build(view, kind, u['ap'])]
+        import chibi_anim3 as N3
+        return [f[0] for f in N3.build(view, kind, dict(u['ap'], anim=u.get('anim')))]
     if k == 'c':
         if kind == 'cast' and not (u.get('cast') or u['ap']['cls'] in ('mage', 'cleric', 'archer')): kk = 'attack'
         if kind == 'run' and not u.get('run'): kk = 'walk'
@@ -106,8 +121,8 @@ def frames(u, kind, view):
         import minichefes as MC
         return [MC.vamp_img(f[0], view) for f in CRE.anim('morcego', kk, view, d)]
     if k == 'e' and kind in ('attack', 'hurt', 'death') and u['name'] in J.ENEMY and not u['name'].startswith('n_') and J.ENEMY[u['name']].get('cls') != 'archer':
-        import chibi_anim2 as N2
-        return [f[0] for f in N2.build(view, kind, J.ENEMY[u['name']])]
+        import chibi_anim3 as N3
+        return [f[0] for f in N3.build(view, kind, dict(J.ENEMY[u['name']], anim=u.get('anim')))]
     if k == 'e': return J.spr(u['name'], kk, view, d)
     if k == 'b': return [f[0] for f in FA.anim(u['name'], kk, view, d)]
     return [f[0] for f in CRE.anim(u['name'], kk, view, d)]
