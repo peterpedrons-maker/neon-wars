@@ -65,45 +65,75 @@ def hurt(view, fr, st, style):
         out.append(im)
     return out
 
-def _erode(im, k, seed=3):
-    a = np.array(im); rng = np.random.RandomState(seed); m = rng.rand(*a.shape[:2])
-    ys = np.arange(a.shape[0])[:, None] / a.shape[0]
-    a[(m + (1 - ys) * .0 + ys * .0) < k, 3] = 0; return Image.fromarray(a)
+def _ease_in(t): return t * t
+def _ease_out(t): return 1 - (1 - t) ** 2
+def _ground(im, lift=0, margin=1):
+    """pousa no chao (base do bbox em BASE+1) e mantem dentro do quadro"""
+    bb = _bb(im)
+    if not bb: return im
+    dx = 0
+    if bb[2] > W - margin: dx = (W - margin) - bb[2]
+    if bb[0] + dx < margin: dx = margin - bb[0]
+    o = Image.new('RGBA', (W, H), (0, 0, 0, 0)); o.alpha_composite(im.crop(bb), (bb[0] + dx, BASE + 1 - lift - (bb[3] - bb[1]))); return o
+def _pivot(st): bb = _bb(st); return ((bb[0] + bb[2]) / 2, bb[3])
+def _hit(st, ux, uy):
+    """3 quadros de impacto: clarao + recuo com achatamento, segura, comeca a ceder (sem trocar de pose)"""
+    return [A2.flash(xf(st, 1.04, .94, -ux * 2, -uy * 2), .35), xf(st, 1.05, .93, -ux * 3, -uy * 3), xf(st, 1.02, .97, -ux * 2, -uy * 2)]
+def _dissolve(st, t, seed=9):
+    a = np.array(st.convert('RGBA')); hh, ww = a.shape[:2]
+    rng = np.random.RandomState(seed); n = rng.rand(hh, ww)
+    ys = np.arange(hh)[:, None]; bb = _bb(st); yr = np.clip((ys - bb[1]) / max(1, bb[3] - bb[1]), 0, 1)
+    score = n * .45 + (1 - yr) * .55          # topo some primeiro
+    gone = (score < t * 1.25) & (a[..., 3] > 0)
+    out = a.copy(); out[gone, 3] = 0
+    parts = Image.fromarray(out)
+    # cinza subindo dos pixels que sumiram (esparso)
+    ys_, xs_ = np.where(gone & (((np.arange(ww)[None, :] * 7 + ys * 13) % 5) == 0))
+    o = np.array(parts)
+    for y, x in zip(ys_, xs_):
+        d = int((t * 1.25 - score[y, x]) * 14) + 1; yy = y - d; xx = x + (1 if (x + y) % 2 else -1) * (d // 4)
+        if 0 <= yy < hh and 0 <= xx < ww and o[yy, xx, 3] == 0:
+            g = int(150 - 60 * min(1, d / 14)); o[yy, xx] = (g, g - 8, g - 4, int(220 * (1 - min(1, d / 15))))
+    return Image.fromarray(o)
 def death(view, fr, st, style):
-    ux, uy = _dirv(view); piv = (W // 2, BASE + 1); out = []
-    hf = A2.flash(_sh(st, -ux, -uy), .4); base = [hf, pick(fr, .6)] if fr else [hf, st]
-    if style == 'topple':
-        out = base + [_sh(st, 1, 0), _sh(st, -1, 0), st]
-        for a in (5, 12, 22, 36, 54, 72, 86, 90): out.append(A2.shake(R.rotate(st, a, piv), 0, 0))
-        out[-1] = A2.dust(out[-1], .1, cx=W // 2 + 10, n=6)
-    elif style == 'fall':
-        low = A2.lying(st, feet_x=W // 2 + 8)
-        out = base + [xf(st, 1, 1.02, -1), xf(st, 1.02, .96, -2), xf(st, 1.05, .9, -3)]
-        for k in range(1, 7): out.append(xf(low, 1, 1, 0, 0) if k > 3 else R.rotate(st, -25 * k, piv))
-        out.append(A2.dust(low, .2, cx=W // 2, n=6)); out.append(A2.dust(low, .6, cx=W // 2, n=6))
+    ux, uy = _dirv(view); px, py = _pivot(st); out = _hit(st, ux, uy)
+    sgn = -1 if style in ('fall', 'tumble', 'flip') else 1        # cai para tras (longe do golpe) ou para a frente (topple)
+    if view != 'side': sgn = -1
+    if style in ('fall', 'topple'):
+        lean = [-2 * sgn, -5 * sgn] if style == 'fall' else [3 * sgn, 6 * sgn]      # antecipacao: inclina o contrario/cede antes de cair
+        out += [_ground(R.rotate(st, lean[0], (px, py))), _ground(R.rotate(st, lean[1], (px, py)))]
+        for k in range(1, 7):                                                        # gravidade: acelera ate 90
+            ang = sgn * (lean[1] * sgn * 0 + 90 * _ease_in(k / 6)) if k < 6 else sgn * 90
+            ang = sgn * max(abs(lean[1]), 90 * _ease_in(k / 6)) if k < 6 else sgn * 90
+            out.append(_ground(R.rotate(st, ang, (px, py))))
+        low = out[-1]
+        out.append(A2.dust(_ground(R.rotate(st, sgn * 84, (px, py)), 1), .25, cx=int(px), n=6))       # quique
+        out.append(A2.dust(low, .6, cx=int(px), n=6)); out.append(low)
     elif style == 'tumble':
-        out = base
-        for k in range(1, 9):
-            t = k / 8; im = R.rotate(st, -min(90, 540 * t) % 360 if t < 1 else -90, (W // 2, BASE - 10))
-            out.append(xf(im, 1, 1, int(-ux * 12 * t), int(-uy * 12 * t) - int(math.sin(t * math.pi) * 10)))
-        out.append(A2.dust(out[-1], .2, cx=W // 2 - 10, n=6)); out.append(A2.dust(out[-2], .6, cx=W // 2 - 10, n=6))
-        out = out[:15]
-    elif style == 'flip':   # bichos: capotam e ficam de barriga para cima
-        out = base
-        def gr(im, lift=0):
-            bb = _bb(im); o = Image.new('RGBA', (W, H), (0, 0, 0, 0)); o.alpha_composite(im.crop(bb), (bb[0], BASE + 1 - lift - (bb[3] - bb[1]) )); return o
-        for k in range(1, 9):
-            t = k / 8; im = R.rotate(st, -180 * min(1, t * 1.15) * ux if ux else -180 * t, (W // 2, BASE - 8))
-            out.append(gr(im, int(math.sin(min(1, t * 1.2) * math.pi) * 8) if t < .85 else 0))
-        out.append(A2.dust(out[-1], .2, cx=W // 2, n=6)); out.append(A2.dust(out[-2], .6, cx=W // 2, n=6))
+        out += [xf(st, 1.0, 1.04, -ux * 3, -uy * 3 - 2)]
+        for k in range(1, 8):
+            t = k / 7; arc = int(math.sin(t * math.pi) * 9); ang = sgn * 90 * _ease_out(t) * (1 + .5 * (1 - t)) * (1 if t < 1 else 1)
+            im = R.rotate(st, max(-100, min(100, ang)) if sgn < 0 else min(100, ang), (px, py - 10))
+            out.append(_ground(im, arc))
+        out.append(A2.dust(_ground(R.rotate(st, sgn * 84, (px, py)), 1), .25, cx=int(px), n=6)); out.append(A2.dust(_ground(R.rotate(st, sgn * 90, (px, py))), .6, cx=int(px), n=6)); out.append(_ground(R.rotate(st, sgn * 90, (px, py))))
+    elif style == 'flip':
+        out += [xf(st, 1.0, 1.05, -ux * 3, -uy * 3 - 3)]
+        for k in range(1, 8):
+            t = k / 7; arc = int(math.sin(t * math.pi) * 10); ang = 180 * _ease_out(t) * (-1 if ux >= 0 else 1)
+            out.append(_ground(R.rotate(st, ang, (px, py - 8)), arc))
+        low = out[-1]; out.append(A2.dust(_ground(R.rotate(st, -168, (px, py - 8)), 2), .25, cx=int(px), n=6)); out.append(A2.dust(low, .6, cx=int(px), n=6)); out.append(low)
     elif style == 'melt':
-        out = base + [_sh(st, 1, 0)]
-        for k in range(1, 12):
-            t = k / 11; im = xf(st, 1 + .5 * t, max(.08, 1 - .95 * t)); out.append(_erode(im, max(0, t - .5) * 1.2, 5) if t > .5 else im)
+        for k in range(1, 13):
+            t = k / 12
+            wob = math.sin(t * 9) * .09 * (1 - t) if k < 7 else 0           # gelatina treme antes de derreter
+            e = _ease_in(max(0, (t - .15) / .85))
+            im = xf(st, 1 + .55 * e + wob, max(.07, 1 - .93 * e - wob))
+            if t > .78:
+                a = np.array(im); a[..., 3] = (a[..., 3] * max(0., 1 - (t - .78) / .3)).astype(np.uint8); im = Image.fromarray(a)
+            out.append(im)
     else:  # dissolve
-        out = base + [_sh(st, 1, 0)]
-        for k in range(1, 12):
-            t = k / 11; im = xf(st, 1 - .1 * t, 1 + .15 * t, 0, -int(4 * t)); out.append(_erode(im, t * 1.05, 9))
+        for k in range(1, 13):
+            t = k / 12; out.append(_dissolve(xf(st, 1 - .06 * t, 1 - .04 * t, 0, int(2 * t)), t))
     while len(out) < 15: out.append(out[-1])
     return out[:15]
 
