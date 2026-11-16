@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="pt-BR">
-<head><script>if(new URLSearchParams(location.search).get("ui")!=="0")document.documentElement.classList.add("pxui");</script>
+<head><script>if(new URLSearchParams(location.search).get("ui")!=="0")document.documentElement.classList.add("pxui");if(new URLSearchParams(location.search).get("kit")!=="0")document.documentElement.classList.add("kit");</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#140e09">
@@ -762,6 +762,27 @@ html.pxui img,html.pxui canvas{image-rendering:pixelated}
 html.pxui #title img{image-rendering:auto}
 html.pxui button,html.pxui .win,html.pxui .card,html.pxui [class*="slot"],html.pxui [class*="bar"],html.pxui input,html.pxui .pan,html.pxui #pan{border-radius:0!important}
 html.pxui button,html.pxui .win,html.pxui #pan{box-shadow:inset 0 0 0 1px rgba(0,0,0,.55),inset 0 0 0 2px rgba(217,180,95,.35)}
+
+/* ===== UI KIT (artes do dono em assets/kit/, recortadas das folhas A–D; desliga com ?kit=0) ===== */
+html.kit #hero{width:212px;height:59px;min-height:0;padding:0;border:0;box-shadow:none;background:url(assets/kit/B00.png) 0 0/100% 100% no-repeat;filter:drop-shadow(0 3px 5px rgba(0,0,0,.6));image-rendering:pixelated}
+html.kit #hero::before,html.kit #hero::after{display:none}
+html.kit #hport{left:2.9%;top:9.7%;width:21%;height:75.7%;border:0;box-shadow:none;background:none;overflow:visible}
+html.kit #hport canvas{width:100%!important;height:100%!important;border-radius:50%;background:radial-gradient(circle at 50% 35%,#3a3050,#14101c)}
+html.kit #hl{left:110%;top:85%;right:auto;bottom:auto;transform:translate(-50%,-50%);width:20px;height:20px;line-height:20px;font-size:11px;background:none;border:0;box-shadow:none;color:#ffe9a0;text-align:center;padding:0;text-shadow:0 1px 0 #000}
+html.kit #hero .nm{position:absolute;left:37%;right:21%;top:69%;height:27%;margin:0;align-items:center;font-size:11px}
+html.kit #hero .nm span:first-child{font-size:11px;max-width:62px}html.kit #hero .nm span:last-child{font-size:8px}
+html.kit #hpw{position:absolute;left:27%;top:16%;width:69%;height:29%;margin:0}
+html.kit #hpw #hp{height:100%;margin:0;border:0;background:none;box-shadow:none;padding:2px 3px}html.kit #hpw #hp::after{display:none}
+html.kit #hero #xp{position:absolute;left:33.5%;top:56.5%;width:42%;height:10%;margin:0;border:0;background:none;box-shadow:none;padding:1px 2px}
+html.kit #hpc{left:80%;top:77%;width:19%;height:18%;right:auto;bottom:auto;font-size:8px;display:flex;align-items:center;justify-content:center;gap:2px}
+html.kit #boss{width:70%!important;max-width:280px;aspect-ratio:767/172;height:auto;padding:0!important;border:0!important;box-shadow:none!important;top:calc(10px + env(safe-area-inset-top))!important;background:url(assets/kit/B01.png) 0 0/100% 100% no-repeat!important;filter:drop-shadow(0 3px 6px rgba(0,0,0,.6));image-rendering:pixelated}
+html.kit #boss .t{position:absolute;left:8%;right:8%;top:36%;z-index:2;margin:0!important;text-align:center;font-size:10px!important;letter-spacing:.2em!important;line-height:1.2;text-shadow:0 1px 0 #000,0 0 4px #000!important}
+html.kit #boss .bar{position:absolute;left:6.8%;width:86.4%;top:35%;height:32%!important;margin:0!important;border:0!important;background:none!important;box-shadow:none!important;padding:2px 3px}
+html.kit #boss .bar b{border-radius:2px}
+html.kit #boss #bsts{position:absolute;left:0;right:0;top:100%;margin-top:2px}
+html.kit #joy{width:116px;height:119px;border:0;border-radius:0;background:url(assets/kit/B21.png) 0 0/100% 100% no-repeat}
+html.kit #joy::before{display:none}
+html.kit #joyk{width:48px;height:48px;margin:-24px 0 0 -24px;border:0;border-radius:0;box-shadow:none;background:url(assets/kit/B25.png) 0 0/100% 100% no-repeat}
 </style>
 </head>
 <body>
