@@ -796,8 +796,8 @@ def accessory2(g, hat, view, hx, hy, back=False):
             g.stamp(['III...','.IIJ..','..IIJ.','...IIJ','....II','....IJ'], hx + 3, hy - 4)
             for k, (xx, yy) in enumerate(((9, -3), (10, -6), (11, -3), (12, -8), (13, -4), (14, -2))): g.put(hx + xx, hy + yy, 'W' if k % 2 else 'd'); g.put(hx + xx, hy + yy + 1, 'd')
         else:
-            g.stamp(['III...','.IIJ..','..IIJ.','...IIJ','....II','....IJ'], hx - 4, hy - 4)
-            g.stamp(['...JII','..JII.','.JII..','JII...','II....','JI....'], hx + 20, hy - 4)
+            g.stamp(['IIII..','IIIJ..','.IIIJ.','..IIIJ','...IIJ','...IIJ'], hx - 4, hy - 4)
+            g.stamp(['..IIII','..JIII','.JIII.','JIII..','JII...','JII...'], hx + 19, hy - 4)
             for k, xx in enumerate((6, 8, 10, 12, 14)):
                 for y_ in range(3 + (k % 2) * 2): g.put(hx + xx, hy - 2 - y_, 'W' if y_ == 0 else 'd')
     elif hat == 'ratking':                                                   # Rei dos Ratos: orelhas grandes + focinho + bigodes + coroa torta de ouro
@@ -815,13 +815,14 @@ def accessory2(g, hat, view, hx, hy, back=False):
                 for y_ in range(3 + (k % 2) * 2): g.put(hx + xx, hy - 1 - y_, 'E' if y_ else 'H'); g.put(hx + xx + 1, hy - 1 - y_, 'E' if y_ > 1 else 'H')
             for xx in range(hx + 3, hx + 19): g.put(xx, hy, 'E'); g.put(xx, hy + 1, 'H')
             g.put(hx + 10, hy, 'W'); g.put(hx + 11, hy, 'W')
+        for k in range(1, 20): g.put(hx + k, hy + 19, 'I'); g.put(hx + k, hy + 20, 'J' if k % 3 else 'k') if view != 'side' else None
     elif hat == 'gorgash':                                                   # chefe ogro: chifres grandes + argola no nariz + colar de ossos
         accessory2(g, 'ogre', view, hx, hy, back)
         if view == 'side':
             g.stamp(['III...','.IIJ..','..IIJ.','...IIJ','....II','....IJ'], hx + 3, hy - 4); g.put(hx + 20, hy + 10, 'E'); g.put(hx + 20, hy + 11, 'E')
         else:
-            g.stamp(['III...','.IIJ..','..IIJ.','...IIJ','....II','....IJ'], hx - 4, hy - 4)
-            g.stamp(['...JII','..JII.','.JII..','JII...','II....','JI....'], hx + 20, hy - 4)
+            g.stamp(['IIII..','IIIJ..','.IIIJ.','..IIIJ','...IIJ','...IIJ'], hx - 4, hy - 4)
+            g.stamp(['..IIII','..JIII','.JIII.','JIII..','JII...','JII...'], hx + 19, hy - 4)
             if not back:
                 for xx in (hx + 9, hx + 10, hx + 11, hx + 12): g.put(xx, hy + 12, 'E')
                 g.put(hx + 9, hy + 13, 'E'); g.put(hx + 12, hy + 13, 'E')
