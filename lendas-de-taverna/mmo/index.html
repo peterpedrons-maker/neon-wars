@@ -1218,7 +1218,7 @@ async function loadAll(){
     loadMap('town','assets/town.json','assets/town_atlas.json','assets/town_ground.png','assets/town_atlas.png')];
   for(const [k,c] of Object.entries(CLASSES))core.push(loadSheet(k,k==='bardo'?'slash':c.atk_==='cast'?'spellcast':c.atk_));
   for(const k of ['bardo','guardiao','mago','guarda','pov_f','ladino_b','clerigo','ladino'])if(!SHEETS[k])core.push(loadSheet(k,null));
-  if(typeof SAVE!=='undefined'&&SAVE&&SAVE.cls)core.push(cxLoad(CXHERO[SAVE.cls]));for(const k of Object.values(CXNPC))core.push(cxLoad(k));
+  if(typeof SAVE!=='undefined'&&SAVE&&SAVE.cls){core.push(cxLoad(CXHERO[SAVE.cls]));if(typeof HVAR!=='undefined')Object.values(HVAR[SAVE.cls]||{}).forEach(v=>core.push(cxLoad(CXHERO[SAVE.cls]+'_'+v)));}for(const k of Object.values(CXNPC))core.push(cxLoad(k));
   await Promise.all(core);
   prepMap('town');useMap('town');
   STAGE2=(async()=>{
@@ -4041,8 +4041,11 @@ const CXHERO={guerreiro:'h_guerreiro',mago:'h_mago',ladino:'h_ladino',clerigo:'h
 function cxLoad(k){if(!CXON||!k)return null;if(!CXP[k])CXP[k]=Promise.all([loadImg('assets/chars/cx_'+k+'_atlas.png'),fetch('assets/chars/cx_'+k+'_atlas.json').then(r=>r.json())]).then(([img,meta])=>{CXS[k]={atlasImg:img,meta};}).catch(()=>{CXS[k]=null;});return CXP[k];}
 function cxZone(zlv){fxsLoad('rei_explosao_roxa');['fx_fogo','fx_gelo','fx_raio','fx_sagrado'].forEach(fxsLoad);const f=famOf(zlv),L=f==='goblin'?['goblin','goblin_x','sapador','cogumelo','aranha','lobo']:f==='esq'?['esqueleto','esqmago','guarda_c','cultista','gargula','zumbi','espectro','morcego','carnical','necro','cav_caido','mumia','aranha']:f==='rato'?['rato','ratkin','ladrao','cult_lodo','sapo','cobra','barata','afogado']:['javali','ogrinho','ogro_lenhador','gnoll','bandido','tronco','harpia','lobo'];if(zlv===5)L.push('rei');L.push(CXHERO[SAVE.cls]);for(const k of L)cxLoad(k);}
 const CXNPC={guarda:'n_guarda',pov_f:'n_pov_f',ladino_b:'n_ladino_b',bardo:'n_bardo'};
-function cxKeyOf(e){if(e.kind==='hero')return CXHERO[SAVE.cls];if(e.kind==='npc'||e.kind==='vill')return e.pet?null:CXNPC[e.sh];const T=e.T;return T?(T.cx||CXMAP[T.atlas||T.sheet]):null;}
-function cxStill(cls,view,i){const k=CXHERO[cls],sh=k&&CXS[k];if(!CXON||!k)return null;if(!sh){if(sh===undefined)cxLoad(k);return null;}const M=sh.meta,l=M.anims['idle_'+(view||'d')],q=l[(i|0)%l.length];return {img:sh.atlasImg,sx:(q%M.cols)*M.w,sy:((q/M.cols)|0)*M.h,w:M.w,h:M.h,ax:M.ax,ay:M.ay};}
+/* O SPRITE DO HERÓI MUDA COM A ARMA EQUIPADA: atlas extra por tipo de arma (cx_h_<classe>_<variante>); sem variante = arma padrão da classe */
+const HVAR={guerreiro:{Machado:'machado',Martelo:'martelo'},ladino:{'Espada Curta':'espadacurta'},mago:{Cetro:'cetro',Varinha:'varinha'},clerigo:{Martelo:'martelo','Cetro Sagrado':'cetro'},arqueiro:{'Arco Longo':'longo'},bardo:{Flauta:'flauta'}};
+function heroCx(cls){cls=cls||SAVE.cls;const base=CXHERO[cls];if(cls!==SAVE.cls)return base;const w=SAVE.eq&&SAVE.eq.arma,v=w&&HVAR[cls]&&HVAR[cls][wtypeOf(w)];if(!v)return base;const k=base+'_'+v;if(CXS[k])return k;if(CXS[k]===undefined)cxLoad(k);return base;}
+function cxKeyOf(e){if(e.kind==='hero')return heroCx();if(e.kind==='npc'||e.kind==='vill')return e.pet?null:CXNPC[e.sh];const T=e.T;return T?(T.cx||CXMAP[T.atlas||T.sheet]):null;}
+function cxStill(cls,view,i){const k=heroCx(cls),sh=k&&CXS[k];if(!CXON||!k)return null;if(!sh){if(sh===undefined)cxLoad(k);return null;}const M=sh.meta,l=M.anims['idle_'+(view||'d')],q=l[(i|0)%l.length];return {img:sh.atlasImg,sx:(q%M.cols)*M.w,sy:((q/M.cols)|0)*M.h,w:M.w,h:M.h,ax:M.ax,ay:M.ay};}
 /* combate legível: inimigos corpo a corpo atacam de uns 6 px mais longe, assim ficam em volta do herói em vez de por cima dele */
 for(const k in MOBS){const T=MOBS[k];if(!T.ranged&&!T.totem&&T.rng>=18&&T.rng<=30&&!T._rg){T.rng+=6;T._rg=1;}}
 const CXSC=.75;   /* escala dos sprites pixel art no mundo (1 = pixel nativo x2). Dono: personagens grandes demais -> .75 */

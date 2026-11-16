@@ -563,6 +563,27 @@ def mace_rows(hand, ang, length=15, head='flanged'):
 
 
 
+
+def wand_rows(hand, ang, length=14):
+    """Varinha SEPARADA: haste fina de madeira com aneis dourados e estrela roxa na ponta."""
+    a = math.radians(ang); ux, uy = math.sin(a), math.cos(a); cells = {}
+    def put(x, y, c): cells[(round(x), round(y))] = c
+    for k in range(-4, int(length) - 3):
+        put(hand[0] + ux * k, hand[1] + uy * k, 'N'); put(hand[0] + ux * k + (1 if abs(ux) < abs(uy) else 0), hand[1] + uy * k + (0 if abs(ux) < abs(uy) else 1), 'N')
+        if k in (-3, 3): put(hand[0] + ux * k, hand[1] + uy * k, 'g')
+    tx, ty = hand[0] + ux * (length - 3), hand[1] + uy * (length - 3)
+    for dx, dy, c in ((0, 0, 'F'), (-1, 0, 'u'), (1, 0, 'u'), (0, -1, 'u'), (0, 1, 'U'), (-2, 0, 'V'), (2, 0, 'V'), (0, -2, 'F'), (0, 2, 'V')): put(tx + dx, ty + dy, c)
+    return cells, (tx, ty)
+
+def flute_rows(hand, ang, length=13):
+    """Flauta SEPARADA: tubo de madeira clara com aneis de latao e furos."""
+    a = math.radians(ang); ux, uy = math.sin(a), math.cos(a); nx, ny = -uy, ux; cells = {}
+    def put(x, y, c): cells[(round(x), round(y))] = c
+    for k in range(-5, int(length) - 4):
+        c0 = 'g' if k in (-5, 0, int(length) - 5) else ('k' if k in (-2, 2, 4, 6) else 'w')
+        for off in (0, 1): put(hand[0] + ux * k + nx * off * .9, hand[1] + uy * k + ny * off * .9, c0 if off == 0 else ('a' if c0 == 'w' else c0))
+    return cells, (hand[0] + ux * (length - 4), hand[1] + uy * (length - 4))
+
 def lute_rows(hand, ang, length=11):
     """Alaude SEPARADO: corpo de pera (madeira clara com boca escura e aro dourado), braco longo escuro, cabeca dobrada com cravelhas. A mao segura o braco."""
     a = math.radians(ang); ux, uy = math.sin(a), math.cos(a); nx, ny = -uy, ux
@@ -597,6 +618,12 @@ def weapon_rows(swd, hxy, view, back=False, bow_center=None):
         c = bow_center or hxy
         cells, tip, pull = bow_rows(c, swd['dir'], swd.get('draw', 0), swd.get('arrow', True), swd.get('span', 11))
         return cells, tip, (back and swd['dir'][1] < 0), [pull]
+    if kind == 'wand':
+        cells, tip = wand_rows(hxy, swd.get('ang', 150), swd.get('len', 14))
+        return cells, tip, False, []
+    if kind == 'flute':
+        cells, tip = flute_rows(hxy, swd.get('ang', 60), swd.get('len', 13))
+        return cells, tip, False, []
     if kind == 'lute':
         cells, tip = lute_rows(hxy, swd.get('ang', 120), swd.get('len', 11))
         return cells, tip, False, []
@@ -1446,6 +1473,9 @@ METAL = {'aco': dict(U='#9aa8c0', u='#d8e4f4', V='#4a5468', Q='#5a6478', q='#9aa
 
 # armas: params (forma) + pal (cores). Troca de arma = trocar o id.
 WEAPONS = {
+    'varinha': dict(kind='wand', len=14, pal=dict(N='#8a5a34', g='#e0b040', F='#fff4ff', u='#c890ff', U='#8a50e0', V='#4a2a98')),
+    'flauta': dict(kind='flute', len=13, pal=dict(w='#e8c888', a='#b08848', g='#e8b840', k='#2a1810')),
+    'cetro_sagrado': dict(kind='staff', head='ring', len=17, pal=dict(N='#e8d8a0', g='#e8b840', Z='#fff4b0', z='#ffd24a', Y='#c08820')),
     'alaude': dict(kind='lute', len=11, ang=120, pal=dict(A='#b5733a', a='#6a3e1c', w='#e0a468', N='#4a2c14', g='#e8b840', k='#1a0e06')),
     # espadas
     'espada_ferro': dict(kind='sword', len=12, guard=2, pal=dict(A='#e6eef6', a='#8190a8', g='#8a6a3a', N='#4a3020')),
@@ -1534,6 +1564,8 @@ def apply_appearance(p, app):
         base = {k: v for k, v in w.items() if k != 'pal'}
         if w['kind'] == 'sword' and q['sw'].get('kind') in ('dagger', 'mace', 'staff', 'bow'): base = {}
         q['sw'] = {**q['sw'], **base, **keep} if base else q['sw']
+        if w['kind'] == 'wand': q['sw']['ang'] = 135 if q.get('view') == 'right' else 150
+        if w['kind'] == 'flute': q['sw']['ang'] = 70 if q.get('view') == 'right' else 62
         if w['kind'] == 'lute': q['sw']['ang'] = q['sw'].get('lute_ang', 96 if q.get('view') == 'right' else 112)
         if 'len' in keep and 'len' in base: pass
     w2 = app.get('weapon2')

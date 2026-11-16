@@ -99,6 +99,16 @@ ANIMS = {
 for _k, _v in ANIMS.items():
     if _k in UNITS: UNITS[_k]['anim'] = _v
 
+# VARIANTES DO HEROI POR ARMA EQUIPADA (o sprite muda com a arma): chave = <heroi>_<variante>; o jogo escolhe por tipo de arma (HVAR em index.html)
+_VAR = {'h_guerreiro_machado': ('h_guerreiro', dict(weapon='machado')), 'h_guerreiro_martelo': ('h_guerreiro', dict(weapon='martelo_guerra')),
+        'h_ladino_espadacurta': ('h_ladino', dict(weapon='espada_curta', weapon2='espada_curta')),
+        'h_mago_cetro': ('h_mago', dict(weapon='cetro_arcano')), 'h_mago_varinha': ('h_mago', dict(weapon='varinha')),
+        'h_clerigo_martelo': ('h_clerigo', dict(weapon='martelo_sagrado')), 'h_clerigo_cetro': ('h_clerigo', dict(weapon='cetro_sagrado')),
+        'h_arqueiro_longo': ('h_arqueiro', dict(weapon='arco_longo')), 'h_bardo_flauta': ('h_bardo', dict(weapon='flauta'))}
+for _k, (_b, _o) in _VAR.items():
+    UNITS[_k] = dict(UNITS[_b], ap=dict(UNITS[_b]['ap'], **_o))
+    if _b in ANIMS: UNITS[_k]['anim'] = ANIMS[_b]
+
 
 def frames(u, kind, view):
     k, d = u['kind'], DENS[kind]
