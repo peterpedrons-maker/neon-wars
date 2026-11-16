@@ -32,8 +32,24 @@ def _thrust(view):
              dict(tn=2, dy=2, hdy=2, ar=(-1, 5), al=(0, 0), bl=(-1, 0), br=(2, 0), sw=sw(172)), dict(tn=3, dy=1, ar=(0, 2), sw=sw(170)), dict(tn=3, ar=(0, 0), sw=sw(168))]
     return P
 
+
+def _play(view):
+    """tocar o instrumento: levanta o braco, dedilha (braco desce rapido) e solta a nota; cabeca balanca e a boca abre (cantando)"""
+    R_ = lambda ar, hdy=0, tn=3, face='n', dy=0, al=(0, 0), hdx=0: dict(tn=tn, ar=ar, al=al, hdy=hdy, face=face, dy=dy, hdx=hdx, sw=dict(kind='lute'))
+    return [R_((0, 0)), R_((0, -1), -1), R_((0, -2), -1, face='shout'), R_((1, -3), -1, face='shout', al=(0, -1)), R_((1, -3), -1, face='shout', al=(0, -1)),
+            R_((0, 2), 0, 2, 'shout', 1, hdx=1), R_((0, -1), 0, 3, 'shout'), R_((0, 2), 1, 2, 'shout', 1), R_((0, 0), 0, 3, 'n'), R_((0, 0))]
+
+def play(view, ap):
+    cls = ap.get('cls', 'warrior')
+    base = C.anim(view, 'attack', cls, C.densify(_play(view), 2), ap, dense=2)
+    fr = [b[0] for b in base]
+    seq = [(0, {}), (1, {}), (2, {}), (3, {}), (4, {}), (5, {}), (6, {}), (7, {}), (8, {}), (8, {}), (9, {}), (10, {}),
+           (12, {'shake': (0, 1)}), (13, {}), (13, {}), (14, {}), (15, {}), (16, {}), (17, {}), (18, {})]
+    return [fr[min(i, len(fr) - 1)] if 'shake' not in o else shake(fr[min(i, len(fr) - 1)], *o['shake']) for i, o in seq]
+
 def attack(view, ap, style):
     cls = ap.get('cls', 'warrior')
+    if style == 'play': return play(view, ap)
     if style == 'cast':
         base = C.anim(view, 'cast', cls, None, ap, dense=2)
         n = len(base); idx = [min(n - 1, round(i * (n - 1) / 19)) for i in range(20)]
@@ -189,7 +205,7 @@ def crumble(view, ap):
 def build(view, kind, appearance, dense=2):
     st = (appearance or {}).get('anim') or {}
     ap = dict(appearance)
-    if kind == 'attack' and st.get('attack') in ('smash', 'jab', 'cast'):
+    if kind == 'attack' and st.get('attack') in ('smash', 'jab', 'cast', 'play'):
         fr = attack(view, ap, st['attack'])
     elif kind == 'hurt' and st.get('hurt') in ('stagger', 'stoic'):
         fr = hurt(view, ap, st['hurt'])

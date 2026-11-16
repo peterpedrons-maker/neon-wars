@@ -562,6 +562,31 @@ def mace_rows(hand, ang, length=15, head='flanged'):
     return cells, (cx, cy)
 
 
+
+def lute_rows(hand, ang, length=11):
+    """Alaude SEPARADO: corpo de pera (madeira clara com boca escura e aro dourado), braco longo escuro, cabeca dobrada com cravelhas. A mao segura o braco."""
+    a = math.radians(ang); ux, uy = math.sin(a), math.cos(a); nx, ny = -uy, ux
+    cells = {}
+    def put(x, y, c): cells[(round(x), round(y))] = c
+    cx0, cy0 = hand[0] - ux * 6.5, hand[1] - uy * 6.5          # centro do corpo, atras da mao
+    for t in range(-7, 8):
+        for w in range(-6, 7):
+            px, py = cx0 + ux * t * .9 + nx * w * .9, cy0 + uy * t * .9 + ny * w * .9
+            ex = (t + 1.0) / 7.4; ey = w / (6.2 - (t * .28 if t > 0 else -t * .1))
+            if ex * ex + ey * ey <= 1:
+                lit = (-nx * 0 + (px - cx0) * -1 + (py - cy0) * -1) > 0
+                put(px, py, 'w' if (px - cx0 + py - cy0) < -3.2 else ('a' if (px - cx0 + py - cy0) > 3.0 else 'A'))
+    for k in range(-2, 3):                                       # boca + aro
+        for l in range(-2, 3):
+            if k * k + l * l <= 5: put(cx0 + ux * k + nx * l - ux * 1, cy0 + uy * k + ny * l - uy * 1, 'k' if k * k + l * l <= 3 else 'g')
+    for k in range(5, int(length) + 1):                          # braco
+        put(hand[0] + ux * (k - 5), hand[1] + uy * (k - 5), 'N'); put(hand[0] + ux * (k - 5) + nx, hand[1] + uy * (k - 5) + ny, 'N')
+    tx, ty = hand[0] + ux * (length - 5), hand[1] + uy * (length - 5)
+    for k in range(0, 4): put(tx + ux * k + nx * (1 if k > 1 else 0) * 1.6, ty + uy * k + ny * (1 if k > 1 else 0) * 1.6, 'N')    # cabeca dobrada
+    put(tx + nx * 2.6, ty + ny * 2.6 + 0, 'g'); put(tx - nx * 1.2, ty - ny * 1.2, 'g')
+    for k in range(-5, 6): put(cx0 + ux * k * .8 - ux * 1, cy0 + uy * k * .8 - uy * 1, 'w') if abs(k) > 3 else None   # cavalete
+    return cells, (tx + ux * 3, ty + uy * 3)
+
 def weapon_rows(swd, hxy, view, back=False, bow_center=None):
     """Roteador de armas. Retorna (cells, tip, behind, mitts2)."""
     kind = swd.get('kind', 'sword')
@@ -572,6 +597,9 @@ def weapon_rows(swd, hxy, view, back=False, bow_center=None):
         c = bow_center or hxy
         cells, tip, pull = bow_rows(c, swd['dir'], swd.get('draw', 0), swd.get('arrow', True), swd.get('span', 11))
         return cells, tip, (back and swd['dir'][1] < 0), [pull]
+    if kind == 'lute':
+        cells, tip = lute_rows(hxy, swd.get('ang', 120), swd.get('len', 11))
+        return cells, tip, False, []
     if kind == 'mace':
         cells, tip = mace_rows(hxy, swd['ang'], swd.get('len', 15), swd.get('head', 'flanged'))
         return cells, tip, (185 <= swd['ang'] <= 265), []
@@ -1418,6 +1446,7 @@ METAL = {'aco': dict(U='#9aa8c0', u='#d8e4f4', V='#4a5468', Q='#5a6478', q='#9aa
 
 # armas: params (forma) + pal (cores). Troca de arma = trocar o id.
 WEAPONS = {
+    'alaude': dict(kind='lute', len=11, ang=120, pal=dict(A='#b5733a', a='#6a3e1c', w='#e0a468', N='#4a2c14', g='#e8b840', k='#1a0e06')),
     # espadas
     'espada_ferro': dict(kind='sword', len=12, guard=2, pal=dict(A='#e6eef6', a='#8190a8', g='#8a6a3a', N='#4a3020')),
     'espada_aco': dict(kind='sword', len=13, guard=3, pal=dict(A='#f6faff', a='#9cb0d2', g='#e8b840', N='#6e4228')),
@@ -1505,6 +1534,7 @@ def apply_appearance(p, app):
         base = {k: v for k, v in w.items() if k != 'pal'}
         if w['kind'] == 'sword' and q['sw'].get('kind') in ('dagger', 'mace', 'staff', 'bow'): base = {}
         q['sw'] = {**q['sw'], **base, **keep} if base else q['sw']
+        if w['kind'] == 'lute': q['sw']['ang'] = q['sw'].get('lute_ang', 96 if q.get('view') == 'right' else 112)
         if 'len' in keep and 'len' in base: pass
     w2 = app.get('weapon2')
     if w2 and q.get('sw2'):
