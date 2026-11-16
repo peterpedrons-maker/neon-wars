@@ -49,7 +49,7 @@ def build(view, kind, appearance, dense=2):
                (12, {'shake': (1, 0)}), (14, {'shake': (1, 0)}), (14, {}), (14, {}),                                      # impacto parado + tremor
                (16, {}), (17, {}), (18, {}), (18, {})]                                                                    # recuperacao
     elif kind == 'hurt':       # 7 quadros densos
-        seq = [(0, {'flash': .4, 'shake': (-1, 0)}), (1, {'shake': (-1, 0)}), (2, {}), (2, {}), (3, {}), (4, {}), (6, {}), (6, {})]
+        seq = [(0, {}), (0, {'flash': .4, 'shake': (-1, 0)}), (1, {'shake': (-1, 0)}), (2, {}), (2, {}), (3, {}), (4, {}), (6, {}), (6, {})]      # indice 1 = quadro do clarao (o jogo usa 1 e depois 2)
     elif kind == 'death':      # 11 quadros densos -> queda com 90 graus exatos
         seq = [(0, {'flash': .4, 'shake': (-1, 0)}), (1, {}), (2, {}), (3, {}), (4, {}), (5, {}), (6, {}),
                (7, {'lie': 6, 'rot': 1}),                                                                                   # no ar, deitando
