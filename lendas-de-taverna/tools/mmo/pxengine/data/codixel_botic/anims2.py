@@ -36,9 +36,10 @@ def make(n, at, shadow_fn=None, kicks=None, dust_from=None):
         p = at(f); ang = p.get('ang', 0)
         lift = -30 * (min(1, abs(ang) / 1.55) ** 2)
         fx = shadow(p.get('shc', 0), p.get('shw', 22), .5)
+        if p.get('spk', 0) > 0.01: fx = both(fx, sparkles(p['spk']))
         if dust_from is not None and dust_from <= f <= dust_from + 8: fx = both(fx, dust(-38, cl((f - dust_from) / 8)))
         k = {'root': (p.get('dx', 0), p.get('dy', 0) + lift, ang, None, p.get('sy', 1), p.get('sx', 1)), 'torso': p.get('tor', 0),
-             'legL': (p.get('lL', 0), 1), 'legR': (p.get('lR', 0), 1), 'fx': fx}
+             'legL': (p.get('lL', 0), p.get('sL', 1)), 'legR': (p.get('lR', 0), p.get('sR', 1)), 'fx': fx}
         if p.get('flash', 0) > 0.01: k['flash'] = p['flash']
         if p.get('shx', 0) or p.get('shy', 0): k['shake'] = (int(round(p.get('shx', 0))), int(round(p.get('shy', 0))))
         return k
@@ -100,3 +101,21 @@ if __name__ == '__main__':
         for i, im in enumerate(fr): sh.alpha_composite(im.resize((CW * 2, CH * 2), Image.NEAREST), ((i % cols) * CW * 2, (y + i // cols) * CH * 2))
         y += (len(fr) + cols - 1) // cols
     sh.save('/tmp/claude-0/-home-user-neon-wars/3ffd125f-a99a-599e-8554-f2b481e86fc1/scratchpad/anims2.png'); print({k: len(v) for k, v in an.items()}, sh.size)
+
+
+def walk(n=8):                      # PASSO de rato: corpo balanca, pes sobem e descem, bracos em oposicao
+    keys = []
+    for i in range(n + 1):
+        t = 2 * math.pi * i / n; s, c = sn(t), cs(t)
+        keys.append((i, S(dy=-5.5 * abs(s) + 2.5, ang=0.06 * s, tor=0.1 + 0.03 * c, lL=1.0 * s, lR=-1.0 * s,
+                          sL=1 - 0.4 * max(0, c * 0 + (-s if s < 0 else 0)) * 0 - 0.35 * max(0, sn(t + 1.57)) * (1 if s > 0 else 0.4),
+                          sR=1 - 0.35 * max(0, sn(t - 1.57)) * (1 if s < 0 else 0.4),
+                          tfu=-.35 * s, tfl=-.3 * s, tbu=.7 * s, tbl=.5 * s, th=-.1 * s, tta=.3 * sn(t - .8), ttb=.45 * sn(t - 1.4)), 'lin'))
+    return make(n, timeline(keys))
+def cast(n=12):                      # levanta o frasco, cabeca para tras, faiscas verdes (codigo) crescem e soltam
+    k = [(0, S(), 'lin'),
+         (3, S(dy=2, tor=.05, ang=.02, tfu=-.25, tfl=-.1, th=.05, spk=.05), 'smooth'),
+         (6, S(dy=-3, ang=-.06, tor=-.14, tfu=.95, tfl=-1.3, tbu=-.4, tbl=-.2, th=-.4, tta=.25, ttb=.4, spk=.5), 'smooth'),
+         (8, S(spk=1.0), 'hold'), (9, S(spk=.8), 'hold'),
+         (11, S(dy=0, ang=0, tor=0, tfu=0, tfl=0, tbu=0, tbl=0, th=0, tta=0, ttb=0, spk=0), 'smooth')]
+    return make(n, timeline(k))

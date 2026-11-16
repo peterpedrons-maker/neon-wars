@@ -79,7 +79,7 @@ UNITS.update({
  'gorgash': _BA(cls='warrior', skin='ogro', hair='preto', hairstyle='mohawk', eyes='brasa', hat='gorgash', outfit='mail', clothes='bronze', metal='ferro', weapon='martelo_guerra', tn_off=2, bulk=1, face_style='brute'),
  'ratking': _BA(cls='rogue', skin='rato', hair='g_rato', hairstyle='spiky', eyes='vermelho', hat='ratking', outfit='cloth', clothes='roxo', weapon='adaga_sangue', weapon2='adaga_sangue', tn_off=1, face_style='sly'),
  'skrix': _BA(cls='mage', skin='goblin', hair='g_goblin', hairstyle='bald', eyes='amarelo', hat='skrix', outfit='robe', clothes='verde', weapon='cajado_caveira', tn_off=-1, face_style='fierce'),
- 'boticario': _BA(cls='mage', skin='palida', hair='preto', hairstyle='long', eyes='verde', hat='boticario', outfit='robe', clothes='verde', weapon='cajado_natureza', face_style='cold'),
+ 'boticario': dict(kind='x', src='codixel_botic/out/cx_boticario'),     # rato alquimista (arte original do dono -> codixel); o medico da peste foi erro
  'presa': _BA(cls='warrior', skin='javali', hair='g_javali', hairstyle='mane', eyes='brasa', hat='presa', outfit='mail', clothes='bronze', metal='ferro', weapon='machado', tn_off=2, bulk=1, face_style='brute'),
  'vampiro': dict(kind='v'),
 })
@@ -115,6 +115,10 @@ def frames(u, kind, view):
 
 def export(key):
     u = UNITS[key]; imgs = []; anims = {}
+    if u['kind'] == 'x':                       # atlas ja montado por outro pipeline (codixel): so copia
+        import shutil
+        shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), u['src'] + '_atlas.png'), os.path.join(OUT, f'cx_{key}_atlas.png'))
+        shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), u['src'] + '_atlas.json'), os.path.join(OUT, f'cx_{key}_atlas.json')); print(key, 'copiado de', u['src']); return
     kinds = ['idle', 'walk', 'run', 'attack', 'hurt', 'death', 'cast']
     ALIAS = {}
     if u['kind'] == 'c' and not u.get('run'): ALIAS['run'] = 'walk'
