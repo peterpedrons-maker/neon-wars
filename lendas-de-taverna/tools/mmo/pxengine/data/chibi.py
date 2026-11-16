@@ -748,6 +748,53 @@ def accessory2(g, hat, view, hx, hy, back=False):
         if view == 'side': g.stamp(['F', 'F'], hx + 18, hy + 12)
         elif not back:
             for sx_ in (hx + 5, hx + 16): [g.put(sx_, hy + 14 - k, 'F') for k in range(3)]
+    elif hat == 'morvath':                                                   # Lorde dos mortos: elmo de ferro com chifres grossos + chama azul
+        accessory2(g, 'rusty_helm', view, hx, hy, back)
+        if view == 'side':
+            g.stamp(['III...','.IIJ..','..IIJ.','...IIJ','....II','....IJ'], hx + 3, hy - 4)
+            for k, (xx, yy) in enumerate(((9, -3), (10, -6), (11, -3), (12, -8), (13, -4), (14, -2))): g.put(hx + xx, hy + yy, 'W' if k % 2 else 'd'); g.put(hx + xx, hy + yy + 1, 'd')
+        else:
+            g.stamp(['III...','.IIJ..','..IIJ.','...IIJ','....II','....IJ'], hx - 4, hy - 4)
+            g.stamp(['...JII','..JII.','.JII..','JII...','II....','JI....'], hx + 20, hy - 4)
+            for k, xx in enumerate((6, 8, 10, 12, 14)):
+                for y_ in range(3 + (k % 2) * 2): g.put(hx + xx, hy - 2 - y_, 'W' if y_ == 0 else 'd')
+    elif hat == 'ratking':                                                   # Rei dos Ratos: orelhas grandes + coroa torta de ouro
+        accessory2(g, 'rat_ears', view, hx, hy, back)
+        if view == 'side':
+            for k, xx in enumerate((5, 7, 9, 11, 13)): g.put(hx + xx, hy - 3 - (k % 2) * 2, 'E'); g.put(hx + xx, hy - 2, 'E'); g.put(hx + xx, hy - 1, 'H')
+            for xx in range(hx + 4, hx + 15): g.put(xx, hy, 'E'); g.put(xx, hy + 1, 'H')
+        else:
+            for k, xx in enumerate((4, 7, 10, 13, 16)):
+                for y_ in range(3 + (k % 2) * 2): g.put(hx + xx, hy - 1 - y_, 'E' if y_ else 'H'); g.put(hx + xx + 1, hy - 1 - y_, 'E' if y_ > 1 else 'H')
+            for xx in range(hx + 3, hx + 19): g.put(xx, hy, 'E'); g.put(xx, hy + 1, 'H')
+            g.put(hx + 10, hy, 'W'); g.put(hx + 11, hy, 'W')
+    elif hat == 'gorgash':                                                   # chefe ogro: chifres grandes + argola no nariz + colar de ossos
+        accessory2(g, 'ogre', view, hx, hy, back)
+        if view == 'side':
+            g.stamp(['III...','.IIJ..','..IIJ.','...IIJ','....II','....IJ'], hx + 3, hy - 4); g.put(hx + 20, hy + 10, 'E'); g.put(hx + 20, hy + 11, 'E')
+        else:
+            g.stamp(['III...','.IIJ..','..IIJ.','...IIJ','....II','....IJ'], hx - 4, hy - 4)
+            g.stamp(['...JII','..JII.','.JII..','JII...','II....','JI....'], hx + 20, hy - 4)
+            if not back:
+                for xx in (hx + 9, hx + 10, hx + 11, hx + 12): g.put(xx, hy + 12, 'E')
+                g.put(hx + 9, hy + 13, 'E'); g.put(hx + 12, hy + 13, 'E')
+            for k, xx in enumerate(range(hx + 1, hx + 21, 3)): g.stamp(['II', 'IJ'], xx, hy + 19 + (1 if 0 < k < 6 else 0))
+    elif hat == 'skrix':                                                     # xama Skrix: coroa de penas altas + mascara de caveira
+        accessory2(g, 'gob_shaman', view, hx, hy, back)
+        for k, (xx, h_) in enumerate(((4, 6), (7, 9), (10, 11), (13, 9), (16, 6))):
+            for y_ in range(h_): g.put(hx + xx - (4 if view == 'side' else 0), hy - 2 - y_, 'W' if y_ % 4 == 3 else ('r' if y_ % 3 else 'A')); g.put(hx + xx + 1 - (4 if view == 'side' else 0), hy - 2 - y_, 'R')
+        if not back and view != 'side':
+            g.stamp(['IIIIII', 'IPIIPI', 'IIJJII'], hx + 8, hy - 1)
+    elif hat == 'boticario':                                                 # Boticario Podre: chapeu de aba larga + mascara de bico
+        if view == 'side':
+            for xx in range(hx - 1, hx + 20): g.put(xx, hy + 1, 'M'); g.put(xx, hy + 2, 'T')
+            g.stamp(['.MMMM.', 'MTTTTM', 'MTTTTM'], hx + 4, hy - 3)
+            if not back:
+                g.stamp(['IIIII', '.IIIIJ', '..IIIJJ', '...IIJJ', '....IJ'], hx + 15, hy + 6); g.put(hx + 13, hy + 7, 'W'); g.put(hx + 14, hy + 7, 'd')
+        else:
+            for xx in range(hx - 3, hx + 25): g.put(xx, hy + 1, 'M'); g.put(xx, hy + 2, 'T')
+            g.stamp(['.MMMMMMMM.', 'MTTTTTTTTM', 'MTTTTTTTTM'], hx + 6, hy - 3)
+            if not back: g.stamp(['IIIJ', '.IIJ', '.IIJ', '..IJ'], hx + 9, hy + 9); g.put(hx + 7, hy + 7, 'W'); g.put(hx + 14, hy + 7, 'W')
     elif hat == 'gob_ears':
         for x in range(hx + 1, hx + (19 if view == 'side' else 21)): g.put(x, hy + 4, 'T'); g.put(x, hy + 5, 'M')
         g.stamp(['TT', 'TM', '.M'], hx + (0 if view == 'side' else 20), hy + 5)
@@ -1264,6 +1311,9 @@ for _w in WEAPONS.values():                      # espadas mais longas e imponen
         _w['len'] = round(_w['len'] * 1.3); _w['_scaled'] = True
 
 
+EXTRA_PAL = dict(E='#ffd860', H='#b07818', I='#f0e8d0', J='#9a8a68', P='#2c1c3c', W='#58e0ff', d='#18a8d8')   # ouro, chifre, vazio, chama azul
+
+
 def make_palette(app):
     """Aparencia (dados) -> overrides de paleta."""
     over = {}
@@ -1277,6 +1327,8 @@ def make_palette(app):
         pass
     if 'weapon' in app: over.update(WEAPONS[app['weapon']].get('pal', {}))
     if 'weapon2' in app: over.update(WEAPONS[app['weapon2']].get('pal', {}))
+    over.update(EXTRA_PAL)
+    if 'pal' in app: over.update(app['pal'])
     return over
 
 
@@ -1307,7 +1359,7 @@ GROUPS = {'RrOL': 'R', 'TtM': 'M', 'cCD': 'D', 'sSp': 'S'}
 
 
 def sel_for(cls, pal, over):
-    sel = dict(SELS[cls])
+    sel = dict(SELS[cls]); sel.update(E='#5a3a08', H='#3a2404', I='#4a3e28', J='#2c2418', P='#100818', W='#0a4a68', d='#0a4a68')
     for chars, dark in GROUPS.items():
         if any(c in over for c in chars):
             col = darken(pal[dark], .5 if dark != 'S' else .55)
