@@ -187,7 +187,9 @@ function townExtras(sc,add,rnd){
     const arc=new T.Mesh(new T.TorusGeometry(1.75,.42,12,36,Math.PI),sm);arc.position.set(0,3.4,0);pg.add(arc);
     sc.vm=new T.ShaderMaterial({transparent:true,depthWrite:false,blending:T.AdditiveBlending,uniforms:{t:{value:0}},vertexShader:'varying vec2 u;void main(){u=uv*2.-1.;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
       fragmentShader:'varying vec2 u;uniform float t;void main(){float r=length(u*vec2(1.,.85));if(r>1.)discard;float a=atan(u.y,u.x);float s=sin(a*4.+r*9.-t*3.)*.5+.5;float s2=sin(a*3.-r*13.+t*2.2)*.5+.5;vec3 c=mix(vec3(.25,.1,.6),vec3(.5,.85,1.),s*s2);float f=smoothstep(1.,.75,r);gl_FragColor=vec4(c*(.5+.9*s)*f+vec3(.9,.8,1.)*pow(max(0.,1.-r*1.6),2.),f*.95);}'});
-    const vt=new T.Mesh(new T.PlaneGeometry(3.4,3.9),sc.vm);vt.position.set(0,2.0,.05);pg.add(vt);sc.pl=new T.PointLight(0x9a7aff,1.6,12,2);sc.pl.position.set(0,2.4,1.2);pg.add(sc.pl);}
+    const vt=new T.Mesh(new T.PlaneGeometry(3.4,3.9),sc.vm);vt.position.set(0,2.0,.05);pg.add(vt);
+    if(typeof PXFX==='undefined'||PXFX){const tx=new T.TextureLoader().load('assets/fx/portal_arcano.png',()=>{vt.visible=false;sp.visible=true;});tx.magFilter=T.NearestFilter;tx.minFilter=T.NearestFilter;tx.generateMipmaps=false;tx.repeat.set(1/8,1/6);
+      const sp=new T.Mesh(new T.PlaneGeometry(7.6,5.95),new T.MeshBasicMaterial({map:tx,transparent:true,depthWrite:false}));sp.position.set(0,2.5,.1);sp.visible=false;pg.add(sp);sc.pt=tx;}sc.pl=new T.PointLight(0x9a7aff,1.6,12,2);sc.pl.position.set(0,2.4,1.2);pg.add(sc.pl);}
 }
 
 // grade de "é chão?" das masmorras: Cripta usa a grade do mapa; Catacumbas/Esgoto leem os cômodos (claro = chão, escuro = vazio)
@@ -380,7 +382,7 @@ function render3(){
   if(scn.lifeUpd)scn.lifeUpd(t,dt);
   if(scn.lifeFn)scn.lifeFn(t,dt,n,camT.x,camT.z);
   if(scn.flies){const p=scn.flies.pts.geometry.attributes.position,b=scn.flies.base;for(let i=0;i<scn.flies.n;i++){p.setY(i,.8+((i*37)%10)/6+Math.sin(t*1.5+i)*.3);p.setX(i,b[i*3]+Math.sin(t*.8+i)*.4);}p.needsUpdate=true;}
-  if(scn.vm){scn.winMats.forEach(m=>m.emissiveIntensity=.2+n*1.4);scn.vm.uniforms.t.value=t;scn.pl.intensity=1.4+.4*Math.sin(t*2);}
+  if(scn.vm){scn.winMats.forEach(m=>m.emissiveIntensity=.2+n*1.4);scn.vm.uniforms.t.value=t;if(scn.pt){const i=Math.floor(t*20)%48;scn.pt.offset.set((i%8)/8,1-(Math.floor(i/8)+1)/6);}scn.pl.intensity=1.4+.4*Math.sin(t*2);}
   for(const s of scn.smoke){s.t+=dt;const u=(s.t%4)/4;s.sp.position.set(s.x+u*.9,s.y+u*2.6,s.z+Math.sin(u*5+s.t)*.1);const q=.5+u*1.8;s.sp.scale.set(q,q,1);s.sp.material.opacity=Math.sin(u*Math.PI)*.35*(1-n*.4);}
   R.render(S,cam);
   overlay2D(h,list);
