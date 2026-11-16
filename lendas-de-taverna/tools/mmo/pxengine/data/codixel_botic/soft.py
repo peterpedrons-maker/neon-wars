@@ -7,7 +7,7 @@ HERE = __import__('os').path.dirname(__import__('os').path.abspath(__file__))
 SRC = Image.open(HERE + '/ref_idle.png').convert('RGBA')
 bb = SRC.getbbox(); SRC = SRC.crop(bb); SW, SH = SRC.size            # 149x153
 FINAL_H = 64; S = FINAL_H / SH; SS = 4                                 # SS = supersample por pixel final
-W, H, OX, OY = 330, 230, 150, 25                                       # canvas em coordenadas-fonte (1 px fonte = 1 unidade)
+W, H, OX, OY = 390, 230, 150, 25                                       # canvas em coordenadas-fonte (1 px fonte = 1 unidade)
 CW, CH = int(W * S), int(H * S)
 # ---- cor: saturacao 1.3 e paleta fixa de 32 cores
 a = np.array(SRC).astype(float); m = a[..., 3] > 128
@@ -58,15 +58,15 @@ def about(j, M): return T(*j) @ M @ T(-j[0], -j[1])
 FEET = (82, 151)
 def fk(pose):
     """pose: {'root':(dx,dy,ang,pivot|None,sy), bone:(ang[, sy])}"""
-    dx, dy, ang, piv, sy = pose.get('root', (0, 0, 0, None, 1))
+    rt = tuple(pose.get('root', (0, 0, 0, None, 1))); dx, dy, ang, piv, sy = rt[:5]; sx = rt[5] if len(rt) > 5 else 1
     piv = piv or FEET
     Wd = {}
-    Wd['body'] = T(dx, dy) @ about(piv, R(ang)) @ about(JOINT['body'], Sc(1, sy))
+    Wd['body'] = T(dx, dy) @ about(piv, R(ang)) @ about(JOINT['body'], Sc(sx, sy))
     for b in BONES[1:]:
         v = pose.get(b, 0); a_, s_ = (v if isinstance(v, tuple) else (v, 1))
         Wd[b] = Wd[PARENT[b]] @ about(JOINT[b], R(a_) @ Sc(1, s_))
     return Wd
-def render(pose, fx=None):
+def render(pose, fx=None, flash=0., shake=(0, 0)):
     Wd = fk(pose)
     P = np.stack([PX, PY, np.ones_like(PX)], 0)
     out = np.zeros((3, PX.size))
@@ -96,6 +96,12 @@ def render(pose, fx=None):
     pal_ext = np.vstack([PAL, [[36, 26, 46], [184, 168, 144], [90, 70, 100]]])
     solid = opaque >= 7
     res[solid, :3] = pal_ext[best[solid]]; res[solid, 3] = 255
+    # pixels soltos (ruido do skinning): remove os que nao tem vizinho
+    sol = res[..., 3] > 0; nb = sum(np.roll(np.roll(sol, i, 0), j, 1).astype(int) for i in (-1, 0, 1) for j in (-1, 0, 1) if (i or j))
+    res[sol & (nb == 0), 3] = 0
+    if flash > 0:                                    # clarao de impacto (1 quadro)
+        m_ = res[..., 3] > 0; res[m_, :3] = (res[m_, :3] + (255 - res[m_, :3]) * flash).astype(np.uint8)
+    if shake != (0, 0): res = np.roll(res, (shake[1], shake[0]), (0, 1))
     return Image.fromarray(res)
 EXTRA_SHADOW, EXTRA_DUST = len(PAL), len(PAL) + 1
 def shadow(cx, w, al=0.5):

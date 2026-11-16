@@ -26,7 +26,7 @@ def simulate(n, kin, tgt, kicks=None, fps=14, sub=8):
         pose = {'root': k['root'], 'torso': k.get('torso', 0), 'legL': k.get('legL', 0), 'legR': k.get('legR', 0)}
         for b in DYN: pose[b] = sp[b].a
         if 'sq' in k: pose['torso'] = (k.get('torso', 0), k['sq'])
-        frames.append(render(pose, k.get('fx')))
+        frames.append(render(pose, k.get('fx'), k.get('flash', 0.), k.get('shake', (0, 0))))
     return frames
 def zero(f, b): return 0.
 def idle(n=16):
