@@ -2909,16 +2909,17 @@ function poiseHit(m,dmg,crit){if(m.stagger>0||m.pimm>0||m.ch||m.ent||(m.act&&m.a
   if(m.poise>=m.maxhp*.04){m.poise=0;m.stagger=1.4;m.pimm=8.6;m.act=null;m.vuln=Math.max(m.vuln||0,1.2);floatText(m.x,m.y-(m.kind==='boss'?104:70),'Postura quebrada','#ffd070',8,1.1);VF.burst(m.x,m.y-30,10,['#ffd070','#fff0b0'],{s0:30,s1:90,flat:.6,up:20});sfx('crit',.6);}}
 function startChannel(m){m.ch={t:0,dur:4.4};m.act=null;m.state='idle';m.take=.35;m.sts=null;
   floatText(m.x,m.y-100,m.T.furyTxt||'GRUNK ENFURECE!','#ff5a3a',12,1.8);bossSnd('roarbig');bossSnd('hum');
-  const c=m.T.aura;VF.wave(m.x,m.y,90,c[0],.8,4);VF.glow(m.x,m.y-30,80,c[0],.9);VF.shake(.5);chat(m.T.nome+' canaliza uma fúria sombria!',2);}
+  const c=m.T.aura;VF.wave(m.x,m.y,90,c[0],.8,4);VF.glow(m.x,m.y-30,80,c[0],.9);VF.shake(.5);VF.spr(m.x,m.y,'fx_runa',.9);VF.spr(m.x,m.y,'fx_runa',.6,{delay:1.4});chat(m.T.nome+' canaliza uma fúria sombria!',2);}
 function bossChannel(m,dt){const c=m.ch;c.t+=dt;m.state='idle';m.row=dir4(G.hero.x-m.x,G.hero.y-m.y);
   m.hp=Math.min(m.maxhp,m.hp+m.maxhp*.011*dt);                                   // regeneração durante a canalização
   if(Math.random()<dt*28)VF.pt(m.x+rnd(-24,24),m.y-rnd(0,70),{vy:-rnd(30,80),vx:rnd(-8,8),life:.9,col:['#ff5a3a','#ffd070','#ff2a1a'][rint(0,2)],sz:2.4});
   if(Math.random()<dt*5)VF.pt(m.x+rnd(-20,20),m.y-rnd(10,60),{vy:-rnd(20,40),life:1,col:'#7fe88a',sz:2.4});
+  if(Math.random()<dt*9)VF.glow(m.x,m.y-34,50+60*c.t/c.dur,Math.random()<.5?'#ff3a2a':'#ffa030',.22+.25*c.t/c.dur);if(Math.random()<dt*3)VF.wave(m.x,m.y,40+90*Math.random(),'#ff5a3a',.5,3);
   if(c.t>c.dur*.5&&!c.r2){c.r2=1;VF.wave(m.x,m.y,120,'#ff3a2a',.7,4);bossSnd('growl');}
   if(c.t>=c.dur){m.ch=null;m.take=null;m.fury=1;m.pow*=1.2;m.spdMul=1.3;m.aspdMul=.8;m.sk={};m.act=null;
     bossSnd('fury');VF.wave(m.x,m.y,160,'#ff3a2a',.9,6);VF.wave(m.x,m.y,100,'#ffd070',.7,3,.08);VF.burst(m.x,m.y-20,34,['#ff5a3a','#ffd070','#fff'],{s0:50,s1:200,flat:.6,up:40,g:90});VF.shake(.9);
     const h=G.hero,d=dist(m,h);if(d<120&&h.state!=='ko'){const k=Math.max(1,d);h.kvx=(h.x-m.x)/k*130;h.kvy=(h.y-m.y)/k*130;}
-    floatText(m.x,m.y-100,'MODO FÚRIA!','#ff3a2a',13,1.6);}}
+    floatText(m.x,m.y-100,'MODO FÚRIA!','#ff3a2a',13,1.6);VF.spr(m.x,m.y,'fx_impacto',1.3);VF.spr(m.x,m.y,'fx_terremoto',1.2,{delay:.1});VF.spr(m.x,m.y,'fx_fogo',.9,{delay:.15});gdecAdd({x:m.x,y:m.y,a:0,kind:'star',R:44,th:'lava',life:5});}}
 function bossSkillFx(m,pick){if(!(m.kind==='boss'||m.mini))return;if(m._bfxT!==undefined&&G.t-m._bfxT<.9)return;m._bfxT=G.t;const id=pick.id,x=m.x,y=m.y,w=pick.warn||.8;
   if(!['forget','echo','crown','dark','curse','potion'].includes(id))VF.spr(x,y,'fx_runa',id==='roar'||id==='screech'?.6:.4);
   if(id==='roar'||id==='screech'){VF.spr(x,y,'fx_terremoto',.9,{delay:w*.7});VF.wave(x,y,pick.r||120,'#ffd070',.6,4,w*.7);}
@@ -3058,7 +3059,7 @@ function updateMob(m,dt){
   if(m.kbT>0)m.kbT-=dt;if(m.vuln>0)m.vuln-=dt;if(m.sts){stUpdate(m,dt);if(m.dead)return;}
   if(m.kvx||m.kvy){m.x+=m.kvx*dt;m.y+=m.kvy*dt;const f=Math.exp(-11*dt);m.kvx*=f;m.kvy*=f;if(Math.abs(m.kvx)+Math.abs(m.kvy)<4)m.kvx=m.kvy=0;collide(m);m.wx=m.x;m.wy=m.y;}
   if((m.kind==='boss'||m.T.afterimg)&&m.dash)bossGhost(m);
-  if(((m.kind==='boss'&&m.ph)||(m.mini&&(m.fury||m.ch)&&fxBoss(m)))&&!m.dead&&Math.random()<dt*(6+8*(m.ph||2))){const cc=m.T.aura||['#ff6a3a'];VF.pt(m.x+rnd(-20,20),m.y-rnd(4,60),{vx:rnd(-8,8),vy:-rnd(20,55),life:rnd(.5,.9),col:cc[0],sz:rnd(1.6,2.6)});}
+  if(((m.kind==='boss'&&(m.ph||m.fury))||(m.mini&&(m.fury||m.ch)&&fxBoss(m)))&&!m.dead&&Math.random()<dt*(6+8*(m.ph||2))){const cc=m.T.aura||['#ff6a3a'];VF.pt(m.x+rnd(-20,20),m.y-rnd(4,60),{vx:rnd(-8,8),vy:-rnd(20,55),life:rnd(.5,.9),col:cc[0],sz:rnd(1.6,2.6)});}
   if(m.dash){const k=m.dash,dp=Math.min(dt/k.dur,1-k.p);m.x+=k.dx*dp;m.y+=k.dy*dp;k.p+=dp;collide(m,6);m.wx=m.x;m.wy=m.y;m.state='walk';m.animT+=dt*10;if(m.T.afterimg){if(Math.random()<dt*100)VF.puff(m.x,m.y,1,['#a89878','#6a5a48'],{r:10,up:12,sz:1.5,a:.65});if(Math.random()<dt*60)VF.pt(m.x-Math.sign(k.dx)*rnd(10,26),m.y-rnd(8,40),{vx:-Math.sign(k.dx)*rnd(40,110),vy:rnd(-6,6),life:.25,col:'#ffe8c0',sz:1.4,add:true});}if(Math.random()<dt*40)VF.pt(m.x+rnd(-8,8),m.y-rnd(0,4),{vy:-rnd(6,14),life:.4,col:'#a89878',sz:2.4,add:false});if(k.p>=1)m.dash=null;return;}
   if(m.stun>0){m.stun-=dt;m.state='hurt';return;}
   m.cd-=dt;const T=m.T,d=dist(m,h),ko=h.state==='ko';
@@ -4114,10 +4115,15 @@ const CXSIZE={rato:.78,ratkin:.9,barata:.7,aranha:.85,cobra:.85,sapo:.9,goblin:.
  javali:1.05,lobo:1.0,gnoll:1.12,carnical:1.05,mumia:1.12,afogado:1.12,zumbi:1.2,ogrinho:1.15,ogro_lenhador:1.4,tronco:1.45,cav_caido:1.3,gargula:1.15,guarda_c:1.15,ogro:1.3,esqueleto:.95,
  grunk:1.15,morvath:1.2,gorgash:1.35,ratking:1.1,skrix:1.05,presa:1.25,vampiro:1.15,boticario:1.0,rei:1.2};
 function cxSize(e){const k=cxKeyOf(e);return (k&&CXSIZE[k])||1;}
-function bsc(e){const k=CXON&&cxKeyOf(e);return k&&CXS[k]?CXSC*cxSize(e):e.T.scale;}
-function msc(e){const k=CXON&&cxKeyOf(e);return (k&&CXS[k]?CXSC*cxSize(e):1)*(e.sc||1);}
+function chScale(e){return(e.fury?1.1:1)*(e.ch?1+.14*Math.min(1,e.ch.t/e.ch.dur)+.025*Math.sin(G.t*32):1);}
+function bsc(e){const k=CXON&&cxKeyOf(e);return k&&CXS[k]?CXSC*cxSize(e)*chScale(e):e.T.scale;}
+function msc(e){const k=CXON&&cxKeyOf(e);return (k&&CXS[k]?CXSC*cxSize(e)*(e.mini?chScale(e):1):1)*(e.sc||1);}
 const CXBLANK=(()=>{const c=document.createElement('canvas');c.width=c.height=1;return [c,0,0,1,1,0,0,0,1];})();
-function cxFrame(e){if(!CXON||(e.kind!=='hero'&&e.kind!=='mob'&&e.kind!=='boss'&&e.kind!=='npc'&&e.kind!=='vill'))return null;const k=cxKeyOf(e);if(!k)return null;const sh=CXS[k];if(!sh){if(sh===undefined){cxLoad(k);if(e.kind==='boss'||e.kind==='mob')return CXBLANK;}return null;}
+/* FÚRIA DO CHEFE: versão do atlas com cores de fúria (vermelho/brasa), gerada uma vez por chefe — antes da arte pixel o chefe mudava de aparência ao enfurecer */
+function cxFuryAtlas(k){const sh=CXS[k];if(!sh||CXS[k+'_f']!==undefined)return;CXS[k+'_f']=null;try{const im=sh.atlasImg,c=document.createElement('canvas');c.width=im.naturalWidth||im.width;c.height=im.naturalHeight||im.height;const x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,c.width,c.height),a=d.data;
+  for(let i=0;i<a.length;i+=4){if(a[i+3]===0)continue;const r=a[i],g=a[i+1],b=a[i+2],l=(r+g+b)/3;a[i]=Math.min(255,r*1.32+26);a[i+1]=Math.round(g*(l>200?.8:.58));a[i+2]=Math.round(b*(l>200?.55:.42));}
+  x.putImageData(d,0,0);CXS[k+'_f']={atlasImg:c,meta:sh.meta};}catch(err){CXS[k+'_f']=null;}}
+function cxFrame(e){if(!CXON||(e.kind!=='hero'&&e.kind!=='mob'&&e.kind!=='boss'&&e.kind!=='npc'&&e.kind!=='vill'))return null;let k=cxKeyOf(e);if(k&&e.fury&&(e.kind==='boss'||e.mini)&&k!=='rei'){cxFuryAtlas(k);if(CXS[k+'_f'])k=k+'_f';}if(!k)return null;const sh=CXS[k];if(!sh){if(sh===undefined){cxLoad(k);if(e.kind==='boss'||e.kind==='mob')return CXBLANK;}return null;}
   const M=sh.meta,r=e.row===0?'u':e.row===2||e.row===undefined?'d':'s',mir=e.row===1,a=e.act;
   const L=n=>(M.anims[n+'_'+r]||M.anims['idle_'+r]),A=(n,i)=>{const l=L(n),q=l[Math.max(0,Math.min(l.length-1,i|0))];return [sh.atlasImg,(q%M.cols)*M.w,((q/M.cols)|0)*M.h,M.w,M.h,M.ax,M.ay,mir?1:0,1];},
     AL=(n,i)=>{const l=L(n).length;return A(n,((Math.floor(i)%l)+l)%l);};
@@ -4127,7 +4133,7 @@ function cxFrame(e){if(!CXON||(e.kind!=='hero'&&e.kind!=='mob'&&e.kind!=='boss'&
   if(e.dod)return AL('run',(e.dod.t||0)*30);
   if(e.state==='hurt'||e.stun>0||(e.stagger>0&&!(a&&a.skill)))return A('hurt',e.flash>.07?1:2);
   if(a&&(e.state==='atk'||a.skill)){const p=Math.min(.999,a.t/a.dur),hit=Math.max(.15,Math.min(.9,a.hit||.5)),imp=.6,u=p<hit?p/hit*imp:imp+(p-hit)/(1-hit)*(1-imp),nm=(a.cast||a.skill)?'cast':'attack';return A(nm,u*L(nm).length);}
-  if(e.ch)return A('cast',3+(Math.floor(G.t*8)%2));
+  if(e.ch)return A('cast',9+(Math.floor(G.t*7)%4));
   if(e.state==='walk'){const run=e.kind==='hero'&&(e.rk||0)>.5;return AL(run?'run':'walk',e.animT*(run?14:e.kind==='hero'?20.8:14));}
   return AL('idle',(G.t+(e._cxp||(e._cxp=Math.random()*9)))*10);}
 function entFrame0(e){
@@ -4232,7 +4238,7 @@ function dollBat(e){const k=e.T.atlas,sh=SHEETS[k];if(!sh)return null;const a=e.
   if(e.dead||e.ch||e.stun>0||e.stagger>0||(a&&(a.skill||e.state==='atk')))return null;
   const p=(k==='vamp'&&e.fury)?'e_':'',nm=sh.meta.anims[p+'fly']?p+'fly':'fly',n=sh.meta.anims[nm].length,mv=e.state==='walk',cyc=mv?1.1:1.9,ph=((G.t+e.x*.013)%cyc)/cyc,fw=mv?.5:.3,i=ph<fw?Math.floor(ph/fw*n)%n:0;
   dollSet(e,{k:'idle'});e.dx.y=Math.sin(G.t*3+e.x*.05)*(mv?1.5:2.5);e.dx.rot=Math.sin(G.t*2+e.x*.03)*.03;return atlasFrame(sh,nm,i);}
-function entFrame(e){e.dx=null;e.glowF=-1;{const f=cxFrame(e);if(f)return f;}
+function entFrame(e){e.dx=null;e.glowF=-1;{const f=cxFrame(e);if(f){if(e.ch&&(e.kind==='boss'||e.mini)&&f!==CXBLANK)e.dx={x:rnd(-1.6,1.6),y:rnd(-1,1),rot:rnd(-.05,.05),sx:1,sy:1};return f;}}
   if(DOLL&&(e.kind==='boss'||e.kind==='mob'||e.kind==='hero')){let fr=null;
     if((e.T&&(e.T.atlas==='bat'||e.T.atlas==='vamp'))&&e.kind!=='hero'){fr=dollBat(e);if(fr)return fr;e.dx=null;return entFrame0(e);}
     if(e.kind==='hero'&&PXH&&SAVE.cls==='guerreiro'&&SHEETS.pxhero){fr=entFrame0(e);if(e.state==='walk')dollSet(e,{k:'move',g:'hop'});else if(e.state==='idle')dollSet(e,{k:'idle'});return fr;}
