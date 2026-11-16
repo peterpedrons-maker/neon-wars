@@ -2359,7 +2359,7 @@ function gainXP(x,at){
 function hurtHero(dmg,fromX,fromY,kf=1){
   const h=G.hero;if(h.state==='ko')return;if(h.inv>0){floatText(h.x,h.y-58,'Esquivou!','#cfe9ff',9,1);return;}{const tk=stMul(h,'taken');if(tk!==1)dmg=Math.max(1,Math.round(dmg*tk));}if(SAVE.sub==='cavaleiro')dmg=Math.round(dmg*.92);{const dr=tf('dmgred')+sb('dmgred');if(dr)dmg=Math.max(1,Math.round(dmg*(1-Math.min(.6,dr))));}if(h.shield>0){const ab=Math.min(h.shield,dmg);h.shield-=ab;dmg-=ab;floatText(h.x+(Math.random()<.5?-15:15),h.y-34,'-'+ab,'#7ab8ff',10,.9,{pop:1,vy:20});if(dmg<=0){sfx('hit_1',.4,1.3);return;}}h.hp-=dmg;h.flash=.14;h.combat=4;
   if(h.act&&h.act.ch>0&&!h.act.done&&dmg>=h.maxhp*.12){h.act=null;h.state='idle';h.cd=.6;floatText(h.x,h.y-64,'Interrompido!','#ff8a78',9,1);sfx('ui_denied',.3);}
-  {const hv=dmg>=h.maxhp*.25,md=dmg>=h.maxhp*.12;floatText(h.x+(Math.random()<.5?-15:15),h.y-34,'−'+nfm(dmg),hv?'#ff2a1a':'#ff5448',hv?17:md?13.5:12,hv?1.25:1,{pop:1,vy:22,bold:1,glow:hv||md,k:'taken'});}spark(h.x,h.y-16,4);knock(h,h.x-fromX,h.y-fromY,52*Math.min(kf,1.4));sfx(Math.random()<.5?'hit_0':'hit_1',.55,.9);
+  {const hv=dmg>=h.maxhp*.25,md=dmg>=h.maxhp*.12;floatText(h.x+(Math.random()<.5?-15:15),h.y-34,'−'+nfm(dmg),hv?'#ff2a1a':'#ff5448',hv?17:md?13.5:12,hv?1.25:1,{pop:1,vy:22,bold:1,glow:hv||md,k:'taken'});}if(dmg>=h.maxhp*.12)VF.spr(h.x,h.y-8,'fx_corte',.5);spark(h.x,h.y-16,4);knock(h,h.x-fromX,h.y-fromY,52*Math.min(kf,1.4));sfx(Math.random()<.5?'hit_0':'hit_1',.55,.9);
   if(h.hp<=0){h.hp=0;h.state='ko';h.koT=3;h.act=null;sfx('death',.8);chat('Você caiu em batalha…',2);$('ko').classList.add('on');$('ko').style.display='flex';SAVE.gold=Math.round(SAVE.gold*.9);}
 }
 function heroRevive(){const h=G.hero;h.sts=null;h.state='idle';h.hp=Math.round(h.maxhp*.6);{const f_=freeSpot(ZONE.start[0],ZONE.start[1]);h.x=f_[0];h.y=f_[1];}h.kvx=h.kvy=0;$('ko').classList.remove('on');$('ko').style.display='none';
@@ -2872,10 +2872,17 @@ function bossChannel(m,dt){const c=m.ch;c.t+=dt;m.state='idle';m.row=dir4(G.hero
     bossSnd('fury');VF.wave(m.x,m.y,160,'#ff3a2a',.9,6);VF.wave(m.x,m.y,100,'#ffd070',.7,3,.08);VF.burst(m.x,m.y-20,34,['#ff5a3a','#ffd070','#fff'],{s0:50,s1:200,flat:.6,up:40,g:90});VF.shake(.9);
     const h=G.hero,d=dist(m,h);if(d<120&&h.state!=='ko'){const k=Math.max(1,d);h.kvx=(h.x-m.x)/k*130;h.kvy=(h.y-m.y)/k*130;}
     floatText(m.x,m.y-100,'MODO FÚRIA!','#ff3a2a',13,1.6);}}
+function bossSkillFx(m,pick){if(!(m.kind==='boss'||m.mini))return;if(m._bfxT!==undefined&&G.t-m._bfxT<.9)return;m._bfxT=G.t;const id=pick.id,x=m.x,y=m.y,w=pick.warn||.8;
+  if(!['forget','echo','crown','dark','curse','potion'].includes(id))VF.spr(x,y,'fx_runa',id==='roar'||id==='screech'?.6:.4);
+  if(id==='roar'||id==='screech'){VF.spr(x,y,'fx_terremoto',.9,{delay:w*.7});VF.wave(x,y,pick.r||120,'#ffd070',.6,4,w*.7);}
+  if(id==='leap'||id==='dive'||id==='bounce'||id==='burrow')VF.spr(x,y,'fx_pouso',.6);
+  if(id==='charge'||id==='zig'){VF.spr(x,y,'fx_pouso',.6);VF.spr(x,y,'fx_pouso',.6,{delay:.15});}
+  if(id==='spin')VF.spr(x,y,'fx_ciclone',.9,{delay:w});
+  if(id==='blink')VF.spr(x,y,'fx_invoca',.4);}
 const BOSS_PH=[.66,.33];   // limiares de fase: a cada um o chefe ruge, fica invulnerável por um instante e passa a atacar mais rápido (ideia futura: trocar a camada de armadura a cada fase)
 function bossPhaseCheck(m){if(m.T.enrageAt)return false;const ph=m.ph||0;if(ph>=BOSS_PH.length||m.hp>=m.maxhp*BOSS_PH[ph])return false;
   m.ph=ph+1;m.spdMul=1+.1*m.ph;m.aspdMul=1-.1*m.ph;m.act=null;m.ent={k:'phase',t:0,dur:1.3};m.state='idle';
-  const c=m.T.aura||['#ff5a3a','#ffd070'];floatText(m.x,m.y-90,m.ph===1?'ENFURECIDO!':'FÚRIA!','#ff5a3a',13,1.5);
+  const c=m.T.aura||['#ff5a3a','#ffd070'];floatText(m.x,m.y-90,m.ph===1?'ENFURECIDO!':'FÚRIA!','#ff5a3a',13,1.5);VF.spr(m.x,m.y,'fx_runa',.7);VF.spr(m.x,m.y,'fx_impacto',1.1,{delay:.5});VF.spr(m.x,m.y,'fx_terremoto',1,{delay:.6});
   G.fx.push({k:'ring',x:m.x,y:m.y,life:.8,max:.8,col:c[0]});VF.wave(m.x,m.y,110,c[0],.7,4);VF.wave(m.x,m.y,70,c[1],.5,2,.1);VF.burst(m.x,m.y-20,30,[c[0],c[1],'#fff'],{s0:50,s1:190,flat:.6,up:40,g:90});VF.glow(m.x,m.y-30,90,c[0],.7);VF.shake(.6);sfx('sk_grito',.8);return true;}
 function mobSkillStart(m,d,dt){const list=m.T.msk||MSK[m.kind==='boss'?'boss':m.type];if(!list)return false;
   if(m.kind==='boss'&&m.hp>0&&bossPhaseCheck(m))return true;
@@ -2884,6 +2891,7 @@ function mobSkillStart(m,d,dt){const list=m.T.msk||MSK[m.kind==='boss'?'boss':m.
   for(const s of list){if(frac>s.hp)continue;if(s.once&&m.used&&m.used[s.id])continue;if((m.sk[s.id]||0)>0)continue;if(s.min&&d<s.min)continue;if(s.max&&d>s.max)continue;const w=s.wt||1;wsum+=w;if(Math.random()*wsum<w)pick=s;}
   if(!pick||Math.random()>dt*1.6)return false;
   m.sk[pick.id]=pick.cd*rnd(.9,1.15)*(m.ph?[1,.8,.6][m.ph]||.6:1)*(m.fury?.65:1);m.row=dir4(h.x-m.x,h.y-m.y);m.act={t:0,dur:pick.warn+.45,done:true,skill:true,anim:pick.id};m.state='atk';{const SM={charge:'charge',zig:'charge',spin:'spin',guard:'guard',swarm:'swarm',plague:'plague',burrow:'burrow',curse:'dark',summon:'dark',rain:'dark',blink:'dark',potion:'flask',dive:'screech',bounce:'slam',totem:'dark'};if(SM[pick.id])bossSnd(SM[pick.id]);}
+  bossSkillFx(m,pick);
   if(pick.id==='forget'){VF.spr(m.x,m.y,'fx_runa',.45);m.act.fxT=m.act.dur*.55;bossSnd('hum');VF.glow(m.x,m.y-40,60,'#a070ff',.9);m.act.fx=mm=>{const hh=G.hero;if(!hh||hh.state==='ko')return;const sl=(SAVE.eqs||[]).filter(i=>i>=0);if(!sl.length)return;const i=sl[Math.floor(Math.random()*sl.length)];hh.sk[i]=Math.max(hh.sk[i]||0,pick.lock);floatText(hh.x,hh.y-70,'Esquecido!','#c8a0ff',11,1.6,{pop:1,bold:1,glow:1});VF.burst(hh.x,hh.y-30,18,['#a070ff','#efe0ff','#fff'],{s0:30,s1:110,flat:.3,up:60});VF.spr(hh.x,hh.y,'rei_explosao_roxa',.3);VF.ringw(hh.x,hh.y,40,'#a070ff',.6,5);VF.glow(hh.x,hh.y-24,50,'#a070ff',.8);sfx('ui_denied',.6);buildBar();};return true;}
   if(pick.id==='echo'){VF.spr(m.x,m.y,'fx_runa',.45);const f=freeSpot(h.x,h.y);addZone({shape:'circle',x:f[0],y:f[1],r:pick.r,warn:pick.warn,mult:pick.mult,st:pick.st,src:m,shake:.25,pc:'#b890ff'});bossSnd('slam');VF.glow(m.x,m.y-40,50,'#b890ff',.7);
     setTimeout(()=>{if(!G.on||m.dead||G.scene!=='dungeon')return;const hh=G.hero,g=freeSpot(hh.x,hh.y);VF.wave(g[0],g[1],pick.r,'#e0d0ff',.5,4);VF.burst(g[0],g[1]-10,12,['#b890ff','#fff'],{s0:30,s1:90,flat:.3,up:50});floatText(g[0],g[1]-64,'Eco!','#e0d0ff',10,1,{pop:1});addZone({shape:'circle',x:g[0],y:g[1],r:pick.r,warn:.9,mult:pick.mult*.85,st:pick.st,src:m,shake:.2,pc:'#e0d0ff'});},(pick.warn+.5)*1000);return true;}
