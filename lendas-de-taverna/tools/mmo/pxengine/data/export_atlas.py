@@ -100,6 +100,7 @@ ANIMS = {
 }
 for _k, _v in ANIMS.items():
     if _k in UNITS: UNITS[_k]['anim'] = _v
+GCAST = {'grunk': 'slam', 'gorgash': 'slam', 'presa': 'slam', 'morvath': 'cast', 'ratking': 'cast', 'vampiro': 'cast', 'skrix': 'cast'}
 GEN = {   # (ataque, dano, morte) para inimigos fora do motor chibi
     'goblin': ('lunge', 'flinch', 'tumble'), 'goblin_x': ('cast', 'stagger', 'dissolve'), 'sapador': ('lunge', 'flinch', 'tumble'), 'bandido': ('lunge', 'flinch', 'fall'),
     'carnical': ('lunge', 'flinch', 'melt'), 'mumia': ('slam', 'stoic', 'dissolve'), 'necro': ('cast', 'stagger', 'dissolve'), 'cav_caido': ('slam', 'stoic', 'topple'),
@@ -110,6 +111,8 @@ GEN = {   # (ataque, dano, morte) para inimigos fora do motor chibi
     'ogrinho': ('slam', 'stoic', 'topple'), 'espectro': ('cast', 'stagger', 'dissolve'), 'morcego': ('pounce', 'stagger', 'flip'), 'slime': ('pounce', 'flinch', 'melt'),
     'vampiro': ('pounce', 'stagger', 'flip'),
 }
+for _k, _v in GCAST.items():
+    if _k in UNITS: UNITS[_k]['gcast'] = _v
 for _k, _v in GEN.items():
     if _k in UNITS and UNITS[_k]['kind'] != 'c': UNITS[_k]['gen'] = dict(attack=_v[0], hurt=_v[1], death=_v[2])
 
@@ -135,6 +138,14 @@ for _k, (_b, _o) in _VAR.items():
 
 
 def frames(u, kind, view):
+    if kind == 'cast' and u.get('gcast'):                 # habilidade de chefe: animacao propria (nao reaproveita o ataque)
+        import genanim as GA
+        st = frames0(u, 'idle', view)[0]
+        if u['kind'] == 'c':
+            base = [f[0].convert('RGBA') for f in C.anim(view, 'cast', u['ap']['cls'], None, u['ap'], dense=1)]
+        else:
+            base = [f.convert('RGBA') for f in frames0(u, 'idle', view)]
+        return GA.attack({'right': 'side', 'down': 'front', 'up': 'back'}.get(view, view), base, st.convert('RGBA'), u['gcast'])
     fr = frames0(u, kind, view)
     if u.get('gen') and kind in ('attack', 'hurt', 'death'):
         import genanim as GA
@@ -181,7 +192,8 @@ def export(key):
     ALIAS = {}
     if u['kind'] == 'c' and not u.get('run'): ALIAS['run'] = 'walk'
     elif u['kind'] != 'c': ALIAS['run'] = 'walk'
-    if u['kind'] != 'c' or not (u.get('cast') or u['ap']['cls'] in ('mage', 'cleric', 'archer')): ALIAS['cast'] = 'attack'
+    if u.get('gcast'): pass
+    elif u['kind'] != 'c' or not (u.get('cast') or u['ap']['cls'] in ('mage', 'cleric', 'archer')): ALIAS['cast'] = 'attack'
     for kind in kinds:
         for vk, vn in VIEWS.items():
             if kind in ALIAS: anims[f'{kind}_{vk}'] = anims[f'{ALIAS[kind]}_{vk}']; continue

@@ -48,7 +48,7 @@ def attack(view, fr, st, style):
             else: k = (19 - i) / 6; im = xf(im, 1 + .08 * k, 1 - .08 * k)
         else:  # cast
             if i <= 10: k = i / 10; im = xf(im, 1, 1 + .06 * k, -int(ux * 1.5 * k), -int(uy * 1.5 * k) - int(2 * k))
-            elif i == 11: im = A2.flash(xf(im, 1.05, 1.0, int(ux * 2), int(uy * 2)), .5)
+            elif i == 11: im = A2.flash(xf(im, 1.05, 1.0, int(ux * 2), int(uy * 2)), .3)
             else: k = (19 - i) / 8; im = xf(im, 1, 1 + .06 * max(k, 0))
         out.append(im)
     return out
