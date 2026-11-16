@@ -21,7 +21,7 @@ UNITS = {
     'h_ladino': dict(kind='c', ap=dict(cls='rogue', weapon='adaga_veneno', weapon2='adaga_veneno', face_style='sly'), run=1),
     'h_clerigo': dict(kind='c', ap=dict(cls='cleric', weapon='maca_ferro'), run=1),
     'h_arqueiro': dict(kind='c', ap=dict(cls='archer', weapon='arco_curto'), run=1),
-    'h_bardo': dict(kind='c', ap=dict(cls='mage', weapon='cajado_natureza', hair='castanho', clothes='verde'), run=1),
+    'h_bardo': dict(kind='c', ap=dict(cls='mage', weapon='alaude', hair='castanho', clothes='verde'), run=1),
     'goblin': dict(kind='e', name='goblin'), 'goblin_x': dict(kind='e', name='goblin_x'),
     'esqueleto': dict(kind='c', ap=dict(cls='warrior', skin='osso', hair='g_osso', eyes='oco', hat='none', outfit='ribs', clothes='osso', metal='ferro', weapon='espada_ferro', face_style='hollow', tn_off=2, shape=dict(skull=1, slim=1, eyeglow='W'))),
     'esqmago': dict(kind='c', ap=dict(cls='mage', face_style='hollow', skin='osso', hair='g_osso', eyes='oco', hat='hood', outfit='robe', clothes='azul', weapon='cajado_gelo')),
@@ -86,6 +86,7 @@ UNITS.update({
 
 # ESTILOS DE ANIMACAO por personagem (chibi_anim3): attack slash|smash|jab|cast, hurt flinch|stagger|stoic, death fall|topple|crumble|dissolve|tumble
 ANIMS = {
+    'h_bardo': dict(attack='play', hurt='stagger'),
     'h_mago': dict(attack='cast', hurt='stagger'), 'h_ladino': dict(attack='jab', hurt='stagger', death='tumble'), 'h_clerigo': dict(attack='smash'),
     'esqueleto': dict(attack='jab', hurt='stagger', death='crumble'), 'esqmago': dict(attack='cast', hurt='stagger', death='dissolve'),
     'guarda_c': dict(attack='smash', hurt='stoic', death='crumble'), 'cultista': dict(attack='cast', hurt='stagger', death='dissolve'),
