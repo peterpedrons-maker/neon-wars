@@ -23,9 +23,9 @@ UNITS = {
     'h_arqueiro': dict(kind='c', ap=dict(cls='archer', weapon='arco_curto'), run=1),
     'h_bardo': dict(kind='c', ap=dict(cls='mage', weapon='cajado_natureza', hair='castanho', clothes='verde'), run=1),
     'goblin': dict(kind='e', name='goblin'), 'goblin_x': dict(kind='e', name='goblin_x'),
-    'esqueleto': dict(kind='e', name='esqueleto'),
+    'esqueleto': dict(kind='c', ap=dict(cls='warrior', skin='osso', hair='g_osso', eyes='oco', hat='none', outfit='ribs', clothes='osso', metal='ferro', weapon='espada_ferro', face_style='hollow', tn_off=2, shape=dict(skull=1, slim=1, eyeglow='W'))),
     'esqmago': dict(kind='c', ap=dict(cls='mage', face_style='hollow', skin='osso', hair='g_osso', eyes='oco', hat='hood', outfit='robe', clothes='azul', weapon='cajado_gelo')),
-    'guarda_c': dict(kind='c', ap=dict(cls='warrior', face_style='hollow', skin='osso', hair='g_osso', eyes='oco', hat='rusty_helm', outfit='mail', clothes='osso', metal='ferro', weapon='maca_ferro', bulk=1)),
+    'guarda_c': dict(kind='c', ap=dict(cls='warrior', face_style='hollow', skin='osso', hair='g_osso', eyes='oco', hat='rusty_helm', outfit='mail', clothes='osso', metal='ferro', weapon='maca_ferro', bulk=1, shape=dict(shield=1, crest=1, eyeglow='c'), pal=dict(Y='#b02820', X='#e85a3a'))),
     'cultista': dict(kind='e', name='cultista'), 'gargula': dict(kind='e', name='gargula'), 'zumbi': dict(kind='e', name='zumbi'),
     'javali': dict(kind='b', name='javali'), 'rato': dict(kind='b', name='rato'),
     'espectro': dict(kind='r', name='espectro'), 'morcego': dict(kind='r', name='morcego'), 'slime': dict(kind='r', name='slime'),
@@ -50,7 +50,7 @@ UNITS.update({
     'cogumelo': dict(kind='f', name='cogumelo'), 'ogrinho': dict(kind='f', name='ogrinho'), 'lobo': dict(kind='f', name='lobo'), 'aranha': dict(kind='f', name='aranha'),
     'cobra': dict(kind='f', name='cobra'), 'sapo': dict(kind='f', name='sapo'), 'barata': dict(kind='f', name='barata'),
 })
-UNITS.update({'ogro': dict(kind='e', name='ogro'), 'grunk': dict(kind='e', name='grunk'), 'morvath': dict(kind='e', name='morvath')})
+UNITS.update({'ogro': dict(kind='c', ap=dict(cls='warrior', skin='ogro', hair='g_ogro_b', eyes='brasa', hat='ogre2', outfit='mail', metal='ferro', clothes='bronze', weapon='maca_ferro', tn_off=3, hdy_off=3, bulk=1, face_style='brute', shape=dict(fists=1))), 'grunk': dict(kind='e', name='grunk'), 'morvath': dict(kind='e', name='morvath')})
 ALIAS_CAST_ONLY = False
 DENS = {'idle': 2, 'walk': 2, 'run': 2, 'attack': 1, 'hurt': 1, 'death': 1, 'cast': 1}
 
