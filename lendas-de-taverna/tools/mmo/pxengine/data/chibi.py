@@ -767,6 +767,91 @@ def restyle_hair(g, style, view, hx, hy, back):
             for h_ in range(3 + (k % 2) * 2): g.put(xx, hy - 1 - h_, 'R' if h_ % 2 else 'O')
 
 
+
+def shape_pass(g, view, back, cx, body_top, boot_top, hx, hy, dx):
+    """Silhueta propria por personagem (dono: 'todos parecem o mesmo'): crânio de caveira (afina maxilar/nuca), corpo magro, escudo, punhos grandes.
+    Opcoes em appearance['shape'] = dict(skull=1, slim=1, shield=1, fists=1, helmcrest=1)."""
+    S = _SHP
+    if not S: return
+    def put(x, y, ch): g.put(x, y, ch)
+    def clear(x, y): g.put(x, y, '.')
+    side = (view == 'side')
+    if S.get('skull'):
+        if not side:
+            cuts = {0: 3, 1: 2, 2: 1, 12: 1, 13: 2, 14: 3, 15: 4, 16: 6, 17: 7}
+            for r, n in cuts.items():
+                for c in range(n):
+                    clear(hx + c, hy + r); clear(hx + 21 - c, hy + r)
+            if not back:
+                for r, cc in ((1, 10), (2, 11), (3, 10), (4, 11)): put(hx + cc, hy + r, 'k')       # rachadura no cranio
+                for c in (7, 9, 12, 14): put(hx + c, hy + 15, 'w'); put(hx + c, hy + 16, 'w')        # dentes
+        else:
+            for r, n in {0: 3, 1: 2, 2: 1, 14: 3, 15: 4, 16: 6, 17: 8}.items():
+                for c in range(n): clear(hx + c, hy + r)
+            for r, n in {16: 3, 17: 5}.items():
+                for c in range(n): clear(hx + 20 - c, hy + r)
+            for r, cc in ((1, 9), (2, 10), (3, 9)): put(hx + cc, hy + r, 'k')
+    if S.get('eyeglow') and not back:
+        gc = S.get('eyeglow')
+        if not side:
+            for c in (hx + 6, hx + 15): put(c, hy + 11, gc)
+        else: put(hx + 15, hy + 11, gc)
+    if S.get('skull') and back and not side:
+        for r in range(2, 13): put(hx + 10, hy + r, 'S') if r % 2 == 0 else put(hx + 11, hy + r, 'S')
+        for r in (14, 15, 16): put(hx + 10, hy + r, 'S'); put(hx + 11, hy + r, 's')
+    if S.get('slim') and not side:
+        for y in range(body_top + 1, boot_top):
+            for c in (cx - 6, cx + 5): clear(c + dx, y)
+    if S.get('slim') and side:
+        for y in range(body_top + 1, boot_top):
+            clear(cx - 5 + dx, y); clear(cx + 3 + dx, y)
+    if S.get('fists'):
+        my = body_top + 1
+        if not side:
+            for (x0, sgn) in ((cx - 13 + dx, 1), (cx + 8 + dx, 1)):
+                for yy in range(5):
+                    for xx in range(5):
+                        if (xx in (0, 4) and yy in (0, 4)): continue
+                        put(x0 + xx, my + yy + 2, 's' if (xx + yy) % 4 else 'S')
+                for k in range(4): put(x0 + 1 + k, my + 7, 'S')
+                put(x0 + 1, my + 3, 'p'); put(x0 + 2, my + 3, 'p')
+        else:
+            x0 = cx + 2 + dx
+            for yy in range(5):
+                for xx in range(5):
+                    if (xx in (0, 4) and yy in (0, 4)): continue
+                    put(x0 + xx, my + yy + 3, 's' if (xx + yy) % 4 else 'S')
+            put(x0 + 1, my + 4, 'p'); put(x0 + 2, my + 4, 'p')
+    if S.get('shield'):
+        if not side:
+            sx, sy = (cx + 10 + dx, body_top + 4) if back else (cx - 11 + dx, body_top + 4)
+            for yy in range(-5, 6):
+                for xx in range(-4, 5):
+                    d = (xx / 4.4) ** 2 + (yy / 5.4) ** 2
+                    if d > 1: continue
+                    ch = 'V' if d > .72 else ('u' if (xx + yy < -3 and d < .5) else 'U')
+                    put(sx + xx, sy + yy, ch)
+            if not back:
+                for yy in range(-1, 2):
+                    for xx in range(-1, 2):
+                        if xx * xx + yy * yy <= 2: put(sx + xx, sy + yy, 'E' if (xx + yy) < 1 else 'H')
+        else:
+            sx, sy = cx + 1 + dx, body_top + 4
+            for yy in range(-5, 6):
+                for xx in range(-2, 3):
+                    d = (xx / 2.4) ** 2 + (yy / 5.4) ** 2
+                    if d > 1: continue
+                    put(sx + xx, sy + yy, 'V' if d > .6 else 'U')
+            put(sx, sy - 1, 'E'); put(sx, sy, 'E'); put(sx, sy + 1, 'H')
+    if S.get('crest'):                                   # cimeira (plume) no elmo: fina, curva para tras, cor Y/X (vermelho por padrao)
+        if not side:
+            pl = ['...YX...', '..YXXY..', '.YXXXXY.', '.YXXYXY.', '..YXXY..', '...YY...']
+            g.stamp(pl, hx + 7, hy - 5)
+            g.stamp(['.YX.', '.YX.'][:1], hx + 9, hy - 6)
+        else:
+            for k, row in enumerate(['..YXXXX.....', '.YXXXXXX....', 'YXXYXXXXY...', 'YXYXXXXY....', '.YXXXY......']):
+                g.stamp([row], hx + 2, hy - 5 + k)
+
 def accessory2(g, hat, view, hx, hy, back=False):
     global _IN_RESTYLE
     if _HSTYLE and not _IN_RESTYLE:
@@ -785,6 +870,14 @@ def accessory2(g, hat, view, hx, hy, back=False):
             [g.put(hx + 5, hy + 15 - k, 'A') for k in range(2)]; [g.put(hx + 16, hy + 15 - k, 'A') for k in range(2)]
             for x in range(hx + 5, hx + 9): g.put(x, hy + 9, 'k')
             for x in range(hx + 13, hx + 17): g.put(x, hy + 9, 'k')
+    elif hat == 'ogre2':                                                     # ogro: chifres curvos de osso + presas grandes
+        if view == 'side':
+            g.stamp(['II..', 'III.', '.III', '..II', '...J'], hx + 5, hy - 4)
+            g.stamp(['F', 'F'], hx + 18, hy + 13); g.put(hx + 14, hy + 8, 'k'); g.put(hx + 15, hy + 8, 'k')
+        else:
+            g.stamp(['II...', 'III..', '.III.', '..IIJ', '...IJ'], hx - 3, hy - 4); g.stamp(['...II', '..III', '.III.', 'JII..', 'JI...'], hx + 20, hy - 4)
+            if not back:
+                for sx_ in (hx + 5, hx + 16): [g.put(sx_, hy + 15 - k, 'F') for k in range(3)]
     elif hat == 'gobking':                                                   # chefe goblin: orelhas + presas (sem coroa)
         accessory2(g, 'gob_ears', view, hx, hy, back)
         if view == 'side': g.stamp(['F', 'F'], hx + 18, hy + 12)
@@ -1077,6 +1170,7 @@ def draw_bow_layer(g, info, mode):
 _REI = False
 _WINGS = False
 _BULK = False
+_SHP = {}
 _T = 0
 
 
@@ -1176,6 +1270,7 @@ def build_front(p, back=False):
     if bowinfo:
         for (x, y, ch) in bowinfo['front_cells']: g.put(x, y, ch)
         if not behind: draw_bow_layer(g, bowinfo, 'arms')
+    shape_pass(g, 'front', back, cx, body_top, boot_top, hx, hy, dx)
     autoline(g)
     sw2 = p.get('sw2')
     if sw2:
@@ -1244,6 +1339,7 @@ def build_side(p):
     accessory2(g, hat, 'side', hx, hy)
     if not p.get('nomitt') and not bowinfo: g.stamp(['ss', 'sS'], cx + 3 + dx + af[0], body_top + 3 + af[1])
     if bowinfo: draw_bow_layer(g, bowinfo, 'arms')
+    shape_pass(g, 'side', False, cx, body_top, boot_top, hx, hy, dx)
     autoline(g)
     sw2 = p.get('sw2')
     if sw2:
@@ -1398,6 +1494,7 @@ def apply_appearance(p, app):
     if 'hat' in app: q['hat'] = app['hat']
     if 'outfit' in app: q['outfit'] = app['outfit']
     if 'tn_off' in app: q['tn'] = max(1, q.get('tn', 3) + app['tn_off'])
+    if app.get('hdy_off'): q['hdy'] = q.get('hdy', 0) + app['hdy_off']
     if app.get('arms_fwd'):
         q['ar'] = (3, -2) if q.get('view') == 'right' else (0, -4); q['al'] = (3, -2) if q.get('view') == 'right' else (0, -4)
     if app.get('noweapon'): q['sw'] = None; q.pop('sw2', None)
@@ -1600,6 +1697,8 @@ def anim(view, kind, cls='warrior', ps_override=None, appearance=None, dense=1):
     else: ps = ATK_S if view == 'right' else (ATK_B if view == 'up' else ATK_F)
     if kind not in ('walk', 'run', 'idle') and dense > 1 and ps_override is None: ps = densify(ps, dense)
     if ps_override is not None: ps = ps_override
+    global _SHP
+    _SHP = dict(appearance.get('shape') or {}) if appearance else {}
     _FSTYLE = appearance.get('face_style') if appearance else None
     _HSTYLE = appearance.get('hairstyle') if appearance else None
     _REI = (cls == 'rei'); _BULK = bool(appearance and appearance.get('bulk')); _WINGS = bool(appearance and appearance.get('wings'))
