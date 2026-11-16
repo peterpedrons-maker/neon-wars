@@ -100,6 +100,18 @@ ANIMS = {
 }
 for _k, _v in ANIMS.items():
     if _k in UNITS: UNITS[_k]['anim'] = _v
+GEN = {   # (ataque, dano, morte) para inimigos fora do motor chibi
+    'goblin': ('lunge', 'flinch', 'tumble'), 'goblin_x': ('cast', 'stagger', 'dissolve'), 'sapador': ('lunge', 'flinch', 'tumble'), 'bandido': ('lunge', 'flinch', 'fall'),
+    'carnical': ('lunge', 'flinch', 'melt'), 'mumia': ('slam', 'stoic', 'dissolve'), 'necro': ('cast', 'stagger', 'dissolve'), 'cav_caido': ('slam', 'stoic', 'topple'),
+    'ogro_lenhador': ('slam', 'stoic', 'topple'), 'afogado': ('lunge', 'stagger', 'melt'), 'ladrao': ('lunge', 'flinch', 'tumble'), 'cult_lodo': ('cast', 'stagger', 'melt'),
+    'javali': ('pounce', 'flinch', 'flip'), 'rato': ('pounce', 'stagger', 'flip'), 'lobo': ('pounce', 'flinch', 'flip'), 'cobra': ('pounce', 'flinch', 'melt'),
+    'aranha': ('pounce', 'flinch', 'melt'), 'barata': ('pounce', 'flinch', 'melt'), 'sapo': ('pounce', 'stagger', 'melt'), 'gnoll': ('lunge', 'flinch', 'fall'),
+    'ratkin': ('lunge', 'flinch', 'tumble'), 'harpia': ('pounce', 'stagger', 'flip'), 'tronco': ('slam', 'stoic', 'topple'), 'cogumelo': ('cast', 'flinch', 'melt'),
+    'ogrinho': ('slam', 'stoic', 'topple'), 'espectro': ('cast', 'stagger', 'dissolve'), 'morcego': ('pounce', 'stagger', 'flip'), 'slime': ('pounce', 'flinch', 'melt'),
+    'vampiro': ('pounce', 'stagger', 'flip'),
+}
+for _k, _v in GEN.items():
+    if _k in UNITS and UNITS[_k]['kind'] != 'c': UNITS[_k]['gen'] = dict(attack=_v[0], hurt=_v[1], death=_v[2])
 
 # VARIANTES DO HEROI POR ARMA EQUIPADA (o sprite muda com a arma): chave = <heroi>_<variante>; o jogo escolhe por tipo de arma (HVAR em index.html)
 _VAR = {'h_guerreiro_machado': ('h_guerreiro', dict(weapon='machado')), 'h_guerreiro_martelo': ('h_guerreiro', dict(weapon='martelo_guerra')),
@@ -113,6 +125,14 @@ for _k, (_b, _o) in _VAR.items():
 
 
 def frames(u, kind, view):
+    fr = frames0(u, kind, view)
+    if u.get('gen') and kind in ('attack', 'hurt', 'death'):
+        import genanim as GA
+        st = frames0(u, 'idle', view)[0]
+        return GA.build(kind, fr, view, u['gen'], st)
+    return fr
+
+def frames0(u, kind, view):
     k, d = u['kind'], DENS[kind]
     kk = kind
     if k == 'c' and u['ap']['cls'] == 'archer':
