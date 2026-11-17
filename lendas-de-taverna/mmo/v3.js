@@ -79,7 +79,7 @@ function buildScene(key){
   }else{
     const procOn=(mood==='field'||mood==='dark'||mood==='town')&&V3.proc&&!window.V3_NOPROC;sc.proc=procOn;
     dgrid=(procOn&&mood==='dark')?dungeonGrid(key):null;
-    const envP={W:ZONE.w,H:ZONE.h,WATER:mood==='town'?null:WATER,WCW,GROUND,stoneNonGreen:mood==='town'};
+    const envP={W:ZONE.w,H:ZONE.h,WATER:mood==='town'?null:WATER,WCW,GROUND,stoneNonGreen:mood==='town',S:ZONE.w>3000?.3:.5};
     let gimg=key==='zone_cripta2'?crpFloor:GROUND;
     if(procOn&&(mood==='field'||mood==='town'))gimg=V3.proc.ground(envP,mood==='town'?V3.proc.palCidade:key==='zone_pantano'?V3.proc.palPantano:V3.proc.palFloresta,key==='zone1'?5:key==='town'?9:7);
     else if(procOn){const pal=key==='zone_esgoto'?V3.proc.palEsgoto:key==='zone_cripta2'?V3.proc.palCripta2:V3.proc.palCripta;gimg=V3.proc.dungeonFloor(envP,pal,key==='zone_esgoto'?4:key==='zone_cripta2'?6:3);

@@ -27,7 +27,7 @@ const samp=(m,gw,gh,gx,gy)=>{const x=Math.max(0,Math.min(gw-1.001,gx)),y=Math.ma
   return (m[yi*gw+xi]*(1-xf)+m[yi*gw+xi+1]*xf)*(1-yf)+(m[(yi+1)*gw+xi]*(1-xf)+m[(yi+1)*gw+xi+1]*xf)*yf;};
 // ---- chão procedural
 P.ground=function(env,pal,seed){
-  const M=masks(env),S=.5,w=Math.round(env.W*S),h=Math.round(env.H*S),c=cv(w,h),x=c.getContext('2d'),im=x.createImageData(w,h),d=im.data,s0=seed||7;
+  const M=masks(env),S=env.S||.5,w=Math.round(env.W*S),h=Math.round(env.H*S),c=cv(w,h),x=c.getContext('2d'),im=x.createImageData(w,h),d=im.data,s0=seed||7;
   for(let py=0;py<h;py++)for(let px=0;px<w;px++){const gx=px/S,gy=py/S,mx=gx/4,my=gy/4;
     const n=fbm(gx/120,gy/120,s0),n2=fbm(gx/22,gy/22,s0+9),sp=hash(px,py,s0);
     let col=mix(mix(pal.g1,pal.g2,sst(.3,.7,n)),pal.g3,sst(.55,.8,n2)*.6);
@@ -244,7 +244,8 @@ function kindIn(a,rgb,flat,id){return null;const mk0=INMAP[(id||'').slice(0,4)];
 // ---- floresta: devolve o que sobrou (props sem modelo) para continuarem como sprites
 P.forest=function(env,add,rnd,items,theme){const DG=theme==='dungeon'||theme==='indoor';
   const mats={},buckets={},rest={stand:[],flats:[]};
-  const take=(list,flat)=>{for(const it of list){const [id,x,y]=it,a=env.ATLAS_J[id];if(!a)continue;const rgb=avgCol(env,id),k=theme==='indoor'?kindIn(a,rgb,flat,id):theme==='town'?kindTown(a,rgb,flat,id):DG?kindDg(a,rgb,flat):kindOf(a,rgb,flat);if(!k||!MODELS[k]){if(k&&!MODELS[k])console.warn('[v3] sem modelo:',k);if(DG&&flat&&theme!=='indoor')continue;(flat?rest.flats:rest.stand).push(it);continue;}(buckets[k]=buckets[k]||[]).push({x,y,a,rgb});}};
+  const take=(list,flat)=>{for(const it of list){const [id,x,y]=it,a=env.ATLAS_J[id];if(!a)continue;if(theme==='outdoor'&&id.slice(0,2)==='b_'){rest.stand.push(it);continue;}   /* casas das vilas: arte original em pé */
+    const rgb=avgCol(env,id),k=theme==='indoor'?kindIn(a,rgb,flat,id):theme==='town'?kindTown(a,rgb,flat,id):DG?kindDg(a,rgb,flat):kindOf(a,rgb,flat);if(!k||!MODELS[k]){if(k&&!MODELS[k])console.warn('[v3] sem modelo:',k);if(DG&&flat&&theme!=='indoor')continue;(flat?rest.flats:rest.stand).push(it);continue;}(buckets[k]=buckets[k]||[]).push({x,y,a,rgb});}};
   take(items.stand,false);take(items.flats,true);
   const runeMat=()=>new T.MeshBasicMaterial({vertexColors:true,transparent:true,blending:T.AdditiveBlending,depthWrite:false,opacity:.9});
   const slimeMat=()=>new T.MeshStandardMaterial({vertexColors:true,emissive:0x40c040,emissiveIntensity:.5,roughness:.3});
