@@ -108,7 +108,7 @@ function buildScene(key){
     if(key==='town'&&p.id.startsWith('b_'))continue;stand.push([p.id,p.x,p.y]);
     if(key==='town'&&a[2]<=24&&a[3]>=80)lampsP.push([p.x*U,2.3,p.y*U]);}
   if(key==='zone_pantano'&&V3.proc)V3.proc.direct(add,ZONE.props.filter(p=>p.k),sc);
-  if(ZONE.region)sc.dist=15.6;   // mapa aberto: câmera um pouco mais afastada (modo manual)
+  if(ZONE.region)sc.dist=17;   // mapa aberto: câmera um pouco mais afastada (modo manual)
   if(ZONE.region&&V3.proc)V3.proc.direct(add,ZONE.props.filter(p=>p.k),sc);
   if(key==='zone_cripta2'&&V3.proc){   // Cripta: cada prop do atlas vira o modelo certo (nada de adivinhar pela cor)
     const MAPC=[['prop_barril','barrel',.85],['prop_caixas','crates',1.1],['braseiro','brazier',.9],['pilar','pillar',.8],['prop_potes','pots',.9],['prop_sacos','sacks',1],['prop_altar','altar',1.05],['prop_bau','chest',1.2],['prop_mesa','table',1.1],['prop_prateleira','potshelf',1.0],['prop_jaula','cage',1.05]],pl=ZONE.crp&&ZONE.crp.plat,lift=pl?pl.elev*U/CT:0,list=[],keep=[];
@@ -353,7 +353,7 @@ function render3(){
    if(foc){tgtZ=foc===B?1.34:1.22;if(foc.ent||camKick>0)tgtZ+=foc===B?.3:.2;
      const ac=foc.act;if(ac&&ac.skill&&ac.t<ac.dur){const wide={rift:.5,charge:.55,zig:.5,leap:.45,dive:.4,echo:.35,spin:.3}[ac.anim];tgtZ+=wide||.22;chan=1;}}}
   zk+=(tgtZ-zk)*Math.min(1,dt*(tgtZ>zk?1.6:.9));
-  const asp=cam.aspect,dist=scn.dist*(asp<1?(1+(1-asp)*1.2)*(1+(zk-1)*.7)/(zk):1)*(asp<1?zk:zk);let tx=(G.cam.x+G.LW/2)*U,tz=(G.cam.y+G.LH/2)*U;
+  const asp=cam.aspect,dist=(window.__cd||scn.dist)*(asp<1?(1+(1-asp)*1.2)*(1+(zk-1)*.7)/(zk):1)*(asp<1?zk:zk);let tx=(G.cam.x+G.LW/2)*U,tz=(G.cam.y+G.LH/2)*U;
   if(foc&&zk>1.02){const w=Math.min(chan?.62:.45,(zk-1)*.9);tx+=(foc.x*U-tx)*w;tz+=(foc.y*U-tz)*w;}
   if(!camT)camT=new T.Vector3(tx,0,tz);camT.x+=(tx-camT.x)*.5;camT.z+=(tz-camT.z)*.5;
   const sh=G.shake>0?G.shake:0;cam.position.set(camT.x+(Math.random()-.5)*sh*.3,.9+Math.sin(TILT)*dist,camT.z-1+Math.cos(TILT)*dist);cam.lookAt(camT.x,.9,camT.z-1);
