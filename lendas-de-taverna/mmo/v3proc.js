@@ -16,12 +16,13 @@ function cv(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;r
 // ---- máscaras em grade de 4px (água do jogo; caminho/pedra lidos como dados do mapa original)
 function blur(m,w,h,r){const o=new Float32Array(m.length);for(let y=0;y<h;y++)for(let x=0;x<w;x++){let s=0,n=0;for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=w||yy>=h)continue;s+=m[yy*w+xx];n++;}o[y*w+x]=s/n;}return o;}
 function masks(env){
-  const gw=Math.ceil(env.W/4),gh=Math.ceil(env.H/4),water=new Float32Array(gw*gh),dirt=new Float32Array(gw*gh),stone=new Float32Array(gw*gh);
+  const gw=Math.ceil(env.W/4),gh=Math.ceil(env.H/4),water=new Float32Array(gw*gh),dirt=new Float32Array(gw*gh),stone=new Float32Array(gw*gh),grave=new Float32Array(gw*gh),swamp=new Float32Array(gw*gh),dforest=new Float32Array(gw*gh);
   if(env.WATER&&env.WCW)for(let y=0;y<gh;y++)for(let x=0;x<gw;x++)if(env.WATER[y*env.WCW+x])water[y*gw+x]=1;
   if(env.GROUND){const c=cv(gw,gh),x=c.getContext('2d',{willReadFrequently:true});x.drawImage(env.GROUND,0,0,gw,gh);const d=x.getImageData(0,0,gw,gh).data;
     for(let i=0;i<gw*gh;i++){const r=d[i*4],g=d[i*4+1],b=d[i*4+2];if(water[i])continue;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),sat=(mx-mn)/(mx||1);
+      if(env.themes){const nr=(a,b2,c)=>Math.abs(r-a)<7&&Math.abs(g-b2)<7&&Math.abs(b-c)<7;if(nr(96,84,120)){grave[i]=1;continue;}if(nr(74,92,40)){swamp[i]=1;continue;}if(nr(40,100,60)){dforest[i]=1;continue;}}
       if(env.stoneNonGreen){if(!(g>r+25&&g>b+25))stone[i]=1;}else if(r>g+4&&r>b+18&&r>70)dirt[i]=1;else if(sat<.14&&mx>85)stone[i]=1;}}
-  return {gw,gh,water:blur(blur(water,gw,gh,2),gw,gh,1),dirt:blur(dirt,gw,gh,1),stone:blur(stone,gw,gh,1)};
+  return {gw,gh,water:blur(blur(water,gw,gh,2),gw,gh,1),dirt:blur(dirt,gw,gh,1),stone:blur(stone,gw,gh,1),grave:blur(grave,gw,gh,2),swamp:blur(swamp,gw,gh,2),dforest:blur(dforest,gw,gh,2)};
 }
 const samp=(m,gw,gh,gx,gy)=>{const x=Math.max(0,Math.min(gw-1.001,gx)),y=Math.max(0,Math.min(gh-1.001,gy)),xi=x|0,yi=y|0,xf=x-xi,yf=y-yi;
   return (m[yi*gw+xi]*(1-xf)+m[yi*gw+xi+1]*xf)*(1-yf)+(m[(yi+1)*gw+xi]*(1-xf)+m[(yi+1)*gw+xi+1]*xf)*yf;};
@@ -32,6 +33,10 @@ P.ground=function(env,pal,seed){
     const n=fbm(gx/120,gy/120,s0),n2=fbm(gx/22,gy/22,s0+9),sp=hash(px,py,s0);
     let col=mix(mix(pal.g1,pal.g2,sst(.3,.7,n)),pal.g3,sst(.55,.8,n2)*.6);
     col=mix(col,pal.g2,(sp>.93?.35:0));
+    if(env.themes){const gv=samp(M.grave,M.gw,M.gh,mx,my),sw=samp(M.swamp,M.gw,M.gh,mx,my),df=samp(M.dforest,M.gw,M.gh,mx,my);
+      if(gv>.05)col=mix(col,mix([58,52,70],[84,76,96],sst(.4,.75,n2)),sst(.05,.5,gv)*.92);
+      if(sw>.05){const mud=sst(.5,.7,n2);col=mix(col,mix([56,70,34],[48,40,28],mud),sst(.05,.5,sw)*.92);}
+      if(df>.05)col=mix(col,mix([26,62,38],[20,50,32],sst(.45,.7,n)),sst(.05,.5,df)*.9);}
     const dv=samp(M.dirt,M.gw,M.gh,mx,my)+(n2-.5)*.5;
     if(dv>.35){const t=sst(.35,.55,dv),dc=mix(mix(pal.d1,pal.d2,n2),pal.d3,sp>.9?.5:0);col=mix(col,dc,t);}
     const sv=samp(M.stone,M.gw,M.gh,mx,my);
@@ -298,7 +303,7 @@ P.MODELS=MODELS;P.hash=hash;P.mix=mix;P.fbm=fbm;
 
 // ---- props descritos direto por dados (mapas gerados por código): [{k,x,y,s}] -> instâncias 3D
 P.direct=function(add,list,sc){
-  const COL={brazier:'#3a3a42',sacks:'#8a7448',altar:'#5c7480',cage:'#3a3a42',pots:'#a8602e',crates:'#8a5a30',barrel:'#7a5230',pillar:'#6a8696',chest:'#8a5a2a',table:'#6a4a2a',potshelf:'#5a3a22',dead:'#4a3a30',broad:'#2f4a2a',thorn:'#4a3424',rock:'#5a5e58',tuft:'#46783a',bones:'#d6ccb0',mush:'#5ff0d0',totem:'#4a3220',tent:'#6a4a30',flower:'#ffffff'};
+  const COL={brazier:'#3a3a42',sacks:'#8a7448',altar:'#5c7480',cage:'#3a3a42',pots:'#a8602e',crates:'#8a5a30',barrel:'#7a5230',pillar:'#6a8696',chest:'#8a5a2a',table:'#6a4a2a',potshelf:'#5a3a22',dead:'#4a3a30',broad:'#2f4a2a',thorn:'#4a3424',rock:'#5a5e58',tuft:'#46783a',bones:'#d6ccb0',mush:'#5ff0d0',totem:'#4a3220',tent:'#6a4a30',flower:'#ffffff',tombstone:'#8a8d92',tomb:'#7c8086',column:'#9a9a94',coffin:'#5a4030',urn:'#8a6a50',puddle:'#3a4a22',rune:'#a070ff',drums:'#7a5230'};
   const WF={dead:.8,broad:1.1,rock:1.6,tent:1.3,totem:.45,thorn:1.1};const by={};
   for(const q of list)(by[q.k]=by[q.k]||[]).push(q);
   const mat=(k)=>{if(k==='mush')return new T.MeshStandardMaterial({vertexColors:true,flatShading:true,emissive:0x22ccaa,emissiveIntensity:.9,roughness:.5});
