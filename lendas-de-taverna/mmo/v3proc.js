@@ -67,6 +67,12 @@ const MODELS={
   dead(c){const m=Mesh();m.add(new T.CylinderGeometry(.05,.11,.62,6),0x3a2a22,M4(0,.31,0,1,1,1));
     [[.16,.55,0,.5,-1.0],[-.18,.62,.02,.45,1.1],[.04,.76,-.12,.4,.3],[0,.8,.1,.35,-.4]].forEach(([x,y,z,l,rz])=>m.add(new T.CylinderGeometry(.015,.04,l,5),0x3a2a22,M4(x,y,z,1,1,1,0,rz)));
     const cc=new T.Color(0x23413f);[[.3,.8,0,.15],[-.3,.85,.05,.14],[.05,1.0,-.1,.14]].forEach(([x,y,z,r],i)=>m.add(jitter(new T.IcosahedronGeometry(r,0),.4,i+9),cc,M4(x,y,z,1,.7,1)));return m.geo();},
+  mount(c){const m=Mesh(),cc=new T.Color(c);   /* montanha: corpo rochoso em lascas + picos e neve no topo */
+    m.add(jitter(new T.ConeGeometry(.62,1.3,8,3),.32,21),cc,M4(0,.65,0,1,1,1),{moss:.25});
+    m.add(jitter(new T.ConeGeometry(.4,1.0,7,3),.3,23),cc.clone().multiplyScalar(.9),M4(.42,.5,.18,1,1,1),{moss:.2});
+    m.add(jitter(new T.ConeGeometry(.34,.85,7,3),.3,27),cc.clone().multiplyScalar(1.08),M4(-.4,.42,-.1,1,1,1),{moss:.2});
+    m.add(jitter(new T.ConeGeometry(.22,.4,7,2),.25,29),0xeef2f6,M4(0,1.12,0,1,1,1));
+    return m.geo();},
   rock(c){const m=Mesh(),cc=new T.Color(c);m.add(jitter(new T.IcosahedronGeometry(.5,1),.5,3),cc,M4(0,.22,0,1,.66,.85),{moss:.55});m.add(jitter(new T.IcosahedronGeometry(.3,1),.55,5),cc.clone().multiplyScalar(.85),M4(.44,.1,.12,1,.72,1),{moss:.4});m.add(jitter(new T.IcosahedronGeometry(.2,1),.5,8),cc.clone().multiplyScalar(1.1),M4(-.38,.07,.2,1,.7,1),{moss:.3});return m.geo();},
   bush(c){const m=Mesh(),cc=new T.Color(c);[[0,.2,0,.34],[.25,.15,.1,.22],[-.22,.14,-.05,.2]].forEach(([x,y,z,r],i)=>m.add(jitter(new T.IcosahedronGeometry(r,0),.35,i+2),cc.clone().multiplyScalar(.85+i*.1),M4(x,y,z,1,.75,1)));return m.geo();},
   post(c){const m=Mesh();m.add(new T.CylinderGeometry(.05,.07,1,6),0x4a3220,M4(0,.5,0,1,1,1));m.add(new T.CylinderGeometry(.1,.07,.12,6),0x2a2a2e,M4(0,1.02,0,1,1,1));return m.geo();},
@@ -254,7 +260,7 @@ P.seeThru=function(m){const prev=m.onBeforeCompile;m.onBeforeCompile=function(sh
   m.customProgramCacheKey=()=>'st'+(prev?'1':'0');return m;};
 P.forest=function(env,add,rnd,items,theme){const DG=theme==='dungeon'||theme==='indoor';
   const mats={},buckets={},rest={stand:[],flats:[]};
-  const take=(list,flat)=>{for(const it of list){const [id,x,y]=it,a=env.ATLAS_J[id];if(!a)continue;if(theme==='outdoor'&&id.slice(0,2)==='b_'){rest.stand.push(it);continue;}   /* casas das vilas: arte original em pé */
+  const take=(list,flat)=>{for(const it of list){const [id,x,y]=it,a=env.ATLAS_J[id];if(!a)continue;if(theme==='outdoor'&&(id.slice(0,2)==='b_'||id.slice(0,2)==='v_')){rest.stand.push(it);continue;}   /* casas das vilas: arte original em pé */
     const rgb=avgCol(env,id),k=theme==='indoor'?kindIn(a,rgb,flat,id):theme==='town'?kindTown(a,rgb,flat,id):DG?kindDg(a,rgb,flat):kindOf(a,rgb,flat);if(!k||!MODELS[k]){if(k&&!MODELS[k])console.warn('[v3] sem modelo:',k);if(DG&&flat&&theme!=='indoor')continue;(flat?rest.flats:rest.stand).push(it);continue;}(buckets[k]=buckets[k]||[]).push({x,y,a,rgb});}};
   take(items.stand,false);take(items.flats,true);
   const runeMat=()=>new T.MeshBasicMaterial({vertexColors:true,transparent:true,blending:T.AdditiveBlending,depthWrite:false,opacity:.9});
@@ -308,8 +314,8 @@ P.MODELS=MODELS;P.hash=hash;P.mix=mix;P.fbm=fbm;
 
 // ---- props descritos direto por dados (mapas gerados por código): [{k,x,y,s}] -> instâncias 3D
 P.direct=function(add,list,sc){
-  const COL={brazier:'#3a3a42',sacks:'#8a7448',altar:'#5c7480',cage:'#3a3a42',pots:'#a8602e',crates:'#8a5a30',barrel:'#7a5230',pillar:'#6a8696',chest:'#8a5a2a',table:'#6a4a2a',potshelf:'#5a3a22',dead:'#4a3a30',broad:'#2f4a2a',thorn:'#4a3424',rock:'#5a5e58',tuft:'#46783a',bones:'#d6ccb0',mush:'#5ff0d0',totem:'#4a3220',tent:'#6a4a30',flower:'#ffffff',tombstone:'#8a8d92',tomb:'#7c8086',column:'#9a9a94',coffin:'#5a4030',urn:'#8a6a50',puddle:'#3a4a22',rune:'#a070ff',drums:'#7a5230'};
-  const WF={dead:.8,broad:1.1,rock:1.6,tent:1.3,totem:.45,thorn:1.1};const by={};
+  const COL={brazier:'#3a3a42',sacks:'#8a7448',altar:'#5c7480',cage:'#3a3a42',pots:'#a8602e',crates:'#8a5a30',barrel:'#7a5230',pillar:'#6a8696',chest:'#8a5a2a',table:'#6a4a2a',potshelf:'#5a3a22',dead:'#4a3a30',broad:'#2f4a2a',thorn:'#4a3424',rock:'#5a5e58',mount:'#6c6a6e',tuft:'#46783a',bones:'#d6ccb0',mush:'#5ff0d0',totem:'#4a3220',tent:'#6a4a30',flower:'#ffffff',tombstone:'#8a8d92',tomb:'#7c8086',column:'#9a9a94',coffin:'#5a4030',urn:'#8a6a50',puddle:'#3a4a22',rune:'#a070ff',drums:'#7a5230'};
+  const WF={mount:1.9,dead:.8,broad:1.1,rock:1.6,tent:1.3,totem:.45,thorn:1.1};const by={};
   for(const q of list)(by[q.k]=by[q.k]||[]).push(q);
   const mat=(k)=>{if(k==='mush')return new T.MeshStandardMaterial({vertexColors:true,flatShading:true,emissive:0x22ccaa,emissiveIntensity:.9,roughness:.5});
     const m=new T.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:.9});if(k==='tuft'||k==='dead'||k==='broad'){const sw={tuft:.35,dead:.01,broad:.02}[k];m.onBeforeCompile=sh=>{sh.uniforms.uTime=P.time;sh.vertexShader='uniform float uTime;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n#ifdef USE_INSTANCING\nfloat ph=instanceMatrix[3].x*.9+instanceMatrix[3].z*.6;\n#else\nfloat ph=0.;\n#endif\ntransformed.x+=sin(uTime*1.7+ph)*position.y*'+sw.toFixed(3)+';transformed.z+=cos(uTime*1.3+ph*1.3)*position.y*'+(sw*.6).toFixed(3)+';');};}return m;};
