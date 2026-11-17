@@ -109,19 +109,24 @@ def addk(k,x,y,s,r=0,wf=None):
     if r:d['col']=[[0,0,r]]
     if wf:d['wf']=wf
     P.append(d)
+CL=fbm(40,(90,45,22),(.62,.28,.10))                          # campo de 'bosquetes': árvores só em manchas, com clareiras entre elas
+def grove(x,y,lo):                                               # 0 fora do bosquete → 1 no miolo
+    v=at(CL,x,y);return min(1.0,max(0.0,(v-lo)*7))
 def forest_dens(x,y):
     f=(1-min(1,x/2300))*.85+.05                       # mais denso a oeste
     f+=max(0,at(N3,x,y)-.5)*1.1
     f*= .35+at(N1,x,y)*1.0
     if at(GOBM,x,y):f=f*1.1+.25
     if at(FORM,x,y):f=f*1.15+.25
+    lo=.42 if (at(GOBM,x,y) or at(FORM,x,y)) else .55 if x<2300 else .62
+    f*=grove(x,y,lo)
     return f*(0 if at(stone,x,y) else 1)
 def tree(x,y):
     if blocked(x,y) or at(CATM,x,y):return 0
     d=forest_dens(x,y);h=at(hill,x,y)
     if at(ESGM,x,y):d*=.25
     if h>.2 and not at(FORM,x,y):
-        if rr.random()>.16*h:return 0
+        if rr.random()>.5*h*grove(x,y,.5):return 0
         ids=TALL_C
     else:
         if rr.random()>min(.9,d*.78):return 0
@@ -133,12 +138,12 @@ def mid(x,y):
     if h>.25 and not at(FORM,x,y):
         if r<.5:P.append(dict(t='p',id=rr.choice(ROCK),x=round(x),y=round(y)));return 1
         return 0
-    if r<.18+d*.12:P.append(dict(t='p',id=rr.choice(BUSH),x=round(x),y=round(y)));return 1
-    if r<.23+d*.12:P.append(dict(t='p',id=rr.choice(ROCK[:4]),x=round(x),y=round(y)));return 1
+    if r<.10+d*.20:P.append(dict(t='p',id=rr.choice(BUSH),x=round(x),y=round(y)));return 1
+    if r<.13+d*.20:P.append(dict(t='p',id=rr.choice(ROCK[:4]),x=round(x),y=round(y)));return 1
     return 0
 def flat(x,y):
     if at(water,x,y) or at(stone,x,y) or at(CATM,x,y):return 0
-    if rr.random()>(.55 if forest_dens(x,y)<.4 else .28):return 0
+    if rr.random()>(.22+.5*max(0,at(CL,x,y)-.5)*(1 if forest_dens(x,y)<.4 else .5)):return 0
     P.append(dict(t='flat',id=rr.choice(FLATS),x=round(x),y=round(y)));return 1
 # vilas
 HC=[[-78,-6,30],[0,-6,30],[78,-6,30]]
