@@ -86,6 +86,13 @@ for (x,y) in [(535,1370),(210-110,720),(490,905),(440,540),(290,1360)]:
     pass
 mk(535,1370,'poi');mk(98,720,'poi');mk(496,905,'poi');mk(458,540,'poi');mk(290,1360,'poi')
 mk(75,1130,'chest');mk(850,860,'chest');mk(95,250,'chest');mk(905,1215,'chest');mk(60,1360,'chest');mk(110,1790,'chest');mk(817,300,'poi')
+# portão do Passo (guarda + quest)
+gx,gy=560,245
+d.rectangle([gx-34,gy-12,gx+34,gy+12],fill=(60,50,30),outline=(255,206,70),width=3)
+for k in(-20,-7,7,20):d.line([(gx+k,gy-12),(gx+k,gy+12)],fill=(255,206,70),width=3)
+d.ellipse([gx-9,gy-9,gx+9,gy+9],fill=(200,40,40),outline=(255,255,255),width=2);d.text((gx,gy),"🔒" if False else "!",font=f(13),fill=(255,255,255),anchor='mm')
+d.text((gx+48,gy-9),"Portão do Passo (guarda)",font=f(15),fill=(255,255,255),anchor='lm',stroke_width=3,stroke_fill=(15,15,15))
+d.text((gx+48,gy+11),"quest: Nv 10 + 3 de 4 chefes",font=f(13,0),fill=(255,236,150),anchor='lm',stroke_width=3,stroke_fill=(15,15,15))
 # aviso
 d.text((640,1418),"sem NPCs: a cidade ainda está atrás",font=f(14,0),fill=(255,236,170),anchor='mm',stroke_width=3,stroke_fill=(15,15,15))
 # legenda
@@ -105,5 +112,6 @@ for i,(ch,t) in enumerate([('P','pesca'),('M','mineração'),('E','ervas'),('L',
     x=300+i*115;d.ellipse([x-10,yb-10,x+10,yb+10],fill=LC[ch],outline=(255,255,255),width=2);d.text((x,yb),ch,font=f(12),fill=(255,255,255),anchor='mm');d.text((x+16,yb),t,font=f(14,0),fill=(235,235,225),anchor='lm')
 mk(x0,y0-14,'camp','NPC avulso / quest');mk(x0,y0+18,'boss','Chefe de zona (ponto fixo)');mk(x0,y0+50,'dg','Entrada de dungeon (fechada)')
 mk(x0,y0+82,'poi','Ponto de interesse (vista, ruína)');mk(x0,y0+114,'chest','Baú / hunt (futuro)')
+d.rectangle([x0-14,y0+137,x0+14,y0+157],fill=(60,50,30),outline=(255,206,70),width=2);d.text((x0+22,y0+147),"Portão com guarda (quest + nível)",font=f(15),fill=(255,255,255),anchor='lm',stroke_width=3,stroke_fill=(15,15,15))
 d.text((W-50,H-48),"Teleporte só entre cidades",font=f(16),fill=(255,226,140),anchor='rm')
 im.save('mundo_esboco3.png');print(im.size)
