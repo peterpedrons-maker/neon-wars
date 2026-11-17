@@ -45,10 +45,11 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     dists=np.stack([wy,H-wy,wx,W-wx]);side=np.argmin(dists,axis=0);ed=np.min(dists,axis=0)
     BT=np.choose(side,[band[0],band[1],band[2],band[3]])+(N3-.5)*120;BAND=ed<BT
     # corredores das saídas (sem barreira nem props)
-    CORR=np.zeros(wx.shape,bool)
+    CORR=np.zeros(wx.shape,bool);LANEP=np.zeros(wx.shape,bool)
     for e in exits:
         along=wx if e['side'] in(0,1) else wy;depth=dists[e['side']]
-        CORR|=(np.abs(along-e['pos'])<180+(N2-.5)*60)&(depth<BT+80)
+        CORR|=(np.abs(along-e['pos'])<250+(N2-.5)*40)&(depth<BT+300)
+        LANEP|=(np.abs(along-e['pos'])<100)&(depth<BT+280)
     ground_near=np.full(wx.shape,1e9)
     for cx,cy in camps:ground_near=np.minimum(ground_near,np.hypot(wx-cx,wy-cy))
     dirt=((road_d<28)|(trail_d<14)|(N2>.8)&(wy>600)|(ground_near<150)|shore)&~water
@@ -59,7 +60,7 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     if ground in GCOL:img[~water&~shore]=GCOL[ground]
     for sd,th in enumerate(side_theme):
         if th in('dark','grave','swamp'):img[BAND&(side==sd)&~water&~CORR]={'dark':DFc,'grave':GVc,'swamp':SWc}[th]
-    img[((road_d<26)|(trail_d<12))&~water]=DR;img[water]=WT
+    img[((road_d<26)|(trail_d<12))&~water]=DR;img[LANEP&~water]=DR;img[water]=WT
     Image.fromarray(img.astype('uint8')).save(f'{A}/{name}_ground.png',optimize=True)
     def gi(x,y):return min(gh-1,max(0,int(y)//GS)),min(gw-1,max(0,int(x)//GS))
     def at(m,x,y):i,j=gi(x,y);return m[i,j]
@@ -192,8 +193,9 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
         elif s==2:cx,cy=dep,p;ox,oy=0,1
         else:cx,cy=W-dep,p;ox,oy=0,1
         for sg in(-1,1):vp('torch1' if sg<0 else 'torch2',cx+ox*sg*130,cy+oy*sg*130)
+        for sg in(-1,1):addk('column',cx+ox*sg*232,cy+oy*sg*232,rr.randint(92,108),11)
         e['rect']=[cx-(300 if s>=2 else 200) if False else 0,0,0,0]
-        hw=220
+        hw=190
         if s==0:e['rect']=[p-hw,0,2*hw,110]
         elif s==1:e['rect']=[p-hw,H-110,2*hw,110]
         elif s==2:e['rect']=[0,p-hw,110,2*hw]
@@ -261,8 +263,9 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
                 a=i*6.283/n+rr.uniform(-.5,.5);rad=0 if n==1 else 55+10*n;spawns.append([round(cx+math.cos(a)*rad),round(cy+math.sin(a)*rad*.75),gi])
     P.sort(key=lambda p:p['y'])
     exs=[dict(id=e['id'],nm=e['nm'],side=e['side'],toSide=e.get('toSide',-1),x=e['rect'][0],y=e['rect'][1],w=e['rect'][2],h=e['rect'][3],to=e['to'],at=e['at'],ready=e['ready'],msg=e.get('msg','')) for e in exits]
+    marks=[dict(k='camp',x=cx_,y=cy_,nm='Acampamento') for cx_,cy_ in camps]+[dict(k='poi',x=x_,y=y_,nm='Ponto de interesse') for x_,y_ in pois]+[dict(k='lair',x=x_,y=y_,nm='Covil') for x_,y_ in lairs]+[dict(k='shrine',x=x_,y=y_,nm='Santuário') for x_,y_ in shrines]
     Z=dict(w=W,h=H,props=P,spawns=spawns,plaza=[0,0,1,1],pond=[0,0,1,1],road=[],start=list(start),boss=[W//2,H//2],gate=list(start),
-           region=dict(nome=nome,nv=nv,gs=1/GS,mundo=name,ground=ground or '',**({'wx':wxw} if wxw else {}),**(region_extra or {})),exits=exs,fx=[],wallc=wall,**({'gates':[dict(nm=g['nm'],dg=g['dg'],x=g['x'],y=g['y'],r=g.get('r',130)) for g in gates]} if gates else {}))
+           region=dict(nome=nome,nv=nv,gs=1/GS,mundo=name,ground=ground or '',**({'wx':wxw} if wxw else {}),**(region_extra or {})),exits=exs,marks=marks,fx=[],wallc=wall,**({'gates':[dict(nm=g['nm'],dg=g['dg'],x=g['x'],y=g['y'],r=g.get('r',130)) for g in gates]} if gates else {}))
     json.dump(Z,open(f'{A}/{name}.json','w'),separators=(',',':'))
     from collections import Counter
     print(name,'spawns',len(spawns),'props',len(P),Counter(p.get('k') or p.get('t') for p in P).most_common(8),'paredes',len(wall),'saídas',[e['id'] for e in exs])

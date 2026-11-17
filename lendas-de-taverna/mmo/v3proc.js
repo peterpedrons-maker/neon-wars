@@ -376,5 +376,16 @@ P.waterLife=function(add,g,GWu,GHu,o){o=o||{};const M=g.M,gw=M.gw,gh=M.gh,wat=(x
       if(f.mode===2&&Math.random()<dt*2){const r=rings.find(q=>q.t>=1);if(r){r.t=0;r.m.position.set(f.x*U,.055,f.y*U);r.m.visible=true;}}}
     for(const r of rings){if(r.t>=1){r.m.visible=false;continue;}r.t+=dt*.7;const s=.3+r.t*1.9;r.m.scale.set(s,s,1);r.m.material.opacity=(1-r.t)*.55;}};
 };
+// ---- passagens entre zonas (estilo FFXII): trilha de pontos que pulsam em direção à saída, setas e nome do destino
+P.exitMarks=function(add,exits,W,H){const grp=[];
+  const lab=(txt,ok)=>{const c=document.createElement('canvas');c.width=320;c.height=64;const x=c.getContext('2d');x.font='700 22px sans-serif';x.textAlign='center';x.textBaseline='middle';x.lineWidth=5;x.strokeStyle='rgba(8,6,10,.92)';x.fillStyle=ok?'#ffe9a8':'#b4bcc8';const t=(ok?'➜ ':'⚒ ')+txt;x.strokeText(t,160,32);x.fillText(t,160,32);const tx=new T.CanvasTexture(c);const sp=new T.Sprite(new T.SpriteMaterial({map:tx,transparent:true,depthTest:false}));sp.renderOrder=20;sp.scale.set(5,1,1);return sp;};
+  for(const e of exits||[]){const ok=!!e.ready,col=ok?0xffd070:0x8a96a8;let ex,ey,dx,dy;
+    if(e.side===0){ex=e.x+e.w/2;ey=0;dx=0;dy=1;}else if(e.side===1){ex=e.x+e.w/2;ey=H;dx=0;dy=-1;}else if(e.side===2){ex=0;ey=e.y+e.h/2;dx=1;dy=0;}else{ex=W;ey=e.y+e.h/2;dx=-1;dy=0;}
+    const dots=[];for(let i=0;i<9;i++){const dep=150+i*62,m=new T.Mesh(new T.CircleGeometry(.19,12),new T.MeshBasicMaterial({color:col,transparent:true,opacity:.5,depthWrite:false}));m.rotation.x=-Math.PI/2;m.position.set((ex+dx*dep)*U,.07,(ey+dy*dep)*U);m.renderOrder=2;add(m);dots.push(m);const rg=new T.Mesh(new T.RingGeometry(.19,.27,12),new T.MeshBasicMaterial({color:0x140c04,transparent:true,opacity:.55,depthWrite:false}));rg.rotation.x=-Math.PI/2;rg.position.set((ex+dx*dep)*U,.068,(ey+dy*dep)*U);rg.renderOrder=2;add(rg);}
+    const arrows=[];for(let i=0;i<3;i++){const dep=210+i*150,ox=-dx,oy=-dy,px=-oy,py=ox,cx=ex+dx*dep,cy=ey+dy*dep,g=new T.BufferGeometry(),v=[(cx+ox*52)*U,.075,(cy+oy*52)*U,(cx-ox*20+px*46)*U,.075,(cy-oy*20+py*46)*U,(cx-ox*20-px*46)*U,.075,(cy-oy*20-py*46)*U];g.setAttribute('position',new T.Float32BufferAttribute(v,3));g.computeVertexNormals();
+      const m=new T.Mesh(g,new T.MeshBasicMaterial({color:col,transparent:true,opacity:.4,depthWrite:false,side:T.DoubleSide}));m.renderOrder=2;add(m);arrows.push(m);}
+    const sp=lab(e.nm+(ok?'':' (em construção)'),ok);sp.position.set((ex+dx*110)*U,1.7,(ey+dy*110)*U);add(sp);grp.push({dots,arrows});}
+  return function(t){for(const g of grp){g.dots.forEach((m,i)=>{m.material.opacity=.22+.7*Math.max(0,Math.sin(t*3.2-i*.75));});g.arrows.forEach((m,i)=>{m.material.opacity=.2+.55*Math.max(0,Math.sin(t*3.2-i*2.2-1.5));});}};
+};
 P.palFloresta={g1:[40,86,34],g2:[56,106,42],g3:[30,68,30],d1:[116,86,54],d2:[132,100,62],d3:[96,70,44],st:[128,128,120],sm:[70,70,66],shore:[150,130,90],w1:[70,140,170],w2:[34,84,120]};
 })();
