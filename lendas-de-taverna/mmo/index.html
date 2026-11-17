@@ -1196,7 +1196,7 @@ async function loadSheet(name,atkKind){
   const anc=[0,1,2,3].map(r=>anchorOf(walk,0,r*64,64,64));
   SHEETS[name]={walk,hurt,atk,cell,frames,anc,stunF:(name==='goblin2'||(name==='goblin'&&location.search.indexOf('gob2')>=0))?1:3};
 }
-const areaName=m=>(m||G.map)==='zone_regiao1'?'Planície de Brumavale':(m||G.map)==='zone_pantano'?'Pântano das Brumas':(m||G.map)==='zone_cripta2'?'Cripta do Rei Esquecido':(m||G.map)==='zone_esgoto'?'Esgotos de Brumavale':(m||G.map)==='zone_cripta'?'Catacumbas de Brumavale':(m||G.map)==='zone1_gob'?'Floresta dos Goblins':'Floresta de Brumavale';
+const areaName=m=>(m||G.map)==='zone_planicie'?'Planície de Brumavale':(m||G.map)==='zone_estrada'?'Estrada de Brumavale':(m||G.map)==='zone_pantano'?'Pântano das Brumas':(m||G.map)==='zone_cripta2'?'Cripta do Rei Esquecido':(m||G.map)==='zone_esgoto'?'Esgotos de Brumavale':(m||G.map)==='zone_cripta'?'Catacumbas de Brumavale':(m||G.map)==='zone1_gob'?'Floresta dos Goblins':'Floresta de Brumavale';
 const zoneMap=z=>{if(z===5)return 'zone_cripta2';if(z>=6)return 'zone_pantano';const f=famOf(z);return f==='goblin'?'zone1_gob':f==='esq'?'zone_cripta':f==='rato'?'zone_esgoto':'zone1';};
 function zoneAutoFx(z){if(z._afx)return z._afx;const L=(z.fx||[]).slice();if(!(z.fx||[]).some(e=>e.k==='fire'))for(const p of z.props)if(p.t==='fire')L.push({k:'fire',x:p.x,y:p.y-8,spr:1,r:50});return z._afx=L;}
 function useMap(n,quiet){const m=MAPS[n];ZONE=m.zone;ATLAS=m.atlas;ATLAS_J=m.atlasJ;GROUND=m.ground;WATER=m.water;WCW=m.wcw;NAV=m.nav||null;WL=m.wl||null;WSP=m.wsp||[];WRX=m.wrx||null;GCTX=m.gx||null;G.prints=[];buildLights(zoneAutoFx(m.zone));G.map=n;MM.key='';if(!quiet&&typeof AMB!=="undefined")AMB.setup(zoneAutoFx(m.zone),n==='zone1_gob'?'gob':n==='zone1'?'forest':null);}
@@ -2086,28 +2086,41 @@ function initTown(){
   G.vill=ZONE.vill.map((v,i)=>({...v,kind:'vill',nm:'',row:2,animT:0,moving:false,x0:v.x,y0:v.y,t:rnd(0,2),tx:v.x,ty:v.y}));
   G.shop=null;lifeInit();
 }
-function enterTown(first,instant){
+function enterTown(first,instant,opts){
   G.arena=null;G.crp=null;{const r=document.getElementById('arres');if(r)r.remove();}
   const go=()=>{
     for(const L of G.loot)addItem(L.it,true);G.loot=[];
     ambStop();G.scene='town';G.room=null;useMap('town');ambStart('town');G.mobs=[];G.boss=null;G.projs=[];G.phase='town';closeWin();
     const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;h.state='idle';h.act=null;h.shield=0;h.buff=null;h.sts=null;h.kvx=h.kvy=0;h.sk=Array(14).fill(0);
-    h.x=first?ZONE.start[0]:ZONE.portal.stand[0];h.y=first?ZONE.start[1]:ZONE.portal.stand[1]+46;G.doorArm=false;   /* volta da dungeon um pouco abaixo do portal, fora da área que o aciona */h.row=2;h._lx=h.x;h._ly=h.y;
+    if(opts&&opts.at){h.x=opts.at[0];h.y=opts.at[1];}else{h.x=first?ZONE.start[0]:ZONE.portal.stand[0];h.y=first?ZONE.start[1]:ZONE.portal.stand[1]+46;}G.doorArm=false;   /* volta da dungeon um pouco abaixo do portal, fora da área que o aciona */h.row=2;h._lx=h.x;h._ly=h.y;
     initTown();G.wp=null;G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2+34;
-    show('hud');buildBar();updHUD(true);setTimeout(()=>banner('Cidade de Brumavale','Zona segura','zone'),instant?200:500);
+    show('hud');buildBar();updHUD(true);setTimeout(()=>banner('Cidade de Brumavale','Zona segura','zone'),instant?200:500);warmWorld();
     playMusic('m_vila');
     if(first){chat('Bem-vindo a Brumavale, '+SAVE.name+'!',1);if(!SAVE.entered)setTimeout(()=>{if(G.scene==='town'&&!G.winOpen)toast('Entre no portal para ir à dungeon',3200);},3400);}else chat('Você voltou à cidade. Vida restaurada.',1);
     writeSave();
   };
   if(instant)go();else fadeTo(go);
 }
-let REGB=0;
-async function enterRegion(){
-  if(REGB)return;REGB=1;try{
-    if(!MAPS.zone_regiao1){toast('Carregando o mapa aberto…',20000);await loadMap('zone_regiao1','assets/zone_regiao1.json','assets/atlas_regiao1.json','assets/zone_regiao1_ground.png','assets/atlas_regiao1.png');
-      await new Promise(r=>setTimeout(r,30));const back=G.map||'town';prepMap('zone_regiao1');useMap(back,true);$('toast').style.display='none';}
-    enterDungeon(1,{map:'zone_regiao1'});
-  }catch(e){console.error(e);toast('Não foi possível carregar o mapa aberto.',2500);}REGB=0;}
+/* ===== MUNDO CONTÍNUO: zonas ligadas por saídas (caminho próprio até a borda do mapa + fade), como no FFXII =====
+   Cada zona tem `exits` no JSON: [{id,nm,x,y,w,h,side,to,at,ready,msg}]; entrar no retângulo troca de zona (fade). `ready:false` = ainda em construção. */
+const WORLD={zone_estrada:['assets/zone_estrada.json','assets/atlas_regiao1.json','assets/zone_estrada_ground.png','assets/atlas_regiao1.png'],
+             zone_planicie:['assets/zone_planicie.json','assets/atlas_regiao1.json','assets/zone_planicie_ground.png','assets/atlas_regiao1.png']};
+const WLOAD={},WINW=[0,0,1,-1],WSIDE_DIR=[[0,1],[0,-1],[1,0],[-1,0]];   // direção PARA DENTRO do mapa por lado da saída (0=N,1=S,2=O,3=L)
+function fetchWorld(n){const w=WORLD[n];if(!w||MAPS[n])return Promise.resolve();return WLOAD[n]||(WLOAD[n]=loadMap(n,w[0],w[1],w[2],w[3]));}
+async function ensureMap(n){await fetchWorld(n);if(!MAPS[n])return;if(!MAPS[n].prepped){const back=G.map||'town';prepMap(n);useMap(back,true);MAPS[n].prepped=1;}}
+function warmWorld(){if(!ZONE||!ZONE.exits)return;setTimeout(()=>{for(const e of ZONE.exits)if(e.ready&&WORLD[e.to])fetchWorld(e.to).catch(()=>{});},1500);}   // baixa as zonas vizinhas em segundo plano (o preparo pesado só acontece na troca)
+async function zoneGo(ex){
+  if(G.xfer)return;
+  if(!ex.ready){if(G.t-(G.exitMsgT||-9)>2.5){G.exitMsgT=G.t;toast(ex.msg||'Caminho em construção.',2400);}const h=G.hero,d=WSIDE_DIR[ex.side||0];h.x+=d[0]*70;h.y+=d[1]*70;h._lx=h.x;h._ly=h.y;G.wp=null;return;}
+  G.xfer=1;G.wp=null;sfx('ui_confirm',.5);
+  try{if(ex.to!=='town'){if(!MAPS[ex.to])toast('Indo para '+ex.nm+'…',20000);await ensureMap(ex.to);$('toast').style.display='none';}
+    if(ex.to==='town')enterTown(false,false,{at:ex.at});else enterDungeon(1,{map:ex.to,at:ex.at,dir:WSIDE_DIR[ex.toSide]||[0,-1]});   // toSide = lado do mapa de destino por onde se chega (a caminhada de entrada segue para dentro dele)
+  }catch(e){console.error(e);toast('Não foi possível carregar a próxima zona.',2500);}
+  setTimeout(()=>{G.xfer=0;},1500);
+}
+function exitCheck(){const h=G.hero;if(G.xfer||G.winOpen||!ZONE||!ZONE.exits||h.state==='ko'||G.arena)return;for(const e of ZONE.exits)if(h.x>=e.x&&h.x<=e.x+e.w&&h.y>=e.y&&h.y<=e.y+e.h){zoneGo(e);return;}}
+async function enterRegion(){   // atalho do Portal (teste): leva ao começo da Planície
+  if(G.xfer)return;G.xfer=1;try{toast('Carregando a Planície…',20000);await ensureMap('zone_planicie');$('toast').style.display='none';enterDungeon(1,{map:'zone_planicie',at:[3000,5740],dir:[0,-1]});}catch(e){console.error(e);toast('Não foi possível carregar o mapa.',2500);}setTimeout(()=>{G.xfer=0;},1500);}
 function enterDungeon(zlv,opts){
   zlv=clamp(zlv||1,1,DUN.length);if(!dgUnlocked(zlv)&&!(opts&&opts.arena)){sfx('ui_denied');return;}
   if(whenReady(()=>enterDungeon(zlv,opts)))return;
@@ -2115,11 +2128,11 @@ function enterDungeon(zlv,opts){
   closeWin();if(G.scene==='town')PFX.boost=1;cxZone(zlv);
   fadeTo(()=>{
     G.scene='dungeon';useMap((opts&&opts.map)||zoneMap(zlv));G.zoneLv=zlv;SAVE.zone=zlv;SAVE.entered=true;G.auto=false;
-    const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;h.state='idle';h.act=null;h.kvx=h.kvy=0;h.sk=Array(14).fill(0);h.potCd=0;{let sx=ZONE.start[0],sy=ZONE.start[1];if(ZONE.region&&G.regRet){sx=G.regRet.x;sy=G.regRet.y;G.regRet=null;}const f_=freeSpot(sx,sy);h.x=f_[0];h.y=f_[1];}h._lx=h.x;h._ly=h.y;G.fromReg=!!(opts&&opts.fromReg);
+    const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;h.state='idle';h.act=null;h.kvx=h.kvy=0;h.sk=Array(14).fill(0);h.potCd=0;{let sx=ZONE.start[0],sy=ZONE.start[1];if(opts&&opts.at){sx=opts.at[0];sy=opts.at[1];}else if(ZONE.region&&G.regRet){sx=G.regRet.x;sy=G.regRet.y;G.regRet=null;}const f_=freeSpot(sx,sy);h.x=f_[0];h.y=f_[1];}h._lx=h.x;h._ly=h.y;G.fromReg=!!(opts&&opts.fromReg);
     GX.clear();G.zones=[];G.pools=[];G.digs=[];G.gdec=[];G.splats=[];G.floats=[];G.fx=[];G.loot=[];resetZone();G.arena=(opts&&opts.arena)||null;if(G.arena){G.mobs=[];G.arena.over=0;if(opts.keepHp)h.hp=Math.round(h.maxhp*Math.min(1,Math.max(.2,hp0)+.35));}MM.key='';G.cam.x=h.x-G.LW/2;G.cam.y=h.y-G.LH/2+34;G.wp=null;
-    G.intro=null;if(!G.arena&&!ZONE.crp){let d=190;while(d>40&&blockedAt(h.x,h.y-d,10))d-=15;if(d>40){G.intro={t:0,dur:2.6,tx:h.x,ty:h.y-d};h.inv=Math.max(h.inv||0,1.2);}}   // durante o título do local o herói anda sozinho para dentro do mapa (não fica escondido embaixo)
-    show('hud');buildBar();updHUD(true);$('toast').style.display='none';setTimeout(()=>{if(ZONE.region)dgTitle(ZONE.region.nome,'Região 1 · teste de mapa aberto','Mapa aberto','');else dgTitle(areaName(),'Nível '+dgLv(G.zoneLv).join(' – '),'Dungeon · Área '+G.zoneLv,G.map==='zone_cripta2'?'cripta':'');},G.map==='zone_cripta2'?2200:500);
-    chat(G.arena?(G.arena.rush?'Boss Rush: '+(G.arena.idx+1)+' de '+G.arena.queue.length+'.':'Arena do Chefe: só você e o chefe.'):(ZONE.region?'Você entrou na '+ZONE.region.nome+' (mapa de teste, sem inimigos).':'Você entrou em '+areaName()+' (Nv. '+dgLv(G.zoneLv).join('–')+'). Cuidado: algo grande pode surgir…'),1);zoneMusic();ambStart();writeSave();
+    G.intro=null;if(!G.arena&&!ZONE.crp){const dv=(opts&&opts.dir)||[0,-1];let d=190;while(d>40&&blockedAt(h.x+dv[0]*d,h.y+dv[1]*d,10))d-=15;if(d>40){G.intro={t:0,dur:2.6,tx:h.x+dv[0]*d,ty:h.y+dv[1]*d};h.inv=Math.max(h.inv||0,1.2);}}   // durante o título do local o herói anda sozinho para dentro do mapa (não fica escondido embaixo)
+    show('hud');buildBar();updHUD(true);$('toast').style.display='none';setTimeout(()=>{if(ZONE.region)dgTitle(ZONE.region.nome,(ZONE.region.nv||'')+' · Brumavale','Zona','');else dgTitle(areaName(),'Nível '+dgLv(G.zoneLv).join(' – '),'Dungeon · Área '+G.zoneLv,G.map==='zone_cripta2'?'cripta':'');},G.map==='zone_cripta2'?2200:500);
+    chat(G.arena?(G.arena.rush?'Boss Rush: '+(G.arena.idx+1)+' de '+G.arena.queue.length+'.':'Arena do Chefe: só você e o chefe.'):(ZONE.region?'Você entrou em '+ZONE.region.nome+' ('+(ZONE.region.nv||'')+').':'Você entrou em '+areaName()+' (Nv. '+dgLv(G.zoneLv).join('–')+'). Cuidado: algo grande pode surgir…'),1);zoneMusic();ambStart();writeSave();warmWorld();
     if(!SAVE.hintAtk){SAVE.hintAtk=1;setTimeout(()=>{chat('Controles: joystick move, segure ATACAR para bater, toque nas habilidades 1–3, P poção e E esquiva.',3);},1800);}
     if(G.arena)setTimeout(()=>{if(G.arena&&G.scene==='dungeon'&&G.phase==='farm'&&!G.boss)spawnBoss();},1600);
   });
@@ -2145,7 +2158,7 @@ function buildBar(){
   ab.appendChild(atk);
   const pot=mkTb('bPot',potHtml,'slot2 sep',()=>usePotion(true));ab.appendChild(pot);
   {const D=DODGE[SAVE.cls];const dd=mkTb('bDodge','<img src="assets/hud/'+(D.t==='blink'?'esq_blink':'esq_roll')+'.png" style="padding:0"><span class="key">E</span><div class="cd"></div><div class="ct"></div>','slot2',()=>{});dd.addEventListener('pointerdown',ev=>{manualDodge();ev.preventDefault();});ab.appendChild(dd);}
-  const tw=mkTb('bTownB','<img src="assets/hud/cidade.png" style="width:40px;height:40px">','mbtn',()=>{sfx('ui_click');gConfirm(G.fromReg?'O progresso desta dungeon será perdido.':'O progresso desta floresta (abates) será perdido.',{title:G.fromReg?'Voltar ao mapa aberto?':ZONE.region?'Voltar para a cidade?':'Voltar para a cidade?',ok:'Voltar',no:'Ficar'}).then(ok=>{if(!ok)return;if(G.fromReg){G.regRet=G.regLast||null;enterRegion();}else enterTown(false);});});
+  const tw=mkTb('bTownB','<img src="assets/hud/cidade.png" style="width:40px;height:40px">','mbtn',()=>{sfx('ui_click');gConfirm(ZONE.region?'Você volta ao portal de Brumavale (o caminho de volta pode ser feito a pé).':G.fromReg?'O progresso desta dungeon será perdido.':'O progresso desta floresta (abates) será perdido.',{title:'Voltar para a cidade?',ok:'Voltar',no:'Ficar'}).then(ok=>{if(!ok)return;if(G.fromReg){G.regRet=G.regLast||null;enterRegion();}else enterTown(false);});});
   socMenu(m,true);m.appendChild(tw);updPot();badge();
 }
 function updPot(){const n=$('potn');if(n)n.textContent=SAVE.potions+(SAVE.potL?'+'+SAVE.potL:'');}
@@ -2196,7 +2209,7 @@ function updHUD(force){
   updStatusHud();{const q=$('hpc');if(q)q.lastChild.textContent=pcFmt(heroPC());}$('hp').firstChild.style.width=clamp(h.hp/h.maxhp*100,0,100)+'%';$('hpt').textContent=Math.ceil(h.hp)+'/'+h.maxhp;
   $('goldn').textContent=SAVE.gold;
   $('xp').firstChild.style.width=clamp(SAVE.xp/xpNeed(SAVE.lv)*100,0,100)+'%';$('hl').textContent=SAVE.lv;{const c=$('hcl');if(c&&!c.innerHTML)c.innerHTML=clsIc(SAVE.cls,16,SAVE.sub);const xt=$('xpt');if(xt)xt.textContent=Math.floor(SAVE.xp/xpNeed(SAVE.lv)*100)+'%';}
-  const dg=G.scene==='dungeon';$('prog').style.display=dg&&!G.crp&&!ZONE.region?'block':'none';{const zn=$('zname');zn.style.display=dg?'block':'none';if(dg){const hv=areaName().split(' ')[0]+'|'+G.zoneLv;if(zn.dataset.v!==hv){zn.dataset.v=hv;zn.innerHTML=areaName().split(' ')[0]+'<small>Zona '+G.zoneLv+'</small>';}}if(G.t-(G._qp||0)>1){G._qp=G.t;qPlace();}}
+  const dg=G.scene==='dungeon';$('prog').style.display=dg&&!G.crp&&!ZONE.region?'block':'none';{const zn=$('zname');zn.style.display=dg?'block':'none';if(dg){const hv=areaName().split(' ')[0]+'|'+G.zoneLv;if(zn.dataset.v!==hv){zn.dataset.v=hv;zn.innerHTML=areaName().split(' ')[0]+'<small>'+(ZONE.region?(ZONE.region.nv||''):'Zona '+G.zoneLv)+'</small>';}}if(G.t-(G._qp||0)>1){G._qp=G.t;qPlace();}}
   if(dg&&(G.phase==='farm'||G.phase==='boss')){const ready=G.dtm>=BOSS_T0&&G.kills>=BOSS_KILLS&&SAVE.lv>=bossLv();{const nm=areaName().split(' ')[0],sb=G.phase==='boss'?'Zona '+G.zoneLv+' · '+G.kills+' abates':ready?'A área está inquieta…':'Zona '+G.zoneLv+' · '+G.kills+' abates',hv=nm+'|'+sb;if($('progt').dataset.v!==hv){$('progt').dataset.v=hv;$('progt').innerHTML='<b>'+(G.phase==='boss'?'Chefe':nm)+'</b><small>'+sb+'</small>';}}$('prog').querySelector('.bar b').style.width=Math.min(100,Math.min(G.dtm/BOSS_T0,G.kills/BOSS_KILLS,SAVE.lv/bossLv())*100)+'%';}
   document.body.classList.toggle('dgn',!!dg);const bs=G.boss,bsv=!!(dg&&G.phase==='boss'&&bs&&!bs.dead&&!(bs.ent&&bs.ent.k!=='phase'&&bs.ent.k!=='roar'));$('boss').style.display=bsv?'block':'none';document.body.classList.toggle('bossfight',dg&&G.phase==='boss'&&!!bs&&!bs.dead);{const had=document.body.classList.contains('bossbar');document.body.classList.toggle('bossbar',bsv);if(had!==bsv){setTimeout(qPlace,60);setTimeout(qPlace,520);}}
   const E=SAVE.elix||{},bf=[['forca','ni_eforca','Poder'],['defesa','ni_edefesa','Defesa']].filter(x=>E[x[0]]>0).map(x=>`<div><img src="../assets/ui-icons/${x[1]}.png">${Math.floor(E[x[0]]/60)}:${String(Math.floor(E[x[0]]%60)).padStart(2,'0')}</div>`).join('');if($('buffs').dataset.v!==bf){$('buffs').dataset.v=bf;$('buffs').innerHTML=bf;}
@@ -3941,6 +3954,7 @@ function update(dt){
   for(let i=G.floats.length-1;i>=0;i--){const f=G.floats[i];f.life-=dt;f.y-=(f.vy||14)*dt;if(f.life<=0)G.floats.splice(i,1);}
   updateFxList(dt);
   if(G.shake>0)G.shake=Math.max(0,G.shake-dt);
+  exitCheck();
   // câmera
   const h=G.hero,tx=h.x-G.LW/2,ty=h.y-G.LH/2+(G.scene==='town'?10:34);G.cam.x+=(tx-G.cam.x)*Math.min(1,dt*6);G.cam.y+=(ty-G.cam.y)*Math.min(1,dt*6);
   G.cam.x=ZONE.w<G.LW?(ZONE.w-G.LW)/2:clamp(G.cam.x,0,ZONE.w-G.LW);G.cam.y=ZONE.h<G.LH?(ZONE.h-G.LH)/2:clamp(G.cam.y,0,ZONE.h-G.LH);
@@ -5181,8 +5195,8 @@ function pzFoot(it){
 function pzRender(){const root=$('pz');if(!root)return;
   root.querySelectorAll('.pztab span').forEach((e,i)=>e.classList.toggle('on',['d','e','r'][i]===PZ.tab));
   if(PZ.tab==='r'){const bg=root.querySelector('.pzbg');if(bg)bg.style.backgroundImage=`url(assets/portal/${PZD[2]?PZD[2].img:PZD[0].img}.jpg)`;
-    root.querySelector('.pzbody').innerHTML=`<div class="pzdet" id="pzdet"><div class="pzh">REGIÃO 1 · PLANÍCIE DE BRUMAVALE</div><div class="pzr"><div><span>Mapa aberto grande (teste)</span><b>5000 × 5000</b></div><div><span>Ambientes</span><b>planície, bosque dos goblins, cemitério, pântano</b></div><div><span>Vilas</span><b>4</b></div><div><span>Portões de dungeon</span><b>5 (goblins, catacumbas, cripta, esgoto, floresta)</b></div><div><span>Inimigos</span><b>ainda sem</b></div></div><div class="pzh">SOBRE</div><div class="pzeq"><span>Protótipo para ver como fica um mapa de região aberto. Ande livre; use o minimapa.</span></div></div>`;
-    root.querySelector('.pzft').innerHTML='<button class="gb big" data-pz="region">Entrar no mapa aberto</button>';return;}
+    root.querySelector('.pzbody').innerHTML=`<div class="pzdet" id="pzdet"><div class="pzh">MUNDO · PLANÍCIE DE BRUMAVALE</div><div class="pzr"><div><span>Zona</span><b>Planície (Nv 1–3), 6000 × 6000</b></div><div><span>Saídas</span><b>Estrada (cidade), Ponte, Goblins, Brejo, Lago</b></div><div><span>Em construção</span><b>só a Estrada está aberta; as outras mostram um aviso</b></div></div></div>`;
+    root.querySelector('.pzft').innerHTML='<button class="gb big" data-pz="region">Ir para a Planície (teste)</button>';return;}
   PZ.items=pzItems();const sel=PZ.tab==='d'?PZ.sel:PZ.selE;
   const bk=z=>PZD[z-1].hab[PZD[z-1].hab.length-1][0];
   const cards=PZ.items.map((c,i)=>`<div class="pzc ${c.locked?'lock':''} ${c.arena?'ar':''}" data-i="${i}" style="background-image:url(assets/portal/${c.arena&&arId(c.z)?'arena_'+arId(c.z):c.img}.jpg)"><div class="hd">${c.hd}</div>${c.st?`<span class="st ${c.cur?'cur':''}">${c.st}</span>`:''}${c.locked?`<div class="lk"><img src="${UI}padlock.png"></div>`:''}<div class="nf"><b>${c.nm}</b><i>${c.lore}</i>${c.arena?`<div class="rq"><span>Nível do chefe</span><b class="bl">${c.bl}</b></div>`:''}<div class="rq"><span>Nível</span><b class="${SAVE.lv>=c.unlock?'ok':'no'}">${c.unlock}+ ${SAVE.lv>=c.unlock?'✔':'🔒'}</b></div></div></div>`).join('');
