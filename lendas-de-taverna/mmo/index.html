@@ -743,6 +743,7 @@ body.bossbar #hero{top:calc(92px + env(safe-area-inset-top))!important}
 body.bossbar #sts{top:calc(146px + env(safe-area-inset-top))!important}
 body.bossbar #hud #mm{top:calc(110px + env(safe-area-inset-top))!important}
 body.bossbar #zname{top:calc(92px + env(safe-area-inset-top))!important}
+body.bossbar #wxb{top:calc(92px + env(safe-area-inset-top))!important}
 
 /* quadro de missões compacto, no canto, translúcido */
 #qtr{right:4px!important;width:124px!important;background:rgba(14,11,20,.42)!important;border:1px solid rgba(184,146,60,.55)!important;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);box-shadow:0 2px 8px rgba(0,0,0,.35)}
@@ -831,6 +832,7 @@ body.dgn #chat{width:44%}
 <body>
 <div id="stage">
   <canvas id="cv"></canvas>
+  <canvas id="wxc" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1"></canvas>
 
   <!-- título -->
   <div class="scr on" id="title">
@@ -1345,6 +1347,42 @@ function todTick(dt){TOD.t=(TOD.t+dt*TOD.sp)%1;const L=.5+.5*Math.cos((TOD.t-.5)
   const s=Math.max(0,Math.min(1,(TOD.t-.25)/.5));TOD.sx=-Math.cos(Math.PI*s);TOD.sl=1.15-.75*Math.sin(Math.PI*s);}
 function todTint(ctx){const k=G.scene==='town'?1:.4,n=TOD.n*k,w=TOD.warm*k;if(n<.02&&w<.02)return;let c=lerpC([255,255,255],[96,112,190],n);c=lerpC(c,[255,196,150],w*.55*(1-n));
   ctx.save();ctx.globalCompositeOperation='multiply';ctx.fillStyle='rgb('+c.map(Math.round).join(',')+')';ctx.fillRect(-4,-4,G.LW+8,G.LH+8);ctx.restore();}
+/* ===== CLIMA (estilo FFXII): cada zona do mundo tem uma tabela de tempo (region.wx = pesos de clear/rain/storm). Chuva e tempestade escurecem o céu, tocam som,
+   e mudam o combate: raios +25%/+40%, fogo −20%/−30% e criaturas do lodo/água ficam 20% mais fortes. O tempo muda sozinho a cada ~1,5–3 min. ===== */
+const WX={k:'clear',a:0,c:0,next:1e9,fl:0,thT:-1,opts:null,map:'',drops:[],spl:[],bt:0};
+const WXN={clear:'Tempo aberto',rain:'Chuva',storm:'Tempestade'},WXHINT={rain:'raios +25% · fogo −20%',storm:'raios +40% · fogo −30%'};
+const WET={sapo:1,afogado:1,homemrato:1,cobra:1,barata:1,rato:1,ratass:1,cultlodo:1,ladrao:1};
+function wxReset(){const R=ZONE&&G.scene==='dungeon'&&ZONE.region;WX.opts=R&&R.wx||null;WX.k='clear';WX.a=0;WX.c=0;WX.fl=0;WX.thT=-1;WX.next=WX.opts?rnd(15,50):1e9;WX.drops=[];WX.spl=[];
+  if(WX.opts&&Math.random()<.45)wxSet(wxPick(),true);}
+function wxPick(){const w=WX.opts;let tot=0;for(const k in w)tot+=w[k];let r=Math.random()*tot;for(const k in w){r-=w[k];if(r<=0)return k;}return 'clear';}
+function wxSet(k,quiet){if(k===WX.k)return;WX.k=k;if(!quiet){chat(k==='rain'?'Começou a chover.':k==='storm'?'Uma tempestade chegou! '+WXHINT.storm+'.':'O tempo abriu.',k==='clear'?4:3);}}
+function wxSkMul(id){if(WX.k==='clear'||!id)return 1;const st=WX.k==='storm';
+  if(/raio|tempest|trov|relamp|choque/.test(id))return st?1.4:1.25;if(/fogo|chama|cataclismo|incend|meteoro|pir/.test(id))return st?.7:.8;return 1;}
+function wxTick(dt){dt/=TEMPO;if(WX.map!==G.map||WX.sc!==G.scene){WX.map=G.map;WX.sc=G.scene;wxReset();}
+  WX.next-=dt;if(WX.opts&&WX.next<=0){WX.next=rnd(90,180);wxSet(wxPick());}
+  const ta=WX.k==='clear'?0:WX.k==='rain'?.75:1,tc=WX.k==='clear'?0:WX.k==='rain'?.7:1;
+  WX.a+=(ta-WX.a)*Math.min(1,dt*.35);WX.c+=(tc-WX.c)*Math.min(1,dt*.25);if(WX.a<.01&&ta===0)WX.a=0;if(WX.c<.01&&tc===0)WX.c=0;
+  if(WX.k==='storm'&&WX.fl<=0&&Math.random()<dt*.12){WX.fl=1;WX.thT=rnd(.5,1.8);}
+  if(WX.fl>0)WX.fl=Math.max(0,WX.fl-dt*2.2);if(WX.thT>0){WX.thT-=dt;if(WX.thT<=0){wxThunder();WX.thT=-1;}}
+  WX.bt-=dt;if(WX.bt<=0){WX.bt=1;const want=WX.a>.5;if(G.mobs)for(const m of G.mobs){if(m.dead||!m.T||m.kind!=='mob')continue;const w=!!WET[m.type]&&want;if(!!m.wxb!==w){m.pow*=w?1.2:1/1.2;m.wxb=w;}}wxBadge();}
+  wxSound(dt);wxDraw(dt);}
+function wxBadge(){let b=document.getElementById('wxb');if(!b){b=document.createElement('div');b.id='wxb';b.style.cssText='position:absolute;left:calc(50% + 52px);transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top));text-align:center;font:700 8.5px/1.25 var(--fd);letter-spacing:.06em;text-transform:uppercase;color:#a8d4ff;text-shadow:0 1px 0 #000,0 0 6px #000;white-space:nowrap;pointer-events:none;z-index:5;display:none';($('stage')||document.body).appendChild(b);}
+  const on=WX.k!=='clear'&&G.on&&G.scene==='dungeon'&&WX.a>.3;b.style.display=on?'block':'none';if(on)b.innerHTML=WXN[WX.k]+'<br><span style="color:#d8e8ff;font-size:7.5px">'+WXHINT[WX.k]+'</span>';}
+let WXA=null;
+function wxSound(dt){if(!AC||!sfxGain)return;if(!WXA){try{const n=AC.sampleRate*2,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);let l=0;for(let i=0;i<n;i++){const w=Math.random()*2-1;l=(l+.04*w)/1.04;d[i]=l*3.2+w*.25;}
+    const s=AC.createBufferSource();s.buffer=b;s.loop=true;const f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=2600;f.Q.value=.5;const g=AC.createGain();g.gain.value=0;s.connect(f);f.connect(g);g.connect(sfxGain);s.start();WXA={g};}catch(e){return;}}
+  WXA.g.gain.value+=((WX.a*.11)-WXA.g.gain.value)*Math.min(1,dt*2);}
+function wxThunder(){if(!AC||!sfxGain)return;try{const t=AC.currentTime,n=AC.sampleRate*2.2,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);let l=0;for(let i=0;i<n;i++){const w=Math.random()*2-1;l=(l+.02*w)/1.02;d[i]=l*5*Math.pow(1-i/n,1.6);}
+  const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(420,t);f.frequency.exponentialRampToValueAtTime(90,t+2);const g=AC.createGain();g.gain.value=.9;s.connect(f);f.connect(g);g.connect(sfxGain);s.start(t);}catch(e){}}
+function wxDraw(dt){const c=document.getElementById('wxc');if(!c)return;const st=$('stage'),W=st.clientWidth,H=st.clientHeight;if(c.width!==W||c.height!==H){c.width=W;c.height=H;}
+  const x=c.getContext('2d');x.clearRect(0,0,W,H);if(G.scene!=='dungeon'||(WX.a<.02&&WX.c<.02&&WX.fl<=0))return;
+  if(WX.c>0){x.fillStyle='rgba(18,28,48,'+(WX.c*.3).toFixed(3)+')';x.fillRect(0,0,W,H);}
+  const N=Math.floor(150*WX.a);while(WX.drops.length<N)WX.drops.push({x:Math.random()*(W+120),y:Math.random()*H,l:7+Math.random()*9,v:620+Math.random()*320});if(WX.drops.length>N)WX.drops.length=N;
+  x.strokeStyle='rgba(200,222,255,'+(.22+.3*WX.a).toFixed(2)+')';x.lineWidth=1.5;x.beginPath();
+  for(const d of WX.drops){d.y+=d.v*dt;d.x-=d.v*dt*.22;if(d.y>H){d.y=-10;d.x=Math.random()*(W+120);if(Math.random()<.18&&WX.spl.length<30)WX.spl.push({x:Math.random()*W,y:H*(.35+Math.random()*.6),t:0});}x.moveTo(d.x,d.y);x.lineTo(d.x+d.l*.22,d.y-d.l);}
+  x.stroke();x.strokeStyle='rgba(210,230,255,.5)';x.lineWidth=1;
+  for(let i=WX.spl.length-1;i>=0;i--){const q=WX.spl[i];q.t+=dt*2.6;if(q.t>=1){WX.spl.splice(i,1);continue;}x.globalAlpha=(1-q.t)*.6;x.beginPath();x.ellipse(q.x,q.y,2+q.t*8,1+q.t*3,0,0,7);x.stroke();}x.globalAlpha=1;
+  if(WX.fl>0){x.fillStyle='rgba(230,238,255,'+(WX.fl*.5).toFixed(3)+')';x.fillRect(0,0,W,H);}}
 let LIGHTS=[],GCTX=null;
 function buildLights(fx){LIGHTS=[];for(const e of fx){if(e.k==='fire')LIGHTS.push({x:e.x,y:e.y,r:95});else if(e.k==='torch')LIGHTS.push({x:e.x,y:e.y,r:75});else if(e.k==='lamp')LIGHTS.push({x:e.x,y:e.y,r:70});}}
 function entLight(e,cx,cy){if(!LIGHTS.length||e.kind==='vill'||e.dead)return;let pr=0;for(const L of LIGHTS){const q=1-Math.hypot(e.x-L.x,(e.y-10)-L.y)/L.r;if(q>pr)pr=q;}if(pr<=.02)return;
@@ -2560,7 +2598,7 @@ function heroHitMoment(h){
   if(h.sts&&stHas(h,'furtivo')){h.furt=1;stRm(h,'furtivo');setTimeout(()=>{h.furt=0;},700);}
   if(a.sk<0){if(hStyle()==='slash')meleeHit(h,t,1,false);else fireProj(h,t,1,false,instr()?'note':undefined);
     if(h.cls==='clerigo'&&Math.random()<.2)h.hp=Math.min(h.maxhp,h.hp+Math.round(h.maxhp*.03));return;}
-  const i=a.sk,S=C.skills[i],o=S[4],sc=skSc(i),ef=skEf(i),du=skDu(i),mult=S[3]*sc,ranged=hStyle()!=='slash';
+  const i=a.sk,S=C.skills[i],o=S[4],sc=skSc(i),ef=skEf(i),du=skDu(i),mult=S[3]*sc*wxSkMul(S[0]),ranged=hStyle()!=='slash';
   {const [sn,sv]=skSnd(S,h.cls);sfx(sn,sv);}skFx(S,h,t,o);applySkillStatus(S,h,t,o);
   if(o.t==='single'){ranged?fireProj(h,t,mult,o.crit,PST[S[0]]):meleeHit(h,t,mult,o.crit);if(o.stun)t.stun=Math.max(t.stun||0,o.stun);
     if(o.heal){const v=Math.round(h.maxhp*o.heal*ef*healM());h.hp=Math.min(h.maxhp,h.hp+v);floatText(h.x,h.y-52,'+'+v,'#8ef08a',10,1.1,{k:'heal',vy:18,pop:1});sfx('heal',.6);G.fx.push({k:'ring',x:h.x,y:h.y,life:.5,max:.5,col:'#8ef08a'});}}
@@ -3978,7 +4016,7 @@ const near=[];for(const m of allFoes()){if(m.dead||m.dash||(m.T&&m.T.totem))cont
 /* TEMPO: velocidade global do jogo (dono: "meio lento demais para um MMO-like"). 1 = original; 1.3 = 30% mais rápido (ataques, recargas, movimento, avisos de chefe, tudo na mesma proporção). */
 const TEMPO=1.3;
 function update(dt){
-  dt*=TEMPO;G.t+=dt;todTick(dt);if(PFX.boost>0)PFX.boost=Math.max(0,PFX.boost-dt*.7);joyShow();if(G.castReq>=0){G.castT=(G.castT||0)+dt;if(G.castT>1.1){G.castReq=-1;G.castT=0;}}else G.castT=0;
+  dt*=TEMPO;G.t+=dt;todTick(dt);wxTick(dt);if(PFX.boost>0)PFX.boost=Math.max(0,PFX.boost-dt*.7);joyShow();if(G.castReq>=0){G.castT=(G.castT||0)+dt;if(G.castT>1.1){G.castReq=-1;G.castT=0;}}else G.castT=0;
   petTick(dt);
   if(G.scene==='town')updateTown(dt);
   else if(G.arena&&G.arena.over&&G.hero.state==='ko'){updateHero(dt);}
