@@ -209,7 +209,7 @@ build('zone_planicie',6000,6000,202,'Planície de Brumavale','Nv 1–3',
   exits=[dict(id='estrada',nm='Estrada de Brumavale',side=1,pos=3000,to='zone_estrada',toSide=0,at=[1100,160],ready=True),
          dict(id='ponte',nm='Ponte do Rio',side=0,pos=3200,to='zone_ponte',toSide=1,at=[1100,3900],ready=False,msg='Ponte do Rio: caminho em construção.'),
          dict(id='goblins',nm='Floresta dos Goblins',side=2,pos=2850,to='zone_goblins',toSide=3,at=[4860,2500],ready=True),
-         dict(id='brejo',nm='Trilha do Brejo',side=1,pos=1300,to='zone_brejo',toSide=0,at=[1100,150],ready=False,msg='Trilha do Brejo: caminho em construção.'),
+         dict(id='brejo',nm='Trilha do Brejo',side=1,pos=1300,to='zone_brejo',toSide=0,at=[1100,150],ready=True),
          dict(id='lago',nm='Margem do Lago (secreta)',side=3,pos=3950,to='zone_lago',toSide=2,at=[500,1000],ready=False,msg='Margem do Lago: caminho em construção.')],
   camps=[(2200,2300),(4300,1900)],pois=[],start=(3000,5740),
   side_theme=['mount','forest','dark','mount'],band=(400,300,420,420),dens=.8,
@@ -228,3 +228,12 @@ build('zone_goblins',5000,5000,303,'Floresta dos Goblins','Nv 3–5',
   camps=[(4300,2250)],pois=[],lairs=[(1500,1550)],start=(4800,2500),
   side_theme=['dark','dark','dark','forest'],band=(380,380,400,300),dens=.95,fdens=1.55,conifer=.6,ground='dark',packs=44,pack_n=3,
   region_extra=dict(zlv=1,lv=[3,5],respawn=45,boss=dict(x=1500,y=1550,lv=6,aggro=440,respawn=300),minis=[dict(type='skrix',x=3300,y=3200,aggro=420,respawn=240)]))
+
+# ---------------------------------------------------------------- Trilha do Brejo (ligação, Nv 3–4) — 2200×4200, caminho para o Pântano
+build('zone_brejo',2200,4200,404,'Trilha do Brejo','Nv 3–4',
+  roads=[[(1100,10),(1000,700),(1250,1500),(1000,2300),(1200,3200),(1100,4190)]],trails=[],
+  waters=[(1700,2000,300,220),(500,3100,260,200)],
+  exits=[dict(id='planicie',nm='Planície de Brumavale',side=0,pos=1100,to='zone_planicie',toSide=1,at=[1300,5740],ready=True),
+         dict(id='pantano',nm='Pântano',side=1,pos=1100,to='zone_pantano',toSide=0,at=[1100,150],ready=False,msg='Pântano: caminho em construção.')],
+  camps=[],pois=[(1200,2100)],start=(1100,150),side_theme=['forest','dark','dark','dark'],band=(330,330,360,360),dens=.9,fdens=1.2,conifer=.4,ground='dark',packs=10,pack_n=3,
+  region_extra=dict(zlv=1,lv=[3,4],respawn=40,mobs=['lobo','rato','javali','lobo']))

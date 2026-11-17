@@ -1196,7 +1196,7 @@ async function loadSheet(name,atkKind){
   const anc=[0,1,2,3].map(r=>anchorOf(walk,0,r*64,64,64));
   SHEETS[name]={walk,hurt,atk,cell,frames,anc,stunF:(name==='goblin2'||(name==='goblin'&&location.search.indexOf('gob2')>=0))?1:3};
 }
-const areaName=m=>(m||G.map)==='zone_goblins'?'Floresta dos Goblins':(m||G.map)==='zone_planicie'?'Planície de Brumavale':(m||G.map)==='zone_estrada'?'Estrada de Brumavale':(m||G.map)==='zone_pantano'?'Pântano das Brumas':(m||G.map)==='zone_cripta2'?'Cripta do Rei Esquecido':(m||G.map)==='zone_esgoto'?'Esgotos de Brumavale':(m||G.map)==='zone_cripta'?'Catacumbas de Brumavale':(m||G.map)==='zone1_gob'?'Floresta dos Goblins':'Floresta de Brumavale';
+const areaName=m=>(m||G.map)==='zone_goblins'?'Floresta dos Goblins':(m||G.map)==='zone_brejo'?'Trilha do Brejo':(m||G.map)==='zone_planicie'?'Planície de Brumavale':(m||G.map)==='zone_estrada'?'Estrada de Brumavale':(m||G.map)==='zone_pantano'?'Pântano das Brumas':(m||G.map)==='zone_cripta2'?'Cripta do Rei Esquecido':(m||G.map)==='zone_esgoto'?'Esgotos de Brumavale':(m||G.map)==='zone_cripta'?'Catacumbas de Brumavale':(m||G.map)==='zone1_gob'?'Floresta dos Goblins':'Floresta de Brumavale';
 const zoneMap=z=>{if(z===5)return 'zone_cripta2';if(z>=6)return 'zone_pantano';const f=famOf(z);return f==='goblin'?'zone1_gob':f==='esq'?'zone_cripta':f==='rato'?'zone_esgoto':'zone1';};
 function zoneAutoFx(z){if(z._afx)return z._afx;const L=(z.fx||[]).slice();if(!(z.fx||[]).some(e=>e.k==='fire'))for(const p of z.props)if(p.t==='fire')L.push({k:'fire',x:p.x,y:p.y-8,spr:1,r:50});return z._afx=L;}
 function useMap(n,quiet){const m=MAPS[n];ZONE=m.zone;ATLAS=m.atlas;ATLAS_J=m.atlasJ;GROUND=m.ground;WATER=m.water;WCW=m.wcw;NAV=m.nav||null;WL=m.wl||null;WSP=m.wsp||[];WRX=m.wrx||null;GCTX=m.gx||null;G.prints=[];buildLights(zoneAutoFx(m.zone));G.map=n;MM.key='';if(!quiet&&typeof AMB!=="undefined")AMB.setup(zoneAutoFx(m.zone),n==='zone1_gob'?'gob':n==='zone1'?'forest':null);}
@@ -2106,7 +2106,8 @@ function enterTown(first,instant,opts){
    Cada zona tem `exits` no JSON: [{id,nm,x,y,w,h,side,to,at,ready,msg}]; entrar no retângulo troca de zona (fade). `ready:false` = ainda em construção. */
 const WORLD={zone_estrada:['assets/zone_estrada.json','assets/atlas_regiao1.json','assets/zone_estrada_ground.png','assets/atlas_regiao1.png'],
              zone_planicie:['assets/zone_planicie.json','assets/atlas_regiao1.json','assets/zone_planicie_ground.png','assets/atlas_regiao1.png'],
-             zone_goblins:['assets/zone_goblins.json','assets/atlas_regiao1.json','assets/zone_goblins_ground.png','assets/atlas_regiao1.png']};
+             zone_goblins:['assets/zone_goblins.json','assets/atlas_regiao1.json','assets/zone_goblins_ground.png','assets/atlas_regiao1.png'],
+             zone_brejo:['assets/zone_brejo.json','assets/atlas_regiao1.json','assets/zone_brejo_ground.png','assets/atlas_regiao1.png']};
 const WLOAD={},WINW=[0,0,1,-1],WSIDE_DIR=[[0,1],[0,-1],[1,0],[-1,0]];   // direção PARA DENTRO do mapa por lado da saída (0=N,1=S,2=O,3=L)
 function fetchWorld(n){const w=WORLD[n];if(!w||MAPS[n])return Promise.resolve();return WLOAD[n]||(WLOAD[n]=loadMap(n,w[0],w[1],w[2],w[3]));}
 async function ensureMap(n){await fetchWorld(n);if(!MAPS[n])return;if(!MAPS[n].prepped){const back=G.map||'town';prepMap(n);useMap(back,true);MAPS[n].prepped=1;}}
