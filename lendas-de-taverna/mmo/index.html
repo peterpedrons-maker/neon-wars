@@ -2070,7 +2070,7 @@ function mkBoss(bx,by){
 }
 function resetZone(){
   if(ZONE.crp){crpInit();return;}
-  G.mobs=[];ZONE.spawns.forEach((s,i)=>{{const f=freeSpot(s[0],s[1]);G.mobs.push(mkMob(varOf(G.zoneLv,i),f[0],f[1],i));}});
+  G.mobs=[];ZONE.spawns.forEach((s,i)=>{{const f=freeSpot(s[0],s[1]);G.mobs.push(mkMob(varOf(G.zoneLv,s[2]!==undefined?s[2]:i),f[0],f[1],i));}});
   bossAlert(false);G.boss=null;G.mp=[];G.ev=null;G.chest=null;G.evT=ZONE.region?1e9:rnd(40,70);G.zbWait=0;G.kills=0;G.phase='farm';G.bossWoke=false;G.dtm=0;G.bossRoll=1;G.projs=[];
 }
 function fadeTo(cb){const f=$('fade');f.classList.add('on');setTimeout(()=>{cb();setTimeout(()=>f.classList.remove('on'),220);},380);}
