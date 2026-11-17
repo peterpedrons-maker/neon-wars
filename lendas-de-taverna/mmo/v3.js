@@ -81,12 +81,12 @@ function buildScene(key){
     dgrid=(procOn&&mood==='dark')?dungeonGrid(key):null;
     const envP={W:ZONE.w,H:ZONE.h,WATER:mood==='town'?null:WATER,WCW,GROUND,stoneNonGreen:mood==='town',S:ZONE.w>3000?.3:.5,themes:!!ZONE.region};
     let gimg=key==='zone_cripta2'?crpFloor:GROUND;
-    if(procOn&&(mood==='field'||mood==='town'))gimg=V3.proc.ground(envP,mood==='town'?V3.proc.palCidade:key==='zone_pantano'?V3.proc.palPantano:V3.proc.palFloresta,key==='zone1'?5:key==='town'?9:7);
+    if(procOn&&(mood==='field'||mood==='town'))gimg=V3.proc.ground(envP,mood==='town'?V3.proc.palCidade:(key==='zone_pantano'||(ZONE.region&&ZONE.region.ground==='swamp'))?V3.proc.palPantano:V3.proc.palFloresta,key==='zone1'?5:key==='town'?9:7);
     else if(procOn){const pal=key==='zone_esgoto'?V3.proc.palEsgoto:key==='zone_cripta2'?V3.proc.palCripta2:V3.proc.palCripta;gimg=V3.proc.dungeonFloor(envP,pal,key==='zone_esgoto'?4:key==='zone_cripta2'?6:3);
       {const x=gimg.canvas.getContext('2d'),S0=gimg.canvas.width/ZONE.w;x.fillStyle='#030409';for(let cy=0;cy<dgrid.rows;cy++)for(let cx=0;cx<dgrid.cols;cx++)if(!dgrid.isF(cx,cy))x.fillRect(Math.floor((dgrid.ox+cx*dgrid.cw)*S0),Math.floor((dgrid.oy+cy*dgrid.ch)*S0),Math.ceil(dgrid.cw*S0)+1,Math.ceil(dgrid.ch*S0)+1);}}
     const pg=procOn?gimg:null,gTex=texOf(pg?pg.canvas:gimg,1);gTex.anisotropy=8;
     const gm=new T.MeshStandardMaterial({map:gTex,roughness:.95});if(mood!=='dark'){gm.bumpMap=gTex;gm.bumpScale=1.2;}
-    const ground=new T.Mesh(new T.PlaneGeometry(GWu,GHu),gm);ground.rotation.x=-Math.PI/2;ground.position.set(GWu/2,0,GHu/2);add(ground);ground.receiveShadow=true;if(pg&&pg.M&&mood!=='dark'){add(V3.proc.waterMesh(pg,GWu,GHu,key==='zone_pantano'?[.45,.62,.4]:undefined));sc.lifeUpd=V3.proc.waterLife(add,pg,GWu,GHu,key==='zone_pantano'?{slow:.7,opacity:.5,size:1.5}:{opacity:.55,size:1.5,per:280});}if(pg&&key==='zone_esgoto'){add(V3.proc.waterMesh(pg,GWu,GHu,[.35,.5,.18]));sc.lifeUpd=V3.proc.waterLife(add,pg,GWu,GHu,{size:1.8,slow:.45,opacity:.45,per:420});}
+    const ground=new T.Mesh(new T.PlaneGeometry(GWu,GHu),gm);ground.rotation.x=-Math.PI/2;ground.position.set(GWu/2,0,GHu/2);add(ground);ground.receiveShadow=true;if(pg&&pg.M&&mood!=='dark'){add(V3.proc.waterMesh(pg,GWu,GHu,(key==='zone_pantano'||(ZONE.region&&ZONE.region.ground==='swamp'))?[.45,.62,.4]:undefined));sc.lifeUpd=V3.proc.waterLife(add,pg,GWu,GHu,key==='zone_pantano'?{slow:.7,opacity:.5,size:1.5}:{opacity:.55,size:1.5,per:280});}if(pg&&key==='zone_esgoto'){add(V3.proc.waterMesh(pg,GWu,GHu,[.35,.5,.18]));sc.lifeUpd=V3.proc.waterLife(add,pg,GWu,GHu,{size:1.8,slow:.45,opacity:.45,per:420});}
     if(mood!=='dark'){const far=new T.Mesh(new T.PlaneGeometry(400,400),new T.MeshStandardMaterial({color:0x2c5a22,roughness:1}));far.rotation.x=-Math.PI/2;far.position.set(GWu/2,-.02,GHu/2);add(far);}
   }
   // ---- props do atlas (billboards em pé, mesclados)

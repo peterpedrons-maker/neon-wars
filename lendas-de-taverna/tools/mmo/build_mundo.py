@@ -118,12 +118,43 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
             elif r<.60:addk('thorn',x,y,40,10)
             elif r<.64:addk('bones',x,y,18)
     if ground in('grave','swamp'):place_grid(72,deco,.5)
+    # ---- retoques de cenário: lagos com juncos, vitórias-régias e pedras; flores em clareiras; capim e seixos na beira dos caminhos
+    def erode(m,k):
+        r=m.copy()
+        for _ in range(k):r=r&np.roll(r,1,0)&np.roll(r,-1,0)&np.roll(r,1,1)&np.roll(r,-1,1)
+        return r
+    if water.any():
+        ys,xs=np.nonzero(shore)
+        for i in range(0,len(ys),5):
+            x=float(wx[ys[i],xs[i]]);y=float(wy[ys[i],xs[i]])
+            if at(CORR,x,y) or at(road_d,x,y)<60 or at(BAND,x,y):continue
+            r=rr.random()
+            if r<.075:
+                for _k in range(rr.randint(1,3)):addk('reed',x+rr.uniform(-22,22),y+rr.uniform(-14,14),rr.randint(34,54))
+            elif r<.115:addk('rock',x,y,rr.randint(20,34),8)
+            elif r<.17:addk('tuft',x,y,rr.randint(14,20))
+        deep=erode(water,3)&~erode(water,14);ys,xs=np.nonzero(deep)
+        for i in range(0,len(ys),4):
+            if rr.random()<.07:
+                x=float(wx[ys[i],xs[i]]);y=float(wy[ys[i],xs[i]]);P.append(dict(t='k',k='lily',x=round(x),y=round(y),s=rr.randint(26,40),lift=.06))
+    if ground not in('grave','swamp'):
+        def meadow(x,y):
+            if not free(x,y,50) or grove(x,y,.5)>.25 or rr.random()>.16:return
+            for _k in range(rr.randint(4,7)):addk('flower',x+rr.uniform(-46,46),y+rr.uniform(-34,34),rr.randint(16,24))
+        place_grid(110,meadow,.5)
+    def edgy(x,y):
+        d=at(road_d,x,y)
+        if 30<d<74 and not at(water,x,y) and not at(CORR,x,y) and camp_d(x,y)>200:
+            r=rr.random()
+            if r<.34:addk('tuft',x,y,rr.randint(13,19))
+            elif r<.40:addk('pebble',x,y,rr.randint(9,13))
+    place_grid(34,edgy,.5)
     if ground=='grave':   # ruínas: 4 colunas em volta de um túmulo
         for _ in range(7):
             for _t in range(40):
                 x=rr.uniform(700,W-700);y=rr.uniform(700,H-700)
                 if free(x,y,90) and not at(BAND,x,y) and not any(math.hypot(x-g['x'],y-g['y'])<260 for g in gates):
-                    for dx,dy in((-70,-50),(70,-50),(-70,50),(70,50)):addk('column',x+dx,y+dy,rr.randint(60,100),12)
+                    for dx,dy in((-70,-50),(70,-50),(-70,50),(70,50)):addk('column',x+dx,y+dy,rr.randint(42,66),9)
                     addk('tomb',x,y,38,18);break
     for g in gates:   # portão de dungeon: duas colunas, runa e fogueiras
         gx,gy=g['x'],g['y'];addk('column',gx-75,gy,120,13);addk('column',gx+75,gy,120,13);addk('rune',gx,gy+12,60)
@@ -147,7 +178,7 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
         for i in range(6):
             a=i*1.047+.4;px_=sx+math.cos(a)*210;py_=sy+math.sin(a)*150
             if ground=='swamp':addk('mush',px_,py_,34);addk('puddle',sx+math.cos(a+.5)*150,sy+math.sin(a+.5)*105,rr.randint(40,60))
-            else:addk('column',px_,py_,rr.randint(90,120),12)
+            else:addk('column',px_,py_,rr.randint(62,82),10)
         addk('rune',sx,sy+14,70)
         for i in range(10):
             a=rr.uniform(0,6.28);d=rr.uniform(50,200);addk('bones',sx+math.cos(a)*d,sy+math.sin(a)*d*.7,18)
@@ -231,7 +262,7 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     P.sort(key=lambda p:p['y'])
     exs=[dict(id=e['id'],nm=e['nm'],side=e['side'],toSide=e.get('toSide',-1),x=e['rect'][0],y=e['rect'][1],w=e['rect'][2],h=e['rect'][3],to=e['to'],at=e['at'],ready=e['ready'],msg=e.get('msg','')) for e in exits]
     Z=dict(w=W,h=H,props=P,spawns=spawns,plaza=[0,0,1,1],pond=[0,0,1,1],road=[],start=list(start),boss=[W//2,H//2],gate=list(start),
-           region=dict(nome=nome,nv=nv,gs=1/GS,mundo=name,**(region_extra or {})),exits=exs,fx=[],wallc=wall,**({'gates':[dict(nm=g['nm'],dg=g['dg'],x=g['x'],y=g['y'],r=g.get('r',130)) for g in gates]} if gates else {}))
+           region=dict(nome=nome,nv=nv,gs=1/GS,mundo=name,ground=ground or '',**(region_extra or {})),exits=exs,fx=[],wallc=wall,**({'gates':[dict(nm=g['nm'],dg=g['dg'],x=g['x'],y=g['y'],r=g.get('r',130)) for g in gates]} if gates else {}))
     json.dump(Z,open(f'{A}/{name}.json','w'),separators=(',',':'))
     from collections import Counter
     print(name,'spawns',len(spawns),'props',len(P),Counter(p.get('k') or p.get('t') for p in P).most_common(8),'paredes',len(wall),'saídas',[e['id'] for e in exs])
