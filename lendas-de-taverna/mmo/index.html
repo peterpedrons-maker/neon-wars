@@ -3208,7 +3208,19 @@ function updateMob(m,dt){
   if(m.kind==='boss'){
     if(G.phase!=='boss'){m.state='idle';return;}
   }
-  const aggro=m.hunt?520:(m.aggro||(m.kind==='boss'?T.aggro*2:T.aggro));
+  const aggro0=m.hunt?520:(m.aggro||(m.kind==='boss'?T.aggro*2:T.aggro));
+  /* MMO: campo de ação + leash (só mobs comuns de zonas do mundo): persegue ao chegar perto; se o herói foge longe ou o mob se afasta demais do ponto de origem, desiste, volta e cura */
+  const lsh=(ZONE&&ZONE.region&&m.kind==='mob'&&!m.mini&&!m.minion&&m.sx!==undefined);
+  if(lsh){
+    const hd=Math.hypot(m.x-m.sx,m.y-m.sy);
+    if(m.ret){
+      if(hd<14){m.ret=false;m.eng=false;m.hp=m.maxhp;m.state='idle';}
+      else{moveTo(m,m.sx,m.sy,T.speed*MOVE*1.35,dt,1);m.state='walk';m.animT+=dt*(T.speed*MOVE/46);collide(m,6);m.wx=m.x;m.wy=m.y;m.row=dir4(m.sx-m.x,m.sy-m.y);m.hp=Math.min(m.maxhp,m.hp+m.maxhp*.25*dt);return;}
+    }
+    if(!ko&&(d<aggro0||m.hp<m.maxhp-.5))m.eng=true;
+    if(m.eng&&(ko||hd>Math.max(560,aggro0*3)||d>aggro0*2.6)){m.ret=true;m.eng=false;m.act=null;m.cd=Math.max(m.cd,.4);return;}
+  }
+  const aggro=(lsh&&m.eng)?aggro0*2.6:aggro0;
   if(!ko&&d<aggro&&(m.kind==='boss'||G.phase==='farm'||G.phase==='boss')&&mobSkillStart(m,d,dt))return;
   if(!ko&&d<aggro&&(m.kind==='boss'||G.phase==='farm'||G.phase==='boss')){
     m.row=dir4(h.x-m.x,h.y-m.y);

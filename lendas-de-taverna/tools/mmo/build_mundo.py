@@ -177,11 +177,12 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
             tries+=1;x=rr.uniform(500,W-500);y=rr.uniform(500,H-500)
             if at(BAND,x,y) or at(water,x,y) or at(CORR,x,y) or camp_d(x,y)<420:continue
             if any(math.hypot(x-e['rect'][0]-e['rect'][2]/2,y-e['rect'][1]-e['rect'][3]/2)<900 for e in exits):continue
-            if any(math.hypot(x-cx,y-cy)<560 for cx,cy in centers):continue
+            if any(math.hypot(x-cx,y-cy)<430 for cx,cy in centers):continue
             centers.append((x,y))
         for cx,cy in centers:
-            for i in range(pack_n):
-                a=i*6.283/pack_n+rr.uniform(-.4,.4);spawns.append([round(cx+math.cos(a)*70),round(cy+math.sin(a)*50)])
+            n=rr.choices([1,2,3,4],[.32,.3,.24,.14])[0]   # isolados, duplas, grupos pequenos (dá para puxar um a um ou agrupar)
+            for i in range(n):
+                a=i*6.283/n+rr.uniform(-.5,.5);rad=0 if n==1 else 55+10*n;spawns.append([round(cx+math.cos(a)*rad),round(cy+math.sin(a)*rad*.75)])
     P.sort(key=lambda p:p['y'])
     exs=[dict(id=e['id'],nm=e['nm'],side=e['side'],toSide=e.get('toSide',-1),x=e['rect'][0],y=e['rect'][1],w=e['rect'][2],h=e['rect'][3],to=e['to'],at=e['at'],ready=e['ready'],msg=e.get('msg','')) for e in exits]
     Z=dict(w=W,h=H,props=P,spawns=spawns,plaza=[0,0,1,1],pond=[0,0,1,1],road=[],start=list(start),boss=[W//2,H//2],gate=list(start),
@@ -212,7 +213,7 @@ build('zone_planicie',6000,6000,202,'Planície de Brumavale','Nv 1–3',
          dict(id='lago',nm='Margem do Lago (secreta)',side=3,pos=3950,to='zone_lago',toSide=2,at=[500,1000],ready=False,msg='Margem do Lago: caminho em construção.')],
   camps=[(2200,2300),(4300,1900)],pois=[],start=(3000,5740),
   side_theme=['mount','forest','dark','mount'],band=(400,300,420,420),dens=.8,
-  hills=lambda x,y:max(0,min(1,(1400-y)/700)),packs=26,pack_n=3,
+  hills=lambda x,y:max(0,min(1,(1400-y)/700)),packs=40,pack_n=3,
   region_extra=dict(zlv=1,lv=[1,3],respawn=40,mobs=['rato','javali','rato','lobo','javali']))
 
 # ---------------------------------------------------------------- Floresta dos Goblins (zona de caça, Nv 3–5) — 5000×5000, mata escura
@@ -225,5 +226,5 @@ build('zone_goblins',5000,5000,303,'Floresta dos Goblins','Nv 3–5',
          dict(id='lenhadores',nm='Trilha dos Lenhadores',side=0,pos=2500,to='zone_lenhadores',toSide=1,at=[1100,4000],ready=False,msg='Trilha dos Lenhadores: caminho em construção.'),
          dict(id='clareira',nm='Clareira das Ruínas (secreta)',side=1,pos=1800,to='zone_clareira',toSide=0,at=[1000,150],ready=False,msg='Clareira das Ruínas: caminho em construção.')],
   camps=[(4300,2250)],pois=[],lairs=[(1500,1550)],start=(4800,2500),
-  side_theme=['dark','dark','dark','forest'],band=(380,380,400,300),dens=.95,fdens=1.55,conifer=.6,ground='dark',packs=30,pack_n=3,
+  side_theme=['dark','dark','dark','forest'],band=(380,380,400,300),dens=.95,fdens=1.55,conifer=.6,ground='dark',packs=44,pack_n=3,
   region_extra=dict(zlv=1,lv=[3,5],respawn=45,boss=dict(x=1500,y=1550,lv=6,aggro=440,respawn=300)))
