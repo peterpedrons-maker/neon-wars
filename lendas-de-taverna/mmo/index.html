@@ -1196,7 +1196,7 @@ async function loadSheet(name,atkKind){
   const anc=[0,1,2,3].map(r=>anchorOf(walk,0,r*64,64,64));
   SHEETS[name]={walk,hurt,atk,cell,frames,anc,stunF:(name==='goblin2'||(name==='goblin'&&location.search.indexOf('gob2')>=0))?1:3};
 }
-const areaName=m=>(m||G.map)==='zone_goblins'?'Floresta dos Goblins':(m||G.map)==='zone_brejo'?'Trilha do Brejo':(m||G.map)==='zone_planicie'?'Planície de Brumavale':(m||G.map)==='zone_estrada'?'Estrada de Brumavale':(m||G.map)==='zone_pantano'?'Pântano das Brumas':(m||G.map)==='zone_cripta2'?'Cripta do Rei Esquecido':(m||G.map)==='zone_esgoto'?'Esgotos de Brumavale':(m||G.map)==='zone_cripta'?'Catacumbas de Brumavale':(m||G.map)==='zone1_gob'?'Floresta dos Goblins':'Floresta de Brumavale';
+const areaName=m=>WNAME[m||G.map]?WNAME[m||G.map]:(m||G.map)==='zone_goblins'?'Floresta dos Goblins':(m||G.map)==='zone_brejo'?'Trilha do Brejo':(m||G.map)==='zone_planicie'?'Planície de Brumavale':(m||G.map)==='zone_estrada'?'Estrada de Brumavale':(m||G.map)==='zone_pantano'?'Pântano das Brumas':(m||G.map)==='zone_cripta2'?'Cripta do Rei Esquecido':(m||G.map)==='zone_esgoto'?'Esgotos de Brumavale':(m||G.map)==='zone_cripta'?'Catacumbas de Brumavale':(m||G.map)==='zone1_gob'?'Floresta dos Goblins':'Floresta de Brumavale';
 const zoneMap=z=>{if(z===5)return 'zone_cripta2';if(z>=6)return 'zone_pantano';const f=famOf(z);return f==='goblin'?'zone1_gob':f==='esq'?'zone_cripta':f==='rato'?'zone_esgoto':'zone1';};
 function zoneAutoFx(z){if(z._afx)return z._afx;const L=(z.fx||[]).slice();if(!(z.fx||[]).some(e=>e.k==='fire'))for(const p of z.props)if(p.t==='fire')L.push({k:'fire',x:p.x,y:p.y-8,spr:1,r:50});return z._afx=L;}
 function useMap(n,quiet){const m=MAPS[n];ZONE=m.zone;ATLAS=m.atlas;ATLAS_J=m.atlasJ;GROUND=m.ground;WATER=m.water;WCW=m.wcw;NAV=m.nav||null;WL=m.wl||null;WSP=m.wsp||[];WRX=m.wrx||null;GCTX=m.gx||null;G.prints=[];buildLights(zoneAutoFx(m.zone));G.map=n;MM.key='';if(!quiet&&typeof AMB!=="undefined")AMB.setup(zoneAutoFx(m.zone),n==='zone1_gob'?'gob':n==='zone1'?'forest':null);}
@@ -1233,7 +1233,7 @@ function crpSpawnPack(r){
   if(r.mobs.length)sfx('sk_grito',.25);
 }
 function crpTick(dt){
-  const C=G.crp,h=G.hero;if(!C||G.scene!=='dungeon'||!h)return;
+  const C=G.crp,h=G.hero;if(!C||!ZONE||!ZONE.crp||G.scene!=='dungeon'||!h)return;
   if(C.intro>0){C.intro-=dt;}
   for(const r of ZONE.crp.rooms){
     if(h.x<r.x0||h.x>r.x1||h.y<r.y0||h.y>r.y1)continue;
@@ -2070,7 +2070,7 @@ function mkBoss(bx,by){
 }
 function resetZone(){
   if(ZONE.crp){crpInit();return;}
-  G.mobs=[];ZONE.spawns.forEach((s,i)=>{{const f=freeSpot(s[0],s[1]);G.mobs.push(mkMob(varOf(G.zoneLv,s[2]!==undefined?s[2]:i),f[0],f[1],i));}});
+  G.crp=null;G.mobs=[];ZONE.spawns.forEach((s,i)=>{{const f=freeSpot(s[0],s[1]);G.mobs.push(mkMob(varOf(G.zoneLv,s[2]!==undefined?s[2]:i),f[0],f[1],i));}});
   bossAlert(false);G.boss=null;G.mp=[];G.ev=null;G.chest=null;G.evT=ZONE.region?1e9:rnd(40,70);G.zbWait=0;G.zm={};G.kills=0;G.phase='farm';G.bossWoke=false;G.dtm=0;G.bossRoll=1;G.projs=[];
 }
 function fadeTo(cb){const f=$('fade');f.classList.add('on');setTimeout(()=>{cb();setTimeout(()=>f.classList.remove('on'),220);},380);}
@@ -2108,6 +2108,8 @@ const WORLD={zone_estrada:['assets/zone_estrada.json','assets/atlas_regiao1.json
              zone_planicie:['assets/zone_planicie.json','assets/atlas_regiao1.json','assets/zone_planicie_ground.png','assets/atlas_regiao1.png'],
              zone_goblins:['assets/zone_goblins.json','assets/atlas_regiao1.json','assets/zone_goblins_ground.png','assets/atlas_regiao1.png'],
              zone_brejo:['assets/zone_brejo.json','assets/atlas_regiao1.json','assets/zone_brejo_ground.png','assets/atlas_regiao1.png']};
+const WNAME={zone_ponte:'Ponte do Rio',zone_colinas:'Colinas Rochosas',zone_desfiladeiro:'Desfiladeiro',zone_passo:'Passo da Montanha',zone_cemiterio:'Cemitério de Brumavale',zone_mortos:'Estrada dos Mortos',zone_lenhadores:'Trilha dos Lenhadores',zone_ogros:'Floresta dos Ogros',zone_brumas:'Pântano das Brumas',zone_clareira:'Clareira das Ruínas',zone_gruta:'Gruta Aberta',zone_lago:'Margem do Lago',zone_mina:'Mina Abandonada',zone_eremita:'Bosque do Eremita',zone_cabana:'Cabana da Bruxa'};
+Object.keys(WNAME).forEach(k=>{WORLD[k]=['assets/'+k+'.json','assets/atlas_regiao1.json','assets/'+k+'_ground.png','assets/atlas_regiao1.png'];});
 const WLOAD={},WINW=[0,0,1,-1],WSIDE_DIR=[[0,1],[0,-1],[1,0],[-1,0]];   // direção PARA DENTRO do mapa por lado da saída (0=N,1=S,2=O,3=L)
 function fetchWorld(n){const w=WORLD[n];if(!w||MAPS[n])return Promise.resolve();return WLOAD[n]||(WLOAD[n]=loadMap(n,w[0],w[1],w[2],w[3]));}
 async function ensureMap(n){await fetchWorld(n);if(!MAPS[n])return;if(!MAPS[n].prepped){const back=G.map||'town';prepMap(n);useMap(back,true);MAPS[n].prepped=1;}}
@@ -2122,10 +2124,14 @@ async function zoneGo(ex){
   setTimeout(()=>{G.xfer=0;},1500);
 }
 function exitCheck(){const h=G.hero;if(G.xfer||G.winOpen||!ZONE||!ZONE.exits||h.state==='ko'||G.arena)return;for(const e of ZONE.exits)if(h.x>=e.x&&h.x<=e.x+e.w&&h.y>=e.y&&h.y<=e.y+e.h){zoneGo(e);return;}}
+async function regBack(){   /* volta da dungeon para a zona do mundo onde fica a entrada */
+  const m=G.regMap||'zone_planicie',r=G.regRet;G.regRet=null;
+  try{if(!MAPS[m])toast('Voltando…',20000);await ensureMap(m);$('toast').style.display='none';enterDungeon(((MAPS[m].zone.region||{}).zlv)||1,{map:m,at:r?[r.x,r.y]:undefined});}catch(e){console.error(e);enterRegion();}
+}
 async function enterRegion(){   // atalho do Portal (teste): leva ao começo da Planície
   if(G.xfer)return;G.xfer=1;try{toast('Carregando a Planície…',20000);await ensureMap('zone_planicie');$('toast').style.display='none';enterDungeon(1,{map:'zone_planicie',at:[3000,5740],dir:[0,-1]});}catch(e){console.error(e);toast('Não foi possível carregar o mapa.',2500);}setTimeout(()=>{G.xfer=0;},1500);}
 function enterDungeon(zlv,opts){
-  zlv=clamp(zlv||1,1,DUN.length);if(!dgUnlocked(zlv)&&!(opts&&opts.arena)){sfx('ui_denied');return;}
+  zlv=clamp(zlv||1,1,DUN.length);if(!dgUnlocked(zlv)&&!(opts&&(opts.arena||opts.map))){sfx('ui_denied');return;}
   if(whenReady(()=>enterDungeon(zlv,opts)))return;
   const hp0=G.hero&&G.hero.maxhp?G.hero.hp/G.hero.maxhp:1;
   closeWin();if(G.scene==='town')PFX.boost=1;cxZone(zlv);
@@ -2161,7 +2167,7 @@ function buildBar(){
   ab.appendChild(atk);
   const pot=mkTb('bPot',potHtml,'slot2 sep',()=>usePotion(true));ab.appendChild(pot);
   {const D=DODGE[SAVE.cls];const dd=mkTb('bDodge','<img src="assets/hud/'+(D.t==='blink'?'esq_blink':'esq_roll')+'.png" style="padding:0"><span class="key">E</span><div class="cd"></div><div class="ct"></div>','slot2',()=>{});dd.addEventListener('pointerdown',ev=>{manualDodge();ev.preventDefault();});ab.appendChild(dd);}
-  const tw=mkTb('bTownB','<img src="assets/hud/cidade.png" style="width:40px;height:40px">','mbtn',()=>{sfx('ui_click');gConfirm(ZONE.region?'Você volta ao portal de Brumavale (o caminho de volta pode ser feito a pé).':G.fromReg?'O progresso desta dungeon será perdido.':'O progresso desta floresta (abates) será perdido.',{title:'Voltar para a cidade?',ok:'Voltar',no:'Ficar'}).then(ok=>{if(!ok)return;if(G.fromReg){G.regRet=G.regLast||null;enterRegion();}else enterTown(false);});});
+  const tw=mkTb('bTownB','<img src="assets/hud/cidade.png" style="width:40px;height:40px">','mbtn',()=>{sfx('ui_click');gConfirm(ZONE.region?'Você volta ao portal de Brumavale (o caminho de volta pode ser feito a pé).':G.fromReg?'O progresso desta dungeon será perdido.':'O progresso desta floresta (abates) será perdido.',{title:'Voltar para a cidade?',ok:'Voltar',no:'Ficar'}).then(ok=>{if(!ok)return;if(G.fromReg){G.regRet=G.regLast||null;regBack();}else enterTown(false);});});
   socMenu(m,true);m.appendChild(tw);updPot();badge();
 }
 function updPot(){const n=$('potn');if(n)n.textContent=SAVE.potions+(SAVE.potL?'+'+SAVE.potL:'');}
@@ -2423,7 +2429,7 @@ function zbossTick(dt){const R=ZONE.region;if(!R||!R.boss||G.arena||G.scene!=='d
 function zminiTick(dt){const R=ZONE.region;if(!R||!R.minis||G.arena||G.scene!=='dungeon'||G.hero.state==='ko')return;G.zm=G.zm||{};
   R.minis.forEach((b,i)=>{const st=G.zm[i]||(G.zm[i]={m:null,wait:0});if(st.wait>0){st.wait-=dt;return;}if(st.m&&!st.m.dead&&!st.m.gone)return;
     if(Math.hypot(G.hero.x-b.x,G.hero.y-b.y)>(b.aggro||420))return;
-    const m=b.type==='skrix'?spawnSkrix(b.x,b.y):null;if(!m)return;st.m=m;const od=m.onDie;m.onDie=()=>{if(od)od();st.wait=b.respawn||240;};});}
+    const SP={skrix:spawnSkrix,vamp:spawnVamp,botic:spawnBotic,javcap:spawnJavcap},fn=SP[b.type];if(!fn)return;const m=fn(b.x,b.y);if(!m)return;if(b.lv&&b.lv!==m.lv){const k=mobHpMul(b.lv)/mobHpMul(m.lv),ka=mobAtkMul(b.lv)/mobAtkMul(m.lv);m.lv=b.lv;m.maxhp=Math.round(m.maxhp*k);m.hp=m.maxhp;m.pow*=ka;m.def=b.lv*1.3;}st.m=m;const od=m.onDie;m.onDie=()=>{if(od)od();st.wait=b.respawn||240;};});}
 function bossTick(dt){if(G.boss&&!G.boss.dead)orbTick(G.boss,dt);zbossTick(dt);zminiTick(dt);
   if(ZONE.region)return;
   if(G.phase!=='farm'||G.hero.state==='ko')return;
@@ -4034,7 +4040,7 @@ function nearInt(){const h=G.hero;if((G.scene!=='town'&&!(G.scene==='dungeon'&&Z
 /* portões das dungeons no mapa aberto: o vórtice (PixelFx) toca em volta de cada portão enquanto o herói está por perto */
 function gateFx(dt){const h=G.hero;for(const g of ZONE.gates){if(dist(h,g)>620){g._t=0;continue;}g._t=(g._t||0)-dt;if(g._t<=0){g._t=2.4;VF.spr(g.x,g.y-34,'portal_arcano',.9);}}}
 function itbUpd(){const b=$('itb'),n=G.near;if(!b)return;if(!n){b.style.display='none';return;}b.innerHTML=`<img src="${UI}${n.ic||'scroll-unfurled'}.png">`+(n.k==='gate'?`<i class="itl">${n.nm}</i>`:'');b.title=n.lb+' '+(n.nm||'');b.style.display='flex';}
-function itbDo(){const n=G.near;if(!n||G.winOpen||(G.scene!=='town'&&n.k!=='gate'))return;G.wp=null;sfx('ui_confirm',.6);if(n.k==='gate'){sfx('spell_cast',.8);sfx('levelup',.4);G.near=null;G.nearKey='';itbUpd();G.regRet={x:n.g.x,y:n.g.y+70};G.regLast=G.regRet;enterDungeon(n.g.dg,{fromReg:1});return;}if(n.k==='npc')interact(n.t);else if(n.k==='door')enterRoom(n.d.room,n.d.id);else interact({kind:'portal'});}
+function itbDo(){const n=G.near;if(!n||G.winOpen||(G.scene!=='town'&&n.k!=='gate'))return;G.wp=null;sfx('ui_confirm',.6);if(n.k==='gate'){if(!dgUnlocked(n.g.dg)){const d=DUN[n.g.dg-1];sfx('ui_denied');toast((d?d.nm:'Dungeon')+': requer nível '+(d?d.unlock:15)+'.',2600);return;}sfx('spell_cast',.8);sfx('levelup',.4);G.near=null;G.nearKey='';itbUpd();G.regRet={x:n.g.x,y:n.g.y+70};G.regLast=G.regRet;G.regMap=G.map;enterDungeon(n.g.dg,{fromReg:1});return;}if(n.k==='npc')interact(n.t);else if(n.k==='door')enterRoom(n.d.room,n.d.id);else interact({kind:'portal'});}
 {const b=$('itb');if(b)b.onclick=itbDo;}
 addEventListener('keydown',e=>{if(/INPUT|TEXTAREA/.test((e.target.tagName||'')))return;if(e.key==='f'||e.key==='F')itbDo();});
 function interact(t){
