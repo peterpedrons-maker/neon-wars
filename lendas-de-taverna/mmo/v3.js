@@ -57,7 +57,7 @@ const hex=(s,d)=>{try{const v=parseInt(String(s||'').replace('#','').slice(0,6),
 function buildScene(key){
   const mood=ZONE.room?'room':ZONE.dark?'dark':key==='town'?'town':'field';
   const rnd=rndSeed(11);
-  const sc={key,mood,grp:new T.Group(),houses:[],winMats:[],sources:[],pool:[],glows:[],smoke:[],chimneys:[],fires:[],fireGeos:[],ents:new Map(),labels:new Map(),dist:mood==='room'?12:12.5,used:0};
+  const sc={key,mood,grp:new T.Group(),houses:[],winMats:[],sources:[],pool:[],glows:[],smoke:[],chimneys:[],fires:[],fireGeos:[],ents:new Map(),labels:new Map(),dist:mood==='room'?12:mood==='town'?12.5:20,used:0};
   const g=sc.grp,add=o=>{g.add(o);return o;};
   S.add(g);
   const aTex=texOf(ATLAS,1),AW=ATLAS.width,AH=ATLAS.height,GWu=ZONE.w*U,GHu=ZONE.h*U;
@@ -108,7 +108,6 @@ function buildScene(key){
     if(key==='town'&&p.id.startsWith('b_'))continue;stand.push([p.id,p.x,p.y]);
     if(key==='town'&&a[2]<=24&&a[3]>=80)lampsP.push([p.x*U,2.3,p.y*U]);}
   if(key==='zone_pantano'&&V3.proc)V3.proc.direct(add,ZONE.props.filter(p=>p.k),sc);
-  if(ZONE.region)sc.dist=17;   // mapa aberto: câmera um pouco mais afastada (modo manual)
   if(ZONE.region&&V3.proc)V3.proc.direct(add,ZONE.props.filter(p=>p.k),sc);
   if(key==='zone_cripta2'&&V3.proc){   // Cripta: cada prop do atlas vira o modelo certo (nada de adivinhar pela cor)
     const MAPC=[['prop_barril','barrel',.85],['prop_caixas','crates',1.1],['braseiro','brazier',.9],['pilar','pillar',.8],['prop_potes','pots',.9],['prop_sacos','sacks',1],['prop_altar','altar',1.05],['prop_bau','chest',1.2],['prop_mesa','table',1.1],['prop_prateleira','potshelf',1.0],['prop_jaula','cage',1.05]],pl=ZONE.crp&&ZONE.crp.plat,lift=pl?pl.elev*U/CT:0,list=[],keep=[];
