@@ -344,16 +344,36 @@ P.palMadeira={base:'#6a4a2a',p:[148,104,60]};
 // ---- vida na água: sombras de peixes nadando dentro do lago e anéis na superfície
 P.waterLife=function(add,g,GWu,GHu,o){o=o||{};const M=g.M,gw=M.gw,gh=M.gh,wat=(x,y)=>{const ix=Math.floor(x/4),iy=Math.floor(y/4);return ix>=0&&iy>=0&&ix<gw&&iy<gh&&M.water[iy*gw+ix]>.66;};
   const cells=[];for(let i=0;i<gw*gh;i++)if(M.water[i]>.8)cells.push(i);if(cells.length<40)return null;
-  const N=Math.min(o.max||14,Math.max(2,Math.round(cells.length/(o.per||500)))),fc=document.createElement('canvas');fc.width=64;fc.height=32;{const x=fc.getContext('2d');x.fillStyle='rgba(0,0,0,.85)';x.beginPath();x.ellipse(24,16,20,7,0,0,7);x.fill();x.beginPath();x.moveTo(42,16);x.lineTo(62,6);x.lineTo(58,16);x.lineTo(62,26);x.closePath();x.fill();x.beginPath();x.moveTo(20,10);x.lineTo(14,2);x.lineTo(28,9);x.fill();}
-  const ft=new T.CanvasTexture(fc),fish=[],sz=o.size||1;
-  for(let i=0;i<N;i++){const c=cells[Math.floor(hash(i,31,7)*cells.length)],x=(c%gw)*4+2,y=Math.floor(c/gw)*4+2;const mm=new T.Mesh(new T.PlaneGeometry(1.5*sz*(.7+hash(i,5,5)*.7),.75*sz*(.7+hash(i,6,6)*.7)),new T.MeshBasicMaterial({map:ft,transparent:true,opacity:o.opacity||.34,depthWrite:false}));mm.rotation.x=-Math.PI/2;mm.position.set(x*U,.05,y*U);mm.renderOrder=3;add(mm);
-    fish.push({m:mm,x,y,a:hash(i,1,1)*6.283,v:(18+hash(i,2,2)*22)*(o.slow||1),ph:hash(i,3,3)*6.28,tt:0});}
+  // ---- peixes em pixel art (vistos de cima, 16x8, 2 quadros de cauda), desenhados por código: 3 espécies
+  const SPEC=[{b:'#e8913a',l:'#f7c070',d:'#b4561f',f:'#d9743a',e:'#2a1a14'},{b:'#7fa6c4',l:'#c3dcec',d:'#4b6f8e',f:'#6a90ae',e:'#10202e'},{b:'#6f8a4a',l:'#a6bf74',d:'#41562b',f:'#566f38',e:'#14200c'}];
+  const mkTex=(sp,fr)=>{const c=document.createElement('canvas');c.width=16;c.height=8;const x=c.getContext('2d'),px=(X,Y,col)=>{x.fillStyle=col;x.fillRect(X,Y,1,1);};
+    for(let Y=0;Y<8;Y++)for(let X=3;X<15;X++){const dx=(X-9)/5.6,dy=(Y-3.5)/2.5;if(dx*dx+dy*dy<=1){const edge=dx*dx+dy*dy>.62;px(X,Y,Y<3?(edge?sp.b:sp.l):Y>4?sp.d:sp.b);}}
+    const w=fr?1:0;for(let X=0;X<4;X++){const sp2=1+X*.55,cy=3.5+(fr?-.5:.5)*(3-X)*.5;for(let Y=0;Y<8;Y++){if(Math.abs(Y-cy)<=sp2*.9&&!(X===3&&Math.abs(Y-3.5)>1.5))px(X,Y,Math.abs(Y-cy)>sp2*.55?sp.f:sp.b);}}
+    px(8,0+w,sp.f);px(8,7-w,sp.f);px(9,0+w,sp.f);px(9,7-w,sp.f);   // nadadeiras peitorais
+    for(let X=5;X<12;X++)px(X,3,sp.d);                              // linha do dorso
+    px(13,2,sp.e);px(13,5,sp.e);return c;};
+  const texs=SPEC.map(sp=>[0,1].map(f=>{const t=new T.CanvasTexture(mkTex(sp,f));t.magFilter=t.minFilter=T.NearestFilter;if('colorSpace' in t&&T.SRGBColorSpace)t.colorSpace=T.SRGBColorSpace;else if(T.sRGBEncoding)t.encoding=T.sRGBEncoding;return t;}));
+  const N=Math.min(o.max||16,Math.max(3,Math.round(cells.length/(o.per||450)))),fish=[],sz=o.size||1;
+  const ang=(a,b)=>{let d=b-a;while(d>Math.PI)d-=6.283;while(d<-Math.PI)d+=6.283;return d;};
+  for(let i=0;i<N;i++){const c=cells[Math.floor(hash(i,31,7)*cells.length)],hx=(c%gw)*4+2,hy=Math.floor(c/gw)*4+2,sp=Math.floor(hash(i,4,4)*3),k=1+Math.floor(hash(i,9,9)*3);   // cardume de 1 a 3
+    for(let j=0;j<k;j++){const w=sz*(.5+hash(i,5+j,5)*.28),x=hx+(hash(i,j,1)-.5)*30,y=hy+(hash(i,j,2)-.5)*24;
+      const mm=new T.Mesh(new T.PlaneGeometry(w,w*.5),new T.MeshBasicMaterial({map:texs[sp][0],transparent:true,opacity:.9,depthWrite:false}));mm.rotation.x=-Math.PI/2;mm.position.set(x*U,.03,y*U);mm.renderOrder=1;add(mm);   // abaixo da lâmina d'água (renderOrder 2)
+      fish.push({m:mm,sp,x,y,hx,hy,a:hash(i,1,1)*6.283,ta:0,v:0,tv:10,ph:hash(i,3,j)*6.28,tt:hash(i,8,j)*3,st:0,mode:0,home:55+hash(i,6,6)*60});}}
   const rings=[];for(let i=0;i<5;i++){const rc=document.createElement('canvas');rc.width=rc.height=64;const x=rc.getContext('2d');x.strokeStyle='rgba(235,250,255,.9)';x.lineWidth=3;x.beginPath();x.arc(32,32,26,0,7);x.stroke();const r=new T.Mesh(new T.PlaneGeometry(1,1),new T.MeshBasicMaterial({map:new T.CanvasTexture(rc),transparent:true,opacity:0,depthWrite:false}));r.rotation.x=-Math.PI/2;r.renderOrder=3;r.visible=false;add(r);rings.push({m:r,t:9});}
   return function(t,dt){
-    for(const f of fish){f.tt+=dt;let nx=f.x+Math.cos(f.a)*f.v*dt,ny=f.y+Math.sin(f.a)*f.v*dt;
-      if(!wat(nx,ny)||!wat(nx+Math.cos(f.a)*14,ny+Math.sin(f.a)*14)){f.a+=1.4+hash(Math.floor(f.x),Math.floor(f.y),9)*1.8;nx=f.x;ny=f.y;}
-      else f.a+=Math.sin(t*.9+f.ph)*dt*.6;f.x=nx;f.y=ny;f.m.position.set(f.x*U,.05,f.y*U);f.m.rotation.z=-f.a;f.m.scale.x=1+.1*Math.sin(t*8+f.ph);
-      if(Math.random()<dt*.05){const r=rings.find(q=>q.t>=1);if(r){r.t=0;r.m.position.set(f.x*U,.055,f.y*U);r.m.visible=true;}}}
+    for(const f of fish){f.tt-=dt;
+      if(f.tt<=0){const r=Math.random();   // rotina: nada devagar, para um instante, às vezes uma arrancada curta
+        if(r<.62){f.mode=0;f.tv=9+Math.random()*7;f.tt=2.5+Math.random()*3.5;f.ta=f.a+(Math.random()-.5)*1.4;}
+        else if(r<.9){f.mode=1;f.tv=1.5;f.tt=1+Math.random()*2.2;}
+        else{f.mode=2;f.tv=34;f.tt=.35+Math.random()*.25;f.ta=f.a+(Math.random()-.5)*.8;}}
+      const dh=Math.hypot(f.x-f.hx,f.y-f.hy);if(dh>f.home&&f.mode!==1){f.ta=Math.atan2(f.hy-f.y,f.hx-f.x);}
+      f.a+=Math.max(-1,Math.min(1,ang(f.a,f.ta)))*dt*(f.mode===2?3.5:1.3);   // gira devagar: nada de curva brusca
+      f.v+=(f.tv-f.v)*Math.min(1,dt*(f.mode===2?6:1.6));
+      const nx=f.x+Math.cos(f.a)*f.v*dt,ny=f.y+Math.sin(f.a)*f.v*dt;
+      if(!wat(nx,ny)||!wat(nx+Math.cos(f.a)*12,ny+Math.sin(f.a)*12)){f.ta=f.a+Math.PI*(.6+Math.random()*.4)*(Math.random()<.5?1:-1);f.v*=.4;f.mode=0;f.tt=1.2;f.tv=9;}else{f.x=nx;f.y=ny;}
+      f.m.position.set(f.x*U,.03,f.y*U);f.m.rotation.z=-f.a;
+      const fr=Math.floor(t*(1.5+f.v*.22)+f.ph)&1;if(f.st!==fr){f.st=fr;f.m.material.map=texs[f.sp][fr];}   // só troca o quadro da cauda: sem esticar/encolher
+      if(f.mode===2&&Math.random()<dt*2){const r=rings.find(q=>q.t>=1);if(r){r.t=0;r.m.position.set(f.x*U,.055,f.y*U);r.m.visible=true;}}}
     for(const r of rings){if(r.t>=1){r.m.visible=false;continue;}r.t+=dt*.7;const s=.3+r.t*1.9;r.m.scale.set(s,s,1);r.m.material.opacity=(1-r.t)*.55;}};
 };
 P.palFloresta={g1:[40,86,34],g2:[56,106,42],g3:[30,68,30],d1:[116,86,54],d2:[132,100,62],d3:[96,70,44],st:[128,128,120],sm:[70,70,66],shore:[150,130,90],w1:[70,140,170],w2:[34,84,120]};

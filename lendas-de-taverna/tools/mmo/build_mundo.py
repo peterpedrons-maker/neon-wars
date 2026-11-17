@@ -23,7 +23,7 @@ def path_d(px,py,pts):
     for a,b in zip(pts,pts[1:]):d=np.minimum(d,seg_d(px,py,a,b))
     return d
 
-def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_theme,band=(380,380,380,380),dens=1.0,hills=None,packs=0,lairs=(),fdens=1.0,conifer=.3,ground=None,region_extra=None,pack_n=3,gates=(),dead=0.0,shrines=()):
+def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_theme,band=(380,380,380,380),dens=1.0,hills=None,packs=0,lairs=(),fdens=1.0,conifer=.3,ground=None,region_extra=None,pack_n=3,gates=(),dead=0.0,shrines=(),wxw=None):
     """side: 0=N 1=S 2=W 3=E. waters: lista de (cx,cy,rx,ry). exits: dict(id,nm,side,pos,to,at,ready,msg). camps/pois: (x,y)."""
     rr=random.Random(seed);gw=W//GS;gh=H//GS
     def smooth(sd,step):
@@ -262,7 +262,7 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     P.sort(key=lambda p:p['y'])
     exs=[dict(id=e['id'],nm=e['nm'],side=e['side'],toSide=e.get('toSide',-1),x=e['rect'][0],y=e['rect'][1],w=e['rect'][2],h=e['rect'][3],to=e['to'],at=e['at'],ready=e['ready'],msg=e.get('msg','')) for e in exits]
     Z=dict(w=W,h=H,props=P,spawns=spawns,plaza=[0,0,1,1],pond=[0,0,1,1],road=[],start=list(start),boss=[W//2,H//2],gate=list(start),
-           region=dict(nome=nome,nv=nv,gs=1/GS,mundo=name,ground=ground or '',**(region_extra or {})),exits=exs,fx=[],wallc=wall,**({'gates':[dict(nm=g['nm'],dg=g['dg'],x=g['x'],y=g['y'],r=g.get('r',130)) for g in gates]} if gates else {}))
+           region=dict(nome=nome,nv=nv,gs=1/GS,mundo=name,ground=ground or '',**({'wx':wxw} if wxw else {}),**(region_extra or {})),exits=exs,fx=[],wallc=wall,**({'gates':[dict(nm=g['nm'],dg=g['dg'],x=g['x'],y=g['y'],r=g.get('r',130)) for g in gates]} if gates else {}))
     json.dump(Z,open(f'{A}/{name}.json','w'),separators=(',',':'))
     from collections import Counter
     print(name,'spawns',len(spawns),'props',len(P),Counter(p.get('k') or p.get('t') for p in P).most_common(8),'paredes',len(wall),'saídas',[e['id'] for e in exs])
@@ -301,7 +301,13 @@ def auto_roads(name,hub=None):
         P0={0:(p,10),1:(p,H-10),2:(10,p),3:(W-10,p)}[s];P1={0:(p,H*.2),1:(p,H*.8),2:(W*.2,p),3:(W*.8,p)}[s]
         mid=((P1[0]+hub[0])/2+r_.uniform(-140,140),(P1[1]+hub[1])/2+r_.uniform(-140,140));roads.append([P0,P1,mid,hub])
     return roads
+# clima por zona (pesos de clear/rain/storm): perto da cidade quase sempre aberto; pântano e cemitério carregados
+WX_BY=dict(planicie=dict(clear=6,rain=2),goblins=dict(clear=3,rain=3),brejo=dict(clear=2,rain=4),ponte=dict(clear=3,rain=3),colinas=dict(clear=4,rain=2,storm=1),
+  desfiladeiro=dict(clear=3,rain=2,storm=2),passo=dict(clear=3,rain=2,storm=2),cemiterio=dict(clear=2,rain=3,storm=2),mortos=dict(clear=2,rain=3,storm=2),
+  lenhadores=dict(clear=3,rain=3),ogros=dict(clear=3,rain=3,storm=1),brumas=dict(clear=1,rain=5,storm=2),clareira=dict(clear=3,rain=2),gruta=dict(rain=3,storm=2),
+  lago=dict(clear=3,rain=3),mina=dict(clear=3,rain=2,storm=1),eremita=dict(clear=2,rain=3),cabana=dict(clear=1,rain=4,storm=3))
 def Z(name,seed,nv,**kw):
+    kw.setdefault('wxw',WX_BY.get(name))
     W,H=SIZE[name];kw.setdefault('roads',auto_roads(name));kw.setdefault('trails',[]);kw.setdefault('waters',[]);kw.setdefault('camps',[])
     kw.setdefault('pois',[]);kw.setdefault('start',(W//2,H//2))
     build('zone_'+name,W,H,seed,NM[name].replace(' (secreta)','').replace(' (secreto)',''),nv,exits=EXL[name],**kw)
