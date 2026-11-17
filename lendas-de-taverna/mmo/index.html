@@ -2047,10 +2047,10 @@ const FAMV={crip:['guarda','cult','espectro','gargula','zumbi','guarda','cult','
 const varOf=(z,i)=>{if(typeof ZONE!=='undefined'&&ZONE&&ZONE.region&&ZONE.region.mobs){const m=ZONE.region.mobs;return m[((i%m.length)+m.length)%m.length];}const a=(typeof G!=='undefined'&&G.map==='zone_cripta2'&&z===5)?FAMV.crip:FAMV[famOf(z)];return a[((i%a.length)+a.length)%a.length];};
 /* progressão definida: 4 dungeons, uma após a outra. Para entrar na seguinte é preciso derrotar o chefe da anterior e ter o nível mínimo. */
 /* pc = poder de combate recomendado (calibrado por simulação: PC com o qual o herói de equipamento médio vence o chefe com folga; tools/mmo/sim/pc_calib.cjs + boss.cjs) */
-const DUN=[{id:1,nm:'Floresta dos Goblins',unlock:1,pc:600},{id:2,nm:'Catacumbas de Brumavale',unlock:8,pc:900},{id:3,nm:'Floresta de Brumavale',unlock:13,pc:1200},{id:4,nm:'Esgotos de Brumavale',unlock:18,pc:1400},{id:5,nm:'Cripta do Rei Esquecido',unlock:1,pc:1650},{id:6,nm:'Pântano das Brumas',unlock:22,pc:1900}];
+const DUN=[{id:1,nm:'Floresta dos Goblins',unlock:1,pc:600},{id:2,nm:'Catacumbas de Brumavale',unlock:8,pc:900},{id:3,nm:'Floresta de Brumavale',unlock:13,pc:1200},{id:4,nm:'Esgotos de Brumavale',unlock:15,pc:1400},{id:5,nm:'Cripta do Rei Esquecido',unlock:15,pc:1650},{id:6,nm:'Pântano das Brumas',unlock:22,pc:1900}];
 const dgLv=z=>[1+(z-1)*BAL.zoneLv,8+(z-1)*BAL.zoneLv];   // faixa de nível dos monstros da dungeon z
 const TEST_UNLOCK=true;   /* TESTE: todas as dungeons e arenas abertas, sem requisito de nível nem de chefe (mude para false para voltar ao normal) */
-function dgUnlocked(z){if(TEST_UNLOCK||z<=1||z===5)return true;const d=DUN[z-1];return !!(d&&SAVE.dgDone&&SAVE.dgDone[z-1]&&SAVE.lv>=d.unlock);}
+function dgUnlocked(z){if(TEST_UNLOCK||z<=1)return true;if(z===5)return SAVE.lv>=DUN[4].unlock;const d=DUN[z-1];return !!(d&&SAVE.dgDone&&SAVE.dgDone[z-1]&&SAVE.lv>=d.unlock);}
 function dgRefresh(){let m=1;for(let z=2;z<=DUN.length;z++)if(dgUnlocked(z))m=z;if(m>(SAVE.zoneMax||1)){SAVE.zoneMax=m;chat('Nova dungeon liberada: '+DUN[m-1].nm+'!',4);sfx('levelup',.4);if(G.hero)floatText(G.hero.x,G.hero.y-80,'Nova dungeon!','#8ef08a',9,1.4);}SAVE.zoneMax=Math.max(1,Math.min(DUN.length,SAVE.zoneMax||1));}
 // experiência estilo Cabal: monstro muito abaixo do seu nível rende 1 de XP (chefes mantêm um mínimo)
 const xpGapMul=g=>g<=2?1:g===3?.85:g===4?.7:g===5?.5:g===6?.3:g===7?.15:g===8?.07:0;
