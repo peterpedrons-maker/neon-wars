@@ -124,7 +124,7 @@ def tree(x,y):
         if rr.random()>.16*h:return 0
         ids=TALL_C
     else:
-        if rr.random()>min(.92,d):return 0
+        if rr.random()>min(.9,d*.78):return 0
         ids=TALL_C if (rr.random()<.5 and x<2600) else TALL_B
     P.append(dict(t='p',id=rr.choice(ids),x=round(x),y=round(y)));return 1
 def mid(x,y):

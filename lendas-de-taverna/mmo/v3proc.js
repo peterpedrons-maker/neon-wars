@@ -247,6 +247,11 @@ function kindTown(a,rgb,flat,id){const mk0=TOWNMAP[(id||'').slice(0,4)];if(mk0)r
 function kindIn(a,rgb,flat,id){return null;const mk0=INMAP[(id||'').slice(0,4)];if(mk0)return mk0;const [,,w,h]=a,[r,g,b]=rgb,sat=(Math.max(r,g,b)-Math.min(r,g,b))/(Math.max(r,g,b)||1),green=g>r+6&&g>=b-4;
   if(flat)return null;if(h<=70&&green&&sat>.18)return 'bush';if(w<=22&&h>=60)return 'lamp';return kindDg(a,rgb,false);}
 // ---- floresta: devolve o que sobrou (props sem modelo) para continuarem como sprites
+/* árvores/objetos entre a câmera e o herói ficam vazados (transparência pontilhada) para não tapar o jogador */
+P.stU={hp:{value:new T.Vector2(-1e4,-1e4)},hz:{value:2},r:{value:0}};
+P.seeThru=function(m){const prev=m.onBeforeCompile;m.onBeforeCompile=function(sh,r){if(prev)prev.call(this,sh,r);sh.uniforms.uHP=P.stU.hp;sh.uniforms.uHZ=P.stU.hz;sh.uniforms.uR=P.stU.r;
+  sh.fragmentShader='uniform vec2 uHP;uniform float uHZ;uniform float uR;\n'+sh.fragmentShader.replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\nif(uR>0.){float dd=length(gl_FragCoord.xy-uHP);if(gl_FragCoord.z<uHZ-.00035&&dd<uR){float f=dd/uR;if(f<.55||mod(floor(gl_FragCoord.x)+floor(gl_FragCoord.y),2.)<1.)discard;}}');};
+  m.customProgramCacheKey=()=>'st'+(prev?'1':'0');return m;};
 P.forest=function(env,add,rnd,items,theme){const DG=theme==='dungeon'||theme==='indoor';
   const mats={},buckets={},rest={stand:[],flats:[]};
   const take=(list,flat)=>{for(const it of list){const [id,x,y]=it,a=env.ATLAS_J[id];if(!a)continue;if(theme==='outdoor'&&id.slice(0,2)==='b_'){rest.stand.push(it);continue;}   /* casas das vilas: arte original em pé */
@@ -254,7 +259,7 @@ P.forest=function(env,add,rnd,items,theme){const DG=theme==='dungeon'||theme==='
   take(items.stand,false);take(items.flats,true);
   const runeMat=()=>new T.MeshBasicMaterial({vertexColors:true,transparent:true,blending:T.AdditiveBlending,depthWrite:false,opacity:.9});
   const slimeMat=()=>new T.MeshStandardMaterial({vertexColors:true,emissive:0x40c040,emissiveIntensity:.5,roughness:.3});
-  const mk=sw=>{const m=new T.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:.92});if(sw)m.onBeforeCompile=sh=>{sh.uniforms.uTime=P.time;sh.vertexShader='uniform float uTime;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n#ifdef USE_INSTANCING\nfloat ph=instanceMatrix[3].x*.9+instanceMatrix[3].z*.6;\n#else\nfloat ph=0.;\n#endif\ntransformed.x+=sin(uTime*1.7+ph)*position.y*'+sw.toFixed(3)+';transformed.z+=cos(uTime*1.3+ph*1.3)*position.y*'+(sw*.6).toFixed(3)+';');};return m;};
+  const mk=sw=>{const m=new T.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:.92});if(sw)m.onBeforeCompile=sh=>{sh.uniforms.uTime=P.time;sh.vertexShader='uniform float uTime;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n#ifdef USE_INSTANCING\nfloat ph=instanceMatrix[3].x*.9+instanceMatrix[3].z*.6;\n#else\nfloat ph=0.;\n#endif\ntransformed.x+=sin(uTime*1.7+ph)*position.y*'+sw.toFixed(3)+';transformed.z+=cos(uTime*1.3+ph*1.3)*position.y*'+(sw*.6).toFixed(3)+';');};return P.seeThru(m);};
   const SW={tuft:.35,flower:.25,bush:.05,broad:.02,conifer:.012,dead:.01,mush:0};
   const BASE={conifer:[28,66,62],broad:[74,92,46],tuft:[78,128,52],bush:[58,104,46],rock:[118,118,112],thorn:[84,58,36],tent:[130,84,58],puddle:null,bones:[214,204,176],twig:[84,60,40],mush:[220,190,70],pillar:null,banner:null,lamp:[40,40,46],bench:[122,86,50],planter:[110,74,44],barrel:[110,76,44],crate:[120,84,48],chest:[122,80,40],coffin:[90,62,40],tomb:null,tombstone:null,urn:null,block:null,column:null,rune:null,slime:[96,200,70],blood:[96,24,22]};
   for(const k in buckets){const L=buckets[k];if(!L.length)continue;
@@ -308,7 +313,7 @@ P.direct=function(add,list,sc){
   for(const q of list)(by[q.k]=by[q.k]||[]).push(q);
   const mat=(k)=>{if(k==='mush')return new T.MeshStandardMaterial({vertexColors:true,flatShading:true,emissive:0x22ccaa,emissiveIntensity:.9,roughness:.5});
     const m=new T.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:.9});if(k==='tuft'||k==='dead'||k==='broad'){const sw={tuft:.35,dead:.01,broad:.02}[k];m.onBeforeCompile=sh=>{sh.uniforms.uTime=P.time;sh.vertexShader='uniform float uTime;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n#ifdef USE_INSTANCING\nfloat ph=instanceMatrix[3].x*.9+instanceMatrix[3].z*.6;\n#else\nfloat ph=0.;\n#endif\ntransformed.x+=sin(uTime*1.7+ph)*position.y*'+sw.toFixed(3)+';transformed.z+=cos(uTime*1.3+ph*1.3)*position.y*'+(sw*.6).toFixed(3)+';');};}return m;};
-  for(const k in by){const L=by[k];if(!MODELS[k])continue;const im=new T.InstancedMesh(MODELS[k](new T.Color(COL[k]||'#888')),mat(k),L.length),m4=new T.Matrix4(),q=new T.Quaternion(),e=new T.Euler();
+  for(const k in by){const L=by[k];if(!MODELS[k])continue;const im=new T.InstancedMesh(MODELS[k](new T.Color(COL[k]||'#888')),P.seeThru(mat(k)),L.length),m4=new T.Matrix4(),q=new T.Quaternion(),e=new T.Euler();
     L.forEach((it,i)=>{const r=hash(Math.round(it.x),Math.round(it.y),11),H=it.s*U/CT*.8,w=(WF[k]||1),s=.9+r*.25;e.set(0,k==='tent'?0:r*6.283,0);q.setFromEuler(e);
       const wf=it.wf||w;m4.compose(new T.Vector3(it.x*U,it.lift||0,it.y*U),q,new T.Vector3(H*wf*s,H*s,H*wf*s));im.setMatrixAt(i,m4);im.setColorAt(i,new T.Color().setScalar(.85+hash(i,5,5)*.3));});
     im.castShadow=!(k==='tuft'||k==='bones'||k==='mush');im.receiveShadow=true;im.frustumCulled=false;add(im);

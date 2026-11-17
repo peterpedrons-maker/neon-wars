@@ -385,6 +385,7 @@ function render3(){
   if(scn.flies){const p=scn.flies.pts.geometry.attributes.position,b=scn.flies.base;for(let i=0;i<scn.flies.n;i++){p.setY(i,.8+((i*37)%10)/6+Math.sin(t*1.5+i)*.3);p.setX(i,b[i*3]+Math.sin(t*.8+i)*.4);}p.needsUpdate=true;}
   if(scn.vm){scn.winMats.forEach(m=>m.emissiveIntensity=.2+n*1.4);scn.vm.uniforms.t.value=t;if(scn.pt){const i=Math.floor(t*20)%48;scn.pt.offset.set((i%8)/8,1-(Math.floor(i/8)+1)/6);}scn.pl.intensity=1.4+.4*Math.sin(t*2);}
   for(const s of scn.smoke){s.t+=dt;const u=(s.t%4)/4;s.sp.position.set(s.x+u*.9,s.y+u*2.6,s.z+Math.sin(u*5+s.t)*.1);const q=.5+u*1.8;s.sp.scale.set(q,q,1);s.sp.material.opacity=Math.sin(u*Math.PI)*.35*(1-n*.4);}
+  if(V3.proc&&V3.proc.stU){const q=V3.proc.stU;if(!ZONE.room&&!ZONE.dark&&h){const v=new T.Vector3(h.x*U,1.1,h.y*U).project(cam),bs=R.getDrawingBufferSize(new T.Vector2());q.hp.value.set((v.x*.5+.5)*bs.x,(v.y*.5+.5)*bs.y);q.hz.value=(v.z+1)/2;q.r.value=bs.x*.2;}else q.r.value=0;}
   R.render(S,cam);
   overlay2D(h,list);
 }
