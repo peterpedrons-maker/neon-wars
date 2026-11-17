@@ -227,4 +227,4 @@ build('zone_goblins',5000,5000,303,'Floresta dos Goblins','Nv 3–5',
          dict(id='clareira',nm='Clareira das Ruínas (secreta)',side=1,pos=1800,to='zone_clareira',toSide=0,at=[1000,150],ready=False,msg='Clareira das Ruínas: caminho em construção.')],
   camps=[(4300,2250)],pois=[],lairs=[(1500,1550)],start=(4800,2500),
   side_theme=['dark','dark','dark','forest'],band=(380,380,400,300),dens=.95,fdens=1.55,conifer=.6,ground='dark',packs=44,pack_n=3,
-  region_extra=dict(zlv=1,lv=[3,5],respawn=45,boss=dict(x=1500,y=1550,lv=6,aggro=440,respawn=300)))
+  region_extra=dict(zlv=1,lv=[3,5],respawn=45,boss=dict(x=1500,y=1550,lv=6,aggro=440,respawn=300),minis=[dict(type='skrix',x=3300,y=3200,aggro=420,respawn=240)]))

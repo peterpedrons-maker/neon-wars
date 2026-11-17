@@ -2071,7 +2071,7 @@ function mkBoss(bx,by){
 function resetZone(){
   if(ZONE.crp){crpInit();return;}
   G.mobs=[];ZONE.spawns.forEach((s,i)=>{{const f=freeSpot(s[0],s[1]);G.mobs.push(mkMob(varOf(G.zoneLv,s[2]!==undefined?s[2]:i),f[0],f[1],i));}});
-  bossAlert(false);G.boss=null;G.mp=[];G.ev=null;G.chest=null;G.evT=ZONE.region?1e9:rnd(40,70);G.zbWait=0;G.kills=0;G.phase='farm';G.bossWoke=false;G.dtm=0;G.bossRoll=1;G.projs=[];
+  bossAlert(false);G.boss=null;G.mp=[];G.ev=null;G.chest=null;G.evT=ZONE.region?1e9:rnd(40,70);G.zbWait=0;G.zm={};G.kills=0;G.phase='farm';G.bossWoke=false;G.dtm=0;G.bossRoll=1;G.projs=[];
 }
 function fadeTo(cb){const f=$('fade');f.classList.add('on');setTimeout(()=>{cb();setTimeout(()=>f.classList.remove('on'),220);},380);}
 async function startGame(){
@@ -2418,7 +2418,12 @@ function orbTick(m,dt){if(G.darkT>0)G.darkT-=dt;if(!m.orbs)return;let n=0;for(co
 function zbossTick(dt){const R=ZONE.region;if(!R||!R.boss||G.arena||G.scene!=='dungeon')return;if(G.zbWait>0){G.zbWait-=dt;return;}if(G.boss||G.phase!=='farm'||G.hero.state==='ko')return;
   const b=R.boss,h=G.hero;if(Math.hypot(h.x-b.x,h.y-b.y)>(b.aggro||440))return;
   const m=G.boss=mkBoss(b.x,b.y);m.zone=1;m.row=dir4(h.x-m.x,h.y-m.y);G.phase='boss';m.ent={k:'roar',t:0,dur:1.4,strike:0};bossArrive(m,false);tenseMusic();}
-function bossTick(dt){if(G.boss&&!G.boss.dead)orbTick(G.boss,dt);zbossTick(dt);
+/* mini-chefes de zona em ponto fixo: region.minis=[{type:'skrix',x,y,aggro,respawn}] */
+function zminiTick(dt){const R=ZONE.region;if(!R||!R.minis||G.arena||G.scene!=='dungeon'||G.hero.state==='ko')return;G.zm=G.zm||{};
+  R.minis.forEach((b,i)=>{const st=G.zm[i]||(G.zm[i]={m:null,wait:0});if(st.wait>0){st.wait-=dt;return;}if(st.m&&!st.m.dead&&!st.m.gone)return;
+    if(Math.hypot(G.hero.x-b.x,G.hero.y-b.y)>(b.aggro||420))return;
+    const m=b.type==='skrix'?spawnSkrix(b.x,b.y):null;if(!m)return;st.m=m;const od=m.onDie;m.onDie=()=>{if(od)od();st.wait=b.respawn||240;};});}
+function bossTick(dt){if(G.boss&&!G.boss.dead)orbTick(G.boss,dt);zbossTick(dt);zminiTick(dt);
   if(ZONE.region)return;
   if(G.phase!=='farm'||G.hero.state==='ko')return;
   G.dtm+=dt;if(G.dtm<BOSS_T0||G.kills<BOSS_KILLS||SAVE.lv<bossLv())return;
