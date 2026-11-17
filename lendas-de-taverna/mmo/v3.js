@@ -87,6 +87,7 @@ function buildScene(key){
     const pg=procOn?gimg:null,gTex=texOf(pg?pg.canvas:gimg,1);gTex.anisotropy=8;
     const gm=new T.MeshStandardMaterial({map:gTex,roughness:.95});if(mood!=='dark'){gm.bumpMap=gTex;gm.bumpScale=1.2;}
     const ground=new T.Mesh(new T.PlaneGeometry(GWu,GHu),gm);ground.rotation.x=-Math.PI/2;ground.position.set(GWu/2,0,GHu/2);add(ground);ground.receiveShadow=true;if(pg&&pg.M&&mood!=='dark'){add(V3.proc.waterMesh(pg,GWu,GHu,(key==='zone_pantano'||(ZONE.region&&ZONE.region.ground==='swamp'))?[.45,.62,.4]:undefined));sc.lifeUpd=V3.proc.waterLife(add,pg,GWu,GHu,key==='zone_pantano'?{slow:.7,opacity:.5,size:1.5}:{opacity:.55,size:1.5,per:280});}if(pg&&key==='zone_esgoto'){add(V3.proc.waterMesh(pg,GWu,GHu,[.35,.5,.18]));sc.lifeUpd=V3.proc.waterLife(add,pg,GWu,GHu,{size:1.8,slow:.45,opacity:.45,per:420});}
+    if(ZONE.region&&ZONE.exits&&ZONE.exits.length)sc.exitUpd=V3.proc.exitMarks(add,ZONE.exits,ZONE.w,ZONE.h);
     if(mood!=='dark'){const far=new T.Mesh(new T.PlaneGeometry(400,400),new T.MeshStandardMaterial({color:0x2c5a22,roughness:1}));far.rotation.x=-Math.PI/2;far.position.set(GWu/2,-.02,GHu/2);add(far);}
   }
   // ---- props do atlas (billboards em pé, mesclados)
@@ -381,6 +382,7 @@ function render3(){
   scn.hl.position.set(h.x*U,1.8+(G.crp&&typeof crpElev==='function'?crpElev(h)*U/CT:0),h.y*U+.3);scn.hl.intensity=mood==='dark'?1.5:G.map==='zone_pantano'?1.1:Math.max(0,(n-.3)*.9);scn.hl.distance=9;scn.hl.color.setHex(0xffb870);
   if(scn.fireGeos.length){const f=Math.floor(t*8)%4,fi=ATLAS_J['fi'+f],b=ATLAS_J['bf'+f],AW=ATLAS.width,AH=ATLAS.height;if(fi&&b)for(const geo of scn.fireGeos){const uv=geo.attributes.uv;[[b,0],[fi,4]].forEach(([a,o])=>{for(let i=0;i<4;i++)uv.setXY(o+i,(a[0]+[0,1,1,0][i]*a[2])/AW,1-(a[1]+[0,0,1,1][i]*a[3])/AH);});uv.needsUpdate=true;}}
   if(scn.lifeUpd)scn.lifeUpd(t,dt);
+  if(scn.exitUpd)scn.exitUpd(t);
   if(scn.lifeFn)scn.lifeFn(t,dt,n,camT.x,camT.z);
   if(scn.flies){const p=scn.flies.pts.geometry.attributes.position,b=scn.flies.base;for(let i=0;i<scn.flies.n;i++){p.setY(i,.8+((i*37)%10)/6+Math.sin(t*1.5+i)*.3);p.setX(i,b[i*3]+Math.sin(t*.8+i)*.4);}p.needsUpdate=true;}
   if(scn.vm){scn.winMats.forEach(m=>m.emissiveIntensity=.2+n*1.4);scn.vm.uniforms.t.value=t;if(scn.pt){const i=Math.floor(t*20)%48;scn.pt.offset.set((i%8)/8,1-(Math.floor(i/8)+1)/6);}scn.pl.intensity=1.4+.4*Math.sin(t*2);}
