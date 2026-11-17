@@ -163,7 +163,7 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
             if any(e['side']==sd and abs(al-e['pos'])<200 for e in exits):continue
             wall.append([round(x),round(y),24])
     P.sort(key=lambda p:p['y'])
-    exs=[dict(id=e['id'],nm=e['nm'],side=e['side'],x=e['rect'][0],y=e['rect'][1],w=e['rect'][2],h=e['rect'][3],to=e['to'],at=e['at'],ready=e['ready'],msg=e.get('msg','')) for e in exits]
+    exs=[dict(id=e['id'],nm=e['nm'],side=e['side'],toSide=e.get('toSide',-1),x=e['rect'][0],y=e['rect'][1],w=e['rect'][2],h=e['rect'][3],to=e['to'],at=e['at'],ready=e['ready'],msg=e.get('msg','')) for e in exits]
     Z=dict(w=W,h=H,props=P,spawns=[],plaza=[0,0,1,1],pond=[0,0,1,1],road=[],start=list(start),boss=[W//2,H//2],gate=list(start),
            region=dict(nome=nome,nv=nv,gs=1/GS,mundo=name),exits=exs,fx=[],wallc=wall)
     json.dump(Z,open(f'{A}/{name}.json','w'),separators=(',',':'))
@@ -174,8 +174,8 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
 build('zone_estrada',2200,4200,101,'Estrada de Brumavale','Nv 1',
   roads=[[(1100,4190),(1100,3800),(1000,3200),(1250,2600),(1100,2000),(900,1400),(1100,800),(1100,10)]],trails=[],
   waters=[(1750,2350,330,230)],
-  exits=[dict(id='cidade',nm='Brumavale',side=1,pos=1100,to='town',at=[450,1150],ready=True),
-         dict(id='planicie',nm='Planície de Brumavale',side=0,pos=1100,to='zone_planicie',at=[3000,5740],ready=True)],
+  exits=[dict(id='cidade',nm='Brumavale',side=1,pos=1100,to='town',toSide=-1,at=[450,1150],ready=True),
+         dict(id='planicie',nm='Planície de Brumavale',side=0,pos=1100,to='zone_planicie',toSide=1,at=[3000,5740],ready=True)],
   camps=[],pois=[(1500,1500)],start=(1100,4000),side_theme=['forest','forest','forest','forest'],band=(330,330,360,360),dens=.9)
 
 # ---------------------------------------------------------------- Planície de Brumavale (zona de caça, Nv 1–3) — 6000×6000
@@ -185,11 +185,11 @@ build('zone_planicie',6000,6000,202,'Planície de Brumavale','Nv 1–3',
          [(3100,4600),(2300,5000),(1600,5500),(1300,5990)]],
   trails=[[(3150,3450),(3900,3300),(4800,3300),(5400,3700),(5990,3950)]],
   waters=[(4300,4150,700,430)],
-  exits=[dict(id='estrada',nm='Estrada de Brumavale',side=1,pos=3000,to='zone_estrada',at=[1100,160],ready=True),
-         dict(id='ponte',nm='Ponte do Rio',side=0,pos=3200,to='zone_ponte',at=[1100,3900],ready=False,msg='Ponte do Rio: caminho em construção.'),
-         dict(id='goblins',nm='Floresta dos Goblins',side=2,pos=2850,to='zone_goblins',at=[3000,3000],ready=False,msg='Floresta dos Goblins: caminho em construção.'),
-         dict(id='brejo',nm='Trilha do Brejo',side=1,pos=1300,to='zone_brejo',at=[1100,150],ready=False,msg='Trilha do Brejo: caminho em construção.'),
-         dict(id='lago',nm='Margem do Lago (secreta)',side=3,pos=3950,to='zone_lago',at=[500,1000],ready=False,msg='Margem do Lago: caminho em construção.')],
+  exits=[dict(id='estrada',nm='Estrada de Brumavale',side=1,pos=3000,to='zone_estrada',toSide=0,at=[1100,160],ready=True),
+         dict(id='ponte',nm='Ponte do Rio',side=0,pos=3200,to='zone_ponte',toSide=1,at=[1100,3900],ready=False,msg='Ponte do Rio: caminho em construção.'),
+         dict(id='goblins',nm='Floresta dos Goblins',side=2,pos=2850,to='zone_goblins',toSide=3,at=[3000,3000],ready=False,msg='Floresta dos Goblins: caminho em construção.'),
+         dict(id='brejo',nm='Trilha do Brejo',side=1,pos=1300,to='zone_brejo',toSide=0,at=[1100,150],ready=False,msg='Trilha do Brejo: caminho em construção.'),
+         dict(id='lago',nm='Margem do Lago (secreta)',side=3,pos=3950,to='zone_lago',toSide=2,at=[500,1000],ready=False,msg='Margem do Lago: caminho em construção.')],
   camps=[(2200,2300),(4300,1900)],pois=[],start=(3000,5740),
   side_theme=['mount','forest','dark','mount'],band=(400,300,420,420),dens=.8,
   hills=lambda x,y:max(0,min(1,(1400-y)/700)))

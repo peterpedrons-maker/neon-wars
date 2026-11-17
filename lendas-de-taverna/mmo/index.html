@@ -2114,8 +2114,7 @@ async function zoneGo(ex){
   if(!ex.ready){if(G.t-(G.exitMsgT||-9)>2.5){G.exitMsgT=G.t;toast(ex.msg||'Caminho em construção.',2400);}const h=G.hero,d=WSIDE_DIR[ex.side||0];h.x+=d[0]*70;h.y+=d[1]*70;h._lx=h.x;h._ly=h.y;G.wp=null;return;}
   G.xfer=1;G.wp=null;sfx('ui_confirm',.5);
   try{if(ex.to!=='town'){if(!MAPS[ex.to])toast('Indo para '+ex.nm+'…',20000);await ensureMap(ex.to);$('toast').style.display='none';}
-    const d=WSIDE_DIR[ex.toSide!=null?ex.toSide:(ex.side^1)]||[0,-1];
-    if(ex.to==='town')enterTown(false,false,{at:ex.at});else enterDungeon(1,{map:ex.to,at:ex.at,dir:[WSIDE_DIR[ex.side][0]*-1,WSIDE_DIR[ex.side][1]*-1]});
+    if(ex.to==='town')enterTown(false,false,{at:ex.at});else enterDungeon(1,{map:ex.to,at:ex.at,dir:WSIDE_DIR[ex.toSide]||[0,-1]});   // toSide = lado do mapa de destino por onde se chega (a caminhada de entrada segue para dentro dele)
   }catch(e){console.error(e);toast('Não foi possível carregar a próxima zona.',2500);}
   setTimeout(()=>{G.xfer=0;},1500);
 }
