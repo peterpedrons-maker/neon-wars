@@ -14,7 +14,7 @@ TALL_C=['6f5e5b765c','615799f946','a012171cf1','5a100d7474']
 BUSH=['5e132ed62f','87f51eb8a1','5369c15f09','1055f1c689']
 ROCK=['d876089903','244580aa96','ca1d87b329','8f3ce74d92','ce03221eb2','498aebd592','545a9bb762']
 FLATS=[k for k,v in AJ.items() if not k.startswith(('b_','v_')) and v[2]<=16 and v[3]<=19 and k not in('fi0','fi1','fi2','fi3','bf0','bf1','bf2','bf3')]
-GR=np.array([74,138,58]);GR2=np.array([66,124,52]);DR=np.array([136,98,62]);WT=np.array([58,116,214]);SH=np.array([196,176,120]);DFc=np.array([40,100,60])
+GR=np.array([74,138,58]);GR2=np.array([66,124,52]);DR=np.array([136,98,62]);WT=np.array([58,116,214]);SH=np.array([196,176,120]);DFc=np.array([40,100,60]);GVc=np.array([96,84,120]);SWc=np.array([74,92,40])
 
 def seg_d(px,py,a,b):
     ax,ay=a;bx,by=b;dx,dy=bx-ax,by-ay;L=dx*dx+dy*dy or 1;t=np.clip(((px-ax)*dx+(py-ay)*dy)/L,0,1);return np.hypot(px-(ax+t*dx),py-(ay+t*dy))
@@ -23,7 +23,7 @@ def path_d(px,py,pts):
     for a,b in zip(pts,pts[1:]):d=np.minimum(d,seg_d(px,py,a,b))
     return d
 
-def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_theme,band=(380,380,380,380),dens=1.0,hills=None,packs=0,lairs=(),fdens=1.0,conifer=.3,ground=None,region_extra=None,pack_n=3):
+def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_theme,band=(380,380,380,380),dens=1.0,hills=None,packs=0,lairs=(),fdens=1.0,conifer=.3,ground=None,region_extra=None,pack_n=3,gates=(),dead=0.0,shrines=()):
     """side: 0=N 1=S 2=W 3=E. waters: lista de (cx,cy,rx,ry). exits: dict(id,nm,side,pos,to,at,ready,msg). camps/pois: (x,y)."""
     rr=random.Random(seed);gw=W//GS;gh=H//GS
     def smooth(sd,step):
@@ -55,9 +55,10 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     img=np.zeros((gh,gw,3));t=smooth(seed+31,8)
     img[:]=GR[None,None,:]*(1-t[...,None])+GR2[None,None,:]*t[...,None]
     img[dirt]=DR;img[shore]=SH
-    if ground=='dark':img[~water&~shore]=DFc
+    GCOL={'dark':DFc,'grave':GVc,'swamp':SWc}
+    if ground in GCOL:img[~water&~shore]=GCOL[ground]
     for sd,th in enumerate(side_theme):
-        if th=='dark':img[BAND&(side==sd)&~water&~CORR]=DFc
+        if th in('dark','grave','swamp'):img[BAND&(side==sd)&~water&~CORR]={'dark':DFc,'grave':GVc,'swamp':SWc}[th]
     img[((road_d<26)|(trail_d<12))&~water]=DR;img[water]=WT
     Image.fromarray(img.astype('uint8')).save(f'{A}/{name}_ground.png',optimize=True)
     def gi(x,y):return min(gh-1,max(0,int(y)//GS)),min(gw-1,max(0,int(x)//GS))
@@ -73,7 +74,7 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
         if col:d['col']=col
         P.append(d)
     def spr(i,x,y):P.append(dict(t='p',id=i,x=round(x),y=round(y)))
-    camp_d=lambda x,y:min([math.hypot(x-cx,y-cy) for cx,cy in list(camps)+list(lairs)]+[1e9])
+    camp_d=lambda x,y:min([math.hypot(x-cx,y-cy) for cx,cy in list(camps)+list(lairs)+list(shrines)+[(g['x'],g['y']) for g in gates]]+[1e9])
     poi_d=lambda x,y:min([math.hypot(x-cx,y-cy) for cx,cy in pois]+[1e9])
     def free(x,y,m=44):return not(at(water,x,y) or (at(shore,x,y) and rr.random()<.7) or at(road_d,x,y)<m or at(trail_d,x,y)<m*.6 or camp_d(x,y)<260 or poi_d(x,y)<200 or at(CORR,x,y))
     def grove(x,y,lo):v=at(CL,x,y);return min(1.0,max(0.0,(v-lo)*7))
@@ -89,7 +90,9 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
         if hills and hills(x,y)>.2:
             if rr.random()<.45*grove(x,y,.5):spr(rr.choice(TALL_C),x,y)
             return
-        if rr.random()<min(.9,f*.78):spr(rr.choice(TALL_C if rr.random()<conifer else TALL_B),x,y)
+        if rr.random()<min(.9,f*.78):
+            if dead and rr.random()<dead:addk('dead',x,y,rr.randint(100,150),7)
+            else:spr(rr.choice(TALL_C if rr.random()<conifer else TALL_B),x,y)
     def mid(x,y):
         if not free(x,y):return
         r=rr.random();d=grove(x,y,.55)
@@ -102,6 +105,29 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
         if at(water,x,y) or at(CORR,x,y):return
         if rr.random()<.20+.5*max(0,at(CL,x,y)-.5):P.append(dict(t='flat',id=rr.choice(FLATS),x=round(x),y=round(y)))
     place_grid(58,tree);place_grid(74,mid);place_grid(28,flat,.5)
+    def deco(x,y):
+        if not free(x,y,50) or any(math.hypot(x-g['x'],y-g['y'])<190 for g in gates):return
+        r=rr.random()
+        if ground=='grave':
+            if r<.36:addk('tombstone',x,y,rr.randint(30,48),9)
+            elif r<.46:addk('bones',x,y,22)
+            elif r<.52:addk('thorn',x,y,42,10)
+        elif ground=='swamp':
+            if r<.40:addk('puddle',x,y,rr.randint(30,60))
+            elif r<.52:addk('mush',x,y,26)
+            elif r<.60:addk('thorn',x,y,40,10)
+            elif r<.64:addk('bones',x,y,18)
+    if ground in('grave','swamp'):place_grid(72,deco,.5)
+    if ground=='grave':   # ruínas: 4 colunas em volta de um túmulo
+        for _ in range(7):
+            for _t in range(40):
+                x=rr.uniform(700,W-700);y=rr.uniform(700,H-700)
+                if free(x,y,90) and not at(BAND,x,y) and not any(math.hypot(x-g['x'],y-g['y'])<260 for g in gates):
+                    for dx,dy in((-70,-50),(70,-50),(-70,50),(70,50)):addk('column',x+dx,y+dy,rr.randint(60,100),12)
+                    addk('tomb',x,y,38,18);break
+    for g in gates:   # portão de dungeon: duas colunas, runa e fogueiras
+        gx,gy=g['x'],g['y'];addk('column',gx-75,gy,120,13);addk('column',gx+75,gy,120,13);addk('rune',gx,gy+12,60)
+        P.append(dict(t='fire',x=gx-135,y=gy+30,small=1));P.append(dict(t='fire',x=gx+135,y=gy+30,small=1))
     # ---- acampamentos (NPCs avulsos entram com o sistema de quests): tendas, fogueira, caixas, barris, feno, tochas
     for cx,cy in camps:
         r2=random.Random(int(cx*3+cy))
@@ -116,6 +142,15 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
         addk('drums',lx+60,ly+40,60);addk('tent',lx-150,ly-70,110,26)
         for i in range(14):
             a=rr.uniform(0,6.28);d=rr.uniform(60,260);addk('bones',lx+math.cos(a)*d,ly+math.sin(a)*d*.7,18)
+    for sx,sy in shrines:   # santuário do chefe de zona: anel de colunas (cemitério) ou lodo/cogumelos/ossos (pântano)
+        P.append(dict(t='fire',x=sx,y=sy+10))
+        for i in range(6):
+            a=i*1.047+.4;px_=sx+math.cos(a)*210;py_=sy+math.sin(a)*150
+            if ground=='swamp':addk('mush',px_,py_,34);addk('puddle',sx+math.cos(a+.5)*150,sy+math.sin(a+.5)*105,rr.randint(40,60))
+            else:addk('column',px_,py_,rr.randint(90,120),12)
+        addk('rune',sx,sy+14,70)
+        for i in range(10):
+            a=rr.uniform(0,6.28);d=rr.uniform(50,200);addk('bones',sx+math.cos(a)*d,sy+math.sin(a)*d*.7,18)
     for x,y in pois:     # ponto de interesse: banco, lampião e estandarte (vista)
         vp('bench1',x-70,y+10,[[-12,-4,8],[12,-4,8]]);vp('lamp1',x+80,y);vp('banner2',x,y-70);vp('post',x+150,y+30)
     # ---- saídas: tochas dos dois lados, estandarte e placa
@@ -143,6 +178,16 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
         elif th=='dark':
             if r<.8:spr(rr.choice(TALL_C),x,y)
             else:addk('dead',x,y,rr.randint(110,150),7)
+        elif th=='grave':
+            if r<.45:addk('dead',x,y,rr.randint(110,150),7)
+            elif r<.7:addk('thorn',x,y,rr.randint(44,60),10)
+            elif r<.85:addk('tombstone',x,y,rr.randint(34,48),9)
+            else:spr(rr.choice(ROCK),x,y)
+        elif th=='swamp':
+            if r<.4:addk('dead',x,y,rr.randint(100,140),7)
+            elif r<.65:addk('thorn',x,y,rr.randint(44,60),10)
+            elif r<.8:addk('mush',x,y,28)
+            else:addk('puddle',x,y,rr.randint(34,60))
         elif th=='mount':
             if r<.5:spr(rr.choice(ROCK),x,y)
             elif r<.8:addk('rock',x,y,rr.randint(110,200),22)
@@ -186,54 +231,116 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     P.sort(key=lambda p:p['y'])
     exs=[dict(id=e['id'],nm=e['nm'],side=e['side'],toSide=e.get('toSide',-1),x=e['rect'][0],y=e['rect'][1],w=e['rect'][2],h=e['rect'][3],to=e['to'],at=e['at'],ready=e['ready'],msg=e.get('msg','')) for e in exits]
     Z=dict(w=W,h=H,props=P,spawns=spawns,plaza=[0,0,1,1],pond=[0,0,1,1],road=[],start=list(start),boss=[W//2,H//2],gate=list(start),
-           region=dict(nome=nome,nv=nv,gs=1/GS,mundo=name,**(region_extra or {})),exits=exs,fx=[],wallc=wall)
+           region=dict(nome=nome,nv=nv,gs=1/GS,mundo=name,**(region_extra or {})),exits=exs,fx=[],wallc=wall,**({'gates':[dict(nm=g['nm'],dg=g['dg'],x=g['x'],y=g['y'],r=g.get('r',130)) for g in gates]} if gates else {}))
     json.dump(Z,open(f'{A}/{name}.json','w'),separators=(',',':'))
     from collections import Counter
     print(name,'spawns',len(spawns),'props',len(P),Counter(p.get('k') or p.get('t') for p in P).most_common(8),'paredes',len(wall),'saídas',[e['id'] for e in exs])
 
-# ---------------------------------------------------------------- Estrada de Brumavale (ligação, Nv 1) — sem NPCs: a cidade ainda está atrás
-build('zone_estrada',2200,4200,101,'Estrada de Brumavale','Nv 1',
-  roads=[[(1100,4190),(1100,3800),(1000,3200),(1250,2600),(1100,2000),(900,1400),(1100,800),(1100,10)]],trails=[],
-  waters=[(1750,2350,330,230)],
-  exits=[dict(id='cidade',nm='Brumavale',side=1,pos=1100,to='town',toSide=-1,at=[450,1150],ready=True),
-         dict(id='planicie',nm='Planície de Brumavale',side=0,pos=1100,to='zone_planicie',toSide=1,at=[3000,5740],ready=True)],
-  camps=[],pois=[(1500,1500)],start=(1100,4000),side_theme=['forest','forest','forest','forest'],band=(330,330,360,360),dens=.9)
+# ================================================================ TABELA DE ZONAS E LIGAÇÕES (primeira região, Nv 1–10 + áreas das dungeons)
+SIZE=dict(estrada=(2200,4200),planicie=(6000,6000),goblins=(5000,5000),brejo=(2200,4200),ponte=(2200,4200),colinas=(5000,5000),
+  desfiladeiro=(2200,4200),passo=(4500,4500),cemiterio=(5000,5000),mortos=(4200,2200),lenhadores=(2200,4200),ogros=(5000,5000),
+  brumas=(5000,5000),clareira=(2400,2400),gruta=(2400,2400),lago=(2400,2400),mina=(2400,2400),eremita=(2400,2400),cabana=(2400,2400))
+NM=dict(estrada='Estrada de Brumavale',planicie='Planície de Brumavale',goblins='Floresta dos Goblins',brejo='Trilha do Brejo',
+  ponte='Ponte do Rio',colinas='Colinas Rochosas',desfiladeiro='Desfiladeiro',passo='Passo da Montanha',cemiterio='Cemitério de Brumavale',
+  mortos='Estrada dos Mortos',lenhadores='Trilha dos Lenhadores',ogros='Floresta dos Ogros',brumas='Pântano das Brumas',
+  clareira='Clareira das Ruínas (secreta)',gruta='Gruta Aberta (secreta)',lago='Margem do Lago (secreta)',mina='Mina Abandonada (secreta)',
+  eremita='Bosque do Eremita (secreto)',cabana='Cabana da Bruxa (secreta)')
+OPP={0:1,1:0,2:3,3:2}
+# (zona A, lado em A, posição em A, zona B, posição em B) — B usa o lado oposto
+LINKS=[('estrada',0,1100,'planicie',3000),('planicie',0,3200,'ponte',1100),('planicie',2,2850,'goblins',2500),('planicie',1,1300,'brejo',1100),
+  ('planicie',3,3950,'lago',1200),('goblins',0,2500,'lenhadores',1100),('goblins',1,1800,'clareira',1200),('brejo',1,1100,'brumas',2500),
+  ('brejo',3,2100,'eremita',1200),('ponte',0,1100,'colinas',2500),('colinas',3,2500,'cemiterio',2500),('colinas',0,2500,'desfiladeiro',1100),
+  ('desfiladeiro',0,1100,'passo',1200),('lenhadores',0,1100,'ogros',2500),('ogros',0,2500,'passo',3300),('cemiterio',3,2500,'mortos',1100),
+  ('mortos',3,1100,'passo',2250),('cemiterio',1,2500,'gruta',1200),('passo',3,2250,'mina',1200),('brumas',3,2500,'cabana',1200)]
+def _arrive(b,sd,pos):
+    W,H=SIZE[b];return {0:[pos,170],1:[pos,H-170],2:[170,pos],3:[W-170,pos]}[sd]
+EXL={k:[] for k in SIZE}
+for a,sa,pa,b,pb in LINKS:
+    sb=OPP[sa]
+    EXL[a].append(dict(id=b,nm=NM[b],side=sa,pos=pa,to='zone_'+b,toSide=sb,at=_arrive(b,sb,pb),ready=True))
+    EXL[b].append(dict(id=a,nm=NM[a],side=sb,pos=pb,to='zone_'+a,toSide=sa,at=_arrive(a,sa,pa),ready=True))
+EXL['estrada'].append(dict(id='cidade',nm='Brumavale',side=1,pos=1100,to='town',toSide=-1,at=[450,1150],ready=True))
+EXL['passo'].append(dict(id='cidade2',nm='Cidade 2',side=0,pos=2250,to='zone_cidade2',toSide=1,at=[1100,4000],ready=False,
+  msg='Portão do Passo: o guarda só deixa passar a partir do nível 10, com a quest dos chefes (em construção).'))
+def auto_roads(name,hub=None):
+    W,H=SIZE[name];hub=hub or (W//2,H//2);r_=random.Random(len(name)*7+W);roads=[]
+    for e in EXL[name]:
+        if e['id']=='cidade':continue
+        p=e['pos'];s=e['side']
+        P0={0:(p,10),1:(p,H-10),2:(10,p),3:(W-10,p)}[s];P1={0:(p,H*.2),1:(p,H*.8),2:(W*.2,p),3:(W*.8,p)}[s]
+        mid=((P1[0]+hub[0])/2+r_.uniform(-140,140),(P1[1]+hub[1])/2+r_.uniform(-140,140));roads.append([P0,P1,mid,hub])
+    return roads
+def Z(name,seed,nv,**kw):
+    W,H=SIZE[name];kw.setdefault('roads',auto_roads(name));kw.setdefault('trails',[]);kw.setdefault('waters',[]);kw.setdefault('camps',[])
+    kw.setdefault('pois',[]);kw.setdefault('start',(W//2,H//2))
+    build('zone_'+name,W,H,seed,NM[name].replace(' (secreta)','').replace(' (secreto)',''),nv,exits=EXL[name],**kw)
+MT=['mount','mount','mount','mount']
 
-# ---------------------------------------------------------------- Planície de Brumavale (zona de caça, Nv 1–3) — 6000×6000
-build('zone_planicie',6000,6000,202,'Planície de Brumavale','Nv 1–3',
+# ---------------------------------------------------------------- Estrada de Brumavale (ligação, Nv 1) — sem NPCs: a cidade ainda está atrás
+Z('estrada',101,'Nv 1',roads=[[(1100,4190),(1100,3800),(1000,3200),(1250,2600),(1100,2000),(900,1400),(1100,800),(1100,10)]],
+  waters=[(1750,2350,330,230)],pois=[(1500,1500)],start=(1100,4000),side_theme=['forest','forest','forest','forest'],band=(330,330,360,360),dens=.9)
+# ---------------------------------------------------------------- Planície de Brumavale (Nv 1–3)
+Z('planicie',202,'Nv 1–3',
   roads=[[(3000,5990),(3000,5400),(3100,4600),(2950,3700),(3150,2700),(3050,1700),(3200,700),(3200,10)],
          [(2950,3700),(2100,3500),(1300,3100),(600,2900),(10,2850)],
          [(3100,4600),(2300,5000),(1600,5500),(1300,5990)]],
-  trails=[[(3150,3450),(3900,3300),(4800,3300),(5400,3700),(5990,3950)]],
-  waters=[(4300,4150,700,430)],
-  exits=[dict(id='estrada',nm='Estrada de Brumavale',side=1,pos=3000,to='zone_estrada',toSide=0,at=[1100,160],ready=True),
-         dict(id='ponte',nm='Ponte do Rio',side=0,pos=3200,to='zone_ponte',toSide=1,at=[1100,3900],ready=False,msg='Ponte do Rio: caminho em construção.'),
-         dict(id='goblins',nm='Floresta dos Goblins',side=2,pos=2850,to='zone_goblins',toSide=3,at=[4860,2500],ready=True),
-         dict(id='brejo',nm='Trilha do Brejo',side=1,pos=1300,to='zone_brejo',toSide=0,at=[1100,150],ready=True),
-         dict(id='lago',nm='Margem do Lago (secreta)',side=3,pos=3950,to='zone_lago',toSide=2,at=[500,1000],ready=False,msg='Margem do Lago: caminho em construção.')],
-  camps=[(2200,2300),(4300,1900)],pois=[],start=(3000,5740),
-  side_theme=['mount','forest','dark','mount'],band=(400,300,420,420),dens=.8,
+  trails=[[(3150,3450),(3900,3300),(4800,3300),(5400,3700),(5990,3950)]],waters=[(4300,4150,700,430)],
+  camps=[(2200,2300),(4300,1900)],start=(3000,5740),side_theme=['mount','forest','dark','mount'],band=(400,300,420,420),dens=.8,
   hills=lambda x,y:max(0,min(1,(1400-y)/700)),packs=40,pack_n=3,
   region_extra=dict(zlv=1,lv=[1,3],respawn=40,mobs=['rato','javali','rato','lobo','javali']))
-
-# ---------------------------------------------------------------- Floresta dos Goblins (zona de caça, Nv 3–5) — 5000×5000, mata escura
-build('zone_goblins',5000,5000,303,'Floresta dos Goblins','Nv 3–5',
-  roads=[[(4990,2500),(4200,2450),(3300,2600),(2400,2300),(1500,1650)],
-         [(3300,2600),(3000,3400),(2200,3900),(1800,4990)],
-         [(2400,2300),(2300,1300),(2500,10)]],trails=[],
-  waters=[(3700,3700,380,260)],
-  exits=[dict(id='planicie',nm='Planície de Brumavale',side=3,pos=2500,to='zone_planicie',toSide=2,at=[180,2850],ready=True),
-         dict(id='lenhadores',nm='Trilha dos Lenhadores',side=0,pos=2500,to='zone_lenhadores',toSide=1,at=[1100,4000],ready=False,msg='Trilha dos Lenhadores: caminho em construção.'),
-         dict(id='clareira',nm='Clareira das Ruínas (secreta)',side=1,pos=1800,to='zone_clareira',toSide=0,at=[1000,150],ready=False,msg='Clareira das Ruínas: caminho em construção.')],
-  camps=[(4300,2250)],pois=[],lairs=[(1500,1550)],start=(4800,2500),
+# ---------------------------------------------------------------- Floresta dos Goblins (Nv 3–5)
+Z('goblins',303,'Nv 3–5',
+  roads=[[(4990,2500),(4200,2450),(3300,2600),(2400,2300),(1500,1650)],[(3300,2600),(3000,3400),(2200,3900),(1800,4990)],[(2400,2300),(2300,1300),(2500,10)]],
+  waters=[(3700,3700,380,260)],camps=[(4300,2250)],lairs=[(1500,1550)],start=(4800,2500),
   side_theme=['dark','dark','dark','forest'],band=(380,380,400,300),dens=.95,fdens=1.55,conifer=.6,ground='dark',packs=44,pack_n=3,
   region_extra=dict(zlv=1,lv=[3,5],respawn=45,boss=dict(x=1500,y=1550,lv=6,aggro=440,respawn=300),minis=[dict(type='skrix',x=3300,y=3200,aggro=420,respawn=240)]))
-
-# ---------------------------------------------------------------- Trilha do Brejo (ligação, Nv 3–4) — 2200×4200, caminho para o Pântano
-build('zone_brejo',2200,4200,404,'Trilha do Brejo','Nv 3–4',
-  roads=[[(1100,10),(1000,700),(1250,1500),(1000,2300),(1200,3200),(1100,4190)]],trails=[],
-  waters=[(1700,2000,300,220),(500,3100,260,200)],
-  exits=[dict(id='planicie',nm='Planície de Brumavale',side=0,pos=1100,to='zone_planicie',toSide=1,at=[1300,5740],ready=True),
-         dict(id='pantano',nm='Pântano',side=1,pos=1100,to='zone_pantano',toSide=0,at=[1100,150],ready=False,msg='Pântano: caminho em construção.')],
-  camps=[],pois=[(1200,2100)],start=(1100,150),side_theme=['forest','dark','dark','dark'],band=(330,330,360,360),dens=.9,fdens=1.2,conifer=.4,ground='dark',packs=10,pack_n=3,
-  region_extra=dict(zlv=1,lv=[3,4],respawn=40,mobs=['lobo','rato','javali','lobo']))
+# ---------------------------------------------------------------- Trilha do Brejo (ligação, Nv 3–4)
+Z('brejo',404,'Nv 3–4',
+  roads=[[(1100,10),(1000,700),(1250,1500),(1000,2300),(1200,3200),(1100,4190)],[(2190,2100),(1800,2100),(1200,2100)]],
+  waters=[(1700,2000,300,220),(500,3100,260,200)],pois=[(1200,2100)],start=(1100,150),side_theme=['forest','dark','dark','dark'],band=(330,330,360,360),
+  dens=.9,fdens=1.2,conifer=.4,ground='dark',packs=10,pack_n=3,region_extra=dict(zlv=1,lv=[3,4],respawn=40,mobs=['lobo','rato','javali','lobo']))
+# ---------------------------------------------------------------- Ponte do Rio (ligação, Nv 3–4): rio com vau/ponte no meio
+Z('ponte',505,'Nv 3–4',roads=[[(1100,4190),(1050,3300),(1100,2300),(1150,1200),(1100,10)]],waters=[(380,2100,430,150),(1860,2100,470,150)],
+  pois=[(1500,2900)],start=(1100,4000),side_theme=['forest','forest','forest','forest'],band=(330,330,360,360),dens=.9,packs=10,
+  region_extra=dict(zlv=1,lv=[3,4],respawn=40,mobs=['javali','lobo','ogrinho','javali']))
+# ---------------------------------------------------------------- Colinas Rochosas (Nv 4–6)
+Z('colinas',606,'Nv 4–6',waters=[(3600,3600,380,240)],camps=[(1700,3400),(3700,1300)],start=(2500,4800),side_theme=MT,band=(420,300,400,420),dens=.8,
+  hills=lambda x,y:.75,packs=36,pack_n=3,region_extra=dict(zlv=1,lv=[4,6],respawn=45,mobs=['javali','lobo','gnoll','harpia','gnoll','javbruto']))
+# ---------------------------------------------------------------- Desfiladeiro (ligação, Nv 7–8)
+Z('desfiladeiro',707,'Nv 7–8',pois=[(1300,2200)],start=(1100,4000),side_theme=MT,band=(300,300,420,420),dens=.7,hills=lambda x,y:.8,packs=12,pack_n=3,
+  region_extra=dict(zlv=1,lv=[7,8],respawn=45,mobs=['gnoll','harpia','bandido','lobo']))
+# ---------------------------------------------------------------- Passo da Montanha (Nv 8–10) — portão com guarda (quest em construção)
+Z('passo',808,'Nv 8–10',pois=[(2250,500),(900,3500)],camps=[(3600,2600)],start=(1200,4300),side_theme=MT,band=(420,300,420,420),dens=.75,
+  hills=lambda x,y:.8,packs=32,pack_n=3,region_extra=dict(zlv=1,lv=[8,10],respawn=45,mobs=['bandido','gnoll','javbruto','harpia','ogrinho','bandido']))
+# ---------------------------------------------------------------- Cemitério de Brumavale (Nv 10–12) — entrada da Cripta; chefe Morvath; mini Morcego-Vampiro
+Z('cemiterio',909,'Nv 10–12',roads=auto_roads('cemiterio',(2700,2400)),camps=[(1100,1500)],shrines=[(2800,3300)],start=(300,2500),
+  side_theme=['grave']*4,band=(380,380,380,380),dens=.7,fdens=.5,conifer=.1,dead=.8,ground='grave',packs=36,pack_n=3,
+  gates=[dict(nm='Cripta do Rei Esquecido',dg=5,x=3900,y=1100)],
+  region_extra=dict(zlv=2,lv=[10,12],respawn=50,mobs=['esq','carnical','necro','cavcaido','mumia','esqmago','esq','carnical'],
+    boss=dict(x=2800,y=3300,lv=13,aggro=440,respawn=300),minis=[dict(type='vamp',x=1700,y=3700,lv=11,aggro=420,respawn=240)]))
+# ---------------------------------------------------------------- Estrada dos Mortos (ligação, Nv 8–9)
+Z('mortos',1010,'Nv 8–9',pois=[(2100,1100)],start=(170,1100),side_theme=['grave']*4,band=(300,300,360,360),dens=.7,fdens=.5,conifer=.1,dead=.8,ground='grave',
+  packs=10,pack_n=3,region_extra=dict(zlv=2,lv=[8,9],respawn=45,mobs=['esq','carnical','morcego','mumia']))
+# ---------------------------------------------------------------- Trilha dos Lenhadores (ligação, Nv 5–6)
+Z('lenhadores',1111,'Nv 5–6',pois=[(1200,2200)],start=(1100,4000),side_theme=['dark']*4,band=(330,330,360,360),dens=.9,fdens=1.3,conifer=.5,ground='dark',packs=10,pack_n=3,
+  region_extra=dict(zlv=1,lv=[5,6],respawn=45,mobs=['gnoll','bandido','tronco','lobo']))
+# ---------------------------------------------------------------- Floresta dos Ogros (Nv 8–11) — chefe Gorgash; mini Capitão Presa-de-Ferro
+Z('ogros',1212,'Nv 8–11',roads=auto_roads('ogros',(2400,2000)),camps=[(3900,3500)],lairs=[(2400,1600)],start=(2500,4800),
+  side_theme=['forest','forest','forest','forest'],band=(380,300,380,380),dens=.95,fdens=1.6,conifer=.5,packs=40,pack_n=3,
+  region_extra=dict(zlv=3,lv=[8,11],respawn=45,mobs=['ogrinho','gnoll','ogrolenhador','bandido','tronco','harpia','lobo','ogrolenhador'],
+    boss=dict(x=2400,y=1600,lv=12,aggro=440,respawn=300),minis=[dict(type='javcap',x=1500,y=3300,lv=11,aggro=420,respawn=240)]))
+# ---------------------------------------------------------------- Pântano das Brumas (Nv 10–12) — entrada do Esgoto; chefe Rei dos Ratos; mini Boticário Podre
+Z('brumas',1313,'Nv 10–12',roads=auto_roads('brumas',(2500,2500)),waters=[(1300,1500,420,300),(3700,3100,520,340),(1500,3700,340,240)],camps=[(1200,2600)],
+  shrines=[(2500,3400)],start=(2500,300),side_theme=['swamp']*4,band=(380,380,380,380),dens=.7,fdens=.5,conifer=.1,dead=.8,ground='swamp',packs=36,pack_n=3,
+  gates=[dict(nm='Esgotos de Brumavale',dg=4,x=3600,y=1500)],
+  region_extra=dict(zlv=4,lv=[10,12],respawn=50,mobs=['homemrato','ladrao','cultlodo','sapo','cobra','barata','afogado','rato'],
+    boss=dict(x=2500,y=3400,lv=13,aggro=440,respawn=300),minis=[dict(type='botic',x=1500,y=2000,lv=11,aggro=420,respawn=240)]))
+# ---------------------------------------------------------------- zonas secretas (becos sem saída; baú/hunt no futuro)
+SEC=dict(side_theme=['dark']*4,band=(300,300,300,300),dens=.8,packs=5,pack_n=3)
+Z('clareira',1414,'Nv 4–5',pois=[(1200,1200)],start=(1200,300),**{**SEC,'ground':'dark'},region_extra=dict(zlv=1,lv=[4,5],respawn=45,mobs=['goblin','sapador','xama','cogumelo']))
+Z('gruta',1515,'Nv 10–11',pois=[(1200,1200)],start=(1200,300),**{**SEC,'side_theme':['grave']*4,'ground':'grave','dead':.8,'fdens':.5},region_extra=dict(zlv=2,lv=[10,11],respawn=45,mobs=['esq','necro','mumia','esqmago']))
+Z('lago',1616,'Nv 2–3',waters=[(1200,1250,500,330)],pois=[(1200,500)],start=(300,1200),**{**SEC,'side_theme':['forest']*4},region_extra=dict(zlv=1,lv=[2,3],respawn=40,mobs=['rato','javali','lobo']))
+Z('mina',1717,'Nv 7–8',pois=[(1200,1200)],start=(300,1200),**{**SEC,'side_theme':MT},hills=lambda x,y:.8,region_extra=dict(zlv=1,lv=[7,8],respawn=45,mobs=['bandido','gnoll','morcego']))
+Z('eremita',1818,'Nv 3–4',pois=[(1200,1200)],start=(300,1200),**{**SEC,'ground':'dark','fdens':1.4},region_extra=dict(zlv=1,lv=[3,4],respawn=40,mobs=['lobo','aranha','cogumelo']))
+Z('cabana',1919,'Nv 10–11',waters=[(1500,1500,320,220)],pois=[(1000,1200)],start=(300,1200),**{**SEC,'side_theme':['swamp']*4,'ground':'swamp','dead':.8,'fdens':.5},
+  region_extra=dict(zlv=4,lv=[10,11],respawn=45,mobs=['homemrato','cultlodo','sapo','afogado']))
