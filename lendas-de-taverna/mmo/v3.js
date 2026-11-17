@@ -79,7 +79,7 @@ function buildScene(key){
   }else{
     const procOn=(mood==='field'||mood==='dark'||mood==='town')&&V3.proc&&!window.V3_NOPROC;sc.proc=procOn;
     dgrid=(procOn&&mood==='dark')?dungeonGrid(key):null;
-    const envP={W:ZONE.w,H:ZONE.h,WATER:mood==='town'?null:WATER,WCW,GROUND,stoneNonGreen:mood==='town',S:ZONE.w>3000?.3:.5};
+    const envP={W:ZONE.w,H:ZONE.h,WATER:mood==='town'?null:WATER,WCW,GROUND,stoneNonGreen:mood==='town',S:ZONE.w>3000?.3:.5,themes:!!ZONE.region};
     let gimg=key==='zone_cripta2'?crpFloor:GROUND;
     if(procOn&&(mood==='field'||mood==='town'))gimg=V3.proc.ground(envP,mood==='town'?V3.proc.palCidade:key==='zone_pantano'?V3.proc.palPantano:V3.proc.palFloresta,key==='zone1'?5:key==='town'?9:7);
     else if(procOn){const pal=key==='zone_esgoto'?V3.proc.palEsgoto:key==='zone_cripta2'?V3.proc.palCripta2:V3.proc.palCripta;gimg=V3.proc.dungeonFloor(envP,pal,key==='zone_esgoto'?4:key==='zone_cripta2'?6:3);
@@ -108,6 +108,7 @@ function buildScene(key){
     if(key==='town'&&p.id.startsWith('b_'))continue;stand.push([p.id,p.x,p.y]);
     if(key==='town'&&a[2]<=24&&a[3]>=80)lampsP.push([p.x*U,2.3,p.y*U]);}
   if(key==='zone_pantano'&&V3.proc)V3.proc.direct(add,ZONE.props.filter(p=>p.k),sc);
+  if(ZONE.region&&V3.proc)V3.proc.direct(add,ZONE.props.filter(p=>p.k),sc);
   if(key==='zone_cripta2'&&V3.proc){   // Cripta: cada prop do atlas vira o modelo certo (nada de adivinhar pela cor)
     const MAPC=[['prop_barril','barrel',.85],['prop_caixas','crates',1.1],['braseiro','brazier',.9],['pilar','pillar',.8],['prop_potes','pots',.9],['prop_sacos','sacks',1],['prop_altar','altar',1.05],['prop_bau','chest',1.2],['prop_mesa','table',1.1],['prop_prateleira','potshelf',1.0],['prop_jaula','cage',1.05]],pl=ZONE.crp&&ZONE.crp.plat,lift=pl?pl.elev*U/CT:0,list=[],keep=[];
     for(const p of ZONE.props){const a=ATLAS_J[p.id];if(p.t!=='p'||!a){keep.push(p);continue;}const e=MAPC.find(q=>p.id.startsWith(q[0]));if(!e){keep.push(p);continue;}
