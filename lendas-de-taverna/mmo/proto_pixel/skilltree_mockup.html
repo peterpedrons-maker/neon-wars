@@ -24,7 +24,7 @@ svg{width:100%;height:100%;display:block}
 .edge.on{stroke:#ffcf6a;filter:url(#glow)}
 .edge.av{stroke:#5a4a2a}
 .nd{cursor:pointer}
-.nd .base{fill:#171220;stroke:#4a3f56;stroke-width:3}
+.nd .base{fill:#1d1627;stroke:#4a3f56;stroke-width:3}
 .nd.lock{opacity:.7}
 .nd.av .ring{opacity:1;animation:pulse 1.4s ease-in-out infinite}
 .ring{fill:none;stroke:#ffe08a;stroke-width:2.5;opacity:0}
@@ -35,6 +35,8 @@ svg{width:100%;height:100%;display:block}
 .lbl{font:700 11px PX;fill:#e9e2d0;text-anchor:middle;paint-order:stroke;stroke:#0a0710;stroke-width:3.5px;pointer-events:none}
 .lbl.k{fill:#ffd9a0;font-size:12px}
 .lbl.c{fill:#e2c8ff}
+.val{font:700 8px PX;fill:#cfc6dc;text-anchor:middle;paint-order:stroke;stroke:#0a0710;stroke-width:3px;pointer-events:none}
+.lowz .val{display:none}
 .lowz .lbl{display:none}.lowz .lbl.k{display:block}.lowz .tag{display:none}
 .tag{font:700 8px PX;fill:#9a8fa8;text-anchor:middle;paint-order:stroke;stroke:#0a0710;stroke-width:3px;pointer-events:none}
 #sheet{position:absolute;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));background:linear-gradient(#211a2b,#130f1b);border:2px solid var(--c,var(--ouro));box-shadow:0 0 0 2px #000,0 8px 24px #000b;padding:10px 12px 12px;display:none;z-index:6}
@@ -99,6 +101,15 @@ const SEC=[
   nots:[['Golpe Final em Área','gf6',['COMBO','O combo passa a ter 4 golpes','O 4º golpe causa dano em área']],['Onda Dupla','gc1',['COMBO','O finalizador solta uma segunda onda']],['Fim Dilacerante','gf4',['COMBO','O finalizador aplica sangramento']],['Raio Ampliado','gf5',['COMBO','+15% de raio do finalizador']],['Impacto Sísmico','gc2',['COMBO','O finalizador atordoa por 0,6 s']],['Cadeia de Finais','gf3',['COMBO','O finalizador reduz em 1,5 s a recarga das habilidades']],['Último Suspiro','gf1',['COMBO','Finalizador em inimigos abaixo de 25% de vida: +40% de dano']],['Golpe de Misericórdia','gf2',['COMBO','Finalizador que mata concede +1 carga de Postura']]],
   keys:[['Finalizador Giratório','gf4',['COMBO · exclusivo','O finalizador vira um giro de 360°']],['Finalizador Investida','gc6',['COMBO · exclusivo','O finalizador avança 90 px e empurra',['Não atinge inimigos atrás','r']]],['Rei do Combo','gfk',['COMBO','+1 golpe no combo e +10% de dano de combo',['−8% de defesa','r']]]]}
 ];
+const NEWSM=[
+ [['Ataque','+3% de ataque','atk','+3%'],['Crítico','+2% de chance de crítico','crit','+2%'],['Dano crítico','+5% de dano crítico','crit2','+5%'],['Vel. de ataque','+3% de velocidade de ataque','spd','+3%']],
+ [['Defesa','+4% de defesa','def','+4%'],['Defesa por carga','+2% de defesa por carga de Postura','def','+2%/c'],['Vida','+3% de vida','hp','+3%'],['Duração da Postura','+0,5 s de duração da Postura','clock','+.5s']],
+ [['Vida','+4% de vida','hp','+4%'],['Defesa','+4% de defesa','def','+4%'],['Regeneração','+0,4% de vida por segundo','regen','+.4%'],['Cura de poções','+6% de cura das poções','pot','+6%']],
+ [['Janela','+0,02 s na janela do Golpe Preciso','win','+.02s'],['Vel. de ataque','+3% de velocidade de ataque','spd','+3%'],['Dano preciso','+2% de dano do Golpe Preciso','atk','+2%'],['Crítico','+2% de chance de crítico','crit','+2%']],
+ [['Experiência','+3% de experiência','xp','+3%'],['Ouro','+4% de ouro','gold','+4%'],['Empurrão','+4% de chance de empurrão','push','+4%'],['Queda','+12% de duração da queda','down','+12%']],
+ [['Finalizador','+4% de dano do finalizador','fin','+4%'],['Raio','+5% de raio do finalizador','area','+5%'],['Ataque','+3% de ataque','atk','+3%'],['Crítico do final','+3% de crítico no finalizador','crit','+3%']]];
+const NEWAT=[['Força','+6 Força','F','+6'],['Vitalidade','+6 Vitalidade','V','+6'],['Vitalidade','+6 Vitalidade','V','+6'],['Destreza','+6 Destreza','D','+6'],['Sorte','+6 Sorte','S','+6'],['Força','+6 Força','F','+6']];
+SEC.forEach((s,j)=>{s.sm=NEWSM[j];s.attr=NEWAT[j];});
 // hibridos (nos bordas entre setores): [anel4, anel6]
 const HYB=[
  [['Fúria Blindada','gf5',['+1% de defesa por 3% de crítico','(híbrido Fúria + Postura)']],['Golpe Escudado','gb2',['Críticos concedem escudo de 3% da vida','(híbrido Fúria + Postura)']]],
@@ -120,27 +131,27 @@ function colAt(a){a=((a+90)%360+360)%360;const j=Math.floor(a/60)%6,t=(a%60)/60;
 function secAt(k,i){const a=((ang(k,i)+90)%360+360)%360;return Math.round(a/60)%6;}
 const ICON=(c)=>c?T+c+'.png':null;
 // slots de destaques por setor (anel, deslocamento d)
-const SLOTS=[[2,0],[3,-1],[3,1],[4,0],[5,-2],[5,2],[6,0],[7,-3]];
+const SLOTS=[[2,0],[3,-1],[3,1],[4,0],[5,-2],[5,2],[6,0],[6,-2]];
 const KEYSL=[[8,0],[8,-2],[8,2]];
 const used={};
 // hub
 N.push({id:'H',x:500,y:500,type:'h',nm:'Guerreiro',desc:['Ponto de partida. Todos os caminhos saem daqui, e quase todos se cruzam.'],col:'#f3d98e',tag:'hub',links:[],ic:null,k:0,i:0});M.H=N[0];
 // nos comuns
-for(let k=1;k<=8;k++){for(let i=0;i<6*k;i++){const j=Math.round(i/k)%6,sec=SEC[j];const [x,y]=pos(k,i);const col=colAt(ang(k,i));
+for(let k=1;k<=7;k++){for(let i=0;i<6*k;i++){const j=Math.round(i/k)%6,sec=SEC[j];const [x,y]=pos(k,i);const col=colAt(ang(k,i));
   const isAttr=rnd()<.13;const sm=sec.sm[Math.floor(rnd()*sec.sm.length)];
-  const n={id:id(k,i),x,y,k,i,type:isAttr?'a':'s',nm:isAttr?sec.attr[0]:sm[0],desc:[isAttr?sec.attr[1]:sm[1]],col,tag:isAttr?'attr':sec.tag,ic:null,links:[],sec:j};N.push(n);M[n.id]=n;}}
+  const gl=isAttr?sec.attr:sm;const n={id:id(k,i),x,y,k,i,type:isAttr?'a':'s',nm:gl[0],desc:[gl[1]],gl:gl[2],val:gl[3],col,tag:isAttr?'attr':sec.tag,ic:null,links:[],sec:j};N.push(n);M[n.id]=n;}}
 // destaques por setor
 SEC.forEach((sec,j)=>{SLOTS.forEach(([k,d],q)=>{const n=M[id(k,j*k+d)];const [nm,ic,desc]=sec.nots[q];Object.assign(n,{type:/COMBO/.test(desc[0])?'c':'n',nm,desc,ic:ICON(ic),col:sec.tag==='combo'?mix(sec.col,colAt(ang(k,j*k+d)),.25):colAt(ang(k,j*k+d)),tag:sec.tag});});
- sec.keys.forEach(([nm,ic,desc],q)=>{const [k,d]=sec.keys.length===1?[8,0]:[[8,-2],[8,2],[8,0]][q];const n=M[id(k,j*k+d)];Object.assign(n,{type:'k',nm,desc,ic:ICON(ic),col:sec.col,tag:sec.tag});if(/exclusivo/.test(desc[0]))n.excl=true;});});
+ sec.keys.forEach(([nm,ic,desc],q)=>{const [k,d]=sec.keys.length===1?[7,0]:[[7,-2],[7,2],[7,0]][q];const n=M[id(k,j*k+d)];Object.assign(n,{type:'k',nm,desc,ic:ICON(ic),col:sec.col,tag:sec.tag});if(/exclusivo/.test(desc[0]))n.excl=true;});});
 // hibridos
 HYB.forEach((h,j)=>{[[4,0],[6,1]].forEach(([k,q])=>{const n=M[id(k,j*k+k/2)];const [nm,ic,desc]=h[q];Object.assign(n,{type:'n',nm,desc,ic:ICON(ic),col:colAt(ang(k,j*k+k/2)),tag:'mix'});});});
 // subclasses (anel 9, bloqueadas)
 const SUB=[[0,-3,'Bárbaro: Machado','Apenas machados: +12% de ataque, +5% de crítico'],[0,3,'Bárbaro: Sede','Matar concede 4% de velocidade por 4 s'],[2,-3,'Cavaleiro: Escudo','Com escudo: +15% de defesa e bloqueio'],[2,3,'Cavaleiro: Juramento','Aliados próximos recebem 8% da sua defesa']];
-SUB.forEach(([j,d,nm,ds],q)=>{const i=j*8+d,a=ang(8,i)*Math.PI/180,r=rr(9);const n={id:'x'+q,x:500+r*Math.cos(a),y:500+r*Math.sin(a),type:'x',nm,desc:['Subclasse · Nível 10',ds],col:'#7fe0a0',tag:'sub',ic:null,links:[id(8,i)],k:9,i};N.push(n);M[n.id]=n;E.push([id(8,i),n.id]);});
+SUB.forEach(([j,d,nm,ds],q)=>{const i=j*7+d,a=ang(7,i)*Math.PI/180,r=rr(8);const n={id:'x'+q,x:500+r*Math.cos(a),y:500+r*Math.sin(a),type:'x',nm,desc:['Subclasse · Nível 10',ds],col:'#7fe0a0',tag:'sub',ic:null,links:[id(7,i)],k:8,i};N.push(n);M[n.id]=n;E.push([id(7,i),n.id]);});
 // arestas
 const link=(a,b)=>{E.push([a,b]);};
 for(let i=0;i<6;i++)link('H',id(1,i));
-for(let k=1;k<=8;k++)for(let i=0;i<6*k;i++){
+for(let k=1;k<=7;k++)for(let i=0;i<6*k;i++){
  if(k>=2&&rnd()>.17)link(id(k,i),id(k,i+1));else if(k<2)link(id(k,i),id(k,i+1));
  if(k>=2){const p=i*(k-1)/k;if(Number.isInteger(p))link(id(k,i),id(k-1,p));else{const f=Math.floor(p),c=f+1;link(id(k,i),id(k-1,f));if(rnd()<.55)link(id(k,i),id(k-1,c));}}
 }
@@ -161,9 +172,9 @@ const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.set
  const defs=svg.querySelector('defs');const bl=el('filter',{id:'soft',x:'-30%',y:'-30%',width:'160%',height:'160%'},defs);el('feGaussianBlur',{stdDeviation:34},bl);
  const g=el('g',{filter:'url(#soft)',opacity:.5},bg);
  SEC.forEach((s,j)=>{const a0=(-90+60*j-30)*Math.PI/180,a1=(-90+60*j+30)*Math.PI/180,R=640;const p=`M500 500 L${500+R*Math.cos(a0)} ${500+R*Math.sin(a0)} A${R} ${R} 0 0 1 ${500+R*Math.cos(a1)} ${500+R*Math.sin(a1)} Z`;el('path',{d:p,fill:s.col,opacity:.22},g);});
- [rr(3),rr(6),rr(9)+20].forEach(r=>el('circle',{cx:500,cy:500,r,fill:'none',stroke:'#241c30','stroke-width':2,'stroke-dasharray':'2 10'},bg));
+ [rr(3),rr(6),rr(8)+20].forEach(r=>el('circle',{cx:500,cy:500,r,fill:'none',stroke:'#241c30','stroke-width':2,'stroke-dasharray':'2 10'},bg));
  for(let i=0;i<220;i++){const a=Math.random()*6.283,r=40+Math.random()*680;el('circle',{cx:500+r*Math.cos(a),cy:500+r*Math.sin(a),r:Math.random()*1.4+.3,fill:'#8a7aa8',opacity:Math.random()*.5+.1},bg);}
- SEC.forEach((s,j)=>{const a=-90+60*j,r=rr(9)+64;const x=500+r*Math.cos(a*Math.PI/180),y=500+r*Math.sin(a*Math.PI/180);const e=el('text',{x,y,fill:s.col,'font-family':'PX','font-weight':700,'font-size':15,'letter-spacing':4,'text-anchor':'middle',opacity:.5},bg);e.textContent=s.nm.toUpperCase();});
+ SEC.forEach((s,j)=>{const a=-90+60*j,r=rr(8)+64;const x=500+r*Math.cos(a*Math.PI/180),y=500+r*Math.sin(a*Math.PI/180);const e=el('text',{x,y,fill:s.col,'font-family':'PX','font-weight':700,'font-size':15,'letter-spacing':4,'text-anchor':'middle',opacity:.5},bg);e.textContent=s.nm.toUpperCase();});
 })();
 const gE=document.getElementById('edges'),gN=document.getElementById('nodes');
 function avail(n){if(ALLOC.has(n.id)||n.type==='x')return false;if(n.excl){const ex=N.find(m=>m.excl&&m!==n&&m.nm.startsWith('Finalizador')&&ALLOC.has(m.id));if(ex&&n.nm.startsWith('Finalizador'))return false;}return n.links.some(l=>ALLOC.has(l));}
@@ -172,7 +183,7 @@ function draw(){gE.innerHTML='';gN.innerHTML='';
  E.forEach(([a,b])=>{const A=M[a],B=M[b];const on=ALLOC.has(a)&&ALLOC.has(b);const av=!on&&((ALLOC.has(a)&&avs.has(b))||(ALLOC.has(b)&&avs.has(a)));
   el('line',{x1:A.x,y1:A.y,x2:B.x,y2:B.y,class:'edge'+(on?' on':av?' av':''),style:on?'stroke:'+mix(A.col,B.col,.5):''},gE);});
  N.forEach(n=>{const on=ALLOC.has(n.id),av=avs.has(n.id),lock=!on&&!av;const g=el('g',{class:'nd '+(on?'on ':'')+(av?'av ':'')+(lock?'lock ':'')+(filt!=='todos'&&!FILT[filt](n)&&n.type!=='h'?'dim ':'')+(sel===n.id?'hl':''),style:'--c:'+n.col,'data-id':n.id},gN);
-  const R={h:24,s:8,a:9,n:17,c:17,k:24,x:16}[n.type];
+  const R={h:24,s:12,a:12,n:17,c:17,k:24,x:16}[n.type];
   if(n.type==='k'){el('rect',{class:'base',x:n.x-R*.9,y:n.y-R*.9,width:R*1.8,height:R*1.8,transform:`rotate(45 ${n.x} ${n.y})`},g);el('rect',{class:'ring',x:n.x-R-5,y:n.y-R-5,width:R*2+10,height:R*2+10,transform:`rotate(45 ${n.x} ${n.y})`},g);}
   else if(n.type==='c'){const pts=[...Array(6)].map((_,i)=>{const a=Math.PI/3*i+Math.PI/6;return (n.x+R*1.08*Math.cos(a))+','+(n.y+R*1.08*Math.sin(a));}).join(' ');el('polygon',{class:'base',points:pts},g);el('circle',{class:'ring',cx:n.x,cy:n.y,r:R+6},g);}
   else if(n.type==='a'){el('rect',{class:'base',x:n.x-R*.8,y:n.y-R*.8,width:R*1.6,height:R*1.6,rx:2},g);el('circle',{class:'ring',cx:n.x,cy:n.y,r:R+5},g);}
@@ -184,9 +195,31 @@ function draw(){gE.innerHTML='';gN.innerHTML='';
     else if(n.type==='h'){const t=el('text',{x:n.x,y:n.y+6,'text-anchor':'middle','font-family':'PX','font-weight':700,'font-size':20,fill:'#f3d98e',style:'pointer-events:none'},g);t.textContent='⚔';}
     const L=el('text',{x:n.x,y:n.y+R+(n.type==='k'?17:13),class:'lbl'+(n.type==='k'?' k':n.type==='c'?' c':'')},g);L.textContent=n.nm.length>20?n.nm.slice(0,20):n.nm;
   }
+  if(n.type==='s'||n.type==='a'){glyph(n.gl,n.x,n.y,lock?'#8a7f99':n.col,g);const V=el('text',{x:n.x,y:n.y+R+9,class:'val'},g);V.textContent=n.val;}
   el('circle',{cx:n.x,cy:n.y,r:Math.max(R+7,18),fill:'transparent'},g);
  });
 }
+
+function glyph(g,x,y,c,p){const st={fill:'none',stroke:c,'stroke-width':1.7,'stroke-linecap':'round','stroke-linejoin':'round',style:'pointer-events:none'};
+ const L=(a,b,c2,d)=>el('line',{x1:x+a,y1:y+b,x2:x+c2,y2:y+d,...st},p);const PL=(pts,f)=>el('polyline',{points:pts.map(q=>(x+q[0])+','+(y+q[1])).join(' '),...st,...(f?{fill:c}:{})},p);
+ const C=(r,f)=>el('circle',{cx:x,cy:y,r,...st,...(f?{fill:c}:{})},p);
+ if(g==='atk'){L(-4,4,4,-4);L(-1,1,-4,-2);L(1,-1,4,2);}
+ else if(g==='crit'){PL([[0,-5],[1.4,-1.4],[5,0],[1.4,1.4],[0,5],[-1.4,1.4],[-5,0],[-1.4,-1.4],[0,-5]]);}
+ else if(g==='crit2'){PL([[0,-5],[1.4,-1.4],[5,0],[1.4,1.4],[0,5],[-1.4,1.4],[-5,0],[-1.4,-1.4],[0,-5]],1);}
+ else if(g==='spd'){PL([[2,-5],[-2,0],[1,0],[-2,5]]);}
+ else if(g==='def'){PL([[-4,-4],[0,-5],[4,-4],[4,0],[0,5],[-4,0],[-4,-4]]);}
+ else if(g==='hp'){PL([[0,4.5],[-4.5,-0.5],[-3,-4],[0,-2.5],[3,-4],[4.5,-0.5],[0,4.5]],1);}
+ else if(g==='regen'){L(-4,0,4,0);L(0,-4,0,4);}
+ else if(g==='pot'){PL([[-1.5,-5],[-1.5,-2],[-4,3],[-3,5],[3,5],[4,3],[1.5,-2],[1.5,-5]]);}
+ else if(g==='clock'){C(4.5);L(0,0,0,-3);L(0,0,2.5,1);}
+ else if(g==='win'){C(4.5);C(1.3,1);}
+ else if(g==='xp'){PL([[0,-5],[1.5,-1.5],[5,-1],[2,1.5],[3,5],[0,3],[-3,5],[-2,1.5],[-5,-1],[-1.5,-1.5],[0,-5]],1);}
+ else if(g==='gold'){C(4.5);L(0,-2.5,0,2.5);}
+ else if(g==='push'){L(-4,0,3,0);PL([[0,-3],[4,0],[0,3]]);}
+ else if(g==='down'){L(0,-4,0,3);PL([[-3,0],[0,4],[3,0]]);}
+ else if(g==='fin'){L(-4,-4,4,4);L(-4,4,4,-4);}
+ else if(g==='area'){C(2);C(5);}
+ else{const t=el('text',{x,y:y+4,'text-anchor':'middle','font-family':'PX','font-weight':700,'font-size':11,fill:c,style:'pointer-events:none'},p);t.textContent=g;}}
 (function(){const c=document.getElementById('chips');Object.keys(FILT).forEach(k=>{const b=document.createElement('button');b.textContent=FNAME[k];b.dataset.k=k;if(k==='todos')b.classList.add('on');b.style.setProperty('--c',{combo:'#c98bff',atk:'#ff7a4a',def:'#7ab8ff',util:'#ffd070',attr:'#9be39b',mix:'#fff',todos:'#ffd070'}[k]);b.onclick=()=>{filt=k;c.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.k===k));draw();};c.appendChild(b);});})();
 const sheet=document.getElementById('sheet');
 const TYPE={s:'Passiva',a:'Atributo',n:'Destaque',c:'Destaque de combo',k:'Pedra angular',x:'Subclasse (bloqueada)',h:'Início'};
