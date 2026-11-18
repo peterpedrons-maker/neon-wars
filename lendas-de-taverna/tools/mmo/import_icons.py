@@ -19,7 +19,6 @@ MAP = {
     'livro': IW('grimoire_closed'), 'orbe': IW('crystal_ball'), 'livro_cancoes': IW('rotulus_unfurled'), 'gema': IW('crystal_blue'),
     'bracadeira': IW('leather_bracers'), 'bracelete': IW('iron_bracers'), 'anel': IW('gold_ring'),
 }
-<<<<<<< HEAD
 # ícones de interface/materiais (assets/ui-icons): chave = arquivo, valor = (fonte, tamanho de saída, matiz opcional em graus)
 UI = {'health-potion': (IW('potion_full_1'), 64, None), 'coins': (G4('I_GoldCoin'), 64, None), 'gems': (G4('I_Ruby'), 64, None),
       'ni_pocao': (IW('potion_full_1'), 96, None), 'ni_pmaior': (IW('potion_full_3'), 64, None),
@@ -36,8 +35,6 @@ def hue(im, deg):
             h, s, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
             if s > .3: r, g, b = [int(c * 255) for c in colorsys.hsv_to_rgb((h + deg / 360) % 1, s, v)]; px[x, y] = (r, g, b, a)
     return im
-=======
->>>>>>> origin/main
 def load(k):
     d, n = MAP[k]; return Image.open(os.path.join(SRC, d, n + '.png')).convert('RGBA')
 def build(k):
@@ -51,7 +48,6 @@ if __name__ == '__main__':
         Sx.save(sys.argv[2])
     else:
         for k in MAP: build(k).save(os.path.join(OUT, f'i_{k}.png'))
-<<<<<<< HEAD
         UID = os.path.join(ROOT, 'assets', 'ui-icons')
         for k, ((d, n), S, hu) in UI.items():
             im = Image.open(os.path.join(SRC, d, n + '.png')).convert('RGBA')
@@ -59,6 +55,4 @@ if __name__ == '__main__':
             w, h = im.size; sc = max(1, S // max(w, h)); big = im.resize((w * sc, h * sc), Image.NEAREST)
             c = Image.new('RGBA', (S, S), (0, 0, 0, 0)); c.alpha_composite(big, ((S - big.width) // 2, (S - big.height) // 2)); c.save(os.path.join(UID, k + '.png'))
         print(len(MAP), 'ícones de item e', len(UI), 'de interface gerados')
-=======
         print(len(MAP), 'ícones gerados')
->>>>>>> origin/main
