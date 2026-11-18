@@ -100,6 +100,19 @@ ANIMS = {
 }
 for _k, _v in ANIMS.items():
     if _k in UNITS: UNITS[_k]['anim'] = _v
+# COMBOS: animacoes de ataque diferentes por golpe (attack2/3/4 = golpe 2, 3 e finalizador). (pose base, variante) -> chibi_anim3.combo_frames
+COMBO_KINDS = ('attack2', 'attack3', 'attack4')
+COMBO = {
+    'h_guerreiro': dict(attack2=('slash', 'rise'), attack3=('slash', 'spin'), attack4=('smash', 'leap')),
+    'h_mago': dict(attack2=('jab', 'dive'), attack3=('cast', 'rise'), attack4=('cast', 'spin')),
+    'h_ladino': dict(attack2=('jab', 'rise'), attack3=('slash', 'dive'), attack4=('slash', 'spin')),
+    'h_clerigo': dict(attack2=('smash', 'rise'), attack3=('slash', 'dive'), attack4=('smash', 'leap')),
+    'h_arqueiro': dict(attack2=('same', 'dive'), attack3=('same', 'rise'), attack4=('same', 'leap')),
+    'h_bardo': dict(attack2=('play', 'dive'), attack3=('play', 'rise'), attack4=('play', 'spin')),
+}
+for _k in list(UNITS):
+    _b = '_'.join(_k.split('_')[:2])
+    if _k.startswith('h_') and _b in COMBO: UNITS[_k]['combo'] = COMBO[_b]
 GCAST = {'grunk': 'slam', 'gorgash': 'slam', 'presa': 'slam', 'morvath': 'cast', 'ratking': 'cast', 'vampiro': 'cast', 'skrix': 'cast'}
 GEN = {   # (ataque, dano, morte) para inimigos fora do motor chibi
     'goblin': ('lunge', 'flinch', 'tumble'), 'goblin_x': ('cast', 'stagger', 'dissolve'), 'sapador': ('lunge', 'flinch', 'tumble'), 'bandido': ('lunge', 'flinch', 'fall'),
@@ -154,6 +167,12 @@ def frames(u, kind, view):
     return fr
 
 def frames0(u, kind, view):
+    if kind in COMBO_KINDS:
+        import chibi_anim3 as N3
+        bs, var = u['combo'][kind]
+        if bs == 'same' or (u['kind'] == 'c' and u['ap']['cls'] == 'archer'):
+            return N3.variant(frames0(u, 'attack', view), var, view)
+        return N3.combo_frames(view, dict(u['ap']), bs, var)
     k, d = u['kind'], DENS[kind]
     kk = kind
     if k == 'c' and u['ap']['cls'] == 'archer':
@@ -188,7 +207,7 @@ def export(key):
         import shutil
         shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), u['src'] + '_atlas.png'), os.path.join(OUT, f'cx_{key}_atlas.png'))
         shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), u['src'] + '_atlas.json'), os.path.join(OUT, f'cx_{key}_atlas.json')); print(key, 'copiado de', u['src']); return
-    kinds = ['idle', 'walk', 'run', 'attack', 'hurt', 'death', 'cast']
+    kinds = ['idle', 'walk', 'run', 'attack', 'hurt', 'death', 'cast'] + (list(COMBO_KINDS) if u.get('combo') else [])
     ALIAS = {}
     if u['kind'] == 'c' and not u.get('run'): ALIAS['run'] = 'walk'
     elif u['kind'] != 'c': ALIAS['run'] = 'walk'

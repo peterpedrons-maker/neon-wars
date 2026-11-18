@@ -215,3 +215,79 @@ def build(view, kind, appearance, dense=2):
         return N2.build(view, kind, appearance, dense)
     base = C.anim(view, 'attack' if kind == 'attack' else 'hurt' if kind == 'hurt' else 'death', ap.get('cls', 'warrior'), None, ap, dense=2)
     return [(im, base[min(i, len(base) - 1)][1], base[min(i, len(base) - 1)][2]) for i, im in enumerate(fr)]
+
+
+# ======================= VARIANTES DE ATAQUE PARA COMBOS (dono: "animacoes unicas para cada golpe do combo") =======================
+# cada variante e um pos-processamento de 20 quadros de ataque (golpe no indice 11), valido para QUALQUER classe/arma:
+#   rise  = antecipa inclinado para frente e CORTA PARA CIMA (corpo recua) | dive = recua e MERGULHA para frente no golpe
+#   spin  = gira o corpo 2 voltas no ar com a arma esticada (estilo Paper Mario) | leap = agacha, SALTA e bate no chao com poeira
+from PIL import ImageOps
+
+def _prof(pts, n=20):
+    xs = [p[0] for p in pts]; out = []
+    for i in range(n):
+        for a, b in zip(pts, pts[1:]):
+            if a[0] <= i <= b[0]:
+                t = 0 if b[0] == a[0] else (i - a[0]) / (b[0] - a[0]); out.append(a[1] + (b[1] - a[1]) * t); break
+        else: out.append(pts[-1][1])
+    return out
+
+def _place(im, dx, dy):
+    out = Image.new('RGBA', (W, H), (0, 0, 0, 0)); out.alpha_composite(im, (0, 0)) if (dx == 0 and dy == 0) else out.paste(im, (int(dx), int(dy))); return out
+
+def _xscale(im, k):
+    k = max(.12, abs(k)); w = max(2, int(round(W * k)))
+    r = im.resize((w, H), Image.NEAREST); out = Image.new('RGBA', (W, H), (0, 0, 0, 0)); out.paste(r, (W // 2 - w // 2, 0), r); return out
+
+def variant(frames, style, view='right'):
+    fr = [f.convert('RGBA') for f in frames]; n = len(fr)
+    if n < 20: fr += [fr[-1]] * (20 - n)
+    out = []
+    if style in ('rise', 'dive'):
+        if style == 'rise':
+            ang = _prof([(0, 0), (3, 7), (8, 13), (10, 13), (11, -14), (14, -8), (19, 0)]); dx = _prof([(0, 0), (9, -1), (11, 1), (14, 0), (19, 0)]); dy = _prof([(0, 0), (8, 1), (11, -2), (14, -1), (19, 0)])
+        else:
+            ang = _prof([(0, 0), (4, -9), (9, -13), (10, -13), (11, 15), (14, 11), (19, 0)]); dx = _prof([(0, 0), (9, -3), (11, 4), (14, 3), (19, 0)]); dy = _prof([(0, 0), (9, 0), (11, 1), (19, 0)])
+        for i in range(20):
+            im = R.rotate(fr[i], ang[i], (W // 2, BASE)) if abs(ang[i]) > .6 else fr[i]
+            im = _place(im, round(dx[i]), round(dy[i]))
+            if i == 11: im = flash(im, .3)
+            if style == 'dive' and 11 <= i <= 13: im = dust(im, .15 + .2 * (i - 11), cx=W // 2 - 4, n=4)
+            out.append(im)
+        return out
+    if style == 'spin':
+        hold = fr[13]; phi = 0.0; seq = []
+        for i in range(20):
+            if i < 6: im = fr[i]                                                         # antecipacao (agacha e levanta a arma)
+            elif i < 17:
+                u = (i - 6) / 10.0; ph = u * 4 * math.pi                                # 2 voltas
+                im = _xscale(hold, math.cos(ph)); im = ImageOps.mirror(im) if math.cos(ph) < 0 else im
+                yy = -int(round(6 * math.sin(math.pi * min(1, u * 1.05))))
+                im = _place(im, 0, yy)
+                if i == 11: im = flash(im, .35)
+            else: im = fr[min(19, i)]
+            out.append(im)
+        out[16] = dust(out[16], .25, cx=W // 2, n=5); out[17] = dust(out[17], .5, cx=W // 2, n=5)
+        return out
+    if style == 'leap':
+        dy = _prof([(0, 0), (1, 2), (3, 3), (4, -3), (6, -7), (8, -7), (9, -5), (10, -2), (11, 0), (19, 0)]); dx = _prof([(0, 0), (4, 0), (8, 3), (11, 5), (14, 5), (19, 3)])
+        sq = _prof([(0, 1), (3, .93), (5, 1.04), (9, 1.03), (11, .94), (13, 1), (19, 1)])
+        for i in range(20):
+            im = fr[min(19, i)]
+            k = sq[i]
+            if abs(k - 1) > .015:                                                          # squash/stretch preso aos pes
+                h2 = max(8, int(round(H * k))); r = im.resize((W, h2), Image.NEAREST); o = Image.new('RGBA', (W, H), (0, 0, 0, 0)); o.paste(r, (0, BASE - int(round(BASE * k)))); im = o
+            im = _place(im, round(dx[i]), round(dy[i]))
+            if i == 11: im = flash(im, .4); im = shake(im, 1, 1)
+            if i in (11, 12): im = dust(im, .1 + .25 * (i - 11), cx=W // 2 + 5, n=6)
+            if i == 13: im = dust(im, .55, cx=W // 2 + 5, n=6)
+            if i == 14: im = dust(im, .8, cx=W // 2 + 5, n=5)
+            out.append(im)
+        return out
+    return fr[:20]
+
+def combo_frames(view, ap, base_style, var):
+    """base_style: 'same' (usa os quadros de ataque normais) | slash|jab|smash|cast|play (outra pose base); var: rise|dive|spin|leap|None"""
+    if base_style in ('slash', 'same'): base = [f[0] for f in N2.build(view, 'attack', ap, 2)]
+    else: base = attack(view, ap, base_style)
+    return variant(base, var, view) if var else [b.convert('RGBA') for b in base[:20]]
