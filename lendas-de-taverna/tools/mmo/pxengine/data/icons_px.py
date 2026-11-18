@@ -40,11 +40,16 @@ class Cv:
         if outline:
             out = (~m) & (u | d | l | r)
             s.px[out] = (*O, 255)
-        tl = m & (~u | ~l); br = m & (~d | ~r)
+        def sh(a, dy, dx):                                   # a deslocado: pixel (y,x) recebe a[y+dy, x+dx]
+            q = np.pad(a, 3); return q[3 + dy:3 + dy + a.shape[0], 3 + dx:3 + dx + a.shape[1]]
+        a1 = sh(m, -1, -1); a2 = sh(m, -2, -2); b1 = sh(m, 1, 1); b2 = sh(m, 2, 2)
+        tl = m & (~a1 | ~u | ~l); br = m & (~b1 | ~d | ~r)
+        tl2 = m & ~tl & ~a2; br2 = m & ~br & ~b2
+        mix = lambda c1, c2: tuple((c1[i] + c2[i]) // 2 for i in range(3))
         s.px[m] = (*M, 255)
         if light:
-            s.px[tl & ~br] = (*L, 255); s.px[br & ~tl] = (*D, 255)
-            s.px[tl & br] = (*M, 255)
+            s.px[tl2 & ~br & ~br2] = (*mix(M, L), 255); s.px[br2 & ~tl & ~tl2] = (*mix(M, D), 255)
+            s.px[tl & ~br] = (*L, 255); s.px[br & ~tl] = (*D, 255); s.px[tl & br] = (*M, 255)
         return m
 
     def poly(s, pts, ramp, **k): return s.put(s._m(lambda d: d.polygon([tuple(p) for p in pts], fill=255)), ramp, **k)
@@ -82,9 +87,12 @@ def add(p, d, k): return (p[0] + d[0] * k, p[1] + d[1] * k)
 def sword(c, blade=STEEL, guard=GOLD, grip=LEATH, ln=17, w=5, short=False, base=(7, 25), tipd=(1, -1), gw=11):
     d = vec((0, 0), tipd); n = (-d[1], d[0]); p0 = add(base, d, 5); p1 = add(p0, d, ln)
     c.blade(p0, p1, w, blade, tip=w * .7)
+    if w >= 3.5: c.seg(add(p0, d, 3), add(p1, d, -2), 1, R(blade[0], blade[1], blade[1], blade[1]), outline=False, light=False)
     cen = add(p0, d, 0)
     c.seg(add(cen, n, -gw / 2), add(cen, n, gw / 2), 3, guard)
+    c.dot(round(cen[0]), round(cen[1]), '#ff5060')
     c.seg(add(p0, d, -1), add(p0, d, -6), 3, grip)
+    for k in (-2.5, -4.5): c.dot(round(add(p0, d, k)[0]), round(add(p0, d, k)[1]), '#2a1408')
     c.ell((round(add(p0, d, -7.5)[0] - 2), round(add(p0, d, -7.5)[1] - 2), round(add(p0, d, -7.5)[0] + 2), round(add(p0, d, -7.5)[1] + 2)), guard)
     return p0, p1, d, n
 
@@ -100,8 +108,10 @@ def i_adaga():
 
 
 def i_machado():
-    c = Cv(); c.seg((7, 26), (23, 9), 3, WOOD)
-    c.poly([(16, 3), (22, 4), (27, 9), (28, 17), (23, 13), (19, 15), (17, 11)], STEEL); c.seg((5, 28), (7, 26), 3, LEATH); c.dots([(20, 7), (21, 8)], '#ffffff'); return c
+    c = Cv(); c.seg((6, 27), (23, 10), 3, WOOD); c.seg((4, 29), (7, 26), 3, LEATH)
+    c.poly([(12, 9), (17, 11), (15, 15)], DSTEEL)
+    c.poly([(16, 4), (23, 2), (29, 7), (30, 15), (25, 20), (21, 15), (19, 10)], STEEL)
+    c.ell((18, 8, 22, 12), DSTEEL, outline=False, light=False); c.dots([(26, 6), (28, 9), (28, 13)], '#ffffff'); c.seg((24, 4), (28, 18), 1, DSTEEL, outline=False, light=False); return c
 
 
 def i_martelo():
@@ -203,10 +213,9 @@ def i_coracao():
 
 
 def i_garra():
-    c = Cv()
-    for k, x in enumerate((8, 14, 20, 26)):
-        c.poly([(x - 2, 26), (x + 2, 26), (x + 3, 14), (x + 6 - k, 4), (x, 12)], BONE)
-    c.rrect((5, 24, 29, 29), 2, DLEATH); return c
+    c = Cv(); c.poly([(5, 29), (4, 18), (8, 9), (16, 4), (24, 4), (18, 8), (14, 15), (13, 29)], BONE)
+    c.poly([(15, 29), (15, 19), (19, 12), (26, 8), (30, 9), (24, 13), (21, 20), (23, 29)], BONE)
+    c.rrect((3, 26, 26, 30), 1, DLEATH); c.dots([(7, 16), (9, 12), (17, 17)], '#ffffff'); return c
 
 
 def i_anel():
@@ -219,8 +228,9 @@ def i_bracelete():
 
 
 def i_bracadeira():
-    c = Cv(); c.seg((7, 25), (23, 9), 12, LEATH); c.seg((10, 28), (12, 26), 12, DLEATH, outline=False, light=False)
-    c.seg((11, 17), (15, 21), 3, GOLD, outline=False, light=False); c.seg((17, 11), (21, 15), 3, GOLD, outline=False, light=False); c.dots([(14, 16), (18, 12)], '#fff2a8'); return c
+    c = Cv(); c.ell((5, 21, 27, 29), DLEATH); c.poly([(5, 9), (27, 9), (25, 25), (7, 25)], LEATH); c.ell((5, 5, 27, 13), DLEATH)
+    c.ell((8, 7, 24, 11), R('#10080a', '#10080a', '#2a1408', '#2a1408'), outline=False, light=False)
+    c.seg((6, 16), (26, 16), 2, GOLD, outline=False, light=False); c.seg((7, 21), (25, 21), 2, GOLD, outline=False, light=False); c.dots([(11, 18), (16, 18), (21, 18)], '#fff2a8'); return c
 
 
 def i_colar():
@@ -269,8 +279,10 @@ def i_boina():
 
 
 def i_mascara():
-    c = Cv(); c.poly([(5, 8), (16, 5), (27, 8), (26, 19), (21, 28), (11, 28), (6, 19)], R('#1c1c24', '#8a8a9c', '#d4d4e4', '#ffffff'))
-    c.poly([(8, 12), (14, 14), (13, 17), (8, 16)], BLACK); c.poly([(24, 12), (18, 14), (19, 17), (24, 16)], BLACK); c.rect((15, 21, 17, 24), BLACK, outline=False, light=False); return c
+    c = Cv(); c.poly([(5, 7), (16, 4), (27, 7), (26, 18), (21, 28), (11, 28), (6, 18)], R('#1c1c24', '#8a8a9c', '#e4e4f0', '#ffffff'))
+    c.poly([(8, 11), (14, 12), (13, 16), (8, 14)], BLACK); c.poly([(24, 11), (18, 12), (19, 16), (24, 14)], BLACK)
+    c.seg((16, 13), (16, 21), 1, R('#1c1c24', '#8a8a9c', '#8a8a9c', '#8a8a9c'), outline=False, light=False); c.seg((12, 24), (20, 24), 1, GOLD[2:3] * 4 if False else GOLD, outline=False, light=False)
+    c.dots([(6, 18), (26, 18), (16, 6)], '#f0b82c'); return c
 
 
 def mail_tex(c, m, col):
@@ -310,7 +322,8 @@ def i_manto():
 def i_botas():
     c = Cv()
     for ox in (0, 12):
-        c.poly([(5 + ox, 6), (13 + ox, 6), (13 + ox, 20), (17 + ox, 23), (17 + ox, 28), (4 + ox, 28), (4 + ox, 6)], LEATH); c.rect((4 + ox, 6, 13 + ox, 9), DLEATH, outline=False, light=False); c.rect((4 + ox, 25, 17 + ox, 28), BLACK, outline=False, light=False)
+        c.poly([(5 + ox, 5), (13 + ox, 5), (13 + ox, 20), (17 + ox, 23), (17 + ox, 28), (4 + ox, 28), (4 + ox, 5)], LEATH); c.rect((4 + ox, 5, 13 + ox, 9), DLEATH, outline=False, light=False)
+        c.rect((4 + ox, 25, 17 + ox, 28), BLACK, outline=False, light=False); c.rect((7 + ox, 13, 11 + ox, 16), GOLD); c.dots([(8 + ox, 14)], '#4a2808')
     return c
 
 
@@ -323,9 +336,9 @@ def i_grevas():
 
 def i_sandalias():
     c = Cv()
-    for ox, oy in ((0, 0), (11, 3)):
-        c.poly([(5 + ox, 6 + oy), (14 + ox, 6 + oy), (15 + ox, 24 + oy), (9 + ox, 27 + oy), (5 + ox, 23 + oy)], LEATH)
-        c.seg((5 + ox, 11 + oy), (15 + ox, 13 + oy), 2, DLEATH, outline=False, light=False); c.seg((5 + ox, 17 + oy), (15 + ox, 19 + oy), 2, DLEATH, outline=False, light=False)
+    for ox in (0, 15):
+        c.ell((3 + ox, 4, 14 + ox, 29), LEATH)
+        c.seg((4 + ox, 12), (13 + ox, 12), 2, DLEATH, outline=False, light=False); c.seg((4 + ox, 18), (13 + ox, 18), 2, DLEATH, outline=False, light=False); c.dots([(5 + ox, 12), (12 + ox, 12), (5 + ox, 18), (12 + ox, 18)], '#f0b82c')
     return c
 
 
