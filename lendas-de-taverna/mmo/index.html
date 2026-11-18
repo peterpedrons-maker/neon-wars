@@ -925,6 +925,11 @@ html #bar .acl #bPot{right:185px;bottom:96px;width:42px!important;height:42px!im
 /* joystick flutuante: só aparece enquanto o dedo está na tela */
 html #joy.fl{pointer-events:none;opacity:0;transition:opacity .12s}
 html #joy.fl.act{opacity:1}
+
+/* CONTROLES MAIS ALTOS + CHAT EMBAIXO (joystick flutuante some quando parado, então o canto fica livre) */
+html #bar .abar.acl{bottom:62px!important}
+html.jfl #chat{bottom:calc(8px + env(safe-area-inset-bottom))!important;width:112px!important}
+html #joy{bottom:calc(60px + env(safe-area-inset-bottom))!important}
 /* modo editar botões */
 html.hedit #cv{pointer-events:none}
 html.hedit #bar .acl>*,html.hedit #joy{outline:2px dashed #ffd678;outline-offset:3px;cursor:grab;opacity:1!important;touch-action:none}
@@ -5987,7 +5992,7 @@ function setHtml(){const ap=SAVE.apot==null?.35:SAVE.apot;return `<div class="se
   <div class="wr"><img class="ic" src="${UI}health-potion.png"><div class="tx"><b>Poção automática</b><span>${ap>0?'Bebe quando a vida cai abaixo de '+Math.round(ap*100)+'%':'Desligada: você bebe a poção manualmente'}</span></div><button class="gb" data-a="set:apot">${ap>0?Math.round(ap*100)+'%':'NÃO'}</button></div>
   <div class="wr"><img class="ic" src="${UI}anvil.png"><div class="tx"><b>Equipar melhor automaticamente</b><span>Ao pegar um item claramente melhor, o herói já o equipa</span></div><button class="gb" data-a="set:auto">${SAVE.autoEq?'SIM':'NÃO'}</button></div>
   <div class="sec-h"><span>Controles</span></div>
-  <div class="wr"><img class="ic" src="${UI}crossed-swords.png"><div class="tx"><b>Joystick flutuante</b><span>${SAVE.joyF?'Toque e arraste no lado esquerdo da tela: o joystick aparece onde o dedo estiver':'Joystick fixo no canto da tela'}</span></div><button class="gb" data-a="set:joyf">${SAVE.joyF?'SIM':'NÃO'}</button></div>
+  <div class="wr"><img class="ic" src="${UI}crossed-swords.png"><div class="tx"><b>Joystick flutuante</b><span>${JOYF()?'Toque e arraste no lado esquerdo da tela: o joystick aparece onde o dedo estiver':'Joystick fixo no canto da tela'}</span></div><button class="gb" data-a="set:joyf">${JOYF()?'SIM':'NÃO'}</button></div>
   <div class="wr"><img class="ic" src="${UI}magic-swirl.png"><div class="tx"><b>Posição dos botões</b><span>Arraste cada botão (ataque, habilidades, poção, esquiva e joystick) para onde o seu polegar alcança</span></div><button class="gb" data-a="set:hud">EDITAR</button></div>
   <div class="wr"><img class="ic" src="${UI}greek-temple.png"><div class="tx"><b>Trocar de herói</b><span>Volta à tela inicial (até ${SLOT_N} heróis; o progresso é salvo)</span></div><button class="gb" data-a="set:swap">TROCAR</button></div>`;}
 function winLocais(){
@@ -6258,7 +6263,7 @@ function winLeilao(){
 function winAct(a){
   if(socAct(a))return;
   const [k,v]=a.split(':');
-  if(k==='set'){if(v==='swap'){writeSave();location.reload();return;}if(v==='joyf'){SAVE.joyF=!SAVE.joyF;hudApply();sfx('ui_click');writeSave();winLocais();return;}if(v==='hud'){closeWin();hudEditStart();return;}if(v==='apot'){const L=[.35,.5,.7,0],i=L.indexOf(SAVE.apot==null?.35:SAVE.apot);SAVE.apot=L[(i+1)%L.length];}else SAVE.autoEq=!SAVE.autoEq;sfx('ui_click');writeSave();winLocais();return;}
+  if(k==='set'){if(v==='swap'){writeSave();location.reload();return;}if(v==='joyf'){SAVE.joyF=!JOYF();hudApply();sfx('ui_click');writeSave();winLocais();return;}if(v==='hud'){closeWin();hudEditStart();return;}if(v==='apot'){const L=[.35,.5,.7,0],i=L.indexOf(SAVE.apot==null?.35:SAVE.apot);SAVE.apot=L[(i+1)%L.length];}else SAVE.autoEq=!SAVE.autoEq;sfx('ui_click');writeSave();winLocais();return;}
   if(k==='leave'){closeWin();G.wp={x:ZONE.exit.x,y:ZONE.exit.y+10};return;}
   if(k==='goto'&&v.startsWith('door')){closeWin();const id=a.split(':')[2],d=ZONE.doors.find(x=>x.id===id);if(d){G.wp={x:d.x,y:d.y-2,target:{kind:'door',id:d.id,room:d.room}};}sfx('ui_confirm',.6);return;}
   if(k==='goto'){closeWin();const t=v==='portal'?{kind:'portal'}:G.npcs.find(n=>n.id===v);G.wp=v==='portal'?{x:ZONE.portal.stand[0],y:ZONE.portal.stand[1],target:t}:{x:t.x,y:t.y+8,target:t};sfx('ui_confirm',.6);return;}
@@ -6305,6 +6310,7 @@ function frame(ts){
 /* ------------------------------ entrada --------------------------------- */
 function tapFx(x,y){const e=$('tapfx');e.style.left=x+'px';e.style.top=y+'px';e.animate([{opacity:.9,transform:'translate(-50%,-50%) scale(.3)'},{opacity:0,transform:'translate(-50%,-50%) scale(1.3)'}],{duration:380});}
 /* ------------------------------ joystick virtual (modo manual) ----------- */
+function JOYF(){return !SAVE||SAVE.joyF!==false;}   /* joystick flutuante é o padrão: só aparece enquanto o dedo está no lado esquerdo */
 G.joy={x:0,y:0,m:0};G.castReq=-1;G.atkHold=false;
 (function(){
   const J=$('joy'),K=$('joyk');let id=null;const R=40;
@@ -6317,9 +6323,9 @@ G.joy={x:0,y:0,m:0};G.castReq=-1;G.atkHold=false;
 
   // joystick FLUTUANTE: arrastar no lado esquerdo da tela cria o joystick onde o dedo tocou
   {let pend=null,fid=null,cx=0,cy=0;const cv=$('cv');
-   cv.addEventListener('pointerdown',ev=>{if(!SAVE.joyF||G.editHud||!G.on||G.winOpen||id!==null||fid!==null)return;if(!(G.scene==='town'||G.scene==='dungeon'))return;const sr=$('stage').getBoundingClientRect();if(ev.clientX>sr.left+sr.width*.62)return;pend={id:ev.pointerId,x:ev.clientX,y:ev.clientY};});
+   cv.addEventListener('pointerdown',ev=>{if(!JOYF()||G.editHud||!G.on||G.winOpen||id!==null||fid!==null)return;if(!(G.scene==='town'||G.scene==='dungeon'))return;const sr=$('stage').getBoundingClientRect();if(ev.clientX>sr.left+sr.width*.62)return;pend={id:ev.pointerId,x:ev.clientX,y:ev.clientY};});
    addEventListener('pointermove',ev=>{
-     if(pend&&ev.pointerId===pend.id&&Math.hypot(ev.clientX-pend.x,ev.clientY-pend.y)>9){const par=J.offsetParent||$('stage'),pr=par.getBoundingClientRect(),w=J.offsetWidth||112;cx=pend.x;cy=pend.y;
+     if(pend&&ev.pointerId===pend.id&&Math.hypot(ev.clientX-pend.x,ev.clientY-pend.y)>6){const par=J.offsetParent||$('stage'),pr=par.getBoundingClientRect(),w=J.offsetWidth||112;cx=pend.x;cy=pend.y;
        J.style.setProperty('left',Math.round(cx-pr.left-w/2)+'px','important');J.style.setProperty('bottom',Math.round(pr.bottom-cy-w/2)+'px','important');
        fid=pend.id;id=fid;pend=null;J.classList.add('act');G.wp=null;setV(ev.clientX-cx,ev.clientY-cy);return;}
      if(fid!==null&&ev.pointerId===fid)setV(ev.clientX-cx,ev.clientY-cy);});
@@ -6341,7 +6347,7 @@ const HUD_IDS=['bAtk','sk0','sk1','sk2','bPot','bDodge'];
 function hudApply(){
   const J=$('joy');if(!J)return;const L=SAVE.hl||{};
   HUD_IDS.forEach(id=>{const e=$(id);if(!e)return;const p=L[id];if(p){e.style.right=p[0]+'px';e.style.bottom=p[1]+'px';}else{e.style.right='';e.style.bottom='';}});
-  const fl=!!SAVE.joyF&&!G.editHud;J.classList.toggle('fl',fl);
+  const fl=!!JOYF()&&!G.editHud;J.classList.toggle('fl',fl);document.documentElement.classList.toggle('jfl',JOYF());
   if(L.joy){J.style.setProperty('left',L.joy[0]+'px','important');J.style.setProperty('bottom',L.joy[1]+'px','important');}else{J.style.removeProperty('left');J.style.removeProperty('bottom');}
   J.style.removeProperty('top');
 }
