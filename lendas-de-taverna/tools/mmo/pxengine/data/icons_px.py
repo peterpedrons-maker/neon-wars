@@ -491,6 +491,7 @@ def make_tiles():
     hud = os.path.join(ROOT, 'mmo', 'assets', 'hud')
     tile(u_scroll_unfurled(), '#a07828').resize((64, 64), Image.NEAREST).save(os.path.join(hud, 'diario.png'))
     tile(u_team_idea(), '#3a78d8').resize((64, 64), Image.NEAREST).save(os.path.join(hud, 'social.png'))
+    tile(u_ferradura(), '#5a9a60').resize((64, 64), Image.NEAREST).save(os.path.join(hud, 'montaria.png'))
 
 
 # ============================ v4: mais detalhe (rebites, costuras, brilhos, facetas) ============================
@@ -720,6 +721,12 @@ def i_orbe():
     c = Cv(); c.poly([(9, 28), (23, 28), (21, 23), (11, 23)], GOLD); c.rect((8, 27, 24, 29), GOLD); m = c.ell((6, 3, 26, 23), CYAN)
     c.arc((8, 5, 24, 21), 190, 300, 2, R('#082838', '#b8f0ff', '#ffffff', '#ffffff'), outline=False, light=False); c.arc((10, 9, 24, 23), 20, 110, 2, R('#082838', '#1c6a9a', '#1c6a9a', '#1c6a9a'), outline=False, light=False)
     c.dots([(14, 12), (17, 15), (12, 16)], '#b8f0ff'); glint(c, 10, 7); return c
+
+
+def u_ferradura():
+    c = Cv(); c.arc((5, 3, 27, 29), 150, 390, 6, STEEL); c.arc((5, 3, 27, 29), 150, 390, 2, R('#1a2030', '#566680', '#e6f0ff', '#ffffff'), outline=False, light=False)
+    for (x, y) in ((8, 20), (6.5, 14), (9, 8), (23, 8), (25.5, 14), (24, 20)): c.ell((x - 1.1, y - 1.1, x + 1.1, y + 1.1), BLACK, outline=False, light=False)
+    glint(c, 12, 5); return c
 
 ITEMS = {n[2:]: f for n, f in list(globals().items()) if n.startswith('i_') and callable(f)}
 
