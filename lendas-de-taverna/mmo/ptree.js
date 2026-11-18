@@ -167,7 +167,6 @@ function build(cls){if(TREES[cls])return TREES[cls];const D=CL[cls]||CL.guerreir
  let notN=0;
  for(let k=1;k<=RINGS;k++)for(let i=0;i<6*k;i++){
   const c=Math.floor(i/k)%6,t=i%k,pole=t===0,p=ringPos(k,i),S=D.sec[c],Sp=D.sec[(c+5)%6];
-  if(!(k===RINGS&&pole)){p.x+=Math.sin(k*12.9+i*78.2)*7;p.y+=Math.cos(k*7.1+i*39.3)*7;}
   const o={id:id(k,i),x:p.x,y:p.y,ring:k,idx:i,sec:c};
   const tk=Object.keys(ST);
   const pk=S.p[0],sk=S.p[1];
