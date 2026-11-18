@@ -89,7 +89,7 @@ UNITS.update({
 # ESTILOS DE ANIMACAO por personagem (chibi_anim3): attack slash|smash|jab|cast, hurt flinch|stagger|stoic, death fall|topple|crumble|dissolve|tumble
 ANIMS = {
     'h_bardo': dict(attack='play', hurt='stagger'),
-    'h_mago': dict(attack='cast', hurt='stagger'), 'h_ladino': dict(attack='jab', hurt='stagger', death='tumble'), 'h_clerigo': dict(attack='smash'),
+    'h_mago': dict(attack='cast', hurt='stagger'), 'h_ladino': dict(attack='rcut', hurt='stagger', death='tumble'), 'h_guerreiro': dict(attack='wchop'), 'h_clerigo': dict(attack='smash'),
     'esqueleto': dict(attack='jab', hurt='stagger', death='crumble'), 'esqmago': dict(attack='cast', hurt='stagger', death='dissolve'),
     'guarda_c': dict(attack='smash', hurt='stoic', death='crumble'), 'cultista': dict(attack='cast', hurt='stagger', death='dissolve'),
     'gargula': dict(attack='jab', hurt='stoic', death='crumble'), 'zumbi': dict(attack='smash', hurt='stoic', death='topple'),
@@ -103,9 +103,9 @@ for _k, _v in ANIMS.items():
 # COMBOS: animacoes de ataque diferentes por golpe (attack2/3/4 = golpe 2, 3 e finalizador). (pose base, variante) -> chibi_anim3.combo_frames
 COMBO_KINDS = ('attack2', 'attack3', 'attack4')
 COMBO = {
-    'h_guerreiro': dict(attack2=('slash', 'rise'), attack3=('slash', 'spin'), attack4=('smash', 'leap')),
+    'h_guerreiro': dict(attack2=('wrise', None), attack3=('jab', 'spin'), attack4=('wslam', None)),
     'h_mago': dict(attack2=('jab', 'dive'), attack3=('cast', 'rise'), attack4=('cast', 'spin')),
-    'h_ladino': dict(attack2=('jab', 'rise'), attack3=('slash', 'dive'), attack4=('slash', 'spin')),
+    'h_ladino': dict(attack2=('rrev', None), attack3=('rstab', None), attack4=('rx', None)),
     'h_clerigo': dict(attack2=('smash', 'rise'), attack3=('slash', 'dive'), attack4=('smash', 'leap')),
     'h_arqueiro': dict(attack2=('same', 'dive'), attack3=('same', 'rise'), attack4=('same', 'leap')),
     'h_bardo': dict(attack2=('play', 'dive'), attack3=('play', 'rise'), attack4=('play', 'spin')),

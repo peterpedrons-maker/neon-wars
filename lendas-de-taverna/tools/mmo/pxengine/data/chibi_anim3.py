@@ -205,7 +205,10 @@ def crumble(view, ap):
 def build(view, kind, appearance, dense=2):
     st = (appearance or {}).get('anim') or {}
     ap = dict(appearance)
-    if kind == 'attack' and st.get('attack') in ('smash', 'jab', 'cast', 'play'):
+    import combo_poses as CP
+    if kind == 'attack' and st.get('attack') in CP.TABLE:
+        fr = CP.attack(view, ap, st['attack'])
+    elif kind == 'attack' and st.get('attack') in ('smash', 'jab', 'cast', 'play'):
         fr = attack(view, ap, st['attack'])
     elif kind == 'hurt' and st.get('hurt') in ('stagger', 'stoic'):
         fr = hurt(view, ap, st['hurt'])
@@ -288,6 +291,8 @@ def variant(frames, style, view='right'):
 
 def combo_frames(view, ap, base_style, var):
     """base_style: 'same' (usa os quadros de ataque normais) | slash|jab|smash|cast|play (outra pose base); var: rise|dive|spin|leap|None"""
-    if base_style in ('slash', 'same'): base = [f[0] for f in N2.build(view, 'attack', ap, 2)]
+    import combo_poses as CP
+    if base_style in CP.TABLE: base = CP.attack(view, ap, base_style)
+    elif base_style in ('slash', 'same'): base = [f[0] for f in N2.build(view, 'attack', ap, 2)]
     else: base = attack(view, ap, base_style)
     return variant(base, var, view) if var else [b.convert('RGBA') for b in base[:20]]
