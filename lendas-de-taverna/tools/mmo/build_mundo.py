@@ -240,14 +240,36 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
             if not(0<x<W and 0<y<H):continue
             sd=int(at(side,x,y))
             if at(BAND,x,y) and side_theme[sd]=='mount' and at(ed,x,y)<at(BT,x,y)*.6 and not at(water,x,y) and not at(CORR,x,y):addk('mount',x,y,rr.randint(190,270),0,1.5)
-    wall=[]
+    wall=[];KW=.36   # a barreira fica na entrada da faixa: o que o herói vê (crista de montanhas / mata fechada) é exatamente o que o bloqueia
+    def ridge(x,y,sd,i):
+        th=side_theme[sd];j=lambda a:rr.uniform(-a,a)
+        if th=='mount':
+            if i%3==0:addk('mount',x+j(22),y+j(22),rr.randint(240,310),0,1.6)
+            if i%4==1:addk('rock',x+j(30),y+j(30),rr.randint(110,160),22)
+        elif th=='forest':
+            spr(rr.choice(TALL_B),x+j(14),y+j(14))
+            if i%2==0:spr(rr.choice(TALL_C),x+j(18),y+j(18)+16)
+            if i%3==0:spr(rr.choice(BUSH),x+j(16),y+j(16)+28)
+        elif th=='dark':
+            spr(rr.choice(TALL_C),x+j(14),y+j(14))
+            if i%2==0:addk('dead',x+j(16),y+j(16)+14,rr.randint(120,150),7)
+        elif th=='grave':
+            addk('dead',x+j(14),y+j(14),rr.randint(130,160),7)
+            if i%2==0:addk('thorn',x+j(18),y+j(18)+16,rr.randint(48,62),10)
+            if i%3==0:addk('tombstone',x+j(18),y+j(18)+26,rr.randint(34,46),9)
+        elif th=='swamp':
+            addk('dead',x+j(14),y+j(14),rr.randint(120,150),7)
+            if i%2==0:addk('thorn',x+j(18),y+j(18)+16,rr.randint(48,62),10)
+            if i%3==0:addk('mush',x+j(18),y+j(18)+24,28)
+    wi=0
     for t_ in range(40,max(W,H)-40,26):
         pts=[]
-        if t_<W-40:pts+=[(t_,.5*at(BT,t_,40),0,t_),(t_,H-.5*at(BT,t_,H-40),1,t_)]
-        if t_<H-40:pts+=[(.5*at(BT,40,t_),t_,2,t_),(W-.5*at(BT,W-40,t_),t_,3,t_)]
+        if t_<W-40:pts+=[(t_,KW*at(BT,t_,40),0,t_),(t_,H-KW*at(BT,t_,H-40),1,t_)]
+        if t_<H-40:pts+=[(KW*at(BT,40,t_),t_,2,t_),(W-KW*at(BT,W-40,t_),t_,3,t_)]
         for x,y,sd,al in pts:
             if any(e['side']==sd and abs(al-e['pos'])<200 for e in exits):continue
-            wall.append([round(x),round(y),24])
+            wall.append([round(x),round(y),26]);wi+=1
+            if wi%2==0 and not at(CORR,x,y) and not at(water,x,y):ridge(x,y,sd,wi//2)
     spawns=[]
     if packs:
         tries=0;centers=[]
@@ -309,7 +331,16 @@ WX_BY=dict(planicie=dict(clear=6,rain=2),goblins=dict(clear=3,rain=3),brejo=dict
   desfiladeiro=dict(clear=3,rain=2,storm=2),passo=dict(clear=3,rain=2,storm=2),cemiterio=dict(clear=2,rain=3,storm=2),mortos=dict(clear=2,rain=3,storm=2),
   lenhadores=dict(clear=3,rain=3),ogros=dict(clear=3,rain=3,storm=1),brumas=dict(clear=1,rain=5,storm=2),clareira=dict(clear=3,rain=2),gruta=dict(rain=3,storm=2),
   lago=dict(clear=3,rain=3),mina=dict(clear=3,rain=2,storm=1),eremita=dict(clear=2,rain=3),cabana=dict(clear=1,rain=4,storm=3))
+# bioma de cada zona: as bordas fecham com o relevo da zona VIZINHA (planície que dá em montanha fecha com montanha)
+BIOME=dict(estrada='forest',planicie='forest',goblins='dark',brejo='dark',ponte='forest',colinas='mount',desfiladeiro='mount',passo='mount',cemiterio='grave',
+  mortos='grave',lenhadores='dark',ogros='forest',brumas='swamp',clareira='dark',gruta='grave',lago='forest',mina='mount',eremita='dark',cabana='swamp')
+def auto_theme(name):
+    th=[BIOME[name]]*4
+    for e in EXL[name]:
+        if e['id'] in BIOME:th[e['side']]=BIOME[e['id']]
+    return th
 def Z(name,seed,nv,**kw):
+    kw['side_theme']=auto_theme(name)
     kw.setdefault('wxw',WX_BY.get(name))
     W,H=SIZE[name];kw.setdefault('roads',auto_roads(name));kw.setdefault('trails',[]);kw.setdefault('waters',[]);kw.setdefault('camps',[])
     kw.setdefault('pois',[]);kw.setdefault('start',(W//2,H//2))
