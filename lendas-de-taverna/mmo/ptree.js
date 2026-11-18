@@ -157,7 +157,7 @@ function ringPos(k,i){const n=6*k,c=Math.floor(i/k)%6,t=(i%k)/k,a0=ang(c),a1=ang
 
 /* ---------- geração da árvore da classe ---------- */
 const TP={guerreiro:['gf','gb','gc'],ladino:['la','lp','ls'],mago:['ma','ms','mt'],clerigo:['cc','cf','cp'],arqueiro:['aa','ac','ap'],bardo:['bh','bi','bm']};
-function art(n,cls){const P=TP[cls]||TP.guerreiro;if(n.kind==='key')return 'assets/talents/'+P[n.sec%3]+'k.png';if(n.kind==='not'||n.kind==='hyb'||n.kind==='sub'){const h=(n.ring*5+n.idx*3+n.sec)%6+1;return 'assets/talents/'+P[n.sec%3]+h+'.png';}return null;}
+function art(n,cls){if(n.kind==='start')return 'assets/class/'+(SAVE.sub&&SUBS[cls]&&SUBS[cls].some(x=>x.id===SAVE.sub)?'sub_'+SAVE.sub:cls)+'.png';const P=TP[cls]||TP.guerreiro;if(n.kind==='key')return 'assets/talents/'+P[n.sec%3]+'k.png';if(n.kind==='not'||n.kind==='hyb'||n.kind==='sub'){const h=(n.ring*5+n.idx*3+n.sec)%6+1;return 'assets/talents/'+P[n.sec%3]+h+'.png';}return null;}
 const TREES={};
 function build(cls){if(TREES[cls])return TREES[cls];const D=CL[cls]||CL.guerreiro,nodes={},list=[];
  const add=o=>{nodes[o.id]=o;list.push(o);o.nb=[];return o;};
@@ -263,7 +263,7 @@ const css=`.ptw{position:relative;height:min(66vh,640px);margin:4px 0;border:2px
 #ptfs .ptd{position:absolute;left:8px;right:8px;bottom:8px;margin:0;background:#0b0f1ae6;z-index:5}#ptfs .ptsum{position:absolute;left:8px;right:8px;top:52px;background:#0b0f1af2;border:2px solid #3a4258;padding:8px;z-index:6}
 #ptfs .ptsum button{margin-top:6px;width:100%;padding:8px;background:#3a2424;border:2px solid #e08a6a;color:#fff;font:12px 'Pixelify Sans',sans-serif}#ptfs .ptsum button:disabled{opacity:.4}`;document.head.appendChild(c);})();
 const KIND={start:'Origem',small:'Passiva',dual:'Passiva dupla',hyb:'Híbrido',not:'Notável',key:'Pedra angular',sub:'Subclasse'};
-const RAD={start:15,small:11,dual:13,hyb:14,not:17,key:21,sub:19};
+const RAD={start:27,small:11,dual:13,hyb:14,not:17,key:21,sub:19};
 function iconHTML(n,col){const sts=n.st&&n.st.length?n.st:['atk'];return `<div class="ic" style="--bc:${col}">${sts.slice(0,2).map(k=>`<img src="${glyph(k,ST[k]?ST[k].c:'#fff')}">`).join('')}</div>`;}
 
 function fit(vw,vh){const R=RR(RINGS+1.6);PT.sc=Math.min(vw,vh)/(R*2)*1.2;PT.vx=0;PT.vy=0;}
@@ -285,10 +285,11 @@ function svgHTML(vw,vh){const T=tree(),N=T.nodes,sel=PT.sel,pth=sel?(pathTo(sel)
   const edge=sel===n.id?'#fff':pset[n.id]?'#ffe08a':av?'#ffd24a':al?S.c:(n.kind==='small'||n.kind==='dual'?'#3d4660':S.c);
   h+=`<g data-n="${n.id}" opacity="${fo(n)}" class="${lock?'lk':''}" ${al?`style="filter:drop-shadow(0 0 ${n.kind==='small'?3:6}px ${S.c})"`:''}>`;
   const fill=al?'#242b40':'#0f1420';
+  if(n.kind==='start')h+=`<circle cx="${x}" cy="${y}" r="${r+5}" fill="none" stroke="#e8c36a" stroke-width="1.5" opacity=".7"/>`;
   if(n.kind==='key'){const q=r+3;h+=`<polygon points="${x},${(n.y-q).toFixed(1)} ${(n.x+q).toFixed(1)},${y} ${x},${(n.y+q).toFixed(1)} ${(n.x-q).toFixed(1)},${y}" fill="${fill}" stroke="${edge}" stroke-width="3"/>`;}
   else if(n.kind==='hyb'){const pts=[0,1,2,3,4,5].map(i=>{const a=i*Math.PI/3+Math.PI/6;return (n.x+Math.cos(a)*(r+1)).toFixed(1)+','+(n.y+Math.sin(a)*(r+1)).toFixed(1);}).join(' ');h+=`<polygon points="${pts}" fill="${fill}" stroke="${edge}" stroke-width="2.8"/>`;}
   else h+=`<circle class="nc ${al?'on':''}" cx="${x}" cy="${y}" r="${r}" fill="${fill}" style="stroke:${edge};stroke-width:${n.kind==='not'?3.2:2.4}"/>`+(n.kind==='not'?`<circle cx="${x}" cy="${y}" r="${r+3.5}" fill="none" stroke="${S.c}" stroke-width="1.2" opacity="${al?.95:.4}"/>`:'');
-  if(im){const w=n.kind==='key'?r*1.5:r*1.5;h+=`<image href="${im}" x="${(n.x-w/2).toFixed(1)}" y="${(n.y-w/2).toFixed(1)}" width="${w.toFixed(1)}" height="${w.toFixed(1)}" style="image-rendering:pixelated;opacity:${op}"/>`;}
+  if(im){const w=n.kind==='start'?r*1.75:r*1.5;h+=`<image href="${im}" x="${(n.x-w/2).toFixed(1)}" y="${(n.y-w/2).toFixed(1)}" width="${w.toFixed(1)}" height="${w.toFixed(1)}" style="image-rendering:pixelated;opacity:${op}"/>`;}
   else{const gs=sts.length>1?r*.62:r*1.05;sts.forEach((k,i)=>{const gx=n.x+(sts.length>1?(i?1:-1)*gs*.52:0)-gs/2;h+=`<image href="${glyph(k,ST[k]?ST[k].c:'#fff')}" x="${gx.toFixed(1)}" y="${(n.y-gs/2).toFixed(1)}" width="${gs.toFixed(1)}" height="${gs.toFixed(1)}" style="image-rendering:pixelated;opacity:${op}"/>`;});}
   if(n.mini)h+=`<circle cx="${(n.x+r*.8).toFixed(1)}" cy="${(n.y-r*.8).toFixed(1)}" r="3.4" fill="#9be06a" stroke="#0b0e16" stroke-width="1"/>`;
   h+='</g>';});
