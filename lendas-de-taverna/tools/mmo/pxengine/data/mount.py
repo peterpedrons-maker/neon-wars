@@ -14,7 +14,6 @@ R = F.R
 PAL = {
     'cavalo': dict(body=R('#4a2616', '#7a4426', '#a86a40'), mane=R('#1a0e08', '#2c1a0e', '#46301c'), hoof=R('#1a1410', '#2c241c', '#443a2e'),
                    nose=R('#7a4a44', '#a8706a', '#cc9a90'), saddle=R('#3a1c0e', '#6a3418', '#98502a'), blanket=R('#5a1020', '#9a2236', '#cc4a5e'),
-<<<<<<< HEAD
                    belly=R('#6a3c24', '#98603c', '#c08a5c'), blaze=R('#b8b0a4', '#e6dece', '#fffaf0'), sock=R('#a8a094', '#dcd4c4', '#fffaf0')),
     'lobo': dict(body=R('#3a404e', '#5e6676', '#8a94a6'), mane=R('#202530', '#363c4a', '#505868'), hoof=R('#14141c', '#262630', '#3a3a46'),
                  nose=R('#14141c', '#2a2a34', '#44444e'), saddle=R('#3a1c0e', '#6a3418', '#98502a'), blanket=R('#1a3a5a', '#2c64a0', '#5a98d0'),
@@ -79,55 +78,6 @@ def cavalo(view, u=0.0, bob=0, amp=3.0, lift=2.6, tail=0.0, head=False, pal='cav
             c.cap(cx, by - 15.5 + hd, cx, by - 9 + hd, 1.1, 1.0, 'blaze')
             c.cap(cx, by - 4, cx, by - 15, 1.6, 1.2, 'mane'); c.dot(cx - 2.2, by - 13.4 + hd, F.hx('#14100c')); c.dot(cx + 2.2, by - 13.4 + hd, F.hx('#14100c'))
         rider = (cx, by - 6.4) if not back else (cx, by - 6.8)
-=======
-                   belly=R('#6a3c24', '#98603c', '#c08a5c'), blaze=R('#b8b0a4', '#e6dece', '#fffaf0')),
-    'lobo': dict(body=R('#3a404e', '#5e6676', '#8a94a6'), mane=R('#202530', '#363c4a', '#505868'), hoof=R('#14141c', '#262630', '#3a3a46'),
-                 nose=R('#14141c', '#2a2a34', '#44444e'), saddle=R('#3a1c0e', '#6a3418', '#98502a'), blanket=R('#1a3a5a', '#2c64a0', '#5a98d0'),
-                 belly=R('#7a8294', '#aab2c4', '#d0d6e2'), blaze=R('#d0d6e2', '#eef0f6', '#ffffff')),
-}
-
-
-def cavalo(view, ph=0.0, bob=0, stride=3.0, lift=2.6, tail=0.0, head=False, pal='cavalo'):
-    """head=True: só pescoço+cabeça+crina (camada que fica na frente do cavaleiro na vista de frente)."""
-    c = F.Cv(); cx = W // 2; gy = BASE; by = gy - 15 + bob; rider = None
-    if view == 'right':
-        legs = ((-6, 0, True), (6, math.pi, True), (-5.5, math.pi, False), (6.5, 0, False))
-        if not head:
-            for lx, p0, far in legs:
-                lf = max(0, math.sin(ph + p0)) * lift; sw = math.cos(ph + p0) * stride
-                F.leg(c, cx + lx, by + 3, gy, sw, lf, 1.8, 1.2, 'body', far, 'hoof')
-            c.ell(cx - 7, by, 6.2, 5.6); c.ell(cx, by + .3, 9.4, 5.9); c.ell(cx, by + 3.4, 8, 2.3, 'belly'); c.ell(cx + 7, by - .6, 5.8, 6.1)
-            c.cap(cx - 11, by - 2, cx - 14.5, by + 7 + math.sin(tail) * 2.2, 2.2, 1.1, 'mane')
-            c.ell(cx - .5, by - 5.4, 5.2, 1.5, 'blanket'); c.ell(cx - .5, by - 6.0, 3.4, 1.3, 'saddle')
-        c.cap(cx + 9, by - 3, cx + 14, by - 11, 3.6, 2.3)
-        c.cap(cx + 14, by - 11, cx + 20, by - 7.4, 2.7, 2.0)
-        c.cap(cx + 19, by - 8, cx + 22.4, by - 5.6, 2.0, 1.7, 'nose')
-        c.cap(cx + 13, by - 13, cx + 13.8, by - 16, 1.2, .5)
-        c.cap(cx + 8.4, by - 5.4, cx + 12.4, by - 12.8, 1.5, 1.2, 'mane')
-        c.dot(cx + 17.6, by - 10.2, F.hx('#14100c')); c.dot(cx + 22.6, by - 6.2, F.hx('#14100c'))
-        rider = (cx - .5, by - 7.2)
-    elif view == 'down':
-        legs = ((-4.4, 0), (4.4, math.pi))
-        if not head:
-            for lx, p0 in legs:
-                lf = max(0, math.sin(ph + p0)) * lift; sw = 0
-                F.leg(c, cx + lx, by + 3, gy, sw, lf, 2.2, 1.5, 'body', False, 'hoof')
-            c.ell(cx, by + .5, 8.2, 6.8); c.ell(cx, by + 4, 7.6, 2.4, 'belly'); c.ell(cx, by - 4.8, 5.6, 1.6, 'blanket')
-        c.cap(cx, by - 2, cx, by - 10, 5.0, 3.2)
-        c.ell(cx, by - 13, 3.0, 4.2); c.ell(cx, by - 9.5, 2.1, 1.5, 'nose')
-        c.cap(cx - 2.2, by - 16.2, cx - 2.6, by - 19, 1.1, .5); c.cap(cx + 2.2, by - 16.2, cx + 2.6, by - 19, 1.1, .5)
-        c.cap(cx, by - 15.5, cx, by - 9, 1.1, 1.0, 'blaze')
-        c.dot(cx - 2.2, by - 13.4, F.hx('#14100c')); c.dot(cx + 2.2, by - 13.4, F.hx('#14100c')); c.dot(cx - 1, by - 9, F.hx('#2a1a14')); c.dot(cx + 1, by - 9, F.hx('#2a1a14'))
-        rider = (cx, by - 6.4)
-    else:
-        legs = ((-4.4, math.pi), (4.4, 0))
-        for lx, p0 in legs:
-            lf = max(0, math.sin(ph + p0)) * lift
-            F.leg(c, cx + lx, by + 3, gy, 0, lf, 2.2, 1.5, 'body', False, 'hoof')
-        c.ell(cx, by + .5, 8.4, 6.8); c.ell(cx, by - 4.8, 5.6, 1.6, 'blanket'); c.ell(cx, by - 5.4, 3.6, 1.3, 'saddle')
-        c.cap(cx, by - 1, cx + math.sin(tail) * 2.4, by + 11, 2.6, 1.3, 'mane')
-        rider = (cx, by - 6.8)
->>>>>>> origin/main
     img = c.render(PAL[pal], F.FLAT)
     return img, rider
 
@@ -138,17 +88,10 @@ GAITS = {'idle': 6, 'walk': 8, 'run': 8}
 def frames(view, kind, pal='cavalo', head=False):
     n = GAITS[kind] * 2; out = []; rid = []
     for i in range(n):
-<<<<<<< HEAD
         u = i / n; ph = 2 * math.pi * u
         if kind == 'idle': im, r = cavalo(view, u, bob=1 if math.sin(ph) > .55 else 0, tail=ph, head=head, pal=pal, idle=True, nod=math.sin(ph * 1))
         elif kind == 'walk': im, r = cavalo(view, u, bob=-1 if abs(math.sin(ph * 2)) > .8 else 0, amp=3.2, lift=2.8, tail=ph * 2, head=head, pal=pal, nod=1.4 * math.sin(ph * 2 + 1))
         else: im, r = cavalo(view, u, bob=(-2 if math.sin(ph * 2) > .3 else (1 if math.sin(ph * 2) < -.7 else 0)), amp=5.4, lift=4.6, tail=ph * 3, head=head, pal=pal, run=True, nod=2.2 * math.sin(ph * 2 + .6))
-=======
-        ph = 2 * math.pi * i / n
-        if kind == 'idle': im, r = cavalo(view, 0, bob=1 if math.sin(ph) > .55 else 0, tail=ph, head=head, pal=pal)
-        elif kind == 'walk': im, r = cavalo(view, ph, bob=-1 if abs(math.sin(ph * 2)) > .85 else 0, stride=3.0, lift=2.4, tail=ph * 2, head=head, pal=pal)
-        else: im, r = cavalo(view, ph, bob=-2 if math.sin(ph * 2) > 0 else 0, stride=5.4, lift=4.2, tail=ph * 3, head=head, pal=pal)
->>>>>>> origin/main
         out.append(im); rid.append(r)
     return out, rid
 
