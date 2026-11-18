@@ -253,11 +253,22 @@ const css=`.ptw{position:relative;height:min(66vh,640px);margin:4px 0;border:2px
 (function(){const s=document.createElement('style');s.textContent=css;document.head.appendChild(s);})();
 
 (function(){const c=document.createElement('style');c.textContent=`.psb{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:4px 0}.psb div{min-width:0}.psb span{display:block;font:10px 'Pixelify Sans',sans-serif;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.psb i{display:block;height:4px;background:#1a2030;border:1px solid #2b3348}.psb u{display:block;height:100%}details.pts summary{font:11px 'Pixelify Sans',sans-serif;color:#aab;cursor:pointer;padding:2px}`;document.head.appendChild(c);})();
+(function(){const c=document.createElement('style');c.textContent=`#ptfs{position:absolute;inset:0;z-index:9999;display:flex;flex-direction:column;background-color:#07090f;background-image:radial-gradient(1px 1px at 20% 30%,#fff6 50%,transparent),radial-gradient(1px 1px at 70% 60%,#fff5 50%,transparent),radial-gradient(1px 1px at 40% 80%,#fff4 50%,transparent);color:#dde;font-family:'Pixelify Sans',sans-serif}
+#ptfs .pth{display:flex;align-items:center;gap:8px;padding:10px 10px 6px}#ptfs .pth b{flex:1;font-size:15px;letter-spacing:2px;color:#f2e6c0}
+#ptfs .ptp{border:2px solid #e8c36a;padding:4px 8px;font-size:13px;background:#0e1220}#ptfs .ptp i{font-style:normal;color:#ffd24a}
+#ptfs .ptx{width:36px;height:36px;border:2px solid #e8c36a;background:#0e1220;color:#ffd24a;font-size:18px;padding:0}
+#ptfs .ptf{display:flex;gap:6px;padding:0 10px;overflow-x:auto}#ptfs .ptf button{flex:none;font:12px 'Pixelify Sans',sans-serif;padding:6px 10px;background:#12172a;border:2px solid #353d57;color:#aab}#ptfs .ptf button.on{border-color:#e8c36a;color:#fff}
+#ptfs .psb{padding:6px 10px 4px;margin:0}#ptfs .ptw{flex:1;height:auto;margin:0;border:0;border-top:2px solid #e8c36a;border-radius:0;background:transparent}
+#ptfs .ptw .hq{position:absolute;left:10px;top:10px;width:34px;height:34px;border:2px solid #e8c36a;background:#0e1220;color:#ffd24a;font-size:16px;padding:0}
+#ptfs .ptd{position:absolute;left:8px;right:8px;bottom:8px;margin:0;background:#0b0f1ae6;z-index:5}#ptfs .ptsum{position:absolute;left:8px;right:8px;top:52px;background:#0b0f1af2;border:2px solid #3a4258;padding:8px;z-index:6}
+#ptfs .ptsum button{margin-top:6px;width:100%;padding:8px;background:#3a2424;border:2px solid #e08a6a;color:#fff;font:12px 'Pixelify Sans',sans-serif}#ptfs .ptsum button:disabled{opacity:.4}`;document.head.appendChild(c);})();
 const KIND={start:'Origem',small:'Passiva',dual:'Passiva dupla',hyb:'Híbrido',not:'Notável',key:'Pedra angular',sub:'Subclasse'};
 const RAD={start:15,small:11,dual:13,hyb:14,not:17,key:21,sub:19};
 function iconHTML(n,col){const sts=n.st&&n.st.length?n.st:['atk'];return `<div class="ic" style="--bc:${col}">${sts.slice(0,2).map(k=>`<img src="${glyph(k,ST[k]?ST[k].c:'#fff')}">`).join('')}</div>`;}
 
 function fit(vw,vh){const R=RR(RINGS+1.6);PT.sc=Math.min(vw,vh)/(R*2)*1.2;PT.vx=0;PT.vy=0;}
+const FG={atk:['atk','crit','critd','aspd','exec','boss','cb4','cbw'],def:['def','dmgred','hp','regen','pot','cbp'],util:['spd','dcd','cdr','drop','pot'],combo:['cb4','cbw','cbp']};
+function fo(n){if(!PT.f||PT.f==='all'||n.id==='c')return 1;const g=FG[PT.f]||[];return Object.keys(n.fx).some(k=>g.includes(k))?1:.18;}
 function svgHTML(vw,vh){const T=tree(),N=T.nodes,sel=PT.sel,pth=sel?(pathTo(sel)||[]):[],pset={};pth.forEach(x=>pset[x]=1);
  const vbw=vw/PT.sc,vbh=vh/PT.sc,vx=PT.vx-vbw/2,vy=PT.vy-vbh/2,u=1/PT.sc;
  let h=`<svg id="ptsvg" viewBox="${vx} ${vy} ${vbw} ${vbh}"><defs>`;
@@ -272,7 +283,7 @@ function svgHTML(vw,vh){const T=tree(),N=T.nodes,sel=PT.sel,pth=sel?(pathTo(sel)
  T.list.forEach(n=>{const al=isAl(n.id),av=allocatable(n),S=T.D.sec[n.sec]||T.D.sec[0],lock=n.kind==='sub'&&SAVE.sub!==n.sub,r=RAD[n.kind]||11,x=n.x.toFixed(1),y=n.y.toFixed(1),im=art(n,SAVE.cls);
   const sts=(n.st&&n.st.length?n.st:['atk']).slice(0,2),op=al||av?1:.5;
   const edge=sel===n.id?'#fff':pset[n.id]?'#ffe08a':av?'#ffd24a':al?S.c:(n.kind==='small'||n.kind==='dual'?'#3d4660':S.c);
-  h+=`<g data-n="${n.id}" class="${lock?'lk':''}" ${al?`style="filter:drop-shadow(0 0 ${n.kind==='small'?3:6}px ${S.c})"`:''}>`;
+  h+=`<g data-n="${n.id}" opacity="${fo(n)}" class="${lock?'lk':''}" ${al?`style="filter:drop-shadow(0 0 ${n.kind==='small'?3:6}px ${S.c})"`:''}>`;
   const fill=al?'#242b40':'#0f1420';
   if(n.kind==='key'){const q=r+3;h+=`<polygon points="${x},${(n.y-q).toFixed(1)} ${(n.x+q).toFixed(1)},${y} ${x},${(n.y+q).toFixed(1)} ${(n.x-q).toFixed(1)},${y}" fill="${fill}" stroke="${edge}" stroke-width="3"/>`;}
   else if(n.kind==='hyb'){const pts=[0,1,2,3,4,5].map(i=>{const a=i*Math.PI/3+Math.PI/6;return (n.x+Math.cos(a)*(r+1)).toFixed(1)+','+(n.y+Math.sin(a)*(r+1)).toFixed(1);}).join(' ');h+=`<polygon points="${pts}" fill="${fill}" stroke="${edge}" stroke-width="2.8"/>`;}
@@ -280,41 +291,47 @@ function svgHTML(vw,vh){const T=tree(),N=T.nodes,sel=PT.sel,pth=sel?(pathTo(sel)
   if(im){const w=n.kind==='key'?r*1.5:r*1.5;h+=`<image href="${im}" x="${(n.x-w/2).toFixed(1)}" y="${(n.y-w/2).toFixed(1)}" width="${w.toFixed(1)}" height="${w.toFixed(1)}" style="image-rendering:pixelated;opacity:${op}"/>`;}
   else{const gs=sts.length>1?r*.62:r*1.05;sts.forEach((k,i)=>{const gx=n.x+(sts.length>1?(i?1:-1)*gs*.52:0)-gs/2;h+=`<image href="${glyph(k,ST[k]?ST[k].c:'#fff')}" x="${gx.toFixed(1)}" y="${(n.y-gs/2).toFixed(1)}" width="${gs.toFixed(1)}" height="${gs.toFixed(1)}" style="image-rendering:pixelated;opacity:${op}"/>`;});}
   if(n.mini)h+=`<circle cx="${(n.x+r*.8).toFixed(1)}" cy="${(n.y-r*.8).toFixed(1)}" r="3.4" fill="#9be06a" stroke="#0b0e16" stroke-width="1"/>`;
-  if(n.kind==='key'||(n.kind==='not'&&PT.sc>1.1)||n.kind==='sub')h+=`<text class="nm" x="${x}" y="${(n.y+r+12*u+3).toFixed(1)}" style="font-size:${(8.5*u).toFixed(1)}px">${n.nm}</text>`;
   h+='</g>';});
  return h+'</svg>';}
 
-window.renderTalents=function(B){ptMigrate();const T=tree(),N=T.nodes,pts=ptPoints();if(PT.cls!==SAVE.cls){PT.cls=SAVE.cls;PT.sel=null;PT.fit=true;}
- // resumo
+window.renderTalents=function(B){ptMigrate();B.innerHTML='<div style="padding:30px 10px;text-align:center;font-size:12px;color:#aab">Árvore de passivas aberta em tela cheia…</div>';
+ const host=document.getElementById('stage')||document.body;let O=document.getElementById('ptfs');if(!O){O=document.createElement('div');O.id='ptfs';host.appendChild(O);}
+ ptRender(O);};
+function ptClose(){const O=document.getElementById('ptfs');if(O)O.remove();panTab='sk';panSel=null;renderPan();}
+function ptRender(O){const T=tree(),N=T.nodes,pts=ptPoints();if(PT.cls!==SAVE.cls){PT.cls=SAVE.cls;PT.sel=null;PT.fit=true;PT.f='all';}
  const tot={};Object.keys(own()).concat(['c']).forEach(id=>{const n=N[id];if(!n||(n.kind==='sub'&&SAVE.sub!==n.sub))return;for(const k in n.fx)tot[k]=(tot[k]||0)+n.fx[k];});
  const chips=Object.keys(tot).filter(k=>ST[k]&&Math.abs(tot[k])>1e-6).map(k=>`<span><img src="${glyph(k,ST[k].c)}">${fxText({[k]:tot[k]})}</span>`).join('')||'<span>Nenhum bônus ainda</span>';
- let h=`<div class="avl"><span>Pontos de passiva · ${spent()} usados · 1 por nível (+1 a cada 4)</span><b>${pts}</b></div>`;
  const sc6=[0,0,0,0,0,0];Object.keys(own()).forEach(id=>{const n=N[id];if(n&&n.sec>=0&&n.sec<6)sc6[n.sec]++;});const mx=Math.max(8,...sc6);
- h+=`<div class="psb">${T.D.sec.map((S,c)=>`<div><span style="color:${S.c}">${S.n}</span><i><u style="width:${sc6[c]/mx*100}%;background:${S.c}"></u></i></div>`).join('')}</div>`;
- h+=`<div class="ptw" id="ptw"></div><div class="ptd" id="ptd"></div><details class="pts"><summary>Bônus totais</summary>${chips}</details>`;
- h+=`<div class="acts"><button data-ptr="1" ${spent()?'':'disabled'}>Redefinir passivas (${50*SAVE.lv} ouro)</button></div>`;
- B.innerHTML=h;
- const W=$('ptw'),vw=W.clientWidth||340,vh=W.clientHeight||420;if(PT.fit){fit(vw,vh);PT.fit=false;}
- const paint=()=>{W.innerHTML=svgHTML(vw,vh)+`<div class="zb"><button data-z="1">+</button><button data-z="-1">−</button><button data-z="0">⌖</button></div>`;};
- const detail=()=>{const d=$('ptd');const n=PT.sel&&N[PT.sel];if(!n){d.innerHTML='<div class="tx"><b>Toque num nó</b><p>Arraste para mover, use +/− (ou dois dedos) para o zoom. Nós com ponto verde têm mini passiva; os maiores com anel são notáveis e pedras angulares.</p></div>';return;}
+ const cn=(CLASSES[SAVE.cls]||{}).nome||SAVE.cls;
+ O.innerHTML=`<div class="pth"><b>PASSIVAS · ${cn.toUpperCase()}</b><span class="ptp">Pontos <i>${pts}</i></span><button class="ptx" data-x="1">✕</button></div>
+ <div class="ptf">${[['all','Todos'],['atk','Ataque'],['def','Defesa'],['util','Utilidade'],['combo','Combo']].map(([k,n])=>`<button class="${(PT.f||'all')===k?'on':''}" data-f="${k}">${n}</button>`).join('')}</div>
+ <div class="psb">${T.D.sec.map((S,c)=>`<div><span style="color:${S.c}">${S.n}</span><i><u style="width:${sc6[c]/mx*100}%;background:${S.c}"></u></i></div>`).join('')}</div>
+ <div class="ptw" id="ptw"></div><div class="ptd" id="ptd"></div><div class="ptsum" id="ptsum" style="display:none"><div class="pts">${chips}</div><button data-ptr="1" ${spent()?'':'disabled'}>Redefinir passivas (${50*SAVE.lv} ouro)</button></div>`;
+ const W=O.querySelector('#ptw'),vw=W.clientWidth||390,vh=W.clientHeight||560;if(PT.fit){fit(vw,vh);PT.fit=false;}
+ const paint=()=>{W.innerHTML=svgHTML(vw,vh)+`<div class="zb"><button data-z="1">+</button><button data-z="-1">−</button><button data-z="0">◎</button></div><button class="hq" data-q="1">?</button>`;};
+ const d=O.querySelector('#ptd');
+ const detail=()=>{const n=PT.sel&&N[PT.sel];if(!n){d.style.display='none';return;}d.style.display='flex';
   const S=T.D.sec[n.sec]||T.D.sec[0],al=isAl(n.id),why=whyNot(n),p=al?[]:pathTo(n.id),cost=p?p.length:0;
   const eff=Object.keys(n.fx).map(k=>fxText({[k]:n.fx[k]})).filter(Boolean).join('<br>');
   let btn='';if(n.id==='c'){}else if(al)btn=`<button data-d="${n.id}">Remover (${10*SAVE.lv}g)</button>`;else if(!why&&p&&cost>0)btn=`<button data-a="${n.id}" ${cost<=pts?'':'disabled'}>${cost>1?'Alocar caminho':'Alocar'} (${cost})</button>`;
   d.innerHTML=iconHTML(n,S.c)+`<div class="tx"><span class="tp">${KIND[n.kind]}${n.sec>=0&&n.kind!=='sub'?' · '+S.n:''}</span><b>${n.nm}</b><p>${eff}</p>${n.mini?`<p class="mi">◆ ${n.mini.t}</p>`:n.kind==='sub'||n.kind==='start'?`<p>${n.ds||''}</p>`:''}${why&&!al?`<p class="wn">${why}</p>`:''}${!why&&!al&&p===null?'<p class="wn">Sem caminho</p>':''}</div>`+btn;
   d.querySelectorAll('[data-a]').forEach(e=>e.onclick=()=>n.kind==='sub'||cost>1?allocPath(n.id):alloc(n.id));d.querySelectorAll('[data-d]').forEach(e=>e.onclick=()=>dealloc(n.id));};
  paint();detail();
- // interação
+ O.querySelector('[data-x]').onclick=ptClose;
+ O.querySelectorAll('[data-f]').forEach(e=>e.onclick=()=>{PT.f=e.dataset.f;sfx('ui_click',.4);ptRender(O);});
+ const rb=O.querySelector('[data-ptr]');if(rb)rb.onclick=resetAll;
  let drag=null,pts2={},pinch=0,moved=0;
  W.onpointerdown=e=>{pts2[e.pointerId]={x:e.clientX,y:e.clientY};moved=0;drag={x:e.clientX,y:e.clientY,vx:PT.vx,vy:PT.vy};try{W.setPointerCapture(e.pointerId)}catch(_){ }};
  W.onpointermove=e=>{if(!pts2[e.pointerId])return;pts2[e.pointerId]={x:e.clientX,y:e.clientY};const ids=Object.keys(pts2);
   if(ids.length>=2){const a=pts2[ids[0]],b=pts2[ids[1]],dd=Math.hypot(a.x-b.x,a.y-b.y);if(pinch){PT.sc=Math.max(.35,Math.min(3.5,PT.sc*dd/pinch));moved=9;paint();}pinch=dd;return;}
   pinch=0;if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>5)moved=9;if(moved){PT.vx=drag.vx-dx/PT.sc;PT.vy=drag.vy-dy/PT.sc;paint();}};
  const up=e=>{const was=pts2[e.pointerId];delete pts2[e.pointerId];pinch=0;if(!Object.keys(pts2).length){const tap=!moved&&was;drag=null;
-   if(tap){const g=document.elementFromPoint(e.clientX,e.clientY),gg=g&&g.closest&&g.closest('[data-n]');if(gg&&W.contains(gg)){PT.sel=gg.dataset.n;sfx('ui_click',.5);paint();detail();}else{const z=g&&g.closest&&g.closest('[data-z]');if(z){const v=+z.dataset.z;if(v===0)fit(vw,vh);else PT.sc=Math.max(.35,Math.min(3.5,PT.sc*(v>0?1.3:1/1.3)));paint();}}}}};
+   if(tap){const g=document.elementFromPoint(e.clientX,e.clientY),gg=g&&g.closest&&g.closest('[data-n]');
+    if(gg&&W.contains(gg)){PT.sel=gg.dataset.n;sfx('ui_click',.5);paint();detail();return;}
+    const z=g&&g.closest&&g.closest('[data-z]');if(z){const v=+z.dataset.z;if(v===0)fit(vw,vh);else PT.sc=Math.max(.35,Math.min(3.5,PT.sc*(v>0?1.3:1/1.3)));paint();return;}
+    if(g&&g.closest&&g.closest('[data-q]')){const m=O.querySelector('#ptsum');m.style.display=m.style.display==='none'?'block':'none';return;}
+    PT.sel=null;paint();detail();}}};
  W.onpointerup=up;W.onpointercancel=e=>{delete pts2[e.pointerId];drag=null;pinch=0;};
-
- W.onwheel=e=>{e.preventDefault();PT.sc=Math.max(.35,Math.min(3.5,PT.sc*(e.deltaY<0?1.15:1/1.15)));paint();};
- const rb=B.querySelector('[data-ptr]');if(rb)rb.onclick=resetAll;
-};
+ W.onwheel=e=>{e.preventDefault();PT.sc=Math.max(.35,Math.min(3.5,PT.sc*(e.deltaY<0?1.15:1/1.15)));paint();};}
 window.ptTree=tree;
 })();
