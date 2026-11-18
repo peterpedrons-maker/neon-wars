@@ -9,12 +9,13 @@ W, H, BASE = C.W, C.H, C.BASE
 def _hand(a, k=3):
     r = math.radians(a); return (round(k * math.sin(r)), round(k * math.cos(r)))
 
-def _side(angs, lean, dy, tn, face, legs, sw2=None, arm_over=None, k=3):
+def _side(angs, lean, dy, tn, face, legs, sw2=None, arm_over=None, k=3, al_over=None, lute=False):
     P = []
     for i in range(10):
         hx, hy = _hand(angs[i], k)
         d = dict(tn=tn[i], dy=dy[i], hdx=lean[i], bdx=int(lean[i] * .6), dx=int(lean[i] * .7), ar=(hx + 1, hy), al=(0, 0), face=face[i],
-                 sw=dict(ang=angs[i], len=12))
+                 sw=dict(kind='lute') if lute else dict(ang=angs[i], len=12))
+        if al_over and al_over.get(i): d['al'] = al_over[i]
         if legs[i]: d['bl'], d['br'] = (-legs[i], 0), (legs[i], 0)
         if arm_over and arm_over.get(i): d['ar'] = arm_over[i]
         if sw2:
@@ -23,11 +24,12 @@ def _side(angs, lean, dy, tn, face, legs, sw2=None, arm_over=None, k=3):
         P.append(d)
     return P
 
-def _front(angs, lean, dy, tn, face, legs, sw2=None, arm_over=None, k=3):
+def _front(angs, lean, dy, tn, face, legs, sw2=None, arm_over=None, k=3, al_over=None, lute=False):
     P = []
     for i in range(10):
         hx, hy = _hand(angs[i], k)
-        d = dict(tn=tn[i], dy=dy[i], hdy=-1 if lean[i] < -1 else (1 if lean[i] > 2 else 0), ar=(hx, hy), al=(0, 0), face=face[i], sw=dict(ang=angs[i], len=12, side='r'))
+        d = dict(tn=tn[i], dy=dy[i], hdy=-1 if lean[i] < -1 else (1 if lean[i] > 2 else 0), ar=(hx, hy), al=(0, 0), face=face[i], sw=dict(kind='lute') if lute else dict(ang=angs[i], len=12, side='r'))
+        if al_over and al_over.get(i): d['al'] = al_over[i]
         if legs[i]: d['bl'], d['br'] = (-legs[i] // 2 - 1, 0), (legs[i] // 2 + 1, 0)
         if arm_over and arm_over.get(i): d['ar'] = arm_over[i]
         if sw2:
@@ -64,23 +66,87 @@ ROG = {
  'rx': dict(angs=[140, 165, 180, 185, 185, 120, 55, 45, 60, 100], lean=[0, -1, -2, -2, -2, 2, 4, 4, 2, 0], dy=[0, 0, -1, -2, -3, -2, 1, 1, 0, 0], tn=[3, 3, 3, 3, 3, 3, 2, 2, 3, 3],
             face=FACE, legs=[0, 0, 0, 0, 0, 1, 3, 3, 1, 0], sw2=[100, 140, 170, 185, 190, 250, 305, 315, 300, 200]),
 }
+
+# --------------------------------- MAGO (cajado) ---------------------------------
+MAGE = {
+ # 1) FOGO: recolhe o cajado ao peito e o estoca para frente soltando a bola
+ 'mthrust': dict(angs=[160, 140, 120, 105, 100, 88, 84, 88, 120, 160], lean=[0, -1, -2, -2, -2, 2, 3, 3, 1, 0], dy=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], tn=[3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+                 face=FACE, legs=[0, 0, 1, 1, 1, 2, 2, 2, 1, 0], arm_over={3: (-2, -1), 4: (-3, -1), 5: (5, -1), 6: (6, -1)}),
+ # 2) GELO: varre o cajado de baixo para cima num arco largo
+ 'msweep': dict(angs=[150, 110, 60, 20, 340, 20, 90, 150, 160, 150], lean=[0, 1, 2, 3, 3, 0, -2, -3, -2, 0], dy=[0, 0, 1, 1, 1, 0, 0, -1, 0, 0], tn=[3, 3, 2, 2, 2, 3, 3, 3, 3, 3],
+                face=FACE, legs=[0, 1, 2, 3, 3, 3, 2, 1, 0, 0]),
+ # 4) ARCANO: levita, ergue o cajado com as duas maos e o crava apontando para o alvo
+ 'mchan': dict(angs=[160, 172, 180, 182, 182, 160, 70, 50, 80, 130], lean=[0, 0, -1, -1, -1, 1, 3, 3, 1, 0], dy=[0, 0, -1, -2, -3, -3, -1, 0, 0, 0], tn=[3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+               face=FACE, legs=[0, 0, 0, 0, 0, 0, 2, 2, 1, 0], arm_over={2: (0, -4), 3: (0, -5), 4: (0, -6), 5: (0, -5), 6: (3, 0)}, al_over={2: (0, -4), 3: (0, -5), 4: (0, -6), 5: (0, -5), 6: (2, 1)}),
+}
+# --------------------------------- CLERIGO (maca) ---------------------------------
+CLE = {
+ # 1) MACETADA: sobe a maca em frente do rosto e desce pesada
+ 'cbash': dict(angs=[140, 165, 180, 185, 185, 95, 40, 25, 50, 110], lean=[0, -1, -2, -2, -2, 2, 4, 4, 2, 0], dy=[0, 0, 0, 0, 0, 0, 1, 1, 0, 0], tn=[3, 3, 3, 3, 3, 3, 2, 2, 3, 3],
+               face=FACE, legs=[0, 0, 1, 1, 1, 2, 3, 3, 1, 0]),
+ # 2) BACKHAND: balanca a maca de frente para tras, em arco baixo
+ 'cback': dict(angs=[110, 90, 70, 55, 50, 10, 325, 295, 285, 270], lean=[0, 1, 2, 3, 3, 1, -2, -3, -2, 0], dy=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], tn=[3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+               face=FACE, legs=[0, 1, 1, 2, 2, 3, 3, 2, 1, 0]),
+ # 4) JULGAMENTO: levita em prece com a maca erguida e a desce sobre o alvo
+ 'cpray': dict(angs=[120, 160, 176, 180, 180, 178, 50, 10, 30, 100], lean=[0, 0, -1, -1, -1, 0, 3, 4, 2, 0], dy=[0, 0, -1, -2, -3, -3, 0, 1, 0, 0], tn=[3, 3, 3, 3, 3, 3, 2, 2, 3, 3],
+               face=FACE, legs=[0, 0, 0, 0, 0, 0, 3, 3, 1, 0], arm_over={2: (0, -4), 3: (0, -5), 4: (0, -6), 5: (0, -6)}, al_over={2: (0, -4), 3: (0, -5), 4: (0, -6), 5: (0, -6)}),
+}
+# --------------------------------- BARDO (alaude) ---------------------------------
+BARD = {
+ 'bstrum': dict(angs=[0] * 10, lean=[0, -1, -1, 1, 1, 2, -1, 2, 0, 0], dy=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], tn=[3, 3, 3, 3, 3, 3, 3, 3, 3, 3], face=[N, N, S_, S_, S_, S_, S_, S_, N, N],
+                legs=[0, 1, 2, 1, 2, 2, 1, 1, 0, 0], arm_over={0: (0, 0), 1: (0, -3), 2: (0, 3), 3: (0, -4), 4: (0, 4), 5: (0, -4), 6: (0, 3), 7: (0, -2), 8: (0, 0), 9: (0, 0)}, lute=True),
+ 'bdance': dict(angs=[0] * 10, lean=[0, 1, 2, 1, -1, -2, -1, 1, 2, 0], dy=[0, -1, -2, 0, -1, -2, 0, -1, 0, 0], tn=[3, 3, 3, 3, 3, 3, 3, 3, 3, 3], face=[N, S_, S_, S_, S_, S_, S_, S_, N, N],
+                legs=[0, 2, 0, 2, 0, 2, 0, 2, 0, 0], arm_over={1: (0, -2), 2: (0, -3), 3: (0, 2), 4: (0, -3), 5: (0, 2), 6: (0, -3), 7: (0, 2)}, lute=True),
+ 'bchord': dict(angs=[0] * 10, lean=[0, -1, -1, -1, -1, 0, 2, 3, 1, 0], dy=[0, 0, -1, -2, -3, -3, 1, 1, 0, 0], tn=[3, 3, 3, 3, 3, 3, 2, 2, 3, 3], face=[N, N, N, S_, S_, S_, S_, S_, N, N],
+                legs=[0, 0, 0, 0, 0, 0, 3, 3, 1, 0], arm_over={2: (0, -5), 3: (0, -6), 4: (0, -6), 5: (0, -6), 6: (1, 4), 7: (1, 4), 8: (0, 1)}, al_over={2: (0, -5), 3: (0, -6), 4: (0, -6), 5: (0, -6), 6: (0, 4), 7: (0, 4)}, lute=True),
+}
+# --------------------------------- ARQUEIRO (arco) ---------------------------------
+BOWD = {'right': (1, 0), 'down': (0, 1), 'up': (0, -1)}
+def _bow(d, draw, arrow=True, mode='aim'): return dict(kind='bow', dir=d, draw=draw, arrow=arrow, mode=mode)
+def _archer(view, name):
+    d = BOWD[view]; B = lambda draw, a=True, m='aim': _bow(d, draw, a, m); f = 'shout'
+    if name == 'aq2':     # tiro rapido: avanca um passo, puxa e solta de uma vez
+        return [dict(sw=B(0, False, 'carry')), dict(sw=B(4), dx=1), dict(sw=B(8), dx=1, hdx=-1, tn=2, face=f), dict(sw=B(8), dx=1, hdx=-1, tn=2, face=f), dict(sw=B(8), dx=2, hdx=-1, tn=2, face=f),
+                dict(sw=B(0, False), dx=2, hdx=1, bdx=1, br=(1, 0)), dict(sw=B(-1, False), dx=2, hdx=1), dict(sw=B(2, False), dx=1), dict(sw=B(0, False), dx=1), dict(sw=B(0, False, 'carry'))]
+    if name == 'aq3':     # tiro duplo: solta, rearma e solta de novo, com pulinho de lado
+        return [dict(sw=B(0, False, 'carry')), dict(sw=B(5)), dict(sw=B(8), hdx=-1, tn=2, face=f), dict(sw=B(8), hdx=-1, tn=2, face=f), dict(sw=B(0, False), hdx=1, dy=-1, br=(0, 1), bl=(0, 1)),
+                dict(sw=B(8), hdx=-1, dy=-2, tn=2, face=f), dict(sw=B(0, False), hdx=1, dy=-1), dict(sw=B(-1, False), dy=0, hdx=1), dict(sw=B(2, False)), dict(sw=B(0, False, 'carry'))]
+    if name == 'aq4':     # PULO PARA TRAS + TIRO CARREGADO: agacha, salta de costas, concentra no ar (arco todo puxado) e solta
+        return [dict(sw=B(0, False, 'carry')), dict(sw=B(2), tn=2, dy=1, hdx=-1), dict(sw=B(4), dy=-2, dx=-2, hdx=-1, bl=(0, 2), br=(0, 2)), dict(sw=B(7), dy=-5, dx=-4, hdx=-2, bdx=-1, bl=(0, 3), br=(0, 3), face=f),
+                dict(sw=B(9), dy=-7, dx=-5, hdx=-2, bdx=-1, bl=(0, 3), br=(0, 3), tn=2, face=f), dict(sw=B(10), dy=-7, dx=-5, hdx=-2, bdx=-1, bl=(0, 3), br=(0, 3), tn=2, face=f),
+                dict(sw=B(0, False), dy=-6, dx=-5, hdx=2, bdx=1, bl=(0, 3), br=(0, 3), face=f), dict(sw=B(-1, False), dy=-3, dx=-5, hdx=1, bl=(0, 2), br=(0, 2)),
+                dict(sw=B(2, False), dy=1, dx=-4, tn=2, hdx=1), dict(sw=B(0, False, 'carry'), dx=-3)]
+    raise KeyError(name)
 TABLE = dict(WAR, **ROG)
+TABLE.update(MAGE); TABLE.update(CLE); TABLE.update(BARD)
+ARCH = ('aq2', 'aq3', 'aq4')
+for _n in ARCH: TABLE[_n] = None
+# opcoes por ataque: seq (indices dos quadros densos), poeira/clarao
+OPT = {
+ 'aq4': dict(seq=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 13, 14, 14, 15, 16, 17, 18], flash=12, dust=[(16, .3), (17, .6), (18, .85)], heavy=True),
+ 'mchan': dict(heavy=True), 'cpray': dict(heavy=True), 'bchord': dict(heavy=True),
+}
+
 SEQ = [0, 1, 2, 3, 4, 5, 6, 7, 8, 8, 9, 10, 12, 13, 13, 14, 15, 16, 17, 18]          # indices dos 19 quadros densos; o golpe cai no 11-12
 
 def poses(view, name):
+    if name in ARCH: return _archer(view, name)
     t = TABLE[name]
-    return (_side if view == 'right' else _front)(t['angs'], t['lean'], t['dy'], t['tn'], t['face'], t['legs'], t.get('sw2'), t.get('arm_over'))
+    return (_side if view == 'right' else _front)(t['angs'], t['lean'], t['dy'], t['tn'], t['face'], t['legs'], t.get('sw2'), t.get('arm_over'), 3, t.get('al_over'), t.get('lute', False))
 
 def attack(view, ap, name):
     cls = ap.get('cls', 'warrior')
     base = C.anim(view, 'attack', cls, C.densify(poses(view, name), 2), ap, dense=2)
     fr = [b[0] for b in base]; out = []
-    heavy = name in ('wslam', 'rx')
-    for k, i in enumerate(SEQ):
+    o = OPT.get(name, {}); heavy = o.get('heavy', name in ('wslam', 'rx')); seq = o.get('seq', SEQ)
+    for k, i in enumerate(seq):
         im = fr[min(i, len(fr) - 1)]
-        if k == 11: im = N2.flash(im, .35 if heavy else .22)
-        if k in (11, 12) and not heavy: im = N2.shake(im, 1, 0)
-        if heavy:
+        if k == o.get('flash', 11): im = N2.flash(im, .35 if heavy else .22)
+        if 'dust' in o:
+            for kk, st in o['dust']:
+                if k == kk: im = N2.dust(im, st, cx=W // 2 + 2, n=6)
+        elif k in (11, 12) and not heavy: im = N2.shake(im, 1, 0)
+        elif heavy and name not in ('aq4',):
             if k == 11: im = N2.shake(im, 1, 1)
             if k in (11, 12): im = N2.dust(im, .12 + .22 * (k - 11), cx=W // 2 + 6, n=6)
             if k == 13: im = N2.dust(im, .55, cx=W // 2 + 6, n=6)

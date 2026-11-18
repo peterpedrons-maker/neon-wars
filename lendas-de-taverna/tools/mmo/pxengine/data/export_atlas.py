@@ -89,7 +89,7 @@ UNITS.update({
 # ESTILOS DE ANIMACAO por personagem (chibi_anim3): attack slash|smash|jab|cast, hurt flinch|stagger|stoic, death fall|topple|crumble|dissolve|tumble
 ANIMS = {
     'h_bardo': dict(attack='play', hurt='stagger'),
-    'h_mago': dict(attack='cast', hurt='stagger'), 'h_ladino': dict(attack='rcut', hurt='stagger', death='tumble'), 'h_guerreiro': dict(attack='wchop'), 'h_clerigo': dict(attack='smash'),
+    'h_mago': dict(attack='mthrust', hurt='stagger'), 'h_ladino': dict(attack='rcut', hurt='stagger', death='tumble'), 'h_guerreiro': dict(attack='wchop'), 'h_clerigo': dict(attack='cbash'),
     'esqueleto': dict(attack='jab', hurt='stagger', death='crumble'), 'esqmago': dict(attack='cast', hurt='stagger', death='dissolve'),
     'guarda_c': dict(attack='smash', hurt='stoic', death='crumble'), 'cultista': dict(attack='cast', hurt='stagger', death='dissolve'),
     'gargula': dict(attack='jab', hurt='stoic', death='crumble'), 'zumbi': dict(attack='smash', hurt='stoic', death='topple'),
@@ -104,11 +104,11 @@ for _k, _v in ANIMS.items():
 COMBO_KINDS = ('attack2', 'attack3', 'attack4')
 COMBO = {
     'h_guerreiro': dict(attack2=('wrise', None), attack3=('jab', 'spin'), attack4=('wslam', None)),
-    'h_mago': dict(attack2=('jab', 'dive'), attack3=('cast', 'rise'), attack4=('cast', 'spin')),
+    'h_mago': dict(attack2=('msweep', None), attack3=('msweep', 'spin'), attack4=('mchan', None)),
     'h_ladino': dict(attack2=('rrev', None), attack3=('rstab', None), attack4=('rx', None)),
-    'h_clerigo': dict(attack2=('smash', 'rise'), attack3=('slash', 'dive'), attack4=('smash', 'leap')),
-    'h_arqueiro': dict(attack2=('same', 'dive'), attack3=('same', 'rise'), attack4=('same', 'leap')),
-    'h_bardo': dict(attack2=('play', 'dive'), attack3=('play', 'rise'), attack4=('play', 'spin')),
+    'h_clerigo': dict(attack2=('cback', None), attack3=('jab', 'spin'), attack4=('cpray', None)),
+    'h_arqueiro': dict(attack2=('aq2', None), attack3=('aq3', None), attack4=('aq4', None)),
+    'h_bardo': dict(attack2=('bstrum', None), attack3=('bdance', None), attack4=('bchord', None)),
 }
 for _k in list(UNITS):
     _b = '_'.join(_k.split('_')[:2])
@@ -170,6 +170,8 @@ def frames0(u, kind, view):
     if kind in COMBO_KINDS:
         import chibi_anim3 as N3
         bs, var = u['combo'][kind]
+        import combo_poses as CP
+        if bs in CP.TABLE and var is None: return N3.combo_frames(view, dict(u['ap']), bs, None)
         if bs == 'same' or (u['kind'] == 'c' and u['ap']['cls'] == 'archer'):
             return N3.variant(frames0(u, 'attack', view), var, view)
         return N3.combo_frames(view, dict(u['ap']), bs, var)
