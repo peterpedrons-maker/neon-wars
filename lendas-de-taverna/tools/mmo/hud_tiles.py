@@ -76,6 +76,24 @@ def ferradura():
     return Image.fromarray(cv, 'RGBA')
 
 
+def bussola():
+    cv = np.zeros((32, 32, 4), np.uint8)
+    ring = shape(32, 32, lambda x, y: (((x - 16) / 14) ** 2 + ((y - 16) / 14) ** 2 <= 1) & (((x - 16) / 11) ** 2 + ((y - 16) / 11) ** 2 >= 1))
+    face = shape(32, 32, lambda x, y: ((x - 16) / 11) ** 2 + ((y - 16) / 11) ** 2 < 1)
+    outline(cv, ring | face); paint(cv, face, ['#2a2236', '#3a3050', '#4a4066', '#5a5080']); paint(cv, ring, ['#6e4a14', '#b8892f', '#e8c868', '#fff0b0'])
+    for a in range(0, 360, 45):                                           # marcas
+        import math
+        r0, r1 = (8.2, 10.2) if a % 90 == 0 else (9, 10)
+        for r in np.arange(r0, r1, .5):
+            cv[int(16 + math.sin(math.radians(a)) * r), int(16 + math.cos(math.radians(a)) * r)] = (*hx('#e8d8a0'), 255)
+    def needle(sign, ramp):                                              # agulha em losango apontando para cima/baixo
+        m = shape(32, 32, lambda x, y: (np.abs(x - 16) <= 3.2 * (1 - np.abs(y - 16 + sign * 0) / 9.5)) & (((y < 16) if sign < 0 else (y >= 16))) & (np.abs(y - 16) <= 9.5))
+        paint(cv, m, ramp)
+    needle(-1, ['#7a1c24', '#b8303a', '#e05a5a', '#ff9a8a']); needle(1, ['#8a94a8', '#b8c0d0', '#dfe6f2', '#ffffff'])
+    cv[16, 16] = (*hx('#1a1020'), 255); cv[15, 15] = (*hx('#ffe08a'), 255)
+    return Image.fromarray(cv, 'RGBA')
+
+
 def finish(im32, name, col):
     big = im32.resize((64, 64), Image.NEAREST)
     glow(big, col).save(os.path.join(OUT, name + '.png'))
@@ -88,4 +106,5 @@ if __name__ == '__main__':
     finish(pack('rotulus_unfurled'), 'diario', '#ffd070')
     finish(social(), 'social', '#6aa0ff')
     finish(ferradura(), 'montaria', '#7ae08a')
+    finish(bussola(), 'atalhos', '#ffd070')
     print('ok')
