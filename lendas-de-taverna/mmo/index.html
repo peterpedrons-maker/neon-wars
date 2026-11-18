@@ -5179,7 +5179,7 @@ function socUI(){const s=$('soc');if(!s||s.dataset.b)return;s.dataset.b=1;petLoa
   setInterval(qPlace,400);}
 function qPlace(){const q=$('qtr'),m=$('mm'),h=$('hud');if(!q||!m||!h)return;if(MM.big){q.style.display='none';return;}q.style.display='';const r=m.getBoundingClientRect(),hr=h.getBoundingClientRect();{const mn=$('mmenu');if(mn&&r.height>0){const qb=q.getBoundingClientRect();mn.style.setProperty('top',Math.round(Math.max(r.bottom,qb.bottom||0)-hr.top+8)+'px');}}if(r.height>0){q.style.top=Math.round(r.bottom-hr.top+14)+'px';const pg=$('prog');if(pg){pg.style.top=Math.round(r.bottom-hr.top+4)+'px';pg.style.width=Math.round(r.width)+'px';const zn=$('zname');if(zn){zn.style.right='auto';zn.style.left=Math.round(r.left+r.width/2-hr.left)+'px';}}};}
 function socRefresh(){if(!SAVE.q)return;socUI();
-  const c=qMain(),t=$('qtr');if(t){const L=SAVE.q.d.l,rows=[];{const sq=stCurQ(),sn=stNext();if(sq){const pg=stProg();rows.push(['Principal: '+sq.nm,pg[0],pg[1],pg[0]>=pg[1]?'Fale com '+NPCD[sq.turn].nm:(sq.give[sq.give.length-1]).slice(0,60),false,0]);}else if(sn){const ok=SAVE.lv>=sn.lv;rows.push(['Principal: '+sn.nm,0,1,ok?'Fale com '+NPCD[sn.giver].nm:'Alcance o nível '+sn.lv,false,0]);}}if(c){const v=qVal(c);rows.push([c.nm,v,c.n,c.ds.replace(/\.$/,''),v>=c.n,0]);}else rows.push(['Trilha concluída',1,1,'',1,0]);
+  const c=qMain(),t=$('qtr');if(t){const L=SAVE.q.d.l,rows=[];{const sq=stCurQ(),sn=stNext();if(sq){const pg=stProg();rows.push(['Principal: '+sq.nm,pg[0],pg[1],pg[0]>=pg[1]?'Fale com '+NPCD[sq.turn].nm:(sq.give[sq.give.length-1]).slice(0,60),false,0]);}else if(sn){const ok=SAVE.lv>=sn.lv;rows.push(['Principal: '+sn.nm,0,1,ok?'Fale com '+NPCD[sn.giver].nm:'Alcance o nível '+sn.lv,false,0]);}for(const x of secActive().slice(0,3)){const pg=qkProg(x);rows.push([x.nm,pg[0],pg[1],'',pg[0]>=pg[1],0]);}}if(c){const v=qVal(c);rows.push([c.nm,v,c.n,c.ds.replace(/\.$/,''),v>=c.n,0]);}else rows.push(['Trilha concluída',1,1,'',1,0]);
     for(const d of L){const v=qVal(d);rows.push([d.nm,v,d.n,d.ds.replace(/\.$/,''),v>=d.n,d.c]);}
     const rd=rows.some(r=>r[4]&&!r[5]);t.classList.toggle('cl',SAVE.qcol!==false);t.classList.toggle('rdy',rd);
     t.innerHTML=`<div class="qth">Missões<u></u><i>${SAVE.qcol!==false?'▸ +'+Math.max(0,rows.length-1):'▾'}</i></div><div class="qrs">`+rows.map((r,i)=>`<div class="qr${i===0?' mn':' dy'}${r[4]?' ok':''}${r[5]?' dn':''}"><b>${r[0]}<em>${r[5]?'✓':r[1]+'/'+r[2]}</em></b>${i===0?`<span>${r[4]?'Concluída — toque para receber':r[3]}</span>`:''}<i><s style="width:${r[2]?Math.min(100,r[1]/r[2]*100):100}%"></s></i></div>`).join('')+'</div>';qPlace();}
@@ -5205,10 +5205,10 @@ const FACN={ordem:'Ordem do Selo',guilda:'Conselho das Guildas',coroa:'Remanesce
 const SVCL={mercador:'Ver mercadorias',alquimista:'Ver poções e elixires',forja:'Usar a forja',leilao:'Abrir o leilão',subclasse:'Falar sobre subclasses',cofre:'Abrir o cofre',missoes:'Quadro de missões',portal:'Usar o portal'};
 const NPCD={
  gua:{ic:'treasure-map',g:['O portal leva às dungeons que você já abriu. Escolha com calma.','Volte inteiro. A Ordem não paga resgate.','Cada dungeon tem seus perigos. Respeite todos.']},
- cap:{ic:'centurion-helmet',g:['Capitão Ruvel, ao seu dispor. A cidade está calma... por enquanto.','Os mapas da estrada são confiáveis. Os monstros é que não.','Quem serve a Brumavale nunca fica sem trabalho.']},
- mer:{g:['Bem-vindo à minha loja! Preço justo para quem tem o Selo.','Se o ouro pesa no bolso, eu alivio. Dê uma olhada.','Compro, vendo e não faço perguntas sobre de onde veio o item.']},
- alq:{g:['Cuidado onde pisa, Escolhido. Esses frascos são frágeis.','Uma poção na hora certa vale mais que uma espada.','O cheiro? Ah, você se acostuma.']},
- fer:{g:['Aço bom nasce do fogo e da paciência.','Traga o equipamento e eu o deixo mais forte. Sem garantia... às vezes quebra.','Ouviu o martelo? É o som do dinheiro.']},
+ cap:{nm:'Capitão Ruvel',ic:'centurion-helmet',g:['Capitão Ruvel, ao seu dispor. A cidade está calma... por enquanto.','Os mapas da estrada são confiáveis. Os monstros é que não.','Quem serve a Brumavale nunca fica sem trabalho.']},
+ mer:{nm:'Bram, o Mercador',g:['Bem-vindo à minha loja! Preço justo para quem tem o Selo.','Se o ouro pesa no bolso, eu alivio. Dê uma olhada.','Compro, vendo e não faço perguntas sobre de onde veio o item.']},
+ alq:{nm:'Mirela, a Alquimista',g:['Cuidado onde pisa, Escolhido. Esses frascos são frágeis.','Uma poção na hora certa vale mais que uma espada.','O cheiro? Ah, você se acostuma.']},
+ fer:{nm:'Brasa, o Ferreiro',g:['Aço bom nasce do fogo e da paciência.','Traga o equipamento e eu o deixo mais forte. Sem garantia... às vezes quebra.','Ouviu o martelo? É o som do dinheiro.']},
  lei:{g:['Lote novo chegando! Fique de olho nas ofertas.','No leilão, quem espera ganha. Quem hesita, perde.','Tudo tem preço. Só varia quem paga.']},
  mes:{g:['Todo caminho se escolhe mais de uma vez.','Sua força é do Selo; o rumo é seu.','Quando estiver pronto, eu mostro as veredas da sua classe.']},
  cof:{g:['Seus pertences estão seguros aqui. Sempre estiveram.','Ouro parado também rende... confiança.','Guardo tudo, não conto nada.']},
@@ -5221,7 +5221,7 @@ const NPCD={
  emis_r:{nm:'Dama Isolde (Coroa)',ic:'crested-helmet',g:['A Coroa foi apagada, mas ainda sangra.','Poucos se lembram do nome do último rei. Eu me lembro.']},
  guardap:{nm:'Guarda do Passo',ic:'centurion-helmet',g:['Alto lá. O Portão está fechado.','Ordens são ordens: só passa quem provar seu valor.']}
 };
-const NLOC={maren:'Brumavale',hilda:'Brumavale · saída sul',mer:'Brumavale · loja do Bram',carav:'Ponte do Rio',eremita:'Colinas Rochosas',guardap:'Passo da Montanha',emis_g:'Passo da Montanha',emis_o:'Passo da Montanha',emis_r:'Passo da Montanha'};
+const NLOC={cap:'Brumavale',alq:'Brumavale · alquimista',fer:'Brumavale · ferreiro',maren:'Brumavale',hilda:'Brumavale · saída sul',mer:'Brumavale · loja do Bram',carav:'Ponte do Rio',eremita:'Colinas Rochosas',guardap:'Passo da Montanha',emis_g:'Passo da Montanha',emis_o:'Passo da Montanha',emis_r:'Passo da Montanha'};
 const REPL=[[0,'Neutro'],[30,'Conhecido'],[100,'Amigo'],[250,'Aliado'],[500,'Honrado']];
 const VL=['Bom dia! Que o dia seja leve.','Ouvi dizer que o Capitão anda preocupado com a estrada.','Tem sempre alguém novo com Selo na cidade, não é?','Já viu o portal? Brilha mais à noite.','Cuidado com os goblins. São pequenos, mas teimosos.','Minha avó dizia: nunca confie em quem não come.','O mercador Bram tem preço bom, mas regateie.','Está ventando... vai chover logo.','Se for à Planície, leve poções.','Hoje acordei com o pé esquerdo.','Brumavale já foi mais calma.','Nada como uma tarde sem monstros.'];
 const VNAMES=['Dona Brisa','Tobias','Lena','Velho Joren','Marta','Pip'];
@@ -5272,19 +5272,66 @@ const SQ=[
 function stS(){const s=SAVE.st=SAVE.st||{n:0,cur:null,fac:{}};s.fac=s.fac||{};return s;}
 const stNext=()=>{const s=stS();return s.cur?null:(SQ[s.n]||null);};
 const stCurQ=()=>{const s=stS();return s.cur?SQ[s.cur.i]:null;};
-function stProg(){const s=stS(),q=stCurQ();if(!q)return [0,1];const o=q.obj;
-  if(o.t==='talk')return [1,1];if(o.t==='kill')return [Math.min(o.n,s.cur.p||0),o.n];
-  if(o.t==='boss'){const h=(SAVE.hunts||{})[o.name]||0;return [Math.min(1,h-(s.cur.b0||0)),1];}
-  if(o.t==='bosses'){const h=SAVE.hunts||{};return [Math.min(o.n,o.names.filter(n=>(h[n]||0)>0).length),o.n];}
-  return [0,1];}
-const stReady=()=>{const p=stProg();return p[0]>=p[1];};
-function stEv(t){const s=stS(),q=stCurQ();if(!q||t!=='kill'||q.obj.t!=='kill')return;const o=q.obj;if(o.maps&&!o.maps.includes(G.map))return;if((s.cur.p||0)>=o.n)return;s.cur.p=(s.cur.p||0)+1;if(s.cur.p>=o.n){chat('Objetivo concluído: '+q.nm+' — fale com '+((NPCD[q.turn]||{}).nm||'o NPC')+'.',4);sfx('levelup',.4);}socRefresh();}
 function stFac(f){const s=stS(),a=[];for(const k in (f||{})){s.fac[k]=(s.fac[k]||0)+f[k];a.push('+'+f[k]+' '+FACN[k]);}if(a.length)chat('Reputação: '+a.join(' · '),4);}
-function stRewOf(q,ch){const r=Object.assign({gold:30+q.lv*18,xp:Math.round(xpNeed(SAVE.lv)*.3),pot:q.lv%2?1:0},ch&&ch.r?ch.r:{});if(r.xp===1)r.xp=Math.round(xpNeed(SAVE.lv)*.45);return r;}
-function stObjTxt(q){const o=q.obj,mp=o.maps?o.maps.map(m=>areaName(m)).join(' / '):'';if(o.t==='talk')return 'Falar com <b>'+NPCD[q.turn].nm+'</b>.';if(o.t==='kill')return 'Derrotar <b>'+o.n+'</b> monstros ('+mp+').';if(o.t==='boss')return 'Derrotar o chefe <b>'+o.name+'</b>.';if(o.t==='bosses')return 'Derrotar <b>'+o.n+'</b> dos chefes: '+o.names.join(', ')+'.';return '';}
+/* ---- Missões secundárias / de facção (k:'side'); `fac` = pontos de facção (opcional); as principais são k:'main' ---- */
+const SEC=[
+ {id:'s_rato',lv:1,nm:'Ratos no Estoque',giver:'mer',turn:'mer',obj:{t:'kill',n:6,maps:['zone_estrada','zone_planicie']},fac:{guilda:8},
+  give:['Ratos andam roendo minhas caixas na estrada! Prejuízo atrás de prejuízo.','Derrote 6 monstros na Estrada ou na Planície e eu pago bem.'],prog:['Ainda há bichos solto por aí.'],done:['Ah, que alívio! O Conselho vai saber da sua ajuda.']},
+ {id:'s_pocao',lv:1,nm:'Frascos Vazios',giver:'alq',turn:'alq',obj:{t:'kill',n:6},r:{pot:2},
+  give:['Preciso de ingredientes frescos para as poções, mas tenho medo da estrada.','Derrote 6 monstros (onde quiser) e traga o que sobrar. Eu fico com os restos e você leva poções.'],prog:['Ainda faltam ingredientes. Continue caçando.'],done:['Perfeito! Aqui estão as poções prometidas.']},
+ {id:'s_oracao',lv:2,nm:'Oração na Estrada',giver:'maren',turn:'maren',obj:{t:'kill',n:8,maps:['zone_estrada','zone_planicie']},fac:{ordem:10},
+  give:['Quero rezar pelos viajantes da estrada, mas há feras demais.','Derrote 8 monstros na Estrada ou na Planície e a Ordem lembrará do seu serviço.'],prog:['A estrada ainda não está segura.'],done:['O Selo agradece. A Ordem lembrará de você.']},
+ {id:'s_aco',lv:2,nm:'Aço Novo',giver:'fer',turn:'fer',obj:{t:'kill',n:8},r:{gold:40},
+  give:['Meu estoque de couro e osso acabou. Cada fera derrotada rende algo para a forja.','Derrote 8 monstros e eu pago pelo material.'],prog:['Ainda preciso de mais material.'],done:['Bom material! Toma, pelo serviço.']},
+ {id:'s_lobo',lv:3,nm:'Javalis Famintos',giver:'cap',turn:'cap',obj:{t:'fam',f:'javali',n:6},
+  give:['Javalis estão destruindo as plantações ao redor da estrada.','Derrote 6 javalis e a cidade lhe agradece.'],prog:['Ainda há javalis no campo.'],done:['As plantações estão salvas. Bom trabalho, herói.']},
+ {id:'s_gob',lv:4,nm:'Goblins no Caminho',giver:'hilda',turn:'hilda',obj:{t:'fam',f:'goblin',n:10},
+  give:['Goblins assaltam os viajantes. Tire 10 deles do caminho.'],prog:['Ainda há goblins por aí.'],done:['Isso vai desencorajar os outros. Obrigada.']},
+ {id:'s_carga',lv:4,nm:'Carga Perdida',giver:'carav',turn:'carav',obj:{t:'kill',n:8,maps:['zone_ponte']},fac:{guilda:10},
+  give:['Perdi parte da carga quando os monstros atacaram. Está espalhada pela Ponte.','Derrote 8 monstros ali para eu poder recolher o que sobrou.'],prog:['Ainda é perigoso recolher a carga.'],done:['Recuperei quase tudo! O Conselho saberá disso.']},
+ {id:'s_pedras',lv:5,nm:'Pedras Antigas',giver:'eremita',turn:'eremita',obj:{t:'kill',n:10,maps:['zone_colinas']},fac:{coroa:12},
+  give:['Estas colinas guardam ruínas da antiga Coroa, mas as criaturas as profanam.','Derrote 10 monstros nas Colinas Rochosas.'],prog:['As ruínas ainda estão ameaçadas.'],done:['Os antigos agradecem. Você tem a memória da Coroa.']},
+ {id:'s_elite',lv:5,nm:'Selos Estranhos',giver:'maren',turn:'maren',obj:{t:'elite',n:2},fac:{ordem:10},
+  give:['Algumas criaturas mais fortes (elites) trazem marcas de Selo.','Derrote 2 elites e me conte o que viu.'],prog:['Ainda faltam elites.'],done:['Marcas de Selo… preciso estudar isso. Obrigada.']},
+ {id:'s_caca',lv:6,nm:'Caçador de Elites',giver:'cap',turn:'cap',obj:{t:'elite',n:3},r:{gold:90},
+  give:['Há uma recompensa por elites. Derrote 3 delas.'],prog:['Ainda faltam elites.'],done:['Recompensa justa. Aqui está.']},
+ {id:'s_pele',lv:7,nm:'Peles de Javali',giver:'mer',turn:'mer',obj:{t:'fam',f:'javali',n:8},fac:{guilda:8},
+  give:['Peles de javali vendem bem no Conselho. Traga-me o equivalente a 8 javalis.'],prog:['Ainda faltam javalis.'],done:['Ótimas peles. O Conselho paga bem.']},
+ {id:'s_corvo',lv:8,nm:'Contrato do Conselho',giver:'emis_g',turn:'emis_g',obj:{t:'kill',n:12,maps:['zone_passo','zone_desfiladeiro']},fac:{guilda:12},
+  give:['O Conselho precisa de rotas seguras pelo Passo. Derrote 12 monstros por lá.'],prog:['As rotas ainda não estão seguras.'],done:['Contrato cumprido. O Conselho lembrará.']},
+ {id:'s_vigilia',lv:8,nm:'Vigília dos Mortos',giver:'emis_o',turn:'emis_o',obj:{t:'fam',f:'esq',n:10},fac:{ordem:15},
+  give:['Os mortos inquietos precisam de descanso. Derrote 10 esqueletos.'],prog:['Ainda há mortos inquietos.'],done:['A Ordem agradece pela vigília.']},
+ {id:'s_rei',lv:8,nm:'Lembrança do Rei',giver:'emis_r',turn:'emis_r',obj:{t:'kill',n:12,maps:['zone_mortos','zone_cemiterio']},fac:{coroa:15},
+  give:['Nos mortos há ecos do último rei. Derrote 12 deles para que descansem em paz.'],prog:['Ainda há ecos para silenciar.'],done:['O rei seria grato. A Coroa se lembra.']}
+];
+SEC.forEach(q=>q.k='side');SQ.forEach(q=>q.k='main');
+const QMAXA=8;
+const qTag=q=>q.k==='main'?'Missão principal':(q.fac?'Missão de facção · '+Object.keys(q.fac).map(k=>FACN[k]).join(' / '):'Missão secundária');
+function stAct(){const s=stS();s.act=s.act||{};s.sd=s.sd||{};return s;}
+function qkSt(q){const s=stAct();return q.k==='main'?(s.cur&&SQ[s.cur.i]===q?s.cur:null):(s.act[q.id]||null);}
+function qkProg(q){const st=qkSt(q),o=q.obj;if(!st)return [0,1];if(o.t==='talk')return [1,1];
+  if(o.t==='boss'){const h=(SAVE.hunts||{})[o.name]||0;return [Math.min(1,h-(st.b0||0)),1];}
+  if(o.t==='bosses'){const h=SAVE.hunts||{};return [Math.min(o.n,o.names.filter(n=>(h[n]||0)>0).length),o.n];}
+  return [Math.min(o.n,st.p||0),o.n];}
+const qkReady=q=>{const p=qkProg(q);return p[0]>=p[1];};
+const secAvail=q=>{const s=stAct();return !s.sd[q.id]&&!s.act[q.id]&&SAVE.lv>=q.lv;};
+const secActive=()=>{const s=stAct();return SEC.filter(q=>s.act[q.id]);};
+function qkEv(q,t,f){const st=qkSt(q),o=q.obj;if(!st||(o.t!=='kill'&&o.t!=='fam'&&o.t!=='elite')||o.t!==t)return;if(o.t==='fam'&&o.f!==f)return;if(o.maps&&!o.maps.includes(G.map))return;if((st.p||0)>=o.n)return;st.p=(st.p||0)+1;
+  if(st.p>=o.n){chat('Objetivo concluído: '+q.nm+' — fale com '+((NPCD[q.turn]||{}).nm||'o NPC')+'.',4);sfx('levelup',.4);}}
+function stEv(t,f){if(!['kill','fam','elite'].includes(t))return;const q=stCurQ();if(q)qkEv(q,t,f);for(const x of secActive())qkEv(x,t,f);socRefresh();}
+function stProg(){const q=stCurQ();return q?qkProg(q):[0,1];}
+const stReady=()=>{const q=stCurQ();return q?qkReady(q):false;};
+function stObjTxt(q){const o=q.obj,mp=o.maps?' ('+o.maps.map(m=>areaName(m)).join(' / ')+')':'';if(o.t==='talk')return 'Falar com <b>'+NPCD[q.turn].nm+'</b>.';
+  if(o.t==='kill')return 'Derrotar <b>'+o.n+'</b> monstros'+mp+'.';if(o.t==='fam')return 'Derrotar <b>'+o.n+'</b> '+((MOBS[o.f]&&MOBS[o.f].nome)||o.f)+mp+'.';if(o.t==='elite')return 'Derrotar <b>'+o.n+'</b> elites'+mp+'.';
+  if(o.t==='boss')return 'Derrotar o chefe <b>'+o.name+'</b>.';if(o.t==='bosses')return 'Derrotar <b>'+o.n+'</b> dos chefes: '+o.names.join(', ')+'.';return '';}
+function stRewOf(q,ch){if(q.k==='side')return Object.assign({gold:20+q.lv*10,xp:Math.round(xpNeed(SAVE.lv)*.2)},q.r||{});
+  const r=Object.assign({gold:30+q.lv*18,xp:Math.round(xpNeed(SAVE.lv)*.3),pot:q.lv%2?1:0},ch&&ch.r?ch.r:{});if(r.xp===1)r.xp=Math.round(xpNeed(SAVE.lv)*.45);return r;}
+function stInfo(q,prog,rew){const pg=qkProg(q);let h='<div class="dls">Objetivo</div><div class="dli">'+stObjTxt(q)+(prog?' <b>('+pg.join('/')+')</b>':'')+'</div>';
+  if(rew){const r=stRewOf(q);h+='<div class="dls">Recompensas</div>'+rwChips(r)+(stFacTxt(q.fac)?'<div class="dlf">Reputação: '+stFacTxt(q.fac)+'</div>':'');}return h;}
+
 function stFacTxt(f){return Object.keys(f||{}).map(k=>'+'+f[k]+' '+FACN[k]).join(' · ');}
-function stInfo(q,prog,rew){let h='<div class="dls">Objetivo</div><div class="dli">'+stObjTxt(q)+(prog?' <b>('+stProg().join('/')+')</b>':'')+'</div>';if(rew){const r=stRewOf(q);h+='<div class="dls">Recompensas</div>'+rwChips(r)+(stFacTxt(q.fac)?'<div class="dlf">Reputação: '+stFacTxt(q.fac)+'</div>':'');}return h;}
-function stFinish(q,ch){const s=stS();const r=stRewOf(q,ch);
+function stFinish(q,ch){const s=stAct();const r=stRewOf(q,ch);
+  if(q.k==='side'){delete s.act[q.id];s.sd[q.id]=1;stFac(q.fac);qGive(r);chat('Missão concluída: '+q.nm+' · '+qRewTxt(r),4);sfx('levelup',.5);if(G.hero)floatText(G.hero.x,G.hero.y-80,'Missão concluída!','#ffe08a',9,1.6);sfx('coin',.8);writeSave();socRefresh();return;}
   stFac(q.fac);if(ch)stFac(ch.fac);qGive(r);chat('Missão principal concluída: '+q.nm+' · '+qRewTxt(r),4);sfx('levelup',.6);if(G.hero)floatText(G.hero.x,G.hero.y-80,'Missão principal concluída!','#ffe08a',9,1.6);
   s.n++;s.cur=null;if(q.lv===10)s.gate=1;const nx=SQ[s.n];if(nx)chat('Próxima missão principal: '+nx.nm+(SAVE.lv>=nx.lv?' — fale com '+NPCD[nx.giver].nm+'.':' — alcance o nível '+nx.lv+'.'),4);
   sfx('coin',.8);writeSave();socRefresh();}
@@ -5296,6 +5343,7 @@ html #dlg,html #dlg *,html #npcmk *{white-space:normal!important;text-transform:
 #dlg{position:absolute;inset:0;z-index:260;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.5);padding:14px;touch-action:manipulation}
 #dlg .dlw{width:min(100%,390px);max-height:86%;display:flex;flex-direction:column;border:14px solid transparent;border-image:url(assets/kit/win_frame.png) 16 / 14px stretch;background:linear-gradient(180deg,#201a26,#120e17) padding-box;position:relative}
 #dlg .dlnm{font:700 16px var(--f);color:#ffd66e;text-align:center;padding:2px 28px 8px;border-bottom:1px solid #5a4620;margin-bottom:8px;text-shadow:0 2px 0 #000}
+#dlg .dlnm small{display:block;font:600 10px var(--f);color:#9fd0ff;letter-spacing:.06em;margin-top:2px;text-shadow:none}
 #dlg .dlx{position:absolute;right:-4px;top:-6px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font:700 16px var(--f);color:#ffd66e;background:#3a2a14;border:2px solid #b98a2a}
 #dlg .dlbody{display:flex;gap:10px;align-items:flex-start;overflow-y:auto;min-height:0;flex:1}
 #dlg .dlp{width:58px;height:58px;flex:none;background:#2a1d10;border:2px solid #b98a2a;display:flex;align-items:center;justify-content:center}
@@ -5310,7 +5358,7 @@ html #dlg,html #dlg *,html #npcmk *{white-space:normal!important;text-transform:
 #dlg .dlo.h{flex:1 1 40%;text-align:center}
 #dlg .dlo:active{background:#5a431f}#dlg .dlo.q{color:#ffe08a}#dlg .dlo.r{color:#9ff08a}
 #npcmk{position:absolute;inset:0;pointer-events:none;z-index:40;overflow:hidden}
-#npcmk .nmk{position:absolute;transform:translate(-50%,-100%);animation:mkb .9s infinite;filter:drop-shadow(0 2px 0 #000a)}#npcmk .nmk img{display:block;height:34px;image-rendering:pixelated}#npcmk .nmk.off img{filter:grayscale(1) brightness(.75)}
+#npcmk .nmk{position:absolute;transform:translate(-50%,-100%);animation:mkb .9s infinite;filter:drop-shadow(0 2px 0 #000a)}#npcmk .nmk img{display:block;height:34px;image-rendering:pixelated}#npcmk .nmk.off img{filter:grayscale(1) brightness(.75)}#npcmk .nmk.sd img{filter:hue-rotate(165deg) saturate(1.3)}
 @keyframes mkb{50%{margin-top:-5px}}
 #npcmk .nbub{position:absolute;transform:translate(-50%,-100%);max-width:170px;background:#fff6dc;color:#2a1a0a;border:2px solid #3a2a14;padding:4px 7px;font:600 11px/1.25 var(--f);text-align:center;box-shadow:0 2px 0 #3a2a14}
 #npcmk .nbub:after{content:'';position:absolute;left:50%;bottom:-7px;margin-left:-5px;border:5px solid transparent;border-top-color:#3a2a14;border-bottom:0}`;
@@ -5318,7 +5366,7 @@ html #dlg,html #dlg *,html #npcmk *{white-space:normal!important;text-transform:
   $('stage').appendChild(d);const mk=document.createElement('div');mk.id='npcmk';$('stage').appendChild(mk);
   d.addEventListener('pointerdown',e=>{e.stopPropagation();if(e.target.closest('.dlx')){sfx('tr_close',.5);dlgClose();}});
   d.querySelector('.dlm').addEventListener('pointerdown',e=>{const b=e.target.closest('.dlo');if(!b)return;e.stopPropagation();const o=D.opts&&D.opts[+b.dataset.i];if(o){sfx('ui_click',.6);o.fn();}});}
-function dlgShow(who,lines,opts,info,title){dlgInit();D.who=who;D.q=lines;D.opts=opts;const el=D.el;el.style.display='flex';el.querySelector('.dlnm').textContent=title||who.nm||'Morador';{const im=el.querySelector('img'),cv=el.querySelector('canvas');let ok=0;const k=who.sh&&CXON&&CXNPC[who.sh],sh=k&&CXS[k];if(sh&&sh.atlasImg){const M=sh.meta,l=M.anims.idle_d,q=l[0],sx=(q%M.cols)*M.w,sy=((q/M.cols)|0)*M.h,c=cv.getContext('2d');c.clearRect(0,0,48,48);c.imageSmoothingEnabled=false;const t=document.createElement('canvas');t.width=M.w;t.height=M.h;const tc=t.getContext('2d');tc.drawImage(sh.atlasImg,sx,sy,M.w,M.h,0,0,M.w,M.h);const dd=tc.getImageData(0,0,M.w,M.h).data;let x0=M.w,x1=0,y0=M.h,y1=0;for(let y=0;y<M.h;y++)for(let x=0;x<M.w;x++)if(dd[(y*M.w+x)*4+3]>40){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}const bw=x1-x0+1,bh=y1-y0+1,hd=Math.round(bh*.7),pad=Math.round(hd*.05),sz=hd+pad*2,cx=(x0+x1)/2-sz/2,cy=y0-pad;c.drawImage(t,cx,cy,sz,sz,0,0,48,48);ok=1;}im.style.display=ok?'none':'block';cv.style.display=ok?'block':'none';if(!ok)im.src=UI+(who.ic||'hood')+'.png';}
+function dlgShow(who,lines,opts,info,title){dlgInit();D.who=who;D.q=lines;D.opts=opts;const el=D.el;el.style.display='flex';el.querySelector('.dlnm').innerHTML=title||who.nm||'Morador';{const im=el.querySelector('img'),cv=el.querySelector('canvas');let ok=0;const k=who.sh&&CXON&&CXNPC[who.sh],sh=k&&CXS[k];if(sh&&sh.atlasImg){const M=sh.meta,l=M.anims.idle_d,q=l[0],sx=(q%M.cols)*M.w,sy=((q/M.cols)|0)*M.h,c=cv.getContext('2d');c.clearRect(0,0,48,48);c.imageSmoothingEnabled=false;const t=document.createElement('canvas');t.width=M.w;t.height=M.h;const tc=t.getContext('2d');tc.drawImage(sh.atlasImg,sx,sy,M.w,M.h,0,0,M.w,M.h);const dd=tc.getImageData(0,0,M.w,M.h).data;let x0=M.w,x1=0,y0=M.h,y1=0;for(let y=0;y<M.h;y++)for(let x=0;x<M.w;x++)if(dd[(y*M.w+x)*4+3]>40){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}const bw=x1-x0+1,bh=y1-y0+1,hd=Math.round(bh*.7),pad=Math.round(hd*.05),sz=hd+pad*2,cx=(x0+x1)/2-sz/2,cy=y0-pad;c.drawImage(t,cx,cy,sz,sz,0,0,48,48);ok=1;}im.style.display=ok?'none':'block';cv.style.display=ok?'block':'none';if(!ok)im.src=UI+(who.ic||'hood')+'.png';}
   el.querySelector('.dlt').innerHTML=lines.map(x=>'<p>'+x+'</p>').join('');el.querySelector('.dlinfo').innerHTML=info||'';el.querySelector('.dlbody').scrollTop=0;el.querySelector('.dlm').innerHTML=(opts||[]).map((o,i)=>`<button class="dlo ${o.c||''} ${o.h?'h':''}" data-i="${i}">${o.lb}</button>`).join('');}
 function dlgClose(){if(D.el)D.el.style.display='none';if(G.winOpen==='dlg')G.winOpen=null;G.dlg=null;}
 const _lastG={};
@@ -5327,29 +5375,38 @@ function talk(t){if(G.dlg||G.winOpen&&G.winOpen!=='dlg')return;if(typeof inComba
   const d=NPCD[t.id]||{};const who={id:t.id,sh:t.sh,nm:t.kind==='vill'?(t.vn||'Morador'):(d.nm||t.nm),ic:t.kind==='vill'?'hood':(d.ic||t.ic)};
   G.dlg=who;G.winOpen='dlg';G.wp=null;sfx('ui_confirm',.5);talkMenu(t,who,[nGreet(who)]);}
 function talkMenu(t,who,lines){
-  const s=stS(),opts=[],q=stCurQ(),nx=stNext();
-  if(q&&q.turn===t.id){if(stReady())opts.push({lb:'<img src="assets/kit/B29.png" style="height:18px;vertical-align:middle;margin-right:6px;image-rendering:pixelated">'+'Entregar: '+q.nm,c:'r',fn:()=>stTurn(t,who,q)});else opts.push({lb:'<img src="assets/kit/B29.png" style="height:18px;vertical-align:middle;margin-right:6px;image-rendering:pixelated">'+q.nm+' ('+stProg().join('/')+')',c:'q',fn:()=>stProgScr(t,who,q)});}
-  if(nx&&nx.giver===t.id&&SAVE.lv>=nx.lv)opts.push({lb:'<img src="assets/kit/B28.png" style="height:18px;vertical-align:middle;margin-right:6px;image-rendering:pixelated">'+nx.nm,c:'q',fn:()=>stOffer(t,who,nx)});
+  const s=stAct(),opts=[],q=stCurQ(),nx=stNext();
+  const IM=(i,f)=>'<img src="assets/kit/'+i+'.png" style="height:18px;vertical-align:middle;margin-right:6px;image-rendering:pixelated;'+(f||'')+'">';
+  const SD='filter:hue-rotate(165deg) saturate(1.3)',GR='filter:grayscale(1)';
+  const turnIn=qq=>{if(qkReady(qq))opts.push({lb:IM('B29',qq.k==='side'?'':'')+'Entregar: '+qq.nm,c:'r',fn:()=>stTurn(t,who,qq)});else opts.push({lb:IM('B29',GR)+qq.nm+' ('+qkProg(qq).join('/')+')',c:'q',fn:()=>stProgScr(t,who,qq)});};
+  if(q&&q.turn===t.id)turnIn(q);
+  for(const x of secActive())if(x.turn===t.id)turnIn(x);
+  if(nx&&nx.giver===t.id&&SAVE.lv>=nx.lv)opts.push({lb:IM('B28')+nx.nm,c:'q',fn:()=>stOffer(t,who,nx)});
+  for(const x of SEC)if(x.giver===t.id&&secAvail(x))opts.push({lb:IM('B28',SD)+x.nm+(x.fac?' <small>(facção)</small>':''),c:'q',fn:()=>stOffer(t,who,x)});
   if(t.win&&SVCL[t.win])opts.push({lb:SVCL[t.win],fn:()=>{dlgClose();if(t.win==='portal')openWin('portal');else openWin(t.win);}});
   opts.push({lb:'Até logo',fn:dlgClose});dlgShow(who,lines,opts);}
-function stOffer(t,who,q){dlgShow(who,q.give,[{lb:'Aceitar',c:'q',h:1,fn:()=>{const s=stS();s.cur={i:s.n,p:0,b0:q.obj.t==='boss'?((SAVE.hunts||{})[q.obj.name]||0):0};chat('Missão principal aceita: '+q.nm,4);sfx('levelup',.4);writeSave();socRefresh();talkMenu(t,who,['Boa sorte, Escolhido.']);}},{lb:'Recusar',h:1,fn:()=>talkMenu(t,who,['Volte quando estiver pronto.'])}],stInfo(q,0,1),q.nm);}
-function stProgScr(t,who,q){dlgShow(who,q.prog||['Ainda não terminou.'],[{lb:'Voltar',h:1,fn:()=>talkMenu(t,who,[nGreet(who)])}],stInfo(q,1,0),q.nm);}
+const qTitle=q=>q.nm+'<small>'+qTag(q)+'</small>';
+function stOffer(t,who,q){dlgShow(who,q.give,[{lb:'Aceitar',c:'q',h:1,fn:()=>{const s=stAct();
+  if(q.k==='side'){if(secActive().length>=QMAXA){toast('Diário cheio ('+QMAXA+' missões).',1800);return;}s.act[q.id]={p:0,b0:0};}else s.cur={i:s.n,p:0,b0:q.obj.t==='boss'?((SAVE.hunts||{})[q.obj.name]||0):0};
+  chat((q.k==='main'?'Missão principal aceita: ':'Missão aceita: ')+q.nm,4);sfx('levelup',.4);writeSave();socRefresh();talkMenu(t,who,['Boa sorte, Escolhido.']);}},{lb:'Recusar',h:1,fn:()=>talkMenu(t,who,['Volte quando estiver pronto.'])}],stInfo(q,0,1),qTitle(q));}
+function stProgScr(t,who,q){dlgShow(who,q.prog||['Ainda não terminou.'],[{lb:'Voltar',h:1,fn:()=>talkMenu(t,who,[nGreet(who)])}],stInfo(q,1,0),qTitle(q));}
 function stTurn(t,who,q){const bk={lb:'Voltar',h:1,fn:()=>talkMenu(t,who,[nGreet(who)])};
-  if(q.choice)dlgShow(who,q.done,q.choice.map(c=>({lb:c.lb+(c.r&&c.r.gold?' <small>(+'+c.r.gold+' ouro)</small>':''),c:'r',fn:()=>{stFinish(q,c);talkMenu(t,who,['Obrigado, Escolhido.']);}})).concat([bk]),'<div class="dls">Escolha sua recompensa</div><div class="dli">Base: '+qRewTxt(stRewOf(q))+'</div>',q.nm);
-  else dlgShow(who,q.done,[{lb:'Concluir missão',c:'r',h:1,fn:()=>{stFinish(q);talkMenu(t,who,['Descanse e volte quando precisar.']);}},bk],stInfo(q,0,1),q.nm);}
+  if(q.choice)dlgShow(who,q.done,q.choice.map(c=>({lb:c.lb+(c.r&&c.r.gold?' <small>(+'+c.r.gold+' ouro)</small>':''),c:'r',fn:()=>{stFinish(q,c);talkMenu(t,who,['Obrigado, Escolhido.']);}})).concat([bk]),'<div class="dls">Escolha sua recompensa</div><div class="dli">Base: '+qRewTxt(stRewOf(q))+'</div>',qTitle(q));
+  else dlgShow(who,q.done,[{lb:'Concluir missão',c:'r',h:1,fn:()=>{stFinish(q);talkMenu(t,who,['Descanse e volte quando precisar.']);}},bk],stInfo(q,0,1),qTitle(q));}
 /* ---- NPCs avulsos, balões e marcadores ! / ? ---- */
 function stNpcSync(){if(!G.on||!G.hero)return;
   if(G.scene==='town'){if(!G.room&&G.npcs&&!G.npcs.some(n=>n.id==='maren')){for(const x of TOWN_X){const f=freeSpot(x.x,x.y);const d=NPCD[x.id];G.npcs.push({...x,x:f[0],y:f[1],nm:d.nm,ic:d.ic,kind:'npc',name:d.nm,row:2,row0:2,animT:0,moving:false,r:44});}}G._znm='';return;}
   if(G.scene==='dungeon'){const k=G.map+'|'+(G.zoneLv||'');if(G._znm!==k){G._znm=k;G.vill=[];G.npcs=(ZNPC[G.map]||[]).map(x=>{const f=freeSpot(x.x,x.y),d=NPCD[x.id];return {...x,x:f[0],y:f[1],nm:d.nm,ic:d.ic,kind:'npc',name:d.nm,row:2,row0:2,animT:0,moving:false,r:44};});}
     const h=G.hero;for(const n of G.npcs){const d=dist(h,n);n.row=d<150?dir4(h.x-n.x,h.y-n.y):n.row0;}}}
 const BUB={e:null,t:0,txt:'',last:new Map(),cd:0};
+function nMark(id){let ready=0,wait=0,main=0,side=0;const c=stCurQ();if(c&&c.turn===id){if(qkReady(c))ready=1;else wait=1;}const nx=stNext();if(nx&&nx.giver===id&&SAVE.lv>=nx.lv)main=1;const s=stAct();
+  for(const x of SEC){if(s.act[x.id]){if(x.turn===id){if(qkReady(x))ready=1;else wait=1;}}else if(!s.sd[x.id]&&x.giver===id&&SAVE.lv>=x.lv)side=1;}
+  if(ready)return ['?','g'];if(main)return ['!','g'];if(side)return ['!','s'];if(wait)return ['?','o'];return null;}
 function stMarkers(){if(!G.on||!G.hero||!window.V3||!V3.toScreen){return;}dlgInit();const mk=$('npcmk');if(!mk)return;const ts=V3.toScreen;
-  const cur=stCurQ(),nx=stNext(),list=[...(G.npcs||[]),...(G.scene==='town'?(G.vill||[]):[])];
+  const list=[...(G.npcs||[]),...(G.scene==='town'?(G.vill||[]):[])];
   while(mk.children.length<list.length+1){const e=document.createElement('div');mk.appendChild(e);}
-  let i=0;const used=new Set();
-  for(const n of list){if(n.kind!=='npc')continue;let sym='',col='';
-    if(cur&&cur.turn===n.id){sym='?';col=stReady()?'#ffd23a':'#8a8f98';}else if(nx&&nx.giver===n.id&&SAVE.lv>=nx.lv){sym='!';col='#ffd23a';}
-    if(!sym)continue;const p=ts(n.x,n.y,64),e=mk.children[i++];e.className='nmk'+(col==='#8a8f98'?' off':'');if(e.dataset.s!==sym){e.dataset.s=sym;e.innerHTML='<img src="assets/kit/'+(sym==='?'?'B29':'B28')+'.png">';}e.style.left=p[0]+'px';e.style.top=p[1]+'px';e.style.display='block';}
+  let i=0;
+  for(const n of list){if(n.kind!=='npc')continue;const m=nMark(n.id);if(!m)continue;const sym=m[0],k=m[1];const p=ts(n.x,n.y,64),e=mk.children[i++];e.className='nmk'+(k==='o'?' off':'')+(k==='s'?' sd':'');if(e.dataset.s!==sym){e.dataset.s=sym;e.innerHTML='<img src="assets/kit/'+(sym==='?'?'B29':'B28')+'.png">';}e.style.left=p[0]+'px';e.style.top=p[1]+'px';e.style.display='block';}
   const bi=i;
   if(BUB.e&&BUB.t>0&&!G.winOpen){const e=mk.children[i++],p=ts(BUB.e.x,BUB.e.y,BUB.e.kind==='vill'?58:(BUB.e.id==='mer'?64:72));e.className='nbub';e.textContent=BUB.txt;e.style.left=p[0]+'px';e.style.top=(p[1]-(BUB.e.kind==='npc'&&mk.querySelector('.nmk')?18:0))+'px';e.style.display='block';e.style.color='';}
   for(;i<mk.children.length;i++)mk.children[i].style.display='none';}
@@ -5400,9 +5457,19 @@ function facBody(){sqCss();const s=stS();let h='<div class="sqs2"><img src="asse
     h+=`<div class="sq" style="margin-bottom:10px"><div class="sqh"><img src="${UI}${k==='ordem'?'sun-priest':k==='guilda'?'coins':'crested-helmet'}.png"><div><small>${l.nm.toUpperCase()}</small><b>${FACN[k]}</b></div><span class="sqb p">${p} pts</span></div><div class="sqo" style="margin-top:8px">${FACD[k]}</div><div class="rp ${k[0]}" style="margin-top:8px"><div class="bar"><i style="width:${l.pct}%"></i></div><em>${l.nx?l.nm+' → '+l.nx+' pts':'Nível máximo'}</em></div></div>`;}
   h+='<div class="sqs2"><img src="assets/kit/D19.png">Níveis<span>pontos necessários</span></div><div class="dd bg2">'+REPL.map(r=>`<span>${r[1]}</span><b>${r[0]}</b>`).join('')+'</div>';
   return h;}
+function sCard(q){const pg=qkProg(q),ok=pg[0]>=pg[1],tn=NPCD[q.turn];
+  return `<div class="sq${ok?' rd':''}" style="margin-bottom:8px"><div class="sqh"><img src="${UI}${q.fac?'sun-priest':'scroll-unfurled'}.png"><div><small>${qTag(q).toUpperCase()}</small><b>${q.nm}</b></div><span class="sqb ${ok?'g':'p'}">${ok?'Pronta!':'Em andamento'}</span></div>
+<div class="sqr"><img src="assets/kit/B29.png"${ok?'':' style="filter:grayscale(1)"'}><span>${ok?'Entregar a':'Entregar depois a'} <b>${tn.nm}</b> · ${NLOC[q.turn]||''}</span></div>
+<div class="sqo"><div class="ro"><span class="ck${ok?' on':''}">${ok?'✔':''}</span><span>${stObjTxt(q)}</span><em>${pg[0]}/${pg[1]}</em></div><div class="bar"><i style="width:${Math.round(pg[0]/pg[1]*100)}%"></i></div></div>
+<div class="sqw"><small>RECOMPENSAS</small>${rwChips(stRewOf(q))}${stFacTxt(q.fac)?'<div class="sqf">Reputação: '+stFacTxt(q.fac)+'</div>':''}</div></div>`;}
+function sideSec(){const act=secActive(),av=SEC.filter(secAvail);let h=`<div class="sqs2"><img src="assets/kit/B28.png" style="filter:hue-rotate(165deg) saturate(1.3)">Missões secundárias<span>${act.length}/${QMAXA} ativas</span></div>`;
+  h+=act.length?act.map(sCard).join(''):'<div class="dd" style="margin-bottom:6px">Nenhuma missão ativa. Procure NPCs com o "!" azul.</div>';
+  if(av.length)h+='<div class="sqw"><small>DISPONÍVEIS ('+av.length+')</small>'+av.map(q=>`<div class="sqr"><img src="assets/kit/B28.png" style="filter:hue-rotate(165deg) saturate(1.3)"><span><b>${q.nm}</b> · ${NPCD[q.giver].nm} (${NLOC[q.giver]||''})${q.fac?' · <i style="color:#9fd0ff;font-style:normal">'+Object.keys(q.fac).map(k=>FACN[k]).join('/')+'</i>':''}</span></div>`).join('')+'</div>';
+  return h;}
 function missionsBody(){sqCss();const c=qMain(),L=SAVE.q.d.l,rdy=(c&&qOk(c)?1:0)+L.filter(d=>!d.c&&qOk(d)).length,s=stS();let h='';
   h+=`<div class="sqt"><span>Missões principais ${s.n}/${SQ.length}</span><div class="bar"><i style="width:${s.n/SQ.length*100}%"></i></div></div>`;
   h+=`<div class="sqs2"><img src="assets/kit/B28.png">Missão principal<span>a história de Brumavale</span></div>`+sqCard();
+  h+=sideSec();
   h+=`<div class="sqs2"><img src="${UI}scroll-unfurled.png">Missões diárias<span>renovam em ${qLeft()}h</span></div>`+L.map((q,i)=>qCard(q,0,'d',i)).join('');
   h+=`<details class="qx"><summary>Trilha do Caçador (capítulo ${Math.min(SAVE.q.m+1,QMAIN.length)} de ${QMAIN.length})</summary>`+(c?qCard(c,1,'m',0):'<div class="dd" style="text-align:center">Trilha concluída.</div>')+'</details>';
   if(rdy>1)h+=`<div class="acts"><button class="g" data-a="qall">Receber tudo (${rdy})</button></div>`;
