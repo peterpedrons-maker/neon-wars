@@ -1082,6 +1082,20 @@ def accessory2(g, hat, view, hx, hy, back=False):
         for i, x in enumerate(range(hx + 5, hx + 17)):
             g.put(x, y + (1 if i % 3 else 0), 'g'); g.put(x, y + 2, 'g')
         g.put(hx + 10, y - 1, 'G'); g.put(hx + 11, y - 1, 'G')
+    elif hat == 'bardcap':                                              # boina de bardo: copa mole caida para o lado + pluma dourada
+        if view == 'side':
+            for r_, row in enumerate(['....uuuuu....', '..uUUUUUUUu..', '.uUUUUUUUUUU.', 'UUUUUUUUUUUUU', 'VVVVVVVVVVVVV']):
+                for c_, ch in enumerate(row):
+                    if ch != '.': g.put(hx + 3 + c_, hy - 4 + r_, ch)
+            for c_ in range(3): g.put(hx + 1 + c_, hy, 'V')
+            pl = [(2, -3), (1, -4), (0, -5), (-1, -5), (-2, -4), (-3, -3), (-4, -1), (-4, 1)]
+        else:
+            for r_, row in enumerate(['.......uuuuuu', '.....uUUUUUUU', '...uUUUUUUUUU', '..UUUUUUUUUUU', '.VUUUUUUUUUUU', '.VVVVVVVVVVVV']):
+                for c_, ch in enumerate(row):
+                    if ch != '.': g.put(hx - 1 + c_, hy - 5 + r_, ch); g.put(hx + 22 - c_, hy - 5 + r_, ch)
+            pl = [(17, -3), (18, -5), (19, -7), (20, -8), (22, -8), (23, -7), (24, -5), (24, -3)]
+        for (px, py) in pl:
+            g.put(hx + px, hy + py, 'X'); g.put(hx + px, hy + py + 1, 'g')
     elif hat == 'bandana':
         for x in range(hx + 1, hx + (20 if view == 'side' else 21)): g.put(x, hy + 6, 'r')
 
@@ -1323,7 +1337,7 @@ def build_front(p, back=False):
     hx, hy = cx - 11 + dx + p.get('hdx', 0), body_top - 17 + p.get('hdy', 0)
     head = list(HEAD_B if back else (HEAD_F_UP if p.get('look') == 'up' else HEAD_F))
     hat = p.get('hat', DEFAULT_HAT[cls]); outfit = p.get('outfit', DEFAULT_OUTFIT[cls])
-    if hat == 'cap': head = cap_head(head, 'front')
+    if hat in ('cap', 'bardcap'): head = cap_head(head, 'front')
     elif hat == 'hood': head = hood_head(head, 'front')
     elif hat in ('helm', 'kinghelm'): head = helm_head(head, 'back' if back else 'front')
     if p.get('face', 'n') != 'n' and not back:
@@ -1397,7 +1411,7 @@ def build_side(p):
     head = make_head_side(*FACES.get(p.get('face', 'n'), ('n', 'open')), p.get('look', 'n'))
     if p.get('face', 'n') in ('n', 'shout', 'blink'): head = apply_face_style(head, _FSTYLE, True)
     hat = p.get('hat', DEFAULT_HAT[cls]); outfit = p.get('outfit', DEFAULT_OUTFIT[cls])
-    if hat == 'cap': head = cap_head_side(head)
+    if hat in ('cap', 'bardcap'): head = cap_head_side(head)
     elif hat == 'hood': head = hood_head_side(head)
     elif hat in ('helm', 'kinghelm'): head = helm_head_side(head)
     g.stamp(head, hx, hy)

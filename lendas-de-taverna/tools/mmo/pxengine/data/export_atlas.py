@@ -21,7 +21,7 @@ UNITS = {
     'h_ladino': dict(kind='c', ap=dict(cls='rogue', weapon='adaga_veneno', weapon2='adaga_veneno', face_style='sly'), run=1),
     'h_clerigo': dict(kind='c', ap=dict(cls='cleric', weapon='maca_ferro'), run=1),
     'h_arqueiro': dict(kind='c', ap=dict(cls='archer', weapon='arco_curto'), run=1),
-    'h_bardo': dict(kind='c', ap=dict(cls='mage', weapon='alaude', hair='castanho', clothes='verde'), run=1),
+    'h_bardo': dict(kind='c', ap=dict(cls='mage', weapon='alaude', hair='castanho', clothes='verde', hat='bardcap', pal=dict(U='#b02838', u='#e0485a', V='#6a1428')), run=1),
     'goblin': dict(kind='e', name='goblin'), 'goblin_x': dict(kind='e', name='goblin_x'),
     'esqueleto': dict(kind='c', ap=dict(cls='warrior', skin='osso', hair='g_osso', eyes='oco', hat='none', outfit='ribs', clothes='osso', metal='ferro', weapon='espada_ferro', face_style='hollow', tn_off=2, shape=dict(skull=1, slim=1, eyeglow='W'))),
     'esqmago': dict(kind='c', ap=dict(cls='mage', face_style='hollow', skin='osso', hair='g_osso', hairstyle='bald', eyes='oco', hat='wizard', outfit='robe', clothes='azul', weapon='cajado_gelo', shape=dict(skull=1, eyeglow='W'))),
