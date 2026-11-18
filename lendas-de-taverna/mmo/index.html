@@ -1039,7 +1039,7 @@ html #qtr .qr.rd span,html #qtr:not(.cl) .qr span{display:block!important}
   <div id="gc"><div class="gcb"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><h3 id="gct"></h3><p id="gcm"></p><div class="gcbt"><button id="gcn" class="sec"></button><button id="gcy" class="ok"></button></div></div></div>
   <div id="fade"></div>
   <div class="scr" id="pan"><div class="box"><div class="tt"><span>Personagem</span><button class="xb" id="pClose"></button></div>
-    <div class="tabs"><button id="tEq" class="on">Equipamento</button><button id="tBg">Mochila</button><button id="tAt">Atributos</button><button id="tSk">Habilidades</button><button id="tTl">Talentos</button></div>
+    <div class="tabs"><button id="tEq" class="on">Equipamento</button><button id="tBg">Mochila</button><button id="tAt">Atributos</button><button id="tSk">Habilidades</button><button id="tTl">Passivas</button></div>
     <div class="wb body" id="pBody"></div></div><div id="tip"></div></div>
   <!-- resultado -->
   <div class="scr" id="res">
@@ -1792,7 +1792,7 @@ let SAVE=null;           // {name,cls,lv,xp,gold,kills,zone}
 const G={mp:[],scene:'town',map:'town',npcs:[],vill:[],winOpen:null,loot:[],on:false,speed:1,auto:true,t:0,cam:{x:0,y:0},K:3,LW:270,LH:480,mobs:[],projs:[],fx:[],zones:[],floats:[],hero:null,boss:null,
          kills:0,phase:'farm',zoneLv:1,koT:0,chat:[],bossWoke:false,wp:null,wpT:0};
 function refreshUniques(){const all=[...Object.values(SAVE.eq||{}),...(SAVE.inv||[]),...(SAVE.vault||[])];for(const it of all){if(it&&it.u){const d=UNIQUES.find(x=>x.id===it.u.id);if(d){it.u.fx=d.fx;it.u.desc=d.desc;}}}}
-function migrateSave(){if(!SAVE.tl)SAVE.tl={};if(!SAVE.mats)SAVE.mats={ferro:0,runa:0,cristal:0};SAVE.potL=SAVE.potL||0;SAVE.elix=SAVE.elix||{forca:0,defesa:0};SAVE.elix.defesa=SAVE.elix.defesa||0;SAVE.elix.vigor=0;SAVE.elix.sorte=0;if(!SAVE.dgDone){SAVE.dgDone={};const zm=Math.max(SAVE.zoneMax||1,SAVE.zone||1);for(let k=1;k<Math.min(zm,DUN.length+1);k++)SAVE.dgDone[k]=true;if(zm>DUN.length)SAVE.dgDone[DUN.length]=true;}SAVE.zone=Math.max(1,Math.min(DUN.length,SAVE.zone||1));SAVE.zoneMax=Math.max(1,Math.min(DUN.length,SAVE.zoneMax||SAVE.zone||1));SAVE.inv=SAVE.inv||[];SAVE.eq=SAVE.eq||{};SAVE.potions=SAVE.potions==null?2:SAVE.potions;SAVE.sk=SAVE.sk||[1,0,0];while(SAVE.sk.length<14)SAVE.sk.push(0);if(SAVE.sub===undefined)SAVE.sub=null;SAVE.vault=SAVE.vault||[];SAVE.eqs=SAVE.eqs||[0,1,2];refreshUniques();if(!SAVE.at||SAVE.at.int===undefined||SAVE.at.res!==undefined||SAVE.at.agi!==undefined)SAVE.at=ATT_NEW();if(SAVE.autoEq==null)SAVE.autoEq=true;
+function migrateSave(){if(!SAVE.tl)SAVE.tl={};if(window.ptMigrate)ptMigrate();if(!SAVE.mats)SAVE.mats={ferro:0,runa:0,cristal:0};SAVE.potL=SAVE.potL||0;SAVE.elix=SAVE.elix||{forca:0,defesa:0};SAVE.elix.defesa=SAVE.elix.defesa||0;SAVE.elix.vigor=0;SAVE.elix.sorte=0;if(!SAVE.dgDone){SAVE.dgDone={};const zm=Math.max(SAVE.zoneMax||1,SAVE.zone||1);for(let k=1;k<Math.min(zm,DUN.length+1);k++)SAVE.dgDone[k]=true;if(zm>DUN.length)SAVE.dgDone[DUN.length]=true;}SAVE.zone=Math.max(1,Math.min(DUN.length,SAVE.zone||1));SAVE.zoneMax=Math.max(1,Math.min(DUN.length,SAVE.zoneMax||SAVE.zone||1));SAVE.inv=SAVE.inv||[];SAVE.eq=SAVE.eq||{};SAVE.potions=SAVE.potions==null?2:SAVE.potions;SAVE.sk=SAVE.sk||[1,0,0];while(SAVE.sk.length<14)SAVE.sk.push(0);if(SAVE.sub===undefined)SAVE.sub=null;SAVE.vault=SAVE.vault||[];SAVE.eqs=SAVE.eqs||[0,1,2];refreshUniques();if(!SAVE.at||SAVE.at.int===undefined||SAVE.at.res!==undefined||SAVE.at.agi!==undefined)SAVE.at=ATT_NEW();if(SAVE.autoEq==null)SAVE.autoEq=true;
   const mig=it=>{if(!it)return;if(it.slot==='arma'&&it.wl==='bardo'&&!/Alaúde|Flauta/.test(it.name||'')){it.name=String(it.name).replace(/Florete|Adaga de Palco/,'Alaúde');it.bn=(it.bn==='Florete'||it.bn==='Adaga de Palco')?'Alaúde':it.bn;it.icon='i_alaude';}
     if(it.slot==='arma'&&it.bn==='Adaga de Palco'){it.bn='Alaúde';it.name=String(it.name).replace('Adaga de Palco','Alaúde');it.icon='i_alaude';it.wl='bardo';}if(it.slot==='arma'&&!it.wl)it.wl=WLK[it.bn]||((UNIQUES.find(x=>x.id===(it.u&&it.u.id))||{}).wl)||SAVE.cls;if(it.slot==='escudo'&&it.sd===undefined)it.sd=SDEF.includes(it.bn);if(!it.tier){it.tier=tierOf(it.ilvl);let bn=it.name;for(const sx of SUFIX)if(bn.endsWith(' '+sx)){bn=bn.slice(0,-sx.length-1);break;}it.bn=bn;it.name=bn+' '+tierAdj(bn,it.tier);}
     if(it.tv!==2){const mu=tierMul(it.tier);if(mu>1)for(const k in it.s)it.s[k]=k==='crit'||k==='spd'||k==='kb'||k==='kd'?Math.round(it.s[k]*mu*10)/10:Math.round(it.s[k]*mu);it.tv=2;}};
@@ -2138,10 +2138,10 @@ const TALENTS={
  set('gc2','Mão Firme',3,{cbw:1},'COMBO: janela do Golpe Preciso +0,04 s e +2% de dano do Golpe Preciso por nível');})();
 const TCAP={exec:.06,boss:.08,ls:.04,dmgred:.25,thorns:.15,crit:.08,aspd:.12,critd:.45,atk:.2,regen:.02};
 let TF={};
-function tfCalc(){TF={};const R=SAVE.tl||{};for(const b of (TALENTS[SAVE.cls]||[]))for(const n of b.nodes){const r=R[n[0]]||0;if(!r)continue;for(const k in n[3])TF[k]=(TF[k]||0)+n[3][k]*r;}for(const k in TCAP)if(TF[k]>TCAP[k])TF[k]=TCAP[k];}
+function tfCalc(){if(window.ptCalc)return ptCalc();TF={};const R=SAVE.tl||{};for(const b of (TALENTS[SAVE.cls]||[]))for(const n of b.nodes){const r=R[n[0]]||0;if(!r)continue;for(const k in n[3])TF[k]=(TF[k]||0)+n[3][k]*r;}for(const k in TCAP)if(TF[k]>TCAP[k])TF[k]=TCAP[k];}
 function tf(k){return TF[k]||0;}
-const tlTotal=()=>SAVE.lv<6?0:Math.floor((SAVE.lv-6)/2)+1;
-const tlSpentAll=()=>Object.values(SAVE.tl||{}).reduce((a,b)=>a+b,0);
+const tlTotal=()=>window.ptTotal?ptTotal():0;
+const tlSpentAll=()=>window.ptSpent?ptSpent():0;
 const tlPoints=()=>tlTotal()-tlSpentAll();
 const tlSpentIn=b=>b.nodes.reduce((a,n)=>a+((SAVE.tl||{})[n[0]]||0),0);
 let tlBr=0;
@@ -6298,6 +6298,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
 </script>
 <script>if(new URLSearchParams(location.search).get('v3')==='0')window.V3_OFF=1;if(new URLSearchParams(location.search).get('proc')==='0')window.V3_NOPROC=1;if(new URLSearchParams(location.search).get('hand')==='1')window.V3_HAND=1;</script>
 <script src="three.min.js"></script>
+<script src="ptree.js"></script>
 <script src="v3.js"></script>
 <script src="v3proc.js"></script>
 </body>
