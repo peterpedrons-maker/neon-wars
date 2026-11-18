@@ -839,7 +839,7 @@ body.dgn #chat{width:44%}
 #mapfs .mfm{flex:1;width:100%;display:flex;align-items:center;justify-content:center;gap:4px;min-height:0}
 #mapfs canvas{image-rendering:auto;box-shadow:0 0 0 2px #000,0 0 18px rgba(255,200,90,.15)}
 #mapfs .mfa{position:absolute;top:50%;margin-top:-50px;width:30px;height:60px;border:2px solid #a07828;background:rgba(26,21,34,.82);color:#ffe08a;font-size:15px;border-radius:0;z-index:2}#mapfs #mfl_{left:0}#mapfs #mfr_{right:0}#mapfs .mfm{position:relative}
-#mapfs .mfl{display:flex;gap:6px;overflow-x:auto;width:100%;box-sizing:border-box;padding:8px 10px;scrollbar-width:none}
+#mapfs .mfl,#mapfs .mfa{display:none!important}#mapfs .mfl{display:flex;gap:6px;overflow-x:auto;width:100%;box-sizing:border-box;padding:8px 10px;scrollbar-width:none}
 #mapfs .mfl::-webkit-scrollbar{display:none}
 #mapfs .mfl button{flex:none;height:34px;padding:0 10px;border:2px solid #4a4056;background:#14101c;color:#d8ccb8;font:600 11px inherit;border-radius:0;white-space:nowrap}
 #mapfs .mfl button.on{border-color:#ffd070;color:#ffe08a;background:#2a2233}
@@ -4661,7 +4661,7 @@ const MMINFO={town:['Brumavale','Cidade'],zone_estrada:['Estrada de Brumavale','
   zone_lago:['Margem do Lago','Nv 2–3'],zone_clareira:['Clareira das Ruínas','Nv 4–5'],zone_eremita:['Bosque do Eremita','Nv 3–4'],zone_cabana:['Cabana da Bruxa','Nv 5–6'],zone_gruta:['Gruta Aberta','Nv 7–8'],zone_mina:['Mina Abandonada','Nv 6–7']};
 const MMORD=Object.keys(MMINFO);
 const MMADJ=[['town','zone_estrada'],['zone_estrada','zone_planicie'],['zone_planicie','zone_ponte'],['zone_planicie','zone_goblins'],['zone_planicie','zone_brejo'],['zone_planicie','zone_lago'],['zone_goblins','zone_lenhadores'],['zone_goblins','zone_clareira'],['zone_brejo','zone_brumas'],['zone_brejo','zone_eremita'],['zone_ponte','zone_colinas'],['zone_colinas','zone_cemiterio'],['zone_colinas','zone_desfiladeiro'],['zone_desfiladeiro','zone_passo'],['zone_lenhadores','zone_ogros'],['zone_ogros','zone_passo'],['zone_cemiterio','zone_mortos'],['zone_mortos','zone_passo'],['zone_cemiterio','zone_gruta'],['zone_passo','zone_mina'],['zone_brumas','zone_cabana']];
-MM.vc={};MM.vb={};MM.fsHit=[];
+MM.vc={};MM.vb={};MM.fsHit=[];MM.hist=[];
 function mmVisited(k){return k==='town'||(k===G.map)||!!(SAVE.disc&&SAVE.disc[k]);}
 function mmList(){const cur=G.map,out=[];const vis=new Set(MMORD.filter(mmVisited));if(cur&&!MMORD.includes(cur))return [cur];
   for(const k of MMORD){if(vis.has(k))out.push([k,1]);else if(MMADJ.some(([a,b])=>(a===k&&vis.has(b))||(b===k&&vis.has(a))))out.push([k,0]);}return out;}
@@ -4680,24 +4680,22 @@ function mmFsEnsure(){let o=$('mapfs');if(o)return o;o=document.createElement('d
   $('stage').appendChild(o);
   const go=d=>{const L=mmList(),i=Math.max(0,L.findIndex(x=>x[0]===MM.view)),n=L[(i+d+L.length)%L.length];if(n){MM.view=n[0];sfx('ui_click',.5);MM.vc[n[0]]=null;}};
   $('mfx').onclick=()=>mmFsClose();$('mfl_').onclick=()=>go(-1);$('mfr_').onclick=()=>go(1);
-  $('mfc').addEventListener('pointerdown',e=>{const r=e.currentTarget.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top;for(const h of MM.fsHit)if(Math.hypot(px-h.x,py-h.y)<h.r){if(mmList().some(x=>x[0]===h.to)){MM.view=h.to;sfx('ui_click',.5);}return;}});
+  $('mfc').addEventListener('pointerdown',e=>{const r=e.currentTarget.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top;for(const h of MM.fsHit)if(Math.hypot(px-h.x,py-h.y)<h.r){sfx('ui_click',.5);if(h.back){MM.view=MM.hist.pop()||G.map;}else{MM.hist.push(MM.view);MM.view=h.to;MM.vc[h.to]=null;}return;}});
   return o;}
-function mmFsOpen(){const o=mmFsEnsure();o.classList.add('on');MM.fsSig='';}
+function mmFsBack(x,cw){if(!MM.hist.length)return;const p=MM.hist[MM.hist.length-1],nm=(MMINFO[p]||['Voltar'])[0];x.font='700 11px Rubik,sans-serif';const t='‹ '+nm,w=x.measureText(t).width+18;x.fillStyle='rgba(20,16,28,.92)';x.fillRect(8,8,w,26);x.strokeStyle='#a07828';x.lineWidth=2;x.strokeRect(8,8,w,26);x.fillStyle='#ffe08a';x.textAlign='left';x.fillText(t,17,25);MM.fsHit.push({x:8+w/2,y:21,r:Math.max(30,w/2),back:1});}
+function mmFsOpen(){const o=mmFsEnsure();o.classList.add('on');MM.fsSig='';MM.hist=[];}
 function mmFsClose(){MM.big=false;const o=$('mapfs');if(o)o.classList.remove('on');sfx('ui_click',.4);}
 function mmFsDraw(){const o=mmFsEnsure();if(!o.classList.contains('on'))o.classList.add('on');
-  const L=mmList();if(!L.some(x=>x[0]===MM.view))MM.view=G.map;
-  const sig=L.map(x=>x.join(':')).join(',')+'|'+MM.view+'|'+G.map;
-  if(sig!==MM.fsSig){MM.fsSig=sig;$('mfl').innerHTML=L.map(([k,v])=>{const nm=mmName(k,v);return `<button data-k="${k}" class="${k===MM.view?'on':''}${v?'':' lk'}${k===G.map?' here':''}">${v?nm[0]:'???'}</button>`;}).join('');
-    $('mfl').querySelectorAll('button').forEach(b=>b.onclick=()=>{MM.view=b.dataset.k;sfx('ui_click',.5);});}
-  const k=MM.view,D=mmV(k),nm=mmName(k,D.vis),cv=$('mfc'),dpr=Math.min(2,window.devicePixelRatio||1);
+  if(!MM.view||(!MMINFO[MM.view]&&MM.view!==G.map))MM.view=G.map;
+  const k=MM.view,D=mmV(k),nm=MMINFO[k]||mmName(k,D.vis),cv=$('mfc'),dpr=Math.min(2,window.devicePixelRatio||1);
   $('mfn').textContent=nm[0];
   const pct=(D.disc?(()=>{let t=0,g=0;const ins=4;for(let j=ins;j<D.gh-ins;j++)for(let i=ins;i<D.gw-ins;i++){t++;if(D.disc[j*D.gw+i])g++;}return t?Math.min(100,Math.round(g/t*100)):100;})():null);
-  $('mfs').textContent=!D.vis?'Chegue lá para descobrir esta área':nm[1]+(pct!=null?'  ·  Explorado '+pct+'%':'')+(D.live?'  ·  Você está aqui':'');
-  const aw=o.clientWidth-16,ah=o.clientHeight-170;if(aw<50||ah<50)return;
+  $('mfs').textContent=!D.vis?'Área ainda não explorada':nm[1]+(pct!=null?'  ·  Explorado '+pct+'%':'')+(D.live?'  ·  Você está aqui':'');
+  const aw=o.clientWidth-16,ah=o.clientHeight-110;if(aw<50||ah<50)return;
   const Z=D.Z||{w:2000,h:2000},kk=Math.min(aw/Z.w,ah/Z.h),cw=Math.round(Z.w*kk),ch=Math.round(Z.h*kk);
   if(cv._s!==cw+'x'+ch){cv._s=cw+'x'+ch;cv.width=cw*dpr;cv.height=ch*dpr;cv.style.width=cw+'px';cv.style.height=ch+'px';}
   const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,cw,ch);x.imageSmoothingEnabled=true;MM.fsHit=[];
-  if(!D.vis||D.loading){x.fillStyle='#07080e';x.fillRect(0,0,cw,ch);x.strokeStyle='rgba(255,224,138,.25)';x.lineWidth=2;x.strokeRect(1,1,cw-2,ch-2);x.fillStyle='rgba(255,224,138,.5)';x.font='700 '+Math.min(cw,ch)*.35+'px Rubik,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(D.loading?'…':'?',cw/2,ch/2);x.textBaseline='alphabetic';return;}
+  if(!D.vis||D.loading){x.fillStyle='#07080e';x.fillRect(0,0,cw,ch);x.strokeStyle='rgba(255,224,138,.25)';x.lineWidth=2;x.strokeRect(1,1,cw-2,ch-2);x.fillStyle='rgba(255,224,138,.5)';x.font='700 '+Math.min(cw,ch)*.35+'px Rubik,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(D.loading?'…':'?',cw/2,ch/2);x.textBaseline='alphabetic';mmFsBack(x,cw);return;}
   x.drawImage(D.base,0,0,cw,ch);if(D.fog){try{x.filter='blur(4px)';}catch(e){}x.drawImage(D.fog,0,0,cw,ch);try{x.filter='none';}catch(e){}}
   const seen=(px,py)=>{if(!D.disc)return true;const i=((py/D.cs)|0)*D.gw+((px/D.cs)|0);return i>=0&&i<D.disc.length&&D.disc[i]===1;};
   const lab=(wx,wy,txt,col,shape,hit)=>{const px=wx*kk,py=wy*kk;x.save();x.translate(px,py);x.fillStyle='#000';
@@ -4706,7 +4704,16 @@ function mmFsDraw(){const o=mmFsEnsure();if(!o.classList.contains('on'))o.classL
     else{x.beginPath();x.moveTo(0,-7);x.lineTo(6.4,0);x.lineTo(0,7);x.lineTo(-6.4,0);x.closePath();x.fill();x.fillStyle=col;x.beginPath();x.moveTo(0,-5.4);x.lineTo(4.8,0);x.lineTo(0,5.4);x.lineTo(-4.8,0);x.closePath();x.fill();}x.restore();
     if(txt){x.font='700 11px Rubik,sans-serif';x.textAlign='center';x.lineWidth=3;x.strokeStyle='rgba(8,6,10,.95)';x.fillStyle='#fff3c8';const tx=Math.max(40,Math.min(cw-40,px)),ty=shape==='sq'?py-11:py+17;x.strokeText(txt,tx,ty);x.fillText(txt,tx,ty);}
     if(hit)MM.fsHit.push({x:px,y:py,r:26,to:hit});};
-  for(const e of Z.exits||[]){const ex=e.x+e.w/2,ey=e.y+e.h/2;if(!seen(ex,ey))continue;const known=mmList().some(q=>q[0]===e.to),t=e.to==='town'?'Brumavale':(known&&mmVisited(e.to)?(MMINFO[e.to]||[e.nm])[0]:'???');lab(ex,ey,t+(known?'  ›':''),e.ready===false?'#8a96a8':'#ffd070','sq',known?e.to:null);}
+  for(const e of Z.exits||[]){const ex=e.x+e.w/2,ey=e.y+e.h/2;if(!seen(ex,ey))continue;
+    const dn=e.to==='town'?'Brumavale':((MMINFO[e.to]||[e.nm])[0]),can=!!(MMINFO[e.to]||e.to==='town'),W2=Z.w*kk,H2=Z.h*kk;
+    let sd=e.side;if(sd===undefined||sd<0){const d=[ey*kk,H2-ey*kk,ex*kk,W2-ex*kk];sd=d.indexOf(Math.min(...d));}
+    const ins=22,ax=sd===2?ins:sd===3?cw-ins:Math.max(46,Math.min(cw-46,ex*kk)),ay=sd===0?ins+4:sd===1?ch-ins-4:Math.max(30,Math.min(ch-30,ey*kk));
+    const ang=[-Math.PI/2,Math.PI/2,Math.PI,0][sd],pl=.75+.25*Math.sin(G.t*5),col=e.ready===false?'#8a96a8':'#ffd070';
+    x.save();x.translate(ax,ay);x.rotate(ang);x.scale(1.5,1.5);x.fillStyle='#000';x.beginPath();x.moveTo(11,0);x.lineTo(-6,9);x.lineTo(-2,0);x.lineTo(-6,-9);x.closePath();x.fill();x.globalAlpha=1;x.fillStyle=col;x.beginPath();x.moveTo(8.5,0);x.lineTo(-4,6.5);x.lineTo(-1,0);x.lineTo(-4,-6.5);x.closePath();x.fill();x.restore();
+    x.font='700 11px Rubik,sans-serif';x.lineWidth=3;x.strokeStyle='rgba(8,6,10,.95)';x.fillStyle='#fff3c8';
+    const lx=sd===2?ax+16:sd===3?ax-16:ax,ly=sd===0?ay+22:sd===1?ay-14:ay+4;x.textAlign=sd===2?'left':sd===3?'right':'center';const tx=sd>=2?lx:Math.max(60,Math.min(cw-60,lx));
+    const tt=dn+(e.ready===false?' (em construção)':'');x.strokeText(tt,tx,ly);x.fillText(tt,tx,ly);
+    if(can&&e.ready!==false)MM.fsHit.push({x:ax,y:ay,r:34,to:e.to});}
   for(const g of Z.gates||[])if(seen(g.x,g.y))lab(g.x,g.y,g.nm,'#c8a0ff','dia');
   for(const m of Z.marks||[]){if(!seen(m.x,m.y))continue;if(m.k==='camp')lab(m.x,m.y,m.nm,'#e8a050','tri');else if(m.k==='shrine'||m.k==='lair')lab(m.x,m.y,m.nm,'#ff7a6a','dia');else if(m.k==='poi')lab(m.x,m.y,'★','#9ad8ff','dia');}
   if(D.k==='town'&&Z.portal)lab(Z.portal.x!==undefined?Z.portal.x:Z.portal[0],Z.portal.y!==undefined?Z.portal.y:Z.portal[1],'Portal','#c8a0ff','dia');
@@ -4718,6 +4725,7 @@ function mmFsDraw(){const o=mmFsEnsure();if(!o.classList.contains('on'))o.classL
     const a=[-1.5708,3.1416,1.5708,0][h.row]??0,px=h.x*kk,py=h.y*kk,z=7;x.save();x.translate(px,py);x.rotate(a);x.fillStyle='#fff';x.strokeStyle='#000';x.lineWidth=1.4;x.beginPath();x.moveTo(z,0);x.lineTo(-z*.7,z*.8);x.lineTo(-z*.35,0);x.lineTo(-z*.7,-z*.8);x.closePath();x.stroke();x.fill();x.restore();}
   {const g=x.createRadialGradient(cw/2,ch/2,Math.min(cw,ch)*.34,cw/2,ch/2,Math.max(cw,ch)*.75);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(4,6,12,.5)');x.fillStyle=g;x.fillRect(0,0,cw,ch);}
   x.strokeStyle='rgba(255,224,138,.45)';x.lineWidth=2;x.strokeRect(1,1,cw-2,ch-2);
+  mmFsBack(x,cw);
   {const cx0=cw-18,cy0=20;x.fillStyle='rgba(8,6,10,.7)';x.beginPath();x.arc(cx0,cy0,13,0,7);x.fill();x.fillStyle='#e0504a';x.beginPath();x.moveTo(cx0,cy0-11);x.lineTo(cx0+4,cy0);x.lineTo(cx0-4,cy0);x.fill();x.fillStyle='#e8dcc0';x.beginPath();x.moveTo(cx0,cy0+11);x.lineTo(cx0+4,cy0);x.lineTo(cx0-4,cy0);x.fill();}
 }
 function mmToggle(){if(MM.big){mmFsClose();return;}MM.big=true;MM.view=G.map;sfx('ui_click',.5);const c=$('mm');if(c)c._w='';mmFsOpen();}
