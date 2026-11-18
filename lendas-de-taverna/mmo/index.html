@@ -2541,7 +2541,7 @@ function gainXP(x,at){
   if(lvled){const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;sfx('levelup',.9);G.fx.push({k:'lv',x:h.x,y:h.y,life:1.2,max:1.2});levelUpFx(SAVE.lv);chat('Você alcançou o Nv.'+SAVE.lv+'!',4);dgRefresh();qCheck();buildBar();chat('+1 ponto de habilidade',4);checkBoss();}
 }
 function hurtHero(dmg,fromX,fromY,kf=1){
-  const h=G.hero;if(h.state==='ko')return;if(h.inv>0){floatText(h.x,h.y-58,'Esquivou!','#cfe9ff',9,1);return;}{const tk=stMul(h,'taken');if(tk!==1)dmg=Math.max(1,Math.round(dmg*tk));}if(SAVE.sub==='cavaleiro')dmg=Math.round(dmg*.92);{const dr=tf('dmgred')+sb('dmgred');if(dr)dmg=Math.max(1,Math.round(dmg*(1-Math.min(.6,dr))));}if(h.shield>0){const ab=Math.min(h.shield,dmg);h.shield-=ab;dmg-=ab;floatText(h.x+(Math.random()<.5?-15:15),h.y-34,'-'+ab,'#7ab8ff',10,.9,{pop:1,vy:20});if(dmg<=0){sfx('hit_1',.4,1.3);return;}}h.hp-=dmg;h.flash=.14;h.combat=4;
+  const h=G.hero;if(h.state==='ko')return;if(h.mounted)mountOff(true);h.mcb=4;if(h.inv>0){floatText(h.x,h.y-58,'Esquivou!','#cfe9ff',9,1);return;}{const tk=stMul(h,'taken');if(tk!==1)dmg=Math.max(1,Math.round(dmg*tk));}if(SAVE.sub==='cavaleiro')dmg=Math.round(dmg*.92);{const dr=tf('dmgred')+sb('dmgred');if(dr)dmg=Math.max(1,Math.round(dmg*(1-Math.min(.6,dr))));}if(h.shield>0){const ab=Math.min(h.shield,dmg);h.shield-=ab;dmg-=ab;floatText(h.x+(Math.random()<.5?-15:15),h.y-34,'-'+ab,'#7ab8ff',10,.9,{pop:1,vy:20});if(dmg<=0){sfx('hit_1',.4,1.3);return;}}h.hp-=dmg;h.flash=.14;h.combat=4;
   if(h.act&&h.act.ch>0&&!h.act.done&&dmg>=h.maxhp*.12){h.act=null;h.state='idle';h.cd=.6;floatText(h.x,h.y-64,'Interrompido!','#ff8a78',9,1);sfx('ui_denied',.3);}
   {const hv=dmg>=h.maxhp*.25,md=dmg>=h.maxhp*.12;floatText(h.x+(Math.random()<.5?-15:15),h.y-34,'−'+nfm(dmg),hv?'#ff2a1a':'#ff5448',hv?17:md?13.5:12,hv?1.25:1,{pop:1,vy:22,bold:1,glow:hv||md,k:'taken'});}if(dmg>=h.maxhp*.12)VF.spr(h.x,h.y-8,'fx_corte',.5);spark(h.x,h.y-16,4);knock(h,h.x-fromX,h.y-fromY,52*Math.min(kf,1.4));sfx(Math.random()<.5?'hit_0':'hit_1',.55,.9);
   if(h.hp<=0){h.hp=0;h.state='ko';h.koT=3;h.act=null;sfx('death',.8);chat('Você caiu em batalha…',2);if(G.arena){if(!G.arena.over){G.arena.over=1;G.boss=null;G.phase='end';bossAlert(false);setTimeout(()=>{if(G.arena&&G.hero.state==='ko')arenaResult(false);},1300);}}else{$('ko').classList.add('on');$('ko').style.display='flex';SAVE.gold=Math.round(SAVE.gold*.9);}}
@@ -2579,6 +2579,7 @@ function atkDur(h){const k=hStyle();return k==='cast'?.75:k==='shoot'?.95:.5;}
 function atkFrames(h){const k=hStyle();return k==='cast'?7:k==='shoot'?13:6;}
 function atkHitAt(h){const k=hStyle();return k==='cast'?.62:k==='shoot'?.7:.5;}
 function startHeroAttack(h,t,force){
+  if(h.mounted)mountOff(true);h.mcb=4;
   const C=CLASSES[h.cls];let sk=-1;const d=Math.max(0,dist(h,t)-((t.T&&t.T.rad)||0));
   if(force>=0)sk=force;else if(force!==-2)
   for(const k of [2,1,0]){const i=SAVE.eqs[k];if(i<0||SAVE.lv<SLOT_UNL[k]||!skAvail(i)||!skOk(i))continue;const S=C.skills[i],o=S[4];if(SAVE.sk[i]<1||h.sk[i]>0)continue;
@@ -3178,7 +3179,7 @@ function mobSkillStart(m,d,dt){const list=m.T.msk||MSK[m.kind==='boss'?'boss':m.
   else if(pick.id==='roar'||pick.id==='screech')addZone({shape:'circle',x:m.x,y:m.y,r:pick.r,warn:pick.warn,mult:pick.mult,st:pick.st,src:m,shake:.5});
   else addZone({shape:'circle',x:h.x,y:h.y,r:pick.r,warn:pick.warn,mult:pick.mult,st:pick.st,src:m});
   return true;}
-function hSpd(h){if(stHas(h,'preso')||stHas(h,'atordoado'))return 0;return h.speed*(h.buff&&h.buff.t>0?1+h.buff.spd:1)*stMul(h,'spd');}
+function hSpd(h){if(stHas(h,'preso')||stHas(h,'atordoado'))return 0;return h.speed*(h.buff&&h.buff.t>0?1+h.buff.spd:1)*stMul(h,'spd')*(h.mounted?(MOUNTS[SAVE.mount||'cavalo']||{spd:1}).spd:1);}
 /* ATACAR ANDANDO (dono: o personagem 'engasgava' parando para atacar). Penalidade de velocidade enquanto ataca: corpo a corpo básico ×.9; à distância básico ×.6;
    habilidade ×.4; habilidade canalizada (segurar/carregar) ×.2 — assim o ranged não foge para sempre. */
 const AMV={melee:1,ranged:.9,skill:.8,chan:.5};   // action RPG: atacar e usar skill quase não reduzem a velocidade
@@ -3197,7 +3198,7 @@ function updateHero(dt){
   if(G.intro&&G.scene!=="dungeon")G.intro=null;
   if(G.intro){const I=G.intro;I.t+=dt;h.state='walk';h.row=dir4(I.tx-h.x,I.ty-h.y);h.animT+=dt*(h.speed/70);moveTo(h,I.tx,I.ty,hSpd(h)*.8,dt);collide(h);if(I.t>=I.dur||Math.hypot(I.tx-h.x,I.ty-h.y)<6){G.intro=null;h.state='idle';}return;}
   if(G.crp&&G.crp.intro>0){const w=ZONE.crp.walkTo;h.state='walk';h.row=dir4(w[0]-h.x,w[1]-h.y);h.animT+=dt*(h.speed/70);moveTo(h,w[0],w[1],hSpd(h)*.8,dt);collide(h);return;}
-  h.cd-=dt;h.combat=Math.max(0,h.combat-dt);h.potCd=Math.max(0,h.potCd-dt);if(h.dcd>0)h.dcd-=dt;if(h.inv>0)h.inv-=dt;
+  mountTick(dt);h.cd-=dt;h.combat=Math.max(0,h.combat-dt);h.potCd=Math.max(0,h.potCd-dt);if(h.dcd>0)h.dcd-=dt;if(h.inv>0)h.inv-=dt;
   if(h.sts){stUpdate(h,dt);if(h.state==='ko')return;if(stHas(h,'atordoado')){h.state='idle';h.act=null;return;}
     if(stHas(h,'medo')){const fm=nearestMob(h,300);if(fm){moveTo(h,h.x+(h.x-fm.x),h.y+(h.y-fm.y),h.speed*.9,dt);h.row=dir4(h.x-fm.x,h.y-fm.y);h.state='walk';h.animT+=dt*(h.speed/70);collide(h);return;}}}
   if(h.buff){h.buff.t-=dt;if(Math.random()<dt*16)VF.pt(h.x+rnd(-11,11),h.y-rnd(0,8),{vy:-rnd(20,45),life:.6,col:h.buff.col||'#ffb050',sz:2});if(h.buff.t<=0)h.buff=null;}
@@ -4397,7 +4398,37 @@ const CXBLANK=(()=>{const c=document.createElement('canvas');c.width=c.height=1;
 function cxFuryAtlas(k){const sh=CXS[k];if(!sh||CXS[k+'_f']!==undefined)return;CXS[k+'_f']=null;try{const im=sh.atlasImg,c=document.createElement('canvas');c.width=im.naturalWidth||im.width;c.height=im.naturalHeight||im.height;const x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,c.width,c.height),a=d.data;
   for(let i=0;i<a.length;i+=4){if(a[i+3]===0)continue;const r=a[i],g=a[i+1],b=a[i+2],l=(r+g+b)/3;a[i]=Math.min(255,r*1.32+26);a[i+1]=Math.round(g*(l>200?.8:.58));a[i+2]=Math.round(b*(l>200?.55:.42));}
   x.putImageData(d,0,0);CXS[k+'_f']={atlasImg:c,meta:sh.meta};}catch(err){CXS[k+'_f']=null;}}
-function cxFrame(e){if(!CXON||(e.kind!=='hero'&&e.kind!=='mob'&&e.kind!=='boss'&&e.kind!=='npc'&&e.kind!=='vill'))return null;let k=cxKeyOf(e);if(k&&e.fury&&(e.kind==='boss'||e.mini)&&k!=='rei'){cxFuryAtlas(k);if(CXS[k+'_f'])k=k+'_f';}if(!k)return null;const sh=CXS[k];if(!sh){if(sh===undefined){cxLoad(k);if(e.kind==='boss'||e.kind==='mob')return CXBLANK;}return null;}
+/* ===== MONTARIAS (estilo MMO): só servem para viajar mais rápido; entrou em combate = a montaria some; chama de novo ao sair do combate =====
+   Sprite: cavalo por código (tools/mmo/pxengine/data/mount.py → cx_mount_<id>_atlas + _h) + cavaleiro composto em tempo de execução (mountFrame) para respeitar a aparência. */
+const MOUNTS={cavalo:{nm:'Cavalo',spd:1.4}};
+const MCV={};
+function mountOk(h){return !!(h&&G.on&&h.state!=='ko'&&!G.room&&!h.act&&!h.dod&&(G.scene==='town'||(G.scene==='dungeon'&&ZONE&&ZONE.region)));}
+function inCombat(h){if(!h)return false;if(h.mcb>0)return true;if(G.boss&&!G.boss.dead)return true;for(const m of G.mobs||[]){if(m.dead||m.hide)continue;if(m.eng&&dist(m,h)<700)return true;const T=m.T||{};if(dist(m,h)<(T.aggro||130)*.75)return true;}return false;}
+function mountOn(){const h=G.hero;if(!h||h.mounted)return;if(!mountOk(h)||!MOUNTS[SAVE.mount||'cavalo'])return;
+  if(inCombat(h)){floatText(h.x,h.y-62,'Em combate!','#ff9a8a',9,1);sfx('ui_denied',.5);return;}
+  h.mounted=true;gxSmoke(h.x,h.y,4,'#d8d0c0',0,{a:.5,sc:.7,up:.5});sfx('ui_confirm',.6);cxLoad('mount_'+(SAVE.mount||'cavalo'));cxLoad('mount_'+(SAVE.mount||'cavalo')+'_h');}
+function mountOff(combat){const h=G.hero;if(!h||!h.mounted)return;h.mounted=false;gxSmoke(h.x,h.y,3,'#a89878',0,{a:.45,sc:.6,up:.5});if(combat){h.mcb=3;floatText(h.x,h.y-62,'A montaria sumiu','#cfe9ff',9,1);}}
+function mountToggle(){const h=G.hero;if(!h||G.winOpen)return;if(h.mounted)mountOff(false);else mountOn();}
+function mountTick(dt){const h=G.hero;if(!h)return;h.mcb=Math.max(0,(h.mcb||0)-dt);
+  if(h.mounted){if(!mountOk(h)&&(h.act||h.dod||h.state==='ko')){mountOff(true);return;}
+    if(!(G.scene==='town'||(ZONE&&ZONE.region))){mountOff(false);return;}
+    h._mt=(h._mt||0)+dt;if(h._mt>.2){h._mt=0;if(inCombat(h))mountOff(true);}}}
+function mountUi(){const b=$('bMo');if(!b)return;const h=G.hero,ok=!!(h&&G.on&&!G.room&&(G.scene==='town'||(G.scene==='dungeon'&&ZONE&&ZONE.region)));b.style.display=ok?'':'none';const sm=b.querySelector('small');if(sm)sm.textContent=h&&h.mounted?'Descer':'Montar';b.classList.toggle('on',!!(h&&h.mounted));}
+setInterval(mountUi,300);
+/* quadro do herói montado: cavalo + cavaleiro (frame parado, cortado na altura da sela) + cabeça do cavalo por cima (vista de frente) */
+function mountFrame(e){const id=SAVE.mount||'cavalo',key='mount_'+id,sh=CXS[key],shh=CXS[key+'_h'];if(!sh||!shh){if(sh===undefined)cxLoad(key);if(shh===undefined)cxLoad(key+'_h');return null;}
+  const hk=heroCx(),hs=hk&&CXS[hk];if(!hs)return null;
+  const M=sh.meta,r=e.row===0?'u':e.row===2||e.row===undefined?'d':'s',mir=e.row===1,moving=e.state==='walk',nm=moving?((e.rk||0)>.5?'run':'walk'):'idle',L=M.anims[nm+'_'+r],n=L.length;
+  const fi=((Math.floor(moving?e.animT*(nm==='run'?14:20.8):(G.t+(e._cxp||(e._cxp=Math.random()*9)))*10)%n)+n)%n,q=L[fi],ck=hk+'|'+nm+'|'+r+'|'+fi;
+  let c=MCV[ck];
+  if(!c){const rd=(M.riderf&&M.riderf[nm+'_'+r]&&M.riderf[nm+'_'+r][fi])||M.rider[r]||[M.w/2,M.h/2],H=hs.meta,il=H.anims['idle_'+r],iq=il[0],cut=H.ay-10,
+      pad=Math.max(0,Math.ceil(cut-rd[1]+4)),cv=document.createElement('canvas');cv.width=M.w;cv.height=M.h+pad;const x=cv.getContext('2d');x.imageSmoothingEnabled=false;
+    const mx=(q%M.cols)*M.w,my=((q/M.cols)|0)*M.h;x.drawImage(sh.atlasImg,mx,my,M.w,M.h,0,pad,M.w,M.h);
+    const hx0=(iq%H.cols)*H.w,hy0=((iq/H.cols)|0)*H.h;x.drawImage(hs.atlasImg,hx0,hy0,H.w,cut,Math.round(rd[0]-H.ax),Math.round(pad+rd[1]-cut+3),H.w,cut);
+    if(r==='d')x.drawImage(shh.atlasImg,mx,my,M.w,M.h,0,pad,M.w,M.h);
+    c=MCV[ck]={f:[cv,0,0,M.w,M.h+pad,M.ax,M.ay+pad,0,1]};}
+  const f=c.f.slice();f[7]=mir?1:0;return f;}
+function cxFrame(e){if(!CXON||(e.kind!=='hero'&&e.kind!=='mob'&&e.kind!=='boss'&&e.kind!=='npc'&&e.kind!=='vill'))return null;let k=cxKeyOf(e);if(k&&e.fury&&(e.kind==='boss'||e.mini)&&k!=='rei'){cxFuryAtlas(k);if(CXS[k+'_f'])k=k+'_f';}if(e.kind==='hero'&&e.mounted&&e.state!=='ko'){const mf=mountFrame(e);if(mf)return mf;}if(!k)return null;const sh=CXS[k];if(!sh){if(sh===undefined){cxLoad(k);if(e.kind==='boss'||e.kind==='mob')return CXBLANK;}return null;}
   const M=sh.meta,r=e.row===0?'u':e.row===2||e.row===undefined?'d':'s',mir=e.row===1,a=e.act;
   const L=n=>(M.anims[n+'_'+r]||M.anims['idle_'+r]),A=(n,i)=>{const l=L(n),q=l[Math.max(0,Math.min(l.length-1,i|0))];return [sh.atlasImg,(q%M.cols)*M.w,((q/M.cols)|0)*M.h,M.w,M.h,M.ax,M.ay,mir?1:0,1];},
     AL=(n,i)=>{const l=L(n).length;return A(n,((Math.floor(i)%l)+l)%l);};
@@ -5148,6 +5179,7 @@ function socMenu(m,dun){
   m.appendChild(mk('bHb','assets/hud/hab.png','Habil.',()=>openPan(PL.hab),'bdHb',1));
   m.appendChild(mk('bQ','assets/hud/diario.png','Diário',()=>openWin('diario'),'bdQ',1));
   m.appendChild(mk('bGp','assets/hud/social.png','Social',()=>openWin('grupo'),null,1));
+  m.appendChild(mk('bMo','assets/hud/montaria.png','Montar',()=>mountToggle(),null,1));
 }
 const SOCW={missoes:()=>winMissoes(),diario:()=>winDiario(),grupo:()=>winGrupo()};
 function rwChips(r){const c=[];if(r.gold)c.push(['coins',r.gold]);if(r.xp)c.push(['xp',r.xp]);if(r.pot)c.push(['health-potion',r.pot]);if(r.tok)c.push(['gems',r.tok]);if(r.mat){const M=MATS.find(m=>m.id===r.mat[0]);c.push([M?M.ic:'ni_ferro',r.mat[1]]);}
@@ -5608,7 +5640,8 @@ G.joy={x:0,y:0,m:0};G.castReq=-1;G.atkHold=false;
     else if(['1','2','3'].includes(k)){G.castReq=+k-1;}
     else if(k===' '||k==='j'){G.atkHold=true;e.preventDefault();}
     else if(k==='e'&&G.scene==='dungeon'){manualDodge();}
-    else if(k==='p'&&G.scene==='dungeon'){usePotion(true);}});
+    else if(k==='p'&&G.scene==='dungeon'){usePotion(true);}
+    else if(k==='m'){mountToggle();}});
   addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k===' '||k==='j')G.atkHold=false;if(k==='shift'){KS.shift=0;kv();return;}if(KS[k]){KS[k]=0;kv();}});
 })();
 function joyShow(){const J=$('joy');if(!J)return;const on=G.on&&!G.winOpen&&!$('pan').classList.contains('on')&&$('hud').offsetParent!==null&&(G.scene==='town'||G.scene==='dungeon');if(J.classList.contains('on')!==on){J.classList.toggle('on',on);if(!on){G.joy.m=0;$('joyk').style.transform='';}}}
