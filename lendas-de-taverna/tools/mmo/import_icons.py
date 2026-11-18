@@ -55,4 +55,3 @@ if __name__ == '__main__':
             w, h = im.size; sc = max(1, S // max(w, h)); big = im.resize((w * sc, h * sc), Image.NEAREST)
             c = Image.new('RGBA', (S, S), (0, 0, 0, 0)); c.alpha_composite(big, ((S - big.width) // 2, (S - big.height) // 2)); c.save(os.path.join(UID, k + '.png'))
         print(len(MAP), 'ícones de item e', len(UI), 'de interface gerados')
-        print(len(MAP), 'ícones gerados')
