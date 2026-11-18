@@ -5299,7 +5299,7 @@ html #dlg,html #dlg *,html #npcmk *{white-space:normal!important;text-transform:
 #dlg .dlo:active{background:#5a431f}#dlg .dlo.q{color:#ffe08a}#dlg .dlo.r{color:#9ff08a}
 #dlg .dlk{position:absolute;right:10px;bottom:6px;font:700 11px var(--f);color:#b98a2a;animation:dkb .8s infinite}@keyframes dkb{50%{opacity:.2}}
 #npcmk{position:absolute;inset:0;pointer-events:none;z-index:40;overflow:hidden}
-#npcmk .nmk{position:absolute;transform:translate(-50%,-100%);font:900 22px var(--f);text-shadow:0 2px 0 #000,0 0 6px #000;animation:mkb .9s infinite}
+#npcmk .nmk{position:absolute;transform:translate(-50%,-100%);animation:mkb .9s infinite;filter:drop-shadow(0 2px 0 #000a)}#npcmk .nmk img{display:block;height:34px;image-rendering:pixelated}#npcmk .nmk.off img{filter:grayscale(1) brightness(.75)}
 @keyframes mkb{50%{margin-top:-5px}}
 #npcmk .nbub{position:absolute;transform:translate(-50%,-100%);max-width:170px;background:#fff6dc;color:#2a1a0a;border:2px solid #3a2a14;padding:4px 7px;font:600 11px/1.25 var(--f);text-align:center;box-shadow:0 2px 0 #3a2a14}
 #npcmk .nbub:after{content:'';position:absolute;left:50%;bottom:-7px;margin-left:-5px;border:5px solid transparent;border-top-color:#3a2a14;border-bottom:0}`;
@@ -5321,8 +5321,8 @@ function talk(t){if(G.dlg||G.winOpen&&G.winOpen!=='dlg')return;if(typeof inComba
   G.dlg=who;G.winOpen='dlg';G.wp=null;sfx('ui_confirm',.5);talkMenu(t,who,[nGreet(who)]);}
 function talkMenu(t,who,lines){
   const s=stS(),opts=[],q=stCurQ(),nx=stNext();
-  if(q&&q.turn===t.id){if(stReady())opts.push({lb:'✔ Entregar: '+q.nm,c:'r',fn:()=>stTurn(t,who,q)});else opts.push({lb:'… '+q.nm+' ('+stProg().join('/')+')',c:'q',fn:()=>talkMenu(t,who,[(q.prog||['Ainda não terminou.'])[0]])});}
-  if(nx&&nx.giver===t.id&&SAVE.lv>=nx.lv)opts.push({lb:'! '+nx.nm,c:'q',fn:()=>stOffer(t,who,nx)});
+  if(q&&q.turn===t.id){if(stReady())opts.push({lb:'<img src="assets/kit/B29.png" style="height:18px;vertical-align:middle;margin-right:6px;image-rendering:pixelated">'+'Entregar: '+q.nm,c:'r',fn:()=>stTurn(t,who,q)});else opts.push({lb:'<img src="assets/kit/B29.png" style="height:18px;vertical-align:middle;margin-right:6px;image-rendering:pixelated">'+q.nm+' ('+stProg().join('/')+')',c:'q',fn:()=>talkMenu(t,who,[(q.prog||['Ainda não terminou.'])[0]])});}
+  if(nx&&nx.giver===t.id&&SAVE.lv>=nx.lv)opts.push({lb:'<img src="assets/kit/B28.png" style="height:18px;vertical-align:middle;margin-right:6px;image-rendering:pixelated">'+nx.nm,c:'q',fn:()=>stOffer(t,who,nx)});
   if(t.win&&SVCL[t.win])opts.push({lb:SVCL[t.win],fn:()=>{dlgClose();if(t.win==='portal')openWin('portal');else openWin(t.win);}});
   opts.push({lb:'Até logo',fn:dlgClose});dlgShow(who,lines,opts);}
 function stOffer(t,who,q){dlgShow(who,q.give,[{lb:'Aceitar a missão',c:'q',fn:()=>{const s=stS();s.cur={i:s.n,p:0,b0:q.obj.t==='boss'?((SAVE.hunts||{})[q.obj.name]||0):0};chat('Missão principal aceita: '+q.nm,4);sfx('levelup',.4);writeSave();socRefresh();talkMenu(t,who,['Boa sorte, Escolhido.']);}},{lb:'Agora não',fn:()=>talkMenu(t,who,['Volte quando estiver pronto.'])}]);}
@@ -5340,7 +5340,7 @@ function stMarkers(){if(!G.on||!G.hero||!window.V3||!V3.toScreen){return;}dlgIni
   let i=0;const used=new Set();
   for(const n of list){if(n.kind!=='npc')continue;let sym='',col='';
     if(cur&&cur.turn===n.id){sym='?';col=stReady()?'#ffd23a':'#8a8f98';}else if(nx&&nx.giver===n.id&&SAVE.lv>=nx.lv){sym='!';col='#ffd23a';}
-    if(!sym)continue;const p=ts(n.x,n.y,64),e=mk.children[i++];e.className='nmk';e.textContent=sym;e.style.color=col;e.style.left=p[0]+'px';e.style.top=p[1]+'px';e.style.display='block';}
+    if(!sym)continue;const p=ts(n.x,n.y,64),e=mk.children[i++];e.className='nmk'+(col==='#8a8f98'?' off':'');if(e.dataset.s!==sym){e.dataset.s=sym;e.innerHTML='<img src="assets/kit/'+(sym==='?'?'B29':'B28')+'.png">';}e.style.left=p[0]+'px';e.style.top=p[1]+'px';e.style.display='block';}
   const bi=i;
   if(BUB.e&&BUB.t>0&&!G.winOpen){const e=mk.children[i++],p=ts(BUB.e.x,BUB.e.y,BUB.e.kind==='vill'?58:(BUB.e.id==='mer'?64:72));e.className='nbub';e.textContent=BUB.txt;e.style.left=p[0]+'px';e.style.top=(p[1]-(BUB.e.kind==='npc'&&mk.querySelector('.nmk')?18:0))+'px';e.style.display='block';e.style.color='';}
   for(;i<mk.children.length;i++)mk.children[i].style.display='none';}
