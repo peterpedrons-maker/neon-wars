@@ -148,6 +148,14 @@ bardo:{
       ['Gran Finale','+22% dano em chefes e +14% em feridos, −6% defesa.',{boss:.22,exec:.14,def:-.06}]]}
 };
 
+
+/* mini passivas de COMBO por classe (cb4 = +1 golpe no combo, cbw = janela de tempo maior, cbp = recurso/duração do combo) */
+(function(){const P=(c,i,j,m)=>{CL[c].sec[i].mi[j]=m;};
+ P('mago',5,0,M('cb4',1,'Quarto Elemento: combo de 4 golpes (o 4º repete o ciclo)'));P('mago',2,2,M('cbw',.5,'Ritmo Arcano: janela de combo maior'));P('mago',3,0,M('cbp',1,'Eco Prolongado: Ressonância dura +2s'));
+ P('arqueiro',1,2,M('cb4',1,'Quarta Flecha: combo de 4 tiros'));P('arqueiro',0,2,M('cbw',.5,'Mira Paciente: janela de combo maior'));P('arqueiro',2,2,M('cbp',1,'Marca Profunda: +1 Marca máxima por alvo'));
+ P('ladino',0,2,M('cb4',1,'Quinto Corte: combo de 5 golpes'));P('ladino',1,2,M('cbw',.5,'Tempo de Lâmina: janela de combo maior'));P('ladino',5,2,M('cbp',1,'Mais Pontos: +1 ponto de combo máximo'));
+ P('clerigo',1,2,M('cb4',1,'Quarta Prece: combo de 4 golpes'));P('clerigo',5,2,M('cbw',.5,'Fé Paciente: janela de combo maior'));P('clerigo',0,0,M('cbp',1,'Mais Luz: +1 Luz máxima'));
+ P('bardo',0,2,M('cb4',1,'Quarta Nota: combo de 4 notas'));P('bardo',2,2,M('cbw',.5,'Tempo Perfeito: janela de combo maior'));P('bardo',5,2,M('cbp',1,'Acorde Longo: acordes duram +2s'));})();
 /* ---------- geometria ---------- */
 const RR=k=>140+54*k;           // raio do anel k
 const RINGS=6,LN=4;
