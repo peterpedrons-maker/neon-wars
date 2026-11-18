@@ -14,53 +14,70 @@ R = F.R
 PAL = {
     'cavalo': dict(body=R('#4a2616', '#7a4426', '#a86a40'), mane=R('#1a0e08', '#2c1a0e', '#46301c'), hoof=R('#1a1410', '#2c241c', '#443a2e'),
                    nose=R('#7a4a44', '#a8706a', '#cc9a90'), saddle=R('#3a1c0e', '#6a3418', '#98502a'), blanket=R('#5a1020', '#9a2236', '#cc4a5e'),
-                   belly=R('#6a3c24', '#98603c', '#c08a5c'), blaze=R('#b8b0a4', '#e6dece', '#fffaf0')),
+                   belly=R('#6a3c24', '#98603c', '#c08a5c'), blaze=R('#b8b0a4', '#e6dece', '#fffaf0'), sock=R('#a8a094', '#dcd4c4', '#fffaf0')),
     'lobo': dict(body=R('#3a404e', '#5e6676', '#8a94a6'), mane=R('#202530', '#363c4a', '#505868'), hoof=R('#14141c', '#262630', '#3a3a46'),
                  nose=R('#14141c', '#2a2a34', '#44444e'), saddle=R('#3a1c0e', '#6a3418', '#98502a'), blanket=R('#1a3a5a', '#2c64a0', '#5a98d0'),
-                 belly=R('#7a8294', '#aab2c4', '#d0d6e2'), blaze=R('#d0d6e2', '#eef0f6', '#ffffff')),
+                 belly=R('#7a8294', '#aab2c4', '#d0d6e2'), blaze=R('#d0d6e2', '#eef0f6', '#ffffff'), sock=R('#8a92a4', '#c8cedc', '#ffffff')),
 }
 
 
-def cavalo(view, ph=0.0, bob=0, stride=3.0, lift=2.6, tail=0.0, head=False, pal='cavalo'):
-    """head=True: só pescoço+cabeça+crina (camada que fica na frente do cavaleiro na vista de frente)."""
+def _leg(u, amp, L, run):
+    """fase u (0..1) -> (deslocamento x do pe, altura do pe). Apoio: pe vai para tras no chao; balanco: levanta e leva para frente."""
+    u %= 1.0; st = .6 if not run else .5
+    if u < st: return amp - 2 * amp * (u / st), 0.0
+    w = (u - st) / (1 - st); return -amp + 2 * amp * w, math.sin(math.pi * w) * L
+
+
+def leg2(c, x, hipy, gy, u, amp, L, front, far, run, sock=True):
+    """perna de duas partes (coxa + canela) com joelho/jarrete dobrando; casco na ponta."""
+    fx, fl = _leg(u, amp, L, run); foot = (x + fx, gy - fl); hip = (x, hipy)
+    mx, my = (hip[0] + foot[0]) / 2, (hip[1] + foot[1]) / 2 - .5
+    bend = (1.2 + fl * .55) * (1 if front else -1) * (1 if fl > .1 or True else 0)
+    kx, ky = mx + bend, my
+    c.cap(hip[0], hip[1], kx, ky, 1.9, 1.35, 'body', far)
+    c.cap(kx, ky, foot[0], foot[1] - 1.3, 1.35, 1.0, 'sock' if sock else 'body', far)
+    c.cap(foot[0], foot[1] - 1.4, foot[0] + .4, foot[1] + .2, 1.2, 1.35, 'hoof', far)
+
+
+def cavalo(view, u=0.0, bob=0, amp=3.0, lift=2.6, tail=0.0, head=False, pal='cavalo', run=False, nod=0.0, idle=False):
+    """head=True: so pescoco+cabeca+crina (camada que fica na frente do cavaleiro na vista de frente)."""
     c = F.Cv(); cx = W // 2; gy = BASE; by = gy - 15 + bob; rider = None
+    if idle: amp = 0.0; lift = 0.0
+    if run: offs = {'nh': 0.0, 'fh': .08, 'nf': .5, 'ff': .58}
+    else: offs = {'nh': 0.0, 'nf': .25, 'fh': .5, 'ff': .75}
     if view == 'right':
-        legs = ((-6, 0, True), (6, math.pi, True), (-5.5, math.pi, False), (6.5, 0, False))
         if not head:
-            for lx, p0, far in legs:
-                lf = max(0, math.sin(ph + p0)) * lift; sw = math.cos(ph + p0) * stride
-                F.leg(c, cx + lx, by + 3, gy, sw, lf, 1.8, 1.2, 'body', far, 'hoof')
+            for name, lx, front, far in (('fh', -6.0, False, True), ('ff', 6.0, True, True), ('nh', -5.0, False, False), ('nf', 6.8, True, False)):
+                leg2(c, cx + lx, by + 3, gy, u + offs[name], amp, lift, front, far, run, sock=(name in ('nh', 'nf')))
             c.ell(cx - 7, by, 6.2, 5.6); c.ell(cx, by + .3, 9.4, 5.9); c.ell(cx, by + 3.4, 8, 2.3, 'belly'); c.ell(cx + 7, by - .6, 5.8, 6.1)
-            c.cap(cx - 11, by - 2, cx - 14.5, by + 7 + math.sin(tail) * 2.2, 2.2, 1.1, 'mane')
-            c.ell(cx - .5, by - 5.4, 5.2, 1.5, 'blanket'); c.ell(cx - .5, by - 6.0, 3.4, 1.3, 'saddle')
-        c.cap(cx + 9, by - 3, cx + 14, by - 11, 3.6, 2.3)
-        c.cap(cx + 14, by - 11, cx + 20, by - 7.4, 2.7, 2.0)
-        c.cap(cx + 19, by - 8, cx + 22.4, by - 5.6, 2.0, 1.7, 'nose')
-        c.cap(cx + 13, by - 13, cx + 13.8, by - 16, 1.2, .5)
-        c.cap(cx + 8.4, by - 5.4, cx + 12.4, by - 12.8, 1.5, 1.2, 'mane')
-        c.dot(cx + 17.6, by - 10.2, F.hx('#14100c')); c.dot(cx + 22.6, by - 6.2, F.hx('#14100c'))
+            tl = math.sin(tail) * (3.2 if run else 2.0); tu = -3.5 if run else 0
+            c.cap(cx - 11, by - 3, cx - 15, by - 2 + tu + 2.5, 2.2, 1.6, 'mane'); c.cap(cx - 15, by - 2 + tu + 2.5, cx - 17.5 + (2 if run else 0), by + 7 + tu * .4 + tl, 1.6, .8, 'mane')
+            c.ell(cx - .5, by - 5.4, 5.2, 1.5, 'blanket'); c.ell(cx - .5, by - 6.0, 3.4, 1.3, 'saddle'); c.cap(cx + 2.5, by - 5, cx + 3.2, by + 1.2, .7, .5, 'saddle')
+        hd = int(round(nod))
+        c.cap(cx + 9, by - 3, cx + 14 + (1 if run else 0), by - 11 + hd + (3 if run else 0), 3.6, 2.3)
+        hx0, hy0 = cx + 14 + (1 if run else 0), by - 11 + hd + (3 if run else 0)
+        c.cap(hx0, hy0, hx0 + 6, hy0 + 3.6, 2.7, 2.0)
+        c.cap(hx0 + 5, hy0 + 3, hx0 + 8.4, hy0 + 5.4, 2.0, 1.7, 'nose')
+        c.cap(hx0 - 1, hy0 - 2, hx0 - .2, hy0 - 5, 1.2, .5)
+        c.cap(cx + 8.4, by - 5.4, hx0 - 1.6, hy0 - 1.8, 1.5, 1.2, 'mane')
+        for q in range(3 if not run else 0): c.cap(cx + 8 + q * 1.3, by - 5 + q * -2.2, cx + 6.4 + q * 1.3, by - 3.4 + q * -2.2 + 1.5, .9, .5, 'mane')
+        c.cap(hx0 + 5.5, hy0 + 3.4, cx + 6.4, by - 5, .6, .5, 'saddle')
+        c.dot(hx0 + 3.6, hy0 + 1, F.hx('#14100c')); c.dot(hx0 + 8.6, hy0 + 5, F.hx('#14100c')); c.dot(hx0 + 3.2, hy0 + .4, F.hx('#f4ece0'))
         rider = (cx - .5, by - 7.2)
-    elif view == 'down':
-        legs = ((-4.4, 0), (4.4, math.pi))
-        if not head:
-            for lx, p0 in legs:
-                lf = max(0, math.sin(ph + p0)) * lift; sw = 0
-                F.leg(c, cx + lx, by + 3, gy, sw, lf, 2.2, 1.5, 'body', False, 'hoof')
-            c.ell(cx, by + .5, 8.2, 6.8); c.ell(cx, by + 4, 7.6, 2.4, 'belly'); c.ell(cx, by - 4.8, 5.6, 1.6, 'blanket')
-        c.cap(cx, by - 2, cx, by - 10, 5.0, 3.2)
-        c.ell(cx, by - 13, 3.0, 4.2); c.ell(cx, by - 9.5, 2.1, 1.5, 'nose')
-        c.cap(cx - 2.2, by - 16.2, cx - 2.6, by - 19, 1.1, .5); c.cap(cx + 2.2, by - 16.2, cx + 2.6, by - 19, 1.1, .5)
-        c.cap(cx, by - 15.5, cx, by - 9, 1.1, 1.0, 'blaze')
-        c.dot(cx - 2.2, by - 13.4, F.hx('#14100c')); c.dot(cx + 2.2, by - 13.4, F.hx('#14100c')); c.dot(cx - 1, by - 9, F.hx('#2a1a14')); c.dot(cx + 1, by - 9, F.hx('#2a1a14'))
-        rider = (cx, by - 6.4)
     else:
-        legs = ((-4.4, math.pi), (4.4, 0))
-        for lx, p0 in legs:
-            lf = max(0, math.sin(ph + p0)) * lift
-            F.leg(c, cx + lx, by + 3, gy, 0, lf, 2.2, 1.5, 'body', False, 'hoof')
-        c.ell(cx, by + .5, 8.4, 6.8); c.ell(cx, by - 4.8, 5.6, 1.6, 'blanket'); c.ell(cx, by - 5.4, 3.6, 1.3, 'saddle')
-        c.cap(cx, by - 1, cx + math.sin(tail) * 2.4, by + 11, 2.6, 1.3, 'mane')
-        rider = (cx, by - 6.8)
+        back = view == 'up'
+        if not head:
+            for name, lx, front in (('nh', -4.4, False), ('nf', 4.4, True)):
+                leg2(c, cx + lx, by + 3, gy, u + offs[name], 0.0, lift * (1.4 if run else 1), front, False, run)
+            c.ell(cx, by + .5, 8.2 if not back else 8.4, 6.8); c.ell(cx, by + 4, 7.6, 2.4, 'belly'); c.ell(cx, by - 4.8, 5.6, 1.6, 'blanket')
+            if back: c.ell(cx, by - 5.4, 3.6, 1.3, 'saddle'); c.cap(cx, by - 1, cx + math.sin(tail) * 2.6, by + 11, 2.8, 1.3, 'mane')
+        if not back:
+            hd = int(round(nod))
+            c.cap(cx, by - 2, cx, by - 10, 5.0, 3.2); c.ell(cx, by - 13 + hd, 3.0, 4.2); c.ell(cx, by - 9.5 + hd, 2.1, 1.5, 'nose')
+            c.cap(cx - 2.2, by - 16.2 + hd, cx - 2.6, by - 19 + hd, 1.1, .5); c.cap(cx + 2.2, by - 16.2 + hd, cx + 2.6, by - 19 + hd, 1.1, .5)
+            c.cap(cx, by - 15.5 + hd, cx, by - 9 + hd, 1.1, 1.0, 'blaze')
+            c.cap(cx, by - 4, cx, by - 15, 1.6, 1.2, 'mane'); c.dot(cx - 2.2, by - 13.4 + hd, F.hx('#14100c')); c.dot(cx + 2.2, by - 13.4 + hd, F.hx('#14100c'))
+        rider = (cx, by - 6.4) if not back else (cx, by - 6.8)
     img = c.render(PAL[pal], F.FLAT)
     return img, rider
 
@@ -71,10 +88,10 @@ GAITS = {'idle': 6, 'walk': 8, 'run': 8}
 def frames(view, kind, pal='cavalo', head=False):
     n = GAITS[kind] * 2; out = []; rid = []
     for i in range(n):
-        ph = 2 * math.pi * i / n
-        if kind == 'idle': im, r = cavalo(view, 0, bob=1 if math.sin(ph) > .55 else 0, tail=ph, head=head, pal=pal)
-        elif kind == 'walk': im, r = cavalo(view, ph, bob=-1 if abs(math.sin(ph * 2)) > .85 else 0, stride=3.0, lift=2.4, tail=ph * 2, head=head, pal=pal)
-        else: im, r = cavalo(view, ph, bob=-2 if math.sin(ph * 2) > 0 else 0, stride=5.4, lift=4.2, tail=ph * 3, head=head, pal=pal)
+        u = i / n; ph = 2 * math.pi * u
+        if kind == 'idle': im, r = cavalo(view, u, bob=1 if math.sin(ph) > .55 else 0, tail=ph, head=head, pal=pal, idle=True, nod=math.sin(ph * 1))
+        elif kind == 'walk': im, r = cavalo(view, u, bob=-1 if abs(math.sin(ph * 2)) > .8 else 0, amp=3.2, lift=2.8, tail=ph * 2, head=head, pal=pal, nod=1.4 * math.sin(ph * 2 + 1))
+        else: im, r = cavalo(view, u, bob=(-2 if math.sin(ph * 2) > .3 else (1 if math.sin(ph * 2) < -.7 else 0)), amp=5.4, lift=4.6, tail=ph * 3, head=head, pal=pal, run=True, nod=2.2 * math.sin(ph * 2 + .6))
         out.append(im); rid.append(r)
     return out, rid
 

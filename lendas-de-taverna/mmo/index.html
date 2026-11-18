@@ -4398,6 +4398,13 @@ const CXBLANK=(()=>{const c=document.createElement('canvas');c.width=c.height=1;
 function cxFuryAtlas(k){const sh=CXS[k];if(!sh||CXS[k+'_f']!==undefined)return;CXS[k+'_f']=null;try{const im=sh.atlasImg,c=document.createElement('canvas');c.width=im.naturalWidth||im.width;c.height=im.naturalHeight||im.height;const x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,c.width,c.height),a=d.data;
   for(let i=0;i<a.length;i+=4){if(a[i+3]===0)continue;const r=a[i],g=a[i+1],b=a[i+2],l=(r+g+b)/3;a[i]=Math.min(255,r*1.32+26);a[i+1]=Math.round(g*(l>200?.8:.58));a[i+2]=Math.round(b*(l>200?.55:.42));}
   x.putImageData(d,0,0);CXS[k+'_f']={atlasImg:c,meta:sh.meta};}catch(err){CXS[k+'_f']=null;}}
+/* sons da montaria: relincho (montar/desmontar) e cascos (andar = 4 batidas, galope = 3 batidas) */
+function mountSnd(k,v){if(!AC||!sfxGain)return;const g=Math.min(1,v==null?.7:v),t=AC.currentTime;
+  if(k==='neigh'){if(!synthOK('m_neigh',.8))return;
+    tn2(430,960,t,.2,.13*g,'sawtooth',2400);tn2(960,1240,t+.2,.1,.12*g,'sawtooth',2600);tn2(1240,1010,t+.3,.08,.1*g,'sawtooth',2400);tn2(1010,1260,t+.38,.07,.1*g,'sawtooth',2600);tn2(1260,520,t+.45,.34,.11*g,'sawtooth',1900);
+    tn2(436,972,t,.2,.07*g,'square',1800);tn2(1260,540,t+.45,.34,.05*g,'square',1700);nz2(t,.8,.05*g,'bandpass',1500,800,2.5);nz2(t+.02,.25,.03*g,'highpass',3500);}
+  else if(k==='snort'){if(!synthOK('m_snort',.5))return;nz2(t,.18,.12*g,'bandpass',900,300,1.5);tn2(260,150,t,.16,.09*g,'sawtooth',700);}
+  else if(k==='hoof'){if(!synthOK('m_hoof',.045))return;const p=.9+Math.random()*.25;nz2(t,.05,.16*g,'lowpass',1500*p,500,1);tn2(190*p,95,t,.07,.16*g,'sine');nz2(t,.03,.07*g,'highpass',2400);}}
 /* ===== MONTARIAS (estilo MMO): só servem para viajar mais rápido; entrou em combate = a montaria some; chama de novo ao sair do combate =====
    Sprite: cavalo por código (tools/mmo/pxengine/data/mount.py → cx_mount_<id>_atlas + _h) + cavaleiro composto em tempo de execução (mountFrame) para respeitar a aparência. */
 const MOUNTS={cavalo:{nm:'Cavalo',spd:1.4}};
@@ -4406,13 +4413,20 @@ function mountOk(h){return !!(h&&G.on&&h.state!=='ko'&&!G.room&&!h.act&&!h.dod&&
 function inCombat(h){if(!h)return false;if(h.mcb>0)return true;if(G.boss&&!G.boss.dead)return true;for(const m of G.mobs||[]){if(m.dead||m.hide)continue;if(m.eng&&dist(m,h)<700)return true;const T=m.T||{};if(dist(m,h)<(T.aggro||130)*.75)return true;}return false;}
 function mountOn(){const h=G.hero;if(!h||h.mounted)return;if(!mountOk(h)||!MOUNTS[SAVE.mount||'cavalo'])return;
   if(inCombat(h)){floatText(h.x,h.y-62,'Em combate!','#ff9a8a',9,1);sfx('ui_denied',.5);return;}
-  h.mounted=true;gxSmoke(h.x,h.y,4,'#d8d0c0',0,{a:.5,sc:.7,up:.5});sfx('ui_confirm',.6);cxLoad('mount_'+(SAVE.mount||'cavalo'));cxLoad('mount_'+(SAVE.mount||'cavalo')+'_h');}
-function mountOff(combat){const h=G.hero;if(!h||!h.mounted)return;h.mounted=false;gxSmoke(h.x,h.y,3,'#a89878',0,{a:.45,sc:.6,up:.5});if(combat){h.mcb=3;floatText(h.x,h.y-62,'A montaria sumiu','#cfe9ff',9,1);}}
+  h.mounted=true;mountFx(h,true);mountSnd('neigh',.8);cxLoad('mount_'+(SAVE.mount||'cavalo'));cxLoad('mount_'+(SAVE.mount||'cavalo')+'_h');}
+function mountFx(h,on,combat){const x=h.x,y=h.y,c1=combat?'#ff8a70':on?'#ffe08a':'#9ad8ff',c2=combat?'#ffd0c0':on?'#fff6d8':'#d8f0ff';
+  gxFlash(x,y-12,on?54:40,c1,.38);gxRing(x,y,on?40:30,c1,7,.5);gxRing(x,y,on?64:46,c2,3,.62);gxStar(x,y-16,on?34:26,c2,.4);
+  gxSmoke(x,y,on?7:5,'#d8d0c0',0,{a:.55,sc:.8,up:.6});
+  for(let i=0;i<(on?22:14);i++){const a=Math.random()*6.283,r=rnd(6,on?34:24);VF.pt(x+Math.cos(a)*r,y-rnd(0,6),{vx:Math.cos(a)*rnd(20,70),vy:-rnd(30,90),life:rnd(.4,.8),col:i%3?c1:c2,sz:rnd(2,3.4)});}
+  for(let i=0;i<5;i++)VF.pt(x+rnd(-14,14),y,{vy:-rnd(40,100),vx:rnd(-30,30),life:.7,col:'#e8dcc0',sz:3,add:false});
+  if(on&&VF.shake)VF.shake(.18);}
+function mountOff(combat){const h=G.hero;if(!h||!h.mounted)return;h.mounted=false;mountFx(h,false,combat);mountSnd(combat?'snort':'neigh',combat?.7:.55);if(combat){h.mcb=3;floatText(h.x,h.y-62,'A montaria sumiu','#cfe9ff',9,1);}}
 function mountToggle(){const h=G.hero;if(!h||G.winOpen)return;if(h.mounted)mountOff(false);else mountOn();}
 function mountTick(dt){const h=G.hero;if(!h)return;h.mcb=Math.max(0,(h.mcb||0)-dt);
   if(h.mounted){if(!mountOk(h)&&(h.act||h.dod||h.state==='ko')){mountOff(true);return;}
     if(!(G.scene==='town'||(ZONE&&ZONE.region))){mountOff(false);return;}
-    h._mt=(h._mt||0)+dt;if(h._mt>.2){h._mt=0;if(inCombat(h))mountOff(true);}}}
+    h._mt=(h._mt||0)+dt;if(h._mt>.2){h._mt=0;if(inCombat(h))mountOff(true);}
+    if(h.state==='walk'){const gal=(h.rk||0)>.5,seq=gal?[0,.11,.22]:[0,.3,.6,.9],cyc=gal?.56:1.2;h._hp=(h._hp||0)+dt*(gal?1:(h.speed>0?Math.min(1.1,Math.hypot(G.joy.x,G.joy.y)+.3):.6));const ph=h._hp%cyc,pk=h._hk==null?-1:h._hk;let idx=-1;for(let i=0;i<seq.length;i++)if(ph>=seq[i])idx=i;if(idx!==pk&&idx>=0)mountSnd('hoof',gal?.75:.5);h._hk=idx;}else h._hk=-1;}}
 function mountUi(){const b=$('bMo');if(!b)return;const h=G.hero,ok=!!(h&&G.on&&!G.room&&(G.scene==='town'||(G.scene==='dungeon'&&ZONE&&ZONE.region)));b.style.display=ok?'':'none';const sm=b.querySelector('small');if(sm)sm.textContent=h&&h.mounted?'Descer':'Montar';b.classList.toggle('on',!!(h&&h.mounted));}
 setInterval(mountUi,300);
 /* quadro do herói montado: cavalo + cavaleiro (frame parado, cortado na altura da sela) + cabeça do cavalo por cima (vista de frente) */
