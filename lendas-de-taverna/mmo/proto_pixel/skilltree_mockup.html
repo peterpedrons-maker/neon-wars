@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Árvore de Passivas · Mockup</title>
+<style>
+@font-face{font-family:PX;src:url(../assets/fonts/PixelifySans-400.ttf);font-weight:400}
+@font-face{font-family:PX;src:url(../assets/fonts/PixelifySans-700.ttf);font-weight:700}
+:root{--ouro:#d9b45f;--ouroC:#f3d98e;--bg:#0c0a12;--panel:#17131f;--lin:#3a3040}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:#e9e2d0;font-family:PX,system-ui,sans-serif;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+header{flex:none;padding:calc(8px + env(safe-area-inset-top)) 10px 6px;background:linear-gradient(#241c2e,#120e19);border-bottom:2px solid var(--ouro);z-index:5}
+.row{display:flex;align-items:center;gap:8px}
+h1{margin:0;font:700 14px PX;letter-spacing:.14em;text-transform:uppercase;color:var(--ouroC);flex:1}
+.pts{font:700 13px PX;color:#fff;background:#0d0a12;border:2px solid var(--ouro);padding:3px 9px}
+.pts b{color:#ffd070}
+.x{width:28px;height:28px;border:2px solid var(--ouro);background:#1c1822;color:var(--ouroC);font:700 16px PX;line-height:22px;text-align:center}
+.chips{display:flex;gap:5px;margin-top:7px;overflow:auto;scrollbar-width:none}
+.chips button{flex:none;font:700 10px PX;letter-spacing:.06em;padding:5px 9px;border:2px solid #4a3f56;background:#14101b;color:#b8aec4}
+.chips button.on{border-color:var(--c,#ffd070);color:#fff;background:#241c2e;box-shadow:0 0 8px var(--c,#ffd070)}
+#stage{flex:1;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 50%,#221a30 0,#120d1b 55%,#09070e 100%)}
+svg{width:100%;height:100%;display:block}
+.edge{stroke:#2e2838;stroke-width:4;stroke-linecap:round;fill:none}
+.edge.on{stroke:#ffcf6a;filter:url(#glow)}
+.edge.av{stroke:#5a4a2a}
+.nd{cursor:pointer}
+.nd .base{fill:#171220;stroke:#4a3f56;stroke-width:3}
+.nd.lock{opacity:.7}
+.nd.av .ring{opacity:1;animation:pulse 1.4s ease-in-out infinite}
+.ring{fill:none;stroke:#ffe08a;stroke-width:2.5;opacity:0}
+@keyframes pulse{50%{opacity:.35}}
+.nd.on .base{stroke:var(--c);filter:url(#glow)}
+.nd.dim{opacity:.18}
+.nd.hl .base{stroke:#fff;stroke-width:4}
+.lbl{font:700 11px PX;fill:#e9e2d0;text-anchor:middle;paint-order:stroke;stroke:#0a0710;stroke-width:3.5px;pointer-events:none}
+.lbl.k{fill:#ffd9a0;font-size:12px}
+.lbl.c{fill:#e2c8ff}
+.tag{font:700 8px PX;fill:#9a8fa8;text-anchor:middle;paint-order:stroke;stroke:#0a0710;stroke-width:3px;pointer-events:none}
+#sheet{position:absolute;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));background:linear-gradient(#211a2b,#130f1b);border:2px solid var(--c,var(--ouro));box-shadow:0 0 0 2px #000,0 8px 24px #000b;padding:10px 12px 12px;display:none;z-index:6}
+#sheet.show{display:block}
+#sheet .t{display:flex;gap:10px;align-items:center}
+#sheet .ic{width:46px;height:46px;border:2px solid var(--c);background:#0d0a12;flex:none;display:grid;place-items:center;overflow:hidden}
+#sheet .ic img{width:100%;height:100%;image-rendering:pixelated}
+#sheet h2{margin:0;font:700 15px PX;color:#fff;letter-spacing:.04em}
+#sheet .bd{font:700 9px PX;letter-spacing:.12em;text-transform:uppercase;color:var(--c)}
+#sheet ul{list-style:none;margin:8px 0 0;padding:0;font:400 12px/1.5 PX;color:#d8d0c0}
+#sheet li.g{color:#9be39b}#sheet li.r{color:#ff9a8a}#sheet li.n{color:#bdb3cc;font-style:italic}
+#sheet .acts{display:flex;gap:8px;margin-top:10px;align-items:center}
+#sheet .req{flex:1;font:400 11px PX;color:#9a8fa8}
+#sheet button{font:700 12px PX;letter-spacing:.08em;padding:9px 16px;border:2px solid #8ef08a;background:#2f5a2a;color:#fff}
+#sheet button[disabled]{border-color:#555;background:#26222b;color:#777}
+#sheet button.ref{border-color:#ff9a8a;background:#4a2424}
+.leg{position:absolute;left:8px;bottom:8px;background:#120e19cc;border:1px solid var(--lin);padding:6px 8px;font:400 10px/1.7 PX;color:#b8aec4;z-index:3}
+.leg i{display:inline-block;width:11px;height:11px;margin-right:6px;vertical-align:-1px;border:2px solid #aaa;background:#171220}
+.zoomb{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px;z-index:3}
+.zoomb button{width:34px;height:34px;border:2px solid var(--ouro);background:#1c1822;color:var(--ouroC);font:700 18px PX}
+</style></head><body>
+<div id="app">
+<header>
+  <div class="row"><h1>Passivas · Guerreiro</h1><div class="pts">Pontos <b id="pl">12</b>/20</div><div class="x">✕</div></div>
+  <div class="chips" id="chips"></div>
+</header>
+<div id="stage">
+  <svg id="svg" viewBox="0 0 390 700" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <g id="vp"><g id="bg"></g><g id="edges"></g><g id="nodes"></g></g>
+  </svg>
+  <div class="leg"><i style="border-radius:50%"></i>Comum &nbsp;<i style="border-radius:50%;border-color:#ffd070;width:14px;height:14px"></i>Destaque<br><i style="transform:rotate(45deg);border-color:#ff7a4a"></i>Pedra angular &nbsp;<i style="border-color:#c98bff;border-radius:3px"></i>Combo</div>
+  <div class="zoomb"><button id="zi">+</button><button id="zo">−</button><button id="zf">◎</button></div>
+  <div id="sheet"></div>
+</div>
+</div>
+<script>
+const COL={f:'#ff7a4a',b:'#7ab8ff',c:'#ffd070',m:'#c98bff',s:'#7fe0a0',h:'#f3d98e'};
+const N=[],E=[],M={};
+const P=(a,r)=>[500+r*Math.cos(a*Math.PI/180),500+r*Math.sin(a*Math.PI/180)];
+const T='../assets/talents/';
+function add(id,a,r,type,nm,desc,col,tag,ic,links,extra){const [x,y]=P(a,r);const n={id,x,y,type,nm,desc:Array.isArray(desc)?desc:[desc],col:COL[col],tag,ic:ic?T+ic+'.png':null,links:links||[],...extra};N.push(n);M[id]=n;(links||[]).forEach(l=>E.push([l,id]));}
+// HUB
+add('H',0,0,'h','Guerreiro','Ponto de partida. Todas as passivas se ligam a partir daqui.','h','hub',null,[]);
+const g=(t)=>[t,'g'];
+// ===== FÚRIA (cima) =====
+add('f1',-90,95,'s','Ataque','+3% de ataque','f','atk',null,['H']);
+add('f2',-90,148,'s','Crítico','+2% de chance de crítico','f','atk',null,['f1']);
+add('f3',-90,205,'n','Golpe Pesado',['+8% de ataque','Golpes básicos têm 10% de chance de empurrar'],'f','atk','gf1',['f2']);
+add('fl1',-103,258,'s','Dano crítico','+5% de dano crítico','f','atk',null,['f3']);
+add('fl2',-107,308,'a','Força','+6 Força','f','attr',null,['fl1']);
+add('fl3',-110,360,'n','Sangue Quente',['+4% de crítico','Críticos recuperam 2% da vida'],'f','atk','gf2',['fl2']);
+add('fl4',-113,412,'s','Ataque','+4% de ataque','f','atk',null,['fl3']);
+add('fl5',-116,466,'k','Berserker',['+22% de ataque','+10% de velocidade de ataque',['−12% de defesa','r']],'f','atk','gfk',['fl4']);
+add('fr1',-77,258,'s','Vel. de ataque','+4% de velocidade de ataque','f','atk',null,['f3']);
+add('fr2',-73,308,'a','Destreza','+6 Destreza','f','attr',null,['fr1']);
+add('fr3',-70,360,'n','Ímpeto',['+6% de velocidade de ataque','Golpe Preciso causa +3% de dano'],'f','atk','gf3',['fr2']);
+add('fr4',-67,412,'s','Crítico','+3% de chance de crítico','f','atk',null,['fr3']);
+add('fr5',-64,466,'n','Carnificina',['+12% de dano em inimigos com menos de 30% de vida'],'f','atk','gf5',['fr4']);
+add('fc1',-90,262,'s','Ataque','+3% de ataque','f','atk',null,['f3']);
+add('fc2',-90,318,'s','Dano crítico','+5% de dano crítico','f','atk',null,['fc1']);
+add('fc3',-90,374,'n','Cicatrizes de Guerra',['+16% de dano crítico','Críticos aplicam sangramento'],'f','atk','gf4',['fc2']);
+add('fc4',-90,430,'s','Ataque','+4% de ataque','f','atk',null,['fc3']);
+add('fc5',-90,486,'n','Fúria Crescente',['+2% de ataque por golpe do combo','(acumula até o finalizador)'],'m','combo','gf3',['fc4']);
+// ===== BASTIÃO (baixo-direita, 30°) =====
+add('b1',30,95,'s','Vida','+4% de vida','b','def',null,['H']);
+add('b2',30,148,'s','Defesa','+4% de defesa','b','def',null,['b1']);
+add('b3',30,205,'n','Pele Grossa',['+10% de vida','+4% de defesa'],'b','def','gb1',['b2']);
+add('bu1',17,258,'s','Vida','+4% de vida','b','def',null,['b3']);
+add('bu2',13,308,'a','Vitalidade','+6 Vitalidade','b','attr',null,['bu1']);
+add('bu3',10,360,'n','Casca Dura',['−6% de dano recebido'],'b','def','gb3',['bu2']);
+add('bu4',7,412,'s','Defesa','+4% de defesa','b','def',null,['bu3']);
+add('bu5',4,466,'n','Resistência de Ferro',['+24% de cura das poções','Poções dão escudo de 5% da vida'],'b','def','gb6',['bu4']);
+add('bd1',43,258,'s','Defesa','+4% de defesa','b','def',null,['b3']);
+add('bd2',47,308,'s','Vida','+4% de vida','b','def',null,['bd1']);
+add('bd3',50,360,'n','Armadura Reforçada',['+12% de defesa'],'b','def','gb2',['bd2']);
+add('bd4',53,412,'s','Regeneração','+0,4% de vida por segundo','b','def',null,['bd3']);
+add('bd5',56,468,'k','Muralha',['+25% de vida','+20% de defesa',['−10% de velocidade de movimento','r']],'b','def','gbk',['bd4']);
+add('bc1',30,262,'s','Defesa','+3% de defesa','b','def',null,['b3']);
+add('bc2',30,318,'n','Segundo Fôlego',['Recupera 1,2% da vida por segundo'],'b','def','gb4',['bc1']);
+add('bc3',30,374,'s','Vida','+5% de vida','b','def',null,['bc2']);
+add('bc4',30,430,'n','Espinhos',['Reflete 15% do dano recebido'],'b','def','gb5',['bc3']);
+// ===== COMANDO (baixo-esquerda, 150°) =====
+add('c1',150,95,'s','Experiência','+3% de experiência','c','util',null,['H']);
+add('c2',150,148,'s','Ouro','+4% de ouro','c','util',null,['c1']);
+add('c3',150,205,'n','Veterano',['+10% de experiência','+4% de vida'],'c','util','gc4',['c2']);
+add('cl1',163,258,'s','Empurrão','+4% de chance de empurrão','c','util',null,['c3']);
+add('cl2',167,308,'a','Sorte','+6 Sorte','c','attr',null,['cl1']);
+add('cl3',170,360,'n','Caçador de Tesouros',['+6% de chance de drop','+10% de ouro'],'c','util','gc5',['cl2']);
+add('cl4',173,412,'s','Empurrão','+4% de chance de empurrão','c','util',null,['cl3']);
+add('cl5',176,466,'k','Tirano',['+15% de empurrão','+40% de duração da queda','Reflete 15% do dano'],'c','util','gck',['cl4']);
+add('cr1',137,258,'s','Ouro','+5% de ouro','c','util',null,['c3']);
+add('cr2',133,308,'s','Experiência','+4% de experiência','c','util',null,['cr1']);
+add('cr3',130,360,'n','Saque de Guerra',['+18% de ouro','Inimigos elite dropam +1 item'],'c','util','gc3',['cr2']);
+add('cr4',127,412,'s','Queda','+12% de duração da queda','c','util',null,['cr3']);
+add('cr5',124,466,'n','Contra-ataque',['Reflete 12% do dano e recupera 3% do dano causado'],'c','util','gc6',['cr4']);
+// ===== COMBO: POSTURA (-30°) entre Fúria e Bastião =====
+add('p1',-30,175,'s','Defesa','+4% de defesa','m','combo',null,['f2','b2']);
+add('p2',-30,232,'c','Postura Firme',['COMBO','+1 carga máxima de Postura','+2 s de duração por nível'],'m','combo','gb5',['p1']);
+add('p3',-30,292,'s','Defesa por carga','+2% de defesa por carga de Postura','m','combo',null,['p2']);
+add('p4',-30,350,'c','Estilhaço Ampliado',['COMBO','Estilhaço causa +30% de dano','Escudo do Estilhaço sobe para 18% da vida'],'m','combo','gf5',['p3']);
+add('p5',-30,414,'k','Muralha Viva',['COMBO','Com a Postura cheia: −20% de dano recebido',['−15% de velocidade de movimento','r']],'m','combo','gbk',['p4']);
+// ===== COMBO: RITMO (90°) entre Bastião e Comando =====
+add('r1',90,175,'s','Janela','+0,02 s na janela do Golpe Preciso','m','combo',null,['b2','c2']);
+add('r2',90,232,'c','Mão Firme',['COMBO','+0,04 s na janela por nível','+2% de dano do Golpe Preciso por nível'],'m','combo','gc2',['r1']);
+add('r3',90,292,'s','Vel. de ataque','+3% de velocidade de ataque','m','combo',null,['r2']);
+add('r4',90,350,'c','Cadência',['COMBO','Golpe Preciso reduz em 1 s a recarga das habilidades'],'m','combo','gf3',['r3']);
+add('r5',90,414,'k','Mestre do Ritmo',['COMBO','Combo Perfeito dobra seus bônus',['Golpes fora do tempo: −10% de dano','r']],'m','combo','gfk',['r4']);
+// ===== COMBO: FINALIZADOR (-150°) entre Comando e Fúria =====
+add('z1',-150,175,'s','Finalizador','+4% de dano do finalizador','m','combo',null,['f2','c2']);
+add('z2',-150,232,'c','Golpe Final em Área',['COMBO','O combo passa a ter 4 golpes','O 4º golpe causa dano em área'],'m','combo','gf6',['z1']);
+add('z3',-150,292,'s','Área','+10% de raio do finalizador','m','combo',null,['z2']);
+add('z4',-150,350,'c','Onda Dupla',['COMBO','O finalizador solta uma segunda onda de choque'],'m','combo','gc1',['z3']);
+add('z5a',-160,418,'k','Finalizador Giratório',['COMBO · exclusivo','O finalizador vira um giro de 360°','Atinge todos ao redor'],'m','combo','gf4',['z4'],{excl:'z5b'});
+add('z5b',-141,418,'k','Finalizador Investida',['COMBO · exclusivo','O finalizador avança 90 px e empurra',['Não atinge inimigos atrás','r']],'m','combo','gc6',['z4'],{excl:'z5a'});
+// ===== SUBCLASSES (anel externo) =====
+add('x1',-100,545,'x','Bárbaro: Machado',['Subclasse · Nível 10','Apenas machados: +12% de ataque, +5% de crítico'],'s','sub',null,['fl5']);
+add('x2',-80,545,'x','Bárbaro: Sede',['Subclasse · Nível 10','Matar um inimigo concede 4% de velocidade por 4 s'],'s','sub',null,['fr5']);
+add('x3',20,545,'x','Cavaleiro: Escudo',['Subclasse · Nível 10','Com escudo: +15% de defesa e bloqueio'],'s','sub',null,['bu5']);
+add('x4',60,545,'x','Cavaleiro: Juramento',['Subclasse · Nível 10','Aliados próximos recebem 8% da sua defesa'],'s','sub',null,['bd5']);
+// estados iniciais
+const ALLOC=new Set(['H','f1','f2','f3','fl1','fl2','fr1','p1','z1','b1']);
+let PTS=12;
+const FILT={todos:()=>true,atk:n=>n.tag==='atk',def:n=>n.tag==='def',combo:n=>n.tag==='combo',attr:n=>n.tag==='attr',util:n=>n.tag==='util'};
+const FNAME={todos:'Todos',atk:'Ataque',def:'Defesa',combo:'Combo',attr:'Atributos',util:'Utilidade'};
+let filt='todos',sel=null;
+const svg=document.getElementById('svg'),vp=document.getElementById('vp');
+const NS='http://www.w3.org/2000/svg';
+const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;};
+// fundo: aneis e estrelas
+(function(){const bg=document.getElementById('bg');
+ [120,260,400,520].forEach(r=>el('circle',{cx:500,cy:500,r,fill:'none',stroke:'#241c30','stroke-width':2,'stroke-dasharray':'2 10'},bg));
+ for(let i=0;i<160;i++){const a=Math.random()*6.283,r=60+Math.random()*560;el('circle',{cx:500+r*Math.cos(a),cy:500+r*Math.sin(a),r:Math.random()*1.4+.3,fill:'#8a7aa8',opacity:Math.random()*.5+.1},bg);}
+ // nomes das regiões
+ const rg=[['FÚRIA',-90,'#ff7a4a',560],['BASTIÃO',30,'#7ab8ff',560],['COMANDO',150,'#ffd070',560],['POSTURA',-30,'#c98bff',470],['RITMO',90,'#c98bff',470],['FINALIZADOR',-150,'#c98bff',470]];
+ rg.forEach(([t,a,c,r])=>{const [x,y]=P(a,r);const e=el('text',{x,y,fill:c,'font-family':'PX','font-weight':700,'font-size':16,'letter-spacing':4,'text-anchor':'middle',opacity:.55},bg);e.textContent=t;});
+})();
+const gE=document.getElementById('edges'),gN=document.getElementById('nodes');
+function avail(n){if(ALLOC.has(n.id))return false;if(n.type==='x')return false;const adj=N.filter(m=>m.links.includes(n.id)||n.links.includes(m.id));return adj.some(m=>ALLOC.has(m.id))&&!(n.excl&&ALLOC.has(n.excl));}
+function draw(){gE.innerHTML='';gN.innerHTML='';
+ E.forEach(([a,b])=>{const A=M[a],B=M[b];const on=ALLOC.has(a)&&ALLOC.has(b);const av=!on&&(ALLOC.has(a)||ALLOC.has(b))&&(avail(A)||avail(B));
+  el('line',{x1:A.x,y1:A.y,x2:B.x,y2:B.y,class:'edge'+(on?' on':av?' av':'')},gE);});
+ N.forEach(n=>{const on=ALLOC.has(n.id),av=avail(n),lock=!on&&!av;const g=el('g',{class:'nd '+(on?'on ':'')+(av?'av ':'')+(lock?'lock ':'')+(filt!=='todos'&&!FILT[filt](n)&&n.type!=='h'?'dim ':'')+(sel===n.id?'hl':''),style:'--c:'+n.col,'data-id':n.id},gN);
+  const R={h:26,s:9,a:10,n:19,c:19,k:26,x:17}[n.type];
+  if(n.type==='k'){el('rect',{class:'base',x:n.x-R,y:n.y-R,width:R*2,height:R*2,transform:`rotate(45 ${n.x} ${n.y})`},g);el('rect',{class:'ring',x:n.x-R-6,y:n.y-R-6,width:R*2+12,height:R*2+12,transform:`rotate(45 ${n.x} ${n.y})`},g);}
+  else if(n.type==='c'){const pts=[...Array(6)].map((_,i)=>{const a=Math.PI/3*i+Math.PI/6;return (n.x+R*1.08*Math.cos(a))+','+(n.y+R*1.08*Math.sin(a));}).join(' ');el('polygon',{class:'base',points:pts},g);el('circle',{class:'ring',cx:n.x,cy:n.y,r:R+7},g);}
+  else if(n.type==='a'){el('rect',{class:'base',x:n.x-R*.8,y:n.y-R*.8,width:R*1.6,height:R*1.6,rx:2},g);el('circle',{class:'ring',cx:n.x,cy:n.y,r:R+5},g);}
+  else{el('circle',{class:'base',cx:n.x,cy:n.y,r:R},g);el('circle',{class:'ring',cx:n.x,cy:n.y,r:R+6},g);}
+  if(n.type==='n'||n.type==='c'||n.type==='k'||n.type==='x'||n.type==='h'){
+    const s=R*(n.type==='k'?1.25:1.5);
+    if(n.ic){const cid='cp'+n.id;const cp=el('clipPath',{id:cid},g);el('circle',{cx:n.x,cy:n.y,r:R*(n.type==='k'?.8:.88)},cp);el('image',{href:n.ic,x:n.x-s/2,y:n.y-s/2,width:s,height:s,'clip-path':`url(#${cid})`,style:'image-rendering:pixelated;pointer-events:none'+(lock?';filter:grayscale(1) brightness(.6)':'')},g);}
+    else if(n.type==='x'){const t=el('text',{x:n.x,y:n.y+5,'text-anchor':'middle','font-family':'PX','font-weight':700,'font-size':14,fill:'#7fe0a0',style:'pointer-events:none'},g);t.textContent='🔒';}
+    else if(n.type==='h'){const t=el('text',{x:n.x,y:n.y+6,'text-anchor':'middle','font-family':'PX','font-weight':700,'font-size':20,fill:'#f3d98e',style:'pointer-events:none'},g);t.textContent='⚔';}
+    const L=el('text',{x:n.x,y:n.y+R+(n.type==='k'?18:14),class:'lbl'+(n.type==='k'?' k':n.type==='c'?' c':'')},g);L.textContent=n.nm.length>18?n.nm.replace(' do ',' ').slice(0,18):n.nm;
+    if(n.type==='x'){}
+  }
+  // hit area maior
+  el('circle',{cx:n.x,cy:n.y,r:Math.max(R+10,22),fill:'transparent'},g);
+ });
+}
+// chips
+(function(){const c=document.getElementById('chips');Object.keys(FILT).forEach(k=>{const b=document.createElement('button');b.textContent=FNAME[k];b.dataset.k=k;if(k==='todos')b.classList.add('on');b.style.setProperty('--c',k==='combo'?'#c98bff':k==='atk'?'#ff7a4a':k==='def'?'#7ab8ff':k==='util'?'#ffd070':k==='attr'?'#9be39b':'#ffd070');b.onclick=()=>{filt=k;c.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.k===k));draw();};c.appendChild(b);});})();
+// folha de informação
+const sheet=document.getElementById('sheet');
+const TYPE={s:'Passiva',a:'Atributo',n:'Destaque',c:'Destaque de combo',k:'Pedra angular',x:'Subclasse (bloqueada)',h:'Início'};
+function showSheet(id){sel=id;const n=M[id];const on=ALLOC.has(id),av=avail(n);
+ sheet.style.setProperty('--c',n.col);sheet.className='show';
+ const lis=n.desc.map(d=>Array.isArray(d)?`<li class="${d[1]}">${d[0]}</li>`:`<li class="${d==='COMBO'||/^COMBO/.test(d)?'n':'g'}">${d}</li>`).join('');
+ const why=n.type==='x'?'Requer nível 10 e subclasse':on?'Alocada':av?'Custa 1 ponto':'Conecte a um nó alocado';
+ sheet.innerHTML=`<div class="t"><div class="ic">${n.ic?`<img src="${n.ic}">`:`<span style="font:700 22px PX;color:${n.col}">${n.type==='a'?'◆':n.type==='x'?'🔒':n.type==='h'?'⚔':'●'}</span>`}</div><div><div class="bd">${TYPE[n.type]}</div><h2>${n.nm}</h2></div></div><ul>${lis}</ul><div class="acts"><div class="req">${why}</div>${on&&n.id!=='H'?'<button class="ref" id="bt">REMOVER</button>':'<button id="bt" '+((av&&PTS>0)?'':'disabled')+'>ALOCAR</button>'}</div>`;
+ document.getElementById('bt').onclick=()=>{if(on){if(n.id==='H')return;ALLOC.delete(id);PTS++;}else if(av&&PTS>0){ALLOC.add(id);PTS--;}document.getElementById('pl').textContent=PTS;draw();showSheet(id);};
+ draw();}
+// pan/zoom
+let S=.9,tx=0,ty=0;const pointers=new Map();let lastD=0,moved=0;
+function apply(){const W=svg.clientWidth,H=svg.clientHeight,k=Math.max(W/390,H/700);vp.setAttribute('transform',`translate(${tx} ${ty}) scale(${S})`);}
+function fit(z,cx,cy){const W=svg.clientWidth,H=svg.clientHeight,k=Math.max(W/390,H/700),vw=390,vh=700;
+ // converte coordenadas da arvore para viewBox
+ S=z;const sx=cx==null?500:cx,sy=cy==null?500:cy;tx=vw/2-sx*S;ty=vh/2-sy*S;apply();}
+svg.addEventListener('pointerdown',e=>{pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});svg.setPointerCapture(e.pointerId);moved=0;lastD=0;});
+svg.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;const p=pointers.get(e.pointerId);const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;
+ const W=svg.clientWidth,H=svg.clientHeight,k=Math.max(W/390,H/700);
+ if(pointers.size===1){tx+=dx/k;ty+=dy/k;moved+=Math.abs(dx)+Math.abs(dy);apply();}
+ else if(pointers.size===2){const [a,b]=[...pointers.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);if(lastD){const f=d/lastD;const mx=((a.x+b.x)/2-svg.getBoundingClientRect().left)/k,my=((a.y+b.y)/2-svg.getBoundingClientRect().top)/k;const ns=Math.max(.35,Math.min(2.6,S*f));tx=mx-(mx-tx)*ns/S;ty=my-(my-ty)*ns/S;S=ns;apply();}lastD=d;moved+=10;}});
+const up=e=>{const wasTap=moved<6&&pointers.size===1;pointers.delete(e.pointerId);if(wasTap){const t=document.elementFromPoint(e.clientX,e.clientY);const g=t&&t.closest&&t.closest('.nd');if(g)showSheet(g.dataset.id);else{sel=null;sheet.className='';draw();}}};
+svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',e=>pointers.delete(e.pointerId));
+svg.addEventListener('wheel',e=>{e.preventDefault();const k=Math.max(svg.clientWidth/390,svg.clientHeight/700);const r=svg.getBoundingClientRect();const mx=(e.clientX-r.left)/k,my=(e.clientY-r.top)/k;const ns=Math.max(.35,Math.min(2.6,S*(e.deltaY<0?1.15:.87)));tx=mx-(mx-tx)*ns/S;ty=my-(my-ty)*ns/S;S=ns;apply();},{passive:false});
+document.getElementById('zi').onclick=()=>{S=Math.min(2.6,S*1.25);fit(S,null,null);};
+document.getElementById('zo').onclick=()=>{S=Math.max(.35,S/1.25);fit(S,null,null);};
+document.getElementById('zf').onclick=()=>fit(.55,500,500);
+draw();
+const q=new URLSearchParams(location.search);
+fit(+(q.get('z')||.6),q.get('cx')?+q.get('cx'):500,q.get('cy')?+q.get('cy'):500);
+if(q.get('f')){filt=q.get('f');document.querySelectorAll('#chips button').forEach(x=>x.classList.toggle('on',x.dataset.k===filt));draw();}
+if(q.get('sel'))showSheet(q.get('sel'));
+</script></body></html>
