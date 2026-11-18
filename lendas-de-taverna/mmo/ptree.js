@@ -149,61 +149,48 @@ bardo:{
 };
 
 /* ---------- geometria ---------- */
-const RR=k=>34+60*k;             // raio do anel k
-const RINGS=6;
+const RR=k=>140+54*k;           // raio do anel k
+const RINGS=6,LN=4;
 const ang=c=>(c*60-90)*Math.PI/180;
-function ringPos(k,i){const n=6*k,c=Math.floor(i/k)%6,t=(i%k)/k,a0=ang(c),a1=ang(c+1);
- const x0=Math.cos(a0)*RR(k),y0=Math.sin(a0)*RR(k),x1=Math.cos(a1)*RR(k),y1=Math.sin(a1)*RR(k);return{x:x0+(x1-x0)*t,y:y0+(y1-y0)*t};}
+const lane=(c,l)=>(c*60+(l-1.5)*15-90)*Math.PI/180;   // 4 pistas por setor, 15° entre todas
 
 /* ---------- geração da árvore da classe ---------- */
 const TP={guerreiro:['gf','gb','gc'],ladino:['la','lp','ls'],mago:['ma','ms','mt'],clerigo:['cc','cf','cp'],arqueiro:['aa','ac','ap'],bardo:['bh','bi','bm']};
-function art(n,cls){if(n.kind==='start')return 'assets/class/'+(SAVE.sub&&SUBS[cls]&&SUBS[cls].some(x=>x.id===SAVE.sub)?'sub_'+SAVE.sub:cls)+'.png';const P=TP[cls]||TP.guerreiro;if(n.kind==='key')return 'assets/talents/'+P[n.sec%3]+'k.png';if(n.kind==='not'||n.kind==='hyb'||n.kind==='sub'){const h=(n.ring*5+n.idx*3+n.sec)%6+1;return 'assets/talents/'+P[n.sec%3]+h+'.png';}return null;}
+function art(n,cls){if(n.kind==='start')return 'assets/class/'+(SAVE.sub&&SUBS[cls]&&SUBS[cls].some(x=>x.id===SAVE.sub)?'sub_'+SAVE.sub:cls)+'.png';const P=TP[cls]||TP.guerreiro;if(n.kind==='key')return 'assets/talents/'+P[n.sec%3]+'k.png';if(n.kind==='not'||n.kind==='hyb'||n.kind==='sub'){const h=(n.ring*5+(n.lane||0)*3+n.sec)%6+1;return 'assets/talents/'+P[n.sec%3]+h+'.png';}return null;}
 const TREES={};
 function build(cls){if(TREES[cls])return TREES[cls];const D=CL[cls]||CL.guerreiro,nodes={},list=[];
  const add=o=>{nodes[o.id]=o;list.push(o);o.nb=[];return o;};
  const link=(a,b)=>{if(a===b||!nodes[a]||!nodes[b]||nodes[a].nb.includes(b))return;nodes[a].nb.push(b);nodes[b].nb.push(a);};
- add({id:'c',kind:'start',x:0,y:0,sec:-1,fx:{},nm:'Origem',ds:'Ponto de partida da árvore. Todos os caminhos começam aqui.',st:['hp']});
- const id=(k,i)=>'r'+k+'_'+((i%(6*k)+6*k)%(6*k));
- let notN=0;
- for(let k=1;k<=RINGS;k++)for(let i=0;i<6*k;i++){
-  const c=Math.floor(i/k)%6,t=i%k,pole=t===0,p=ringPos(k,i),S=D.sec[c],Sp=D.sec[(c+5)%6];
-  const o={id:id(k,i),x:p.x,y:p.y,ring:k,idx:i,sec:c};
-  const tk=Object.keys(ST);
-  const pk=S.p[0],sk=S.p[1];
-  if(k===RINGS&&pole){ // pedra angular
-   const K=D.key[c];o.kind='key';o.nm=K[0];o.ds=K[1];o.fx=K[2];o.st=Object.keys(K[2]).filter(q=>K[2][q]>0).slice(0,2);o.sec=c;
-  }else if(pole&&(k===2||k===4||k===5)){ // híbrido: mistura os dois setores vizinhos
-   const a=Sp.p[1],b=S.p[0];o.kind='hyb';o.nm=(Sp.n+' + '+S.n);o.fx={};o.fx[a]=ST[a].v*(k===5?2.2:1.4);o.fx[b===a?S.p[1]:b]=ST[b===a?S.p[1]:b].v*(k===5?2.2:1.4);o.st=Object.keys(o.fx);o.sec2=(c+5)%6;
-   o.ds='Híbrido de '+Sp.n+' e '+S.n+'.';
-  }else if(pole){ // polos simples (ring 1,3,6 já cobertos): pequeno duplo
-   o.kind='dual';o.fx={};o.fx[pk]=ST[pk].v*(1+k*.12);o.fx[sk]=ST[sk].v*(1+k*.12);o.st=[pk,sk];o.nm=S.n+' · '+ST[pk].n.split(' ')[0];o.sec2=(c+5)%6;
-  }else{
-   const notable=(k===3&&t===1)||(k===4&&t===2)||(k===5&&t===3)||(k===6&&(t===2||t===4));
-   if(notable){
-    const q=notN%5;const mi=S.mi[q%3];o.kind='not';o.nm=S.nm[q];o.fx={};const sc=1+k*.18;o.fx[pk]=ST[pk].v*sc*1.4;o.fx[sk]=ST[sk].v*sc*1.1;
-    o.mini=mi;if(o.fx[mi.k]!=null&&mi.k!==pk&&mi.k!==sk)o.fx[mi.k]=mi.v;else if(mi.k===pk||mi.k===sk)o.fx[mi.k]=(o.fx[mi.k]||0)+mi.v;else o.fx[mi.k]=mi.v;
-    o.st=[pk,sk];o.ds=mi.t;notN++;
-   }else if((i*7+k*3+c)%3===0){ // duplo
-    o.kind='dual';o.fx={};const sc=1+k*.1;o.fx[pk]=ST[pk].v*sc*.8;o.fx[sk]=ST[sk].v*sc*.8;o.st=[pk,sk];o.nm=S.n+' (duplo)';
-   }else{
-    const kk=(i+k)%2?pk:sk;o.kind='small';o.fx={};o.fx[kk]=ST[kk].v*(1+k*.1);o.st=[kk];o.nm=S.n+' · '+ST[kk].n;
-   }
-  }
-  add(o);}
- // ligações: anel + para dentro
- for(let k=1;k<=RINGS;k++)for(let i=0;i<6*k;i++){
-  const skip=k>=3&&((i*5+k*11)%7===0)&&(i%k!==0);   // alguns arcos ficam abertos (mais caminhos alternativos)
-  if(!skip)link(id(k,i),id(k,i+1));
-  if(k===1)link(id(1,i),'c');
-  else{const j=Math.round(i*(k-1)/k);link(id(k,i),id(k-1,j));
-   if(i%k!==0&&k>2){const j2=Math.floor(i*(k-1)/k);if(j2!==j)link(id(k,i),id(k-1,j2));}}
+ add({id:'c',kind:'start',x:0,y:0,ring:0,sec:-1,fx:{},nm:'Origem',ds:'Ponto de partida da árvore. Todos os caminhos começam aqui.',st:['hp']});
+ const id=(c,l,k)=>{const cc=((c+Math.floor(l/LN))%6+6)%6,ll=((l%LN)+LN)%LN;return 'n'+cc+'_'+ll+'_'+k;};
+ const NOT={'1,3':0,'2,3':1,'1,5':2,'2,5':3};
+ for(let c=0;c<6;c++){const S=D.sec[c],Sp=D.sec[(c+5)%6],Sn=D.sec[(c+1)%6],pk=S.p[0],sk=S.p[1];
+  for(let l=0;l<LN;l++)for(let k=1;k<=RINGS;k++){
+   const a=lane(c,l),r=RR(k),o={id:id(c,l,k),x:Math.cos(a)*r,y:Math.sin(a)*r,ring:k,lane:c*LN+l,sec:c};
+   const q=NOT[l+','+k];
+   if(q!==undefined){const mi=S.mi[q%3],sc=1+k*.16;o.kind='not';o.nm=S.nm[q];o.fx={};o.fx[pk]=ST[pk].v*sc*1.4;o.fx[sk]=ST[sk].v*sc*1.1;o.mini=mi;o.fx[mi.k]=(o.fx[mi.k]||0)+mi.v;o.st=[pk,sk];o.ds=mi.t;}
+   else if((l===0||l===3)&&(k===2||k===5)){const A=l===0?Sp:S,B=l===0?S:Sn,a2=A.p[1],b2=B.p[0],m=k===5?2.3:1.5;o.kind='hyb';o.fx={};o.fx[a2]=ST[a2].v*m;o.fx[b2]=(o.fx[b2]||0)+ST[b2].v*m;o.st=a2===b2?[a2]:[a2,b2];o.nm=A.n+' + '+B.n;o.ds='Híbrido de '+A.n+' e '+B.n+'.';o.sec2=l===0?(c+5)%6:(c+1)%6;}
+   else if((l+k+c)%3===0){const sc=1+k*.1;o.kind='dual';o.fx={};o.fx[pk]=ST[pk].v*sc*.85;o.fx[sk]=ST[sk].v*sc*.85;o.st=[pk,sk];o.nm=S.n+' (duplo)';}
+   else{const kk=(l+k)%2?pk:sk;o.kind='small';o.fx={};o.fx[kk]=ST[kk].v*(1+k*.1);o.st=[kk];o.nm=S.n+' · '+ST[kk].n;}
+   add(o);}
+  // pedra angular no eixo do setor
+  const K=D.key[c],a=ang(c),r=RR(RINGS+1.15);
+  add({id:'k'+c,kind:'key',x:Math.cos(a)*r,y:Math.sin(a)*r,ring:RINGS+1,lane:null,sec:c,nm:K[0],ds:K[1],fx:K[2],st:Object.keys(K[2]).filter(q=>K[2][q]>0).slice(0,2)});
  }
- // subclasses (trancadas): saem de dois polos do anel externo
+ // ligações: pistas retas (raios) + anéis (arcos)
+ for(let c=0;c<6;c++){for(let l=0;l<LN;l++){
+   for(let k=1;k<RINGS;k++)link(id(c,l,k),id(c,l,k+1));
+   if(l===1||l===2)link('c',id(c,l,1));
+   // arcos: anéis 1,3,5 completos; 2,4,6 só entre as duas pistas centrais
+   for(let k=1;k<=RINGS;k++){const full=k%2===1;if(full||l===1)link(id(c,l,k),id(c,l+1,k));}
+  }
+  link('k'+c,id(c,1,RINGS));link('k'+c,id(c,2,RINGS));}
+ // subclasses (trancadas): saem da fronteira entre dois setores
  const SB=(typeof SUBS!=='undefined'&&SUBS[cls])||[];
- SB.forEach((sb,j)=>{const c=1+j*3,p=ringPos(RINGS,c*RINGS),a=ang(c),R=RR(RINGS+1.15);
-  const o=add({id:'s'+j,x:Math.cos(a)*R,y:Math.sin(a)*R,ring:RINGS+1,idx:c,sec:c,kind:'sub',sub:sb.id,nm:'Mestre '+sb.nome,ds:sb.desc,fx:{},st:Object.keys(sb.m||{}).slice(0,2)});
+ SB.forEach((sb,j)=>{const c=1+j*3,a=(c*60+30-90)*Math.PI/180,R=RR(RINGS+1.15);
+  const o=add({id:'s'+j,x:Math.cos(a)*R,y:Math.sin(a)*R,ring:RINGS+1,lane:null,sec:c,kind:'sub',sub:sb.id,nm:'Mestre '+sb.nome,ds:sb.desc,fx:{},st:Object.keys(sb.m||{}).slice(0,2)});
   const mm=sb.m||{};for(const k in mm)if(ST[k])o.fx[k]=mm[k]*.5;if(!Object.keys(o.fx).length){o.fx.atk=.05;o.st=['atk'];}
-  link('s'+j,id(RINGS,c*RINGS));});
+  link('s'+j,id(c,3,RINGS));link('s'+j,id(c,4,RINGS));});
  return TREES[cls]={nodes,list,D};}
 
 /* ---------- estado ---------- */
@@ -262,10 +249,10 @@ const css=`.ptw{position:relative;height:min(66vh,640px);margin:4px 0;border:2px
 #ptfs .ptd{position:absolute;left:8px;right:8px;bottom:8px;margin:0;background:#0b0f1ae6;z-index:5}#ptfs .ptsum{position:absolute;left:8px;right:8px;top:52px;background:#0b0f1af2;border:2px solid #3a4258;padding:8px;z-index:6}
 #ptfs .ptsum button{margin-top:6px;width:100%;padding:8px;background:#3a2424;border:2px solid #e08a6a;color:#fff;font:12px 'Pixelify Sans',sans-serif}#ptfs .ptsum button:disabled{opacity:.4}`;document.head.appendChild(c);})();
 const KIND={start:'Origem',small:'Passiva',dual:'Passiva dupla',hyb:'Híbrido',not:'Notável',key:'Pedra angular',sub:'Subclasse'};
-const RAD={start:27,small:11,dual:13,hyb:14,not:17,key:21,sub:19};
+const RAD={start:30,small:12,dual:14,hyb:15,not:19,key:24,sub:20};
 function iconHTML(n,col){const sts=n.st&&n.st.length?n.st:['atk'];return `<div class="ic" style="--bc:${col}">${sts.slice(0,2).map(k=>`<img src="${glyph(k,ST[k]?ST[k].c:'#fff')}">`).join('')}</div>`;}
 
-function fit(vw,vh){const R=RR(RINGS+1.6);PT.sc=Math.min(vw,vh)/(R*2)*1.2;PT.vx=0;PT.vy=0;}
+function fit(vw,vh){const R=RR(RINGS+2.4);PT.sc=Math.min(vw,vh)/(R*2)*1.0;PT.vx=0;PT.vy=0;}
 const FG={atk:['atk','crit','critd','aspd','exec','boss','cb4','cbw'],def:['def','dmgred','hp','regen','pot','cbp'],util:['spd','dcd','cdr','drop','pot'],combo:['cb4','cbw','cbp']};
 function fo(n){if(!PT.f||PT.f==='all'||n.id==='c')return 1;const g=FG[PT.f]||[];return Object.keys(n.fx).some(k=>g.includes(k))?1:.18;}
 function svgHTML(vw,vh){const T=tree(),N=T.nodes,sel=PT.sel,pth=sel?(pathTo(sel)||[]):[],pset={};pth.forEach(x=>pset[x]=1);
@@ -273,12 +260,16 @@ function svgHTML(vw,vh){const T=tree(),N=T.nodes,sel=PT.sel,pth=sel?(pathTo(sel)
  let h=`<svg id="ptsvg" viewBox="${vx} ${vy} ${vbw} ${vbh}"><defs>`;
  T.D.sec.forEach((S,c)=>{h+=`<radialGradient id="pg${c}"><stop offset="0" stop-color="${S.c}" stop-opacity=".22"/><stop offset="1" stop-color="${S.c}" stop-opacity="0"/></radialGradient>`;});
  h+='</defs>';
- T.D.sec.forEach((S,c)=>{const a=ang(c+.5),r=RR(3.6);h+=`<circle cx="${(Math.cos(a)*r).toFixed(0)}" cy="${(Math.sin(a)*r).toFixed(0)}" r="${RR(4.4)}" fill="url(#pg${c})"/>`;});
- T.D.sec.forEach((S,c)=>{const a=ang(c+.5),r=RR(RINGS+2.3);h+=`<text class="sl" x="${Math.cos(a)*r}" y="${Math.sin(a)*r+3}" style="fill:${S.c};font-size:${(8*u).toFixed(1)}px;opacity:.85">${S.n.toUpperCase()}</text>`;});
+ T.D.sec.forEach((S,c)=>{const a=ang(c),r=RR(3.6);h+=`<circle cx="${(Math.cos(a)*r).toFixed(0)}" cy="${(Math.sin(a)*r).toFixed(0)}" r="${RR(4.4)}" fill="url(#pg${c})"/>`;});
+ T.D.sec.forEach((S,c)=>{const a=ang(c),r=RR(RINGS+2.0);h+=`<text class="sl" x="${Math.cos(a)*r}" y="${Math.sin(a)*r+3}" style="fill:${S.c};font-size:${(8*u).toFixed(1)}px;opacity:.85">${S.n.toUpperCase()}</text>`;});
+ for(let k=1;k<=RINGS;k++)h+=`<circle cx="0" cy="0" r="${RR(k)}" fill="none" stroke="#1c2234" stroke-width="1" stroke-dasharray="2 6"/>`;
+ for(let c=0;c<6;c++){const a=(c*60+30-90)*Math.PI/180;h+=`<line x1="${(Math.cos(a)*RR(1)*.8).toFixed(0)}" y1="${(Math.sin(a)*RR(1)*.8).toFixed(0)}" x2="${(Math.cos(a)*RR(RINGS+1.6)).toFixed(0)}" y2="${(Math.sin(a)*RR(RINGS+1.6)).toFixed(0)}" stroke="#1c2234" stroke-width="1"/>`;}
  const drawn={};
  T.list.forEach(n=>n.nb.forEach(m=>{const k=n.id<m?n.id+'|'+m:m+'|'+n.id;if(drawn[k])return;drawn[k]=1;const a=n,b=N[m],on=isAl(a.id)&&isAl(b.id),av=!on&&((isAl(a.id)&&allocatable(b))||(isAl(b.id)&&allocatable(a))),pa=pset[a.id]&&(pset[b.id]||isAl(b.id))||pset[b.id]&&isAl(a.id);
   let st='';if(on){const ca=(T.D.sec[a.sec]||T.D.sec[0]).c,cb=(T.D.sec[b.sec]||T.D.sec[0]).c;st=`stroke:${a.sec===b.sec||a.sec<0?cb:ca}`;}
-  h+=`<line class="ln ${on?'on':''} ${av?'av':''} ${pa?'pa':''}" x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" style="${st}"/>`;}));
+  const cls=`ln ${on?'on':''} ${av?'av':''} ${pa?'pa':''}`;
+  if(a.lane!=null&&b.lane!=null&&a.ring===b.ring)h+=`<path class="${cls}" d="M${a.x.toFixed(1)} ${a.y.toFixed(1)}A${RR(a.ring)} ${RR(a.ring)} 0 0 1 ${b.x.toFixed(1)} ${b.y.toFixed(1)}" fill="none" style="${st}"/>`;
+  else h+=`<line class="${cls}" x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" style="${st}"/>`;}));
  T.list.forEach(n=>{const al=isAl(n.id),av=allocatable(n),S=T.D.sec[n.sec]||T.D.sec[0],lock=n.kind==='sub'&&SAVE.sub!==n.sub,r=RAD[n.kind]||11,x=n.x.toFixed(1),y=n.y.toFixed(1),im=art(n,SAVE.cls);
   const sts=(n.st&&n.st.length?n.st:['atk']).slice(0,2),op=al||av?1:.5;
   const edge=sel===n.id?'#fff':pset[n.id]?'#ffe08a':av?'#ffd24a':al?S.c:(n.kind==='small'||n.kind==='dual'?'#3d4660':S.c);
