@@ -5394,10 +5394,15 @@ function sqCard(){const s=stS(),q=stCurQ(),nx=stNext(),tot=SQ.length;
 ${ok?`<div class="sqo">${nx.give[0]}</div>`:''}<div class="sqw"><small>RECOMPENSAS</small>${rew(nx)}</div></div>`;}
   return '<div class="sq"><div class="sqh"><img src="assets/kit/D19.png"><div><small>ATO 1</small><b>Fim do Ato 1</b></div></div><div class="sqo">Você concluiu as missões principais disponíveis. O Ato 2 chega em breve.</div></div>';}
 function repBlock(){const s=stS();return ['ordem','guilda','coroa'].map(k=>{const p=s.fac[k]||0,l=repLvl(p);return `<div class="rp ${k[0]}"><b>${FACN[k]}</b><div class="bar"><i style="width:${l.pct}%"></i></div><em>${l.nm} · ${p}${l.nx?'/'+l.nx:''}</em></div>`;}).join('');}
+const FACD={ordem:'Guardiã dos Selos. Valoriza tradição, ordem e obediência.',guilda:'Mercadores e artesãos. Valoriza lucro, rotas seguras e contratos.',coroa:'Restos da monarquia apagada. Valorizam memória, honra e a verdade.'};
+function facBody(){sqCss();const s=stS();let h='<div class="sqs2"><img src="assets/kit/D19.png">Reputação<span>pontos com as três facções</span></div><div class="dd" style="margin-bottom:8px">Cumpra missões de personagens de cada facção para ganhar pontos. Você pode se dar bem com todas.</div>';
+  for(const k of ['ordem','guilda','coroa']){const p=s.fac[k]||0,l=repLvl(p);
+    h+=`<div class="sq" style="margin-bottom:10px"><div class="sqh"><img src="${UI}${k==='ordem'?'sun-priest':k==='guilda'?'coins':'crested-helmet'}.png"><div><small>${l.nm.toUpperCase()}</small><b>${FACN[k]}</b></div><span class="sqb p">${p} pts</span></div><div class="sqo" style="margin-top:8px">${FACD[k]}</div><div class="rp ${k[0]}" style="margin-top:8px"><div class="bar"><i style="width:${l.pct}%"></i></div><em>${l.nx?l.nm+' → '+l.nx+' pts':'Nível máximo'}</em></div></div>`;}
+  h+='<div class="sqs2"><img src="assets/kit/D19.png">Níveis<span>pontos necessários</span></div><div class="dd bg2">'+REPL.map(r=>`<span>${r[1]}</span><b>${r[0]}</b>`).join('')+'</div>';
+  return h;}
 function missionsBody(){sqCss();const c=qMain(),L=SAVE.q.d.l,rdy=(c&&qOk(c)?1:0)+L.filter(d=>!d.c&&qOk(d)).length,s=stS();let h='';
   h+=`<div class="sqt"><span>Missões principais ${s.n}/${SQ.length}</span><div class="bar"><i style="width:${s.n/SQ.length*100}%"></i></div></div>`;
   h+=`<div class="sqs2"><img src="assets/kit/B28.png">Missão principal<span>a história de Brumavale</span></div>`+sqCard();
-  h+=`<div class="sqs2"><img src="${UI}crossed-swords.png">Reputação<span>missões secundárias rendem pontos</span></div>`+repBlock();
   h+=`<div class="sqs2"><img src="${UI}scroll-unfurled.png">Missões diárias<span>renovam em ${qLeft()}h</span></div>`+L.map((q,i)=>qCard(q,0,'d',i)).join('');
   h+=`<details class="qx"><summary>Trilha do Caçador (capítulo ${Math.min(SAVE.q.m+1,QMAIN.length)} de ${QMAIN.length})</summary>`+(c?qCard(c,1,'m',0):'<div class="dd" style="text-align:center">Trilha concluída.</div>')+'</details>';
   if(rdy>1)h+=`<div class="acts"><button class="g" data-a="qall">Receber tudo (${rdy})</button></div>`;
@@ -5432,9 +5437,11 @@ function winMissoes(){$('wtt').textContent='Capitão Ruvel';const c=qMain(),ok=c
   const tk=`<div class="tokb"><img src="${UI}gems.png"><span>Fichas de Brumavale</span><b>${SAVE.tok||0}</b></div>`;
   const tb=`<div class="tabs" style="margin:0 -12px">${[['m','Missões'],['s','Loja de fichas']].map(([k,l])=>`<button data-a="rt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
   $('wbody').innerHTML=hd+tk+tb+(tab==='s'?shopBody():missionsBody()+'<div class="acts"><button data-a="op:diario">Abrir o Diário</button></div>');}
-function winDiario(){$('wtt').textContent='Diário';let tab=G.qtab;if(!['m','b','c','p'].includes(tab))tab='m';
-  let h=`<div class="tabs" style="margin:0 -12px">${[['m','Missões'],['b','Bestiário'],['c','Títulos'],['p','Pets']].map(([k,l])=>`<button data-a="qt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
+function winDiario(){$('wtt').textContent='Diário';let tab=G.qtab;if(!['m','f','b','c','p'].includes(tab))tab='m';
+  let h=`<div class="tabs" style="margin:0 -12px">${[['m','Missões'],['f','Facções'],['b','Bestiário'],['c','Títulos'],['p','Pets']].map(([k,l])=>`<button data-a="qt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
   if(tab==='m')h+=missionsBody();
+  else if(tab==='f')h+=facBody();
+   else if(tab==='f')h+=facBody();
   else if(tab==='c')h+=winConq();
   else if(tab==='p')h+=winPets();
   else{h+='<div class="sub">Derrote criaturas para completar o bestiário. Cada marco (10 · 50 · 200 · 500) rende ouro.</div><div class="bgrid">';
