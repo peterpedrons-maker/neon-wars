@@ -166,23 +166,23 @@ function build(cls){if(TREES[cls])return TREES[cls];const D=CL[cls]||CL.guerreir
  const NOT={'1,3':0,'2,3':1,'1,5':2,'2,5':3};
  for(let c=0;c<6;c++){const S=D.sec[c],Sp=D.sec[(c+5)%6],Sn=D.sec[(c+1)%6],pk=S.p[0],sk=S.p[1];
   for(let l=0;l<LN;l++)for(let k=1;k<=RINGS;k++){
-   const a=lane(c,l),r=RR(k),o={id:id(c,l,k),x:Math.cos(a)*r,y:Math.sin(a)*r,ring:k,lane:c*LN+l,sec:c};
+   const hh=(c*37+l*17+k*29+c*l*7)%100,lj=Math.sin(c*5.1+l*2.3)*.045,ls=1+Math.cos(c*3.7)*.035,a=lane(c,l)+lj,r=RR(k)*ls+(k>1?Math.sin(c*11+k*13)*12:0),o={id:id(c,l,k),x:Math.cos(a)*r,y:Math.sin(a)*r,ring:k,lane:c*LN+l,sec:c};
    const q=NOT[l+','+k];
    if(q!==undefined){const mi=S.mi[q%3],sc=1+k*.16;o.kind='not';o.nm=S.nm[q];o.fx={};o.fx[pk]=ST[pk].v*sc*1.4;o.fx[sk]=ST[sk].v*sc*1.1;o.mini=mi;o.fx[mi.k]=(o.fx[mi.k]||0)+mi.v;o.st=[pk,sk];o.ds=mi.t;}
    else if((l===0||l===3)&&(k===2||k===5)){const A=l===0?Sp:S,B=l===0?S:Sn,a2=A.p[1],b2=B.p[0],m=k===5?2.3:1.5;o.kind='hyb';o.fx={};o.fx[a2]=ST[a2].v*m;o.fx[b2]=(o.fx[b2]||0)+ST[b2].v*m;o.st=a2===b2?[a2]:[a2,b2];o.nm=A.n+' + '+B.n;o.ds='Híbrido de '+A.n+' e '+B.n+'.';o.sec2=l===0?(c+5)%6:(c+1)%6;}
    else if((l+k+c)%3===0){const sc=1+k*.1;o.kind='dual';o.fx={};o.fx[pk]=ST[pk].v*sc*.85;o.fx[sk]=ST[sk].v*sc*.85;o.st=[pk,sk];o.nm=S.n+' (duplo)';}
    else{const kk=(l+k)%2?pk:sk;o.kind='small';o.fx={};o.fx[kk]=ST[kk].v*(1+k*.1);o.st=[kk];o.nm=S.n+' · '+ST[kk].n;}
+   if(o.kind==='small'&&k>=2&&k<=5&&hh<24)continue;   // buracos: algumas casas ficam vazias (spoke pula o nó)
    add(o);}
   // pedra angular no eixo do setor
   const K=D.key[c],a=ang(c),r=RR(RINGS+1.15);
   add({id:'k'+c,kind:'key',x:Math.cos(a)*r,y:Math.sin(a)*r,ring:RINGS+1,lane:null,sec:c,nm:K[0],ds:K[1],fx:K[2],st:Object.keys(K[2]).filter(q=>K[2][q]>0).slice(0,2)});
  }
- // ligações: pistas retas (raios) + anéis (arcos)
+ // ligações: pistas retas (raios) + degraus entre pistas vizinhas
  for(let c=0;c<6;c++){for(let l=0;l<LN;l++){
-   for(let k=1;k<RINGS;k++)link(id(c,l,k),id(c,l,k+1));
+   let prev=null;for(let k=1;k<=RINGS;k++){const cur=id(c,l,k);if(!nodes[cur])continue;if(prev)link(prev,cur);prev=cur;}
    if(l===1||l===2)link('c',id(c,l,1));
-   // arcos: anéis 1,3,5 completos; 2,4,6 só entre as duas pistas centrais
-   for(let k=1;k<=RINGS;k++){const full=k%2===1;if(full||l===1)link(id(c,l,k),id(c,l+1,k));}
+   for(let k=1;k<=RINGS;k++){const full=k%2===1,h2=(c*13+l*31+k*17)%100;if(k===1||(full&&h2>=22)||(!full&&l===1))link(id(c,l,k),id(c,l+1,k));}
   }
   link('k'+c,id(c,1,RINGS));link('k'+c,id(c,2,RINGS));}
  // subclasses (trancadas): saem da fronteira entre dois setores
@@ -229,7 +229,7 @@ window.ptMigrate=function(){if(SAVE.trv===1)return;SAVE.trv=1;SAVE.tl={};SAVE.tr
 /* ---------- interface ---------- */
 const css=`.ptw{position:relative;height:min(66vh,640px);margin:4px 0;border:2px solid #3a4258;border-radius:6px;overflow:hidden;background:#07090f;touch-action:none;user-select:none}
 .ptw svg{width:100%;height:100%;display:block}.ptw .zb{position:absolute;right:6px;top:6px;display:flex;flex-direction:column;gap:4px}.ptw .zb button{width:32px;height:32px;font-size:18px;background:#10151f;border:2px solid #556;color:#ffd24a;border-radius:4px;padding:0}
-.ptw .ln{stroke:#2b3348;stroke-width:2.4;stroke-linecap:round}.ptw .ln.on{stroke-width:4}.ptw .ln.av{stroke:#8a7a4a;stroke-dasharray:3 4}.ptw .ln.pa{stroke:#ffe08a;stroke-width:4}
+.ptw .ln{stroke:#2b3348;stroke-width:2.4;stroke-linecap:round}.ptw .ln.on{stroke-width:4}.ptw .ln.av{stroke:#6f6238}.ptw .ln.pa{stroke:#ffe08a;stroke-width:4}
 .ptw .nc{fill:#10151f;stroke:#445;stroke-width:2.5}.ptw .nc.on{fill:#1b2234}.ptw .nc.av{stroke:#ffd24a}.ptw .nc.sel{stroke:#fff;stroke-width:3.5}.ptw .nc.pa{stroke:#ffe08a}.ptw .lk{opacity:.4}
 .ptw text.sl{font:700 9px 'Pixelify Sans',sans-serif;fill:#aab;text-anchor:middle;pointer-events:none}.ptw text.nm{font-family:'Pixelify Sans',sans-serif;font-weight:700;fill:#f2e6c0;text-anchor:middle;paint-order:stroke;stroke:#0a0d14;stroke-width:3px;pointer-events:none}.ptw text.rt{font:700 8px 'Pixelify Sans',sans-serif;fill:#ffd24a;text-anchor:middle;pointer-events:none}
 .pts{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}.pts span{font:11px 'Pixelify Sans',sans-serif;background:#10151f;border:1px solid #3a4258;border-radius:3px;padding:2px 5px;color:#cfd6e6}.pts span img{width:11px;height:11px;image-rendering:pixelated;vertical-align:-1px;margin-right:3px}
@@ -252,7 +252,7 @@ const KIND={start:'Origem',small:'Passiva',dual:'Passiva dupla',hyb:'Híbrido',n
 const RAD={start:30,small:12,dual:14,hyb:15,not:19,key:24,sub:20};
 function iconHTML(n,col){const sts=n.st&&n.st.length?n.st:['atk'];return `<div class="ic" style="--bc:${col}">${sts.slice(0,2).map(k=>`<img src="${glyph(k,ST[k]?ST[k].c:'#fff')}">`).join('')}</div>`;}
 
-function fit(vw,vh){const R=RR(RINGS+2.4);PT.sc=Math.min(vw,vh)/(R*2)*1.0;PT.vx=0;PT.vy=0;}
+function fit(vw,vh){const R=RR(RINGS+2.9);PT.sc=Math.min(vw,vh)/(R*2);PT.vx=0;PT.vy=0;}
 const FG={atk:['atk','crit','critd','aspd','exec','boss','cb4','cbw'],def:['def','dmgred','hp','regen','pot','cbp'],util:['spd','dcd','cdr','drop','pot'],combo:['cb4','cbw','cbp']};
 function fo(n){if(!PT.f||PT.f==='all'||n.id==='c')return 1;const g=FG[PT.f]||[];return Object.keys(n.fx).some(k=>g.includes(k))?1:.18;}
 function svgHTML(vw,vh){const T=tree(),N=T.nodes,sel=PT.sel,pth=sel?(pathTo(sel)||[]):[],pset={};pth.forEach(x=>pset[x]=1);
@@ -261,15 +261,12 @@ function svgHTML(vw,vh){const T=tree(),N=T.nodes,sel=PT.sel,pth=sel?(pathTo(sel)
  T.D.sec.forEach((S,c)=>{h+=`<radialGradient id="pg${c}"><stop offset="0" stop-color="${S.c}" stop-opacity=".22"/><stop offset="1" stop-color="${S.c}" stop-opacity="0"/></radialGradient>`;});
  h+='</defs>';
  T.D.sec.forEach((S,c)=>{const a=ang(c),r=RR(3.6);h+=`<circle cx="${(Math.cos(a)*r).toFixed(0)}" cy="${(Math.sin(a)*r).toFixed(0)}" r="${RR(4.4)}" fill="url(#pg${c})"/>`;});
- T.D.sec.forEach((S,c)=>{const a=ang(c),r=RR(RINGS+2.0);h+=`<text class="sl" x="${Math.cos(a)*r}" y="${Math.sin(a)*r+3}" style="fill:${S.c};font-size:${(8*u).toFixed(1)}px;opacity:.85">${S.n.toUpperCase()}</text>`;});
- for(let k=1;k<=RINGS;k++)h+=`<circle cx="0" cy="0" r="${RR(k)}" fill="none" stroke="#1c2234" stroke-width="1" stroke-dasharray="2 6"/>`;
- for(let c=0;c<6;c++){const a=(c*60+30-90)*Math.PI/180;h+=`<line x1="${(Math.cos(a)*RR(1)*.8).toFixed(0)}" y1="${(Math.sin(a)*RR(1)*.8).toFixed(0)}" x2="${(Math.cos(a)*RR(RINGS+1.6)).toFixed(0)}" y2="${(Math.sin(a)*RR(RINGS+1.6)).toFixed(0)}" stroke="#1c2234" stroke-width="1"/>`;}
+ T.D.sec.forEach((S,c)=>{const a=ang(c),r=RR(RINGS+1.75),cx=Math.cos(a),an=cx>.3?'start':cx<-.3?'end':'middle';h+=`<text class="sl" text-anchor="${an}" x="${cx*r+(cx>.3?14:cx<-.3?-14:0)}" y="${Math.sin(a)*r+(Math.sin(a)<-.3?-26:Math.sin(a)>.3?34:4)}" style="fill:${S.c};font-size:${(8*u).toFixed(1)}px;opacity:.85">${S.n.toUpperCase()}</text>`;});
  const drawn={};
  T.list.forEach(n=>n.nb.forEach(m=>{const k=n.id<m?n.id+'|'+m:m+'|'+n.id;if(drawn[k])return;drawn[k]=1;const a=n,b=N[m],on=isAl(a.id)&&isAl(b.id),av=!on&&((isAl(a.id)&&allocatable(b))||(isAl(b.id)&&allocatable(a))),pa=pset[a.id]&&(pset[b.id]||isAl(b.id))||pset[b.id]&&isAl(a.id);
   let st='';if(on){const ca=(T.D.sec[a.sec]||T.D.sec[0]).c,cb=(T.D.sec[b.sec]||T.D.sec[0]).c;st=`stroke:${a.sec===b.sec||a.sec<0?cb:ca}`;}
   const cls=`ln ${on?'on':''} ${av?'av':''} ${pa?'pa':''}`;
-  if(a.lane!=null&&b.lane!=null&&a.ring===b.ring)h+=`<path class="${cls}" d="M${a.x.toFixed(1)} ${a.y.toFixed(1)}A${RR(a.ring)} ${RR(a.ring)} 0 0 1 ${b.x.toFixed(1)} ${b.y.toFixed(1)}" fill="none" style="${st}"/>`;
-  else h+=`<line class="${cls}" x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" style="${st}"/>`;}));
+  h+=`<line class="${cls}" x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" style="${st}"/>`;}));
  T.list.forEach(n=>{const al=isAl(n.id),av=allocatable(n),S=T.D.sec[n.sec]||T.D.sec[0],lock=n.kind==='sub'&&SAVE.sub!==n.sub,r=RAD[n.kind]||11,x=n.x.toFixed(1),y=n.y.toFixed(1),im=art(n,SAVE.cls);
   const sts=(n.st&&n.st.length?n.st:['atk']).slice(0,2),op=al||av?1:.5;
   const edge=sel===n.id?'#fff':pset[n.id]?'#ffe08a':av?'#ffd24a':al?S.c:(n.kind==='small'||n.kind==='dual'?'#3d4660':S.c);
