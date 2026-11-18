@@ -2722,6 +2722,8 @@ const CMB={
  clerigo:{mult:[.9,1,1.35],ext:[.85,.95,1.05,1.55],reset:1.25,win:.24},
  bardo:{mult:[.9,.95,1.3],ext:[.85,.9,1,1.5],reset:1.25,win:.24}};
 const CMBR={ladino:{n:'Pontos',ic:'fortalecido',d:'Cada ponto reforça a próxima habilidade em +12%.'},clerigo:{n:'Luz',ic:'regeneracao',d:'Com a Luz cheia, a próxima habilidade causa +30% e cura um pouco.'}};
+const CMBV={3:['','2','4'],4:['','2','3','4'],5:['','2','3','3','4']};   // variante de animação de ataque por golpe (attack, attack2, attack3, attack4 no atlas)
+const CMBLUNGE={'':45,'2':80,'3':55,'4':190};
 function cmbCfg(h){return CMB[h.cls];}
 function atkWant(){return G.atkHold||(G.t-(G.atkTap||-9)<.28);}
 function cmbBase(h){const c=cmbCfg(h);return c?c.mult.length:3;}
@@ -2742,7 +2744,7 @@ function cmbStart(h,act,t){
   let prec=false;
   if(step>0&&tap>(h.cmbT||0)&&Math.abs(tap-(h.rdyAt||0))<=cmbWin(h))prec=true;
   const arr=len>cmbBase(h)?cf.ext:cf.mult;
-  act.cm=arr[step]*(prec?1.08+(tf('cbw')||0)*.02:1);act.fin=step===len-1;act.len=len;act.step=step;act.prec=prec;
+  act.cm=arr[step]*(prec?1.08+(tf('cbw')||0)*.02:1);act.fin=step===len-1;act.len=len;act.step=step;act.prec=prec;act.v=(CMBV[len]||CMBV[3])[step]||'';
   if(h.nextCrit){act.fc=1;h.nextCrit=0;}
   if(step>0&&!prec)h.cmbPerf=0;
   if(prec){h.cd*=.88;floatText(h.x,h.y-58,'PRECISO!','#ffe08a',7.5,.6);VF.ringw(h.x,h.y,30,'#ffe08a',.3,5);sfx('ui_confirm',.3);}
@@ -2764,7 +2766,7 @@ function cmbFinisher(h,t,a){
   G.shake=Math.max(G.shake||0,big?.3:.16);G.hs=Math.max(G.hs||0,big?.09:.055);sfx(big?'hit_1':'hit_0',big?.6:.4);
   if(big){h.pos=0;h.posT=0;h.shield=Math.max(h.shield||0,Math.round(h.maxhp*.12));h.shieldT=Math.max(h.shieldT||0,4);floatText(h.x,h.y-70,'ESTILHAÇO!','#ffd070',10,1);VF.spr(h.x,h.y,'fx_escudo',.5);VF.star(cx,cy-14,34,'#ffe08a',.35);}
   else{h.pos=Math.min(maxp,(h.pos||0)+1);h.posT=8+(tf('cbp')||0)*2;}
-  if(a.perf&&!big)floatText(h.x,h.y-70,'PERFEITO!','#ffe08a',8,.9);
+  if(a.perf&&!big)floatText(h.x,h.y-84,'PERFEITO!','#ffe08a',8,.9);
 }
 /* ---- ganchos por classe (rodam quando o golpe básico acerta/dispara) ---- */
 const EL=[{k:'fire',c:'#ff8a3a',c2:'#ffd070',n:'Fogo'},{k:'ice',c:'#8ad8ff',c2:'#e8f8ff',n:'Gelo'},{k:'arc',c:'#c08aff',c2:'#f0d8ff',n:'Arcano'}];
@@ -2791,7 +2793,12 @@ const CMBH={
  bardo:(h,t,a)=>{VF.notes(h.x,h.y-34,a.fin?5:2,a.perf?'#ffd070':'#8ac8ff');
   if(a.fin){const maj=!!a.perf,col=maj?'#ffd070':'#8ac8ff';h.chord={t:7+2*(tf('cbp')||0),atk:maj?.16:0,def:maj?0:.22,maj};VF.ringw(h.x,h.y,50,col,.5,9);VF.glow(h.x,h.y-18,34,col,.45,4);floatText(h.x,h.y-66,maj?'ACORDE MAIOR  +ataque':'ACORDE MENOR  +defesa',col,8.5,1);}}
 };
-function cmbHit(h,t,a){const f=CMBH[h.cls];if(f)f(h,t,a);}
+function cmbHit(h,t,a){const f=CMBH[h.cls];if(f)f(h,t,a);
+  const A=cmbDir(h,t),v=a.v||'',melee=hStyle()==='slash';
+  if(melee){const L=CMBLUNGE[v]||45;h.kvx=(h.kvx||0)+Math.cos(A)*L;h.kvy=(h.kvy||0)+Math.sin(A)*L*.6;}          // avanço do corpo junto com o golpe
+  if(v==='3'){VF.blade(h.x,h.y-16,34,A-3.1,A+3.1,'#ffffff',.3,7,0,.6);VF.ringw(h.x,h.y+2,40,'#dfe8ff',.35,5);}   // giro: círculo de corte em volta
+  else if(v==='2'){const P=cmbPos(h,t);VF.blade(P.x,P.y+4,26,A-1.0,A+1.0,'#ffffff',.22,5,0,.6);}                  // golpe ascendente: lâmina fina
+}
 /* multiplicador da PRÓXIMA habilidade, conforme o recurso de combo da classe */
 function cmbSkMul(h,t){let m=1;const c=h.cls;
  if(c==='mago'&&h.res&&h.res.t>0){m=1+.14*h.res.n;VF.glow(h.x,h.y-20,34,h.res.col,.4,4);VF.ringw(h.x,h.y,40,h.res.col,.4,8);floatText(h.x,h.y-62,'RESSONÂNCIA!',h.res.col,8,.9);h.res=null;}
@@ -4711,7 +4718,7 @@ function cxFrame(e){if(!CXON||(e.kind!=='hero'&&e.kind!=='mob'&&e.kind!=='boss'&
   if(e.dead)return A('death',Math.floor(e.deadT*L('death').length/.8));
   if(e.dod)return AL('run',(e.dod.t||0)*30);
   if(e.state==='hurt'||e.stun>0||(e.stagger>0&&!(a&&a.skill)))return A('hurt',e.flash>.07?1:2);
-  if(a&&(e.state==='atk'||a.skill)){const p=Math.min(.999,a.t/a.dur),hit=Math.max(.15,Math.min(.9,a.hit||.5)),imp=.6,u=p<hit?p/hit*imp:imp+(p-hit)/(1-hit)*(1-imp),nm=(a.cast||a.skill)?'cast':'attack';return A(nm,u*L(nm).length);}
+  if(a&&(e.state==='atk'||a.skill)){const p=Math.min(.999,a.t/a.dur),hit=Math.max(.15,Math.min(.9,a.hit||.5)),imp=.6,u=p<hit?p/hit*imp:imp+(p-hit)/(1-hit)*(1-imp),nm=(a.cast||a.skill)?'cast':'attack'+(a.v||'');if(!M.anims[nm+'_'+r])nm=(a.cast||a.skill)?'cast':'attack';return A(nm,u*L(nm).length);}
   if(e.ch)return A('cast',9+(Math.floor(G.t*7)%4));
   if(e.state==='walk'){const run=e.kind==='hero'&&(e.rk||0)>.5;return AL(run?'run':'walk',e.animT*(run?14:e.kind==='hero'?20.8:14));}
   return AL('idle',(G.t+(e._cxp||(e._cxp=Math.random()*9)))*10);}
