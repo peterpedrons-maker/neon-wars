@@ -5221,6 +5221,8 @@ const NPCD={
  emis_r:{nm:'Dama Isolde (Coroa)',ic:'crested-helmet',g:['A Coroa foi apagada, mas ainda sangra.','Poucos se lembram do nome do último rei. Eu me lembro.']},
  guardap:{nm:'Guarda do Passo',ic:'centurion-helmet',g:['Alto lá. O Portão está fechado.','Ordens são ordens: só passa quem provar seu valor.']}
 };
+const NLOC={maren:'Brumavale',hilda:'Brumavale · saída sul',mer:'Brumavale · loja do Bram',carav:'Ponte do Rio',eremita:'Colinas Rochosas',guardap:'Passo da Montanha',emis_g:'Passo da Montanha',emis_o:'Passo da Montanha',emis_r:'Passo da Montanha'};
+const REPL=[[0,'Neutro'],[30,'Conhecido'],[100,'Amigo'],[250,'Aliado'],[500,'Honrado']];
 const VL=['Bom dia! Que o dia seja leve.','Ouvi dizer que o Capitão anda preocupado com a estrada.','Tem sempre alguém novo com Selo na cidade, não é?','Já viu o portal? Brilha mais à noite.','Cuidado com os goblins. São pequenos, mas teimosos.','Minha avó dizia: nunca confie em quem não come.','O mercador Bram tem preço bom, mas regateie.','Está ventando... vai chover logo.','Se for à Planície, leve poções.','Hoje acordei com o pé esquerdo.','Brumavale já foi mais calma.','Nada como uma tarde sem monstros.'];
 const VNAMES=['Dona Brisa','Tobias','Lena','Velho Joren','Marta','Pip'];
 /* NPCs avulsos nas zonas do mundo (acampamentos e pontos de interesse) */
@@ -5361,13 +5363,43 @@ setInterval(()=>{try{stNpcSync();}catch(e){}},300);setInterval(()=>{try{bubTick(
 function rwChips(r){const c=[];if(r.gold)c.push(['coins',r.gold]);if(r.xp)c.push(['xp',r.xp]);if(r.pot)c.push(['health-potion',r.pot]);if(r.tok)c.push(['gems',r.tok]);if(r.mat){const M=MATS.find(m=>m.id===r.mat[0]);c.push([M?M.ic:'ni_ferro',r.mat[1]]);}
   return '<div class="rws">'+c.map(([ic,v])=>ic==='xp'?`<span class="rw"><b class="xpt">EXP</b>${v}</span>`:`<span class="rw"><img src="${UI}${ic}.png">${v}</span>`).join('')+'</div>';}
 function qCard(q,main,k,i){const v=qVal(q),ok=v>=q.n,cl=q.c,r=qRew(q,main),pct=Math.round(v/q.n*100);
-  return `<div class="qc${ok&&!cl?' rd':''}${cl?' dn':''}${main?' mn':' dy'}"><em class="tg">${main?'Principal':'Diária'}</em><div class="qh"><img src="${UI}${cl?'check-mark':main?'scroll-unfurled':'crossed-swords'}.png"><div><b>${q.nm}</b><span>${q.ds}${main?'':' ('+q.n+')'}</span></div></div><div class="qp"><i style="width:${pct}%"></i><em>${cl?'Concluída':v+' / '+q.n}</em></div><div class="qf">${rwChips(r)}${cl?'':`<button class="gb" data-a="qc:${k}:${i}" ${ok?'':'disabled'}>${ok?'Receber':'Em andamento'}</button>`}</div></div>`;}
+  return `<div class="qc${ok&&!cl?' rd':''}${cl?' dn':''}${main?' mn':' dy'}"><em class="tg">${main?'Trilha':'Diária'}</em><div class="qh"><img src="${UI}${cl?'check-mark':main?'scroll-unfurled':'crossed-swords'}.png"><div><b>${q.nm}</b><span>${q.ds}${main?'':' ('+q.n+')'}</span></div></div><div class="qp"><i style="width:${pct}%"></i><em>${cl?'Concluída':v+' / '+q.n}</em></div><div class="qf">${rwChips(r)}${cl?'':`<button class="gb" data-a="qc:${k}:${i}" ${ok?'':'disabled'}>${ok?'Receber':'Em andamento'}</button>`}</div></div>`;}
 function qLeft(){const d=new Date(),m=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1)-d;return Math.max(1,Math.ceil(m/3600000));}
-function missionsBody(){const c=qMain(),L=SAVE.q.d.l,rdy=(c&&qOk(c)?1:0)+L.filter(d=>!d.c&&qOk(d)).length;let h='';
-  h+=`<div class="chp"><b>Capítulo ${Math.min(SAVE.q.m+1,QMAIN.length)} de ${QMAIN.length}</b><div class="qp s"><i style="width:${SAVE.q.m/QMAIN.length*100}%"></i></div></div>`;
-  h+='<div class="qs p"><b>Missão principal</b><span>a história de Brumavale</span></div>'+(c?qCard(c,1,'m',0):'<div class="dd" style="text-align:center">Você concluiu toda a trilha principal.</div>');
-  const nx=QMAIN.slice(SAVE.q.m+1,SAVE.q.m+3);if(nx.length)h+='<div class="qs n"><b>Próximos capítulos</b></div><div class="nxt">'+nx.map(q=>`<span><img src="${UI}padlock.png">${q.nm}</span>`).join('')+'</div>';
-  h+=`<div class="qs d"><b>Missões diárias</b><span>renovam em ${qLeft()}h</span></div>`+L.map((q,i)=>qCard(q,0,'d',i)).join('');
+function sqCss(){if(document.getElementById('sqcss'))return;const st=document.createElement('style');st.id='sqcss';st.textContent=`
+.sqt{display:flex;align-items:center;gap:8px;margin:6px 0 10px;font:700 11px var(--f);color:#c9b98a}.sqt .bar{flex:1;height:8px;background:#0c0912;border:1px solid #5a4620}.sqt .bar i{display:block;height:100%;background:linear-gradient(#ffd66e,#c98f1e)}
+.sqs2{display:flex;align-items:center;gap:6px;margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid #5a4620;font:700 12px var(--f);color:#ffd66e;letter-spacing:.06em;text-transform:uppercase}.sqs2 img{height:18px;image-rendering:pixelated}.sqs2 span{margin-left:auto;font:500 11px var(--f);color:#9a8d6e;text-transform:none;letter-spacing:0}
+.sq{border:2px solid #b98a2a;background:linear-gradient(180deg,#2a2130,#17121d);padding:10px;box-shadow:inset 0 0 0 1px #000a}
+.sq.lk{border-color:#4a4350;filter:grayscale(.7);opacity:.8}.sq.rd{border-color:#7ddc6a;box-shadow:0 0 10px #5ddc4a55,inset 0 0 0 1px #000a}
+.sqh{display:flex;gap:10px;align-items:center}.sqh>img{width:34px;height:34px;image-rendering:pixelated;flex:none}.sqh small{display:block;font:600 10px var(--f);color:#9a8d6e;letter-spacing:.08em}.sqh b{font:700 16px var(--f);color:#fff2cc}
+.sqb{margin-left:auto;font:700 10px var(--f);padding:3px 7px;border:1px solid;white-space:nowrap}.sqb.p{color:#ffd66e;border-color:#b98a2a;background:#3a2a14}.sqb.g{color:#0f2a0a;border-color:#7ddc6a;background:#7ddc6a}.sqb.l{color:#aaa;border-color:#555;background:#222}.sqb.n{color:#2a1a00;border-color:#ffd23a;background:#ffd23a}
+.sqr{display:flex;align-items:center;gap:6px;margin-top:9px;font:500 12.5px/1.3 var(--f);color:#ddd2bc}.sqr img{height:24px;image-rendering:pixelated;flex:none}.sqr b{color:#ffe9a8}
+.sqo{margin-top:8px;padding:7px 8px;background:#0e0a14;border:1px solid #4a3a1a;font:500 12.5px/1.35 var(--f);color:#eee3c8}.sqo .ro{display:flex;gap:8px;align-items:flex-start}.sqo .ck{flex:none;width:16px;height:16px;border:2px solid #b98a2a;text-align:center;line-height:12px;font:700 12px var(--f);color:#7ddc6a}.sqo .ck.on{background:#17331a;border-color:#7ddc6a}.sqo em{margin-left:auto;font:700 12px var(--f);font-style:normal;color:#ffd66e;white-space:nowrap}
+.sqo .bar{height:6px;background:#050308;border:1px solid #4a3a1a;margin-top:6px}.sqo .bar i{display:block;height:100%;background:linear-gradient(#7ddc6a,#3a9a2a)}
+.sqw{margin-top:8px}.sqw>small{display:block;font:700 10px var(--f);color:#9a8d6e;letter-spacing:.08em;margin-bottom:3px}.sqf{font:600 11.5px var(--f);color:#9fd0ff;margin-top:4px}
+.rp{display:flex;align-items:center;gap:8px;margin:5px 0;font:600 12px var(--f);color:#eee3c8}.rp b{width:150px;flex:none;font-weight:600;font-size:11.5px}.rp .bar{flex:1;height:8px;background:#0c0912;border:1px solid #5a4620}.rp .bar i{display:block;height:100%}.rp em{font:600 11px var(--f);font-style:normal;color:#9a8d6e;min-width:96px;text-align:right}
+.rp.o i{background:#e0c060}.rp.g i{background:#6cc0e8}.rp.c i{background:#d86060}
+.qx{margin-top:14px}.qx>summary{font:700 12px var(--f);color:#c9b98a;cursor:pointer;padding:6px 0;border-bottom:1px solid #5a4620}`;document.head.appendChild(st);}
+function repLvl(p){let k=0;for(let i=0;i<REPL.length;i++)if(p>=REPL[i][0])k=i;const a=REPL[k],b=REPL[k+1];return {nm:a[1],pct:b?Math.round((p-a[0])/(b[0]-a[0])*100):100,nx:b?b[0]:null};}
+function sqCard(){const s=stS(),q=stCurQ(),nx=stNext(),tot=SQ.length;
+  const rew=(qq)=>rwChips(stRewOf(qq))+(stFacTxt(qq.fac)?'<div class="sqf">Reputação: '+stFacTxt(qq.fac)+'</div>':'');
+  const head=(qq,st,cls)=>`<div class="sqh"><img src="assets/kit/D19.png"><div><small>ATO 1 · MISSÃO ${qq.lv}</small><b>${qq.nm}</b></div><span class="sqb ${cls}">${st}</span></div>`;
+  if(q){const pg=stProg(),ok=pg[0]>=pg[1],tn=NPCD[q.turn];
+    return `<div class="sq${ok?' rd':''}">${head(q,ok?'Pronta!':'Em andamento',ok?'g':'p')}
+<div class="sqr"><img src="assets/kit/B29.png"${ok?'':' style="filter:grayscale(1)"'}><span>${ok?'Entregar a':'Entregar depois a'} <b>${tn.nm}</b> · ${NLOC[q.turn]||''}</span></div>
+<div class="sqo"><div class="ro"><span class="ck${ok?' on':''}">${ok?'✔':''}</span><span>${stObjTxt(q)}</span><em>${pg[0]}/${pg[1]}</em></div><div class="bar"><i style="width:${Math.round(pg[0]/pg[1]*100)}%"></i></div></div>
+<div class="sqw"><small>RECOMPENSAS</small>${rew(q)}</div></div>`;}
+  if(nx){const ok=SAVE.lv>=nx.lv,gv=NPCD[nx.giver];
+    return `<div class="sq${ok?'':' lk'}">${head(nx,ok?'Disponível':'Nível '+nx.lv,ok?'n':'l')}
+<div class="sqr"><img src="assets/kit/B28.png"${ok?'':' style="filter:grayscale(1)"'}><span>${ok?'Fale com':'Libera no nível '+nx.lv+'. Depois, fale com'} <b>${gv.nm}</b> · ${NLOC[nx.giver]||''}</span></div>
+${ok?`<div class="sqo">${nx.give[0]}</div>`:''}<div class="sqw"><small>RECOMPENSAS</small>${rew(nx)}</div></div>`;}
+  return '<div class="sq"><div class="sqh"><img src="assets/kit/D19.png"><div><small>ATO 1</small><b>Fim do Ato 1</b></div></div><div class="sqo">Você concluiu as missões principais disponíveis. O Ato 2 chega em breve.</div></div>';}
+function repBlock(){const s=stS();return ['ordem','guilda','coroa'].map(k=>{const p=s.fac[k]||0,l=repLvl(p);return `<div class="rp ${k[0]}"><b>${FACN[k]}</b><div class="bar"><i style="width:${l.pct}%"></i></div><em>${l.nm} · ${p}${l.nx?'/'+l.nx:''}</em></div>`;}).join('');}
+function missionsBody(){sqCss();const c=qMain(),L=SAVE.q.d.l,rdy=(c&&qOk(c)?1:0)+L.filter(d=>!d.c&&qOk(d)).length,s=stS();let h='';
+  h+=`<div class="sqt"><span>Missões principais ${s.n}/${SQ.length}</span><div class="bar"><i style="width:${s.n/SQ.length*100}%"></i></div></div>`;
+  h+=`<div class="sqs2"><img src="assets/kit/B28.png">Missão principal<span>a história de Brumavale</span></div>`+sqCard();
+  h+=`<div class="sqs2"><img src="${UI}crossed-swords.png">Reputação<span>missões secundárias rendem pontos</span></div>`+repBlock();
+  h+=`<div class="sqs2"><img src="${UI}scroll-unfurled.png">Missões diárias<span>renovam em ${qLeft()}h</span></div>`+L.map((q,i)=>qCard(q,0,'d',i)).join('');
+  h+=`<details class="qx"><summary>Trilha do Caçador (capítulo ${Math.min(SAVE.q.m+1,QMAIN.length)} de ${QMAIN.length})</summary>`+(c?qCard(c,1,'m',0):'<div class="dd" style="text-align:center">Trilha concluída.</div>')+'</details>';
   if(rdy>1)h+=`<div class="acts"><button class="g" data-a="qall">Receber tudo (${rdy})</button></div>`;
   return h;}
 /* ===== LOJA DE FICHAS (Capitão Ruvel): moeda das missões, conquistas e encomendas ===== */
