@@ -2538,7 +2538,7 @@ function bossArrive(m,fall){bossSnd(fall?'roarbig':'roar');if(fall)bossSnd('slam
 function gainXP(x,at){
   SAVE.xp+=x;floatText(at.x,at.y-58,'+'+x+' Exp','#9fe0ff',8,1);
   let lvled=false;while(SAVE.xp>=xpNeed(SAVE.lv)){SAVE.xp-=xpNeed(SAVE.lv);SAVE.lv++;lvled=true;}
-  if(lvled){const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;sfx('levelup',.9);G.fx.push({k:'lv',x:h.x,y:h.y,life:1.2,max:1.2});levelUpFx(SAVE.lv);chat('Você alcançou o Nv.'+SAVE.lv+'!',4);dgRefresh();qCheck();buildBar();chat('+1 ponto de habilidade',4);checkBoss();}
+  if(lvled){const h=G.hero;heroStatsInto(h);h.hp=h.maxhp;sfx('levelup',.9);G.fx.push({k:'lv',x:h.x,y:h.y,life:1.2,max:1.2});levelUpFx(SAVE.lv);chat('Você alcançou o Nv.'+SAVE.lv+'!',4);dgRefresh();qCheck();stLvUp();buildBar();chat('+1 ponto de habilidade',4);checkBoss();}
 }
 function hurtHero(dmg,fromX,fromY,kf=1){
   const h=G.hero;if(h.state==='ko')return;if(h.mounted)mountOff(true);h.mcb=4;if(h.inv>0){floatText(h.x,h.y-58,'Esquivou!','#cfe9ff',9,1);return;}{const tk=stMul(h,'taken');if(tk!==1)dmg=Math.max(1,Math.round(dmg*tk));}if(SAVE.sub==='cavaleiro')dmg=Math.round(dmg*.92);{const dr=tf('dmgred')+sb('dmgred');if(dr)dmg=Math.max(1,Math.round(dmg*(1-Math.min(.6,dr))));}if(h.shield>0){const ab=Math.min(h.shield,dmg);h.shield-=ab;dmg-=ab;floatText(h.x+(Math.random()<.5?-15:15),h.y-34,'-'+ab,'#7ab8ff',10,.9,{pop:1,vy:20});if(dmg<=0){sfx('hit_1',.4,1.3);return;}}h.hp-=dmg;h.flash=.14;h.combat=4;
@@ -4054,7 +4054,7 @@ function update(dt){
   petTick(dt);
   if(G.scene==='town')updateTown(dt);
   else if(G.arena&&G.arena.over&&G.hero.state==='ko'){updateHero(dt);}
-  else{if(ZONE.gates){const nr=nearInt(),key=nr?nr.k+nr.nm:'';G.near=nr;if(key!==G.nearKey){G.nearKey=key;itbUpd();}gateFx(dt);}else if(G.nearKey){G.nearKey='';G.near=null;itbUpd();}updateHero(dt);crpTick(dt);if(tf('regen')&&G.hero.state!=='ko'&&G.hero.hp<G.hero.maxhp)G.hero.hp=Math.min(G.hero.maxhp,G.hero.hp+G.hero.maxhp*tf('regen')*dt);updateZones(dt);for(const m of G.mobs)updateMob(m,dt);if(G.boss)updateMob(G.boss,dt);separateEnts();updateProjs(dt);updateMProjs(dt);tickElix(dt);bossTick(dt);evTick(dt);if(G.arena&&G.phase==='boss'&&!G.arena.over)G.arena.tm=(G.arena.tm||0)+dt;if(G.mobs.some(m=>m.gone))G.mobs=G.mobs.filter(m=>!m.gone);}
+  else{if(ZONE.gates||(G.npcs&&G.npcs.length)){const nr=nearInt(),key=nr?nr.k+nr.nm:'';G.near=nr;if(key!==G.nearKey){G.nearKey=key;itbUpd();}if(ZONE.gates)gateFx(dt);}else if(G.nearKey){G.nearKey='';G.near=null;itbUpd();}updateHero(dt);crpTick(dt);if(tf('regen')&&G.hero.state!=='ko'&&G.hero.hp<G.hero.maxhp)G.hero.hp=Math.min(G.hero.maxhp,G.hero.hp+G.hero.maxhp*tf('regen')*dt);updateZones(dt);for(const m of G.mobs)updateMob(m,dt);if(G.boss)updateMob(G.boss,dt);separateEnts();updateProjs(dt);updateMProjs(dt);tickElix(dt);bossTick(dt);evTick(dt);if(G.arena&&G.phase==='boss'&&!G.arena.over)G.arena.tm=(G.arena.tm||0)+dt;if(G.mobs.some(m=>m.gone))G.mobs=G.mobs.filter(m=>!m.gone);}
   for(let i=G.floats.length-1;i>=0;i--){const f=G.floats[i];f.life-=dt;f.y-=(f.vy||14)*dt;if(f.life<=0)G.floats.splice(i,1);}
   updateFxList(dt);
   if(G.shake>0)G.shake=Math.max(0,G.shake-dt);
@@ -4103,22 +4103,23 @@ function updateTown(dt){
   for(const v of G.vill){v.t-=dt;if(v.t<=0){v.t=rnd(2,5);v.tx=v.x0+rnd(-46,46);v.ty=v.y0+rnd(-26,26);}
     const m=moveTo(v,v.tx,v.ty,24,dt);collide(v,6);v.moving=m>0.1;if(v.moving)v.animT+=dt*.7;}
 }
-function nearInt(){const h=G.hero;if((G.scene!=='town'&&!(G.scene==='dungeon'&&ZONE.gates))||G.winOpen||G.roomBusy)return null;
-  if(G.scene==='dungeon'){for(const g of ZONE.gates)if(dist(h,g)<g.r)return {k:'gate',g,lb:'Entrar',nm:g.nm,ic:'greek-temple'};return null;}
+function nearInt(){const h=G.hero;if((G.scene!=='town'&&!(G.scene==='dungeon'&&(ZONE.gates||(G.npcs&&G.npcs.length))))||G.winOpen||G.roomBusy)return null;
+  if(G.scene==='dungeon'){if(ZONE.gates)for(const g of ZONE.gates)if(dist(h,g)<g.r)return {k:'gate',g,lb:'Entrar',nm:g.nm,ic:'greek-temple'};for(const n of (G.npcs||[]))if(dist(h,n)<(n.r||40)+14)return {k:'npc',t:n,lb:'Falar',nm:n.nm,ic:n.ic};return null;}
   for(const n of G.npcs)if(dist(h,n)<(n.r||40)+14)return {k:'npc',t:n,lb:'Falar',nm:n.nm,ic:n.ic};
+  for(const v of G.vill){if(v.pet)continue;if(dist(h,v)<36){if(!v.vn)v.vn=VNAMES[G.vill.indexOf(v)%VNAMES.length];return {k:'npc',t:v,lb:'Falar',nm:v.vn,ic:'hood'};}}
   if(!G.room){if(ZONE.doors)for(const d of ZONE.doors)if(Math.abs(h.x-d.x)<34&&h.y<d.y+8&&h.y>d.y-36)return {k:'door',d,lb:'Entrar',nm:d.nm,ic:d.ic};
     const P=ZONE.portal;if(P&&Math.abs(h.x-P.x)<38&&h.y<P.stand[1]+8&&h.y>P.y-22)return {k:'portal',lb:'Entrar',nm:'Portal das Dungeons',ic:'greek-temple'};}
   return null;}
 /* portões das dungeons no mapa aberto: o vórtice (PixelFx) toca em volta de cada portão enquanto o herói está por perto */
 function gateFx(dt){const h=G.hero;for(const g of ZONE.gates){if(dist(h,g)>620){g._t=0;continue;}g._t=(g._t||0)-dt;if(g._t<=0){g._t=2.4;VF.spr(g.x,g.y-34,'portal_arcano',.9);}}}
 function itbUpd(){const b=$('itb'),n=G.near;if(!b)return;if(!n){b.style.display='none';return;}b.innerHTML=`<img src="${UI}${n.ic||'scroll-unfurled'}.png">`+(n.k==='gate'?`<i class="itl">${n.nm}</i>`:'');b.title=n.lb+' '+(n.nm||'');b.style.display='flex';}
-function itbDo(){const n=G.near;if(!n||G.winOpen||(G.scene!=='town'&&n.k!=='gate'))return;G.wp=null;sfx('ui_confirm',.6);if(n.k==='gate'){if(!dgUnlocked(n.g.dg)){const d=DUN[n.g.dg-1];sfx('ui_denied');toast((d?d.nm:'Dungeon')+': requer nível '+(d?d.unlock:15)+'.',2600);return;}sfx('spell_cast',.8);sfx('levelup',.4);G.near=null;G.nearKey='';itbUpd();G.regRet={x:n.g.x,y:n.g.y+70};G.regLast=G.regRet;G.regMap=G.map;enterDungeon(n.g.dg,{fromReg:1});return;}if(n.k==='npc')interact(n.t);else if(n.k==='door')enterRoom(n.d.room,n.d.id);else interact({kind:'portal'});}
+function itbDo(){const n=G.near;if(!n||G.winOpen||(G.scene!=='town'&&n.k!=='gate'&&n.k!=='npc'))return;G.wp=null;sfx('ui_confirm',.6);if(n.k==='gate'){if(!dgUnlocked(n.g.dg)){const d=DUN[n.g.dg-1];sfx('ui_denied');toast((d?d.nm:'Dungeon')+': requer nível '+(d?d.unlock:15)+'.',2600);return;}sfx('spell_cast',.8);sfx('levelup',.4);G.near=null;G.nearKey='';itbUpd();G.regRet={x:n.g.x,y:n.g.y+70};G.regLast=G.regRet;G.regMap=G.map;enterDungeon(n.g.dg,{fromReg:1});return;}if(n.k==='npc')interact(n.t);else if(n.k==='door')enterRoom(n.d.room,n.d.id);else interact({kind:'portal'});}
 {const b=$('itb');if(b)b.onclick=itbDo;}
 addEventListener('keydown',e=>{if(/INPUT|TEXTAREA/.test((e.target.tagName||'')))return;if(e.key==='f'||e.key==='F')itbDo();});
 function interact(t){
   G.wp=null;sfx('ui_confirm',.6);
-  if(t.kind==='npc'){t.row=dir4(G.hero.x-t.x,G.hero.y-t.y);openWin(t.win);}
-  else openWin('portal');
+  if(t.kind==='npc'||t.kind==='vill'){t.row=dir4(G.hero.x-t.x,G.hero.y-t.y);talk(t);}
+  else talk({id:'gua',nm:'Guarda do Portal',ic:'treasure-map',kind:'npc',win:'portal'});
 }
 /* ------------------------------ desenho --------------------------------- */
 let ctx=null;
@@ -5157,7 +5158,7 @@ function qRewTxt(r){const a=[];if(r.gold)a.push(r.gold+' ouro');if(r.xp)a.push(r
 function qGive(r){SAVE.gold+=r.gold||0;if(r.tok)SAVE.tok=(SAVE.tok||0)+r.tok;if(r.pot)SAVE.potions+=r.pot;if(r.mat){SAVE.mats=SAVE.mats||{};SAVE.mats[r.mat[0]]=(SAVE.mats[r.mat[0]]||0)+r.mat[1];}if(r.xp&&G.hero)gainXP(r.xp,{x:G.hero.x,y:G.hero.y});updPot();}
 const _qn=new Set();
 function qNote(q){if(_qn.has(q.id+(q.date||'')+SAVE.q.d.date))return;if(qOk(q)){_qn.add(q.id+(q.date||'')+SAVE.q.d.date);chat('Missão concluída: '+q.nm,4);sfx('levelup',.4);if(G.hero)floatText(G.hero.x,G.hero.y-80,'Missão concluída!','#ffe08a',9,1.4);}}
-function qEv(t,f){if(!SAVE.q)return;SAVE.cnt=SAVE.cnt||{};SAVE.cnt[t]=(SAVE.cnt[t]||0)+1;const c=qMain();
+function qEv(t,f){if(!SAVE.q)return;stEv(t,f);SAVE.cnt=SAVE.cnt||{};SAVE.cnt[t]=(SAVE.cnt[t]||0)+1;const c=qMain();
   if(c&&c.t===t&&(!c.f||c.f===f)){SAVE.q.p[c.id]=(SAVE.q.p[c.id]||0)+1;qNote(c);}
   for(const d of SAVE.q.d.l)if(!d.c&&d.t===t&&(!d.f||d.f===f)&&d.p<d.n){d.p++;qNote(d);}
   achCheck();socRefresh();}
@@ -5178,7 +5179,7 @@ function socUI(){const s=$('soc');if(!s||s.dataset.b)return;s.dataset.b=1;petLoa
   setInterval(qPlace,400);}
 function qPlace(){const q=$('qtr'),m=$('mm'),h=$('hud');if(!q||!m||!h)return;if(MM.big){q.style.display='none';return;}q.style.display='';const r=m.getBoundingClientRect(),hr=h.getBoundingClientRect();{const mn=$('mmenu');if(mn&&r.height>0){const qb=q.getBoundingClientRect();mn.style.setProperty('top',Math.round(Math.max(r.bottom,qb.bottom||0)-hr.top+8)+'px');}}if(r.height>0){q.style.top=Math.round(r.bottom-hr.top+14)+'px';const pg=$('prog');if(pg){pg.style.top=Math.round(r.bottom-hr.top+4)+'px';pg.style.width=Math.round(r.width)+'px';const zn=$('zname');if(zn){zn.style.right='auto';zn.style.left=Math.round(r.left+r.width/2-hr.left)+'px';}}};}
 function socRefresh(){if(!SAVE.q)return;socUI();
-  const c=qMain(),t=$('qtr');if(t){const L=SAVE.q.d.l,rows=[];if(c){const v=qVal(c);rows.push([c.nm,v,c.n,c.ds.replace(/\.$/,''),v>=c.n,0]);}else rows.push(['Trilha concluída',1,1,'',1,0]);
+  const c=qMain(),t=$('qtr');if(t){const L=SAVE.q.d.l,rows=[];{const sq=stCurQ(),sn=stNext();if(sq){const pg=stProg();rows.push(['Principal: '+sq.nm,pg[0],pg[1],pg[0]>=pg[1]?'Fale com '+NPCD[sq.turn].nm:(sq.give[sq.give.length-1]).slice(0,60),false,0]);}else if(sn){const ok=SAVE.lv>=sn.lv;rows.push(['Principal: '+sn.nm,0,1,ok?'Fale com '+NPCD[sn.giver].nm:'Alcance o nível '+sn.lv,false,0]);}}if(c){const v=qVal(c);rows.push([c.nm,v,c.n,c.ds.replace(/\.$/,''),v>=c.n,0]);}else rows.push(['Trilha concluída',1,1,'',1,0]);
     for(const d of L){const v=qVal(d);rows.push([d.nm,v,d.n,d.ds.replace(/\.$/,''),v>=d.n,d.c]);}
     const rd=rows.some(r=>r[4]&&!r[5]);t.classList.toggle('cl',SAVE.qcol!==false);t.classList.toggle('rdy',rd);
     t.innerHTML=`<div class="qth">Missões<u></u><i>${SAVE.qcol!==false?'▸ +'+Math.max(0,rows.length-1):'▾'}</i></div><div class="qrs">`+rows.map((r,i)=>`<div class="qr${i===0?' mn':' dy'}${r[4]?' ok':''}${r[5]?' dn':''}"><b>${r[0]}<em>${r[5]?'✓':r[1]+'/'+r[2]}</em></b>${i===0?`<span>${r[4]?'Concluída — toque para receber':r[3]}</span>`:''}<i><s style="width:${r[2]?Math.min(100,r[1]/r[2]*100):100}%"></s></i></div>`).join('')+'</div>';qPlace();}
@@ -5196,6 +5197,160 @@ function socMenu(m,dun){
   m.appendChild(mk('bMo','assets/hud/montaria.png','Montar',()=>mountToggle(),null,1));
 }
 const SOCW={missoes:()=>winMissoes(),diario:()=>winDiario(),grupo:()=>winGrupo()};
+/* ===== DIÁLOGO COM NPCs + MISSÕES DA HISTÓRIA (Ato 1) — ver HISTORIA.md =====
+   Todo NPC (inclusive moradores) fala: balão de fala ao chegar perto e caixa de diálogo ao tocar "Falar".
+   Serviços (loja, forja…) falam primeiro e só então abrem a janela. A missão principal é UMA por nível:
+   a do nível N só libera no nível N e com a N-1 concluída. */
+const FACN={ordem:'Ordem do Selo',guilda:'Conselho das Guildas',coroa:'Remanescentes da Coroa'};
+const SVCL={mercador:'Ver mercadorias',alquimista:'Ver poções e elixires',forja:'Usar a forja',leilao:'Abrir o leilão',subclasse:'Falar sobre subclasses',cofre:'Abrir o cofre',missoes:'Quadro de missões',portal:'Usar o portal'};
+const NPCD={
+ gua:{ic:'treasure-map',g:['O portal leva às dungeons que você já abriu. Escolha com calma.','Volte inteiro. A Ordem não paga resgate.','Cada dungeon tem seus perigos. Respeite todos.']},
+ cap:{ic:'centurion-helmet',g:['Capitão Ruvel, ao seu dispor. A cidade está calma... por enquanto.','Os mapas da estrada são confiáveis. Os monstros é que não.','Quem serve a Brumavale nunca fica sem trabalho.']},
+ mer:{g:['Bem-vindo à minha loja! Preço justo para quem tem o Selo.','Se o ouro pesa no bolso, eu alivio. Dê uma olhada.','Compro, vendo e não faço perguntas sobre de onde veio o item.']},
+ alq:{g:['Cuidado onde pisa, Escolhido. Esses frascos são frágeis.','Uma poção na hora certa vale mais que uma espada.','O cheiro? Ah, você se acostuma.']},
+ fer:{g:['Aço bom nasce do fogo e da paciência.','Traga o equipamento e eu o deixo mais forte. Sem garantia... às vezes quebra.','Ouviu o martelo? É o som do dinheiro.']},
+ lei:{g:['Lote novo chegando! Fique de olho nas ofertas.','No leilão, quem espera ganha. Quem hesita, perde.','Tudo tem preço. Só varia quem paga.']},
+ mes:{g:['Todo caminho se escolhe mais de uma vez.','Sua força é do Selo; o rumo é seu.','Quando estiver pronto, eu mostro as veredas da sua classe.']},
+ cof:{g:['Seus pertences estão seguros aqui. Sempre estiveram.','Ouro parado também rende... confiança.','Guardo tudo, não conto nada.']},
+ maren:{nm:'Irmã Maren',ic:'sun-priest',g:['Que o Selo guie seus passos, Escolhido.','A Ordem agradece cada besta abatida na estrada.','Você carrega algo que milhares já carregaram. Honre isso.']},
+ hilda:{nm:'Sargento Hilda',ic:'helmet',g:['Sargento Hilda, guarda da estrada. Mantenha a espada afiada.','A estrada ao sul é a única saída. E a única entrada para o que vem de fora.','Não gosto de gente com Selo... mas gosto de quem trabalha.']},
+ carav:{nm:'Caravaneiro Dalton',ic:'scales',g:['Minha carga está parada faz dois dias. Dois dias de prejuízo!','Se alguém me tirar daqui, pago o dobro.']},
+ eremita:{nm:'Eremita Orlo',ic:'hooded-figure',g:['Há muito não vejo gente de Selo por estas colinas.','Quem vive sozinho escuta melhor o que a pedra conta.']},
+ emis_o:{nm:'Frei Aurelio (Ordem)',ic:'sun-priest',g:['A Ordem observa seus passos, Escolhido.','O Selo é um presente. Lembre-se de quem o deu.']},
+ emis_g:{nm:'Mestre Corvo (Guildas)',ic:'coins',g:['Tempo é dinheiro, e você está gastando o meu.','O Conselho paga bem a quem sabe se fazer útil.']},
+ emis_r:{nm:'Dama Isolde (Coroa)',ic:'crested-helmet',g:['A Coroa foi apagada, mas ainda sangra.','Poucos se lembram do nome do último rei. Eu me lembro.']},
+ guardap:{nm:'Guarda do Passo',ic:'centurion-helmet',g:['Alto lá. O Portão está fechado.','Ordens são ordens: só passa quem provar seu valor.']}
+};
+const VL=['Bom dia! Que o dia seja leve.','Ouvi dizer que o Capitão anda preocupado com a estrada.','Tem sempre alguém novo com Selo na cidade, não é?','Já viu o portal? Brilha mais à noite.','Cuidado com os goblins. São pequenos, mas teimosos.','Minha avó dizia: nunca confie em quem não come.','O mercador Bram tem preço bom, mas regateie.','Está ventando... vai chover logo.','Se for à Planície, leve poções.','Hoje acordei com o pé esquerdo.','Brumavale já foi mais calma.','Nada como uma tarde sem monstros.'];
+const VNAMES=['Dona Brisa','Tobias','Lena','Velho Joren','Marta','Pip'];
+/* NPCs avulsos nas zonas do mundo (acampamentos e pontos de interesse) */
+const ZNPC={
+ zone_ponte:[{id:'carav',sh:'bardo',x:1500,y:2900}],
+ zone_colinas:[{id:'eremita',sh:'ladino_b',x:1700,y:3400}],
+ zone_passo:[{id:'guardap',sh:'guarda',x:2060,y:320},{id:'emis_o',sh:'pov_f',x:1950,y:600},{id:'emis_g',sh:'bardo',x:2250,y:560},{id:'emis_r',sh:'ladino_b',x:2550,y:600}]
+};
+const TOWN_X=[{id:'maren',sh:'pov_f',x:385,y:330},{id:'hilda',sh:'guarda',x:505,y:1110}];
+const SQ=[
+ {lv:1,nm:'O Selo',giver:'maren',turn:'hilda',obj:{t:'talk'},fac:{ordem:10},
+  give:['Você chegou. Eu vi o Selo brilhar assim que atravessou o portão.','Todo Escolhido recebe um Selo da Ordem. Ele dá força... e laços.','Procure a Sargento Hilda, perto da saída sul. Ela vai lhe mostrar a estrada.'],
+  done:['Então é você, o novo Escolhido. A Irmã Maren me avisou.','A estrada ao sul é perigosa. Eu cuido da guarda; você cuida do que passa dela. Fechado?']},
+ {lv:2,nm:'Estrada Segura',giver:'hilda',turn:'mer',obj:{t:'kill',n:10,maps:['zone_estrada','zone_planicie']},fac:{guilda:10},
+  give:['Os lobos e os ratos estão atacando as carroças das Guildas.','Derrote 10 monstros na Estrada ou na Planície. Depois fale com o Bram, o mercador: ele paga o serviço.'],
+  prog:['Ainda há bichos na estrada. Continue.'],done:['Ouvi que a estrada ficou mais calma. O Conselho agradece. Aqui está o pagamento.']},
+ {lv:3,nm:'Marcas na Planície',giver:'maren',turn:'maren',obj:{t:'kill',n:12,maps:['zone_planicie']},fac:{ordem:12},
+  give:['Algumas criaturas da Planície trazem uma marca estranha na pele. Parece... a marca de um Selo gasto.','Derrote 12 monstros na Planície e me conte o que encontrar nelas.'],
+  prog:['Procure as criaturas marcadas na Planície.'],done:['Marcas de Selo em feras? Isso não deveria ser possível.','Guarde segredo por enquanto, Escolhido. Preciso entender.']},
+ {lv:4,nm:'A Ponte Cortada',giver:'hilda',turn:'carav',obj:{t:'kill',n:10,maps:['zone_ponte']},fac:{guilda:8,coroa:8},
+  give:['Uma caravana das Guildas ficou presa na Ponte do Rio. Os monstros cercaram a carga.','Limpe 10 deles na Ponte e fale com o Caravaneiro Dalton.'],
+  prog:['A caravana ainda está cercada. Limpe a Ponte.'],
+  done:['Foi você quem limpou a ponte? Que alívio! Posso lhe pagar em moedas... ou apontar um atalho que um Remanescente da Coroa me ensinou.'],
+  choice:[{lb:'Aceitar o pagamento (Guildas)',fac:{guilda:15},r:{gold:80}},{lb:'Aceitar o atalho (Coroa)',fac:{coroa:15},r:{xp:1}}]},
+ {lv:5,nm:'O Rei Goblin',giver:'maren',turn:'maren',obj:{t:'boss',name:'Grunk'},fac:{ordem:15},
+  give:['Os goblins escolheram um líder: Grunk. Ele ataca quem passa pela mata a oeste.','Derrote Grunk na Floresta dos Goblins e volte aqui.'],
+  prog:['Grunk ainda está vivo, na Floresta dos Goblins.'],
+  done:['Grunk, derrotado... Trouxe algo dele?','Um Selo enferrujado. Isso... isso já foi de um Escolhido. Não conte a ninguém.']},
+ {lv:6,nm:'O Eremita',giver:'maren',turn:'eremita',obj:{t:'kill',n:12,maps:['zone_colinas']},fac:{coroa:10},
+  give:['Um eremita vive nas Colinas Rochosas e conhece histórias antigas. Talvez ele saiba sobre as marcas.','Limpe o caminho (12 monstros nas Colinas) e fale com ele.'],
+  prog:['O eremita está nas Colinas. Limpe o caminho até ele.'],
+  done:['Você tem o Selo. Então a história se repete.','Houve um Primeiro Escolhido, jovem. Ele não obedeceu. Apagaram o nome dele de tudo. De tudo.','Se quiser saber mais, procure onde os mortos descansam.']},
+ {lv:7,nm:'Relatório à Ordem',giver:'hilda',turn:'maren',obj:{t:'talk'},fac:{},
+  give:['A Irmã Maren quer um relatório do que você viu. Fale com ela.'],
+  done:['O que você descobriu nas Colinas?','Você pode me contar tudo... ou guardar o que ouviu do eremita. A escolha é sua.'],
+  choice:[{lb:'Contar tudo à Irmã (Ordem)',fac:{ordem:15},r:{gold:60}},{lb:'Guardar silêncio (Coroa)',fac:{coroa:15},r:{xp:1}}]},
+ {lv:8,nm:'Os Mortos não Descansam',giver:'hilda',turn:'hilda',obj:{t:'kill',n:15,maps:['zone_mortos','zone_cemiterio']},fac:{ordem:10,coroa:5},
+  give:['Há mortos andando pela Estrada dos Mortos e no Cemitério. Têm a mesma marca das feras.','Derrote 15 deles e volte.'],
+  prog:['Ainda há mortos inquietos.'],done:['Mortos com marcas de Selo. A Ordem não vai gostar de ouvir isso.']},
+ {lv:9,nm:'Três Pedidos',giver:'emis_g',turn:'emis_g',obj:{t:'kill',n:20,maps:['zone_passo','zone_desfiladeiro']},fac:{guilda:10},
+  give:['Aqui no Passo, três poderes disputam o Escolhido: a Ordem, a Coroa e o Conselho.','Eu falo pelo Conselho: derrote 20 monstros no Passo e eu pago bem.','Os outros dois também vão querer favores. Fale com eles quando puder.'],
+  prog:['Ainda falta limpar o Passo.'],done:['Bom trabalho. O Conselho não esquece quem lhe é útil.']},
+ {lv:10,nm:'O Portão do Passo',giver:'guardap',turn:'guardap',obj:{t:'bosses',n:3,names:['Grunk','Gorgash','Morvath','Rei dos Ratos']},fac:{ordem:20,guilda:20,coroa:20},
+  give:['Alto lá. O Portão só abre para quem provar seu valor.','Derrote 3 dos 4 chefes da região: Grunk, Gorgash, Morvath e o Rei dos Ratos. As mortes anteriores contam.'],
+  prog:['Ainda não derrotou chefes suficientes.'],done:['Três chefes. Impressionante.','O Portão está aberto. A Cidade 2 aguarda, Escolhido. (Em construção.)']}
+];
+function stS(){const s=SAVE.st=SAVE.st||{n:0,cur:null,fac:{}};s.fac=s.fac||{};return s;}
+const stNext=()=>{const s=stS();return s.cur?null:(SQ[s.n]||null);};
+const stCurQ=()=>{const s=stS();return s.cur?SQ[s.cur.i]:null;};
+function stProg(){const s=stS(),q=stCurQ();if(!q)return [0,1];const o=q.obj;
+  if(o.t==='talk')return [1,1];if(o.t==='kill')return [Math.min(o.n,s.cur.p||0),o.n];
+  if(o.t==='boss'){const h=(SAVE.hunts||{})[o.name]||0;return [Math.min(1,h-(s.cur.b0||0)),1];}
+  if(o.t==='bosses'){const h=SAVE.hunts||{};return [Math.min(o.n,o.names.filter(n=>(h[n]||0)>0).length),o.n];}
+  return [0,1];}
+const stReady=()=>{const p=stProg();return p[0]>=p[1];};
+function stEv(t){const s=stS(),q=stCurQ();if(!q||t!=='kill'||q.obj.t!=='kill')return;const o=q.obj;if(o.maps&&!o.maps.includes(G.map))return;if((s.cur.p||0)>=o.n)return;s.cur.p=(s.cur.p||0)+1;if(s.cur.p>=o.n){chat('Objetivo concluído: '+q.nm+' — fale com '+((NPCD[q.turn]||{}).nm||'o NPC')+'.',4);sfx('levelup',.4);}socRefresh();}
+function stFac(f){const s=stS(),a=[];for(const k in (f||{})){s.fac[k]=(s.fac[k]||0)+f[k];a.push('+'+f[k]+' '+FACN[k]);}if(a.length)chat('Reputação: '+a.join(' · '),4);}
+function stFinish(q,ch){const s=stS();const r=Object.assign({gold:30+q.lv*18,xp:Math.round(xpNeed(SAVE.lv)*.3),pot:q.lv%2?1:0},ch&&ch.r?ch.r:{});if(r.xp===1)r.xp=Math.round(xpNeed(SAVE.lv)*.45);
+  stFac(q.fac);if(ch)stFac(ch.fac);qGive(r);chat('Missão principal concluída: '+q.nm+' · '+qRewTxt(r),4);sfx('levelup',.6);if(G.hero)floatText(G.hero.x,G.hero.y-80,'Missão principal concluída!','#ffe08a',9,1.6);
+  s.n++;s.cur=null;if(q.lv===10)s.gate=1;const nx=SQ[s.n];if(nx)chat('Próxima missão principal: '+nx.nm+(SAVE.lv>=nx.lv?' — fale com '+NPCD[nx.giver].nm+'.':' — alcance o nível '+nx.lv+'.'),4);
+  sfx('coin',.8);writeSave();socRefresh();}
+function stLvUp(){const q=stNext();if(q&&SAVE.lv===q.lv){chat('Nova missão principal: '+q.nm+' — fale com '+NPCD[q.giver].nm+'.',4);sfx('levelup',.3);}}
+/* ---- caixa de diálogo ---- */
+const D={el:null,q:[],i:0,full:'',n:0,tm:0,opts:null,t:null};
+function dlgInit(){if(D.el)return;const st=document.createElement('style');st.textContent=`
+html #dlg,html #dlg *,html #npcmk *{white-space:normal!important;text-transform:none!important;letter-spacing:0!important}html #dlg .dlt,html #dlg .dlo{word-break:break-word;overflow-wrap:anywhere}
+#dlg{position:absolute;left:0;right:0;bottom:0;z-index:260;display:none;padding:0 8px calc(8px + env(safe-area-inset-bottom));touch-action:manipulation}
+#dlg .dlb{max-width:540px;margin:0 auto;background:rgba(20,14,9,.96);border:2px solid #e0b84e;box-shadow:0 0 0 2px #3a2a14,0 6px 22px #000c;padding:10px 12px 10px;position:relative}
+#dlg .dlh{display:flex;gap:10px;align-items:flex-start}
+#dlg .dlp{width:54px;height:54px;flex:none;background:#2a1d10;border:2px solid #b98a2a;display:flex;align-items:center;justify-content:center}
+#dlg .dlp img{width:44px;height:44px;image-rendering:pixelated}
+#dlg .dln{font:700 13px var(--f);color:#ffd66e;margin-bottom:4px}
+#dlg .dlt{font:500 14px/1.35 var(--f);color:#f4ead6;min-height:58px}
+#dlg .dlm{margin-top:8px;display:flex;flex-direction:column;gap:5px}
+#dlg .dlo{font:600 13.5px var(--f);color:#fff2cc;background:#3a2a14;border:2px solid #b98a2a;padding:8px 10px;text-align:left}
+#dlg .dlo:active{background:#5a431f}#dlg .dlo.q{color:#ffe08a}#dlg .dlo.r{color:#9ff08a}
+#dlg .dlk{position:absolute;right:10px;bottom:6px;font:700 11px var(--f);color:#b98a2a;animation:dkb .8s infinite}@keyframes dkb{50%{opacity:.2}}
+#npcmk{position:absolute;inset:0;pointer-events:none;z-index:40;overflow:hidden}
+#npcmk .nmk{position:absolute;transform:translate(-50%,-100%);font:900 22px var(--f);text-shadow:0 2px 0 #000,0 0 6px #000;animation:mkb .9s infinite}
+@keyframes mkb{50%{margin-top:-5px}}
+#npcmk .nbub{position:absolute;transform:translate(-50%,-100%);max-width:170px;background:#fff6dc;color:#2a1a0a;border:2px solid #3a2a14;padding:4px 7px;font:600 11px/1.25 var(--f);text-align:center;box-shadow:0 2px 0 #3a2a14}
+#npcmk .nbub:after{content:'';position:absolute;left:50%;bottom:-7px;margin-left:-5px;border:5px solid transparent;border-top-color:#3a2a14;border-bottom:0}`;
+  document.head.appendChild(st);const d=D.el=document.createElement('div');d.id='dlg';d.innerHTML='<div class="dlb"><div class="dlh"><div class="dlp"><img><canvas width="48" height="48" style="display:none;image-rendering:pixelated;width:44px;height:44px"></canvas></div><div style="flex:1;min-width:0"><div class="dln"></div><div class="dlt"></div></div></div><div class="dlm"></div><span class="dlk">▼</span></div>';
+  $('stage').appendChild(d);const mk=document.createElement('div');mk.id='npcmk';$('stage').appendChild(mk);
+  d.addEventListener('pointerdown',e=>{if(e.target.closest('.dlo'))return;e.stopPropagation();dlgTap();});
+  d.querySelector('.dlm').addEventListener('pointerdown',e=>{const b=e.target.closest('.dlo');if(!b)return;e.stopPropagation();const o=D.opts&&D.opts[+b.dataset.i];if(o){sfx('ui_click',.6);o.fn();}});}
+function dlgTap(){if(D.n<D.full.length){D.n=D.full.length;dlgDraw();return;}if(D.i<D.q.length-1)dlgLine(D.i+1);}
+function dlgDraw(){const t=D.el.querySelector('.dlt');t.textContent=D.full.slice(0,D.n);const last=D.i>=D.q.length-1,done=D.n>=D.full.length;
+  D.el.querySelector('.dlm').style.display=(last&&done&&D.opts)?'flex':'none';D.el.querySelector('.dlk').style.display=(!last&&done)?'block':'none';}
+function dlgLine(i){D.i=i;D.full=D.q[i];D.n=0;clearInterval(D.t);D.t=setInterval(()=>{D.n+=2;if(D.n>=D.full.length){D.n=D.full.length;clearInterval(D.t);if(D.i<D.q.length-1||!D.opts)sfx('ui_click',.25);}dlgDraw();},26);dlgDraw();}
+function dlgShow(who,lines,opts){dlgInit();D.who=who;D.q=lines;D.opts=opts;const el=D.el;el.style.display='block';el.querySelector('.dln').textContent=who.nm||'Morador';{const im=el.querySelector('img'),cv=el.querySelector('canvas');let ok=0;const k=who.sh&&CXON&&CXNPC[who.sh],sh=k&&CXS[k];if(sh&&sh.atlasImg){const M=sh.meta,l=M.anims.idle_d,q=l[0],sx=(q%M.cols)*M.w,sy=((q/M.cols)|0)*M.h,c=cv.getContext('2d');c.clearRect(0,0,48,48);c.imageSmoothingEnabled=false;const hh=M.h*.5,ww=hh;c.drawImage(sh.atlasImg,sx+M.ax-ww/2,sy+M.ay-M.h*.78,ww,hh,0,0,48,48);ok=1;}im.style.display=ok?'none':'block';cv.style.display=ok?'block':'none';if(!ok)im.src=UI+(who.ic||'hood')+'.png';}
+  el.querySelector('.dlm').innerHTML=(opts||[]).map((o,i)=>`<button class="dlo ${o.c||''}" data-i="${i}">${o.lb}</button>`).join('');dlgLine(0);}
+function dlgClose(){clearInterval(D.t);if(D.el)D.el.style.display='none';if(G.winOpen==='dlg')G.winOpen=null;G.dlg=null;}
+const _lastG={};
+function nGreet(who){const L=(NPCD[who.id]||{}).g||VL;let k;do{k=Math.floor(Math.random()*L.length);}while(L.length>1&&_lastG[who.id||'v']===k);_lastG[who.id||'v']=k;return L[k];}
+function talk(t){if(G.dlg||G.winOpen&&G.winOpen!=='dlg')return;if(typeof inCombat==='function'&&inCombat()){toast('Há inimigos por perto!',1500);return;}
+  const d=NPCD[t.id]||{};const who={id:t.id,sh:t.sh,nm:t.kind==='vill'?(t.vn||'Morador'):(d.nm||t.nm),ic:t.kind==='vill'?'hood':(d.ic||t.ic)};
+  G.dlg=who;G.winOpen='dlg';G.wp=null;sfx('ui_confirm',.5);talkMenu(t,who,[nGreet(who)]);}
+function talkMenu(t,who,lines){
+  const s=stS(),opts=[],q=stCurQ(),nx=stNext();
+  if(q&&q.turn===t.id){if(stReady())opts.push({lb:'✔ Entregar: '+q.nm,c:'r',fn:()=>stTurn(t,who,q)});else opts.push({lb:'… '+q.nm+' ('+stProg().join('/')+')',c:'q',fn:()=>talkMenu(t,who,[(q.prog||['Ainda não terminou.'])[0]])});}
+  if(nx&&nx.giver===t.id&&SAVE.lv>=nx.lv)opts.push({lb:'! '+nx.nm,c:'q',fn:()=>stOffer(t,who,nx)});
+  if(t.win&&SVCL[t.win])opts.push({lb:SVCL[t.win],fn:()=>{dlgClose();if(t.win==='portal')openWin('portal');else openWin(t.win);}});
+  opts.push({lb:'Até logo',fn:dlgClose});dlgShow(who,lines,opts);}
+function stOffer(t,who,q){dlgShow(who,q.give,[{lb:'Aceitar a missão',c:'q',fn:()=>{const s=stS();s.cur={i:s.n,p:0,b0:q.obj.t==='boss'?((SAVE.hunts||{})[q.obj.name]||0):0};chat('Missão principal aceita: '+q.nm,4);sfx('levelup',.4);writeSave();socRefresh();talkMenu(t,who,['Boa sorte, Escolhido.']);}},{lb:'Agora não',fn:()=>talkMenu(t,who,['Volte quando estiver pronto.'])}]);}
+function stTurn(t,who,q){if(q.choice)dlgShow(who,q.done,q.choice.map(c=>({lb:c.lb,c:'r',fn:()=>{stFinish(q,c);talkMenu(t,who,['Obrigado, Escolhido.']);}})));
+  else dlgShow(who,q.done,[{lb:'Receber recompensa',c:'r',fn:()=>{stFinish(q);talkMenu(t,who,['Descanse e volte quando precisar.']);}}]);}
+/* ---- NPCs avulsos, balões e marcadores ! / ? ---- */
+function stNpcSync(){if(!G.on||!G.hero)return;
+  if(G.scene==='town'){if(!G.room&&G.npcs&&!G.npcs.some(n=>n.id==='maren')){for(const x of TOWN_X){const f=freeSpot(x.x,x.y);const d=NPCD[x.id];G.npcs.push({...x,x:f[0],y:f[1],nm:d.nm,ic:d.ic,kind:'npc',name:d.nm,row:2,row0:2,animT:0,moving:false,r:44});}}G._znm='';return;}
+  if(G.scene==='dungeon'){const k=G.map+'|'+(G.zoneLv||'');if(G._znm!==k){G._znm=k;G.vill=[];G.npcs=(ZNPC[G.map]||[]).map(x=>{const f=freeSpot(x.x,x.y),d=NPCD[x.id];return {...x,x:f[0],y:f[1],nm:d.nm,ic:d.ic,kind:'npc',name:d.nm,row:2,row0:2,animT:0,moving:false,r:44};});}
+    const h=G.hero;for(const n of G.npcs){const d=dist(h,n);n.row=d<150?dir4(h.x-n.x,h.y-n.y):n.row0;}}}
+const BUB={e:null,t:0,txt:'',last:new Map(),cd:0};
+function stMarkers(){if(!G.on||!G.hero||!window.V3||!V3.toScreen){return;}dlgInit();const mk=$('npcmk');if(!mk)return;const ts=V3.toScreen;
+  const cur=stCurQ(),nx=stNext(),list=[...(G.npcs||[]),...(G.scene==='town'?(G.vill||[]):[])];
+  while(mk.children.length<list.length+1){const e=document.createElement('div');mk.appendChild(e);}
+  let i=0;const used=new Set();
+  for(const n of list){if(n.kind!=='npc')continue;let sym='',col='';
+    if(cur&&cur.turn===n.id){sym='?';col=stReady()?'#ffd23a':'#8a8f98';}else if(nx&&nx.giver===n.id&&SAVE.lv>=nx.lv){sym='!';col='#ffd23a';}
+    if(!sym)continue;const p=ts(n.x,n.y,64),e=mk.children[i++];e.className='nmk';e.textContent=sym;e.style.color=col;e.style.left=p[0]+'px';e.style.top=p[1]+'px';e.style.display='block';}
+  const bi=i;
+  if(BUB.e&&BUB.t>0&&!G.winOpen){const e=mk.children[i++],p=ts(BUB.e.x,BUB.e.y,BUB.e.kind==='vill'?58:(BUB.e.id==='mer'?64:72));e.className='nbub';e.textContent=BUB.txt;e.style.left=p[0]+'px';e.style.top=(p[1]-(BUB.e.kind==='npc'&&mk.querySelector('.nmk')?18:0))+'px';e.style.display='block';e.style.color='';}
+  for(;i<mk.children.length;i++)mk.children[i].style.display='none';}
+function bubTick(){if(!G.on||!G.hero)return;BUB.t-=.7;if(BUB.t<=0)BUB.e=null;if(BUB.e||G.winOpen||G.dlg)return;
+  const h=G.hero,list=[...(G.npcs||[]),...(G.scene==='town'?(G.vill||[]):[])];let best=null,bd=170;
+  for(const n of list){const d=dist(h,n);if(d<bd&&Date.now()-(BUB.last.get(n)||0)>16000){bd=d;best=n;}}
+  if(!best)return;BUB.last.set(best,Date.now());BUB.e=best;BUB.t=4.2;BUB.txt=nGreet({id:best.kind==='vill'?'':best.id});}
+setInterval(()=>{try{stNpcSync();}catch(e){}},300);setInterval(()=>{try{bubTick();}catch(e){}},700);
+(function mkLoop(){try{stMarkers();}catch(e){}requestAnimationFrame(mkLoop);})();
+
 function rwChips(r){const c=[];if(r.gold)c.push(['coins',r.gold]);if(r.xp)c.push(['xp',r.xp]);if(r.pot)c.push(['health-potion',r.pot]);if(r.tok)c.push(['gems',r.tok]);if(r.mat){const M=MATS.find(m=>m.id===r.mat[0]);c.push([M?M.ic:'ni_ferro',r.mat[1]]);}
   return '<div class="rws">'+c.map(([ic,v])=>ic==='xp'?`<span class="rw"><b class="xpt">EXP</b>${v}</span>`:`<span class="rw"><img src="${UI}${ic}.png">${v}</span>`).join('')+'</div>';}
 function qCard(q,main,k,i){const v=qVal(q),ok=v>=q.n,cl=q.c,r=qRew(q,main),pct=Math.round(v/q.n*100);

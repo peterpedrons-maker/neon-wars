@@ -305,6 +305,7 @@ function drawEnt(sc,e,frame){
 // ------------------------------------------------------------------ projeção e entrada
 const tmp=new T.Vector3();
 function toScreen(x,y,hpx){tmp.set(x*U,(hpx||0)*U/CT,y*U).project(cam);return [(tmp.x+1)/2*stageEl.clientWidth,(1-tmp.y)/2*stageEl.clientHeight,tmp.z];}
+V3.toScreen=toScreen;
 function pxScale(x,y){const a=toScreen(x,y,0),b=toScreen(x,y,10);return Math.max(.2,Math.abs(a[1]-b[1])/10);}
 V3.pick=function(cx,cy){const r=stageEl.getBoundingClientRect(),nx=(cx-r.left)/r.width*2-1,ny=-((cy-r.top)/r.height)*2+1;
   const ray=new T.Raycaster();ray.setFromCamera({x:nx,y:ny},cam);const o=ray.ray.origin,d=ray.ray.direction;if(Math.abs(d.y)<1e-5)return [G.hero.x,G.hero.y];
@@ -364,7 +365,7 @@ function render3(){
   for(const m of G.mobs)if(!(m.dead&&m.deadT>1.1))list.push(m);
   if(G.boss&&!(G.boss.dead&&G.boss.deadT>1.2))list.push(G.boss);
   if(G.petE)list.push(G.petE);
-  if(G.scene==='town'){for(const q of (G.npcs||[]))list.push(q);for(const q of (G.vill||[]))list.push(q);}
+  if(G.scene==='town'){for(const q of (G.npcs||[]))list.push(q);for(const q of (G.vill||[]))list.push(q);}else if(G.scene==='dungeon'&&G.npcs&&G.npcs.length){for(const q of G.npcs)list.push(q);}
   const lim=(dist*1.15)/U*.0+Math.pow(dist*1.6,2);
   for(const e of list){if(!e||e.hide)continue;const dx=e.x*U-camT.x,dz=e.y*U-camT.z;
     if(e!==h&&dx*dx+dz*dz>lim){const r0=scn.ents.get(e);if(r0){r0.seen=frameNo;r0.root.visible=false;}continue;}
