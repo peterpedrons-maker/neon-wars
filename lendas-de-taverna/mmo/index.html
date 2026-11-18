@@ -16,7 +16,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 html,body{margin:0;height:100%;background:#000;color:var(--papel);font-family:var(--f);font-size:13px;overflow:hidden;touch-action:manipulation}
 #stage{position:absolute;left:50%;top:0;height:100%;transform:translateX(-50%);background:var(--bg);overflow:hidden}
-canvas#cv{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;display:none}
+canvas#cv{touch-action:none;position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;display:none}
 #gc{position:absolute;inset:0;display:none;z-index:300;align-items:center;justify-content:center;padding:22px;background:rgba(4,3,8,.74);backdrop-filter:blur(2px)}
 #gc.on{display:flex;animation:gcf .14s ease-out}@keyframes gcf{from{opacity:0}to{opacity:1}}
 #gc .gcb{position:relative;width:100%;max-width:310px;background:linear-gradient(180deg,rgba(24,20,32,.97),rgba(11,10,16,.98));border:1px solid var(--lin);box-shadow:0 14px 40px rgba(0,0,0,.75),inset 0 0 0 1px rgba(0,0,0,.8);padding:18px 18px 14px;animation:pop .16s ease-out}
@@ -914,6 +914,25 @@ html #bar .acl #bDodge{bottom:28px}
 /* JOYSTICK alinhado ao ATACAR: mesmo centro vertical e mesma margem lateral; chat sobe para cima do joystick */
 html #joy{left:12px!important;bottom:calc(14px + env(safe-area-inset-bottom))!important}
 html #chat{bottom:calc(136px + env(safe-area-inset-bottom))!important}
+/* LAYOUT ERGONÔMICO: esquiva + 3 habilidades num arco só (raio 108, a cada 34°) em volta do ATACAR; poção pequena mais afastada */
+html #bar .abar.acl{width:250px}
+html #bar .acl #sk0,html #bar .acl #sk1,html #bar .acl #sk2,html #bar .acl #bDodge{width:54px!important;height:54px!important}
+html #bar .acl #bDodge{right:137px;bottom:35px}
+html #bar .acl #sk0{right:119px;bottom:95px}
+html #bar .acl #sk1{right:70px;bottom:135px}
+html #bar .acl #sk2{right:7px;bottom:141px}
+html #bar .acl #bPot{right:185px;bottom:96px;width:42px!important;height:42px!important}
+/* joystick flutuante: só aparece enquanto o dedo está na tela */
+html #joy.fl{pointer-events:none;opacity:0;transition:opacity .12s}
+html #joy.fl.act{opacity:1}
+/* modo editar botões */
+html.hedit #cv{pointer-events:none}
+html.hedit #bar .acl>*,html.hedit #joy{outline:2px dashed #ffd678;outline-offset:3px;cursor:grab;opacity:1!important;touch-action:none}
+#hudEd{position:absolute;left:8px;right:8px;top:calc(110px + env(safe-area-inset-top));z-index:500;display:none;background:linear-gradient(#241c10,#120d08);border:2px solid #d9b45f;box-shadow:0 0 0 2px #000,0 6px 18px #000a;padding:8px 10px;color:#f3d98e;font:700 11px var(--ft);text-align:center}
+html.hedit #hudEd{display:block}
+#hudEd p{margin:0 0 6px;color:#cdbf9a;font-weight:400}
+#hudEd button{font:700 11px var(--ft);margin:0 4px;padding:6px 12px;border:2px solid #d9b45f;background:#2b2112;color:#f3d98e}
+#hudEd button.ok{background:#2f5a2a;border-color:#8ef08a;color:#fff}
 </style>
 </head>
 <body>
@@ -2277,14 +2296,14 @@ function enterDungeon(zlv,opts){
 function mkTb(id,html,cls,fn){const e=document.createElement('button');e.className=cls;e.id=id;e.style.pointerEvents='auto';e.innerHTML=html;e.onclick=fn;return e;}
 function buildBar(){
   const C=CLASSES[SAVE.cls],b=$('bar'),m=$('mmenu');b.innerHTML='';m.innerHTML='';
-  const ab=document.createElement('div');ab.className='abar'+(G.scene==='town'?'':' acl');b.appendChild(ab);
+  const ab=document.createElement('div');const TW=G.scene==='town'&&!G.editHud;ab.className='abar'+(TW?'':' acl');b.appendChild(ab);
   const potHtml='<img src="assets/hud/pocao.png"><span class="key">P</span><div class="cd"></div><div class="ct"></div><span class="n" id="potn"></span>';
-  if(G.scene==='town'){
+  if(TW){
     const sk0=SAVE.eqs[0]>=0?SAVE.eqs[0]:0;
     ab.appendChild(mkTb('bGo','<img src="assets/hud/atalhos.png" style="padding:2px 2px 11px"><span class="lbl">Atalhos</span>','slot2',()=>{if(G.winOpen)return;sfx('ui_click');openWin('locais');}));
     ab.appendChild(mkTb('bPot',potHtml,'slot2',()=>usePotion(true)));
     socMenu(m,false);
-    updPot();badge();return;
+    updPot();badge();hudApply();return;
   }
   [0,1,2].forEach(k=>{const si=SAVE.eqs[k],lk=SAVE.lv<SLOT_UNL[k]||si<0||SAVE.sk[si]<1||!skAvail(si)||!skOk(si);const d=document.createElement('div');d.className='slot2'+(lk?' lock':'')+(si<0?' empty':'');d.id='sk'+k;
     d.innerHTML=(si>=0?`<img src="${skImg(C.skills[si][0])}">`:'<img src="../assets/ui-icons/magic-swirl.png">')+`<span class="key">${k+1}</span><div class="cd"></div><div class="ct"></div>`+(lk?`<div class="lv"><img src="../assets/ui-icons/padlock.png"><b>${SAVE.lv<SLOT_UNL[k]?'Nv '+SLOT_UNL[k]:(si>=0&&SAVE.sk[si]>=1&&skAvail(si)&&!skOk(si))?'Arma':'+'}</b></div>`:'');
@@ -2296,7 +2315,7 @@ function buildBar(){
   const pot=mkTb('bPot',potHtml,'slot2 sep',()=>usePotion(true));ab.appendChild(pot);
   {const D=DODGE[SAVE.cls];const dd=mkTb('bDodge','<img src="assets/hud/'+(D.t==='blink'?'esq_blink':'esq_roll')+'.png" style="padding:0"><span class="key">E</span><div class="cd"></div><div class="ct"></div>','slot2',()=>{});dd.addEventListener('pointerdown',ev=>{manualDodge();ev.preventDefault();});ab.appendChild(dd);}
   const tw=mkTb('bTownB','<img src="assets/hud/cidade.png" style="width:40px;height:40px">','mbtn',()=>{sfx('ui_click');gConfirm(ZONE.region?'Você volta ao portal de Brumavale (o caminho de volta pode ser feito a pé).':G.fromReg?'O progresso desta dungeon será perdido.':'O progresso desta floresta (abates) será perdido.',{title:'Voltar para a cidade?',ok:'Voltar',no:'Ficar'}).then(ok=>{if(!ok)return;if(G.fromReg){G.regRet=G.regLast||null;regBack();}else enterTown(false);});});
-  socMenu(m,true);m.appendChild(tw);updPot();badge();
+  socMenu(m,true);m.appendChild(tw);updPot();badge();hudApply();
 }
 function updPot(){const n=$('potn');if(n)n.textContent=SAVE.potions+(SAVE.potL?'+'+SAVE.potL:'');}
 function usePotion(manual){const h=G.hero;if(!h||h.state==='ko')return;
@@ -5726,6 +5745,9 @@ function winTip(){
 function setHtml(){const ap=SAVE.apot==null?.35:SAVE.apot;return `<div class="sec-h"><span>Ajustes de combate</span></div>
   <div class="wr"><img class="ic" src="${UI}health-potion.png"><div class="tx"><b>Poção automática</b><span>${ap>0?'Bebe quando a vida cai abaixo de '+Math.round(ap*100)+'%':'Desligada: você bebe a poção manualmente'}</span></div><button class="gb" data-a="set:apot">${ap>0?Math.round(ap*100)+'%':'NÃO'}</button></div>
   <div class="wr"><img class="ic" src="${UI}anvil.png"><div class="tx"><b>Equipar melhor automaticamente</b><span>Ao pegar um item claramente melhor, o herói já o equipa</span></div><button class="gb" data-a="set:auto">${SAVE.autoEq?'SIM':'NÃO'}</button></div>
+  <div class="sec-h"><span>Controles</span></div>
+  <div class="wr"><img class="ic" src="${UI}crossed-swords.png"><div class="tx"><b>Joystick flutuante</b><span>${SAVE.joyF?'Toque e arraste no lado esquerdo da tela: o joystick aparece onde o dedo estiver':'Joystick fixo no canto da tela'}</span></div><button class="gb" data-a="set:joyf">${SAVE.joyF?'SIM':'NÃO'}</button></div>
+  <div class="wr"><img class="ic" src="${UI}magic-swirl.png"><div class="tx"><b>Posição dos botões</b><span>Arraste cada botão (ataque, habilidades, poção, esquiva e joystick) para onde o seu polegar alcança</span></div><button class="gb" data-a="set:hud">EDITAR</button></div>
   <div class="wr"><img class="ic" src="${UI}greek-temple.png"><div class="tx"><b>Trocar de herói</b><span>Volta à tela inicial (até ${SLOT_N} heróis; o progresso é salvo)</span></div><button class="gb" data-a="set:swap">TROCAR</button></div>`;}
 function winLocais(){
   $('wtt').textContent='Atalhos';
@@ -5995,7 +6017,7 @@ function winLeilao(){
 function winAct(a){
   if(socAct(a))return;
   const [k,v]=a.split(':');
-  if(k==='set'){if(v==='swap'){writeSave();location.reload();return;}if(v==='apot'){const L=[.35,.5,.7,0],i=L.indexOf(SAVE.apot==null?.35:SAVE.apot);SAVE.apot=L[(i+1)%L.length];}else SAVE.autoEq=!SAVE.autoEq;sfx('ui_click');writeSave();winLocais();return;}
+  if(k==='set'){if(v==='swap'){writeSave();location.reload();return;}if(v==='joyf'){SAVE.joyF=!SAVE.joyF;hudApply();sfx('ui_click');writeSave();winLocais();return;}if(v==='hud'){closeWin();hudEditStart();return;}if(v==='apot'){const L=[.35,.5,.7,0],i=L.indexOf(SAVE.apot==null?.35:SAVE.apot);SAVE.apot=L[(i+1)%L.length];}else SAVE.autoEq=!SAVE.autoEq;sfx('ui_click');writeSave();winLocais();return;}
   if(k==='leave'){closeWin();G.wp={x:ZONE.exit.x,y:ZONE.exit.y+10};return;}
   if(k==='goto'&&v.startsWith('door')){closeWin();const id=a.split(':')[2],d=ZONE.doors.find(x=>x.id===id);if(d){G.wp={x:d.x,y:d.y-2,target:{kind:'door',id:d.id,room:d.room}};}sfx('ui_confirm',.6);return;}
   if(k==='goto'){closeWin();const t=v==='portal'?{kind:'portal'}:G.npcs.find(n=>n.id===v);G.wp=v==='portal'?{x:ZONE.portal.stand[0],y:ZONE.portal.stand[1],target:t}:{x:t.x,y:t.y+8,target:t};sfx('ui_confirm',.6);return;}
@@ -6051,6 +6073,17 @@ G.joy={x:0,y:0,m:0};G.castReq=-1;G.atkHold=false;
   J.addEventListener('pointermove',ev=>{if(ev.pointerId===id)mv(ev);});
   const up=ev=>{if(ev.pointerId!==id)return;id=null;J.classList.remove('act');setV(0,0);};
   J.addEventListener('pointerup',up);J.addEventListener('pointercancel',up);
+
+  // joystick FLUTUANTE: arrastar no lado esquerdo da tela cria o joystick onde o dedo tocou
+  {let pend=null,fid=null,cx=0,cy=0;const cv=$('cv');
+   cv.addEventListener('pointerdown',ev=>{if(!SAVE.joyF||G.editHud||!G.on||G.winOpen||id!==null||fid!==null)return;if(!(G.scene==='town'||G.scene==='dungeon'))return;const sr=$('stage').getBoundingClientRect();if(ev.clientX>sr.left+sr.width*.62)return;pend={id:ev.pointerId,x:ev.clientX,y:ev.clientY};});
+   addEventListener('pointermove',ev=>{
+     if(pend&&ev.pointerId===pend.id&&Math.hypot(ev.clientX-pend.x,ev.clientY-pend.y)>9){const par=J.offsetParent||$('stage'),pr=par.getBoundingClientRect(),w=J.offsetWidth||112;cx=pend.x;cy=pend.y;
+       J.style.setProperty('left',Math.round(cx-pr.left-w/2)+'px','important');J.style.setProperty('bottom',Math.round(pr.bottom-cy-w/2)+'px','important');
+       fid=pend.id;id=fid;pend=null;J.classList.add('act');G.wp=null;setV(ev.clientX-cx,ev.clientY-cy);return;}
+     if(fid!==null&&ev.pointerId===fid)setV(ev.clientX-cx,ev.clientY-cy);});
+   const fup=ev=>{if(pend&&ev.pointerId===pend.id)pend=null;if(fid!==null&&ev.pointerId===fid){fid=null;id=null;J.classList.remove('act');setV(0,0);hudApply();}};
+   addEventListener('pointerup',fup);addEventListener('pointercancel',fup);}
   // teclado (WASD / setas)
   const KS={};const kv=()=>{const dx=(KS.d||KS.arrowright?1:0)-(KS.a||KS.arrowleft?1:0),dy=(KS.s||KS.arrowdown?1:0)-(KS.w||KS.arrowup?1:0);if(id!==null)return;if(!dx&&!dy){setV(0,0);return;}const d=Math.hypot(dx,dy);G.joy.m=KS.shift?1:.6;G.joy.x=dx/d;G.joy.y=dy/d;K.style.transform=`translate(${dx/d*R*.8}px,${dy/d*R*.8}px)`;};
   addEventListener('keydown',e=>{if(/INPUT|TEXTAREA/.test((e.target.tagName||'')))return;const k=e.key.toLowerCase();if(k==='shift'){KS.shift=1;kv();}if('wasd'.includes(k)&&k.length===1||k.startsWith('arrow')){KS[k]=1;G.wp=null;kv();if(k.startsWith('arrow'))e.preventDefault();}
@@ -6061,6 +6094,42 @@ G.joy={x:0,y:0,m:0};G.castReq=-1;G.atkHold=false;
     else if(k==='m'){mountToggle();}});
   addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k===' '||k==='j')G.atkHold=false;if(k==='shift'){KS.shift=0;kv();return;}if(KS[k]){KS[k]=0;kv();}});
 })();
+
+/* ===== layout dos botões (editável), joystick flutuante ===== */
+const HUD_IDS=['bAtk','sk0','sk1','sk2','bPot','bDodge'];
+function hudApply(){
+  const J=$('joy');if(!J)return;const L=SAVE.hl||{};
+  HUD_IDS.forEach(id=>{const e=$(id);if(!e)return;const p=L[id];if(p){e.style.right=p[0]+'px';e.style.bottom=p[1]+'px';}else{e.style.right='';e.style.bottom='';}});
+  const fl=!!SAVE.joyF&&!G.editHud;J.classList.toggle('fl',fl);
+  if(L.joy){J.style.setProperty('left',L.joy[0]+'px','important');J.style.setProperty('bottom',L.joy[1]+'px','important');}else{J.style.removeProperty('left');J.style.removeProperty('bottom');}
+  J.style.removeProperty('top');
+}
+let HUDDRAG=null;
+function hudEditStart(){
+  G.editHud=true;G.joy.m=0;document.documentElement.classList.add('hedit');
+  let b=$('hudEd');if(!b){b=document.createElement('div');b.id='hudEd';b.innerHTML='<p>Arraste cada botão para onde o seu polegar alcança melhor.</p><button id="hudRs">Restaurar</button><button id="hudOk" class="ok">Concluir</button>';$('stage').appendChild(b);
+    $('hudRs').onclick=()=>{delete SAVE.hl;buildBar();writeSave();sfx('ui_click');};
+    $('hudOk').onclick=hudEditEnd;}
+  buildBar();joyShow();
+}
+function hudEditEnd(){G.editHud=false;document.documentElement.classList.remove('hedit');writeSave();buildBar();joyShow();sfx('ui_click');}
+document.addEventListener('pointerdown',ev=>{
+  if(!G.editHud)return;const t=ev.target.closest&&ev.target.closest('#bar .acl>*, #joy');if(!t)return;
+  ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
+  const id=t.id==='joy'?'joy':t.id,par=t.offsetParent||$('stage'),pr=par.getBoundingClientRect(),r=t.getBoundingClientRect();
+  HUDDRAG={id,t,x:ev.clientX,y:ev.clientY,pr,r,pid:ev.pointerId};
+},true);
+document.addEventListener('click',ev=>{if(G.editHud&&ev.target.closest&&ev.target.closest('#bar .acl>*, #joy')){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();}},true);
+addEventListener('pointermove',ev=>{
+  const d=HUDDRAG;if(!d||ev.pointerId!==d.pid)return;const st=$('stage').getBoundingClientRect();
+  let dx=ev.clientX-d.x,dy=ev.clientY-d.y;
+  // mantém o botão inteiro dentro da tela
+  dx=Math.max(st.left-d.r.left,Math.min(st.right-d.r.right,dx));dy=Math.max(st.top+60-d.r.top,Math.min(st.bottom-d.r.bottom,dy));
+  if(d.id==='joy'){const l=Math.round(d.r.left-d.pr.left+dx),b=Math.round(d.pr.bottom-d.r.bottom-dy);d.t.style.setProperty('left',l+'px','important');d.t.style.setProperty('bottom',b+'px','important');d.v=[l,b];}
+  else{const rt=Math.round(d.pr.right-d.r.right-dx),b=Math.round(d.pr.bottom-d.r.bottom-dy);d.t.style.right=rt+'px';d.t.style.bottom=b+'px';d.v=[rt,b];}
+});
+const hudDragEnd=ev=>{const d=HUDDRAG;if(!d||ev.pointerId!==d.pid)return;HUDDRAG=null;if(d.v){(SAVE.hl=SAVE.hl||{})[d.id]=d.v;}};
+addEventListener('pointerup',hudDragEnd);addEventListener('pointercancel',hudDragEnd);
 function joyShow(){const J=$('joy');if(!J)return;const on=G.on&&!G.winOpen&&!$('pan').classList.contains('on')&&$('hud').offsetParent!==null&&(G.scene==='town'||G.scene==='dungeon');if(J.classList.contains('on')!==on){J.classList.toggle('on',on);if(!on){G.joy.m=0;$('joyk').style.transform='';}}}
 $('cv').addEventListener('pointerdown',ev=>{
   if(!G.on||G.winOpen)return;const r=$('cv').getBoundingClientRect();let lx=(ev.clientX-r.left)/r.width*G.LW+G.cam.x,ly=(ev.clientY-r.top)/r.height*G.LH+G.cam.y;const V=window.V3&&V3.active();if(V){const q=V3.pick(ev.clientX,ev.clientY);lx=q[0];ly=q[1];}
