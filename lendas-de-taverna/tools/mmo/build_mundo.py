@@ -23,6 +23,51 @@ def path_d(px,py,pts):
     for a,b in zip(pts,pts[1:]):d=np.minimum(d,seg_d(px,py,a,b))
     return d
 
+
+# ---- ANTI-SOBREPOSIÇÃO: estruturas (tendas, barris, caixas, totens, tochas...) nunca nascem uma em cima da outra ----
+_V={'well':26,'lamp1':5,'lamp2':5,'banner1':8,'banner2':7,'sign':6,'crates':28,'stall':30,'post':6,'barrel1':23,'barrel2':23,'hay1':20,'hay2':20,'bench1':24,'bench2':24,'planter1':20,'planter2':18,'sack1':9,'sack2':9,'torch1':5,'torch2':5,'torch3':5}
+_K={'tent':80,'totem':16,'drums':22,'column':14,'tomb':18,'bones':7}
+_PRIO={'fire':0,'tent':1,'well':1,'stall':1,'totem':2,'drums':2,'column':3,'tomb':3,'crates':4,'bench1':4,'bench2':4,'hay1':5,'hay2':5,'barrel1':5,'barrel2':5,'planter1':5,'planter2':5,'sack1':6,'sack2':6,'banner1':7,'banner2':7,'sign':7,'post':7,'lamp1':7,'lamp2':7,'torch1':8,'torch2':8,'torch3':8,'bones':9}
+_COVER={'flower','tuft','pebble'}
+def _foot(p):
+    if p['t']=='fire':return 'fire',18
+    if p['t']=='k' and p['k'] in _K:return p['k'],_K[p['k']]
+    if p['t']=='p' and p['id'].startswith('v_') and p['id'][2:] in _V:return p['id'][2:],_V[p['id'][2:]]
+    return None,0
+def declutter(P,W,H):
+    """Remove sobreposição entre estruturas: o item menos importante é empurrado para o ponto livre mais próximo (até 170px) ou removido.
+    Flores/capim/pedrinhas que nasceriam em cima de uma estrutura também saem. Não mexe na posição de quem não conflita."""
+    S=[(i,)+_foot(P[i]) for i in range(len(P))];S=[(i,n,r) for i,n,r in S if n]
+    S.sort(key=lambda t:(_PRIO.get(t[1],6),-t[2]));kept=[];moved=dropped=0;G={}
+    def cell(x,y):return int(x//120),int(y//120)
+    def near(x,y):
+        cx,cy=cell(x,y)
+        for a in(-1,0,1):
+            for b in(-1,0,1):
+                for q in G.get((cx+a,cy+b),()):yield q
+    def hit(x,y,r,slack=3):
+        for qx,qy,qr in near(x,y):
+            if math.hypot(x-qx,y-qy)<r+qr-slack:return (qx,qy)
+        return None
+    rm=set()
+    for i,n,r in S:
+        p=P[i];h=hit(p['x'],p['y'],r)
+        if h is None:kept.append((p['x'],p['y'],r));G.setdefault(cell(p['x'],p['y']),[]).append((p['x'],p['y'],r));continue
+        base=math.atan2(p['y']-h[1],p['x']-h[0]);ok=False
+        for d in range(10,172,10):
+            for k in(0,1,-1,2,-2,3,-3,4,-4,5,-5,6):
+                a=base+k*.52;x=p['x']+math.cos(a)*d;y=p['y']+math.sin(a)*d
+                if 60<x<W-60 and 60<y<H-60 and hit(x,y,r) is None:
+                    p['x']=round(x);p['y']=round(y);ok=True;break
+            if ok:break
+        if ok:
+            moved+=1;kept.append((p['x'],p['y'],r));G.setdefault(cell(p['x'],p['y']),[]).append((p['x'],p['y'],r))
+        elif n in('fire','tent','well','stall'):kept.append((p['x'],p['y'],r))     # essenciais ficam
+        else:rm.add(i);dropped+=1
+    for i,p in enumerate(P):          # decoração rasteira em cima de estrutura
+        if p['t']=='k' and p['k'] in _COVER and hit(p['x'],p['y'],4,0) is not None:rm.add(i);dropped+=1
+    P[:]=[p for i,p in enumerate(P) if i not in rm];return moved,dropped
+
 def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_theme,band=(380,380,380,380),dens=1.0,hills=None,packs=0,lairs=(),fdens=1.0,conifer=.3,ground=None,region_extra=None,pack_n=3,gates=(),dead=0.0,shrines=(),wxw=None):
     """side: 0=N 1=S 2=W 3=E. waters: lista de (cx,cy,rx,ry). exits: dict(id,nm,side,pos,to,at,ready,msg). camps/pois: (x,y)."""
     rr=random.Random(seed);gw=W//GS;gh=H//GS
@@ -283,6 +328,7 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
             n=rr.choices([1,2,3,4],[.32,.3,.24,.14])[0]   # isolados, duplas, grupos pequenos (dá para puxar um a um ou agrupar)
             for i in range(n):
                 a=i*6.283/n+rr.uniform(-.5,.5);rad=0 if n==1 else 55+10*n;spawns.append([round(cx+math.cos(a)*rad),round(cy+math.sin(a)*rad*.75),gi])
+    _mv,_dr=declutter(P,W,H);print('   anti-sobreposição:',name,'movidos',_mv,'removidos',_dr)
     P.sort(key=lambda p:p['y'])
     exs=[dict(id=e['id'],nm=e['nm'],side=e['side'],toSide=e.get('toSide',-1),x=e['rect'][0],y=e['rect'][1],w=e['rect'][2],h=e['rect'][3],to=e['to'],at=e['at'],ready=e['ready'],msg=e.get('msg','')) for e in exits]
     marks=[dict(k='camp',x=cx_,y=cy_,nm='Acampamento') for cx_,cy_ in camps]+[dict(k='poi',x=x_,y=y_,nm='Ponto de interesse') for x_,y_ in pois]+[dict(k='lair',x=x_,y=y_,nm='Covil') for x_,y_ in lairs]+[dict(k='shrine',x=x_,y=y_,nm='Santuário') for x_,y_ in shrines]
