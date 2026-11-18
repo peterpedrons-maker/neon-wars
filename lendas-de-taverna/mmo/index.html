@@ -3283,7 +3283,7 @@ function gdecFromZone(z){if(!z.src||z.src.kind==='hero')return;const th=gdecThem
   if(z.shape==='line'){gdecAdd({x:z.x+Math.cos(z.a)*z.len/2,y:z.y+Math.sin(z.a)*z.len/2,a:z.a,kind:'line',R:Math.max(4,Math.round((z.w||24)/4)),L:Math.round(z.len/2),th,life:th==='vazio'?5:4});return;}
   const Rr=Math.max(10,Math.round(z.r/2));gdecAdd({x:z.x,y:z.y,a:0,kind:'star',R:Rr,th,life:4.5});if(z.r>=70)gdecAdd({x:z.x,y:z.y,a:0,kind:'pit',R:Math.round(Rr*.55),th,life:4.5,delay:.05});}
 function updateGdec(dt){if(!G.gdec)return;for(const d of G.gdec)d.t+=dt;G.gdec=G.gdec.filter(d=>d.t<d.life);}
-function drawGdec(ctx,cx,cy){const D=G.gdec;if(!D)return;for(const d of D){const t=d.t-(d.delay||0);if(t<0)continue;const spr=gdSprite(d.kind,d.R,d.th,d.sd,d.L),grow=Math.min(1,t/.22),fade=Math.min(1,(d.life-d.t)/1.4),ps=2;
+function drawGdec(ctx,cx,cy){const D=G.gdec;if(!D||(window.V3&&V3.active()))return;for(const d of D){const t=d.t-(d.delay||0);if(t<0)continue;const spr=gdSprite(d.kind,d.R,d.th,d.sd,d.L),grow=Math.min(1,t/.22),fade=Math.min(1,(d.life-d.t)/1.4),ps=2;
   ctx.save();ctx.translate(Math.round(d.x-cx),Math.round(d.y-cy));if(!(window.V3&&V3.active()))ctx.scale(1,ZK);ctx.rotate(d.a||0);ctx.globalAlpha=Math.max(0,fade);ctx.imageSmoothingEnabled=false;
   const w=spr.width*ps,h=spr.height*ps;
   if(d.kind==='line'){ctx.beginPath();ctx.rect(-w/2,-h/2,w*grow,h);ctx.clip();}

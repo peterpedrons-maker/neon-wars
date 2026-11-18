@@ -321,6 +321,32 @@ let frameNo=0,camT=null,shown=false,bad=0,zk=1,camBossId=null,camKick=0;
 V3.render=function(){
   try{render3();if(!shown){shown=true;}}catch(err){bad++;V3.err=String(err&&err.message||err);console.error('[v3]',err);if(bad>=3){V3.ready=false;document.body.classList.remove('v3on');if(typeof toast==='function')toast('Modo 2.5D desligado neste aparelho: '+V3.err,5000);}}
 };
+
+// ---- decais de chão (rachaduras/buracos) como planos 3D DEITADOS no próprio chão: mesma perspectiva, luz e profundidade do terreno
+function syncDecals(){
+  if(!scn||typeof G==='undefined'||typeof gdSprite!=='function')return;
+  const D=G.gdec||[];let dg=scn.dg;if(!dg){dg=scn.dg=new T.Group();scn.grp.add(dg);}
+  const live=new Set();
+  for(const d of D){
+    const t=d.t-(d.delay||0);if(t<0)continue;live.add(d);
+    const spr=gdSprite(d.kind,d.R,d.th,d.sd,d.L),w=spr.width*2*U,hh=spr.height*2*U;
+    let m=d._m;
+    if(!m){
+      if(!spr._tx){const tx=new T.CanvasTexture(spr);tx.encoding=T.sRGBEncoding;tx.magFilter=T.NearestFilter;tx.minFilter=T.NearestFilter;tx.generateMipmaps=false;spr._tx=tx;}
+      const geo=new T.PlaneGeometry(w,hh);geo.rotateX(-Math.PI/2);if(d.kind==='line')geo.translate(w/2,0,0);
+      const mat=new T.MeshStandardMaterial({map:spr._tx,transparent:true,depthWrite:false,roughness:1,metalness:0,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+      const mesh=new T.Mesh(geo,mat);mesh.renderOrder=2;const piv=new T.Group();piv.add(mesh);dg.add(piv);d._m=piv;m=piv;m.userData.mat=mat;
+    }
+    const a=d.a||0,grow=Math.min(1,t/.22),fade=Math.max(0,Math.min(1,(d.life-d.t)/1.4)),mat=m.userData.mat;
+    m.rotation.y=-a;
+    if(d.kind==='line'){m.position.set((d.x-Math.cos(a)*spr.width)*U,.02,(d.y-Math.sin(a)*spr.width)*U);m.scale.set(Math.max(.02,grow),1,1);}
+    else{m.position.set(d.x*U,.02,d.y*U);const k=d.kind==='star'?.25+.75*grow:.4+.6*Math.min(1,t/.18);m.scale.set(k,1,k);}
+    mat.opacity=fade;
+    const gl=typeof GDPAL!=='undefined'&&GDPAL[d.th]&&GDPAL[d.th].glow&&t<2.2;
+    if(gl){mat.emissiveMap=spr._tx;mat.emissive.setRGB(1,1,1);mat.emissiveIntensity=Math.max(0,(.45+.2*Math.sin(G.t*9))*(1-t/2.2));}else{mat.emissiveIntensity=0;}
+  }
+  for(const c of dg.children.slice()){let ok=false;for(const d of live)if(d._m===c){ok=true;break;}if(!ok){dg.remove(c);c.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();});}}
+}
 const _c1=new T.Color(),_c2=new T.Color();
 function render3(){
   if(!scn||scn.key!==G.map){
@@ -389,6 +415,7 @@ function render3(){
   if(scn.vm){scn.winMats.forEach(m=>m.emissiveIntensity=.2+n*1.4);scn.vm.uniforms.t.value=t;if(scn.pt){const i=Math.floor(t*20)%48;scn.pt.offset.set((i%8)/8,1-(Math.floor(i/8)+1)/6);}scn.pl.intensity=1.4+.4*Math.sin(t*2);}
   for(const s of scn.smoke){s.t+=dt;const u=(s.t%4)/4;s.sp.position.set(s.x+u*.9,s.y+u*2.6,s.z+Math.sin(u*5+s.t)*.1);const q=.5+u*1.8;s.sp.scale.set(q,q,1);s.sp.material.opacity=Math.sin(u*Math.PI)*.35*(1-n*.4);}
   if(V3.proc&&V3.proc.stU){const q=V3.proc.stU;if(!ZONE.room&&!ZONE.dark&&h){const v=new T.Vector3(h.x*U,1.1,h.y*U).project(cam),bs=R.getDrawingBufferSize(new T.Vector2());q.hp.value.set((v.x*.5+.5)*bs.x,(v.y*.5+.5)*bs.y);q.hz.value=(v.z+1)/2;q.r.value=bs.x*.2;}else q.r.value=0;}
+  try{syncDecals();}catch(e){}
   R.render(S,cam);
   overlay2D(h,list);
 }
