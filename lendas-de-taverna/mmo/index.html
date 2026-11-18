@@ -2763,7 +2763,7 @@ function cmbFinisher(h,t,a){
   allFoes().forEach(f=>{if(f===t)return;if(Math.hypot(f.x-cx,f.y-cy)-((f.T&&f.T.rad)||0)<R){const r=dmgCalc(heroPow(h)*subMult(h,f),mdefv(f),m,heroCrit(h));hitMob(f,r.d,r.crit,cx,cy,big?2:1.5);popFoe(f,12);}});
   if(!t.virt)popFoe(t,10);
   cmbArc(h,t,big?'#ffd070':'#ff9a3a',ext?48:42,16,0);cmbArc(h,t,'#ffffff',36,4,.12);
-  VF.wave(cx,cy,R*.9,big?'#ffe08a':'#ffcf80',.4,3);VF.ringw(cx,cy,R*.85,big?'#ffd070':'#e8e0d0',.45,big?14:9);VF.ringw(cx,cy,R*.5,'#ffffff',.3,5,.04);
+  VF.ringw(cx,cy+2,R*.7,big?'#ffd070':'#e8e0d0',.4,big?10:7);
   gdecAdd({x:cx,y:cy,a:0,kind:'star',R:big?34:24,th:'terra',life:4});if(big)gdecAdd({x:cx,y:cy,a:0,kind:'pit',R:16,th:'terra',life:4,delay:.04});
   VF.chunks(cx,cy,big?14:8);VF.sparks(cx,cy-12,big?30:18,big?['#ffd070','#fff','#ff9a3a']:['#ffcf80','#fff','#e8e0d0'],{s0:100,s1:270});VF.puff(cx,cy,big?8:5,'#b8a88a',{r:R*.4,up:18});
   G.shake=Math.max(G.shake||0,big?.38:.22);G.hs=Math.max(G.hs||0,big?.1:.07);sfx(big?'hit_1':'hit_0',big?.7:.5);
@@ -3284,7 +3284,7 @@ function gdecFromZone(z){if(!z.src||z.src.kind==='hero')return;const th=gdecThem
   const Rr=Math.max(10,Math.round(z.r/2));gdecAdd({x:z.x,y:z.y,a:0,kind:'star',R:Rr,th,life:4.5});if(z.r>=70)gdecAdd({x:z.x,y:z.y,a:0,kind:'pit',R:Math.round(Rr*.55),th,life:4.5,delay:.05});}
 function updateGdec(dt){if(!G.gdec)return;for(const d of G.gdec)d.t+=dt;G.gdec=G.gdec.filter(d=>d.t<d.life);}
 function drawGdec(ctx,cx,cy){const D=G.gdec;if(!D)return;for(const d of D){const t=d.t-(d.delay||0);if(t<0)continue;const spr=gdSprite(d.kind,d.R,d.th,d.sd,d.L),grow=Math.min(1,t/.22),fade=Math.min(1,(d.life-d.t)/1.4),ps=2;
-  ctx.save();ctx.translate(Math.round(d.x-cx),Math.round(d.y-cy));ctx.scale(1,ZK);ctx.rotate(d.a||0);ctx.globalAlpha=Math.max(0,fade);ctx.imageSmoothingEnabled=false;
+  ctx.save();ctx.translate(Math.round(d.x-cx),Math.round(d.y-cy));if(!(window.V3&&V3.active()))ctx.scale(1,ZK);ctx.rotate(d.a||0);ctx.globalAlpha=Math.max(0,fade);ctx.imageSmoothingEnabled=false;
   const w=spr.width*ps,h=spr.height*ps;
   if(d.kind==='line'){ctx.beginPath();ctx.rect(-w/2,-h/2,w*grow,h);ctx.clip();}
   else if(d.kind==='star'){ctx.beginPath();ctx.arc(0,0,Math.max(1,w*.55*grow),0,7);ctx.clip();}
