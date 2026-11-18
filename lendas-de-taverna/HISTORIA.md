@@ -1,26 +1,47 @@
-# Hearthblade — História (rascunho v1, ideia escolhida pelo dono: "O Herói Já Foi Escolhido")
+# Hearthblade — História v2 (contida) — aguardando aprovação do dono
 
-**Regras do dono:** base é o WoW (main quest até o nível 60, depois o jogo de verdade começa: endgame de farm). Futuro multiplayer: a história NÃO pode depender de "só existe um herói". Tom: político, poder, nada de "matar o deus mau". Nada de implementar história/diálogos antes de o dono aprovar o desenho.
+**Regras do dono:** base é o WoW (main quest até o 60, depois endgame de farm; multiplayer no futuro, então nada de "único herói"). Tom de poder/política está aprovado, mas **menos escala**: sem farol, sem fim do mundo. Nada de implementar história/diálogos antes de aprovar.
 
-## Premissa
-Todo mundo trata o jogador como "o Escolhido da profecia". A **Ordem do Farol** (religiosa, rica, a única que "lê" a profecia) entrega um **Selo** a cada aventureiro que chega e o chama de Escolhido. **Existem milhares de Escolhidos** (explica o multiplayer): "Escolhido" é um cargo que a Ordem fabrica. A profecia original era de UMA pessoa — o **Primeiro Escolhido** — que falhou e foi apagado dos registros (liga com o Rei Esquecido). O Selo faz o herói ficar mais forte quanto mais "males" derrota, e cada vitória alimenta o **Farol** (a fonte de poder da Ordem). O herói faz o trabalho sujo de limpeza sem saber que serve para legitimar e abastecer o poder da Ordem.
+## Premissa contida
+A **Ordem do Selo** (pequena, respeitada, rica em favores) entrega um **Selo** a cada aventureiro e o chama de **Escolhido**. Existem muitos Escolhidos (cada jogador é um). O Selo dá força e, em troca, **a Ordem pode "chamar" o portador** (ele fica em dívida). O **Primeiro Escolhido** se rebelou e foi apagado dos registros: é o **Rei Esquecido**. Quem não aguenta o Selo vira um **Marcado** (os chefes de zona). Ninguém ameaça o mundo: o conflito é quem controla os Escolhidos, e o que a Ordem esconde.
 
-## Atos (um por região de ~10 níveis; mundo contínuo de zonas)
-1. **Brumavale (1–10)** — chegada, Selo, os 4 chefes de zona (Grunk, Gorgash, Morvath, Rei dos Ratos) são **Escolhidos anteriores corrompidos pelo Selo** (o jogador só descobre no fim do ato). O guarda do Passo exige 3 de 4 chefes: a Ordem quer o "serviço" feito antes de liberar a Cidade 2. Gancho final: o Selo reage com algo que viu no Rei Esquecido.
-2. **Cidade 2 (10–20) — política:** três poderes disputam o Escolhido: **Ordem do Farol**, **Conselho das Guildas** (mercadores, vendem "Selos falsos"), **Remanescentes da Coroa** (a monarquia apagada). Revela os Registros: milhares de nomes. Missões de investigação, facções, primeiras escolhas com consequência pequena.
-3. **O Impostor (20–30):** rastro do Primeiro Escolhido (e de quem o apagou). Descobre-se que o apagamento foi um pacto da Ordem com as casas nobres. Dungeons: arquivos, cofres, a cripta do pacto.
-4. **Os Apagados (30–40):** heróis que removeram o Selo (hereges). O Selo cobra um preço; o herói escolhe se o mantém. Cidade 3 neutra (porto/mercado) — palco de espionagem.
-5. **O Farol (40–50):** o que o Farol realmente é: um reservatório alimentado pelas conquistas dos Escolhidos; apagá-lo mataria a magia do mundo, mantê-lo escraviza. Guerra aberta entre as facções.
-6. **A Escolha (50–60):** o herói decide o destino do Farol (**manter / desligar / tomar o controle**). Finais por facção; nenhum "mata o vilão e acabou" — o Farol e o Selo continuam existindo no endgame.
+**Vilão final: o Arauto do Selo**, líder do círculo interno da Ordem. Quer manter todos os Escolhidos presos à dívida e "colher" os que caem.
 
-## Endgame (depois do 60, como no WoW — o jogo real)
-- **Era dos Escolhidos:** o mundo continua com os 3 poderes em disputa. Reputação com cada facção (lojas, itens, títulos).
-- **Dungeons e raides por tier** (Cripta do Rei Esquecido, Esgoto etc. já existem como base), com drops específicos por dungeon; **hunts** de chefes raros (estilo FFXII) e **chefes de mundo**.
-- **Eventos de facção** (cerco ao Farol, guerra por territórios) — pensados para virar multiplayer/instância compartilhada.
-- **Conquistas, títulos, montarias e equipamentos** por tier; temporadas.
+## Facções (o jogador ganha pontos com as TRÊS; sem escolher lado)
+- **Ordem do Selo** (tradição, ordem), **Conselho das Guildas** (comércio, dinheiro), **Remanescentes da Coroa** (a monarquia apagada).
+- Pontos vêm de **missões secundárias** de NPCs de cada facção (e algumas missões principais). Níveis de reputação: Conhecido → Amigo → Aliado → Honrado → Exaltado.
+- Recompensas por reputação: itens à venda, receitas, títulos, aparências, missões exclusivas, montarias e (no endgame) acesso a hunts/dungeons de facção. Nenhuma recompensa exclui outra: dá para ficar bem com as três. Escolhas nas missões mudam só QUANTO ponto cada uma rende.
 
-## Como encaixa no que já existe
-- Portão do Passo = fim do Ato 1 (3 de 4 chefes; o registro de caça já existe).
-- Rei Esquecido (Cripta, dungeon Nv15+) = o Primeiro Escolhido apagado; seu kit de Esquecimento vira ferramenta narrativa.
-- Boticário/Skrix/Presa-de-Ferro/Morcego-Vampiro = mini-chefes ex-aliados do herói.
-- Sistema de quests/NPCs com diálogo estilo WoW (balão, opções, várias missões por NPC) será construído DEPOIS da aprovação deste desenho.
+## Regra da missão principal (decisão do dono) — 60 missões, 1 por nível
+- O herói começa com a missão do nível 1. A missão do nível N **só libera quando o herói está no nível N E concluiu a do nível N-1**.
+- Se terminar a do nível 2 e ainda não for nível 3, a do 3 espera. Se chegar ao 3 sem terminar a do 2, a do 3 também espera.
+- Cada missão tem região/cidade/NPC dono (sistema de quests já nasce com esses campos). Diário mostra "Missão principal" fixa no topo.
+
+## ATO 1 — Brumavale (níveis 1–10)
+1. **Nv1 — O Selo** (Brumavale): Irmã Maren (Ordem) entrega o Selo; Sargento Hilda manda falar com o mercador Bram e ir à Estrada. Tutorial de atacar/poção.
+2. **Nv2 — Estrada Segura** (Estrada de Brumavale): limpar lobos/ratos que travam a estrada; Bram (Guildas) paga pelo serviço. 1ª missão que dá pontos de facção.
+3. **Nv3 — Marcas na Planície** (Planície): acampamentos sem NPC fixo; achar 3 criaturas com marca de Selo gasta no corpo. Dúvida plantada.
+4. **Nv4 — A Ponte Cortada** (Ponte do Rio): caravana das Guildas presa; um Remanescente oferece atalho. Escolha pequena (quem recebe mais pontos).
+5. **Nv5 — O Rei Goblin** (Floresta dos Goblins): derrotar o Grunk (chefe de zona). Ele usa um Selo enferrujado: já foi um Escolhido.
+6. **Nv6 — O Eremita** (Colinas Rochosas): eremita conta do Primeiro Escolhido e pede uma relíquia (pista para o Rei Esquecido).
+7. **Nv7 — Relatório à Ordem** (Brumavale / Desfiladeiro): Maren pede que o herói não conte o que viu; o herói decide. Rende pontos diferentes por facção.
+8. **Nv8 — Os Mortos não Descansam** (Estrada dos Mortos / Cemitério): Morvath e as marcas nos mortos; mini-chefe Morcego-Vampiro.
+9. **Nv9 — Três Pedidos** (Passo da Montanha): um emissário de cada facção pede um favor; o jogador pode fazer os três (os chefes de Ogros e Pântano entram aqui como opções).
+10. **Nv10 — O Portão do Passo** (guarda do Passo): derrotar 3 de 4 chefes de zona (Grunk, Gorgash, Morvath, Rei dos Ratos); mortes anteriores contam (registro de caça). Portão abre; chegada à Cidade 2.
+
+## Atos seguintes (resumo: uma missão por nível)
+- **Ato 2 — Cidade 2 (11–20):** as 3 facções disputam o novo Escolhido; investigação dos Registros; revelação de que todos os Marcados foram Escolhidos.
+- **Ato 3 — O Impostor (21–30):** alguém usa o nome do Primeiro Escolhido; rastro até o pacto que o apagou.
+- **Ato 4 — Os Apagados (31–40):** Escolhidos que renunciaram ao Selo; o preço da renúncia; Cidade 3 (porto/mercado, espionagem).
+- **Ato 5 — O Círculo Interno (41–50):** a Ordem se divide; o herói chega perto do Arauto; Rei Esquecido (dungeon) como peça-chave.
+- **Ato 6 — O Arauto (51–60):** cerco à Cidadela do Selo; **missão do nível 60 = derrotar o Arauto do Selo** (chefe final da história).
+
+## O que a missão 60 libera (começa o endgame)
+- **Câmaras do Arauto**: série de dungeons de nível máximo ligadas ao chefe final (cada câmara guarda um lugar-tenente do Arauto; cada uma com drops próprios; modo difícil depois).
+- Reputação das facções sobe de teto (Exaltado); hunts e eventos de facção; título "Quebra-Selo" e opção de manter/remover o Selo (visual e bônus).
+- Dungeons existentes (Cripta, Esgoto etc.) ganham versão de nível 60. Detalhe das câmaras só depois de aprovar.
+
+## Todos os NPCs falam (decisão do dono)
+- **Todo NPC tem balão de conversa**, não só os de missão: moradores dizem falas curtas ("bom dia", comentário do lugar, mudam por hora/clima); guardas e mercadores também.
+- **Mercadores/serviços:** falam primeiro e só depois abre a loja/janela.
+- **NPCs de missão:** balão com a fala, opções, lista de missões dele (estilo WoW); marcadores "!" e "?" (kit B27–B29).
