@@ -261,7 +261,6 @@ function svgHTML(vw,vh){const T=tree(),N=T.nodes,sel=PT.sel,pth=sel?(pathTo(sel)
  T.D.sec.forEach((S,c)=>{h+=`<radialGradient id="pg${c}"><stop offset="0" stop-color="${S.c}" stop-opacity=".22"/><stop offset="1" stop-color="${S.c}" stop-opacity="0"/></radialGradient>`;});
  h+='</defs>';
  T.D.sec.forEach((S,c)=>{const a=ang(c),r=RR(3.6);h+=`<circle cx="${(Math.cos(a)*r).toFixed(0)}" cy="${(Math.sin(a)*r).toFixed(0)}" r="${RR(4.4)}" fill="url(#pg${c})"/>`;});
- T.D.sec.forEach((S,c)=>{const a=ang(c),r=RR(RINGS+1.75),cx=Math.cos(a),an=cx>.3?'start':cx<-.3?'end':'middle';h+=`<text class="sl" text-anchor="${an}" x="${cx*r+(cx>.3?14:cx<-.3?-14:0)}" y="${Math.sin(a)*r+(Math.sin(a)<-.3?-26:Math.sin(a)>.3?34:4)}" style="fill:${S.c};font-size:${(8*u).toFixed(1)}px;opacity:.85">${S.n.toUpperCase()}</text>`;});
  const drawn={};
  T.list.forEach(n=>n.nb.forEach(m=>{const k=n.id<m?n.id+'|'+m:m+'|'+n.id;if(drawn[k])return;drawn[k]=1;const a=n,b=N[m],on=isAl(a.id)&&isAl(b.id),av=!on&&((isAl(a.id)&&allocatable(b))||(isAl(b.id)&&allocatable(a))),pa=pset[a.id]&&(pset[b.id]||isAl(b.id))||pset[b.id]&&isAl(a.id);
   let st='';if(on){const ca=(T.D.sec[a.sec]||T.D.sec[0]).c,cb=(T.D.sec[b.sec]||T.D.sec[0]).c;st=`stroke:${a.sec===b.sec||a.sec<0?cb:ca}`;}
