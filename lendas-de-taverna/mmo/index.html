@@ -1007,7 +1007,7 @@ html #qtr .qr.rd span,html #qtr:not(.cl) .qr span{display:block!important}
 
 /* MEDIDOR DE RANK — kit do dono (assets/kit/rank): COMBO + hits em cima, barra com letra e fogo */
 #sty{width:158px!important;text-shadow:none!important}
-#sty .sk{display:flex;align-items:flex-end;gap:5px;height:34px;margin:0 0 -2px 2px}
+#sty .sk{display:flex;align-items:flex-end;gap:5px;height:34px;margin:0 0 8px 2px}
 #sty .sco{font:900 italic 17px/1 var(--ft,inherit);color:#fff0d4;-webkit-text-stroke:4px #5a1a10;paint-order:stroke fill;text-shadow:0 2px 0 #2a0a08;padding:2px 10px 3px 2px;margin-bottom:2px;background:linear-gradient(100deg,transparent 0 4%,rgba(200,30,30,.85) 4% 88%,transparent 88%) no-repeat 0 100%/100% 6px;letter-spacing:.5px}
 #sty .sht{font:900 italic 10px/1 var(--ft,inherit);color:#e8dcb0;-webkit-text-stroke:3px #5a1a10;paint-order:stroke fill;margin-bottom:3px;letter-spacing:.5px}
 #sty .sfr,#sty .sli,#sty .sfi{image-rendering:pixelated}
@@ -2840,7 +2840,7 @@ function hudFxTick(dt,fire){const c=$('styFx');if(!c)return;const g=c.getContext
   hudGeo();
   if(fire){HFX.fireT+=dt;const t=HFX.fireT,fr=Math.floor(t*14),x0=HFX.bx+7,y0=HFX.by+5,N=60,RAMP=['#fff4b8','#ffd24a','#ff9a2a','#e8501a','#a8281a'];
     // fogo por código: línguas de chama em colunas de 2px saindo da borda de cima da barra; núcleo claro na base e ponta escura, bordas picotadas
-    for(let i=0;i<N;i++){const x=x0+i*2,w=Math.sin(i*.55+t*7)+Math.sin(i*1.31-t*11)*.7+Math.sin(i*.23+t*4.3)*.9,h=Math.max(3,Math.round(9+w*3.6+(i%7===0?4:0)));
+    for(let i=0;i<N;i++){const x=x0+i*2,w=Math.sin(i*.55+t*7)+Math.sin(i*1.31-t*11)*.7+Math.sin(i*.23+t*4.3)*.9,h=Math.max(2,Math.round(4.5+w*1.8+(i%7===0?2.5:0)));
       for(let r=0;r<h;r++){const q=r/h;if(r>=h-2&&((i+r+fr)&1))continue;const ci=q<.18?0:q<.4?1:q<.65?2:q<.88?3:4;g.fillStyle=RAMP[ci];g.globalAlpha=q>.9?.7:.96;g.fillRect(x,y0-r*1.5-2,2,1.5);}}
     // a barra em brasa: fio quente em cima e línguas curtas nas pontas
     g.globalAlpha=.9;g.fillStyle='#ffe27a';g.fillRect(x0,y0,N*2,1);
