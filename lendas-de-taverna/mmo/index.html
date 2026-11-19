@@ -4545,7 +4545,7 @@ const GXF2={
  s_bar3:gxNovaFx({col:'#ff6a3a',col2:'#ffd070',R:100,sh:'flame',waves:true,vig:'rgba(255,90,40,.5)',smoke:'#6a4a3a',shake:.34}),
  /* ladino */
  n_execucao:gxHit({col:'#ff3a4a',col2:'#fff',slash:1,x:true,star:36,ring:44,vig:'rgba(180,0,20,.45)',shake:.28}),
- n_laminas:gxNovaFx({col:'#c8d0ff',col2:'#fff',R:72,spin:3,sh:'dia',rings:2,n:14}),
+ n_laminas:(h)=>{VF.m3('bladering',h.x,h.y,.8,{fol:1});VF.puff&&VF.puff(h.x,h.y,3,['#3a2a5a'],{r:8,up:6});},
  s_ass1:gxProjFxMk({col:'#c0304a',col2:'#ff8a9a',mark:true,ling:'curse',size:10}),
  s_ass2:gxHit({col:'#a98aff',col2:'#fff',dash:true,slash:2,ring:52,smoke:'#4a3a6a',shake:.28}),
  s_ass3:gxBuffFx({col:'#bfe8ff',col2:'#fff',extra:'shadow'}),
