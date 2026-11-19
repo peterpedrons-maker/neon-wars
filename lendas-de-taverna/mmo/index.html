@@ -2767,11 +2767,11 @@ function cmbArc(h,t,c1,R,th,off){const a=cmbDir(h,t)+(off||0),x=h.x+Math.cos(a)*
 /* ===== MEDIDOR DE ESTILO (estilo Devil May Cry) =====
    Pontos sobem a cada golpe (mais em crítico, golpe preciso, finalizador, habilidade e esquiva; variedade de ações dá bônus) e caem com o tempo parado.
    Levar dano derruba o rank. Só visual por enquanto (STY fica pronto para virar bônus/recompensa depois). */
-const STR=[{l:'D',w:'AQUECENDO',c:'#9fb4c8',th:0},{l:'C',w:'BOM',c:'#7ed87e',th:7},{l:'B',w:'ÓTIMO',c:'#5fd0ff',th:16},{l:'A',w:'INCRÍVEL',c:'#ffd24a',th:30},{l:'S',w:'BRUTAL',c:'#ff9a3a',th:48},{l:'SS',w:'SELVAGEM',c:'#ff5a3a',th:72},{l:'SSS',w:'LENDÁRIO',c:'#ff4fd8',th:104}];
+const STR=[{l:'D',w:'AQUECENDO',c:'#9fb4c8',th:0},{l:'C',w:'BOM',c:'#7ed87e',th:8},{l:'B',w:'ÓTIMO',c:'#5fd0ff',th:20},{l:'A',w:'INCRÍVEL',c:'#ffd24a',th:40},{l:'S',w:'BRUTAL',c:'#ff9a3a',th:66},{l:'SS',w:'SELVAGEM',c:'#ff5a3a',th:100},{l:'SSS',w:'LENDÁRIO',c:'#ff4fd8',th:145}];
 const STY={p:0,hits:0,idle:0,r:0,best:0,last:[],endT:0,shownR:-1,shownN:-1,shownP:-1};
 function styRank(p){let r=0;for(let i=0;i<STR.length;i++)if(p>=STR[i].th)r=i;return r;}
 function styAdd(pts,act){if(!G.hero||G.hero.state==='ko')return;if(act){const L=STY.last;if(!L.slice(-3).includes(act))pts+=1.4;L.push(act);if(L.length>6)L.shift();}
-  STY.p=Math.min(STR[STR.length-1].th+30,STY.p+pts);STY.idle=0;STY.endT=0;}
+  STY.p=Math.min(STR[STR.length-1].th+40,STY.p+pts);STY.idle=0;STY.endT=0;}
 function styHit(dmg,crit){STY.hits++;if(STY.hits>STY.best)STY.best=STY.hits;styAdd(crit?2.1:1.1,'hit');const e=$('styL');if(e){e.classList.remove('hit');void e.offsetWidth;e.classList.add('hit');}const n=$('styN');if(n){n.classList.remove('pop');void n.offsetWidth;n.classList.add('pop');}}
 function styHurt(){if(STY.p<=0)return;const r=styRank(STY.p);STY.p=Math.max(0,Math.min(STY.p*.5,r>0?STR[r].th-.5:0));STY.last.length=0;}
 function styReset(){STY.p=0;STY.hits=0;STY.idle=0;STY.endT=0;STY.last.length=0;STY.r=0;STY.shownR=-1;const e=$('sty');if(e)e.classList.remove('on','end','top');}
