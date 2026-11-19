@@ -1012,7 +1012,7 @@ html #qtr .qr.rd span,html #qtr:not(.cl) .qr span{display:block!important}
 #sty .sht{font:900 italic 10px/1 var(--ft,inherit);color:#e8dcb0;-webkit-text-stroke:3px #5a1a10;paint-order:stroke fill;margin-bottom:3px;letter-spacing:.5px}
 #sty .sfr,#sty .sli,#sty .sfi{image-rendering:pixelated}
 #sty .ghost{animation:styCrush .4s linear forwards!important;z-index:0}
-#sty .sli.drop{animation:styDrop .42s linear both;z-index:2}
+#sty .sli.drop{animation:styDrop .42s linear both!important;z-index:2}
 #sty .sbar.jolt{animation:styJolt .22s ease-out}
 @keyframes styJolt{0%{transform:translateY(0)}25%{transform:translateY(3px)}55%{transform:translateY(-1px)}100%{transform:none}}
 #sty #styFx{position:absolute;left:-20px;top:-40px;width:240px;height:150px;pointer-events:none;z-index:3;image-rendering:pixelated}
@@ -2825,7 +2825,7 @@ function styAdd(pts,act){if(!G.hero||G.hero.state==='ko'||(G.hero.tuf&&act!=='do
   STY.idle=0;STY.endT=0;if(STY.r>=4){STY.hold=STYHOLD;return;}
   STY.f+=pts/STR[STY.r].need;
   while(STY.f>=1&&STY.r<4){STY.f-=1;STY.r++;if(STY.r>=4){STY.f=1;STY.hold=STYHOLD;break;}}}
-function styHit(dmg,crit){if(G.hero&&G.hero.tuf)return;STY.hits++;if(STY.hits>STY.best)STY.best=STY.hits;styAdd(crit?2.1:1.1,'hit');const e=$('styL');if(e){e.classList.remove('hit');void e.offsetWidth;e.classList.add('hit');}const n=$('styN');if(n){n.classList.remove('pop');void n.offsetWidth;n.classList.add('pop');}}
+function styHit(dmg,crit){if(G.hero&&G.hero.tuf)return;STY.hits++;if(STY.hits>STY.best)STY.best=STY.hits;styAdd(crit?2.1:1.1,'hit');const e=$('styL');if(e&&!e.classList.contains('drop')){e.classList.remove('hit');void e.offsetWidth;e.classList.add('hit');}const n=$('styN');if(n){n.classList.remove('pop');void n.offsetWidth;n.classList.add('pop');}}
 function styHurt(){const h=G.hero;if(h&&h.cls==='guerreiro'){styAdd(1.6,'hurt');return;}if(!styLive()||styReady())return;STY.f-=.45;if(STY.f<0){if(STY.r>0){STY.r--;STY.f=1+STY.f;}else STY.f=0;}STY.last.length=0;}
 function styConsume(){STY.r=0;STY.f=0;STY.hold=0;STY.last.length=0;STY.idle=0;STY.shownR=-1;}
 function styReset(){if(G.hero)G.hero.tuf=null;STY.dv=0;STY.r=0;STY.f=0;STY.hits=0;STY.idle=0;STY.endT=0;STY.hold=0;STY.last.length=0;STY.shownR=-1;STY.shownRd=-1;const e=$('sty');if(e)e.classList.remove('on','end','rdy');document.documentElement.classList.remove('emp');}
@@ -2846,6 +2846,7 @@ function hudFxTick(dt,fire){const c=$('styFx');if(!c)return;const g=c.getContext
 function styLetter(l,up){const L=$('styL'),src='assets/kit/rank/p_'+l+'.png';
   if(!up){L.src=src;return;}
   const g=L.cloneNode();g.removeAttribute('id');g.className='sli ghost';L.parentNode.insertBefore(g,L);g.addEventListener('animationend',()=>g.remove());
+  if(!L._ae){L._ae=1;L.addEventListener('animationend',ev=>{if(ev.animationName==='styDrop')ev.target.classList.remove('drop');});}
   L.src=src;L.classList.remove('pop','hit','drop');void L.offsetWidth;L.classList.add('drop');
   setTimeout(()=>{hudGeo();const sb=document.querySelector('#sty .sbar');if(sb){sb.classList.remove('jolt');void sb.offsetWidth;sb.classList.add('jolt');}sfx('sk_terra',.7,1.3);G.shake=Math.max(G.shake||0,.2+.03*(STY.r||0));
     // poeira e fragmentos em pixels (sem anel, sem linhas): nuvem que abre para os lados + estilhaços da letra esmagada
