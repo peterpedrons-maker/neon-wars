@@ -58,3 +58,6 @@ SIL Open Font License 1.1 — Stefie Justprince, via Google Fonts (assets/fonts/
 - **Wolf monster sound** (OpenGameArt, CC0) — morte do lobo.
 - **Zebra whinny** — extraído de vídeo por **Peet J van Eeden** (CC BY 3.0), publicado no OpenGameArt; recortado e baixado de tom para o relincho do cavalo (`mount_neigh.ogg`). Atribuição exigida: Peet J van Eeden (CC BY).
 - O som de bufo do cavalo (`mount_snort.ogg`) vem do pacote CC0 acima.
+
+## Almendra (fonte do Diário)
+SIL Open Font License 1.1 — Ryoichi Tsunekawa / Flat It, via Google Fonts (assets/fonts/Almendra-*.ttf).
