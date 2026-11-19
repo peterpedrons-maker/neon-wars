@@ -1050,6 +1050,42 @@ html.rage #stage::after{content:'';position:absolute;inset:0;pointer-events:none
 .pdw .pcol.l{left:8px}.pdw .pcol.r{right:8px}
 .pdw .pds{width:54px;height:54px;display:grid;place-items:center}
 .pdw .pdh{position:absolute;left:0;right:0;bottom:3px;text-align:center;font:500 9px var(--ft);letter-spacing:.18em;text-transform:uppercase;color:#6d6684;pointer-events:none}
+
+/* ===== DIÁRIO COMO LIVRO (janela com arte própria): capa de couro, página de pergaminho, fitas e selos ===== */
+#win.bk .box{border:3px solid #1b0f08!important;border-image:none!important;background:linear-gradient(180deg,#5a3720,#33200f 60%,#26160a)!important;box-shadow:0 14px 44px rgba(0,0,0,.8),inset 0 0 0 2px #7a5230,inset 0 0 0 5px #1b0f08,inset 0 0 22px rgba(0,0,0,.6)!important;padding:7px!important}
+#win.bk .box::before,#win.bk .box::after{width:18px!important;height:18px!important;border:0!important;background:radial-gradient(circle at 35% 35%,#ffe9a8,#c98f1e 55%,#6a4a10);box-shadow:0 0 0 2px #2a1808;border-radius:3px}
+#win.bk .box::before{left:2px!important;top:2px!important}#win.bk .box::after{right:2px!important;bottom:2px!important}
+#win.bk .tt{background:none!important;border:0!important;height:34px}#win.bk .tt span{font:700 17px var(--fd);letter-spacing:.2em;color:#f0cf7c;text-shadow:0 2px 0 #1b0f08,0 0 12px rgba(240,207,124,.4)}
+#win.bk .tt::before{display:none}
+#win.bk .tabs{margin:0 0 -1px!important;background:none!important;border:0!important;gap:3px;padding:0 4px;position:relative;z-index:2}
+#win.bk .tabs button{height:34px!important;font:700 10px var(--ft)!important;letter-spacing:.02em!important;padding:0 3px!important;min-width:0;color:#e0c890!important;background:linear-gradient(180deg,#4a2c18,#2e1a0c)!important;border:2px solid #1b0f08!important;border-bottom:0!important;border-radius:6px 6px 0 0;box-shadow:inset 0 1px 0 #7a5230!important;opacity:.9}
+#win.bk .tabs button.on{color:#3a1d0e!important;background:#dcc89a!important;opacity:1;box-shadow:none!important;height:38px!important;margin-top:-4px;font-weight:800!important}
+#win.bk .wb{position:relative;color:#3b2a14;background:
+ radial-gradient(ellipse at 50% 40%,rgba(255,244,214,.55),rgba(0,0,0,0) 70%),
+ linear-gradient(90deg,rgba(70,40,12,.5),rgba(70,40,12,0) 26px,rgba(0,0,0,0) calc(100% - 22px),rgba(70,40,12,.28)),
+ url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .22  0 0 0 0 .08  0 0 0 .32 0'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>"),
+ #dcc89a;border:2px solid #1b0f08;border-top:0;box-shadow:inset 0 0 36px rgba(120,80,20,.55),3px 3px 0 #cdb888,5px 5px 0 #b69c68,7px 7px 0 #8a6a38}
+#win.bk .wb .sub,#win.bk .wb .dd,#win.bk .qs span,#win.bk .sqs2 span,#win.bk .sqt{color:#5a4326!important}
+#win.bk .qtabs button{background:#c9b078!important;color:#3a2a10!important;border:2px solid #7a5a28!important;box-shadow:inset 0 0 0 1px #e6d4a4}
+#win.bk .qtabs button.on{background:linear-gradient(#8a1d1d,#5e1212)!important;color:#ffe9a8!important;border-color:#2a0a0a!important}
+#win.bk .qsh{background:linear-gradient(180deg,#8a2424,#5e1414)!important;border:2px solid #2a0a0a!important;color:#ffe3a0!important;box-shadow:inset 0 1px 0 #c25a4a,0 2px 0 rgba(0,0,0,.35);clip-path:polygon(0 0,100% 0,calc(100% - 9px) 50%,100% 100%,0 100%)}
+#win.bk .qsh.op{border-color:#c98f1e!important}#win.bk .qsh em{color:#e8b8a0!important}
+#win.bk .sq{background:rgba(255,246,218,.45)!important;border:2px solid #8a6a32!important;box-shadow:inset 0 0 0 2px rgba(255,255,255,.25),inset 0 0 0 3px #b99a58,2px 2px 0 rgba(60,36,12,.35)!important}
+#win.bk .sq.rd{border-color:#3f8a2a!important;box-shadow:inset 0 0 0 3px #7ab25a,0 0 10px rgba(70,160,50,.35)!important}
+#win.bk .sqh b{color:#4a1a0c!important;font:700 17px var(--fd);letter-spacing:.04em}#win.bk .sqh small{color:#7a5a2a!important}
+#win.bk .sqr{color:#3b2a14!important}#win.bk .sqr b{color:#7a1d10!important}
+#win.bk .sqo{background:rgba(120,86,30,.12)!important;border:1px dashed #8a6a32!important;color:#2e2010!important}#win.bk .sqo em{color:#7a1d10!important}
+#win.bk .sqo .ck{border-color:#7a5a28!important;background:rgba(255,255,255,.35)}#win.bk .sqo .ck.on{background:#cfe6b0!important;border-color:#3f8a2a!important;color:#2a7a1a!important}
+#win.bk .sqo .bar,#win.bk .sqt .bar{background:#bfa66e!important;border-color:#7a5a28!important}
+#win.bk .sqb{border-radius:50%;min-width:0;padding:5px 7px;font-size:9.5px;box-shadow:0 2px 0 rgba(0,0,0,.4),inset 0 0 0 2px rgba(255,255,255,.25)}
+#win.bk .sqb.p{background:#8a1d1d!important;border-color:#3a0a0a!important;color:#ffe3a0!important}#win.bk .sqb.g{background:#3f8a2a!important;border-color:#1a3a0a!important;color:#effcd8!important}#win.bk .sqb.n{background:#c98f1e!important;border-color:#5a3a08!important;color:#2a1a00!important}#win.bk .sqb.l{background:#7a6a50!important;border-color:#3a2e1c!important;color:#e8dcc0!important}
+#win.bk .sqs2{color:#6a1a10!important;border-bottom-color:#8a6a32!important}
+#win.bk .qs b{color:#6a1a10!important;background:none!important;-webkit-text-fill-color:#6a1a10!important}#win.bk .qs{border-image:none!important;border-bottom:1px solid #8a6a32!important}
+#win.bk .wr{background:rgba(255,246,218,.42)!important;border:1px solid #8a6a32!important;color:#3b2a14}
+#win.bk .wr .tx b{color:#4a1a0c}#win.bk .wr .tx span{color:#5a4326!important}#win.bk .wr .pr{color:#7a1d10!important}
+#win.bk .wr.lock{opacity:.8;filter:none}#win.bk .wr .bar{background:#bfa66e!important;border-color:#7a5a28!important}
+#win.bk .dd{background:rgba(255,246,218,.35)!important;border-color:#8a6a32!important;color:#3b2a14}
+#win.bk .sqf{color:#2a5a8a!important}
 </style>
 </head>
 <body>
@@ -6352,7 +6388,7 @@ function winMissoes(){$('wtt').textContent='Capitão Ruvel';const c=qMain(),ok=c
   const tk=`<div class="tokb"><img src="${UI}gems.png"><span>Fichas de Brumavale</span><b>${SAVE.tok||0}</b></div>`;
   const tb=`<div class="tabs" style="margin:0 -12px">${[['m','Missões'],['s','Loja de fichas']].map(([k,l])=>`<button data-a="rt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
   $('wbody').innerHTML=hd+tk+tb+(tab==='s'?shopBody():missionsBody()+'<div class="acts"><button data-a="op:diario">Abrir o Diário</button></div>');}
-function winDiario(){$('wtt').textContent='Diário';let tab=G.qtab;if(!['m','f','b','c','p'].includes(tab))tab='m';
+function winDiario(){{const w=$('win');if(w)w.classList.add('bk');}$('wtt').textContent='Diário';let tab=G.qtab;if(!['m','f','b','c','p'].includes(tab))tab='m';
   let h=`<div class="tabs" style="margin:0 -12px">${[['m','Missões'],['f','Facções'],['b','Bestiário'],['c','Títulos'],['p','Pets']].map(([k,l])=>`<button data-a="qt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
   if(tab==='m')h+=missionsBody();
   else if(tab==='f')h+=facBody();
@@ -6394,7 +6430,7 @@ function socAct(a){const [k,v,w]=a.split(':');
   else if(k==='cs'){const t=($('cmsg').value||'').trim();if(t){(G.clog=G.clog||[]).push({c:G.cch,who:SAVE.name,t,col:G.cch==='p'?'#8ec2ff':'#e6dcc2'});sfx('ui_click',.4);}}
   else return false;
   writeSave();renderWin();return true;}
-function openWin(id){if(id==='portal'){sfx('tr_open',.6);G.winOpen='portal';G.wsel=null;G.wp=null;$('toast').style.display='none';pzOpen();return;}sfx('tr_open',.6);G.winOpen=id;G.wsel=null;G.wp=null;if(id==='forja'&&!G.fslot)G.fslot=SLOTS.find(k=>SAVE.eq[k])||'arma';if(id==='mercador'&&!G.shop)restock(true);
+function openWin(id){{const w=$('win');if(w)w.classList.toggle('bk',id==='diario');}if(id==='portal'){sfx('tr_open',.6);G.winOpen='portal';G.wsel=null;G.wp=null;$('toast').style.display='none';pzOpen();return;}sfx('tr_open',.6);G.winOpen=id;G.wsel=null;G.wp=null;if(id==='forja'&&!G.fslot)G.fslot=SLOTS.find(k=>SAVE.eq[k])||'arma';if(id==='mercador'&&!G.shop)restock(true);
   $('toast').style.display='none';$('win').classList.add('on');renderWin();}
 function closeWin(){G.winOpen=null;$('win').classList.remove('on');pzClose();}
 $('wx').onclick=()=>{sfx('tr_close',.6);closeWin();};
