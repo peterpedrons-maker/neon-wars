@@ -529,7 +529,7 @@ M3.lance={build(f,g){const L=f.L||420,a=_arrow(80,0xf0fff4);a.scale.set(2,3.4,3.
  upd(f,g,t){const L=f.L||420,k=Math.min(1,t/.22),d=L*k;g.rotation.y=-(f.a||0);g.position.y=24*U;g.userData.a.position.set(d-60,0,0);g.userData.c.scale.set(d,1,1);g.userData.o.scale.set(d,1+Math.sin(t*50)*.1,1+Math.sin(t*50)*.1);const fa=t>.6?Math.max(0,1-(t-.6)*2.5):1;g.userData.c.material.opacity=.9*fa;g.userData.o.material.opacity=.4*fa;g.userData.a.visible=t<.35;
   g.userData.R.forEach((r,i)=>{const px=(i+1)*L/8,u=(t-.22*px/L)/.5;r.visible=u>=0&&u<1;if(!r.visible)return;r.position.x=px;const rr=16+u*62;r.scale.set(1,rr,rr);r.material.opacity=.9*(1-u);});}};
 /* PONTO FRACO (ladino): CONE no chao saindo do inimigo em direcao ao lado fraco (90 graus = exatamente a area que conta como acerto); acende quando o heroi esta dentro */
-M3.weakpt={build(f,g){const R=((f.ft&&f.ft.T&&f.ft.T.rad)||14)+46,q=new T.Group(),rg=_tx(64,64,(c,w,h)=>{const r=c.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);r.addColorStop(0,'rgba(255,255,255,.10)');r.addColorStop(.6,'rgba(255,255,255,.42)');r.addColorStop(1,'rgba(255,255,255,.75)');c.fillStyle=r;c.fillRect(0,0,w,h);});
+M3.weakpt={build(f,g){const R=60,q=new T.Group(),rg=_tx(64,64,(c,w,h)=>{const r=c.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);r.addColorStop(0,'rgba(255,255,255,.10)');r.addColorStop(.6,'rgba(255,255,255,.42)');r.addColorStop(1,'rgba(255,255,255,.75)');c.fillStyle=r;c.fillRect(0,0,w,h);});
   const fill=new T.Mesh(new T.CircleGeometry(R,24,-Math.PI/4,Math.PI/2).rotateX(-Math.PI/2),_mt(0x9a4aff,.5,false,rg));q.add(fill);q.userData.f=fill;
   const rim=new T.Mesh(new T.RingGeometry(R-4,R,24,1,-Math.PI/4,Math.PI/2).rotateX(-Math.PI/2),_mt(0xb06aff,1,false));rim.position.y=.3;q.add(rim);
   for(const s of[-1,1]){const e=new T.Mesh(new T.BoxGeometry(R,.4,3.2).translate(R/2,0,0),_mt(0xb06aff,1,false));e.rotation.y=s*Math.PI/4;e.position.y=.3;q.add(e);}
@@ -537,6 +537,7 @@ M3.weakpt={build(f,g){const R=((f.ft&&f.ft.T&&f.ft.T.rad)||14)+46,q=new T.Group(
   const ch=[];for(let k=0;k<3;k++){const c=new T.Mesh(new T.ConeGeometry(5,9,3).rotateZ(-Math.PI/2).rotateY(0),_mt(0xffffff,.8,true));c.position.set(R*(.25+k*.2),1.2,0);c.scale.set(1,1,1.4);q.add(c);ch.push(c);}q.userData.c=ch;g.add(q);g.userData.q=q;},
  upd(f,g,t){const e=f.ft,w=e&&e.wp;if(!e||e.dead||!w||!w.on){g.visible=false;return;}const q=g.userData.q,H=G.hero,tm=G.t;f.x=e.x;f.y=e.y;g.position.set(e.x*U,.02,e.y*U);
   const vv=[[0,-1],[-1,0],[0,1],[1,0]][w.s];q.rotation.y=Math.atan2(-vv[1],vv[0]);
+  {const sc=e.kind==='boss'?(typeof bsc==='function'?bsc(e):1):(typeof msc==='function'?msc(e):1),k=Math.max(.6,Math.min(2,sc/(typeof CXSC==='number'?CXSC:.75)));q.scale.set(k,1,k);}
   const inside=H&&(()=>{const dx=H.x-e.x,dy=H.y-e.y;return (Math.abs(dx)>Math.abs(dy)?(dx>0?3:1):(dy>0?2:0))===w.s;})(),warn=w.t>3.6?(Math.sin(tm*30)>0?1:.4):1,fi=Math.min(1,w.age*6),pu=.85+.15*Math.sin(tm*8);
   q.userData.f.material.color.set(inside?0xe8d0ff:0x9a4aff);q.userData.f.material.userData.o=(inside?.78:.5)*pu;q.userData.d.rotation.y=tm*3;q.userData.d.position.y=16+Math.sin(tm*4)*3;q.userData.d.scale.setScalar(inside?1.4:1);
   q.userData.c.forEach((c,k)=>{c.material.userData.o=.35+.55*Math.max(0,Math.sin(tm*7-k*1.1));});
