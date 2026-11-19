@@ -3102,7 +3102,7 @@ function wallTick(dt){const h=G.hero;if(!h||!h.wall)return;const W=h.wall;if(h.s
 function startRage(h,dur){h.rage={t:0,dur,fx:0};document.documentElement.classList.add('rage');floatText(h.x,h.y-100,'FÚRIA!','#ff6a4a',13,1.5);G.hs=Math.max(G.hs||0,.08);G.shake=Math.max(G.shake||0,.35);sfx('sk_grito',.6);}
 function rageTick(dt){const h=G.hero;if(!h)return;if(!h.rage){if(document.documentElement.classList.contains('rage'))document.documentElement.classList.remove('rage');return;}const Rg=h.rage;
   if(h.state==='ko'||G.scene!=='dungeon'){h.rage=null;return;}Rg.t+=dt;Rg.fx-=dt;
-  if(Rg.fx<=0){Rg.fx=.045;for(let k=0;k<3;k++)VF.pt(h.x+rnd(-12,12),h.y-rnd(0,26),{vx:rnd(-14,14),vy:-rnd(50,110),life:.45,col:['#ff3a2a','#ff7a2a','#3a0a0a','#ffb43a'][Math.floor(Math.random()*4)],sz:2+(k===0?1:0)});if(Math.random()<.3)VF.ringw(h.x,h.y+4,22+Math.random()*10,'#ff4a3a',.22,2);}
+  if(Rg.fx<=0){Rg.fx=.035;VF.glow(h.x,h.y-14,30+4*Math.sin(Rg.t*14),'#ff2a1a',.16,5);for(let k=0;k<7;k++)VF.pt(h.x+rnd(-14,14),h.y-rnd(-2,22),{vx:rnd(-16,16),vy:-rnd(70,150),life:.55,col:['#ff2a1a','#ff6a2a','#2a0505','#ffb43a','#ff4a3a'][Math.floor(Math.random()*5)],sz:3+(k%3===0?1:0)});}
   if(Rg.t>=Rg.dur){h.rage=null;document.documentElement.classList.remove('rage');floatText(h.x,h.y-70,'Cansaço','#c8a8a8',9,1);VF.puff(h.x,h.y,8,['#5a4a4a','#3a2a2a'],{r:16,up:10,sz:1.4,a:.6});}}
 function startTufao(h,mult,o){h.tuf={t:0,dur:4.2,tk:0,r:Math.max(62,o.r||62)*1.15,m:mult*.5,fxT:0,ang:0};floatText(h.x,h.y-100,'TUFÃO!','#ffb070',12,1.4);G.hs=Math.max(G.hs||0,.06);}
 function tufTick(dt){const h=G.hero;if(!h||!h.tuf)return;if(h.state==='ko'||G.scene!=='dungeon'){h.tuf=null;return;}
