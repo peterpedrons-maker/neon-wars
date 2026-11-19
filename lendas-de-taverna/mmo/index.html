@@ -3182,23 +3182,23 @@ function cleEmp(h,S,t,mult,o){const id=S[0];
 function holyHeal(h,pct,txt){const v=Math.round(h.maxhp*pct*healM());h.hp=Math.min(h.maxhp,h.hp+v);floatText(h.x,h.y-60,'+'+v,'#8ef08a',11,1.2,{k:'heal',vy:18,pop:1});}
 function judgeFx(h,t,mult){floatText(h.x,h.y-90,'JULGAMENTO!','#ffe890',12,1.5);const tg=allFoes().filter(m=>Math.hypot(m.x-h.x,m.y-h.y)<300).sort((a,b)=>Math.hypot(a.x-h.x,a.y-h.y)-Math.hypot(b.x-h.x,b.y-h.y)).slice(0,6);
   if(!tg.length&&t&&!t.virt)tg.push(t);
-  tg.forEach((m,k)=>{VF.spr(m.x,m.y,'fx_runa',.9);setTimeout(()=>{if(!G.on||m.dead)return;const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),mult*1.5,heroCrit(h));hitMob(m,r.d,r.crit,m.x,m.y,1.6);if(!(m.kind==='boss'||m.mini))m.stun=Math.max(m.stun||0,1.2);
-    VF.spr(m.x,m.y,'fx_sagrado',1.5);VF.spr(m.x,m.y,'fx_faisca',.9,{delay:.1});G.shake=Math.max(G.shake||0,.25);sfx('sk_sagrado',.6,1+k*.05);},500+k*170);});}
-function healWave(h,mult,pct){floatText(h.x,h.y-90,'LUZ CURATIVA!','#8ef08a',12,1.5);holyHeal(h,pct,'');VF.spr(h.x,h.y,'fx_runa',1.5);
-  for(let k=0;k<3;k++)setTimeout(()=>{if(G.on&&G.hero)VF.ringw(G.hero.x,G.hero.y+4,70+k*50,'#8ef08a',.5,3);},k*160);
-  for(let k=0;k<14;k++){const a=k*.449;VF.pt(h.x+Math.cos(a)*40,h.y+Math.sin(a)*28,{vx:0,vy:-rnd(50,110),life:.9,col:k%2?'#d8ffd0':'#8ef08a',sz:3});}
+  tg.forEach((m,k)=>{const d=k*.17;G.fx.push({k:'m3',n:'sword',x:m.x,y:m.y,life:1.5,max:1.5,delay:d,sc:1.6});
+    setTimeout(()=>{if(!G.on||m.dead)return;const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),mult*1.5,heroCrit(h));hitMob(m,r.d,r.crit,m.x,m.y,1.6);if(!(m.kind==='boss'||m.mini))m.stun=Math.max(m.stun||0,1.2);
+    VF.sparks(m.x,m.y-10,14,['#fff','#ffe890'],{s0:90,s1:220});G.shake=Math.max(G.shake||0,.22);sfx('sk_sagrado',.6,1+k*.05);},(.34*1.5+d)*1000);});}
+function healWave(h,mult,pct){floatText(h.x,h.y-90,'LUZ CURATIVA!','#8ef08a',12,1.5);holyHeal(h,pct,'');G.fx.push({k:'m3',n:'heal',x:h.x,y:h.y,life:1.6,max:1.6,delay:0,sc:1.2,fol:1});
+  for(let k=0;k<16;k++){const a=k*.393;VF.pt(h.x+Math.cos(a)*50,h.y+Math.sin(a)*30,{vx:0,vy:-rnd(60,120),life:1,col:k%2?'#d8ffd0':'#8ef08a',sz:3});}
   allFoes().forEach(m=>{if(Math.hypot(m.x-h.x,(m.y-h.y)/.7)-((m.T&&m.T.rad)||0)<150){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),mult*.8,heroCrit(h));hitMob(m,r.d,r.crit,h.x,h.y,.8);}});
-  sfx('heal',.8);G.shake=Math.max(G.shake||0,.12);}
+  sfx('heal',.8);G.shake=Math.max(G.shake||0,.1);}
 function holyHammer(h,t,mult){const x=t.virt?h.x+(h.aim?h.aim.x:0)*90:t.x,y=t.virt?h.y+(h.aim?h.aim.y:-1)*90:t.y;floatText(x,y-80,'MARTELO DIVINO!','#ffe890',12,1.5);
-  VF.spr(x,y,'fx_runa',1.3);setTimeout(()=>{if(!G.on)return;VF.spr(x,y-60,'fx_sagrado',2.2);},300);
+  G.fx.push({k:'m3',n:'hammer',x,y,life:1.5,max:1.5,delay:0,sc:2.1});
   setTimeout(()=>{if(!G.on)return;allFoes().forEach(m=>{if(!m.dead&&Math.hypot(m.x-x,(m.y-y)/.7)-((m.T&&m.T.rad)||0)<100){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),mult*2,heroCrit(h));hitMob(m,r.d,r.crit,x,y,2.2);if(!(m.kind==='boss'||m.mini))m.stun=Math.max(m.stun||0,2);}});
-    VF.spr(x,y,'fx_impacto',1.6);VF.spr(x,y,'fx_pouso',1.2,{delay:.05});VF.ringw(x,y+4,110,'#ffe890',.45,4);VF.sparks(x,y-10,18,['#fff','#ffe890'],{s0:90,s1:240});G.shake=Math.max(G.shake||0,.8);G.hs=Math.max(G.hs||0,.12);sfx('sk_terra',.9,.9);},650);}
-function greatHeal(h){floatText(h.x,h.y-90,'CURA MAIOR!','#8ef08a',12,1.5);holyHeal(h,.3,'');h.cleHot={t:0,dur:6,tk:0};VF.spr(h.x,h.y,'fx_escudo',1.4);VF.spr(h.x,h.y,'fx_runa',1.4);VF.ringw(h.x,h.y+4,90,'#8ef08a',.5,4);sfx('heal',.9);}
-function startFury(h,mult){floatText(h.x,h.y-90,'FÚRIA DIVINA!','#ffd860',12,1.5);h.cleFury={t:0,dur:6,tk:0,m:mult*.6};VF.spr(h.x,h.y,'fx_runa',1.5);VF.spr(h.x,h.y,'fx_sagrado',1.1);G.hs=Math.max(G.hs||0,.06);}
+    VF.sparks(x,y-10,22,['#fff','#ffe890','#e8b840'],{s0:100,s1:260});G.shake=Math.max(G.shake||0,.8);G.hs=Math.max(G.hs||0,.12);sfx('sk_terra',.9,.9);},.4*1500);}
+function greatHeal(h){floatText(h.x,h.y-90,'CURA MAIOR!','#8ef08a',12,1.5);holyHeal(h,.3,'');h.cleHot={t:0,dur:6,tk:0};G.fx.push({k:'m3',n:'dome',x:h.x,y:h.y,life:6,max:6,delay:0,sc:1,fol:1});sfx('heal',.9);}
+function startFury(h,mult){floatText(h.x,h.y-90,'FÚRIA DIVINA!','#ffd860',12,1.5);h.cleFury={t:0,dur:6,tk:0,m:mult*.6};G.fx.push({k:'m3',n:'wings',x:h.x,y:h.y,life:6,max:6,delay:0,sc:1,fol:1});G.hs=Math.max(G.hs||0,.06);}
 function cleTick(dt){const h=G.hero;if(!h)return;if(h.state==='ko'||G.scene==='town'){h.cleHot=h.cleFury=null;return;}
-  const H=h.cleHot;if(H){H.t+=dt;H.tk-=dt;if(H.tk<=0){H.tk=1;holyHeal(h,.04,'');VF.ringw(h.x,h.y+4,60,'#8ef08a',.4,2);for(let k=0;k<6;k++)VF.pt(h.x+rnd(-20,20),h.y+rnd(-6,6),{vx:0,vy:-rnd(40,90),life:.8,col:k%2?'#d8ffd0':'#8ef08a',sz:3});}if(H.t>=H.dur)h.cleHot=null;}
+  const H=h.cleHot;if(H){H.t+=dt;H.tk-=dt;if(H.tk<=0){H.tk=1;holyHeal(h,.04,'');for(let k=0;k<6;k++)VF.pt(h.x+rnd(-20,20),h.y+rnd(-6,6),{vx:0,vy:-rnd(40,90),life:.8,col:k%2?'#d8ffd0':'#8ef08a',sz:3});}if(H.t>=H.dur)h.cleHot=null;}
   const F=h.cleFury;if(F){F.t+=dt;F.tk-=dt;if(Math.random()<.5)VF.pt(h.x+rnd(-14,14),h.y+rnd(-4,6),{vx:0,vy:-rnd(60,130),life:.6,col:Math.random()<.5?'#ffe890':'#fff',sz:3});
-    if(F.tk<=0){F.tk=.7;VF.ringw(h.x,h.y+4,110,'#ffd860',.45,4);VF.spr(h.x,h.y,'fx_sagrado',.8);allFoes().forEach(m=>{if(Math.hypot(m.x-h.x,(m.y-h.y)/.7)-((m.T&&m.T.rad)||0)<110){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),F.m,heroCrit(h));hitMob(m,r.d,r.crit,h.x,h.y,.8);}});G.shake=Math.max(G.shake||0,.1);}
+    if(F.tk<=0){F.tk=.7;G.fx.push({k:'m3',n:'wall',x:h.x,y:h.y,life:.6,max:.6,delay:0,sc:1,r:110});allFoes().forEach(m=>{if(Math.hypot(m.x-h.x,(m.y-h.y)/.7)-((m.T&&m.T.rad)||0)<110){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),F.m,heroCrit(h));hitMob(m,r.d,r.crit,h.x,h.y,.8);}});G.shake=Math.max(G.shake||0,.1);}
     if(F.t>=F.dur)h.cleFury=null;}}
 function startTufao(h,mult,o){h.tuf={t:0,dur:4.2,tk:0,r:Math.max(62,o.r||62)*1.15,m:mult*.5,fxT:0,ang:0};floatText(h.x,h.y-100,'TUFÃO!','#ffb070',12,1.4);G.hs=Math.max(G.hs||0,.06);}
 function tufTick(dt){const h=G.hero;if(!h||!h.tuf)return;if(h.state==='ko'||G.scene!=='dungeon'){h.tuf=null;return;}
@@ -3984,6 +3984,7 @@ const VF={
   emblem(x,y,id,col){G.fx.push({k:'emblem',x,y,id,col,life:.85,max:.85,delay:0});},
   star(x,y,r,col,life=.3,delay=0){G.fx.push({k:'star',x,y,r,col,life,max:life,delay,rot:Math.random()*1.57});},
   blade(x,y,R,a0,a1,col,life=.34,th=10,delay=0,sq=.72){G.fx.push({k:'blade',x,y,R,a0,a1,col,life,max:life,th,delay,sq});},
+  m3(n,x,y,life,o={}){G.fx.push(Object.assign({k:'m3',n,x,y,life,max:life,delay:0},o));},
   ringw(x,y,r1,col,life=.6,w=10,delay=0){G.fx.push({k:'ringw',x,y,r1,col,life,max:life,w,delay});},
   dome(x,y,r,col,life=1){G.fx.push({k:'dome',x,y,r,col,life,max:life,delay:0});},
   plus(x,y,col,delay=0){G.fx.push({k:'plus',x,y,vx:rnd(-6,6),vy:-rnd(22,46),life:rnd(.8,1.2),max:1,col,delay,g:0});},
