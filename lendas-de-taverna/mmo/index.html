@@ -1099,6 +1099,19 @@ html.rage #stage::after{content:'';position:absolute;inset:0;pointer-events:none
 
 :root:root #win[data-art="subclasse"] .box{background:linear-gradient(rgba(8,10,16,.3),rgba(8,10,16,.55)),url(assets/kit/win/mestre.png) center/cover no-repeat!important;image-rendering:pixelated}
 #win[data-art="mercador"] .wb,#win[data-art="subclasse"] .wb{background:none!important}
+
+/* ===== JANELAS: cabeçalho e abas combinando com a arte do livro ===== */
+:root:root #win.bk .tt{background:linear-gradient(180deg,#5b3a22,#3a2314 55%,#2a190d)!important;border:2px solid #1b0f08!important;border-radius:4px;box-shadow:inset 0 1px 0 #8a5e38,inset 0 0 0 2px rgba(0,0,0,.25),0 2px 0 rgba(0,0,0,.4)!important;height:34px;margin:-8px 2px 6px;padding:0 5px 0 12px;position:relative}
+:root:root #win.bk .tt::before{display:block!important;content:'';position:absolute;left:4px;right:34px;bottom:3px;border-bottom:1px dashed rgba(224,200,144,.35);pointer-events:none}
+:root:root #win.bk .tt span{font:700 14px var(--fd);letter-spacing:.22em;color:#f0cf7c;text-shadow:0 2px 0 #1b0f08}
+:root:root #win.bk .xb{width:26px;height:26px;border-radius:50%;border:2px solid #1b0f08!important;background:radial-gradient(circle at 35% 30%,#ffe9a8,#c98f1e 55%,#6a4a10)!important;box-shadow:0 2px 0 rgba(0,0,0,.5),inset 0 0 0 1px #fff3c4}
+:root:root #win.bk .xb::before,:root:root #win.bk .xb::after{width:11px;height:3px;margin:-1.5px 0 0 -5.5px;background:#3a1d0e}
+:root:root #win.bk .tabs{gap:2px;padding:0 6px;margin:0 0 -3px!important}
+:root:root #win.bk .tabs button{background:linear-gradient(180deg,#6a4426,#3e2614 60%,#2e1a0c)!important;border:2px solid #1b0f08!important;border-bottom:0!important;border-radius:7px 7px 0 0;box-shadow:inset 0 1px 0 #9a6a40,inset 0 0 0 2px rgba(0,0,0,.2)!important;color:#e8cf94!important;opacity:1;font:700 10.5px var(--ft)!important;height:32px!important;margin-top:2px;text-shadow:0 1px 0 #1b0f08}
+:root:root #win.bk .tabs button.on{background:linear-gradient(180deg,#e4d2a2,#d2bb86)!important;color:#5a1a0c!important;height:37px!important;margin-top:-3px;text-shadow:none;box-shadow:inset 0 1px 0 #fff6d8!important}
+.sqfl{margin-top:6px}.sqfl>small{display:block;font:700 10px var(--f);color:#9a8d6e;letter-spacing:.08em;margin-bottom:3px}.sqfl .sqf{margin:0;padding:3px 0;border-top:1px solid rgba(138,106,50,.45)}.sqfl .sqf:first-of-type{border-top:0}
+.sqh .sqb.n{display:none}
+#win.bk .sqfl>small{color:#7a5a2a}
 </style>
 </head>
 <body>
@@ -6148,6 +6161,7 @@ function stInfo(q,prog,rew,mode){const pg=qkProg(q),ok=pg[0]>=pg[1];
     h+='</div>';}
   return h;}
 
+function stFacHtml(f){const k=Object.keys(f||{});return k.length?'<div class="sqfl"><small>REPUTAÇÃO</small>'+k.map(x=>'<div class="sqf">+'+f[x]+' '+FACN[x]+'</div>').join('')+'</div>':'';}
 function stFacTxt(f){return Object.keys(f||{}).map(k=>'+'+f[k]+' '+FACN[k]).join(' · ');}
 function stFinish(q,ch,pick){const s=stAct();const r=stRewOf(q,ch);const v=qkItems(q),need=v?v.f.length+(v.c.length?1:0):0;
   if(v&&v.c.length&&(pick==null||!v.c[pick]))return false;if(need&&SAVE.inv.length+need>BAG_MAX){toast('Mochila cheia! Libere espaço para receber os itens.',2200);sfx('ui_denied');return false;}
@@ -6287,7 +6301,7 @@ function sqCss(){if(document.getElementById('sqcss'))return;const st=document.cr
 .qx{margin-top:14px}.qx>summary{font:700 12px var(--f);color:#c9b98a;cursor:pointer;padding:6px 0;border-bottom:1px solid #5a4620}`;document.head.appendChild(st);}
 function repLvl(p){let k=0;for(let i=0;i<REPL.length;i++)if(p>=REPL[i][0])k=i;const a=REPL[k],b=REPL[k+1];return {nm:a[1],pct:b?Math.round((p-a[0])/(b[0]-a[0])*100):100,nx:b?b[0]:null};}
 function sqCard(){const s=stS(),q=stCurQ(),nx=stNext(),tot=SQ.length;
-  const rew=(qq)=>rwChips(stRewOf(qq))+(stFacTxt(qq.fac)?'<div class="sqf">Reputação: '+stFacTxt(qq.fac)+'</div>':'');
+  const rew=(qq)=>rwChips(stRewOf(qq))+stFacHtml(qq.fac);
   const head=(qq,st,cls)=>`<div class="sqh"><img src="assets/kit/D19.png"><div><small>ATO 1 · MISSÃO ${qq.lv}</small><b>${qq.nm}</b></div><span class="sqb ${cls}">${st}</span></div>`;
   if(q){const pg=stProg(),ok=pg[0]>=pg[1],tn=NPCD[q.turn];
     return `<div class="sq${ok?' rd':''}">${head(q,ok?'Pronta!':'Em andamento',ok?'g':'p')}
@@ -6310,7 +6324,7 @@ function sCard(q){const pg=qkProg(q),ok=pg[0]>=pg[1],tn=NPCD[q.turn];
   return `<div class="sq${ok?' rd':''}" style="margin-bottom:8px"><div class="sqh"><img src="${UI}${q.fac?'sun-priest':'scroll-unfurled'}.png"><div><small>${qTag(q).toUpperCase()}</small><b>${q.nm}</b></div><span class="sqb ${ok?'g':'p'}">${ok?'Pronta!':'Em andamento'}</span></div>
 <div class="sqr"><img src="assets/kit/B29.png"${ok?'':' style="filter:grayscale(1)"'}><span>${ok?'Entregar a':'Entregar depois a'} <b>${tn.nm}</b> · ${NLOC[q.turn]||''}</span></div>
 <div class="sqo"><div class="ro"><span class="ck${ok?' on':''}">${ok?'✔':''}</span><span>${stObjTxt(q)}</span><em>${pg[0]}/${pg[1]}</em></div><div class="bar"><i style="width:${Math.round(pg[0]/pg[1]*100)}%"></i></div></div>
-<div class="sqw"><small>RECOMPENSAS</small>${rwChips(stRewOf(q))}${stFacTxt(q.fac)?'<div class="sqf">Reputação: '+stFacTxt(q.fac)+'</div>':''}${rwMini(q)}</div></div>`;}
+<div class="sqw"><small>RECOMPENSAS</small>${rwChips(stRewOf(q))}${stFacHtml(q.fac)}${rwMini(q)}</div></div>`;}
 function qOpen(k,def){const o=(SAVE.qsec||{})[k];return o===undefined?def:!!o;}
 function qSec(k,ic,title,sub,badge,body,def){const op=qOpen(k,def);(G.qsd=G.qsd||{})[k]=op;
   return `<div class="qsh${op?' op':''}" data-a="qs:${k}">${ic}<b>${title}</b><span class="qsb">${badge||''}</span><em>${sub||''}</em><i class="qsa">${op?'▾':'▸'}</i></div>`+(op?`<div class="qsbody">${body}</div>`:'');}
@@ -6330,7 +6344,7 @@ function mlCss(){if(document.getElementById('mlcss'))return;const st=document.cr
 function dCard(q,txt){const gv=NPCD[q.giver],ok=SAVE.lv>=q.lv;
   return `<div class="sq${ok?'':' lk'}"><div class="sqh"><img src="${UI}${q.fac?'sun-priest':'scroll-unfurled'}.png"><div><small>${qTag(q).toUpperCase()}</small><b>${q.nm}</b></div><span class="sqb ${ok?'n':'l'}">${ok?'Disponível':'Nível '+q.lv}</span></div>
 <div class="sqr"><img src="assets/kit/B28.png"><span>Fale com <b>${gv.nm}</b> · ${NLOC[q.giver]||''}</span></div>
-<div class="sqo">${(q.give&&q.give[0])||''}</div><div class="sqw"><small>RECOMPENSAS</small>${rwChips(stRewOf(q))}${stFacTxt(q.fac)?'<div class="sqf">Reputação: '+stFacTxt(q.fac)+'</div>':''}${rwMini(q)}</div></div>`;}
+<div class="sqo">${(q.give&&q.give[0])||''}</div><div class="sqw"><small>RECOMPENSAS</small>${rwChips(stRewOf(q))}${stFacHtml(q.fac)}${rwMini(q)}</div></div>`;}
 function doneCard(nm,sub,lv){return `<div class="sq"><div class="sqh"><img src="assets/kit/B29.png"><div><small>CONCLUÍDA</small><b>${nm}</b></div><span class="sqb g">✔</span></div><div class="sqo">${sub||''}${lv?'<br>Nível '+lv:''}</div></div>`;}
 function missionsBody(){sqCss();mlCss();const c=qMain(),L=SAVE.q.d.l,s=stS(),st=stAct();
   const act=secActive(),av=SEC.filter(secAvail),aS=act.filter(q=>!q.fac),aF=act.filter(q=>q.fac),vS=av.filter(q=>!q.fac),vF=av.filter(q=>q.fac);
