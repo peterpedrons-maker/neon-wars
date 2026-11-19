@@ -1015,6 +1015,8 @@ html #qtr .qr.rd span,html #qtr:not(.cl) .qr span{display:block!important}
 #sty .sli.drop{animation:styDrop .5s cubic-bezier(.3,0,.5,1) both}
 #sty #styFx{position:absolute;left:-20px;top:-40px;width:240px;height:150px;pointer-events:none;z-index:3;image-rendering:pixelated}
 #sty .rd{display:none!important}
+#sty.rdy .sbar{animation:styBurn .5s ease-in-out infinite alternate}
+@keyframes styBurn{0%{filter:drop-shadow(0 0 4px #ff8a2a) drop-shadow(0 -3px 6px #ff5a10)}100%{filter:drop-shadow(0 0 8px #ffb43a) drop-shadow(0 -5px 12px #ff7a20)}}
 #sty .sgw b{position:relative}
 #sty .sgw b::after{content:'';position:absolute;right:0;top:0;bottom:0;width:7px;background:linear-gradient(90deg,transparent,#fff6c8);animation:styShine .7s ease-in-out infinite alternate}
 @keyframes styShine{0%{opacity:.35}100%{opacity:.95}}
@@ -2828,18 +2830,18 @@ function styConsume(){STY.r=0;STY.f=0;STY.hold=0;STY.last.length=0;STY.idle=0;ST
 function styReset(){if(G.hero)G.hero.tuf=null;STY.dv=0;STY.r=0;STY.f=0;STY.hits=0;STY.idle=0;STY.endT=0;STY.hold=0;STY.last.length=0;STY.shownR=-1;STY.shownRd=-1;const e=$('sty');if(e)e.classList.remove('on','end','rdy');document.documentElement.classList.remove('emp');}
 function styDmg(){return 1+STYD[STY.r];}
 /* efeitos de HUD (PixelFx desenhado num canvas sobre o medidor): sprites das folhas de assets/fx + faíscas simples */
-const HFX={L:[],p:[],lx:167,ly:94,fireT:0};
+const HFX={L:[],p:[],lx:167,ly:88,fireT:0};
 function hudFx(n,x,y,sc,o){o=o||{};fxsLoad(n);HFX.L.push({n,x,y,sc,t:0,delay:o.delay||0,flip:o.flip,loop:o.loop,off:o.off||0,cut:o.cut});}
 function hudFxTick(dt,fire){const c=$('styFx');if(!c)return;const g=c.getContext('2d');
   if(!HFX.L.length&&!HFX.p.length&&!fire){if(HFX.dirty){g.clearRect(0,0,c.width,c.height);HFX.dirty=0;}return;}
   HFX.dirty=1;g.clearRect(0,0,c.width,c.height);g.imageSmoothingEnabled=false;g.setTransform(2,0,0,2,0,0);
-  if(fire){HFX.fireT+=dt;fxsLoad('fx_chama');const F=FXS.fx_chama;if(F&&F.m){const m=F.m,n=m.n;g.globalCompositeOperation='lighter';
-    for(let k=0;k<12;k++){const fi=Math.floor((HFX.fireT*m.fps+k*7)%n),sx=(fi%m.cols)*m.w,sy=Math.floor(fi/m.cols)*m.h,sc=.85+.15*((k*5)%3)/2,bx=24+k*11.5,by=82;
-      g.drawImage(F.im,sx,sy+28,m.w,44,bx-m.ox*sc,by-44*sc,m.w*sc,44*sc);}
+  if(fire){HFX.fireT+=dt;fxsLoad('fx_fogueira');const F=FXS.fx_fogueira;if(F&&F.m){const m=F.m,n=m.n;g.globalCompositeOperation='lighter';
+    for(let k=0;k<7;k++){const fi=Math.floor((HFX.fireT*m.fps+k*9)%n),sx=(fi%m.cols)*m.w,sy=Math.floor(fi/m.cols)*m.h,sc=1+.12*((k*5)%3)/2,bx=26+k*20.5,by=91;
+      g.drawImage(F.im,sx,sy+44,m.w,38,bx-m.ox*sc,by-38*sc,m.w*sc,38*sc);}
     g.globalCompositeOperation='source-over';}}
   for(let i=HFX.L.length-1;i>=0;i--){const e=HFX.L[i];e.t+=dt;const F=FXS[e.n];if(!F||!F.m)continue;const m=F.m,tt=e.t-e.delay;if(tt<0)continue;const fi=Math.floor(tt*m.fps);if(fi>=m.n){HFX.L.splice(i,1);continue;}
     const sx=(fi%m.cols)*m.w,sy=Math.floor(fi/m.cols)*m.h;g.save();g.translate(e.x,e.y);if(e.flip)g.scale(-1,1);g.globalCompositeOperation='lighter';g.drawImage(F.im,sx,sy,m.w,m.h,-m.ox*e.sc,-m.oy*e.sc,m.w*e.sc,m.h*e.sc);g.restore();}
-  for(let i=HFX.p.length-1;i>=0;i--){const q=HFX.p[i];q.t+=dt;if(q.t>=q.life){HFX.p.splice(i,1);continue;}q.vy+=420*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;g.globalAlpha=1-q.t/q.life;g.fillStyle=q.c;g.fillRect(Math.round(q.x),Math.round(q.y),2,2);}
+  for(let i=HFX.p.length-1;i>=0;i--){const q=HFX.p[i];q.t+=dt;if(q.t>=q.life){HFX.p.splice(i,1);continue;}q.vy+=260*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;g.globalAlpha=1-q.t/q.life;g.fillStyle=q.c;g.fillRect(Math.round(q.x),Math.round(q.y),2,2);}
   g.globalAlpha=1;}
 function styLetter(l,up){const L=$('styL'),src='assets/kit/rank/p_'+l+'.png';
   if(!up){L.src=src;return;}
@@ -2855,7 +2857,7 @@ function styTick(dt){const e=$('sty');if(!e)return;
   else if(styLive()&&STY.idle>1.15){const dec=dt*(.12+STY.r*.07);STY.f-=dec;if(STY.f<0){if(STY.r>0){STY.r--;STY.f=1+STY.f;}else{STY.f=0;if(STY.hits){STY.endT=1.5;STY.endN=STY.hits;}}}}
   if(!styLive()&&STY.endT>0){STY.endT-=dt;if(STY.endT<=0){STY.hits=0;STY.shownR=-1;}}
   const live=styLive(),show=live||STY.endT>0,rdy=styReady();
-  if(live&&!HFX.pre){HFX.pre=1;['fx_pouso','fx_faisca','fx_chama'].forEach(fxsLoad);}
+  if(live&&!HFX.pre){HFX.pre=1;['fx_pouso','fx_faisca','fx_fogueira'].forEach(fxsLoad);}
   e.classList.toggle('on',show);e.classList.toggle('end',!live&&STY.endT>0);e.classList.toggle('rdy',rdy);document.documentElement.classList.toggle('emp',rdy);
   if(!show){STY.dv=0;hudFxTick(dt,false);return;}
   const tv=live?(STY.r>=4?4+Math.max(0,Math.min(1,STY.hold/STYHOLD)):STY.r+Math.min(.999,STY.f)):0;
