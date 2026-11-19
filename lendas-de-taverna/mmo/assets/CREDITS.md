@@ -52,3 +52,9 @@ Músicas `floresta_*` compostas para o jogo e renderizadas com instrumentos reai
 
 ## Pixelify Sans (fonte da interface pixel art)
 SIL Open Font License 1.1 — Stefie Justprince, via Google Fonts (assets/fonts/PixelifySans-*.ttf).
+
+## Sons de criaturas e cavalo (adicionados na rodada "sons dos inimigos")
+- **80 CC0 Creature SFX** e **80 CC0 Creature SFX 2** (Chasersgaming, OpenGameArt, CC0) — base dos sons de lobo, aranha, barata, sapo, cobra, tronco vivo, harpia, gnoll, bandido/ladrão, mortos-vivos e cogumelo (`assets/audio/sfx/mob_<familia>_<atk|hurt|die>.ogg`, recortados e normalizados).
+- **Wolf monster sound** (OpenGameArt, CC0) — morte do lobo.
+- **Zebra whinny** — extraído de vídeo por **Peet J van Eeden** (CC BY 3.0), publicado no OpenGameArt; recortado e baixado de tom para o relincho do cavalo (`mount_neigh.ogg`). Atribuição exigida: Peet J van Eeden (CC BY).
+- O som de bufo do cavalo (`mount_snort.ogg`) vem do pacote CC0 acima.
