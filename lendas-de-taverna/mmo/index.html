@@ -1086,6 +1086,21 @@ html.rage #stage::after{content:'';position:absolute;inset:0;pointer-events:none
 #win.bk .wr.lock{opacity:.8;filter:none}#win.bk .wr .bar{background:#bfa66e!important;border-color:#7a5a28!important}
 #win.bk .dd{background:rgba(255,246,218,.35)!important;border-color:#8a6a32!important;color:#3b2a14}
 #win.bk .sqf{color:#2a5a8a!important}
+
+/* ===== ARTE PINTADA DAS JANELAS (gerada pelo dono; assets/kit/win/*.png processados por tools/mmo/win_art.py) ===== */
+.pdw{background:#0c0a10 url(assets/kit/win/nicho.png) center 70%/cover no-repeat!important;image-rendering:pixelated}
+#win.bk .box{border:0!important;border-style:solid!important;border-color:transparent!important;border-width:30px 28px 30px 28px!important;border-image:url(assets/kit/win/capa.png) 29 30 31 31 / 30px 28px 30px 28px stretch!important;image-rendering:pixelated;background:#21140b!important;box-shadow:0 14px 44px rgba(0,0,0,.8)!important;padding:0!important}
+#win.bk .box::before,#win.bk .box::after{display:none!important}
+#win.bk .tt{height:30px;margin:-6px 0 2px}#win.bk .tt span{font-size:15px}
+#win.bk .wb{background:url(assets/kit/win/pagina.png) center/100% 100% no-repeat!important;image-rendering:pixelated;box-shadow:none!important;border:0!important;padding-left:14px;padding-right:12px}
+
+:root:root #pan.tbag .box{background:#0a0807 url(assets/kit/win/mochila.png) center/100% 100% no-repeat!important;image-rendering:pixelated}
+#pan.tbag #pBody{margin:0 7% 15%;padding:0 4px;background:none!important}
+
+:root:root #win[data-art="mercador"] .box{background:linear-gradient(rgba(8,6,10,.28),rgba(8,6,10,.5)),url(assets/kit/win/loja.png) center/cover no-repeat!important;image-rendering:pixelated}
+
+:root:root #win[data-art="subclasse"] .box{background:linear-gradient(rgba(8,10,16,.3),rgba(8,10,16,.55)),url(assets/kit/win/mestre.png) center/cover no-repeat!important;image-rendering:pixelated}
+#win[data-art="mercador"] .wb,#win[data-art="subclasse"] .wb{background:none!important}
 </style>
 </head>
 <body>
@@ -5688,18 +5703,11 @@ function pdFrame(){
   if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
   const ln=$('pdln');if(ln&&(ln.width!==CW||ln.height!==CH)){ln.width=CW;ln.height=CH;}const lx=ln&&ln.getContext('2d');if(lx)lx.clearRect(0,0,CW,CH);
   const x=cv.getContext('2d');x.imageSmoothingEnabled=false;x.clearRect(0,0,W,H);
-  const col=CHCOL[SAVE.cls]||'#e8c35a',now=performance.now()/1000,cx=W/2,fy=H-12;
-  // fundo: parede de pedra escura com tijolos baixos e vinheta
-  let g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#1a1624');g.addColorStop(1,'#0c0a12');x.fillStyle=g;x.fillRect(0,0,W,H);
-  for(let r=0;r*5<H;r++){const off=(r&1)*10;for(let c=-1;c*10<W+10;c++){const bx=c*10+off/2,by=r*5,sh=((r*7+c*13)%5)/5;x.fillStyle=sh>.6?'#1d1828':'#191522';x.fillRect(bx+1,by+1,8,3);}}
-  // arco de pedra ao fundo
-  x.strokeStyle='#2c2539';x.lineWidth=3;x.beginPath();x.ellipse(cx,fy-4,W*.36,H*.82,0,Math.PI,0);x.stroke();x.strokeStyle='#3a3248';x.lineWidth=1;x.beginPath();x.ellipse(cx,fy-4,W*.36-3,H*.82-3,0,Math.PI,0);x.stroke();
-  // luz de fundo na cor da classe
-  g=x.createRadialGradient(cx,fy-H*.42,4,cx,fy-H*.42,W*.5);g.addColorStop(0,pdHex(col,.34));g.addColorStop(1,pdHex(col,0));x.fillStyle=g;x.fillRect(0,0,W,H);
-  // plataforma + círculo rúnico girando
-  x.fillStyle='#1c1826';x.beginPath();x.ellipse(cx,fy+2,W*.34,8,0,0,7);x.fill();x.fillStyle='#2e283c';x.beginPath();x.ellipse(cx,fy,W*.34,8,0,0,7);x.fill();x.strokeStyle='#463e58';x.lineWidth=1;x.beginPath();x.ellipse(cx,fy,W*.34,8,0,0,7);x.stroke();
-  x.strokeStyle=pdHex(col,.8);x.lineWidth=1;for(let k=0;k<14;k++){const a=k/14*6.283+now*.5;if(k%2)continue;x.beginPath();x.ellipse(cx,fy,W*.27,5,0,a,a+.32);x.stroke();}
-  x.fillStyle=pdHex(col,.25);x.beginPath();x.ellipse(cx,fy,W*.2,4,0,0,7);x.fill();
+  const col=CHCOL[SAVE.cls]||'#e8c35a',now=performance.now()/1000,cx=W/2,fy=Math.round(H*.88);
+  // fundo = arte pintada (CSS .pdw); aqui só o brilho rúnico animado na plataforma
+  let g=x.createRadialGradient(cx,fy-H*.3,4,cx,fy-H*.3,W*.45);g.addColorStop(0,pdHex(col,.18));g.addColorStop(1,pdHex(col,0));x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.strokeStyle=pdHex(col,.55+.25*Math.sin(now*2.2));x.lineWidth=1;for(let k=0;k<12;k++){if(k%2)continue;const a=k/12*6.283+now*.5;x.beginPath();x.ellipse(cx,fy,W*.26,5,0,a,a+.34);x.stroke();}
+  x.fillStyle=pdHex(col,.16+.08*Math.sin(now*2.2));x.beginPath();x.ellipse(cx,fy,W*.27,5.5,0,0,7);x.fill();
   // brasas subindo
   if(!PD.emb||PD.emb.length!==14)PD.emb=Array.from({length:14},(_,i)=>({x:Math.random()*W,y:Math.random()*H,s:.2+Math.random()*.4,o:Math.random()*6}));
   for(const e of PD.emb){e.y-=e.s;if(e.y<0){e.y=H;e.x=Math.random()*W;}x.fillStyle=pdHex(col,.35+.3*Math.sin(now*3+e.o));x.fillRect(Math.round(e.x+Math.sin(now+e.o)*2),Math.round(e.y),1,1);}
@@ -5716,7 +5724,7 @@ function pdFrame(){
     lx.fillStyle=it?c:'#3a3446';lx.beginPath();lx.arc(ax,ay,3,0,7);lx.fill();lx.strokeStyle='rgba(0,0,0,.6)';lx.lineWidth=1;lx.beginPath();lx.arc(ax,ay,3.5,0,7);lx.stroke();
     if(fl>0){lx.strokeStyle=pdHex(c,fl);lx.lineWidth=2;lx.beginPath();lx.arc(ax,ay,5+(1-fl)*46,0,7);lx.stroke();}}
   // vinheta
-  g=x.createRadialGradient(cx,H*.5,H*.35,cx,H*.5,W*.75);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.55)');x.fillStyle=g;x.fillRect(0,0,W,H);
+  g=x.createRadialGradient(cx,H*.5,H*.35,cx,H*.5,W*.75);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.25)');x.fillStyle=g;x.fillRect(0,0,W,H);
 }
 function hideTip(){const t=$('tip');if(t)t.classList.remove('on');}
 function showTip(){
@@ -5738,6 +5746,7 @@ function renderPan(){
   ['Eq','Bg','At'].forEach(x=>$('t'+x).style.display=hb?'none':'');['Sk','Tl'].forEach(x=>$('t'+x).style.display=hb?'':'none');
   ['Eq','Bg','Sk','At','Tl'].forEach(x=>$('t'+x).classList.toggle('on',panTab===x.toLowerCase()));
   hideTip();
+  $('pan').classList.toggle('tbag',panTab==='bg');
   const B=$('pBody'),C=CLASSES[SAVE.cls],h=G.hero;B.onclick=null;
   if(panTab==='eq'||panTab==='bg'){
     const isEq=panTab==='eq';
@@ -6430,7 +6439,7 @@ function socAct(a){const [k,v,w]=a.split(':');
   else if(k==='cs'){const t=($('cmsg').value||'').trim();if(t){(G.clog=G.clog||[]).push({c:G.cch,who:SAVE.name,t,col:G.cch==='p'?'#8ec2ff':'#e6dcc2'});sfx('ui_click',.4);}}
   else return false;
   writeSave();renderWin();return true;}
-function openWin(id){{const w=$('win');if(w)w.classList.toggle('bk',id==='diario');}if(id==='portal'){sfx('tr_open',.6);G.winOpen='portal';G.wsel=null;G.wp=null;$('toast').style.display='none';pzOpen();return;}sfx('tr_open',.6);G.winOpen=id;G.wsel=null;G.wp=null;if(id==='forja'&&!G.fslot)G.fslot=SLOTS.find(k=>SAVE.eq[k])||'arma';if(id==='mercador'&&!G.shop)restock(true);
+function openWin(id){{const w=$('win');if(w){w.classList.toggle('bk',id==='diario');w.dataset.art=id;}}if(id==='portal'){sfx('tr_open',.6);G.winOpen='portal';G.wsel=null;G.wp=null;$('toast').style.display='none';pzOpen();return;}sfx('tr_open',.6);G.winOpen=id;G.wsel=null;G.wp=null;if(id==='forja'&&!G.fslot)G.fslot=SLOTS.find(k=>SAVE.eq[k])||'arma';if(id==='mercador'&&!G.shop)restock(true);
   $('toast').style.display='none';$('win').classList.add('on');renderWin();}
 function closeWin(){G.winOpen=null;$('win').classList.remove('on');pzClose();}
 $('wx').onclick=()=>{sfx('tr_close',.6);closeWin();};
