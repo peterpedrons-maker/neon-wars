@@ -3936,10 +3936,11 @@ function updateMob(m,dt){
 /* ============ efeitos visuais das habilidades (partículas aditivas, raios, ondas, meteoros…) ============ */
 /* Efeitos em sprite (PixelFx, MIT): folhas em assets/fx/<nome>.png + .json. Desligam com ?pfx=0 */
 const FXS={};
+const GFXG=new Set(['fx_runa','fx_terremoto']); /* folhas que ficam DEITADAS no chao (perspectiva do mapa) */
 function fxsLoad(n){if(FXS[n]!==undefined)return;FXS[n]=null;const im=new Image();im.onload=()=>fetch('assets/fx/'+n+'.json').then(r=>r.json()).then(m=>{FXS[n]={im,m};}).catch(()=>{});im.src='assets/fx/'+n+'.png';}
 const PXFX=!/[?&]pfx=0/.test(location.search);
 const VF={
-  spr(x,y,n,sc=.5,o={}){if(!PXFX)return;fxsLoad(n);const d=o.delay||0,L=(FXS[n]&&FXS[n].m?FXS[n].m.n/FXS[n].m.fps:2.2);G.fx.push({k:'spr',x,y,n,sc,life:L,max:L,delay:d,add:o.add});},
+  spr(x,y,n,sc=.5,o={}){if(!PXFX)return;fxsLoad(n);const d=o.delay||0,L=(FXS[n]&&FXS[n].m?FXS[n].m.n/FXS[n].m.fps:2.2);G.fx.push({k:'spr',x,y,n,sc,life:L,max:L,delay:d,add:o.add,ground:o.ground!==undefined?o.ground:GFXG.has(n)});},
   pt(x,y,o){G.fx.push({k:'pt',x,y,vx:o.vx||0,vy:o.vy||0,g:o.g||0,life:o.life||.5,max:o.life||.5,col:o.col||'#fff',sz:o.sz||2,add:o.add!==false,ch:o.ch,delay:o.delay||0});},
   burst(x,y,n,col,o={}){for(let i=0;i<n;i++){const a=o.a0!==undefined?o.a0+Math.random()*(o.a1-o.a0):Math.random()*6.283,sp=rnd(o.s0||30,o.s1||110);VF.pt(x,y,{vx:Math.cos(a)*sp,vy:Math.sin(a)*sp*(o.flat||1)-(o.up||0),g:o.g||0,life:rnd(.3,.7)*(o.l||1),col:Array.isArray(col)?col[i%col.length]:col,sz:rnd(1.4,3)*(o.sz||1),delay:o.delay||0});}},
   glow(x,y,r1,col,life=.35,r0=2,delay=0){G.fx.push({k:'glow',x,y,r0,r1,col,life,max:life,delay});},
@@ -4556,7 +4557,7 @@ function drawFx(ctx,cx,cy){
   for(const f of G.fx){if(f.delay>0)continue;const x=f.x-cx,y=f.y-cy,t=1-f.life/f.max,al=Math.max(0,1-t);
     const add=()=>{ctx.globalCompositeOperation='lighter';},nor=()=>{ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;};
     if(f.k==='sp'){ctx.fillStyle=`rgba(255,240,150,${f.life/f.max})`;ctx.fillRect(x,y,2,1);}
-    else if(f.k==='spr'){const S=FXS[f.n];if(S&&S.m){const m=S.m,i=Math.min(m.n-1,Math.floor(t*m.n)),sx=(i%m.cols)*m.w,sy=Math.floor(i/m.cols)*m.h,sc=f.sc;ctx.imageSmoothingEnabled=false;if(f.add)add();ctx.drawImage(S.im,sx,sy,m.w,m.h,Math.round(x-m.ox*sc),Math.round(y-m.oy*sc),Math.round(m.w*sc),Math.round(m.h*sc));nor();}}
+    else if(f.k==='spr'){const S=FXS[f.n];if(S&&S.m&&!(f.ground&&window.V3&&V3.active())){const m=S.m,i=Math.min(m.n-1,Math.floor(t*m.n)),sx=(i%m.cols)*m.w,sy=Math.floor(i/m.cols)*m.h,sc=f.sc;ctx.imageSmoothingEnabled=false;if(f.add)add();ctx.drawImage(S.im,sx,sy,m.w,m.h,Math.round(x-m.ox*sc),Math.round(y-m.oy*sc),Math.round(m.w*sc),Math.round(m.h*sc));nor();}}
     else if(f.k==='trail'){ctx.fillStyle=`rgba(160,210,255,${.5*f.life/f.max})`;ctx.fillRect(x-1,y-1,3,3);}
     else if(f.k==='ring'){ctx.strokeStyle=f.col||'#fff';ctx.globalAlpha=1-t;ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(x,y,10+t*52,5+t*26,0,0,7);ctx.stroke();ctx.globalAlpha=1;}
     else if(f.k==='lv'){const r=8+t*44;ctx.strokeStyle='rgba(255,226,120,'+(1-t)+')';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y,r,r*.4,0,0,7);ctx.stroke();ctx.beginPath();ctx.ellipse(x,y-t*50,r*.7,r*.28,0,0,7);ctx.stroke();}

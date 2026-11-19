@@ -347,6 +347,28 @@ function syncDecals(){
   }
   for(const c of dg.children.slice()){let ok=false;for(const d of live)if(d._m===c){ok=true;break;}if(!ok){dg.remove(c);c.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();});}}
 }
+/* EFEITOS NO CHÃO (PixelFx deitados no terreno, na mesma perspectiva do mapa): G.fx kind 'spr' com ground:true vira um plano 3D */
+function syncGroundFx(){
+  if(!scn||typeof G==='undefined'||typeof FXS==='undefined')return;
+  let gg=scn.gfx;if(!gg){gg=scn.gfx=new T.Group();scn.grp.add(gg);}
+  const live=new Set();
+  for(const f of (G.fx||[])){
+    if(f.k!=='spr'||!f.ground)continue;const S=FXS[f.n];if(!S||!S.m)continue;
+    const dl=f.delay||0;if(dl>0)continue;const m=S.m,age=(f.max-f.life);if(age<0)continue;
+    live.add(f);let o=f._g;
+    if(!o){
+      const tx=new T.Texture(S.im);tx.encoding=T.sRGBEncoding;tx.magFilter=T.NearestFilter;tx.minFilter=T.NearestFilter;tx.generateMipmaps=false;tx.needsUpdate=true;
+      const w=m.w*f.sc*U,h=m.h*f.sc*U,geo=new T.PlaneGeometry(w,h);geo.rotateX(-Math.PI/2);
+      const mat=new T.MeshBasicMaterial({map:tx,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3,blending:f.add?T.AdditiveBlending:T.NormalBlending});
+      const mesh=new T.Mesh(geo,mat);mesh.renderOrder=3;gg.add(mesh);o=f._g={mesh,tx,mat};
+    }
+    const t=Math.min(.999,age/f.max),i=Math.min(m.n-1,Math.floor(t*m.n)),iw=S.im.width,ih=S.im.height;
+    o.tx.repeat.set(m.w/iw,m.h/ih);o.tx.offset.set(((i%m.cols)*m.w)/iw,1-(Math.floor(i/m.cols)*m.h+m.h)/ih);
+    /* o ponto de ancora do quadro cai sobre (x,y) no chao */
+    o.mesh.position.set((f.x+(m.w/2-m.ox)*f.sc)*U,.03,(f.y+(m.h/2-m.oy)*f.sc*1.0)*U);
+  }
+  for(const c of gg.children.slice()){let ok=false;for(const f of live)if(f._g&&f._g.mesh===c){ok=true;break;}if(!ok){gg.remove(c);if(c.geometry)c.geometry.dispose();if(c.material){if(c.material.map)c.material.map.dispose();c.material.dispose();}}}
+}
 const _c1=new T.Color(),_c2=new T.Color();
 function render3(){
   if(!scn||scn.key!==G.map){
@@ -415,7 +437,7 @@ function render3(){
   if(scn.vm){scn.winMats.forEach(m=>m.emissiveIntensity=.2+n*1.4);scn.vm.uniforms.t.value=t;if(scn.pt){const i=Math.floor(t*20)%48;scn.pt.offset.set((i%8)/8,1-(Math.floor(i/8)+1)/6);}scn.pl.intensity=1.4+.4*Math.sin(t*2);}
   for(const s of scn.smoke){s.t+=dt;const u=(s.t%4)/4;s.sp.position.set(s.x+u*.9,s.y+u*2.6,s.z+Math.sin(u*5+s.t)*.1);const q=.5+u*1.8;s.sp.scale.set(q,q,1);s.sp.material.opacity=Math.sin(u*Math.PI)*.35*(1-n*.4);}
   if(V3.proc&&V3.proc.stU){const q=V3.proc.stU;if(!ZONE.room&&!ZONE.dark&&h){const v=new T.Vector3(h.x*U,1.1,h.y*U).project(cam),bs=R.getDrawingBufferSize(new T.Vector2());q.hp.value.set((v.x*.5+.5)*bs.x,(v.y*.5+.5)*bs.y);q.hz.value=(v.z+1)/2;q.r.value=bs.x*.2;}else q.r.value=0;}
-  try{syncDecals();}catch(e){}
+  try{syncDecals();}catch(e){}try{syncGroundFx();}catch(e){}
   R.render(S,cam);
   overlay2D(h,list);
 }
