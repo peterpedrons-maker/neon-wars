@@ -2838,10 +2838,10 @@ function hudFxTick(dt,fire){const c=$('styFx');if(!c)return;const g=c.getContext
   if(!HFX.L.length&&!HFX.p.length&&!fire){if(HFX.dirty){g.clearRect(0,0,c.width,c.height);HFX.dirty=0;}return;}
   HFX.dirty=1;g.clearRect(0,0,c.width,c.height);g.imageSmoothingEnabled=false;g.setTransform(2,0,0,2,0,0);
   hudGeo();
-  if(fire){HFX.fireT+=dt;fxsLoad('fx_fogueira');const F=FXS.fx_fogueira;if(F&&F.m){const m=F.m,n=m.n;g.globalCompositeOperation='lighter';
-    for(let k=0;k<7;k++){const fi=Math.floor((HFX.fireT*m.fps+k*9)%n),sx=(fi%m.cols)*m.w,sy=Math.floor(fi/m.cols)*m.h,sc=1+.12*((k*5)%3)/2,bx=HFX.bx+12+k*19,by=HFX.by+15;
+  if(fire){HFX.fireT+=dt;fxsLoad('fx_fogueira');const F=FXS.fx_fogueira;if(F&&F.m){const m=F.m,n=m.n;g.globalCompositeOperation='lighter';g.globalAlpha=.78;
+    for(let k=0;k<7;k++){const fi=Math.floor((HFX.fireT*m.fps+k*9)%n),sx=(fi%m.cols)*m.w,sy=Math.floor(fi/m.cols)*m.h,sc=.78+.1*((k*5)%3)/2,bx=HFX.bx+12+k*19,by=HFX.by+14;
       g.drawImage(F.im,sx,sy+44,m.w,38,bx-m.ox*sc,by-38*sc,m.w*sc,38*sc);}
-    g.globalCompositeOperation='source-over';}}
+    g.globalAlpha=1;g.globalCompositeOperation='source-over';}}
   for(let i=HFX.L.length-1;i>=0;i--){const e=HFX.L[i];e.t+=dt;const F=FXS[e.n];if(!F||!F.m)continue;const m=F.m,tt=e.t-e.delay;if(tt<0)continue;const fi=Math.floor(tt*m.fps);if(fi>=m.n){HFX.L.splice(i,1);continue;}
     const sx=(fi%m.cols)*m.w,sy=Math.floor(fi/m.cols)*m.h;g.save();g.translate(e.x,e.y);if(e.flip)g.scale(-1,1);g.globalCompositeOperation='lighter';g.drawImage(F.im,sx,sy,m.w,m.h,-m.ox*e.sc,-m.oy*e.sc,m.w*e.sc,m.h*e.sc);g.restore();}
   for(let i=HFX.p.length-1;i>=0;i--){const q=HFX.p[i];q.t+=dt;if(q.t>=q.life){HFX.p.splice(i,1);continue;}q.vy+=260*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;g.globalAlpha=1-q.t/q.life;g.fillStyle=q.c;g.fillRect(Math.round(q.x),Math.round(q.y),2,2);}
