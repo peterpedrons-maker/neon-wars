@@ -19,7 +19,7 @@ UNITS = {
     'h_guerreiro': dict(kind='c', ap=HERO, run=1),
     'h_mago': dict(kind='c', ap=dict(cls='mage', weapon='cajado_arcano', face_style='cold'), run=1),
     'h_ladino': dict(kind='c', ap=dict(cls='rogue', weapon='adaga_veneno', weapon2='adaga_veneno', face_style='sly'), run=1),
-    'h_clerigo': dict(kind='c', ap=dict(cls='cleric', weapon='maca_ferro'), run=1),
+    'h_clerigo': dict(kind='c', ap=dict(cls='cleric', weapon='maca_ferro'), run=1, sk=dict(judge='cjudge', heal='cheal', hammer='chammer', great='cgreat', fury='cfury')),
     'h_arqueiro': dict(kind='c', ap=dict(cls='archer', weapon='arco_curto'), run=1),
     'h_bardo': dict(kind='c', ap=dict(cls='mage', weapon='alaude', hair='castanho', clothes='verde', hat='bardcap', pal=dict(U='#b02838', u='#e0485a', V='#6a1428')), run=1),
     'goblin': dict(kind='e', name='goblin'), 'goblin_x': dict(kind='e', name='goblin_x'),

@@ -3053,7 +3053,7 @@ function manualCast(){
   let t=nearestMob(h,self?h.rng*1.8:Math.max(h.rng*1.6,o.r?o.r:0)+20);
   if(!t)t=self?{x:h.x,y:h.y,kind:'mob',dead:false}:virtTarget(h,Math.max(50,h.rng*.9));
   startHeroAttack(h,t,i);
-  if(h.act&&h.act.sk===i){if(emp){h.act.emp=1;styConsume();if(C.skills[i][0]==='n_esmaga'&&hStyle()==='slash'){h.act.crush=1;h.act.dur=1.15;h.act.hit=.62;}if(C.skills[i][0]==='n_terremoto'&&hStyle()==='slash'){h.act.quake=1;h.act.dur=1.4;h.act.hit=.52;}if(C.skills[i][0]==='s_cav2'){h.act.wall=1;h.act.dur=1.3;h.act.hit=.5;}if(C.skills[i][0]==='s_bar1'){h.act.rage=1;h.act.dur=1.3;h.act.hit=.5;}{const SA={meteoros:'sky',n_gelo:'frost',n_raio:'beam',s_pir2:'burn',s_geo2:'rock',n_laminas:'exec',n_adagas:'rain',n_execucao:'exec',s_ass1:'mark',s_arm1:'trap'}[C.skills[i][0]];if(SA){h.act.sa=SA;h.act.dur=1.25;h.act.hit=.55;}}}else styAdd(4,'sk'+i);}
+  if(h.act&&h.act.sk===i){if(emp){h.act.emp=1;styConsume();if(C.skills[i][0]==='n_esmaga'&&hStyle()==='slash'){h.act.crush=1;h.act.dur=1.15;h.act.hit=.62;}if(C.skills[i][0]==='n_terremoto'&&hStyle()==='slash'){h.act.quake=1;h.act.dur=1.4;h.act.hit=.52;}if(C.skills[i][0]==='s_cav2'){h.act.wall=1;h.act.dur=1.3;h.act.hit=.5;}if(C.skills[i][0]==='s_bar1'){h.act.rage=1;h.act.dur=1.3;h.act.hit=.5;}{const SA={meteoros:'sky',n_gelo:'frost',n_raio:'beam',s_pir2:'burn',s_geo2:'rock',n_laminas:'exec',n_adagas:'rain',n_execucao:'exec',s_ass1:'mark',s_arm1:'trap',julgamento:'judge',n_cura:'heal',n_martelo:'hammer',s_cur1:'great',s_tem3:'fury'}[C.skills[i][0]];if(SA){h.act.sa=SA;h.act.dur=1.25;h.act.hit=.55;}}}else styAdd(4,'sk'+i);}
 }
 function heroPow(h){return styDmg()*h.pow*(h.chord&&h.chord.t>0?1+(h.chord.atk||0):1)*(h.buff&&h.buff.t>0?1+(h.buff.atk||0):1)*stMul(h,'dmg');}
 function heroCrit(h){if(h.furt)return 1;return Math.min(.95,h.crit+(h.buff&&h.buff.t>0?(h.buff.crit||0):0)+stSum(h,'crit'));}
@@ -3175,6 +3175,31 @@ function mageTick(dt){const B=G.beam,h=G.hero;if(!B||!h)return;if(h.hp<=0||!G.on
   VF.pt(h.x+c*B.L,h.y+s*B.L*.7-22,{vx:rnd(-40,40),vy:rnd(-40,40),life:.2,col:'#fff',sz:4});
   if(B.tk<=0){B.tk=.13;allFoes().forEach(m=>{if(m.dead)return;const px=m.x-h.x,py=m.y-h.y,pr=px*c+py*s;if(pr<0||pr>B.L)return;const dd=Math.abs(-px*s+py*c);if(dd<20+((m.T&&m.T.rad)||0)){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),B.m*.2,heroCrit(h));hitMob(m,r.d,r.crit,m.x,m.y,.3);VF.sparks(m.x,m.y-10,3,['#fff','#c8a0ff'],{s0:50,s1:130});if(B.sp<=0){VF.spr(m.x,m.y,'fx_raio',.7);}}});if(B.sp<=0)B.sp=.4;G.shake=Math.max(G.shake||0,.12);}
   if(B.t>=B.dur)G.beam=null;}
+/* CLÉRIGO EMPODERADO: Julgamento = colunas de luz caem sobre os inimigos; Cura = onda de luz que cura em área; Martelo Divino = martelo de luz gigante; Cura Maior = cura + regeneração em aura; Fúria Divina = pulsos sagrados em volta */
+function cleEmp(h,S,t,mult,o){const id=S[0];
+  if(id==='julgamento')judgeFx(h,t,mult);else if(id==='n_cura')healWave(h,mult,.35);else if(id==='n_martelo')holyHammer(h,t,mult);
+  else if(id==='s_cur1')greatHeal(h);else if(id==='s_tem3')startFury(h,mult);}
+function holyHeal(h,pct,txt){const v=Math.round(h.maxhp*pct*healM());h.hp=Math.min(h.maxhp,h.hp+v);floatText(h.x,h.y-60,'+'+v,'#8ef08a',11,1.2,{k:'heal',vy:18,pop:1});}
+function judgeFx(h,t,mult){floatText(h.x,h.y-90,'JULGAMENTO!','#ffe890',12,1.5);const tg=allFoes().filter(m=>Math.hypot(m.x-h.x,m.y-h.y)<300).sort((a,b)=>Math.hypot(a.x-h.x,a.y-h.y)-Math.hypot(b.x-h.x,b.y-h.y)).slice(0,6);
+  if(!tg.length&&t&&!t.virt)tg.push(t);
+  tg.forEach((m,k)=>{VF.spr(m.x,m.y,'fx_runa',.9);setTimeout(()=>{if(!G.on||m.dead)return;const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),mult*1.5,heroCrit(h));hitMob(m,r.d,r.crit,m.x,m.y,1.6);if(!(m.kind==='boss'||m.mini))m.stun=Math.max(m.stun||0,1.2);
+    VF.spr(m.x,m.y,'fx_sagrado',1.5);VF.spr(m.x,m.y,'fx_faisca',.9,{delay:.1});G.shake=Math.max(G.shake||0,.25);sfx('sk_sagrado',.6,1+k*.05);},500+k*170);});}
+function healWave(h,mult,pct){floatText(h.x,h.y-90,'LUZ CURATIVA!','#8ef08a',12,1.5);holyHeal(h,pct,'');VF.spr(h.x,h.y,'fx_runa',1.5);
+  for(let k=0;k<3;k++)setTimeout(()=>{if(G.on&&G.hero)VF.ringw(G.hero.x,G.hero.y+4,70+k*50,'#8ef08a',.5,3);},k*160);
+  for(let k=0;k<14;k++){const a=k*.449;VF.pt(h.x+Math.cos(a)*40,h.y+Math.sin(a)*28,{vx:0,vy:-rnd(50,110),life:.9,col:k%2?'#d8ffd0':'#8ef08a',sz:3});}
+  allFoes().forEach(m=>{if(Math.hypot(m.x-h.x,(m.y-h.y)/.7)-((m.T&&m.T.rad)||0)<150){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),mult*.8,heroCrit(h));hitMob(m,r.d,r.crit,h.x,h.y,.8);}});
+  sfx('heal',.8);G.shake=Math.max(G.shake||0,.12);}
+function holyHammer(h,t,mult){const x=t.virt?h.x+(h.aim?h.aim.x:0)*90:t.x,y=t.virt?h.y+(h.aim?h.aim.y:-1)*90:t.y;floatText(x,y-80,'MARTELO DIVINO!','#ffe890',12,1.5);
+  VF.spr(x,y,'fx_runa',1.3);setTimeout(()=>{if(!G.on)return;VF.spr(x,y-60,'fx_sagrado',2.2);},300);
+  setTimeout(()=>{if(!G.on)return;allFoes().forEach(m=>{if(!m.dead&&Math.hypot(m.x-x,(m.y-y)/.7)-((m.T&&m.T.rad)||0)<100){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),mult*2,heroCrit(h));hitMob(m,r.d,r.crit,x,y,2.2);if(!(m.kind==='boss'||m.mini))m.stun=Math.max(m.stun||0,2);}});
+    VF.spr(x,y,'fx_impacto',1.6);VF.spr(x,y,'fx_pouso',1.2,{delay:.05});VF.ringw(x,y+4,110,'#ffe890',.45,4);VF.sparks(x,y-10,18,['#fff','#ffe890'],{s0:90,s1:240});G.shake=Math.max(G.shake||0,.8);G.hs=Math.max(G.hs||0,.12);sfx('sk_terra',.9,.9);},650);}
+function greatHeal(h){floatText(h.x,h.y-90,'CURA MAIOR!','#8ef08a',12,1.5);holyHeal(h,.3,'');h.cleHot={t:0,dur:6,tk:0};VF.spr(h.x,h.y,'fx_escudo',1.4);VF.spr(h.x,h.y,'fx_runa',1.4);VF.ringw(h.x,h.y+4,90,'#8ef08a',.5,4);sfx('heal',.9);}
+function startFury(h,mult){floatText(h.x,h.y-90,'FÚRIA DIVINA!','#ffd860',12,1.5);h.cleFury={t:0,dur:6,tk:0,m:mult*.6};VF.spr(h.x,h.y,'fx_runa',1.5);VF.spr(h.x,h.y,'fx_sagrado',1.1);G.hs=Math.max(G.hs||0,.06);}
+function cleTick(dt){const h=G.hero;if(!h)return;if(h.state==='ko'||G.scene==='town'){h.cleHot=h.cleFury=null;return;}
+  const H=h.cleHot;if(H){H.t+=dt;H.tk-=dt;if(H.tk<=0){H.tk=1;holyHeal(h,.04,'');VF.ringw(h.x,h.y+4,60,'#8ef08a',.4,2);for(let k=0;k<6;k++)VF.pt(h.x+rnd(-20,20),h.y+rnd(-6,6),{vx:0,vy:-rnd(40,90),life:.8,col:k%2?'#d8ffd0':'#8ef08a',sz:3});}if(H.t>=H.dur)h.cleHot=null;}
+  const F=h.cleFury;if(F){F.t+=dt;F.tk-=dt;if(Math.random()<.5)VF.pt(h.x+rnd(-14,14),h.y+rnd(-4,6),{vx:0,vy:-rnd(60,130),life:.6,col:Math.random()<.5?'#ffe890':'#fff',sz:3});
+    if(F.tk<=0){F.tk=.7;VF.ringw(h.x,h.y+4,110,'#ffd860',.45,4);VF.spr(h.x,h.y,'fx_sagrado',.8);allFoes().forEach(m=>{if(Math.hypot(m.x-h.x,(m.y-h.y)/.7)-((m.T&&m.T.rad)||0)<110){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),F.m,heroCrit(h));hitMob(m,r.d,r.crit,h.x,h.y,.8);}});G.shake=Math.max(G.shake||0,.1);}
+    if(F.t>=F.dur)h.cleFury=null;}}
 function startTufao(h,mult,o){h.tuf={t:0,dur:4.2,tk:0,r:Math.max(62,o.r||62)*1.15,m:mult*.5,fxT:0,ang:0};floatText(h.x,h.y-100,'TUFÃO!','#ffb070',12,1.4);G.hs=Math.max(G.hs||0,.06);}
 function tufTick(dt){const h=G.hero;if(!h||!h.tuf)return;if(h.state==='ko'||G.scene!=='dungeon'){h.tuf=null;return;}
   const T=h.tuf;T.t+=dt;T.ang+=dt*11;T.tk-=dt;T.fxT-=dt;const q=T.t/T.dur,R=T.r*(.82+.18*Math.sin(T.t*5));
@@ -3210,6 +3235,7 @@ function heroHitMoment(h){
   {const [sn,sv]=skSnd(S,h.cls);sfx(sn,sv);}skFx(S,h,t,o);applySkillStatus(S,h,t,o);
   if(emp&&h.cls==='ladino')rogEmp(h,S,t,mult,o);
   if(emp&&h.cls==='mago')mageEmp(h,S,t,mult,o);
+  if(emp&&h.cls==='clerigo')cleEmp(h,S,t,mult,o);
   if(o.t==='single'){ranged?fireProj(h,t,mult,o.crit,PST[S[0]]):meleeHit(h,t,mult,o.crit);if(o.stun)t.stun=Math.max(t.stun||0,o.stun);if(emp&&S[0]==='n_esmaga')crushFx(h,t,mult,o);
     if(o.heal){const v=Math.round(h.maxhp*o.heal*ef*healM());h.hp=Math.min(h.maxhp,h.hp+v);floatText(h.x,h.y-52,'+'+v,'#8ef08a',10,1.1,{k:'heal',vy:18,pop:1});sfx('heal',.6);G.fx.push({k:'ring',x:h.x,y:h.y,life:.5,max:.5,col:'#8ef08a'});}}
   else if(o.t==='multi'){for(let k=0;k<o.n;k++)setTimeout(()=>{if(G.on&&t&&!t.dead)fireProj(h,t,mult,false,PST[S[0]]);},k*110);}
@@ -4666,7 +4692,7 @@ const near=[];for(const m of allFoes()){if(m.dead||m.dash||(m.T&&m.T.totem))cont
 /* TEMPO: velocidade global do jogo (dono: "meio lento demais para um MMO-like"). 1 = original; 1.3 = 30% mais rápido (ataques, recargas, movimento, avisos de chefe, tudo na mesma proporção). */
 const TEMPO=1.3;
 function update(dt){
-  dt*=TEMPO;G.t+=dt;todTick(dt);wxTick(dt);if(PFX.boost>0)PFX.boost=Math.max(0,PFX.boost-dt*.7);joyShow();styTick(dt);tufTick(dt);wallTick(dt);rageTick(dt);rogTick(dt);mageTick(dt);if(G.castReq>=0){G.castT=(G.castT||0)+dt;if(G.castT>1.1){G.castReq=-1;G.castT=0;}}else G.castT=0;
+  dt*=TEMPO;G.t+=dt;todTick(dt);wxTick(dt);if(PFX.boost>0)PFX.boost=Math.max(0,PFX.boost-dt*.7);joyShow();styTick(dt);tufTick(dt);wallTick(dt);rageTick(dt);rogTick(dt);mageTick(dt);cleTick(dt);if(G.castReq>=0){G.castT=(G.castT||0)+dt;if(G.castT>1.1){G.castReq=-1;G.castT=0;}}else G.castT=0;
   petTick(dt);
   if(G.scene==='town')updateTown(dt);
   else if(G.arena&&G.arena.over&&G.hero.state==='ko'){updateHero(dt);}

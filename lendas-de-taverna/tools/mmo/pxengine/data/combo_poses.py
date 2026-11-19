@@ -129,6 +129,22 @@ CLE = {
  # 4) JULGAMENTO: levita em prece com a maca erguida e a desce sobre o alvo
  'cpray': dict(angs=[120, 160, 176, 180, 180, 178, 50, 10, 30, 100], lean=[0, 0, -1, -1, -1, 0, 3, 4, 2, 0], dy=[0, 0, -1, -2, -3, -3, 0, 1, 0, 0], tn=[3, 3, 3, 3, 3, 3, 2, 2, 3, 3],
                face=FACE, legs=[0, 0, 0, 0, 0, 0, 3, 3, 1, 0], arm_over={2: (0, -4), 3: (0, -5), 4: (0, -6), 5: (0, -6)}, al_over={2: (0, -4), 3: (0, -5), 4: (0, -6), 5: (0, -6)}),
+ # --- SKILLS EMPODERADAS ---
+ # JULGAMENTO: ergue a maca com as duas maos, levita, e aponta para o ceu chamando as colunas de luz
+ 'cjudge': dict(angs=[150, 170, 180, 182, 178, 182, 178, 120, 90, 130], lean=[0, -1, -2, -3, -3, -3, -3, 1, 2, 0], dy=[0, -1, -2, -3, -4, -4, -4, -2, 0, 0], tn=[3] * 10,
+               face=FACE, legs=[0] * 10, arm_over={2: (0, -4), 3: (0, -6), 4: (0, -7), 5: (0, -7), 6: (0, -7)}, al_over={2: (0, -4), 3: (0, -6), 4: (0, -7), 5: (0, -7), 6: (0, -7)}),
+ # CURA: ajoelha, maca junto ao peito, depois abre e ergue a maca soltando a luz
+ 'cheal': dict(angs=[130, 140, 150, 150, 150, 150, 175, 182, 170, 140], lean=[0, 0, 1, 1, 1, 1, -2, -3, -1, 0], dy=[0, 1, 2, 3, 3, 3, 0, -2, -1, 0], tn=[3, 3, 2, 2, 2, 2, 3, 3, 3, 3],
+               face=FACE, legs=[0, 1, 2, 3, 3, 3, 1, 0, 0, 0]),
+ # MARTELO DIVINO: ergue a maca bem alto, tremendo, e a cai com as duas maos
+ 'chammer': dict(angs=[150, 172, 182, 186, 184, 186, 80, 15, 5, 40], lean=[0, -2, -3, -4, -4, -4, 3, 5, 4, 1], dy=[0, -1, -2, -3, -3, -3, 1, 3, 3, 1], tn=[3, 3, 3, 3, 3, 3, 2, 1, 1, 2],
+                face=FACE, legs=[0, 0, 0, 0, 0, 0, 3, 3, 3, 1], arm_over={3: (0, -5), 4: (0, -6), 5: (0, -6), 7: (3, 3), 8: (3, 3)}, al_over={3: (0, -5), 4: (0, -6), 5: (0, -6), 7: (3, 3), 8: (3, 3)}),
+ # CURA MAIOR: levita de bracos abertos, maca na vertical diante do peito, brilha e devolve a luz
+ 'cgreat': dict(angs=[140, 165, 180, 180, 180, 180, 180, 180, 170, 150], lean=[0, 0, -1, -1, -1, -1, -1, -1, 0, 0], dy=[0, -1, -2, -3, -4, -4, -4, -3, -1, 0], tn=[3] * 10,
+                face=FACE, legs=[0] * 10, arm_over={3: (2, -3), 4: (2, -4), 5: (2, -4), 6: (2, -4), 7: (2, -3)}, al_over={3: (2, -3), 4: (2, -4), 5: (2, -4), 6: (2, -4), 7: (2, -3)}),
+ # FURIA DIVINA: pernas abertas, maca ao alto, grita e treme enquanto a luz o envolve
+ 'cfury': dict(angs=[140, 170, 185, 190, 185, 190, 185, 190, 180, 150], lean=[0, -2, -3, -4, -4, -4, -4, -4, -2, 0], dy=[0, -1, -1, -2, -1, -2, -1, -2, -1, 0], tn=[3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+               face=[N, N, S_, S_, S_, S_, S_, S_, N, N], legs=[0, 2, 3, 3, 3, 3, 3, 3, 2, 0], arm_over={3: (0, -5), 4: (0, -6), 5: (0, -5), 6: (0, -6), 7: (0, -5)}, al_over={3: (0, -5), 4: (0, -6), 5: (0, -5), 6: (0, -6), 7: (0, -5)}),
 }
 # --------------------------------- BARDO (alaude) ---------------------------------
 BARD = {
@@ -163,7 +179,7 @@ for _n in ARCH: TABLE[_n] = None
 # opcoes por ataque: seq (indices dos quadros densos), poeira/clarao
 OPT = {
  'aq4': dict(seq=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 13, 14, 14, 15, 16, 17, 18], flash=12, dust=[(16, .3), (17, .6), (18, .85)], heavy=True),
- 'mchan': dict(heavy=True), 'mfrost': dict(heavy=True), 'mrock': dict(heavy=True), 'cpray': dict(heavy=True), 'bchord': dict(heavy=True),
+ 'mchan': dict(heavy=True), 'mfrost': dict(heavy=True), 'mrock': dict(heavy=True), 'cpray': dict(heavy=True), 'cjudge': dict(heavy=True), 'chammer': dict(heavy=True), 'cfury': dict(heavy=True), 'bchord': dict(heavy=True),
 }
 
 SEQ = [0, 1, 2, 3, 4, 5, 6, 7, 8, 8, 9, 10, 12, 13, 13, 14, 15, 16, 17, 18]          # indices dos 19 quadros densos; o golpe cai no 11-12
