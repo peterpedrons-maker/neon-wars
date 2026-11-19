@@ -442,6 +442,73 @@ M3.wings={build(f,g){
 /* parede cilindrica de luz que se expande (pulso da furia) */
 M3.wall={build(f,g){const c=new T.Mesh(new T.CylinderGeometry(1,1,70,36,1,true),_mt(0xffd860,0,true,_tx(2,64,(c,w,h)=>{const q=c.createLinearGradient(0,0,0,h);q.addColorStop(0,'rgba(255,255,255,0)');q.addColorStop(.5,'rgba(255,230,140,.9)');q.addColorStop(1,'rgba(255,200,60,1)');c.fillStyle=q;c.fillRect(0,0,w,h);})));c.position.y=35;g.add(c);g.userData.c=c;},
  upd(f,g,t){const c=g.userData.c,r=24+(f.r||110)*(1-Math.pow(1-t,2));c.scale.set(r,1,r);c.material.opacity=.85*(1-t);}};
+
+/* ===== MODELOS 3D: guerreiro, ladino e mago ===== */
+const _R=(a,b)=>a+Math.random()*(b-a);
+function _fd(g,a){g.traverse(m=>{if(m.isMesh){const u=m.material.userData;if(u.o===undefined)u.o=m.material.opacity;m.material.opacity=u.o*a;}});}
+function _gr(stops){return _tx(2,64,(c,w,h)=>{const q=c.createLinearGradient(0,0,0,h);stops.forEach(s=>q.addColorStop(s[0],s[1]));c.fillStyle=q;c.fillRect(0,0,w,h);});}
+function _fc(f,d){return f.c==null?d:f.c;}
+/* GIRO DE LAMINA: funil de vento com poeira orbitando */
+M3.tornado={build(f,g){g.userData.L=[];for(let i=0;i<5;i++){const tx=_tx(128,32,(c,w,h)=>{c.clearRect(0,0,w,h);for(let k=0;k<26;k++){c.fillStyle='rgba(255,255,255,'+(.25+Math.random()*.6)+')';c.fillRect(Math.random()*w,Math.random()*h,10+Math.random()*30,2);}});tx.wrapS=T.RepeatWrapping;
+  const m=new T.Mesh(new T.CylinderGeometry(30+i*11,20+i*10,30,28,1,true),_mt(i%2?0xfff0d0:0xd8e8ff,.8,true,tx));m.position.y=15+i*27;g.add(m);g.userData.L.push(m);}
+  g.userData.D=[];for(let i=0;i<8;i++){const b=new T.Mesh(new T.BoxGeometry(5,5,5),_mt(i%2?0xb8a070:0x8a7a5a,1,false));g.add(b);g.userData.D.push(b);}},
+ upd(f,g,t){const a=Math.min(1,t*12)*Math.min(1,(1-t)*10),T0=t*f.max;g.userData.L.forEach((m,i)=>{m.material.map.offset.x=-T0*(1.4+i*.3);m.rotation.y=T0*(2+i*.4);m.material.opacity=.8*a;});
+  g.userData.D.forEach((b,i)=>{const an=T0*(5+i*.5)+i*.8,h=10+((T0*40+i*37)%110),r=24+h*.32;b.position.set(Math.cos(an)*r,h,Math.sin(an)*r);b.rotation.set(an,an*1.3,0);b.material.opacity=a;});}};
+/* onda de choque: casca hemisferica que se expande */
+M3.shock={build(f,g){const c=_fc(f,0xffe0b0);const m=new T.Mesh(new T.SphereGeometry(1,28,12,0,Math.PI*2,0,Math.PI/2),_mt(c,.8,true,_gr([[0,'rgba(255,255,255,.05)'],[.6,'rgba(255,255,255,.35)'],[1,'rgba(255,255,255,1)']])));g.add(m);g.userData.m=m;},
+ upd(f,g,t){const r=(f.r||100)*(1-Math.pow(1-t,2.4));g.userData.m.scale.set(r,r*.55,r);g.userData.m.material.opacity=.85*(1-t);}};
+/* pedras que voam e caem */
+M3.rocks={build(f,g){g.userData.P=[];const c=_fc(f,0x8a7a60),n=f.n||10;for(let i=0;i<n;i++){const m=new T.Mesh(new T.DodecahedronGeometry(_R(3,7)*(f.s||1)),_mt(i%3?c:0xd8c8a8,1,false));const a=_R(0,6.28),v=_R(30,(f.r||100)*1.1);g.add(m);g.userData.P.push({m,vx:Math.cos(a)*v,vz:Math.sin(a)*v,vy:_R(130,260),sp:_R(3,9)});}},
+ upd(f,g,t){const T0=t*f.max;g.userData.P.forEach(p=>{const tt=Math.min(T0,1.1);p.m.position.set(p.vx*tt*.7,Math.max(0,p.vy*tt-420*tt*tt),p.vz*tt*.7);p.m.rotation.x=T0*p.sp;p.m.rotation.y=T0*p.sp*.7;});_fd(g,t>.75?(1-t)*4:1);}};
+/* ABALO SISMICO: aneis erguidos do terreno que se propagam */
+M3.ripple={build(f,g){g.userData.R=[];for(let i=0;i<3;i++){const m=new T.Mesh(new T.TorusGeometry(1,.09,6,52),_mt(i===1?0xfff0d0:0xc9a878,1,false));m.rotation.x=Math.PI/2;g.add(m);g.userData.R.push(m);}},
+ upd(f,g,t){g.userData.R.forEach((m,i)=>{const u=Math.min(1,Math.max(0,(t-i*.12)/.7)),r=(f.r||110)*(.25+.75*(1-Math.pow(1-u,2)));m.scale.set(r,r*.35,r);m.position.y=6*Math.sin(u*Math.PI);m.material.opacity=Math.max(0,1-u)*(u>0?1:0);});}};
+/* MURALHA: 6 escudos orbitando */
+M3.shields={build(f,g){g.userData.S=[];for(let i=0;i<6;i++){const pts=[[-11,14],[11,14],[11,0],[0,-16],[-11,0]];const w=new T.Group();w.add(new T.Mesh(_ext(pts.map(p=>[p[0]*1.18,p[1]*1.18]),3.2),_mt(0xe8c050,1,false)),new T.Mesh(_ext(pts,4),_mt(0x4a78c8,1,false)),new T.Mesh(new T.SphereGeometry(3,8,6),_mt(0xfff0b0,1,false)));w.children[2].position.z=3;g.add(w);g.userData.S.push(w);}
+  const rg=new T.Mesh(new T.RingGeometry(40,50,48),_mt(0x8ac8ff,.3,true));rg.rotation.x=-Math.PI/2;rg.position.y=1.3;g.add(rg);g.userData.rg=rg;},
+ upd(f,g,t){const T0=t*f.max,a=Math.min(1,t*14)*Math.min(1,(1-t)*14);g.userData.S.forEach((w,i)=>{const an=T0*1.9+i*Math.PI/3;w.position.set(Math.cos(an)*46,22+Math.sin(T0*3+i)*2,Math.sin(an)*46);w.rotation.y=Math.PI/2-an;w.scale.setScalar(.3+.7*a);});g.userData.rg.rotation.z=T0;_fd(g,a);}};
+/* FURIA SELVAGEM: chamas que sobem em volta do guerreiro */
+M3.flames={build(f,g){g.userData.F=[];const tx=_gr([[0,'rgba(255,255,200,0)'],[.25,'rgba(255,230,120,.9)'],[.6,'rgba(255,110,30,.95)'],[1,'rgba(160,20,10,.9)']]);for(let i=0;i<8;i++){const h=i<7?52:90,m=new T.Mesh(new T.ConeGeometry(i<7?9:15,h,8,1,true).translate(0,h/2,0),_mt(i%2?0xff7a2a:0xff3a1a,.8,true,tx));const a=i*.9,r=i<7?18:0;m.position.set(Math.cos(a)*r,0,Math.sin(a)*r);m.userData.h=h;g.add(m);g.userData.F.push(m);}},
+ upd(f,g,t){const T0=t*f.max,a=Math.min(1,t*10)*Math.min(1,(1-t)*10);g.userData.F.forEach((m,i)=>{m.scale.set(.9+.2*Math.sin(T0*17+i),(.75+.3*Math.sin(T0*13+i*2))*a,.9+.2*Math.cos(T0*15+i));m.rotation.y=T0*3+i;});}};
+/* humo escuro */
+M3.smoke={build(f,g){g.userData.P=[];const c=_fc(f,0x3a2060);for(let i=0;i<6;i++){const m=new T.Mesh(new T.SphereGeometry(_R(8,13),10,8),_mt(c,.8,false));g.add(m);g.userData.P.push({m,a:_R(0,6.28),v:_R(20,45)});}},
+ upd(f,g,t){g.userData.P.forEach(p=>{p.m.position.set(Math.cos(p.a)*p.v*t*1.6,14+t*40,Math.sin(p.a)*p.v*t*1.6);p.m.scale.setScalar(.6+t*1.6);});_fd(g,1-t);}};
+/* DANCA DAS SOMBRAS: corte em X de laminas roxas */
+M3.xslash={build(f,g){const pts=[[-46,0],[0,5],[46,0],[0,-5]],c=_fc(f,0xb890ff);g.userData.B=[0,1].map(i=>{const b=new T.Group();b.add(new T.Mesh(_ext(pts,1),_mt(c,.9,true)),new T.Mesh(_ext(pts.map(p=>[p[0]*.8,p[1]*.4]),1),_mt(0xffffff,1,true)));b.position.y=24;b.rotation.z=(i?-1:1)*.75;g.add(b);return b;});},
+ upd(f,g,t){const k=Math.min(1,t*5),a=1-Math.max(0,(t-.4)/.6);g.userData.B.forEach((b,i)=>{b.scale.set(.2+.8*(i?Math.min(1,Math.max(0,t*5-.5)):k),1,1);});_fd(g,a);}};
+/* EXECUCAO: foice em arco */
+M3.scythe={build(f,g){const sh=new T.Shape();sh.absarc(0,0,58,-1.0,1.0,false);sh.absarc(0,0,40,1.0,-1.0,true);const gm=new T.ExtrudeGeometry(sh,{depth:2,bevelEnabled:false});const m=new T.Mesh(gm,_mt(0xe8d8ff,1,true)),o=new T.Mesh(gm,_mt(0xb04080,.5,true));o.scale.set(1.18,1.18,1.2);const p=new T.Group();p.add(o,m);p.position.y=34;g.add(p);g.userData.p=p;},
+ upd(f,g,t){const p=g.userData.p,k=Math.min(1,t*3);p.rotation.z=1.6-3.2*(1-Math.pow(1-k,2));p.rotation.y=.5;_fd(g,t<.5?1:1-(t-.5)*2);}};
+/* MARCA DA MORTE: cristal rubro sobre o alvo */
+M3.mark={build(f,g){const c=new T.Mesh(new T.OctahedronGeometry(11),_mt(0xff4a7a,.9,true)),k=new T.Mesh(new T.OctahedronGeometry(6),_mt(0x300010,1,false)),rg=new T.Mesh(new T.RingGeometry(22,27,6),_mt(0xff4a7a,.7,true));rg.rotation.x=-Math.PI/2;rg.position.y=1.5;c.position.y=k.position.y=72;g.add(c,k,rg);g.userData.c=c;g.userData.k=k;g.userData.rg=rg;},
+ upd(f,g,t){const T0=t*f.max,e=f.ft;if(e&&e.dead){g.visible=false;return;}if(e){f.x=e.x;f.y=e.y;g.position.set(e.x*U,.02,e.y*U);}const y=72+Math.sin(T0*4)*4;g.userData.c.position.y=g.userData.k.position.y=y;g.userData.c.rotation.y=g.userData.k.rotation.y=T0*3;g.userData.rg.rotation.z=T0*2;const a=Math.min(1,t*20)*(t>.9?(1-t)*10:1);_fd(g,a);}};
+/* ARMADILHA DE ESPINHOS */
+M3.spikes={build(f,g){g.userData.S=[];for(let i=0;i<16;i++){const a=_R(0,6.28),d=Math.sqrt(Math.random())*(f.r||80),m=new T.Mesh(new T.ConeGeometry(_R(3,5),_R(22,36),6).translate(0,15,0),_mt(i%3?0x5a7a30:0xb8c878,1,false));m.position.set(Math.cos(a)*d,0,Math.sin(a)*d*.8);m.rotation.set(_R(-.25,.25),0,_R(-.25,.25));g.add(m);g.userData.S.push({m,d:_R(0,.15)});}},
+ upd(f,g,t){const T0=t*f.max;g.userData.S.forEach((p,i)=>{const u=Math.min(1,Math.max(0,(T0-p.d)*7)),r=t>.9?(1-t)*10:1;p.m.scale.y=Math.max(.01,u*r*(.85+.15*Math.sin(T0*9+i)));});}};
+/* CHUVA DE ADAGAS: adagas 3D que caem e ficam cravadas */
+M3.daggers={build(f,g){g.userData.D=(f.pts||[]).map(p=>{const d=new T.Group();d.add(new T.Mesh(_ext([[0,0],[3,8],[3,26],[-3,26],[-3,8]],1.4),_mt(0xdde4f4,1,false)),new T.Mesh(new T.BoxGeometry(10,2,3),_mt(0x6a7090,1,false)),new T.Mesh(new T.CylinderGeometry(1.6,1.6,10,6),_mt(0x4a3a30,1,false)));d.children[1].position.y=28;d.children[2].position.y=34;d.scale.setScalar(1.35);g.add(d);return{d,x:p[0],z:p[1]*.9,t0:p[2],rz:_R(-.3,.3)};});},
+ upd(f,g,t){const T0=t*f.max;g.userData.D.forEach(p=>{const u=(T0-p.t0)/.2;p.d.visible=u>=0;if(u<0)return;const k=Math.min(1,u);p.d.position.set(p.x,-3+(1-k)*(1-k)*300,p.z);p.d.rotation.z=p.rz;p.d.rotation.x=.12;});_fd(g,t>.8?(1-t)*5:1);}};
+/* METEORO: rocha em chamas caindo na diagonal, aviso no chao */
+M3.meteor={build(f,g){const rk=new T.Mesh(new T.IcosahedronGeometry(17,1),_mt(0x6a2a10,1,false)),gl=new T.Mesh(new T.SphereGeometry(24,12,10),_mt(0xff7a2a,.5,true)),tl=new T.Mesh(new T.ConeGeometry(20,130,12).translate(0,65,0),_mt(0xff5a1a,.55,true,_gr([[0,'rgba(255,255,160,0)'],[.4,'rgba(255,170,60,.7)'],[1,'rgba(255,80,20,1)']])));const m=new T.Group();m.add(gl,rk,tl);g.add(m);g.userData.m=m;g.userData.tl=tl;
+  const w=new T.Mesh(new T.CircleGeometry(1,40),_mt(0xff2a10,.4,true,_tx(64,64,(c,W,H)=>{const q=c.createRadialGradient(32,32,10,32,32,32);q.addColorStop(0,'rgba(255,60,30,.25)');q.addColorStop(.85,'rgba(255,60,30,.7)');q.addColorStop(1,'rgba(255,60,30,0)');c.fillStyle=q;c.fillRect(0,0,W,H);})));w.rotation.x=-Math.PI/2;w.position.y=1.2;g.add(w);g.userData.w=w;},
+ upd(f,g,t){const k=Math.min(1,t/.98),e=k*k,m=g.userData.m;m.position.set(130*(1-e),430*(1-e),0);m.children[1].rotation.x=T0r(t);const dx=130,dy=430,ang=Math.atan2(dx,dy);g.userData.tl.rotation.z=-ang;g.userData.tl.rotation.x=0;g.userData.w.scale.setScalar((f.r||120)*(.4+.6*k));g.userData.w.material.opacity=.5*(.6+.4*Math.sin(t*60));if(t>.97){m.visible=false;g.userData.w.visible=false;}}};
+function T0r(t){return t*9;}
+/* NOVA GELIDA: cristais de gelo brotam em anel + casca gelada */
+M3.icenova={build(f,g){const sh=new T.Mesh(new T.SphereGeometry(1,24,12,0,Math.PI*2,0,Math.PI/2),_mt(0xbfeaff,.6,true,_gr([[0,'rgba(255,255,255,.1)'],[1,'rgba(220,245,255,1)']])));g.add(sh);g.userData.sh=sh;g.userData.C=[];const n=14;for(let i=0;i<n;i++){const a=i*6.283/n+_R(-.1,.1),r=(f.r||170)*_R(.62,.92),h=_R(34,64),c=new T.Mesh(new T.ConeGeometry(_R(5,8),h,5).translate(0,h/2,0),_mt(i%2?0x8ad0ff:0xdff4ff,.85,false));c.position.set(Math.cos(a)*r,0,Math.sin(a)*r*.85);c.rotation.set(_R(-.2,.2),0,_R(-.2,.2));g.add(c);g.userData.C.push({c,d:i*.012});}},
+ upd(f,g,t){const r=(f.r||170)*(1-Math.pow(1-Math.min(1,t*4),3));g.userData.sh.scale.set(r,r*.5,r);g.userData.sh.material.opacity=.6*Math.max(0,1-t*3.5);g.userData.C.forEach(p=>{const u=Math.min(1,Math.max(0,(t-p.d)*6)),o=t>.85?(1-t)/.15:1;p.c.scale.setScalar(Math.max(.01,u*o));});}};
+M3.iceblock={build(f,g){const b=new T.Mesh(new T.BoxGeometry(28,38,28),_mt(0xaee4ff,.45,false)),e=new T.Mesh(new T.OctahedronGeometry(10),_mt(0xffffff,.8,true));b.position.y=19;e.position.y=44;g.add(b,e);g.userData.b=b;g.userData.e=e;},
+ upd(f,g,t){const m=f.ft;if(m){if(m.dead){g.visible=false;return;}g.position.set(m.x*U,.02,m.y*U);}g.userData.e.rotation.y=t*8;_fd(g,t<.06?t/.06:t>.9?(1-t)*10:1);}};
+/* RAIO ARCANO: feixe 3D com aneis em espiral */
+M3.beam={build(f,g){const L=f.L||300,mk=(r,c,o,add)=>new T.Mesh(new T.CylinderGeometry(r,r,L,12,1,true).rotateZ(Math.PI/2).translate(L/2,0,0),_mt(c,o,add));g.userData.o=mk(11,0xa070ff,.45,true);g.userData.i=mk(4.5,0xffffff,.95,true);g.add(g.userData.o,g.userData.i);g.userData.R=[];for(let i=0;i<6;i++){const r=new T.Mesh(new T.TorusGeometry(15,1.6,6,20).rotateY(Math.PI/2),_mt(0xd8c0ff,.8,true));g.add(r);g.userData.R.push(r);}
+  const cap=new T.Mesh(new T.SphereGeometry(15,12,10),_mt(0xe0d0ff,.7,true));g.add(cap);g.userData.cap=cap;g.userData.end=cap.clone();g.add(g.userData.end);},
+ upd(f,g,t){const H=G.hero;if(H){f.x=H.x;f.y=H.y;g.position.set(H.x*U,.02,H.y*U);}g.position.y=22*U;g.rotation.y=-(f.a||0);const L=f.L||300,p=1+.12*Math.sin(t*90),a=Math.min(1,t*14)*Math.min(1,(1-t)*14);g.userData.o.scale.set(1,p,p);g.userData.i.scale.set(1,1+.2*Math.sin(t*120),1+.2*Math.sin(t*120));g.userData.R.forEach((r,i)=>{r.position.x=((t*f.max*260+i*L/6)%L);r.rotation.x=t*f.max*8+i;});g.userData.end.position.x=L;g.userData.end.scale.setScalar(.6+.3*Math.sin(t*70));_fd(g,a);}};
+/* INFERNO: poca de lava com colunas de fogo */
+M3.lava={build(f,g){const r=f.r||84,d=new T.Mesh(new T.CircleGeometry(r,36),_mt(0xff6a1a,.75,true,_tx(128,128,(c,W,H)=>{const q=c.createRadialGradient(64,64,10,64,64,64);q.addColorStop(0,'rgba(255,230,120,.9)');q.addColorStop(.55,'rgba(255,110,30,.8)');q.addColorStop(1,'rgba(120,20,0,0)');c.fillStyle=q;c.fillRect(0,0,W,H);for(let i=0;i<40;i++){c.fillStyle='rgba(60,10,0,.35)';c.fillRect(Math.random()*W,Math.random()*H,8,2);}})));d.rotation.x=-Math.PI/2;d.position.y=1.3;g.add(d);g.userData.d=d;
+  const tx=_gr([[0,'rgba(255,255,200,0)'],[.3,'rgba(255,220,100,.9)'],[1,'rgba(255,70,20,1)']]);g.userData.F=[];for(let i=0;i<7;i++){const a=_R(0,6.28),dd=Math.sqrt(Math.random())*r*.75,h=_R(70,110),m=new T.Mesh(new T.CylinderGeometry(3,_R(8,13),h,8,1,true).translate(0,h/2,0),_mt(0xff6a1a,.8,true,tx));m.position.set(Math.cos(a)*dd,0,Math.sin(a)*dd*.8);g.add(m);g.userData.F.push(m);}},
+ upd(f,g,t){const T0=t*f.max,a=Math.min(1,t*8)*Math.min(1,(1-t)*8);g.userData.d.material.opacity=.75*a*(.85+.15*Math.sin(T0*10));g.userData.F.forEach((m,i)=>{m.scale.set(1,(.6+.45*Math.sin(T0*9+i*1.7))*a,1);m.rotation.y=T0*2+i;});}};
+/* ESTACAS DE PEDRA: pilares de rocha que sobem em ondas */
+M3.stakes={build(f,g){g.userData.S=(f.pts||[]).map((p,i)=>{const h=_R(60,92),m=new T.Mesh(new T.CylinderGeometry(3,_R(9,13),h,6).translate(0,h/2,0),_mt(i%3?0x9a8a70:0x7a6a52,1,false)),c=new T.Mesh(new T.ConeGeometry(4,10,6).translate(0,h+3,0),_mt(0xe8d8b8,1,false));const w=new T.Group();w.add(m,c);w.position.set(p[0],0,p[1]*.9);w.rotation.set(_R(-.18,.18),_R(0,3),_R(-.18,.18));g.add(w);return{w,t0:p[2],h};});},
+ upd(f,g,t){const T0=t*f.max;g.userData.S.forEach(p=>{const u=Math.min(1,Math.max(0,(T0-p.t0)*7)),o=1+.15*Math.sin(u*3.14);p.w.position.y=-p.h*(1-u)*(1-u);p.w.scale.setScalar(t>.85?Math.max(.01,(1-t)/.15):1);});}};
 function syncM3(){
   if(!scn||typeof G==='undefined')return;
   let gg=scn.m3g;if(!gg){gg=scn.m3g=new T.Group();scn.grp.add(gg);}
@@ -449,7 +516,7 @@ function syncM3(){
   for(const f of (G.fx||[])){
     if(f.k!=='m3'||f.delay>0)continue;const D=M3[f.n];if(!D)continue;live.add(f);let o=f._g;
     if(!o){const g=new T.Group();g.renderOrder=6;D.build(f,g);g.traverse(m=>{if(m.isMesh)m.renderOrder=6;});o=f._g={mesh:g};gg.add(g);}
-    const g=o.mesh,t=Math.min(.999,1-f.life/f.max),H=G.hero;
+    const g=o.mesh,t=Math.min(.999,1-f.life/f.max),H=G.hero;g.visible=true;if(f.need&&H&&!H[f.need]&&f.life>.05)f.life=.05;
     if(f.fol&&H){f.x=H.x;f.y=H.y;}
     g.position.set(f.x*U,.02,f.y*U);g.scale.setScalar(U*(f.sc||1));D.upd(f,g,t);
   }
