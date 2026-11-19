@@ -1042,6 +1042,14 @@ html #qtr .qr.rd span,html #qtr:not(.cl) .qr span{display:block!important}
 #sty.end .sk,#sty.end .sbar{filter:grayscale(.6) brightness(.8)}
 html.rage #stage::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:4;box-shadow:inset 0 0 70px 14px rgba(200,20,10,.55);animation:rageP .6s ease-in-out infinite alternate}
 @keyframes rageP{0%{opacity:.55}100%{opacity:1}}
+
+/* boneco do equipamento */
+.pdw{position:relative;height:350px;margin:0 0 8px;border:1px solid #3a3446;box-shadow:inset 0 0 0 1px #0a0810,0 0 18px rgba(0,0,0,.6)}
+.pdw canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;cursor:pointer}.pdw #pdln{pointer-events:none;image-rendering:auto}
+.pdw .pcol{position:absolute;top:8px;bottom:8px;z-index:2;display:flex;flex-direction:column;justify-content:space-between;gap:0}
+.pdw .pcol.l{left:8px}.pdw .pcol.r{right:8px}
+.pdw .pds{width:54px;height:54px;display:grid;place-items:center}
+.pdw .pdh{position:absolute;left:0;right:0;bottom:3px;text-align:center;font:500 9px var(--ft);letter-spacing:.18em;text-transform:uppercase;color:#6d6684;pointer-events:none}
 </style>
 </head>
 <body>
@@ -5624,14 +5632,55 @@ function itemCell(it,sel,onclk,cls){const R=RAR[it.rar],eqd=SAVE.eq[it.slot],min
   const df=mine||!eqd?(!mine&&!eqd?1:0):itemScore(it)-itemScore(eqd),arw=!ok||mine?'':df>.01?'<i class="pa up">▲</i>':df<-.01?'<i class="pa dn">▼</i>':'';
   const tr=it.up?`<i class="ul">+${it.up}</i>`:(!ok?'<i class="upg lk">🔒</i>':'');
   return `<div class="${cls} ${sel?'sel':''} ${(it.tier||1)>=12?'tc12':(it.tier||1)>=10?'tc10':''} ${ok?'':'nolv'}" style="--rc:${R.c};border-color:${R.c}" data-c="${onclk}"><img src="../assets/ico/${it.icon}.png"><span class="pcl"><em>PC</em>${pcShort(itemPC(it))}${arw}</span>${tr}<i class="ts">${starsT(it)}</i>${it.set?'<i class="setb">SET</i>':''}</div>`;}
+/* ===== BONECO DO EQUIPAMENTO (paper doll): nicho de pedra, plataforma rúnica, linhas ligando cada slot ao corpo, giro por toque, clarão ao equipar ===== */
+const PD={v:0,t:0,tm:null,prev:null,flash:null,emb:null};
+const PD_VIEWS=[['d',0],['s',0],['u',0],['s',1]];
+const PD_ANC={elmo:[-.1,.9],armadura:[-.2,.58],luvas:[-.55,.4],botas:[-.2,.06],arma:[.75,.84],amuleto:[.12,.7],escudo:[.35,.52],anel:[.45,.34]};   // ponto no boneco (x em larguras de corpo, y em fração da altura)
+function pdSig(){const o={};SLOTS.forEach(k=>{const it=SAVE.eq[k];o[k]=it?(it.id||it.n||it.name||'')+'|'+(it.rar||0)+'|'+(it.up||0):''});return o;}
+function pdHex(c,a){const n=parseInt(c.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;}
 function drawDoll(){
-  const cv=$('pdoll'),sh=SHEETS.hero;if(!cv||!sh)return;if(!cxStill(SAVE.cls,'d',0)&&CXHERO[SAVE.cls]){pxBuild(CXHERO[SAVE.cls],pkOf(SAVE.cls)).then(()=>drawDoll());return;}
-  const dpr=Math.min(devicePixelRatio||1,3),W=128,H=160;cv.width=W*dpr;cv.height=H*dpr;
-  const x=cv.getContext('2d');x.imageSmoothingEnabled=false;
-  const S=Math.max(2,Math.floor(H*dpr/64)),a=sh.anc[2],by=cv.height-10*dpr;
-  x.fillStyle='rgba(130,128,150,.35)';x.beginPath();x.ellipse(cv.width/2,by,46*dpr,9*dpr,0,0,7);x.fill();
-  const st=cxStill(SAVE.cls,'d',0);if(st){const k2=Math.max(1,Math.round(H*dpr/st.h*1.6));x.drawImage(st.img,st.sx,st.sy,st.w,st.h,Math.round(cv.width/2-st.ax*k2),Math.round(by-st.ay*k2),st.w*k2,st.h*k2);return;}
-  x.drawImage(sh.walk,0,2*64,64,64,Math.round(cv.width/2-a.x*S),Math.round(by-a.y*S),64*S,64*S);
+  const cv=$('pdoll');if(!cv)return;
+  if(!cxStill(SAVE.cls,'d',0)&&CXHERO[SAVE.cls]){pxBuild(CXHERO[SAVE.cls],pkOf(SAVE.cls)).then(()=>drawDoll());return;}
+  const sig=pdSig();if(PD.prev){for(const k of SLOTS)if(sig[k]!==PD.prev[k]&&sig[k]){PD.flash={k,t:performance.now()};sfx('tr_equip',.6);break;}}PD.prev=sig;
+  if(!cv._tap){cv._tap=1;cv.onclick=ev=>{ev.stopPropagation();PD.v=(PD.v+1)%PD_VIEWS.length;sfx('ui_click',.4);pdFrame();};}
+  if(PD.tm)clearInterval(PD.tm);PD.tm=setInterval(()=>{const c=$('pdoll');if(!c||!$('pan').classList.contains('on')||panTab!=='eq'){clearInterval(PD.tm);PD.tm=null;return;}PD.t++;pdFrame();},110);
+  pdFrame();
+}
+function pdFrame(){
+  const cv=$('pdoll'),box=$('pdw');if(!cv||!box)return;
+  const br=box.getBoundingClientRect(),CW=Math.max(100,Math.round(br.width)),CH=Math.max(100,Math.round(br.height)),W=Math.round(CW/3),H=Math.round(CH/3);
+  if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+  const ln=$('pdln');if(ln&&(ln.width!==CW||ln.height!==CH)){ln.width=CW;ln.height=CH;}const lx=ln&&ln.getContext('2d');if(lx)lx.clearRect(0,0,CW,CH);
+  const x=cv.getContext('2d');x.imageSmoothingEnabled=false;x.clearRect(0,0,W,H);
+  const col=CHCOL[SAVE.cls]||'#e8c35a',now=performance.now()/1000,cx=W/2,fy=H-12;
+  // fundo: parede de pedra escura com tijolos baixos e vinheta
+  let g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#1a1624');g.addColorStop(1,'#0c0a12');x.fillStyle=g;x.fillRect(0,0,W,H);
+  for(let r=0;r*5<H;r++){const off=(r&1)*10;for(let c=-1;c*10<W+10;c++){const bx=c*10+off/2,by=r*5,sh=((r*7+c*13)%5)/5;x.fillStyle=sh>.6?'#1d1828':'#191522';x.fillRect(bx+1,by+1,8,3);}}
+  // arco de pedra ao fundo
+  x.strokeStyle='#2c2539';x.lineWidth=3;x.beginPath();x.ellipse(cx,fy-4,W*.36,H*.82,0,Math.PI,0);x.stroke();x.strokeStyle='#3a3248';x.lineWidth=1;x.beginPath();x.ellipse(cx,fy-4,W*.36-3,H*.82-3,0,Math.PI,0);x.stroke();
+  // luz de fundo na cor da classe
+  g=x.createRadialGradient(cx,fy-H*.42,4,cx,fy-H*.42,W*.5);g.addColorStop(0,pdHex(col,.34));g.addColorStop(1,pdHex(col,0));x.fillStyle=g;x.fillRect(0,0,W,H);
+  // plataforma + círculo rúnico girando
+  x.fillStyle='#1c1826';x.beginPath();x.ellipse(cx,fy+2,W*.34,8,0,0,7);x.fill();x.fillStyle='#2e283c';x.beginPath();x.ellipse(cx,fy,W*.34,8,0,0,7);x.fill();x.strokeStyle='#463e58';x.lineWidth=1;x.beginPath();x.ellipse(cx,fy,W*.34,8,0,0,7);x.stroke();
+  x.strokeStyle=pdHex(col,.8);x.lineWidth=1;for(let k=0;k<14;k++){const a=k/14*6.283+now*.5;if(k%2)continue;x.beginPath();x.ellipse(cx,fy,W*.27,5,0,a,a+.32);x.stroke();}
+  x.fillStyle=pdHex(col,.25);x.beginPath();x.ellipse(cx,fy,W*.2,4,0,0,7);x.fill();
+  // brasas subindo
+  if(!PD.emb||PD.emb.length!==14)PD.emb=Array.from({length:14},(_,i)=>({x:Math.random()*W,y:Math.random()*H,s:.2+Math.random()*.4,o:Math.random()*6}));
+  for(const e of PD.emb){e.y-=e.s;if(e.y<0){e.y=H;e.x=Math.random()*W;}x.fillStyle=pdHex(col,.35+.3*Math.sin(now*3+e.o));x.fillRect(Math.round(e.x+Math.sin(now+e.o)*2),Math.round(e.y),1,1);}
+  // boneco (1 px do atlas = 1 px nativo)
+  const vw=PD_VIEWS[PD.v],st=cxStill(SAVE.cls,vw[0],PD.t),SC=1;let hd=H*.5,hw=26;
+  if(st){x.save();x.translate(Math.round(cx),Math.round(fy));if(vw[1])x.scale(-1,1);x.drawImage(st.img,st.sx,st.sy,st.w,st.h,-st.ax*SC,-st.ay*SC,st.w*SC,st.h*SC);x.restore();
+    const bk=SAVE.cls+vw[0];if(!PD.bb)PD.bb={};if(!PD.bb[bk]){const t=document.createElement('canvas');t.width=st.w;t.height=st.h;const tc=t.getContext('2d');tc.drawImage(st.img,st.sx,st.sy,st.w,st.h,0,0,st.w,st.h);const d=tc.getImageData(0,0,st.w,st.h).data;let y0=st.h,y1=0,x0=st.w,x1=0;for(let yy=0;yy<st.h;yy++)for(let xx=0;xx<st.w;xx++)if(d[(yy*st.w+xx)*4+3]>40){if(yy<y0)y0=yy;if(yy>y1)y1=yy;if(xx<x0)x0=xx;if(xx>x1)x1=xx;}PD.bb[bk]={hv:(st.ay-y0),hw:(x1-x0)/2};}
+    hd=PD.bb[bk].hv*SC;hw=PD.bb[bk].hw*SC;}
+  // linhas de cada slot até o ponto do corpo (canvas sobreposto em px de CSS: traço fino e nítido)
+  const bb=box.getBoundingClientRect(),F=3,ccx=cx*F,cfy=fy*F,chd=hd*F,cwd=hw*F*.5;
+  if(lx)for(const k of SLOTS){const el=box.querySelector('[data-k="'+k+'"]');if(!el)continue;const r=el.getBoundingClientRect(),left=(r.left+r.width/2-bb.left)<CW/2,sx=(left?r.right:r.left)-bb.left,sy=r.top+r.height/2-bb.top,A=PD_ANC[k],ax=ccx+A[0]*cwd*(PD_VIEWS[PD.v][1]?-1:1)*2,ay=cfy-A[1]*chd;
+    const it=SAVE.eq[k],c=it?RAR[it.rar||0].c:'#3a3446',fl=PD.flash&&PD.flash.k===k?Math.max(0,1-(performance.now()-PD.flash.t)/900):0;
+    lx.strokeStyle=pdHex(c,it?.6+.4*fl:.5);lx.lineWidth=1+fl*1.5;lx.beginPath();lx.moveTo(sx,sy);lx.lineTo(sx+(ax-sx)*.3,sy);lx.lineTo(ax,ay);lx.stroke();
+    lx.fillStyle=it?c:'#3a3446';lx.beginPath();lx.arc(ax,ay,3,0,7);lx.fill();lx.strokeStyle='rgba(0,0,0,.6)';lx.lineWidth=1;lx.beginPath();lx.arc(ax,ay,3.5,0,7);lx.stroke();
+    if(fl>0){lx.strokeStyle=pdHex(c,fl);lx.lineWidth=2;lx.beginPath();lx.arc(ax,ay,5+(1-fl)*46,0,7);lx.stroke();}}
+  // vinheta
+  g=x.createRadialGradient(cx,H*.5,H*.35,cx,H*.5,W*.75);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.55)');x.fillStyle=g;x.fillRect(0,0,W,H);
 }
 function hideTip(){const t=$('tip');if(t)t.classList.remove('on');}
 function showTip(){
@@ -5656,9 +5705,9 @@ function renderPan(){
   const B=$('pBody'),C=CLASSES[SAVE.cls],h=G.hero;B.onclick=null;
   if(panTab==='eq'||panTab==='bg'){
     const isEq=panTab==='eq';
-    const sl=k=>{const it=SAVE.eq[k],sel=panSel&&panSel.src==='eq'&&panSel.k===k;return it?itemCell(it,sel,'eq:'+k,'slot'):`<div class="slot" data-c="none"><div class="ph">${SLOT_NAME[k]}</div></div>`;};
+    const sl=k=>{const it=SAVE.eq[k],sel=panSel&&panSel.src==='eq'&&panSel.k===k;return `<div class="pds" data-k="${k}">`+(it?itemCell(it,sel,'eq:'+k,'slot'):`<div class="slot" data-c="none"><div class="ph">${SLOT_NAME[k]}</div></div>`)+'</div>';};
     let html='';
-    if(isEq){html+=`<div class="hxid"><b>${SAVE.name||C.nome}</b><span>${C.nome}${subOf()?' · '+subOf().nome:''} · Nível ${SAVE.lv}</span></div>`;html+=`<div class="pd"><div class="pcol">${['elmo','armadura','luvas','botas'].map(sl).join('')}</div><div class="pc"><canvas id="pdoll"></canvas></div><div class="pcol">${['arma','escudo','amuleto','anel'].map(sl).join('')}</div></div>`;
+    if(isEq){html+=`<div class="hxid"><b>${SAVE.name||C.nome}</b><span>${C.nome}${subOf()?' · '+subOf().nome:''} · Nível ${SAVE.lv}</span></div>`;html+=`<div class="pdw" id="pdw"><canvas id="pdoll"></canvas><canvas id="pdln"></canvas><div class="pcol l">${['elmo','armadura','luvas','botas'].map(sl).join('')}</div><div class="pcol r">${['arma','amuleto','escudo','anel'].map(sl).join('')}</div><div class="pdh">toque no boneco para girar</div></div>`;
     html+=`<div class="pcw"><span>PODER DE COMBATE</span><b>${pcFmt(heroPC())}</b></div>`;
     html+=`<div class="stg stl"><div class="s-hp"><span>Vida</span><b>${h.maxhp}</b></div><div class="s-atk"><span>Ataque</span><b>${Math.round(h.pow)}</b></div><div class="s-def"><span>Defesa</span><b>${Math.round(h.def)}</b></div><div class="s-crit"><span>Crítico</span><b>${Math.round(h.crit*100)}%</b></div><div class="s-kb"><span>Empurrão</span><b>${Math.round(knockChance()*100)}%</b></div><div class="s-spd"><span>Velocidade</span><b>${Math.round(h.speed)}</b></div></div>`;
     }
