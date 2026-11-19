@@ -2879,6 +2879,24 @@ function styTick(dt){const e=$('sty');if(!e)return;
   $('styG').style.width=(fr*100).toFixed(2)+'%';
   hudFxTick(dt,rdy&&dr>=4);
   const n=live?STY.hits:(STY.endN||STY.hits);if(n!==STY.shownN){STY.shownN=n;$('styN').textContent=n;}}
+/* ---- LADINO: PONTOS FRACOS. Cada inimigo próximo mostra um ponto fraco em 1 dos 4 lados (0 cima,1 esq,2 baixo,3 dir, relativos ao inimigo).
+   Acertar desse lado = dano extra + muita barra de rank; o ponto some e volta em OUTRO lado depois de um tempo. Se ninguém acertar, troca de lado sozinho. ---- */
+const WPV=[[0,-1],[-1,0],[0,1],[1,0]];
+function wpNew(w){let n;do{n=(Math.random()*4)|0;}while(n===w.s);w.s=n;w.t=0;w.on=1;w.age=0;}
+function wpClear(){for(const m of G.mobs.concat(G.boss?[G.boss]:[])){if(m&&m.wp){if(m.wp.fx)m.wp.fx.life=.05;m.wp=null;}}}
+function wpHit(h,t,fin){const w=t.wp;if(!w||!w.on)return;w.on=0;w.cd=2;
+  const r=dmgCalc(heroPow(h)*subMult(h,t),mdefv(t),.4,heroCrit(h));hitMob(t,r.d,r.crit,h.x,h.y,.6);
+  const v=WPV[w.s],px=t.x+v[0]*14,py=t.y-16+v[1]*10;
+  VF.sparks(px,py,14,['#fff','#c0a0ff','#8a5ae0'],{s0:80,s1:220});VF.glow(px,py,26,'#c0a0ff',.3,4);G.hs=Math.max(G.hs||0,.04);
+  styCls(fin?2:3.4,'PONTO FRACO!');sfx('hit_1',.35,1.5);}
+function wpTick(dt){const h=G.hero;
+  if(!h||h.cls!=='ladino'||h.state==='ko'||!G.on||G.scene!=='dungeon'){if(G.wpAny){wpClear();G.wpAny=0;}return;}
+  const foes=allFoes().filter(m=>Math.hypot(m.x-h.x,m.y-h.y)<300).sort((a,b)=>Math.hypot(a.x-h.x,a.y-h.y)-Math.hypot(b.x-h.x,b.y-h.y)).slice(0,4),set=new Set(foes);
+  for(const m of allFoes()){if(!set.has(m)&&m.wp){if(m.wp.fx)m.wp.fx.life=.05;m.wp=null;}}
+  for(const m of foes){let w=m.wp;if(!w){w=m.wp={s:(Math.random()*4)|0,t:0,on:1,cd:0,age:0};}G.wpAny=1;w.age+=dt;
+    if(!w.on){w.cd-=dt;if(w.cd<=0)wpNew(w);}
+    else{w.t+=dt;if(w.t>4.5){w.on=0;w.cd=.45;}}
+    if(!w.fx||w.fx.life<.5)w.fx=VF.m3('weakpt',m.x,m.y,12,{ft:m});else w.fx.life=12;}}
 function cmbStart(h,act,t){
   const cf=cmbCfg(h);if(!cf||!act)return;
   const len=cmbLen(h),T=G.t;
@@ -2954,7 +2972,8 @@ const CMBH={
   cmbMuzzle(h,t,v==='2'?'#d8ff9a':'#c8e8a0','#fff',v==='2'?10:7);
   if(v==='3'){for(const d of [-.28,.28]){const vt={virt:1,ax:Math.cos(A+d),ay:Math.sin(A+d)};fireProj(h,vt,.55,false);}cmbMuzzle(h,t,'#ffe08a','#fff',14);}},
  ladino:(h,t,a)=>{const P=cmbPos(h,t),v=a.v||'',A=cmbDir(h,t);rscAdd(h,a.fin?2:1);
-  if(a.fin)styCls(3,'EMBOSCADA');else if(!t.virt&&typeof t.row==='number'){const F=[[0,-1],[-1,0],[0,1],[1,0]][t.row&3];if(F[0]*(h.x-t.x)+F[1]*(h.y-t.y)<-4)styCls(1.8,'PELAS COSTAS');}
+  if(a.fin)styCls(3,'EMBOSCADA');
+  if(!t.virt&&t.wp&&t.wp.on&&(a.fin||dir4(h.x-t.x,h.y-t.y)===t.wp.s))wpHit(h,t,a.fin);
   if(v===''){cmbArc(h,t,'#c0a0ff',30,9,-.4);cmbArc(h,t,'#fff',24,3,-.25);VF.puff(h.x,h.y,3,['#3a2a5a'],{r:8,up:8});VF.sparks(P.x,P.y,7,['#e8d8ff','#c0a0ff'],{s0:70,s1:190});}
   else if(v==='2'){cmbArc(h,t,'#a888e8',32,9,.55);VF.sparks(P.x,P.y,8,['#e8d8ff','#a888e8'],{s0:60,s1:180,a0:-2.4,a1:-.7});popFoe(t,12);G.hs=Math.max(G.hs||0,.03);}
   else if(v==='3'){for(const dl of [0,.09])setTimeout(()=>{if(!G.on)return;VF.bolt(h.x+Math.cos(A)*10,h.y-20,P.x,P.y,'#e8d8ff',.14);VF.sparks(P.x,P.y,6,['#fff','#c0a0ff'],{s0:80,s1:200});VF.glow(P.x,P.y,14,'#fff',.15,2);},dl*1000);G.hs=Math.max(G.hs||0,.04);G.shake=Math.max(G.shake||0,.1);}
@@ -4716,7 +4735,7 @@ const near=[];for(const m of allFoes()){if(m.dead||m.dash||(m.T&&m.T.totem))cont
 /* TEMPO: velocidade global do jogo (dono: "meio lento demais para um MMO-like"). 1 = original; 1.3 = 30% mais rápido (ataques, recargas, movimento, avisos de chefe, tudo na mesma proporção). */
 const TEMPO=1.3;
 function update(dt){
-  dt*=TEMPO;G.t+=dt;todTick(dt);wxTick(dt);if(PFX.boost>0)PFX.boost=Math.max(0,PFX.boost-dt*.7);joyShow();styTick(dt);tufTick(dt);wallTick(dt);rageTick(dt);rogTick(dt);mageTick(dt);cleTick(dt);if(G.castReq>=0){G.castT=(G.castT||0)+dt;if(G.castT>1.1){G.castReq=-1;G.castT=0;}}else G.castT=0;
+  dt*=TEMPO;G.t+=dt;todTick(dt);wxTick(dt);if(PFX.boost>0)PFX.boost=Math.max(0,PFX.boost-dt*.7);joyShow();styTick(dt);wpTick(dt);tufTick(dt);wallTick(dt);rageTick(dt);rogTick(dt);mageTick(dt);cleTick(dt);if(G.castReq>=0){G.castT=(G.castT||0)+dt;if(G.castT>1.1){G.castReq=-1;G.castT=0;}}else G.castT=0;
   petTick(dt);
   if(G.scene==='town')updateTown(dt);
   else if(G.arena&&G.arena.over&&G.hero.state==='ko'){updateHero(dt);}
