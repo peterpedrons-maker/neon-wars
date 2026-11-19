@@ -102,6 +102,21 @@ MAGE = {
  # 4) ARCANO: levita, ergue o cajado com as duas maos e o crava apontando para o alvo
  'mchan': dict(angs=[160, 172, 180, 182, 182, 160, 70, 50, 80, 130], lean=[0, 0, -1, -1, -1, 1, 3, 3, 1, 0], dy=[0, 0, -1, -2, -3, -3, -1, 0, 0, 0], tn=[3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
                face=FACE, legs=[0, 0, 0, 0, 0, 0, 2, 2, 1, 0], arm_over={2: (0, -4), 3: (0, -5), 4: (0, -6), 5: (0, -5), 6: (3, 0)}, al_over={2: (0, -4), 3: (0, -5), 4: (0, -6), 5: (0, -5), 6: (2, 1)}),
+ # 5) METEOROS (skill): levita e ergue o cajado com as duas maos, tremendo, apontando para o ceu
+ 'msky': dict(angs=[150, 165, 180, 182, 178, 182, 178, 182, 170, 140], lean=[0, -1, -2, -3, -3, -3, -3, -3, -1, 0], dy=[0, -1, -2, -3, -4, -4, -4, -4, -2, 0], tn=[3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+              face=FACE, legs=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], arm_over={2: (0, -4), 3: (0, -6), 4: (0, -7), 5: (0, -7), 6: (0, -7), 7: (0, -6)}, al_over={2: (0, -4), 3: (0, -6), 4: (0, -7), 5: (0, -7), 6: (0, -7), 7: (0, -6)}),
+ # 6) NOVA GELIDA (skill): agacha e bate o cajado no chao a frente; o gelo explode em volta
+ 'mfrost': dict(angs=[150, 175, 180, 150, 90, 20, 5, 0, 10, 60], lean=[0, -1, -2, 0, 3, 4, 4, 4, 2, 0], dy=[0, 0, -1, 0, 1, 3, 3, 3, 2, 0], tn=[3, 3, 3, 3, 2, 1, 1, 1, 2, 3],
+               face=FACE, legs=[0, 0, 1, 1, 2, 3, 3, 3, 2, 0], arm_over={5: (3, 3), 6: (3, 3), 7: (3, 3)}, al_over={5: (3, 3), 6: (3, 3), 7: (3, 3)}),
+ # 7) RAIO ARCANO (skill): firma as pernas e aponta o cajado reto para o alvo, segurando o raio
+ 'mbeam': dict(angs=[150, 120, 95, 90, 90, 90, 90, 90, 100, 130], lean=[0, 1, 2, 3, 3, 3, 3, 3, 1, 0], dy=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], tn=[3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+              face=FACE, legs=[0, 1, 2, 3, 3, 3, 3, 3, 2, 0], arm_over={3: (6, -2), 4: (7, -2), 5: (7, -2), 6: (7, -2), 7: (7, -2)}, al_over={3: (6, -2), 4: (7, -2), 5: (7, -2), 6: (7, -2), 7: (7, -2)}),
+ # 8) INFERNO (skill do piromante): gira o cajado em arco baixo e aponta para o alvo, incendiando-o
+ 'mburn': dict(angs=[150, 120, 60, 20, 10, 40, 80, 95, 100, 130], lean=[0, 1, 2, 3, 3, 2, 2, 3, 1, 0], dy=[0, 0, 1, 1, 1, 0, 0, 0, 0, 0], tn=[3, 3, 2, 2, 2, 3, 3, 3, 3, 3],
+              face=FACE, legs=[0, 1, 2, 3, 3, 3, 2, 2, 1, 0], arm_over={6: (6, -2), 7: (6, -2)}, al_over={6: (6, -2), 7: (6, -2)}),
+ # 9) ESTACAS DE PEDRA (skill do geomante): bate o cajado duas vezes no chao
+ 'mrock': dict(angs=[150, 180, 150, 40, 5, 150, 40, 5, 20, 80], lean=[0, -2, -1, 3, 4, -1, 3, 4, 2, 0], dy=[0, -1, 0, 2, 3, 0, 2, 3, 2, 0], tn=[3, 3, 3, 2, 1, 3, 2, 1, 2, 3],
+              face=FACE, legs=[0, 1, 1, 3, 3, 1, 3, 3, 2, 0], arm_over={4: (3, 3), 7: (3, 3)}, al_over={4: (3, 3), 7: (3, 3)}),
 }
 # --------------------------------- CLERIGO (maca) ---------------------------------
 CLE = {
@@ -148,7 +163,7 @@ for _n in ARCH: TABLE[_n] = None
 # opcoes por ataque: seq (indices dos quadros densos), poeira/clarao
 OPT = {
  'aq4': dict(seq=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 13, 14, 14, 15, 16, 17, 18], flash=12, dust=[(16, .3), (17, .6), (18, .85)], heavy=True),
- 'mchan': dict(heavy=True), 'cpray': dict(heavy=True), 'bchord': dict(heavy=True),
+ 'mchan': dict(heavy=True), 'mfrost': dict(heavy=True), 'mrock': dict(heavy=True), 'cpray': dict(heavy=True), 'bchord': dict(heavy=True),
 }
 
 SEQ = [0, 1, 2, 3, 4, 5, 6, 7, 8, 8, 9, 10, 12, 13, 13, 14, 15, 16, 17, 18]          # indices dos 19 quadros densos; o golpe cai no 11-12

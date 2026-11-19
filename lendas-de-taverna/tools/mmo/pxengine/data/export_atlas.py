@@ -113,6 +113,7 @@ COMBO = {
 for _k in list(UNITS):
     _b = '_'.join(_k.split('_')[:2])
     if _k.startswith('h_') and _b in COMBO: UNITS[_k]['combo'] = COMBO[_b]
+UNITS['h_mago'].update(sk=dict(sky='msky', frost='mfrost', beam='mbeam', burn='mburn', rock='mrock'))
 UNITS['h_ladino'].update(spin=True, sk=dict(rain='rrain', exec='rexec', mark='rmark', trap='rtrap'))
 UNITS['h_guerreiro']['twirl'] = True      # Tufao (Giro de Lamina empoderado): anim 'spin'
 GCAST = {'grunk': 'slam', 'gorgash': 'slam', 'presa': 'slam', 'morvath': 'cast', 'ratking': 'cast', 'vampiro': 'cast', 'skrix': 'cast'}
