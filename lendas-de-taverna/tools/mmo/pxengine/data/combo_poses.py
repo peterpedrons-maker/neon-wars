@@ -153,3 +153,34 @@ def attack(view, ap, name):
             if k == 14: im = N2.dust(im, .8, cx=W // 2 + 6, n=5)
         out.append(im)
     return out
+
+
+# ---------------------------------------------------------------- TUFAO (Giro de Lamina empoderado): loop de giro com a espada nas DUAS maos
+TW_FACE = ['down', 'down', 'right', 'right', 'up', 'up', 'left', 'left']
+TW_ANG = {'down': (65, 110), 'right': (80, 100), 'up': (90, 90), 'left': (80, 100)}
+
+def _twirl_pose(view, k, i):
+    """k = 0..7 (passo da volta), i = quadro (0..15) para alternar pernas/quique. Espada esticada na horizontal, as duas maos no cabo."""
+    sub = k % 2; a = TW_ANG[TW_FACE[k]][sub]
+    hx, hy = _hand(a, 3)
+    hop = 1 if (i % 2 == 0) else 0
+    p = dict(tn=2 if hop else 3, dy=-1 if hop else 0, face='shout', hdx=0, ar=(hx, hy), al=(hx - 1, hy), nomitt=False)
+    p['bl'], p['br'] = ((-2, 0), (2, 0)) if hop else ((-1, 0), (1, 0))
+    if view == 'right':
+        p['sw'] = dict(ang=a, len=13); p['hdx'] = 1; p['bdx'] = 1; p['ar'] = (hx + 1, hy)
+    else:
+        p['sw'] = dict(ang=a, len=13, side='r'); p['hdy'] = 0
+    return p
+
+def twirl(ap, n=16):
+    """n quadros do giro: o heroi roda frente -> lado -> costas -> lado (espelhado), duas voltas; independe da vista pedida."""
+    from PIL import ImageOps
+    cls = ap.get('cls', 'warrior'); out = []
+    for i in range(n):
+        k = i % 8; fv = TW_FACE[k]; view = 'right' if fv == 'left' else fv
+        p = _twirl_pose(view, k, i)
+        im = C.anim(view, 'attack', cls, [p], ap, dense=1)[0][0].convert('RGBA')
+        if fv == 'left' or (fv == 'up' and k % 2 == 1): im = ImageOps.mirror(im)
+        if i % 4 == 1: im = N2.dust(im, .35, cx=W // 2, n=4)
+        out.append(im)
+    return out
