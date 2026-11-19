@@ -77,6 +77,18 @@ ROG = {
  # 4) FINALIZADOR EM X: salta e cruza as duas adagas
  'rx': dict(angs=[140, 165, 180, 185, 185, 120, 55, 45, 60, 100], lean=[0, -1, -2, -2, -2, 2, 4, 4, 2, 0], dy=[0, 0, -1, -2, -3, -2, 1, 1, 0, 0], tn=[3, 3, 3, 3, 3, 3, 2, 2, 3, 3],
             face=FACE, legs=[0, 0, 0, 0, 0, 1, 3, 3, 1, 0], sw2=[100, 140, 170, 185, 190, 250, 305, 315, 300, 200]),
+ # 5) CHUVA DE ADAGAS (skill): as duas maos sobem e arremessam as adagas para o alto
+ 'rrain': dict(angs=[110, 140, 170, 185, 185, 185, 175, 150, 120, 110], lean=[0, -1, -2, -3, -3, -3, -2, -1, 0, 0], dy=[0, 0, -1, -2, -2, -2, -1, 0, 0, 0], tn=[3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+               face=FACE, legs=[0, 1, 2, 2, 2, 2, 2, 1, 0, 0], sw2=[110, 135, 165, 185, 185, 185, 170, 145, 120, 110], arm_over={3: (-2, -6), 4: (-2, -7), 5: (-2, -7), 6: (-2, -5)}),
+ # 6) EXECUCAO (skill): agacha fundo no escuro com as laminas baixas e some num bote para frente
+ 'rexec': dict(angs=[110, 80, 45, 20, 20, 20, 100, 90, 95, 110], lean=[0, 2, 3, 4, 4, 4, -1, -2, -1, 0], dy=[0, 1, 2, 3, 3, 3, 0, -1, 0, 0], tn=[3, 2, 2, 1, 1, 1, 3, 3, 3, 3],
+               face=FACE, legs=[0, 1, 2, 3, 3, 3, 2, 1, 0, 0], sw2=[110, 85, 50, 25, 25, 25, 95, 88, 95, 110]),
+ # 7) MARCA DA MORTE (skill do assassino): uma adaga aponta para o alvo e a outra risca o ar marcando-o
+ 'rmark': dict(angs=[110, 100, 95, 90, 90, 90, 90, 95, 100, 110], lean=[0, -1, -1, -2, -2, -2, -1, 0, 0, 0], dy=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], tn=[3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+               face=FACE, legs=[0, 1, 1, 2, 2, 2, 2, 1, 0, 0], sw2=[110, 150, 175, 175, 130, 70, 30, 60, 110, 110]),
+ # 8) ARMADILHA DE ESPINHOS (skill do armadilheiro): agacha e crava as duas adagas no chao a sua frente
+ 'rtrap': dict(angs=[110, 70, 30, 5, 0, 0, 0, 0, 40, 110], lean=[0, 1, 2, 3, 3, 3, 3, 3, 1, 0], dy=[0, 1, 2, 3, 3, 3, 3, 3, 2, 0], tn=[3, 2, 2, 1, 1, 1, 1, 1, 2, 3],
+               face=FACE, legs=[0, 1, 2, 3, 3, 3, 3, 3, 2, 0], sw2=[110, 75, 35, 8, 0, 0, 0, 0, 45, 110], arm_over={3: (1, 3), 4: (1, 3), 5: (1, 3), 6: (1, 3), 7: (1, 2)}),
 }
 
 # --------------------------------- MAGO (cajado) ---------------------------------
@@ -150,7 +162,7 @@ def attack(view, ap, name):
     cls = ap.get('cls', 'warrior')
     base = C.anim(view, 'attack', cls, C.densify(poses(view, name), 2), ap, dense=2)
     fr = [b[0] for b in base]; out = []
-    o = OPT.get(name, {}); heavy = o.get('heavy', name in ('wslam', 'rx', 'wcrush', 'wplant', 'wwall')); seq = o.get('seq', SEQ)
+    o = OPT.get(name, {}); heavy = o.get('heavy', name in ('wslam', 'rx', 'wcrush', 'wplant', 'wwall', 'rtrap', 'rrain')); seq = o.get('seq', SEQ)
     for k, i in enumerate(seq):
         im = fr[min(i, len(fr) - 1)]
         if k == o.get('flash', 11): im = N2.flash(im, .35 if heavy else .22)

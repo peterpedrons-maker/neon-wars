@@ -113,6 +113,7 @@ COMBO = {
 for _k in list(UNITS):
     _b = '_'.join(_k.split('_')[:2])
     if _k.startswith('h_') and _b in COMBO: UNITS[_k]['combo'] = COMBO[_b]
+UNITS['h_ladino'].update(spin=True, sk=dict(rain='rrain', exec='rexec', mark='rmark', trap='rtrap'))
 UNITS['h_guerreiro']['twirl'] = True      # Tufao (Giro de Lamina empoderado): anim 'spin'
 GCAST = {'grunk': 'slam', 'gorgash': 'slam', 'presa': 'slam', 'morvath': 'cast', 'ratking': 'cast', 'vampiro': 'cast', 'skrix': 'cast'}
 GEN = {   # (ataque, dano, morte) para inimigos fora do motor chibi
@@ -168,6 +169,9 @@ def frames(u, kind, view):
     return fr
 
 def frames0(u, kind, view):
+    if kind in u.get('sk', {}):
+        import chibi_anim3 as N3
+        return N3.combo_frames(view, dict(u['ap']), u['sk'][kind], None)
     if kind in ('wall', 'rage'):
         import chibi_anim3 as N3
         return N3.combo_frames(view, dict(u['ap']), 'wwall' if kind == 'wall' else 'wrage', None)
@@ -222,7 +226,7 @@ def export(key):
         import shutil
         shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), u['src'] + '_atlas.png'), os.path.join(OUT, f'cx_{key}_atlas.png'))
         shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), u['src'] + '_atlas.json'), os.path.join(OUT, f'cx_{key}_atlas.json')); print(key, 'copiado de', u['src']); return
-    kinds = ['idle', 'walk', 'run', 'attack', 'hurt', 'death', 'cast'] + (list(COMBO_KINDS) if u.get('combo') else []) + (['spin'] if u.get('twirl') else []) + (['crush', 'quake', 'wall', 'rage'] if u.get('twirl') else [])
+    kinds = ['idle', 'walk', 'run', 'attack', 'hurt', 'death', 'cast'] + (list(COMBO_KINDS) if u.get('combo') else []) + (['spin'] if u.get('twirl') else []) + (['crush', 'quake', 'wall', 'rage'] if u.get('twirl') else []) + (['spin'] if u.get('spin') else []) + list(u.get('sk', {}))
     ALIAS = {}
     if u['kind'] == 'c' and not u.get('run'): ALIAS['run'] = 'walk'
     elif u['kind'] != 'c': ALIAS['run'] = 'walk'
