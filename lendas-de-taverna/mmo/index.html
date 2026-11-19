@@ -1209,7 +1209,7 @@ html.rage #stage::after{content:'';position:absolute;inset:0;pointer-events:none
   <div id="gc"><div class="gcb"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><h3 id="gct"></h3><p id="gcm"></p><div class="gcbt"><button id="gcn" class="sec"></button><button id="gcy" class="ok"></button></div></div></div>
   <div id="fade"></div>
   <div class="scr" id="pan"><div class="box"><div class="tt"><span>Personagem</span><button class="xb" id="pClose"></button></div>
-    <div class="tabs"><button id="tEq" class="on">Equipamento</button><button id="tBg">Mochila</button><button id="tMt">Materiais</button><button id="tAt">Atributos</button><button id="tSk">Habilidades</button><button id="tTl">Passivas</button></div>
+    <div class="tabs"><button id="tEq" class="on">Equipamento</button><button id="tAt">Atributos</button><button id="tBg">Mochila</button><button id="tMt">Materiais</button><button id="tSk">Habilidades</button><button id="tTl">Passivas</button></div>
     <div class="wb body" id="pBody"></div></div><div id="tip"></div></div>
   <!-- resultado -->
   <div class="scr" id="res">
@@ -3983,7 +3983,6 @@ function updateHero(dt){
     if(stHas(h,'medo')){const fm=nearestMob(h,300);if(fm){moveTo(h,h.x+(h.x-fm.x),h.y+(h.y-fm.y),h.speed*.9,dt);h.row=dir4(h.x-fm.x,h.y-fm.y);h.state='walk';h.animT+=dt*(h.speed/70);collide(h);return;}}}
   if(h.buff){h.buff.t-=dt;if(Math.random()<dt*16)VF.pt(h.x+rnd(-11,11),h.y-rnd(0,8),{vy:-rnd(20,45),life:.6,col:h.buff.col||'#ffb050',sz:2});if(h.buff.t<=0)h.buff=null;}
   if(h.shieldT>0){h.shieldT-=dt;if(h.shieldT<=0)h.shield=0;}
-  {const ap=SAVE.apot==null?.35:SAVE.apot;if(ap>0&&h.hp<h.maxhp*ap&&(SAVE.potions>0||SAVE.potL>0)&&h.potCd<=0)usePotion(false);}
   /* esquiva é do jogador (botão E / tecla E): nada de esquiva automática */
   if(h.dod){updateDodge(h,dt);return;}
   if(h.combat<=0&&h.hp<h.maxhp){h.hp=Math.min(h.maxhp,h.hp+h.maxhp*.025*dt);}
@@ -5697,7 +5696,7 @@ function render(){
 }
 /* ------------------------------ painel do herói -------------------------- */
 let panTab='eq',panSel=null,skSlot=0;   // panSel: {src:'bag'|'eq', k}
-const PL={pers:'eq',hab:'sk'};   // última aba de cada janela
+const PL={pers:'eq',bag:'bg',hab:'sk'},PGRP={eq:'pers',at:'pers',bg:'bag',mt:'bag',sk:'hab',tl:'hab'},PTT={pers:'Personagem',bag:'Mochila',hab:'Habilidades'};   // última aba de cada janela
 const isHabTab=t=>t==='sk'||t==='tl';
 function openPan(t){sfx('tr_open',.6);panTab=t||panTab;panSel=null;$('pan').classList.add('on');renderPan();}
 function closePan(){$('pan').classList.remove('on');}
@@ -5780,9 +5779,8 @@ function showTip(){
   t.style.setProperty('--ax',(r.left+r.width/2-pr.left-x)+'px');
 }
 function renderPan(){
-  const hb=isHabTab(panTab);PL[hb?'hab':'pers']=panTab;$('pan').querySelector('.tt span').textContent=hb?'Habilidades':'Personagem';
-  ['Eq','Bg','Mt','At'].forEach(x=>$('t'+x).style.display=hb?'none':'');['Sk','Tl'].forEach(x=>$('t'+x).style.display=hb?'':'none');
-  ['Eq','Bg','Mt','Sk','At','Tl'].forEach(x=>$('t'+x).classList.toggle('on',panTab===x.toLowerCase()));
+  const gp=PGRP[panTab]||'pers';PL[gp]=panTab;$('pan').querySelector('.tt span').textContent=PTT[gp];
+  ['Eq','At','Bg','Mt','Sk','Tl'].forEach(x=>{const b=$('t'+x);b.style.display=PGRP[x.toLowerCase()]===gp?'':'none';b.classList.toggle('on',panTab===x.toLowerCase());});
   hideTip();
   const B=$('pBody'),C=CLASSES[SAVE.cls],h=G.hero;B.onclick=null;
   if(panTab==='eq'||panTab==='bg'){
@@ -5793,7 +5791,6 @@ function renderPan(){
     html+=`<div class="pcw"><span>PODER DE COMBATE</span><b>${pcFmt(heroPC())}</b></div>`;
     }
     else{html+=`<div class="qs p"><b>Mochila</b><span>${SAVE.inv.length} / ${BAG_MAX}</span></div><div class="bag">`+Array.from({length:Math.max(BAG_MAX,SAVE.inv.length)},(_,i)=>{const it=SAVE.inv[i];return it?itemCell(it,panSel&&panSel.src==='bag'&&panSel.k===i,'bag:'+i,'cell'):'<div class="cell e"></div>';}).join('')+'</div>';
-    {const ap=SAVE.apot==null?.35:SAVE.apot;html+=`<div class="qs d"><b>Poção automática</b></div><div class="acts"><button data-a="apot" class="${ap>0?'g':''}">${ap>0?'Bebe abaixo de '+Math.round(ap*100)+'% da vida':'Desligada'}</button><button data-a="sortbag">Ordenar</button></div>`;}
     html+=`<div class="acts" style="display:none"></div><div class="sub" style="padding:6px 4px">Para vender, fale com o Mercador (Bram).</div>`;}
     B.innerHTML=html;if(isEq)drawDoll();
     B.querySelectorAll('[data-c]').forEach(e=>e.onclick=ev=>{ev.stopPropagation();const c=e.dataset.c;if(c==='none')return;const [src,k]=c.split(':');const nk=src==='bag'?+k:k;if(panSel&&panSel.src===src&&panSel.k===nk)panSel=null;else panSel={src,k:nk};sfx('ui_click',.5);renderPan();});
@@ -6034,12 +6031,24 @@ function socMenu(m,dun){
   const tg=mkTb('bMt','<span>'+(SAVE.mcol?'☰':'‹')+'</span>','mbtn mtgl',()=>{SAVE.mcol=!SAVE.mcol;m.classList.toggle('col',!!SAVE.mcol);tg.firstChild.textContent=SAVE.mcol?'☰':'‹';sfx('ui_click',.5);writeSave();});
   m.classList.toggle('col',!!SAVE.mcol);m.appendChild(tg);
   m.appendChild(mk('bPs','assets/hud/heroi.png','Pers.',()=>openPan(PL.pers),'bdPs',1));
+  m.appendChild(mk('bBg','assets/hud/mochila.png','Mochila',()=>openPan(PL.bag),null,1));
   m.appendChild(mk('bHb','assets/hud/hab.png','Habil.',()=>openPan(PL.hab),'bdHb',1));
-  m.appendChild(mk('bQ','assets/hud/diario.png','Diário',()=>openWin('diario'),'bdQ',1));
+  m.appendChild(mk('bQ','assets/hud/diario.png','Missões',()=>{if(!['m','f'].includes(G.qtab))G.qtab='m';openWin('diario');},'bdQ',1));
+  m.appendChild(mk('bPo','assets/hud/pocoes.png','Poções',()=>openWin('pocoes'),null,1));
+  m.appendChild(mk('bDi','assets/hud/bestiario.png','Diário',()=>{if(!['b','c','p'].includes(G.qtab))G.qtab='b';openWin('diario');},null,1));
   m.appendChild(mk('bGp','assets/hud/social.png','Social',()=>openWin('grupo'),null,1));
   m.appendChild(mk('bMo','assets/hud/montaria.png','Montar',()=>mountToggle(),null,1));
 }
-const SOCW={missoes:()=>winMissoes(),diario:()=>winDiario(),grupo:()=>winGrupo()};
+
+function winPocoes(){$('wtt').textContent='Poções';const h=G.hero,cd=h&&h.potCd>0?Math.ceil(h.potCd):0;
+  const row=(ic,nm,ds,n,btn)=>`<div class="wr"><img class="ic" src="${UI}${ic}.png"><div class="tx"><b>${nm}</b><span>${ds}</span></div><b style="font:700 16px var(--f);color:var(--ouroC);min-width:30px;text-align:right">${n}</b>${btn||''}</div>`;
+  let x=`<div class="sub">Beba pelo botão de poção na tela de combate, ou aqui. A recarga é de 8 segundos. Compre mais com o Alquimista na cidade.</div>`;
+  x+=`<div class="sec-h"><span>Poções de vida</span><em>${cd?'Recarga: '+cd+'s':'Pronta'}</em></div>`;
+  x+=row('ni_pocao','Poção de Cura','Cura 45% da vida',SAVE.potions,'')+row('ni_pmaior','Poção Maior','Cura 80% da vida. É a escolhida quando a vida está abaixo de 30%.',SAVE.potL||0,'');
+  x+=`<div class="acts"><button class="g" data-a="dp" ${(SAVE.potions>0||SAVE.potL>0)&&!cd?'':'disabled'}>Beber agora</button></div>`;
+  x+=`<div class="sec-h"><span>Elixires</span></div>`+Object.keys(ELIX).map(k=>{const E=ELIX[k];return row(E[1],E[0],E[2]+' · '+elixLeft(k),'','');}).join('');
+  $('wbody').innerHTML=x;}
+const SOCW={missoes:()=>winMissoes(),diario:()=>winDiario(),grupo:()=>winGrupo(),pocoes:()=>winPocoes()};
 /* ===== DIÁLOGO COM NPCs + MISSÕES DA HISTÓRIA (Ato 1) — ver HISTORIA.md =====
    Todo NPC (inclusive moradores) fala: balão de fala ao chegar perto e caixa de diálogo ao tocar "Falar".
    Serviços (loja, forja…) falam primeiro e só então abrem a janela. A missão principal é UMA por nível:
@@ -6432,8 +6441,8 @@ function winMissoes(){$('wtt').textContent='Capitão Ruvel';const c=qMain(),ok=c
   const tk=`<div class="tokb"><img src="${UI}gems.png"><span>Fichas de Brumavale</span><b>${SAVE.tok||0}</b></div>`;
   const tb=`<div class="tabs" style="margin:0 -12px">${[['m','Missões'],['s','Loja de fichas']].map(([k,l])=>`<button data-a="rt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
   $('wbody').innerHTML=hd+tk+tb+(tab==='s'?shopBody():missionsBody()+'<div class="acts"><button data-a="op:diario">Abrir o Diário</button></div>');}
-function winDiario(){{const w=$('win');if(w)w.classList.add('bk');}$('wtt').textContent='Diário';let tab=G.qtab;if(!['m','f','b','c','p'].includes(tab))tab='m';
-  let h=`<div class="tabs" style="margin:0 -12px">${[['m','Missões'],['f','Facções'],['b','Bestiário'],['c','Títulos'],['p','Pets']].map(([k,l])=>`<button data-a="qt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
+function winDiario(){{const w=$('win');if(w)w.classList.add('bk');}let tab=G.qtab;if(!['m','f','b','c','p'].includes(tab))tab='m';const qg=(tab==='m'||tab==='f');$('wtt').textContent=qg?'Missões':'Diário';
+  let h=`<div class="tabs" style="margin:0 -12px">${(qg?[['m','Missões'],['f','Facções']]:[['b','Bestiário'],['c','Títulos'],['p','Pets']]).map(([k,l])=>`<button data-a="qt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
   if(tab==='m')h+=missionsBody();
   else if(tab==='f')h+=facBody();
    else if(tab==='f')h+=facBody();
@@ -6463,7 +6472,7 @@ function winGrupo(){$('wtt').textContent='Grupo';const tab=G.gtab||'g',P=G.party
     h+=ch==='s'?'':inp('cmsg','Mensagem…','cs')+'<div class="sub">Sem conexão: só você vê estas mensagens.</div>';}
   $('wbody').innerHTML=h;}
 function socAct(a){const [k,v,w]=a.split(':');
-  if(k==='rt'){G.rtab=v;sfx('ui_click');}else if(k==='sb'){shopBuy(v);}else if(k==='pet'){if(petOwn(v)){SAVE.pet=SAVE.pet===v?null:v;G.petE=null;sfx('ui_confirm',.6);}}else if(k==='qall'){const c=qMain();if(c&&qOk(c))qClaim('m',0);SAVE.q.d.l.forEach((d,i)=>{if(!d.c&&qOk(d))qClaim('d',i);});}else if(k==='op'){G.winOpen=v;sfx('ui_click');renderWin();return true;}else if(k==='ti'){setTitle(SAVE.title===v?null:v);sfx('ui_confirm',.6);}else if(k==='qt'){G.qtab=v;sfx('ui_click');}else if(k==='mt'){G.mtab=v;SAVE.mtab=v;sfx('ui_click',.5);writeSave();}else if(k==='qs'){SAVE.qsec=SAVE.qsec||{};if(v==='all'||v==='none'){['main','side','fac','day','trail'].forEach(x=>SAVE.qsec[x]=v==='all');}else SAVE.qsec[v]=!(G.qsd&&G.qsd[v]);sfx('ui_click',.5);writeSave();}else if(k==='qc'){qClaim(v,+w);}else if(k==='ql'){G.qsel=v;sfx('ui_click',.5);}
+  if(k==='dp'){usePotion(true);}else if(k==='rt'){G.rtab=v;sfx('ui_click');}else if(k==='sb'){shopBuy(v);}else if(k==='pet'){if(petOwn(v)){SAVE.pet=SAVE.pet===v?null:v;G.petE=null;sfx('ui_confirm',.6);}}else if(k==='qall'){const c=qMain();if(c&&qOk(c))qClaim('m',0);SAVE.q.d.l.forEach((d,i)=>{if(!d.c&&qOk(d))qClaim('d',i);});}else if(k==='op'){G.winOpen=v;sfx('ui_click');renderWin();return true;}else if(k==='ti'){setTitle(SAVE.title===v?null:v);sfx('ui_confirm',.6);}else if(k==='qt'){G.qtab=v;sfx('ui_click');}else if(k==='mt'){G.mtab=v;SAVE.mtab=v;sfx('ui_click',.5);writeSave();}else if(k==='qs'){SAVE.qsec=SAVE.qsec||{};if(v==='all'||v==='none'){['main','side','fac','day','trail'].forEach(x=>SAVE.qsec[x]=v==='all');}else SAVE.qsec[v]=!(G.qsd&&G.qsd[v]);sfx('ui_click',.5);writeSave();}else if(k==='qc'){qClaim(v,+w);}else if(k==='ql'){G.qsel=v;sfx('ui_click',.5);}
   else if(k==='gt'){G.gtab=v;sfx('ui_click');}else if(k==='gi'){G.ginv=+v;sfx('ui_click');}
   else if(k==='gs'){const n=($('gname').value||'').trim();if(n){SAVE.pend.push(n);G.ginv=null;toast('Convite guardado — o online chega em breve',1600);sfx('ui_confirm',.6);}}
   else if(k==='gp'){SAVE.pend.splice(+v,1);}
@@ -6516,8 +6525,7 @@ function winTip(){
   }
 }
 /* Locais (atalho na barra da cidade) */
-function setHtml(){const ap=SAVE.apot==null?.35:SAVE.apot;return `<div class="sec-h"><span>Ajustes de combate</span></div>
-  <div class="wr"><img class="ic" src="${UI}health-potion.png"><div class="tx"><b>Poção automática</b><span>${ap>0?'Bebe quando a vida cai abaixo de '+Math.round(ap*100)+'%':'Desligada: você bebe a poção manualmente'}</span></div><button class="gb" data-a="set:apot">${ap>0?Math.round(ap*100)+'%':'NÃO'}</button></div>
+function setHtml(){return `<div class="sec-h"><span>Ajustes de combate</span></div>
   <div class="wr"><img class="ic" src="${UI}anvil.png"><div class="tx"><b>Equipar melhor automaticamente</b><span>Ao pegar um item claramente melhor, o herói já o equipa</span></div><button class="gb" data-a="set:auto">${SAVE.autoEq?'SIM':'NÃO'}</button></div>
   <div class="sec-h"><span>Controles</span></div>
   <div class="wr"><img class="ic" src="${UI}crossed-swords.png"><div class="tx"><b>Joystick flutuante</b><span>${JOYF()?'Toque e arraste no lado esquerdo da tela: o joystick aparece onde o dedo estiver':'Joystick fixo no canto da tela'}</span></div><button class="gb" data-a="set:joyf">${JOYF()?'SIM':'NÃO'}</button></div>
@@ -6641,7 +6649,7 @@ function winForja(){
 }
 /* Alquimista */
 const ALQ=[
- {nm:'Poção de Cura',ic:'ni_pocao',tipo:'Consumível',d:'Cura 45% da vida. Usada sozinha em combate.',price:()=>potPrice(),act:'bp:s',btn:'Comprar',extra:()=>`Você tem ${SAVE.potions}`},
+ {nm:'Poção de Cura',ic:'ni_pocao',tipo:'Consumível',d:'Cura 45% da vida. Beba pelo botão de poção.',price:()=>potPrice(),act:'bp:s',btn:'Comprar',extra:()=>`Você tem ${SAVE.potions}`},
  {nm:'Poção Maior',ic:'ni_pmaior',tipo:'Consumível',d:'Cura 80% da vida. Usada em emergências (quando a vida está baixa).',price:()=>Math.round(potPrice()*2.6),act:'bp:l',btn:'Comprar',extra:()=>`Você tem ${SAVE.potL}`},
  {nm:'Elixir de Poder',ic:'ni_eforca',tipo:'Elixir · 5 min',get d(){return '+'+elixPow()+' de ataque dentro da dungeon (valor fixo, vale para qualquer classe).';},price:()=>elixPrice(),act:'be:forca',btn:'Beber',extra:()=>elixLeft('forca')},
  {nm:'Elixir de Defesa',ic:'ni_edefesa',tipo:'Elixir · 5 min',get d(){return '+'+elixDef()+' de defesa dentro da dungeon (valor fixo).';},price:()=>elixPrice(),act:'be:defesa',btn:'Beber',extra:()=>elixLeft('defesa')}];
