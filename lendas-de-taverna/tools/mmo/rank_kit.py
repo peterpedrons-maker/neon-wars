@@ -20,3 +20,15 @@ for k, b in CROPS.items():
         a[..., 3] = a[..., 3] * np.clip((m - 60) / 90, 0, 1); c = Image.fromarray(a.astype('uint8'))
         bb = c.getchannel('A').point(lambda v: 255 if v > 24 else 0).getbbox(); c = c.crop(bb) if bb else c
     c.save(os.path.join(D, k + '.png')); print(k, c.size)
+
+# --- versoes em PIXEL ART (casam com o resto do jogo): reduz, fecha a paleta e corta o alfa em 0/255; o CSS amplia com image-rendering:pixelated ---
+import numpy as np
+PIX = {'frame': (138, None), 'fire': (40, None), 'D': (None, 36), 'C': (None, 36), 'B': (None, 36), 'A': (None, 36), 'S': (None, 44)}
+for k, (w, h) in PIX.items():
+    c = Image.open(os.path.join(D, k + '.png')).convert('RGBA')
+    w = w or round(c.width * h / c.height); h = h or round(c.height * w / c.width)
+    c = c.resize((w, h), Image.LANCZOS)
+    a = np.array(c); al = a[..., 3] > 120
+    q = c.convert('RGB').quantize(colors=22, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).convert('RGB')
+    o = np.array(q); o = np.dstack([o, (al * 255).astype('uint8')])
+    Image.fromarray(o).save(os.path.join(D, 'p_' + k + '.png')); print('p_' + k, (w, h))
