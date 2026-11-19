@@ -95,6 +95,7 @@ def bussola():
 
 
 def mochila():
+<<<<<<< HEAD
     """mochila de aventureiro: corpo de lona verde, aba e alças de couro, bolso frontal com costura, fivela e alça de mão"""
     cv = np.zeros((32, 32, 4), np.uint8)
     def rr(x0, y0, x1, y1, r):
@@ -129,6 +130,20 @@ def outline_in(cv, mask, col='#1a1020'):
     cv[edge] = (*hx(col), 255)
 
 
+=======
+    cv = np.zeros((32, 32, 4), np.uint8)
+    body = shape(32, 32, lambda x, y: (((x - 16) / 11.5) ** 2 + ((y - 19) / 11) ** 2 <= 1) & (y > 10))
+    neck = shape(32, 32, lambda x, y: (abs(x - 16) <= 5.5) & (y >= 6) & (y <= 12))
+    flap = shape(32, 32, lambda x, y: (((x - 16) / 8.5) ** 2 + ((y - 13.5) / 4.2) ** 2 <= 1) & (y > 11) & (y < 17))
+    outline(cv, body | neck); paint(cv, body, ['#4a2a12', '#7a4a22', '#a8703a', '#d09a5a']); paint(cv, neck, ['#4a2a12', '#6a4020', '#8a5a2c', '#b07a40'])
+    paint(cv, flap, ['#6a3e1c', '#94602e', '#bd8644', '#e0b070'])
+    band = shape(32, 32, lambda x, y: (abs(x - 16) <= 6) & (y >= 7) & (y <= 8.4)); paint(cv, band, ['#8a5a10', '#c98f1e', '#f0c850', '#fff0a0'])
+    buck = shape(32, 32, lambda x, y: (abs(x - 16) <= 2) & (y >= 15) & (y <= 18)); outline(cv, buck); paint(cv, buck, ['#8a5a10', '#c98f1e', '#f0c850', '#fff0a0'])
+    for (x, y) in ((8, 22), (24, 22), (12, 27), (20, 27)): cv[y, x] = (*hx('#3a2008'), 255)
+    return Image.fromarray(cv, 'RGBA')
+
+
+>>>>>>> origin/main
 def finish(im32, name, col):
     big = im32.resize((64, 64), Image.NEAREST)
     glow(big, col).save(os.path.join(OUT, name + '.png'))
@@ -143,5 +158,9 @@ if __name__ == '__main__':
     finish(ferradura(), 'montaria', '#7ae08a')
     finish(bussola(), 'atalhos', '#ffd070')
     finish(mochila(), 'mochila', '#e0a050')
+<<<<<<< HEAD
+=======
+    finish(pack('potion_full_1'), 'pocoes', '#ff6a6a')
+>>>>>>> origin/main
     finish(pack('grimoire_closed'), 'bestiario', '#b890ff')
     print('ok')
