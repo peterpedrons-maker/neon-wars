@@ -1136,6 +1136,9 @@ html.rage #stage::after{content:'';position:absolute;inset:0;pointer-events:none
 :root:root #pan .xb::before,:root:root #pan .xb::after{background:#3a1d0e;height:3px}
 :root:root #pan .tabs button{background:linear-gradient(180deg,#6a4426,#3e2614 60%,#2e1a0c)!important;border:2px solid #1b0f08!important;border-bottom:0!important;border-radius:7px 7px 0 0;box-shadow:inset 0 1px 0 #9a6a40!important;color:#e8cf94!important;text-shadow:0 1px 0 #1b0f08}
 :root:root #pan .tabs button.on{background:linear-gradient(180deg,#e4d2a2,#d2bb86)!important;color:#5a1a0c!important;text-shadow:none}
+
+#pdln{display:none!important}
+.mtl{display:flex;flex-direction:column;gap:5px;margin:6px 0}.mtr{display:flex;align-items:center;gap:10px;padding:8px 10px;background:#15111c;border:1px solid #4a3d22;border-left:4px solid var(--mc,#c98f1e)}.mtr img{width:28px;height:28px;image-rendering:pixelated}.mtr span{flex:1;font:600 14px var(--f);color:#eee3c8}.mtr b{font:700 16px var(--f);color:#ffd66e}
 </style>
 </head>
 <body>
@@ -1206,7 +1209,7 @@ html.rage #stage::after{content:'';position:absolute;inset:0;pointer-events:none
   <div id="gc"><div class="gcb"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><h3 id="gct"></h3><p id="gcm"></p><div class="gcbt"><button id="gcn" class="sec"></button><button id="gcy" class="ok"></button></div></div></div>
   <div id="fade"></div>
   <div class="scr" id="pan"><div class="box"><div class="tt"><span>Personagem</span><button class="xb" id="pClose"></button></div>
-    <div class="tabs"><button id="tEq" class="on">Equipamento</button><button id="tBg">Mochila</button><button id="tAt">Atributos</button><button id="tSk">Habilidades</button><button id="tTl">Passivas</button></div>
+    <div class="tabs"><button id="tEq" class="on">Equipamento</button><button id="tBg">Mochila</button><button id="tMt">Materiais</button><button id="tAt">Atributos</button><button id="tSk">Habilidades</button><button id="tTl">Passivas</button></div>
     <div class="wb body" id="pBody"></div></div><div id="tip"></div></div>
   <!-- resultado -->
   <div class="scr" id="res">
@@ -5778,20 +5781,18 @@ function showTip(){
 }
 function renderPan(){
   const hb=isHabTab(panTab);PL[hb?'hab':'pers']=panTab;$('pan').querySelector('.tt span').textContent=hb?'Habilidades':'Personagem';
-  ['Eq','Bg','At'].forEach(x=>$('t'+x).style.display=hb?'none':'');['Sk','Tl'].forEach(x=>$('t'+x).style.display=hb?'':'none');
-  ['Eq','Bg','Sk','At','Tl'].forEach(x=>$('t'+x).classList.toggle('on',panTab===x.toLowerCase()));
+  ['Eq','Bg','Mt','At'].forEach(x=>$('t'+x).style.display=hb?'none':'');['Sk','Tl'].forEach(x=>$('t'+x).style.display=hb?'':'none');
+  ['Eq','Bg','Mt','Sk','At','Tl'].forEach(x=>$('t'+x).classList.toggle('on',panTab===x.toLowerCase()));
   hideTip();
   const B=$('pBody'),C=CLASSES[SAVE.cls],h=G.hero;B.onclick=null;
   if(panTab==='eq'||panTab==='bg'){
     const isEq=panTab==='eq';
     const sl=k=>{const it=SAVE.eq[k],sel=panSel&&panSel.src==='eq'&&panSel.k===k;return `<div class="pds" data-k="${k}">`+(it?itemCell(it,sel,'eq:'+k,'slot'):`<div class="slot" data-c="none"><div class="ph">${SLOT_NAME[k]}</div></div>`)+'</div>';};
     let html='';
-    if(isEq){html+=`<div class="hxid"><b>${SAVE.name||C.nome}</b><span>${C.nome}${subOf()?' · '+subOf().nome:''} · Nível ${SAVE.lv}</span></div>`;html+=`<div class="pdw" id="pdw"><canvas id="pdoll"></canvas><canvas id="pdln"></canvas><div class="pcol l">${['elmo','armadura','luvas','botas'].map(sl).join('')}</div><div class="pcol r">${['arma','amuleto','escudo','anel'].map(sl).join('')}</div><div class="pdh">toque no boneco para girar</div></div>`;
+    if(isEq){html+=`<div class="hxid"><b>${SAVE.name||C.nome}</b><span>${C.nome}${subOf()?' · '+subOf().nome:''} · Nível ${SAVE.lv}</span></div>`;html+=`<div class="pdw" id="pdw"><canvas id="pdoll"></canvas><div class="pcol l">${['elmo','armadura','luvas','botas'].map(sl).join('')}</div><div class="pcol r">${['arma','amuleto','escudo','anel'].map(sl).join('')}</div><div class="pdh">toque no boneco para girar</div></div>`;
     html+=`<div class="pcw"><span>PODER DE COMBATE</span><b>${pcFmt(heroPC())}</b></div>`;
-    html+=`<div class="stg stl"><div class="s-hp"><span>Vida</span><b>${h.maxhp}</b></div><div class="s-atk"><span>Ataque</span><b>${Math.round(h.pow)}</b></div><div class="s-def"><span>Defesa</span><b>${Math.round(h.def)}</b></div><div class="s-crit"><span>Crítico</span><b>${Math.round(h.crit*100)}%</b></div><div class="s-kb"><span>Empurrão</span><b>${Math.round(knockChance()*100)}%</b></div><div class="s-spd"><span>Velocidade</span><b>${Math.round(h.speed)}</b></div></div>`;
     }
-    else{html+=`<div class="mats" style="margin-top:2px">${MATS.map(M=>`<div style="--mc:${M.col}"><img src="${UI}${M.ic}.png"><b>${matN(M.id)}</b></div>`).join('')}</div>`;
-    html+=`<div class="qs p"><b>Mochila</b><span>${SAVE.inv.length} / ${BAG_MAX}</span></div><div class="bag">`+Array.from({length:Math.max(BAG_MAX,SAVE.inv.length)},(_,i)=>{const it=SAVE.inv[i];return it?itemCell(it,panSel&&panSel.src==='bag'&&panSel.k===i,'bag:'+i,'cell'):'<div class="cell e"></div>';}).join('')+'</div>';
+    else{html+=`<div class="qs p"><b>Mochila</b><span>${SAVE.inv.length} / ${BAG_MAX}</span></div><div class="bag">`+Array.from({length:Math.max(BAG_MAX,SAVE.inv.length)},(_,i)=>{const it=SAVE.inv[i];return it?itemCell(it,panSel&&panSel.src==='bag'&&panSel.k===i,'bag:'+i,'cell'):'<div class="cell e"></div>';}).join('')+'</div>';
     {const ap=SAVE.apot==null?.35:SAVE.apot;html+=`<div class="qs d"><b>Poção automática</b></div><div class="acts"><button data-a="apot" class="${ap>0?'g':''}">${ap>0?'Bebe abaixo de '+Math.round(ap*100)+'% da vida':'Desligada'}</button><button data-a="sortbag">Ordenar</button></div>`;}
     html+=`<div class="acts" style="display:none"></div><div class="sub" style="padding:6px 4px">Para vender, fale com o Mercador (Bram).</div>`;}
     B.innerHTML=html;if(isEq)drawDoll();
@@ -5799,6 +5800,8 @@ function renderPan(){
     B.querySelectorAll('[data-a]').forEach(e=>e.onclick=()=>panAct(e.dataset.a));
     B.onclick=e=>{if(panSel){panSel=null;renderPan();}};
     showTip();
+  }else if(panTab==='mt'){
+    B.innerHTML=`<div class="qs p"><b>Materiais</b><span>${MATS.reduce((a,M)=>a+matN(M.id),0)} no total</span></div><div class="mtl">`+MATS.map(M=>`<div class="mtr" style="--mc:${M.col}"><img src="${UI}${M.ic}.png"><span>${M.nm||M.id}</span><b>${matN(M.id)}</b></div>`).join('')+`</div><div class="sub" style="padding:6px 4px">Usados na Forja e no Alquimista.</div>`;
   }else if(panTab==='tl'){renderTalents(B);
   }else if(panTab==='sk'){
     const pts=skPoints();
@@ -5865,6 +5868,7 @@ function panAct(a){
   updPot();badge();writeSave();renderPan();
 }
 $('tEq').onclick=()=>{panTab='eq';panSel=null;sfx('ui_click');renderPan();};
+$('tMt').onclick=()=>{panTab='mt';panSel=null;sfx('ui_click');renderPan();};
 $('tBg').onclick=()=>{panTab='bg';panSel=null;sfx('ui_click');renderPan();};
 $('tSk').onclick=()=>{panTab='sk';panSel=null;sfx('ui_click');renderPan();};
 $('tAt').onclick=()=>{panTab='at';panSel=null;sfx('ui_click');renderPan();};
