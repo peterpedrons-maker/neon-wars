@@ -2989,7 +2989,7 @@ function manualCast(){
   let t=nearestMob(h,self?h.rng*1.8:Math.max(h.rng*1.6,o.r?o.r:0)+20);
   if(!t)t=self?{x:h.x,y:h.y,kind:'mob',dead:false}:virtTarget(h,Math.max(50,h.rng*.9));
   startHeroAttack(h,t,i);
-  if(h.act&&h.act.sk===i){if(emp){h.act.emp=1;styConsume();}else styAdd(4,'sk'+i);}
+  if(h.act&&h.act.sk===i){if(emp){h.act.emp=1;styConsume();if(C.skills[i][0]==='n_esmaga'&&hStyle()==='slash'){h.act.crush=1;h.act.dur=1.15;h.act.hit=.62;}}else styAdd(4,'sk'+i);}
 }
 function heroPow(h){return styDmg()*h.pow*(h.chord&&h.chord.t>0?1+(h.chord.atk||0):1)*(h.buff&&h.buff.t>0?1+(h.buff.atk||0):1)*stMul(h,'dmg');}
 function heroCrit(h){if(h.furt)return 1;return Math.min(.95,h.crit+(h.buff&&h.buff.t>0?(h.buff.crit||0):0)+stSum(h,'crit'));}
@@ -3002,6 +3002,15 @@ function meleeHit(h,tt,mult,forceCrit,kf){if(tt.virt){tt=coneTarget(h,tt);if(!tt
 function empO(o){const e=Object.assign({},o);if(e.r)e.r=Math.round(e.r*1.35);if(e.stun)e.stun*=1.5;if(e.n)e.n=Math.ceil(e.n*1.5);return e;}
 function empFx(h,S){floatText(h.x,h.y-86,'EMPODERADO!','#ffd070',11,1.3);VF.ringw(h.x,h.y+4,64,'#ffd070',.5,8);VF.ringw(h.x,h.y+4,38,'#fff',.4,5,.05);VF.glow(h.x,h.y-18,42,'#ffd070',.5,4);VF.star(h.x,h.y-20,48,'#fff',.35);VF.sparks(h.x,h.y-18,22,['#ffd070','#ff9a3a','#fff'],{s0:90,s1:250});G.shake=Math.max(G.shake||0,.2);G.hs=Math.max(G.hs||0,.05);sfx('crit',.5,.8);}
 /* TUFÃO (Giro de Lâmina empoderado): o herói gira por ~4s andando livremente; um redemoinho em volta fere (tique a cada .22s), puxa os inimigos para o centro e reduz o dano recebido */
+/* GOLPE ESMAGADOR empoderado: o herói salta com a espada nas duas mãos e esmaga o alvo; onda de choque em área com rachaduras no chão, estilhaços e atordoamento */
+function crushFx(h,t,mult,o){const R=104,x=t.x,y=t.y;
+  allFoes().forEach(m=>{if(m===t)return;const d=Math.hypot(m.x-x,m.y-y);if(d-((m.T&&m.T.rad)||0)<R){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),mult*.6,heroCrit(h));hitMob(m,r.d,r.crit,x,y,2.2);m.stun=Math.max(m.stun||0,(o.stun||1.5)*.7);}});
+  gdecAdd({x,y,a:0,kind:'star',R:48,th:'terra',life:5.5});gdecAdd({x,y,a:0,kind:'pit',R:22,th:'terra',life:5.5,delay:.04});
+  [-1,1].forEach(sg=>gdecAdd({x:x+sg*34,y:y+8,a:sg*.5,kind:'line',R:5,L:34,th:'terra',life:5,delay:.07}));
+  VF.ringw(x,y+4,R,'#ffe0b0',.45,9);VF.ringw(x,y+4,R*.62,'#fff',.35,6,.05);VF.ringw(x,y+4,R*1.2,'#c9a878',.6,4,.1);
+  VF.sparks(x,y-8,26,['#ffe9c0','#ffb070','#fff'],{s0:120,s1:330});VF.chunks(x,y,9);VF.puff(x,y+2,14,['#b8a888','#8a7a60'],{r:26,up:14,sz:1.6,a:.7});
+  VF.star(x,y-12,60,'#fff',.3);floatText(x,y-70,'ESMAGADO!','#ffb070',12,1.3);
+  G.hs=Math.max(G.hs||0,.14);G.shake=Math.max(G.shake||0,.5);}
 function startTufao(h,mult,o){h.tuf={t:0,dur:4.2,tk:0,r:Math.max(62,o.r||62)*1.15,m:mult*.5,fxT:0,ang:0};floatText(h.x,h.y-100,'TUFÃO!','#ffb070',12,1.4);G.hs=Math.max(G.hs||0,.06);}
 function tufTick(dt){const h=G.hero;if(!h||!h.tuf)return;if(h.state==='ko'||G.scene!=='dungeon'){h.tuf=null;return;}
   const T=h.tuf;T.t+=dt;T.ang+=dt*11;T.tk-=dt;T.fxT-=dt;const q=T.t/T.dur,R=T.r*(.82+.18*Math.sin(T.t*5));
@@ -3035,7 +3044,7 @@ function heroHitMoment(h){
   const i=a.sk,S=C.skills[i],emp=!!a.emp,o=emp?empO(S[4]):S[4],sc=skSc(i),ef=skEf(i)*(emp?1.25:1),du=skDu(i)*(emp?1.5:1),mult=S[3]*sc*wxSkMul(S[0])*cmbSkMul(h,t)*(emp?1.15:1),ranged=hStyle()!=='slash';
   if(emp)empFx(h,S);
   {const [sn,sv]=skSnd(S,h.cls);sfx(sn,sv);}skFx(S,h,t,o);applySkillStatus(S,h,t,o);
-  if(o.t==='single'){ranged?fireProj(h,t,mult,o.crit,PST[S[0]]):meleeHit(h,t,mult,o.crit);if(o.stun)t.stun=Math.max(t.stun||0,o.stun);
+  if(o.t==='single'){ranged?fireProj(h,t,mult,o.crit,PST[S[0]]):meleeHit(h,t,mult,o.crit);if(o.stun)t.stun=Math.max(t.stun||0,o.stun);if(emp&&S[0]==='n_esmaga')crushFx(h,t,mult,o);
     if(o.heal){const v=Math.round(h.maxhp*o.heal*ef*healM());h.hp=Math.min(h.maxhp,h.hp+v);floatText(h.x,h.y-52,'+'+v,'#8ef08a',10,1.1,{k:'heal',vy:18,pop:1});sfx('heal',.6);G.fx.push({k:'ring',x:h.x,y:h.y,life:.5,max:.5,col:'#8ef08a'});}}
   else if(o.t==='multi'){for(let k=0;k<o.n;k++)setTimeout(()=>{if(G.on&&t&&!t.dead)fireProj(h,t,mult,false,PST[S[0]]);},k*110);}
   else if(o.t==='meteor'){const big=S[0]==='n_cataclismo',n=(big?6:3)*(emp?2:1),rain=S[0]==='n_chuva';if(rain){setTimeout(()=>{if(!G.on)return;allFoes().forEach(m=>{if(Math.hypot(m.x-t.x,m.y-t.y)<52){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),mult,heroCrit(h));hitMob(m,r.d,r.crit,t.x,t.y-30,1.1);}});},420);}
@@ -4887,7 +4896,7 @@ function cxFrame(e){if(!CXON||(e.kind!=='hero'&&e.kind!=='mob'&&e.kind!=='boss'&
   if(e.kind==='hero'&&e.tuf&&M.anims.spin_d){const l=M.anims.spin_d,q=l[Math.floor(e.tuf.ang*1.8)%l.length];return [sh.atlasImg,(q%M.cols)*M.w,((q/M.cols)|0)*M.h,M.w,M.h,M.ax,M.ay,0,1];}
   if(e.dod)return AL('run',(e.dod.t||0)*30);
   if(e.state==='hurt'||e.stun>0||(e.stagger>0&&!(a&&a.skill)))return A('hurt',e.flash>.07?1:2);
-  if(a&&(e.state==='atk'||a.skill)){const p=Math.min(.999,a.t/a.dur),hit=Math.max(.15,Math.min(.9,a.hit||.5)),imp=.6,u=p<hit?p/hit*imp:imp+(p-hit)/(1-hit)*(1-imp),nm=(a.cast||a.skill)?'cast':'attack'+(a.v||'');if(!M.anims[nm+'_'+r])nm=(a.cast||a.skill)?'cast':'attack';return A(nm,u*L(nm).length);}
+  if(a&&(e.state==='atk'||a.skill)){const p=Math.min(.999,a.t/a.dur),hit=Math.max(.15,Math.min(.9,a.hit||.5)),imp=.6,u=p<hit?p/hit*imp:imp+(p-hit)/(1-hit)*(1-imp),nm=(a.crush&&M.anims['crush_'+r])?'crush':(a.cast||a.skill)?'cast':'attack'+(a.v||'');if(!M.anims[nm+'_'+r])nm=(a.cast||a.skill)?'cast':'attack';return A(nm,u*L(nm).length);}
   if(e.ch)return A('cast',9+(Math.floor(G.t*7)%4));
   if(e.state==='walk'){const run=e.kind==='hero'&&(e.rk||0)>.5;return AL(run?'run':'walk',e.animT*(run?14:e.kind==='hero'?20.8:14));}
   return AL('idle',(G.t+(e._cxp||(e._cxp=Math.random()*9)))*10);}

@@ -168,6 +168,9 @@ def frames(u, kind, view):
     return fr
 
 def frames0(u, kind, view):
+    if kind == 'crush':
+        import chibi_anim3 as N3
+        return N3.combo_frames(view, dict(u['ap']), 'wcrush', None)
     if kind == 'spin':
         import combo_poses as CP
         return CP.twirl(dict(u['ap']))
@@ -213,7 +216,7 @@ def export(key):
         import shutil
         shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), u['src'] + '_atlas.png'), os.path.join(OUT, f'cx_{key}_atlas.png'))
         shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), u['src'] + '_atlas.json'), os.path.join(OUT, f'cx_{key}_atlas.json')); print(key, 'copiado de', u['src']); return
-    kinds = ['idle', 'walk', 'run', 'attack', 'hurt', 'death', 'cast'] + (list(COMBO_KINDS) if u.get('combo') else []) + (['spin'] if u.get('twirl') else [])
+    kinds = ['idle', 'walk', 'run', 'attack', 'hurt', 'death', 'cast'] + (list(COMBO_KINDS) if u.get('combo') else []) + (['spin'] if u.get('twirl') else []) + (['crush'] if u.get('twirl') else [])
     ALIAS = {}
     if u['kind'] == 'c' and not u.get('run'): ALIAS['run'] = 'walk'
     elif u['kind'] != 'c': ALIAS['run'] = 'walk'
