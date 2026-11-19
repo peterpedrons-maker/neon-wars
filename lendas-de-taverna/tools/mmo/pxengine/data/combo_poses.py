@@ -53,6 +53,9 @@ WAR = {
  # 5) GOLPE ESMAGADOR (skill empoderada): agacha fundo, ergue a espada com as duas maos, SALTA alto e esmaga o chao
  'wcrush': dict(angs=[110, 150, 178, 184, 184, 184, 12, 0, 20, 80], lean=[0, 1, -2, -3, -3, -3, 5, 6, 3, 0], dy=[1, 2, -1, -6, -9, -7, 2, 3, 1, 0],
                tn=[3, 2, 3, 3, 3, 3, 2, 2, 3, 3], face=FACE, legs=[0, 3, 1, 0, 0, 1, 3, 3, 1, 0], arm_over={2: (-1, -4), 3: (-1, -6), 4: (-1, -7), 5: (-1, -4), 6: (1, -1)}),
+ # 6) ABALO SISMICO (skill empoderada): ergue a espada com as duas maos e a CRAVA no chao, ajoelhando; segura tremendo
+ 'wplant': dict(angs=[110, 150, 178, 184, 184, 120, 40, 4, 0, 0], lean=[0, -1, -2, -3, -3, 3, 6, 7, 7, 7], dy=[0, 0, -1, -3, -3, 0, 2, 3, 3, 3],
+               tn=[3, 3, 3, 3, 3, 3, 2, 1, 1, 1], face=FACE, legs=[0, 0, 0, 0, 0, 1, 3, 3, 3, 3], arm_over={3: (-1, -5), 4: (-1, -5), 6: (1, 0), 7: (1, 2), 8: (1, 2), 9: (1, 2)}),
 }
 # --------------------------------- LADINO (duas adagas) ---------------------------------
 ROG = {
@@ -141,7 +144,7 @@ def attack(view, ap, name):
     cls = ap.get('cls', 'warrior')
     base = C.anim(view, 'attack', cls, C.densify(poses(view, name), 2), ap, dense=2)
     fr = [b[0] for b in base]; out = []
-    o = OPT.get(name, {}); heavy = o.get('heavy', name in ('wslam', 'rx', 'wcrush')); seq = o.get('seq', SEQ)
+    o = OPT.get(name, {}); heavy = o.get('heavy', name in ('wslam', 'rx', 'wcrush', 'wplant')); seq = o.get('seq', SEQ)
     for k, i in enumerate(seq):
         im = fr[min(i, len(fr) - 1)]
         if k == o.get('flash', 11): im = N2.flash(im, .35 if heavy else .22)

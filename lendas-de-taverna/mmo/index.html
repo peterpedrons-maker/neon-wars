@@ -2989,7 +2989,7 @@ function manualCast(){
   let t=nearestMob(h,self?h.rng*1.8:Math.max(h.rng*1.6,o.r?o.r:0)+20);
   if(!t)t=self?{x:h.x,y:h.y,kind:'mob',dead:false}:virtTarget(h,Math.max(50,h.rng*.9));
   startHeroAttack(h,t,i);
-  if(h.act&&h.act.sk===i){if(emp){h.act.emp=1;styConsume();if(C.skills[i][0]==='n_esmaga'&&hStyle()==='slash'){h.act.crush=1;h.act.dur=1.15;h.act.hit=.62;}}else styAdd(4,'sk'+i);}
+  if(h.act&&h.act.sk===i){if(emp){h.act.emp=1;styConsume();if(C.skills[i][0]==='n_esmaga'&&hStyle()==='slash'){h.act.crush=1;h.act.dur=1.15;h.act.hit=.62;}if(C.skills[i][0]==='n_terremoto'&&hStyle()==='slash'){h.act.quake=1;h.act.dur=1.4;h.act.hit=.52;}}else styAdd(4,'sk'+i);}
 }
 function heroPow(h){return styDmg()*h.pow*(h.chord&&h.chord.t>0?1+(h.chord.atk||0):1)*(h.buff&&h.buff.t>0?1+(h.buff.atk||0):1)*stMul(h,'dmg');}
 function heroCrit(h){if(h.furt)return 1;return Math.min(.95,h.crit+(h.buff&&h.buff.t>0?(h.buff.crit||0):0)+stSum(h,'crit'));}
@@ -3011,6 +3011,17 @@ function crushFx(h,t,mult,o){const R=104,x=t.x,y=t.y;
   VF.sparks(x,y-8,26,['#ffe9c0','#ffb070','#fff'],{s0:120,s1:330});VF.chunks(x,y,9);VF.puff(x,y+2,14,['#b8a888','#8a7a60'],{r:26,up:14,sz:1.6,a:.7});
   VF.star(x,y-12,60,'#fff',.3);floatText(x,y-70,'ESMAGADO!','#ffb070',12,1.3);
   G.hs=Math.max(G.hs||0,.14);G.shake=Math.max(G.shake||0,.5);}
+/* ABALO SÍSMICO empoderado: o herói crava a espada no chão; 3 ondas de choque em anéis crescentes, fissuras compridas irradiando e rochas que sobem; cada onda fere e atordoa de novo */
+function quakeFx(h,mult,o){const R=o.r||120,x=h.x,y=h.y;G.shake=Math.max(G.shake||0,.6);G.hs=Math.max(G.hs||0,.12);
+  floatText(x,y-96,'ABALO SÍSMICO!','#ffb070',12,1.4);
+  gdecAdd({x,y,a:0,kind:'pit',R:20,th:'terra',life:6});
+  for(let k=0;k<8;k++){const a=k*Math.PI/4+.2,L=Math.round(R*.46);gdecAdd({x:x+Math.cos(a)*L,y:y+Math.sin(a)*L,a,kind:'line',R:5,L,th:'terra',life:6,delay:.05+k*.01});}
+  [0,1,2].forEach(k=>setTimeout(()=>{if(!G.on||!G.hero)return;const rr=R*(.62+.28*k);
+    VF.ringw(x,y+4,rr,k===2?'#ffe0b0':'#c9a878',.42,8-k*2);VF.ringw(x,y+4,rr*.7,'#fff',.3,4);VF.chunks(x,y,8+k*3);
+    VF.puff(x,y+2,10,['#b8a888','#8a7a60'],{r:rr*.6,up:16,sz:1.6,a:.6});
+    for(let j=0;j<6+k*3;j++){const a=Math.random()*6.283,d=rr*(.35+.6*Math.random());VF.chunks(x+Math.cos(a)*d,y+Math.sin(a)*d,3);}
+    G.shake=Math.max(G.shake||0,.35+k*.1);sfx('sk_terra',.6);
+    allFoes().forEach(m=>{if(Math.hypot(m.x-x,m.y-y)-((m.T&&m.T.rad)||0)<rr+10){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),mult*(k===0?.5:.4),heroCrit(h));hitMob(m,r.d,r.crit,x,y,1.8);m.stun=Math.max(m.stun||0,.8);if(popFoe)popFoe(m);}});},k*230));}
 function startTufao(h,mult,o){h.tuf={t:0,dur:4.2,tk:0,r:Math.max(62,o.r||62)*1.15,m:mult*.5,fxT:0,ang:0};floatText(h.x,h.y-100,'TUFÃO!','#ffb070',12,1.4);G.hs=Math.max(G.hs||0,.06);}
 function tufTick(dt){const h=G.hero;if(!h||!h.tuf)return;if(h.state==='ko'||G.scene!=='dungeon'){h.tuf=null;return;}
   const T=h.tuf;T.t+=dt;T.ang+=dt*11;T.tk-=dt;T.fxT-=dt;const q=T.t/T.dur,R=T.r*(.82+.18*Math.sin(T.t*5));
@@ -3049,7 +3060,7 @@ function heroHitMoment(h){
   else if(o.t==='multi'){for(let k=0;k<o.n;k++)setTimeout(()=>{if(G.on&&t&&!t.dead)fireProj(h,t,mult,false,PST[S[0]]);},k*110);}
   else if(o.t==='meteor'){const big=S[0]==='n_cataclismo',n=(big?6:3)*(emp?2:1),rain=S[0]==='n_chuva';if(rain){setTimeout(()=>{if(!G.on)return;allFoes().forEach(m=>{if(Math.hypot(m.x-t.x,m.y-t.y)<52){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),mult,heroCrit(h));hitMob(m,r.d,r.crit,t.x,t.y-30,1.1);}});},420);}
     else for(let k=0;k<n;k++){const bx=t.x+rnd(-34,34),by=t.y+rnd(-22,22);GXI_meteor(bx,by,k*.16,big);VF.meteor(bx,by,'#ff8a3a',k*.16,()=>{if(!G.on)return;allFoes().forEach(m=>{if(Math.hypot(m.x-bx,m.y-by)<(big?58:48)*(emp?1.3:1)){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),mult*(big?.55:1),heroCrit(h));hitMob(m,r.d,r.crit,bx,by-30,1.2);}});VF.glow(bx,by-6,big?54:40,'#ff9a3a',.45);VF.wave(bx,by,big?52:38,'#ffb050',.45,3);VF.burst(bx,by-6,big?22:14,['#ff7a2a','#ffd070','#fff0c0','#5a3a20'],{s0:40,s1:150,up:30,g:120});G.fx.push({k:'boom',x:bx,y:by,life:.4,max:.4,delay:0});sfx('spell_hit',.5);G.shake=Math.max(G.shake||0,big?.3:.15);});}}
-  else if(o.t==='aoe'){if(emp&&S[0]==='n_giro')startTufao(h,mult,o);allFoes().forEach(m=>{if(Math.hypot(m.x-h.x,m.y-h.y)-((m.T&&m.T.rad)||0)<o.r){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),mult,heroCrit(h));hitMob(m,r.d,r.crit,h.x,h.y,o.knock||1.2);if(o.stun)m.stun=Math.max(m.stun,o.stun);if(SAVE.sub==='dissonante')m.vuln=6;}});
+  else if(o.t==='aoe'){if(emp&&S[0]==='n_giro')startTufao(h,mult,o);if(emp&&S[0]==='n_terremoto')quakeFx(h,mult,o);allFoes().forEach(m=>{if(Math.hypot(m.x-h.x,m.y-h.y)-((m.T&&m.T.rad)||0)<o.r){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),mult,heroCrit(h));hitMob(m,r.d,r.crit,h.x,h.y,o.knock||1.2);if(o.stun)m.stun=Math.max(m.stun,o.stun);if(SAVE.sub==='dissonante')m.vuln=6;}});
     G.fx.push({k:'ring',x:h.x,y:h.y,life:.5,max:.5,col:'#ffe08a'});G.shake=Math.max(G.shake||0,.15);}
   else if(o.t==='heal'){const v=Math.round(h.maxhp*o.heal*ef*healM());h.hp=Math.min(h.maxhp,h.hp+v);floatText(h.x,h.y-52,'+'+v,'#8ef08a',11,1.2,{k:'heal',vy:18,pop:1});sfx('heal',.8);G.fx.push({k:'ring',x:h.x,y:h.y,life:.7,max:.7,col:'#8ef08a'});}
   else if(o.t==='buff'){h.buff={atk:(o.atk||0)*ef,spd:o.spd||0,def:(o.def||0)*ef,crit:(o.crit||0)*ef,t:o.dur*du*(SAVE.sub==='consonante'?1.3:1),col:BUFFCOL[S[0]]||'#ffb050'};floatText(h.x,h.y-52,'Reforçado!','#ffe08a',9);G.fx.push({k:'ring',x:h.x,y:h.y,life:.6,max:.6,col:'#ffa63a'});sfx('buff',.6);}
@@ -3625,6 +3636,12 @@ function hSpd(h){if(stHas(h,'preso')||stHas(h,'atordoado'))return 0;return h.spe
    habilidade ×.4; habilidade canalizada (segurar/carregar) ×.2 — assim o ranged não foge para sempre. */
 const AMV={melee:1,ranged:.9,skill:.8,chan:.5};   // action RPG: atacar e usar skill quase não reduzem a velocidade
 function heroMoveWhileAct(h,dt){
+  if(h.cz&&!(h.act&&h.act.crush)){h.cz=0;h.zoff=0;}
+  if(h.act&&h.act.crush&&h.state!=='ko'){const a=h.act,p=Math.min(1,a.t/a.dur);h.cz=1;
+    if(p>.16&&p<.64){const q=(p-.16)/.48;h.zoff=54*Math.sin(Math.PI*q);const t=a.tgt;
+      if(t&&!t.dead&&q<.92){const d=dist(h,t)-((t.T&&t.T.rad)||0);if(d>14){const sp=Math.min(d-10,300*dt),nx=h.x+(t.x-h.x)/Math.max(1,dist(h,t))*sp,ny=h.y+(t.y-h.y)/Math.max(1,dist(h,t))*sp;if(!blockedAt(nx,ny,8)){h.x=nx;h.y=ny;}}}
+      if(Math.random()<dt*30)VF.pt(h.x+rnd(-8,8),h.y-h.zoff*.4,{vy:-rnd(10,40),life:.35,col:'#ffe9c0',sz:2});}
+    else h.zoff=0;}
   const a=h.act;if(!a||h.state==='ko')return;const ranged=h.rng>60,sk=a.sk>=0,pen=sk?((a.ch>0&&a.t<a.ch)?AMV.chan:AMV.skill):(ranged?AMV.ranged:AMV.melee);
   let mv=0;
   if(!G.auto&&G.joy.m>0){mv=moveTo(h,h.x+G.joy.x*60,h.y+G.joy.y*60,hSpd(h)*Math.max(.35,G.joy.m)*pen,dt);}
@@ -3653,7 +3670,7 @@ function updateHero(dt){
     {const a=h.act;if(a.cast&&a.ch>0&&a.t<a.ch+.3&&Math.random()<dt*45){const ang=Math.random()*6.283,r=rnd(24,38);VF.pt(h.x+Math.cos(ang)*r,h.y-14+Math.sin(ang)*r*.6,{vx:-Math.cos(ang)*r*2.5,vy:-Math.sin(ang)*r*1.5,life:.38,col:CHCOL[h.cls],sz:2.2});}}
     if(!h.act.done&&h.act.t>=h.act.dur*h.act.hit){h.act.done=true;heroHitMoment(h);}
     if(h.act&&h.act.t>=h.act.dur){h.act=null;h.state='idle';}
-    if(h.act)heroMoveWhileAct(h,dt);   // ataca ANDANDO: o ataque básico quase não reduz a velocidade; habilidades/disparos reduzem (anti-kite infinito)
+    if(h.act)heroMoveWhileAct(h,dt);else if(h.cz){h.cz=0;h.zoff=0;}   // ataca ANDANDO: o ataque básico quase não reduz a velocidade; habilidades/disparos reduzem (anti-kite infinito)
     return;}
   let tgt=null;const bs=G.boss;const jm=!G.auto&&G.joy.m>0;
   if(G.auto){tgt=nearestMob(h,260);if(tgt)tgt=skPrio(h,tgt);}
@@ -4896,7 +4913,7 @@ function cxFrame(e){if(!CXON||(e.kind!=='hero'&&e.kind!=='mob'&&e.kind!=='boss'&
   if(e.kind==='hero'&&e.tuf&&M.anims.spin_d){const l=M.anims.spin_d,q=l[Math.floor(e.tuf.ang*1.8)%l.length];return [sh.atlasImg,(q%M.cols)*M.w,((q/M.cols)|0)*M.h,M.w,M.h,M.ax,M.ay,0,1];}
   if(e.dod)return AL('run',(e.dod.t||0)*30);
   if(e.state==='hurt'||e.stun>0||(e.stagger>0&&!(a&&a.skill)))return A('hurt',e.flash>.07?1:2);
-  if(a&&(e.state==='atk'||a.skill)){const p=Math.min(.999,a.t/a.dur),hit=Math.max(.15,Math.min(.9,a.hit||.5)),imp=.6,u=p<hit?p/hit*imp:imp+(p-hit)/(1-hit)*(1-imp),nm=(a.crush&&M.anims['crush_'+r])?'crush':(a.cast||a.skill)?'cast':'attack'+(a.v||'');if(!M.anims[nm+'_'+r])nm=(a.cast||a.skill)?'cast':'attack';return A(nm,u*L(nm).length);}
+  if(a&&(e.state==='atk'||a.skill)){const p=Math.min(.999,a.t/a.dur),hit=Math.max(.15,Math.min(.9,a.hit||.5)),imp=.6,u=p<hit?p/hit*imp:imp+(p-hit)/(1-hit)*(1-imp),nm=(a.crush&&M.anims['crush_'+r])?'crush':(a.quake&&M.anims['quake_'+r])?'quake':(a.cast||a.skill)?'cast':'attack'+(a.v||'');if(!M.anims[nm+'_'+r])nm=(a.cast||a.skill)?'cast':'attack';return A(nm,u*L(nm).length);}
   if(e.ch)return A('cast',9+(Math.floor(G.t*7)%4));
   if(e.state==='walk'){const run=e.kind==='hero'&&(e.rk||0)>.5;return AL(run?'run':'walk',e.animT*(run?14:e.kind==='hero'?20.8:14));}
   return AL('idle',(G.t+(e._cxp||(e._cxp=Math.random()*9)))*10);}

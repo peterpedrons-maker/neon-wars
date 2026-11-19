@@ -35,7 +35,7 @@ def alias(u):
 def frames_of(u):
     """-> (lista de quadros RGBA 72x64, anims {nome: [indices]}) como export_atlas.export()"""
     imgs, anims, al = [], {}, alias(u)
-    for kind in ['idle', 'walk', 'run', 'attack', 'hurt', 'death', 'cast'] + (list(E.COMBO_KINDS) if u.get('combo') else []) + (['spin'] if u.get('twirl') else []) + (['crush'] if u.get('twirl') else []):
+    for kind in ['idle', 'walk', 'run', 'attack', 'hurt', 'death', 'cast'] + (list(E.COMBO_KINDS) if u.get('combo') else []) + (['spin'] if u.get('twirl') else []) + (['crush', 'quake'] if u.get('twirl') else []):
         for vk, vn in E.VIEWS.items():
             if kind in al: anims[f'{kind}_{vk}'] = anims[f'{al[kind]}_{vk}']; continue
             if kind == 'spin' and vk != 'd': anims[f'{kind}_{vk}'] = anims['spin_d']; continue
