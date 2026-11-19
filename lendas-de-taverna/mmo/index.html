@@ -6126,6 +6126,7 @@ function qLeft(){const d=new Date(),m=new Date(d.getFullYear(),d.getMonth(),d.ge
 function sqCss(){if(document.getElementById('sqcss'))return;const st=document.createElement('style');st.id='sqcss';st.textContent=`
 .rmw{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px}.rml{font:700 10px var(--f);color:#9a8d6e;letter-spacing:.06em;text-transform:uppercase}.rmi{width:34px;height:34px;border:2px solid;background:#0d0b11;padding:2px;flex:none}.rmi img{width:100%;height:100%;image-rendering:pixelated}
 .sqt{display:flex;align-items:center;gap:8px;margin:6px 0 10px;font:700 11px var(--f);color:#c9b98a}.sqt .bar{flex:1;height:8px;background:#0c0912;border:1px solid #5a4620}.sqt .bar i{display:block;height:100%;background:linear-gradient(#ffd66e,#c98f1e)}
+.qsh{display:flex;align-items:center;gap:6px;margin:8px 0 0;padding:8px 8px;background:linear-gradient(180deg,#2a2130,#17121d);border:2px solid #5a4620;cursor:pointer;font:700 12px var(--f);color:#ffd66e;letter-spacing:.05em;text-transform:uppercase;user-select:none}.qsh.op{border-color:#b98a2a}.qsh img{height:18px;image-rendering:pixelated}.qsh b{font-weight:700}.qsh em{margin-left:auto;font:500 10px var(--f);color:#9a8d6e;font-style:normal;text-transform:none;letter-spacing:0}.qsb{display:inline-flex;gap:4px}.qp{font:700 9px var(--f);text-decoration:none;padding:1px 5px;background:#0c0912;border:1px solid #5a4620;color:#c9b98a;letter-spacing:0}.qp.g{background:#1a3a1a;border-color:#5ddc4a;color:#a8f090}.qp.b{background:#10243a;border-color:#4a8ad0;color:#9fd0ff}.qsa{font-style:normal;color:#ffd66e;width:12px;text-align:center}.qsbody{padding:8px 4px 2px;border:2px solid #3a2f18;border-top:0;margin-bottom:2px}.qsctl{display:flex;gap:6px;justify-content:flex-end;margin:0 0 2px}.qsctl button{font:600 10px var(--f);padding:3px 8px;background:#17121d;color:#c9b98a;border:1px solid #5a4620;cursor:pointer}
 .sqs2{display:flex;align-items:center;gap:6px;margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid #5a4620;font:700 12px var(--f);color:#ffd66e;letter-spacing:.06em;text-transform:uppercase}.sqs2 img{height:18px;image-rendering:pixelated}.sqs2 span{margin-left:auto;font:500 11px var(--f);color:#9a8d6e;text-transform:none;letter-spacing:0}
 .sq{border:2px solid #b98a2a;background:linear-gradient(180deg,#2a2130,#17121d);padding:10px;box-shadow:inset 0 0 0 1px #000a}
 .sq.lk{border-color:#4a4350;filter:grayscale(.7);opacity:.8}.sq.rd{border-color:#7ddc6a;box-shadow:0 0 10px #5ddc4a55,inset 0 0 0 1px #000a}
@@ -6164,16 +6165,24 @@ function sCard(q){const pg=qkProg(q),ok=pg[0]>=pg[1],tn=NPCD[q.turn];
 <div class="sqr"><img src="assets/kit/B29.png"${ok?'':' style="filter:grayscale(1)"'}><span>${ok?'Entregar a':'Entregar depois a'} <b>${tn.nm}</b> · ${NLOC[q.turn]||''}</span></div>
 <div class="sqo"><div class="ro"><span class="ck${ok?' on':''}">${ok?'✔':''}</span><span>${stObjTxt(q)}</span><em>${pg[0]}/${pg[1]}</em></div><div class="bar"><i style="width:${Math.round(pg[0]/pg[1]*100)}%"></i></div></div>
 <div class="sqw"><small>RECOMPENSAS</small>${rwChips(stRewOf(q))}${stFacTxt(q.fac)?'<div class="sqf">Reputação: '+stFacTxt(q.fac)+'</div>':''}${rwMini(q)}</div></div>`;}
-function sideSec(){const act=secActive(),av=SEC.filter(secAvail);let h=`<div class="sqs2"><img src="assets/kit/B28.png" style="filter:hue-rotate(165deg) saturate(1.3)">Missões secundárias<span>${act.length}/${QMAXA} ativas</span></div>`;
-  h+=act.length?act.map(sCard).join(''):'<div class="dd" style="margin-bottom:6px">Nenhuma missão ativa. Procure NPCs com o "!" azul.</div>';
+function qOpen(k,def){const o=(SAVE.qsec||{})[k];return o===undefined?def:!!o;}
+function qSec(k,ic,title,sub,badge,body,def){const op=qOpen(k,def);(G.qsd=G.qsd||{})[k]=op;
+  return `<div class="qsh${op?' op':''}" data-a="qs:${k}">${ic}<b>${title}</b><span class="qsb">${badge||''}</span><em>${sub||''}</em><i class="qsa">${op?'▾':'▸'}</i></div>`+(op?`<div class="qsbody">${body}</div>`:'');}
+function sideList(act,av,none){let h=act.length?act.map(sCard).join(''):`<div class="dd" style="margin-bottom:6px">${none}</div>`;
   if(av.length)h+='<div class="sqw"><small>DISPONÍVEIS ('+av.length+')</small>'+av.map(q=>`<div class="sqr"><img src="assets/kit/B28.png" style="filter:hue-rotate(165deg) saturate(1.3)"><span><b>${q.nm}</b> · ${NPCD[q.giver].nm} (${NLOC[q.giver]||''})${q.fac?' · <i style="color:#9fd0ff;font-style:normal">'+Object.keys(q.fac).map(k=>FACN[k]).join('/')+'</i>':''}</span></div>`).join('')+'</div>';
   return h;}
 function missionsBody(){sqCss();const c=qMain(),L=SAVE.q.d.l,rdy=(c&&qOk(c)?1:0)+L.filter(d=>!d.c&&qOk(d)).length,s=stS();let h='';
+  const act=secActive(),av=SEC.filter(secAvail),aS=act.filter(q=>!q.fac),aF=act.filter(q=>q.fac),vS=av.filter(q=>!q.fac),vF=av.filter(q=>q.fac);
+  const rd=a=>a.filter(q=>{const p=qkProg(q);return p[0]>=p[1];}).length,pill=(n,t,c2)=>n?`<u class="qp ${c2||''}">${n} ${t}</u>`:'';
+  const mrdy=(stS&&c&&0)||0;
   h+=`<div class="sqt"><span>Missões principais ${s.n}/${SQ.length}</span><div class="bar"><i style="width:${s.n/SQ.length*100}%"></i></div></div>`;
-  h+=`<div class="sqs2"><img src="assets/kit/B28.png">Missão principal<span>a história de Brumavale</span></div>`+sqCard();
-  h+=sideSec();
-  h+=`<div class="sqs2"><img src="${UI}scroll-unfurled.png">Missões diárias<span>renovam em ${qLeft()}h</span></div>`+L.map((q,i)=>qCard(q,0,'d',i)).join('');
-  h+=`<details class="qx"><summary>Trilha do Caçador (capítulo ${Math.min(SAVE.q.m+1,QMAIN.length)} de ${QMAIN.length})</summary>`+(c?qCard(c,1,'m',0):'<div class="dd" style="text-align:center">Trilha concluída.</div>')+'</details>';
+  h+=`<div class="qsctl"><button data-a="qs:all">Expandir tudo</button><button data-a="qs:none">Recolher tudo</button></div>`;
+  h+=qSec('main',`<img src="assets/kit/B28.png">`,'Principal','a história',`${s.n}/${SQ.length}`,sqCard(),true);
+  h+=qSec('side',`<img src="assets/kit/B28.png" style="filter:hue-rotate(165deg) saturate(1.3)">`,'Secundárias',aS.length+'/'+QMAXA+' ativas',pill(rd(aS),'prontas','g')+pill(vS.length,'novas','b'),sideList(aS,vS,'Nenhuma missão ativa. Procure NPCs com o "!" azul.'),aS.length>0);
+  h+=qSec('fac',`<img src="assets/kit/D19.png">`,'Facções','pontos de reputação',pill(rd(aF),'prontas','g')+pill(vF.length,'novas','b'),sideList(aF,vF,'Nenhuma missão de facção ativa. Elas rendem reputação com Ordem, Guildas e Remanescentes.'),aF.length>0);
+  const dn=L.filter(d=>!d.c).length;
+  h+=qSec('day',`<img src="${UI}scroll-unfurled.png">`,'Diárias','renovam em '+qLeft()+'h',pill(L.filter(d=>!d.c&&qOk(d)).length,'prontas','g')+`<u class="qp">${dn}/${L.length}</u>`,L.map((q,i)=>qCard(q,0,'d',i)).join(''),dn>0);
+  h+=qSec('trail',`<img src="${UI}scroll-unfurled.png" style="filter:grayscale(.6)">`,'Trilha do Caçador','cap. '+Math.min(SAVE.q.m+1,QMAIN.length)+' de '+QMAIN.length,'',c?qCard(c,1,'m',0):'<div class="dd" style="text-align:center">Trilha concluída.</div>',false);
   if(rdy>1)h+=`<div class="acts"><button class="g" data-a="qall">Receber tudo (${rdy})</button></div>`;
   return h;}
 /* ===== LOJA DE FICHAS (Capitão Ruvel): moeda das missões, conquistas e encomendas ===== */
@@ -6237,7 +6246,7 @@ function winGrupo(){$('wtt').textContent='Grupo';const tab=G.gtab||'g',P=G.party
     h+=ch==='s'?'':inp('cmsg','Mensagem…','cs')+'<div class="sub">Sem conexão: só você vê estas mensagens.</div>';}
   $('wbody').innerHTML=h;}
 function socAct(a){const [k,v,w]=a.split(':');
-  if(k==='rt'){G.rtab=v;sfx('ui_click');}else if(k==='sb'){shopBuy(v);}else if(k==='pet'){if(petOwn(v)){SAVE.pet=SAVE.pet===v?null:v;G.petE=null;sfx('ui_confirm',.6);}}else if(k==='qall'){const c=qMain();if(c&&qOk(c))qClaim('m',0);SAVE.q.d.l.forEach((d,i)=>{if(!d.c&&qOk(d))qClaim('d',i);});}else if(k==='op'){G.winOpen=v;sfx('ui_click');renderWin();return true;}else if(k==='ti'){setTitle(SAVE.title===v?null:v);sfx('ui_confirm',.6);}else if(k==='qt'){G.qtab=v;sfx('ui_click');}else if(k==='qc'){qClaim(v,+w);}
+  if(k==='rt'){G.rtab=v;sfx('ui_click');}else if(k==='sb'){shopBuy(v);}else if(k==='pet'){if(petOwn(v)){SAVE.pet=SAVE.pet===v?null:v;G.petE=null;sfx('ui_confirm',.6);}}else if(k==='qall'){const c=qMain();if(c&&qOk(c))qClaim('m',0);SAVE.q.d.l.forEach((d,i)=>{if(!d.c&&qOk(d))qClaim('d',i);});}else if(k==='op'){G.winOpen=v;sfx('ui_click');renderWin();return true;}else if(k==='ti'){setTitle(SAVE.title===v?null:v);sfx('ui_confirm',.6);}else if(k==='qt'){G.qtab=v;sfx('ui_click');}else if(k==='qs'){SAVE.qsec=SAVE.qsec||{};if(v==='all'||v==='none'){['main','side','fac','day','trail'].forEach(x=>SAVE.qsec[x]=v==='all');}else SAVE.qsec[v]=!(G.qsd&&G.qsd[v]);sfx('ui_click',.5);writeSave();}else if(k==='qc'){qClaim(v,+w);}
   else if(k==='gt'){G.gtab=v;sfx('ui_click');}else if(k==='gi'){G.ginv=+v;sfx('ui_click');}
   else if(k==='gs'){const n=($('gname').value||'').trim();if(n){SAVE.pend.push(n);G.ginv=null;toast('Convite guardado — o online chega em breve',1600);sfx('ui_confirm',.6);}}
   else if(k==='gp'){SAVE.pend.splice(+v,1);}
