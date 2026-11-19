@@ -2828,14 +2828,14 @@ function styConsume(){STY.r=0;STY.f=0;STY.hold=0;STY.last.length=0;STY.idle=0;ST
 function styReset(){if(G.hero)G.hero.tuf=null;STY.dv=0;STY.r=0;STY.f=0;STY.hits=0;STY.idle=0;STY.endT=0;STY.hold=0;STY.last.length=0;STY.shownR=-1;STY.shownRd=-1;const e=$('sty');if(e)e.classList.remove('on','end','rdy');document.documentElement.classList.remove('emp');}
 function styDmg(){return 1+STYD[STY.r];}
 /* efeitos de HUD (PixelFx desenhado num canvas sobre o medidor): sprites das folhas de assets/fx + faíscas simples */
-const HFX={L:[],p:[],lx:167,ly:100,fireT:0};
+const HFX={L:[],p:[],lx:167,ly:94,fireT:0};
 function hudFx(n,x,y,sc,o){o=o||{};fxsLoad(n);HFX.L.push({n,x,y,sc,t:0,delay:o.delay||0,flip:o.flip,loop:o.loop,off:o.off||0,cut:o.cut});}
 function hudFxTick(dt,fire){const c=$('styFx');if(!c)return;const g=c.getContext('2d');
   if(!HFX.L.length&&!HFX.p.length&&!fire){if(HFX.dirty){g.clearRect(0,0,c.width,c.height);HFX.dirty=0;}return;}
   HFX.dirty=1;g.clearRect(0,0,c.width,c.height);g.imageSmoothingEnabled=false;g.setTransform(2,0,0,2,0,0);
   if(fire){HFX.fireT+=dt;fxsLoad('fx_chama');const F=FXS.fx_chama;if(F&&F.m){const m=F.m,n=m.n;g.globalCompositeOperation='lighter';
-    for(let k=0;k<9;k++){const fi=Math.floor((HFX.fireT*m.fps+k*7)%n),sx=(fi%m.cols)*m.w,sy=Math.floor(fi/m.cols)*m.h,sc=.3+.04*((k*5)%3),dw=m.w*sc,dh=m.oy*sc,bx=28+k*14,by=76+7;
-      g.drawImage(F.im,sx,sy,m.w,m.oy,bx-m.ox*sc,by-dh,dw,dh);}
+    for(let k=0;k<12;k++){const fi=Math.floor((HFX.fireT*m.fps+k*7)%n),sx=(fi%m.cols)*m.w,sy=Math.floor(fi/m.cols)*m.h,sc=.85+.15*((k*5)%3)/2,bx=24+k*11.5,by=82;
+      g.drawImage(F.im,sx,sy+28,m.w,44,bx-m.ox*sc,by-44*sc,m.w*sc,44*sc);}
     g.globalCompositeOperation='source-over';}}
   for(let i=HFX.L.length-1;i>=0;i--){const e=HFX.L[i];e.t+=dt;const F=FXS[e.n];if(!F||!F.m)continue;const m=F.m,tt=e.t-e.delay;if(tt<0)continue;const fi=Math.floor(tt*m.fps);if(fi>=m.n){HFX.L.splice(i,1);continue;}
     const sx=(fi%m.cols)*m.w,sy=Math.floor(fi/m.cols)*m.h;g.save();g.translate(e.x,e.y);if(e.flip)g.scale(-1,1);g.globalCompositeOperation='lighter';g.drawImage(F.im,sx,sy,m.w,m.h,-m.ox*e.sc,-m.oy*e.sc,m.w*e.sc,m.h*e.sc);g.restore();}
@@ -2846,7 +2846,7 @@ function styLetter(l,up){const L=$('styL'),src='assets/kit/rank/p_'+l+'.png';
   const g=L.cloneNode();g.removeAttribute('id');g.className='sli ghost';L.parentNode.insertBefore(g,L);g.addEventListener('animationend',()=>g.remove());
   L.src=src;L.classList.remove('pop','hit','drop');void L.offsetWidth;L.classList.add('drop');
   setTimeout(()=>{sfx('sk_terra',.55,1.5);G.shake=Math.max(G.shake||0,.16+.03*(STY.r||0));
-    hudFx('fx_pouso',HFX.lx,HFX.ly,.75);hudFx('fx_faisca',HFX.lx-6,HFX.ly-2,.55);hudFx('fx_faisca',HFX.lx+6,HFX.ly-2,.55,{flip:1,delay:.04});
+    hudFx('fx_pouso',HFX.lx,HFX.ly,1);hudFx('fx_faisca',HFX.lx-6,HFX.ly-2,.8);hudFx('fx_faisca',HFX.lx+6,HFX.ly-2,.8,{flip:1,delay:.04});
     for(let k=0;k<7;k++)HFX.p.push({x:HFX.lx+(Math.random()-.5)*20,y:HFX.ly-2,vx:(Math.random()-.5)*150,vy:-60-Math.random()*90,t:0,life:.45+Math.random()*.25,c:['#ffd070','#ffb43a','#fff0d4','#b8a888'][k%4]});},230);}
 function styTick(dt){const e=$('sty');if(!e)return;
   if(G.scene!=='dungeon'||!G.hero||G.hero.state==='ko'){if(styLive()||STY.hits)styReset();return;}
