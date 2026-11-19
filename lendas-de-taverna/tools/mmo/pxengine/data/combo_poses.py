@@ -154,6 +154,17 @@ BARD = {
                 legs=[0, 2, 0, 2, 0, 2, 0, 2, 0, 0], arm_over={1: (0, -2), 2: (0, -3), 3: (0, 2), 4: (0, -3), 5: (0, 2), 6: (0, -3), 7: (0, 2)}, lute=True),
  'bchord': dict(angs=[0] * 10, lean=[0, -1, -1, -1, -1, 0, 2, 3, 1, 0], dy=[0, 0, -1, -2, -3, -3, 1, 1, 0, 0], tn=[3, 3, 3, 3, 3, 3, 2, 2, 3, 3], face=[N, N, N, S_, S_, S_, S_, S_, N, N],
                 legs=[0, 0, 0, 0, 0, 0, 3, 3, 1, 0], arm_over={2: (0, -5), 3: (0, -6), 4: (0, -6), 5: (0, -6), 6: (1, 4), 7: (1, 4), 8: (0, 1)}, al_over={2: (0, -5), 3: (0, -6), 4: (0, -6), 5: (0, -6), 6: (0, 4), 7: (0, 4)}, lute=True),
+ # --- SKILLS EMPODERADAS ---
+ 'bcresc': dict(angs=[0] * 10, lean=[0, -1, -2, -3, -3, -3, -3, 3, 2, 0], dy=[0, 0, -1, -2, -3, -4, -4, 1, 1, 0], tn=[3, 3, 3, 3, 3, 3, 3, 2, 2, 3], face=[N, N, S_, S_, S_, S_, S_, S_, N, N],
+                legs=[0, 0, 1, 1, 1, 1, 1, 3, 2, 0], arm_over={2: (0, -4), 3: (0, -6), 4: (0, -8), 5: (0, -9), 6: (0, -9), 7: (2, 5), 8: (1, 2)}, al_over={3: (0, -5), 4: (0, -8), 5: (0, -9), 6: (0, -9), 7: (1, 5)}, lute=True),
+ 'bsymph': dict(angs=[0] * 10, lean=[0, 2, 3, 2, -2, -3, -2, 2, 1, 0], dy=[0, -2, -4, -2, -3, -5, -2, -3, -1, 0], tn=[3] * 10, face=[N, S_, S_, S_, S_, S_, S_, S_, N, N],
+                legs=[0, 2, 1, 2, 0, 2, 1, 2, 1, 0], arm_over={1: (0, -5), 2: (0, -7), 3: (0, -5), 4: (0, -7), 5: (0, -7), 6: (0, -5), 7: (0, -7)}, al_over={1: (0, -4), 2: (0, -6), 4: (0, -6), 6: (0, -4)}, lute=True),
+ 'bballad': dict(angs=[0] * 10, lean=[0, 1, 2, 3, 3, 3, 3, 2, 1, 0], dy=[0, 0, 1, 2, 2, 2, 2, 1, 0, 0], tn=[3, 3, 2, 2, 2, 2, 2, 2, 3, 3], face=[N] * 10,
+                 legs=[0, 0, 1, 1, 1, 1, 1, 1, 0, 0], arm_over={2: (0, 2), 3: (0, 3), 4: (0, 1), 5: (0, 3), 6: (0, 1), 7: (0, 2)}, lute=True),
+ 'bharm': dict(angs=[0] * 10, lean=[0, 0, -1, -1, -1, -1, -1, -1, 0, 0], dy=[0, -1, -3, -5, -6, -6, -6, -5, -2, 0], tn=[3] * 10, face=[N, N, N, S_, S_, S_, S_, N, N, N],
+                legs=[0] * 10, arm_over={2: (0, -3), 3: (0, -6), 4: (0, -8), 5: (0, -8), 6: (0, -8), 7: (0, -5)}, al_over={2: (0, -3), 3: (0, -6), 4: (0, -8), 5: (0, -8), 6: (0, -8), 7: (0, -5)}, lute=True),
+ 'bcacoph': dict(angs=[0] * 10, lean=[0, -1, -2, -3, 4, 5, 4, 2, 1, 0], dy=[0, 0, -2, -4, 2, 3, 3, 1, 0, 0], tn=[3, 3, 3, 3, 2, 1, 1, 2, 3, 3], face=[N, N, S_, S_, S_, S_, S_, S_, N, N],
+                 legs=[0, 1, 1, 1, 3, 3, 3, 2, 1, 0], arm_over={2: (0, -7), 3: (0, -9), 4: (2, 6), 5: (3, 7), 6: (3, 7), 7: (1, 3)}, al_over={3: (0, -8), 4: (2, 6), 5: (3, 7), 6: (3, 7)}, lute=True),
 }
 # --------------------------------- ARQUEIRO (arco) ---------------------------------
 BOWD = {'right': (1, 0), 'down': (0, 1), 'up': (0, -1)}
@@ -171,15 +182,31 @@ def _archer(view, name):
                 dict(sw=B(9), dy=-7, dx=-5, hdx=-2, bdx=-1, bl=(0, 3), br=(0, 3), tn=2, face=f), dict(sw=B(10), dy=-7, dx=-5, hdx=-2, bdx=-1, bl=(0, 3), br=(0, 3), tn=2, face=f),
                 dict(sw=B(0, False), dy=-6, dx=-5, hdx=2, bdx=1, bl=(0, 3), br=(0, 3), face=f), dict(sw=B(-1, False), dy=-3, dx=-5, hdx=1, bl=(0, 2), br=(0, 2)),
                 dict(sw=B(2, False), dy=1, dx=-4, tn=2, hdx=1), dict(sw=B(0, False, 'carry'), dx=-3)]
+    if name == 'aqrain':   # CHUVA DE FLECHAS: recua o tronco, puxa o arco todo para o alto, treme e solta
+        return [dict(sw=B(0, False, 'carry')), dict(sw=B(3), tn=2, dy=1), dict(sw=B(6), hdx=-1, dy=-1, tn=2), dict(sw=B(9), hdx=-2, dy=-2, tn=2, face=f), dict(sw=B(10), hdx=-2, dy=-3, tn=2, face=f),
+                dict(sw=B(10), hdx=-2, dy=-2, tn=2, face=f), dict(sw=B(10), hdx=-2, dy=-3, tn=2, face=f), dict(sw=B(0, False), hdx=1, dy=-1, face=f), dict(sw=B(-1, False), dy=0), dict(sw=B(0, False, 'carry'))]
+    if name == 'aqstorm':  # TEMPESTADE: tres disparos relampago com pulinhos
+        return [dict(sw=B(0, False, 'carry')), dict(sw=B(8), hdx=-1, tn=2, face=f), dict(sw=B(0, False), dy=-2, hdx=1), dict(sw=B(8), hdx=-1, dy=-1, tn=2, face=f), dict(sw=B(0, False), dy=-3, hdx=1),
+                dict(sw=B(8), hdx=-1, dy=-2, tn=2, face=f), dict(sw=B(0, False), dy=-3, hdx=1), dict(sw=B(8), hdx=-1, dy=-1, tn=2, face=f), dict(sw=B(0, False), dy=0, dx=-1), dict(sw=B(0, False, 'carry'))]
+    if name == 'aqpierce': # TIRO PERFURANTE: ajoelha, segura a mira longa e solta com coice
+        return [dict(sw=B(0, False, 'carry')), dict(sw=B(3), tn=2, dy=2), dict(sw=B(7), tn=1, dy=3, hdx=-1), dict(sw=B(10), tn=1, dy=3, hdx=-1, face=f), dict(sw=B(10), tn=1, dy=3, hdx=-1, face=f),
+                dict(sw=B(10), tn=1, dy=3, hdx=-1, face=f), dict(sw=B(0, False), tn=1, dy=3, hdx=2, dx=-2, bdx=1), dict(sw=B(-1, False), tn=2, dy=2, dx=-2), dict(sw=B(2, False), dy=1, dx=-1), dict(sw=B(0, False, 'carry'))]
+    if name == 'aqmark':   # MARCA DO CACADOR: passo firme, aponta e mira com calma, solta
+        return [dict(sw=B(0, False, 'carry')), dict(sw=B(4), dx=1), dict(sw=B(7), dx=2, tn=2), dict(sw=B(9), dx=2, tn=2, hdx=-1, face=f), dict(sw=B(9), dx=2, tn=2, hdx=-1, face=f),
+                dict(sw=B(9), dx=2, tn=2, hdx=-1, face=f), dict(sw=B(0, False), dx=2, hdx=1, bdx=1), dict(sw=B(0, False), dx=2, dy=-1), dict(sw=B(-1, False), dx=1), dict(sw=B(0, False, 'carry'))]
+    if name == 'aqboom':   # FLECHAS EXPLOSIVAS: salto curto para tras, tiro no ar, cai rolando
+        return [dict(sw=B(0, False, 'carry')), dict(sw=B(3), tn=2, dy=2), dict(sw=B(6), dy=-3, dx=-2, bl=(0, 2), br=(0, 2)), dict(sw=B(9), dy=-6, dx=-3, hdx=-1, bl=(0, 3), br=(0, 3), face=f),
+                dict(sw=B(10), dy=-7, dx=-3, hdx=-1, bl=(0, 3), br=(0, 3), face=f), dict(sw=B(0, False), dy=-6, dx=-3, hdx=2, bl=(0, 3), br=(0, 3)), dict(sw=B(-1, False), dy=-3, dx=-3), dict(sw=B(2, False), dy=1, dx=-3, tn=2),
+                dict(sw=B(2, False), dy=2, dx=-2, tn=1), dict(sw=B(0, False, 'carry'), dx=-1)]
     raise KeyError(name)
 TABLE = dict(WAR, **ROG)
 TABLE.update(MAGE); TABLE.update(CLE); TABLE.update(BARD)
-ARCH = ('aq2', 'aq3', 'aq4')
+ARCH = ('aq2', 'aq3', 'aq4', 'aqrain', 'aqstorm', 'aqpierce', 'aqmark', 'aqboom')
 for _n in ARCH: TABLE[_n] = None
 # opcoes por ataque: seq (indices dos quadros densos), poeira/clarao
 OPT = {
  'aq4': dict(seq=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 13, 14, 14, 15, 16, 17, 18], flash=12, dust=[(16, .3), (17, .6), (18, .85)], heavy=True),
- 'mchan': dict(heavy=True), 'mfrost': dict(heavy=True), 'mrock': dict(heavy=True), 'cpray': dict(heavy=True), 'cjudge': dict(heavy=True), 'chammer': dict(heavy=True), 'cfury': dict(heavy=True), 'bchord': dict(heavy=True),
+ 'mchan': dict(heavy=True), 'mfrost': dict(heavy=True), 'mrock': dict(heavy=True), 'cpray': dict(heavy=True), 'bcresc': dict(heavy=True), 'bcacoph': dict(heavy=True), 'aqpierce': dict(heavy=True), 'aqboom': dict(heavy=True), 'cjudge': dict(heavy=True), 'chammer': dict(heavy=True), 'cfury': dict(heavy=True), 'bchord': dict(heavy=True),
 }
 
 SEQ = [0, 1, 2, 3, 4, 5, 6, 7, 8, 8, 9, 10, 12, 13, 13, 14, 15, 16, 17, 18]          # indices dos 19 quadros densos; o golpe cai no 11-12
