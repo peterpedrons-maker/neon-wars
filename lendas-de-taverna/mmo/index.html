@@ -3007,10 +3007,12 @@ function tufTick(dt){const h=G.hero;if(!h||!h.tuf)return;if(h.state==='ko'||G.sc
   const T=h.tuf;T.t+=dt;T.ang+=dt*11;T.tk-=dt;T.fxT-=dt;const q=T.t/T.dur,R=T.r*(.82+.18*Math.sin(T.t*5));
   if(T.fxT<=0){T.fxT=.028;const a=T.ang;
     for(let k=0;k<3;k++){const aa=a+k*2.094,rr=R*(.45+.55*Math.random());VF.pt(h.x+Math.cos(aa)*rr,h.y-10+Math.sin(aa)*rr*.5,{vx:-Math.sin(aa)*190,vy:Math.cos(aa)*95-26,life:.3,col:['#ffe9c0','#ffb070','#fff'][k%3],sz:1+(k===0?1:0)});}
-    for(let k=0;k<7;k++){const hz=Math.random()*78,rr=R*(.28+.72*(1-hz/90)),aa=a*(1+hz*.004)+Math.random()*6.283;
-      VF.pt(h.x+Math.cos(aa)*rr,h.y-hz*.55+Math.sin(aa)*rr*.42,{vx:-Math.sin(aa)*230,vy:Math.cos(aa)*95-hz*.4,life:.26,col:['#ffffff','#e8f0ff','#d8c8a0','#b8d890'][k%4],sz:(k%3===0)?3:2});}
-    if(Math.random()<.4){for(let k=0;k<4;k++)VF.wave(h.x,h.y+4-k*19,R*(1.02-.2*k),k%2?'#ffffff':'#e8d8b8',.18,2);}if(Math.random()<.3)VF.chunks(h.x+rnd(-R*.6,R*.6),h.y+2,2);
-    VF.blade(h.x,h.y-14,R*.92,a,a+1.9,'#ffe8c8',.16,7,0,.6);VF.blade(h.x,h.y-40,R*.6,a+2.6,a+4.3,'#ffffff',.14,5,0,.5);
+    for(let k=0;k<9;k++){const hz=Math.random()*96,rr=R*(.18+.82*hz/96),aa=a*(1+hz*.006)+Math.random()*6.283;
+      VF.pt(h.x+Math.cos(aa)*rr,h.y+2-hz*.85+Math.sin(aa)*rr*.4,{vx:-Math.sin(aa)*(210+hz),vy:Math.cos(aa)*80-hz*.5,life:.26,col:['#ffffff','#e8f0ff','#d8c8a0','#b8d890','#9a8a6a'][k%5],sz:(k%3===0)?3:2});}
+    for(let k=0;k<6;k++){const hz=k*17,rr=R*(.2+.17*k),ar=a*(1+.12*k)+k*1.1;VF.blade(h.x,h.y+2-hz*.9,rr,ar,ar+2.5,k%2?'#ffffff':'#ead9b8',.12,3+k*.7,0,.7);}
+    if(Math.random()<.45){for(let k=0;k<6;k++)VF.wave(h.x,h.y+3-k*15,R*(.16+.17*k),k%2?'#ffffff':'#d8c8a8',.16,2);}
+    if(Math.random()<.35)VF.chunks(h.x+rnd(-R*.5,R*.5),h.y+2,2);
+    VF.blade(h.x,h.y-8,R*.95,a,a+1.9,'#ffe8c8',.16,7,0,.6);
     if(Math.random()<.5)VF.pt(h.x+rnd(-R,R),h.y+2,{vx:rnd(-20,20),vy:-rnd(40,110),life:.5,col:Math.random()<.5?'#b8a88a':'#8aa860',sz:2});}
   if(T.tk<=0){T.tk=.22;
     allFoes().forEach(m=>{const d=Math.hypot(m.x-h.x,m.y-h.y);if(d-((m.T&&m.T.rad)||0)<R){const r=dmgCalc(heroPow(h)*subMult(h,m),mdefv(m),T.m,heroCrit(h));hitMob(m,r.d,r.crit,h.x,h.y,.35);}});
