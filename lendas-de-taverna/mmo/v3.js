@@ -285,6 +285,7 @@ function drawEnt(sc,e,frame){
     G.cam.x=e.x-S0/2;G.cam.y=e.y-(S0-12);G.LW=S0;G.LH=S0;
     try{
       if(e.pet)drawPet(e,S0/2,S0-12);
+      else if(e.kind==='hero'&&e.tuf&&typeof drawSpin==='function'){drawSpin(e,fr,scale);}
       else if(e.kind==='hero'&&e.dod){if(typeof drawDodge==='function')drawDodge(e,fr,scale);else drawSprite(e,fr,scale,false,Math.min(1,.1+e.dod.t/.22));}
       else{
         const ra=e.kind==='boss'&&e.T.atlas&&((e.ent&&e.ent.k==='roar')||(e.act&&e.act.skill&&e.act.anim==='roar'&&!e.dead));
