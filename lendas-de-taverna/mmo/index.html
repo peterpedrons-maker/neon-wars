@@ -1004,6 +1004,28 @@ html #qtr .qr.rd span,html #qtr:not(.cl) .qr span{display:block!important}
 #bAtk.win{filter:brightness(1.35) drop-shadow(0 0 10px #ffe08a)!important}
 #bAtk.win::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:3px solid #ffe08a;box-shadow:0 0 10px #ffe08a;animation:cmbw .25s ease-in-out infinite alternate;pointer-events:none}
 @keyframes cmbw{from{transform:scale(1.02);opacity:.6}to{transform:scale(1.1);opacity:1}}
+
+/* MEDIDOR DE RANK — kit do dono (assets/kit/rank): COMBO + hits em cima, barra com letra e fogo */
+#sty{width:158px!important;text-shadow:none!important}
+#sty .sk{display:flex;align-items:flex-end;gap:5px;height:34px;margin:0 0 -2px 2px}
+#sty .sco{height:28px;image-rendering:auto}
+#sty .sht{height:14px;margin-bottom:3px}
+#sty #styN{font:900 italic 26px/1 var(--ft,inherit);color:#fff0d4;-webkit-text-stroke:4px #5a1a10;paint-order:stroke fill;text-shadow:0 2px 0 #2a0a08;min-width:14px;text-align:right}
+#sty #styN.pop{animation:styHit .16s ease-out}
+#sty .sbar{position:relative;width:138px;height:21px;margin-top:2px}
+#sty .sfr{position:absolute;inset:0;width:100%;height:100%;display:block}
+#sty .sgw{position:absolute;left:13.7%;width:83.8%;top:26.6%;height:42.5%;overflow:hidden;border-radius:1px}
+#sty .sgw b{display:block;height:100%;width:0;background:repeating-linear-gradient(115deg,#ff7a20 0 5px,#ffb43a 5px 9px,#ffe27a 9px 11px);box-shadow:0 0 6px #ff9a3a;transition:width .08s linear}
+#sty .sli{position:absolute;z-index:1;right:-26px;top:50%;height:34px;transform:translateY(-50%);transform-origin:30% 60%;filter:drop-shadow(0 2px 2px #000)}
+#sty .sli.pop{animation:styPop .42s cubic-bezier(.2,1.6,.4,1)}
+#sty .sli.hit{animation:styHit .16s ease-out}
+#sty .sfi{position:absolute;right:-24px;top:-14px;width:40px;z-index:0;opacity:0;transform-origin:50% 90%;pointer-events:none}
+#sty.r3 .sfi{opacity:.55;transform:scale(.7)}
+#sty.r4 .sfi{opacity:1;animation:styFire .5s ease-in-out infinite alternate}
+#sty.r4 .sli{height:44px;right:-30px}
+#sty.r4 .sgw b{box-shadow:0 0 10px #ffb43a,0 0 18px #ff7a20}
+@keyframes styFire{0%{transform:scale(1,1)}100%{transform:scale(1.12,1.22) translateY(-2px)}}
+#sty.end .sk,#sty.end .sbar{filter:grayscale(.6) brightness(.8)}
 </style>
 </head>
 <body>
@@ -1059,7 +1081,7 @@ html #qtr .qr.rd span,html #qtr:not(.cl) .qr span{display:block!important}
       <div class="pb" id="hpw"><div class="bar" id="hp"><b style="width:100%"></b></div><span id="hpt"></span></div>
       <div class="bar" id="xp"><b style="width:0"></b></div><span id="xpt"></span><div id="hpc"><em>PC</em><b>0</b></div></div>
     <div id="zone" class="txt-o" style="display:none">·</div><div id="gold"><span id="goldn">0</span></div><div id="dgt"><div class="vg"></div><div class="fl"></div><div class="bar t"></div><div class="bar b"></div><div class="c"><div class="tag"></div><div class="n"></div><div class="ln"></div><div class="sub"></div></div></div><div id="banner"><i class="o"></i><b id="bnT"></b><u></u><span id="bnS"></span></div>
-    <div id="sts"></div><div id="sty"><div class="sr"><i id="styL">D</i></div><div class="sw" id="styW">AQUECENDO</div><div class="sg"><b id="styG"></b></div><div class="sh"><span id="styN">0</span><em>HITS</em></div><div class="rd" id="styR">HABILIDADE CARREGADA</div></div><canvas id="mm"></canvas><div id="zname"></div><div id="prog" class="panel txt-o"><div id="progt">Clareira 0/10</div><div class="bar"><b style="width:0"></b></div></div>
+    <div id="sts"></div><div id="sty"><div class="sk"><img class="sco" src="assets/kit/rank/combo.png" alt=""><span id="styN">0</span><img class="sht" src="assets/kit/rank/hits.png" alt=""></div><div class="sbar"><img class="sfr" src="assets/kit/rank/frame.png" alt=""><div class="sgw"><b id="styG"></b></div><img id="styFi" class="sfi" src="assets/kit/rank/fire.png" alt=""><img id="styL" class="sli" src="assets/kit/rank/D.png" alt=""></div><div id="styW" style="display:none"></div><div class="rd" id="styR">HABILIDADE CARREGADA</div></div><canvas id="mm"></canvas><div id="zname"></div><div id="prog" class="panel txt-o"><div id="progt">Clareira 0/10</div><div class="bar"><b style="width:0"></b></div></div>
     <div id="alertv"></div><div id="boss"><div class="t" id="bosst">—</div><div class="bar"><b style="width:100%"></b></div><div id="bpos"><b></b></div><div id="bsts"></div></div>
     <div id="buffs"></div>
     <div id="soc"></div><button id="itb"></button>
@@ -2804,7 +2826,7 @@ function styTick(dt){const e=$('sty');if(!e)return;
   e.classList.toggle('on',show);e.classList.toggle('end',!live&&STY.endT>0);e.classList.toggle('rdy',rdy);document.documentElement.classList.toggle('emp',rdy);
   if(!show){return;}
   const r=live?STY.r:0,R=STR[r];
-  if(r!==STY.shownR){const up=r>STY.shownR&&STY.shownR>=0&&live;STY.shownR=r;e.style.setProperty('--rc',R.c);$('styL').textContent=R.l;$('styW').textContent=R.w;
+  if(r!==STY.shownR){const up=r>STY.shownR&&STY.shownR>=0&&live;STY.shownR=r;e.style.setProperty('--rc',R.c);$('styL').src='assets/kit/rank/'+R.l+'.png';e.classList.remove('r3','r4');if(r>=3)e.classList.add('r'+r);
     if(up){const L=$('styL');L.classList.remove('pop');void L.offsetWidth;L.classList.add('pop');sfx('ui_confirm',.35+.06*r,1+r*.1);if(r>=2){G.shake=Math.max(G.shake||0,.05+.025*r);}if(r>=4){floatText(G.hero.x,G.hero.y-90,'HABILIDADE CARREGADA!',R.c,9.5,1.4);VF.ringw(G.hero.x,G.hero.y+4,52,R.c,.6,6);VF.star(G.hero.x,G.hero.y-20,40,'#fff',.4);sfx('levelup',.35,1.3);}}}
   if(rdy){STY.fx-=dt;if(STY.fx<=0){STY.fx=.09;const h=G.hero,a=Math.random()*6.283;VF.pt(h.x+Math.cos(a)*14,h.y-4+Math.sin(a)*6,{vx:0,vy:-rnd(30,70),life:.55,col:Math.random()<.5?'#ffd070':'#ff9a3a',sz:2});}}
   const gv=rdy?Math.max(0,Math.min(1,STY.hold/STYHOLD)):Math.max(0,Math.min(1,STY.f));
