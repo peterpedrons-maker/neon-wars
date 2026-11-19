@@ -1139,6 +1139,8 @@ html.rage #stage::after{content:'';position:absolute;inset:0;pointer-events:none
 
 #pdln{display:none!important}
 .mtl{display:flex;flex-direction:column;gap:5px;margin:6px 0}.mtr{display:flex;align-items:center;gap:10px;padding:8px 10px;background:#15111c;border:1px solid #4a3d22;border-left:4px solid var(--mc,#c98f1e)}.mtr img{width:28px;height:28px;image-rendering:pixelated}.mtr span{flex:1;font:600 14px var(--f);color:#eee3c8}.mtr b{font:700 16px var(--f);color:#ffd66e}
+
+#tip.na::after{display:none}
 </style>
 </head>
 <body>
@@ -1209,7 +1211,7 @@ html.rage #stage::after{content:'';position:absolute;inset:0;pointer-events:none
   <div id="gc"><div class="gcb"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><h3 id="gct"></h3><p id="gcm"></p><div class="gcbt"><button id="gcn" class="sec"></button><button id="gcy" class="ok"></button></div></div></div>
   <div id="fade"></div>
   <div class="scr" id="pan"><div class="box"><div class="tt"><span>Personagem</span><button class="xb" id="pClose"></button></div>
-    <div class="tabs"><button id="tEq" class="on">Equipamento</button><button id="tAt">Atributos</button><button id="tBg">Mochila</button><button id="tMt">Materiais</button><button id="tSk">Habilidades</button><button id="tTl">Passivas</button></div>
+    <div class="tabs"><button id="tEq" class="on">Equipamento</button><button id="tBg">Mochila</button><button id="tMt">Materiais</button><button id="tAt">Atributos</button><button id="tSk">Habilidades</button><button id="tTl">Passivas</button></div>
     <div class="wb body" id="pBody"></div></div><div id="tip"></div></div>
   <!-- resultado -->
   <div class="scr" id="res">
@@ -5696,7 +5698,7 @@ function render(){
 }
 /* ------------------------------ painel do herói -------------------------- */
 let panTab='eq',panSel=null,skSlot=0;   // panSel: {src:'bag'|'eq', k}
-const PL={pers:'eq',bag:'bg',hab:'sk'},PGRP={eq:'pers',at:'pers',bg:'bag',mt:'bag',sk:'hab',tl:'hab'},PTT={pers:'Personagem',bag:'Mochila',hab:'Habilidades'};   // última aba de cada janela
+const PL={pers:'eq',hab:'sk'},PGRP={eq:'pers',bg:'pers',mt:'pers',at:'pers',sk:'hab',tl:'hab'},PTT={pers:'Personagem',hab:'Habilidades'};   // última aba de cada janela
 const isHabTab=t=>t==='sk'||t==='tl';
 function openPan(t){sfx('tr_open',.6);panTab=t||panTab;panSel=null;$('pan').classList.add('on');renderPan();}
 function closePan(){$('pan').classList.remove('on');}
@@ -5774,8 +5776,13 @@ function showTip(){
   t.classList.add('on');
   const pr=$('pan').getBoundingClientRect(),r=el.getBoundingClientRect(),w=t.offsetWidth,hh=t.offsetHeight;
   let x=r.left+r.width/2-pr.left-w/2;x=Math.max(6,Math.min(pr.width-w-6,x));
-  const bt=$('pBody').getBoundingClientRect().top-pr.top+4;let y=r.top-pr.top-hh-10,below=false;if(y<bt){y=r.bottom-pr.top+10;below=true;}
-  t.style.left=x+'px';t.style.top=y+'px';t.classList.toggle('bl',below);
+  const bt=$('pBody').getBoundingClientRect().top-pr.top+4,top=r.top-pr.top,bot=r.bottom-pr.top,PH=pr.height-8;
+  const spA=top-bt-10,spB=PH-bot-10;let y,below=false,na=false;
+  if(hh<=spA)y=top-hh-10;                       // cabe em cima do item
+  else if(hh<=spB){y=bot+10;below=true;}        // cabe embaixo
+  else{                                          // não cabe em nenhum lado: usa o lado maior e encosta nos limites da janela
+    below=spB>spA;y=below?bot+10:top-hh-10;y=Math.max(bt,Math.min(PH-hh,y));na=y<bot&&y+hh>top;}
+  t.style.left=x+'px';t.style.top=y+'px';t.classList.toggle('bl',below);t.classList.toggle('na',na);
   t.style.setProperty('--ax',(r.left+r.width/2-pr.left-x)+'px');
 }
 function renderPan(){
@@ -5789,6 +5796,7 @@ function renderPan(){
     let html='';
     if(isEq){html+=`<div class="hxid"><b>${SAVE.name||C.nome}</b><span>${C.nome}${subOf()?' · '+subOf().nome:''} · Nível ${SAVE.lv}</span></div>`;html+=`<div class="pdw" id="pdw"><canvas id="pdoll"></canvas><div class="pcol l">${['elmo','armadura','luvas','botas'].map(sl).join('')}</div><div class="pcol r">${['arma','amuleto','escudo','anel'].map(sl).join('')}</div><div class="pdh">toque no boneco para girar</div></div>`;
     html+=`<div class="pcw"><span>PODER DE COMBATE</span><b>${pcFmt(heroPC())}</b></div>`;
+    html+=`<div class="stg stl"><div class="s-hp"><span>Vida</span><b>${h.maxhp}</b></div><div class="s-atk"><span>Ataque</span><b>${Math.round(h.pow)}</b></div><div class="s-def"><span>Defesa</span><b>${Math.round(h.def)}</b></div><div class="s-crit"><span>Crítico</span><b>${Math.round(h.crit*100)}%</b></div><div class="s-kb"><span>Empurrão</span><b>${Math.round(knockChance()*100)}%</b></div><div class="s-spd"><span>Velocidade</span><b>${Math.round(h.speed)}</b></div></div>`;
     }
     else{html+=`<div class="qs p"><b>Mochila</b><span>${SAVE.inv.length} / ${BAG_MAX}</span></div><div class="bag">`+Array.from({length:Math.max(BAG_MAX,SAVE.inv.length)},(_,i)=>{const it=SAVE.inv[i];return it?itemCell(it,panSel&&panSel.src==='bag'&&panSel.k===i,'bag:'+i,'cell'):'<div class="cell e"></div>';}).join('')+'</div>';
     html+=`<div class="acts" style="display:none"></div><div class="sub" style="padding:6px 4px">Para vender, fale com o Mercador (Bram).</div>`;}
@@ -6031,24 +6039,15 @@ function socMenu(m,dun){
   const tg=mkTb('bMt','<span>'+(SAVE.mcol?'☰':'‹')+'</span>','mbtn mtgl',()=>{SAVE.mcol=!SAVE.mcol;m.classList.toggle('col',!!SAVE.mcol);tg.firstChild.textContent=SAVE.mcol?'☰':'‹';sfx('ui_click',.5);writeSave();});
   m.classList.toggle('col',!!SAVE.mcol);m.appendChild(tg);
   m.appendChild(mk('bPs','assets/hud/heroi.png','Pers.',()=>openPan(PL.pers),'bdPs',1));
-  m.appendChild(mk('bBg','assets/hud/mochila.png','Mochila',()=>openPan(PL.bag),null,1));
+  m.appendChild(mk('bBg','assets/hud/mochila.png','Mochila',()=>openPan('bg'),null,1));
   m.appendChild(mk('bHb','assets/hud/hab.png','Habil.',()=>openPan(PL.hab),'bdHb',1));
   m.appendChild(mk('bQ','assets/hud/diario.png','Missões',()=>{if(!['m','f'].includes(G.qtab))G.qtab='m';openWin('diario');},'bdQ',1));
-  m.appendChild(mk('bPo','assets/hud/pocoes.png','Poções',()=>openWin('pocoes'),null,1));
   m.appendChild(mk('bDi','assets/hud/bestiario.png','Diário',()=>{if(!['b','c','p'].includes(G.qtab))G.qtab='b';openWin('diario');},null,1));
   m.appendChild(mk('bGp','assets/hud/social.png','Social',()=>openWin('grupo'),null,1));
   m.appendChild(mk('bMo','assets/hud/montaria.png','Montar',()=>mountToggle(),null,1));
 }
 
-function winPocoes(){$('wtt').textContent='Poções';const h=G.hero,cd=h&&h.potCd>0?Math.ceil(h.potCd):0;
-  const row=(ic,nm,ds,n,btn)=>`<div class="wr"><img class="ic" src="${UI}${ic}.png"><div class="tx"><b>${nm}</b><span>${ds}</span></div><b style="font:700 16px var(--f);color:var(--ouroC);min-width:30px;text-align:right">${n}</b>${btn||''}</div>`;
-  let x=`<div class="sub">Beba pelo botão de poção na tela de combate, ou aqui. A recarga é de 8 segundos. Compre mais com o Alquimista na cidade.</div>`;
-  x+=`<div class="sec-h"><span>Poções de vida</span><em>${cd?'Recarga: '+cd+'s':'Pronta'}</em></div>`;
-  x+=row('ni_pocao','Poção de Cura','Cura 45% da vida',SAVE.potions,'')+row('ni_pmaior','Poção Maior','Cura 80% da vida. É a escolhida quando a vida está abaixo de 30%.',SAVE.potL||0,'');
-  x+=`<div class="acts"><button class="g" data-a="dp" ${(SAVE.potions>0||SAVE.potL>0)&&!cd?'':'disabled'}>Beber agora</button></div>`;
-  x+=`<div class="sec-h"><span>Elixires</span></div>`+Object.keys(ELIX).map(k=>{const E=ELIX[k];return row(E[1],E[0],E[2]+' · '+elixLeft(k),'','');}).join('');
-  $('wbody').innerHTML=x;}
-const SOCW={missoes:()=>winMissoes(),diario:()=>winDiario(),grupo:()=>winGrupo(),pocoes:()=>winPocoes()};
+const SOCW={missoes:()=>winMissoes(),diario:()=>winDiario(),grupo:()=>winGrupo()};
 /* ===== DIÁLOGO COM NPCs + MISSÕES DA HISTÓRIA (Ato 1) — ver HISTORIA.md =====
    Todo NPC (inclusive moradores) fala: balão de fala ao chegar perto e caixa de diálogo ao tocar "Falar".
    Serviços (loja, forja…) falam primeiro e só então abrem a janela. A missão principal é UMA por nível:
@@ -6472,7 +6471,7 @@ function winGrupo(){$('wtt').textContent='Grupo';const tab=G.gtab||'g',P=G.party
     h+=ch==='s'?'':inp('cmsg','Mensagem…','cs')+'<div class="sub">Sem conexão: só você vê estas mensagens.</div>';}
   $('wbody').innerHTML=h;}
 function socAct(a){const [k,v,w]=a.split(':');
-  if(k==='dp'){usePotion(true);}else if(k==='rt'){G.rtab=v;sfx('ui_click');}else if(k==='sb'){shopBuy(v);}else if(k==='pet'){if(petOwn(v)){SAVE.pet=SAVE.pet===v?null:v;G.petE=null;sfx('ui_confirm',.6);}}else if(k==='qall'){const c=qMain();if(c&&qOk(c))qClaim('m',0);SAVE.q.d.l.forEach((d,i)=>{if(!d.c&&qOk(d))qClaim('d',i);});}else if(k==='op'){G.winOpen=v;sfx('ui_click');renderWin();return true;}else if(k==='ti'){setTitle(SAVE.title===v?null:v);sfx('ui_confirm',.6);}else if(k==='qt'){G.qtab=v;sfx('ui_click');}else if(k==='mt'){G.mtab=v;SAVE.mtab=v;sfx('ui_click',.5);writeSave();}else if(k==='qs'){SAVE.qsec=SAVE.qsec||{};if(v==='all'||v==='none'){['main','side','fac','day','trail'].forEach(x=>SAVE.qsec[x]=v==='all');}else SAVE.qsec[v]=!(G.qsd&&G.qsd[v]);sfx('ui_click',.5);writeSave();}else if(k==='qc'){qClaim(v,+w);}else if(k==='ql'){G.qsel=v;sfx('ui_click',.5);}
+  if(k==='rt'){G.rtab=v;sfx('ui_click');}else if(k==='sb'){shopBuy(v);}else if(k==='pet'){if(petOwn(v)){SAVE.pet=SAVE.pet===v?null:v;G.petE=null;sfx('ui_confirm',.6);}}else if(k==='qall'){const c=qMain();if(c&&qOk(c))qClaim('m',0);SAVE.q.d.l.forEach((d,i)=>{if(!d.c&&qOk(d))qClaim('d',i);});}else if(k==='op'){G.winOpen=v;sfx('ui_click');renderWin();return true;}else if(k==='ti'){setTitle(SAVE.title===v?null:v);sfx('ui_confirm',.6);}else if(k==='qt'){G.qtab=v;sfx('ui_click');}else if(k==='mt'){G.mtab=v;SAVE.mtab=v;sfx('ui_click',.5);writeSave();}else if(k==='qs'){SAVE.qsec=SAVE.qsec||{};if(v==='all'||v==='none'){['main','side','fac','day','trail'].forEach(x=>SAVE.qsec[x]=v==='all');}else SAVE.qsec[v]=!(G.qsd&&G.qsd[v]);sfx('ui_click',.5);writeSave();}else if(k==='qc'){qClaim(v,+w);}else if(k==='ql'){G.qsel=v;sfx('ui_click',.5);}
   else if(k==='gt'){G.gtab=v;sfx('ui_click');}else if(k==='gi'){G.ginv=+v;sfx('ui_click');}
   else if(k==='gs'){const n=($('gname').value||'').trim();if(n){SAVE.pend.push(n);G.ginv=null;toast('Convite guardado — o online chega em breve',1600);sfx('ui_confirm',.6);}}
   else if(k==='gp'){SAVE.pend.splice(+v,1);}

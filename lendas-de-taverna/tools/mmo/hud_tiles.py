@@ -95,16 +95,38 @@ def bussola():
 
 
 def mochila():
+    """mochila de aventureiro: corpo de lona verde, aba e alças de couro, bolso frontal com costura, fivela e alça de mão"""
     cv = np.zeros((32, 32, 4), np.uint8)
-    body = shape(32, 32, lambda x, y: (((x - 16) / 11.5) ** 2 + ((y - 19) / 11) ** 2 <= 1) & (y > 10))
-    neck = shape(32, 32, lambda x, y: (abs(x - 16) <= 5.5) & (y >= 6) & (y <= 12))
-    flap = shape(32, 32, lambda x, y: (((x - 16) / 8.5) ** 2 + ((y - 13.5) / 4.2) ** 2 <= 1) & (y > 11) & (y < 17))
-    outline(cv, body | neck); paint(cv, body, ['#4a2a12', '#7a4a22', '#a8703a', '#d09a5a']); paint(cv, neck, ['#4a2a12', '#6a4020', '#8a5a2c', '#b07a40'])
-    paint(cv, flap, ['#6a3e1c', '#94602e', '#bd8644', '#e0b070'])
-    band = shape(32, 32, lambda x, y: (abs(x - 16) <= 6) & (y >= 7) & (y <= 8.4)); paint(cv, band, ['#8a5a10', '#c98f1e', '#f0c850', '#fff0a0'])
-    buck = shape(32, 32, lambda x, y: (abs(x - 16) <= 2) & (y >= 15) & (y <= 18)); outline(cv, buck); paint(cv, buck, ['#8a5a10', '#c98f1e', '#f0c850', '#fff0a0'])
-    for (x, y) in ((8, 22), (24, 22), (12, 27), (20, 27)): cv[y, x] = (*hx('#3a2008'), 255)
+    def rr(x0, y0, x1, y1, r):
+        def f(x, y):
+            cx = np.clip(x, x0 + r, x1 - r); cy = np.clip(y, y0 + r, y1 - r)
+            return ((x - cx) ** 2 + (y - cy) ** 2 <= r * r) & (x >= x0) & (x <= x1) & (y >= y0) & (y <= y1)
+        return shape(32, 32, f)
+    green = ['#1c3a24', '#2f6038', '#4a8a50', '#80c078']; brown = ['#3a2008', '#6a4020', '#96602c', '#c48a48']; gold = ['#8a5a10', '#c98f1e', '#f0c850', '#fff0a0']
+    handle = rr(12, 2, 20, 9, 3) & ~rr(14.2, 4.2, 17.8, 9, 1.4)
+    body = rr(5, 8, 27, 29, 6)
+    flap = rr(5.5, 8, 26.5, 17, 5) & (shape(32, 32, lambda x, y: y <= 14 + 3.2 * np.sin((x - 5.5) / 21 * 3.14159)))
+    pocket = rr(9, 19, 23, 28, 3)
+    sl = rr(2, 14, 6.5, 25, 2); sr = rr(25.5, 14, 30, 25, 2)
+    m = handle | body | sl | sr
+    outline(cv, m)
+    paint(cv, handle, brown); paint(cv, sl, green); paint(cv, sr, green); paint(cv, body, green)
+    paint(cv, pocket, ['#16301c', '#264e2e', '#3a7040', '#62a060']); outline_in(cv, pocket)
+    paint(cv, flap, brown); outline_in(cv, flap)
+    for x in range(9, 24, 2):                                   # costura do bolso
+        cv[20, x] = (*hx('#d8c890'), 255)
+    for y in (10, 11):                                            # costura da aba
+        pass
+    strap = shape(32, 32, lambda x, y: (abs(x - 16) <= 1.4) & (y >= 13) & (y <= 20)); paint(cv, strap, brown); outline_in(cv, strap)
+    buck = rr(13.5, 17, 18.5, 21, 1); outline(cv, buck); paint(cv, buck, gold)
+    cv[19, 16] = (*hx('#3a2008'), 255)
     return Image.fromarray(cv, 'RGBA')
+
+
+def outline_in(cv, mask, col='#1a1020'):
+    """contorno escuro DENTRO da forma (separa partes sobrepostas)"""
+    pad = np.pad(mask, 1); edge = mask & ~(pad[2:, 1:-1] & pad[:-2, 1:-1] & pad[1:-1, 2:] & pad[1:-1, :-2])
+    cv[edge] = (*hx(col), 255)
 
 
 def finish(im32, name, col):
@@ -121,6 +143,5 @@ if __name__ == '__main__':
     finish(ferradura(), 'montaria', '#7ae08a')
     finish(bussola(), 'atalhos', '#ffd070')
     finish(mochila(), 'mochila', '#e0a050')
-    finish(pack('potion_full_1'), 'pocoes', '#ff6a6a')
     finish(pack('grimoire_closed'), 'bestiario', '#b890ff')
     print('ok')
