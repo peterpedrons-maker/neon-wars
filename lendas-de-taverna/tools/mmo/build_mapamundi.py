@@ -1,7 +1,7 @@
 # Mapa-múndi de fantasia da Região 1, a partir da geometria REAL das zonas (tamanho, lados, saídas, água, estradas, props).
 # -> mmo/assets/mapa_regiao1.png, mapa_regiao1_ids.png, mapa_regiao1_layout.json   (use /usr/bin/python3)
 import numpy as np, random, math, json, os
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from scipy.ndimage import gaussian_filter, zoom, binary_fill_holes, binary_closing, distance_transform_edt
 from skimage import measure
 from skimage.morphology import skeletonize
@@ -64,9 +64,10 @@ for i,k in enumerate(KEYS): col[ID==i]=TINT[INT.get(k) or {'forest':'forest','da
 col=np.stack([gaussian_filter(col[...,c],13) for c in range(3)],-1)
 lm=gaussian_filter(land.astype(np.float32),2)[...,None]
 img=par*(1-.55*lm)+col*.55*lm
-dsea=np.clip(distance_transform_edt(~land)/140,0,1)[...,None]
-seac=np.array((170,186,176),np.float32)*(1-.35*dsea)+np.array((150,168,168),np.float32)*(.35*dsea)
-img=img*lm+(par*.72+seac*.28)*(1-lm)
+dsea=np.clip(distance_transform_edt(~land)/230,0,1)[...,None]
+seac=np.array((142,196,196),np.float32)*(1-dsea)+np.array((70,124,156),np.float32)*dsea     # turquesa raso -> azul fundo
+seac=seac*(0.94+0.12*noise(30,21)[...,None])
+img=img*lm+(par*.34+seac*.66)*(1-lm)
 edge=gaussian_filter(land.astype(np.float32),8); img*=(1-0.25*np.clip(edge*(1-edge)*4,0,1))[...,None]
 base=Image.fromarray(np.clip(img,0,255).astype(np.uint8)).resize((W*S,H*S),Image.BICUBIC); d=ImageDraw.Draw(base,'RGBA')
 INK=(52,34,18,255)
@@ -102,14 +103,19 @@ for i,k in enumerate(KEYS):
         if len(c)>=30: solid([(p[1]*S,p[0]*S) for p in c[::2]])
 # --- ícones ---
 def tree(x,y,k=1,dark=False):
-    g=(38,86,48) if not dark else (28,62,48); gl=(70,128,72) if not dark else (50,92,70); s_=6*k
-    d.polygon([P(x,y-s_*2.3),P(x-s_,y),P(x+s_,y)],fill=g+(255,),outline=INK); d.polygon([P(x,y-s_*2.3),P(x-s_,y),P(x-s_*.1,y)],fill=gl+(255,))
-    d.rectangle([P(x-1,y)[0],P(x-1,y)[1],P(x+1,y+3*k)[0],P(x+1,y+3*k)[1]],fill=(80,54,30,255))
+    g=(40,92,52) if not dark else (28,66,54); gl=(86,150,84) if not dark else (58,108,84); s_=5.5*k
+    d.rectangle([P(x-1,y)[0],P(x-1,y)[1],P(x+1,y+3*k)[0],P(x+1,y+3*k)[1]],fill=(86,56,30,255))
+    for j,(w_,y0,y1) in enumerate(((1.25,y-s_*.3,y-s_*0),(1.0,y-s_*1.1,y-s_*.45),(.7,y-s_*2.2,y-s_*1.2))):
+        d.polygon([P(x,y1-s_*1.15*(1 if j==2 else .9)),P(x-s_*w_,y0+s_*.9),P(x+s_*w_,y0+s_*.9)],fill=g+(255,),outline=INK)
+        d.polygon([P(x,y1-s_*1.15*(1 if j==2 else .9)),P(x-s_*w_,y0+s_*.9),P(x-s_*w_*.1,y0+s_*.9)],fill=gl+(255,))
 def dead(x,y):
     d.line([P(x,y),P(x,y-10)],fill=INK,width=2); d.line([P(x,y-6),P(x-4,y-11)],fill=INK,width=2); d.line([P(x,y-8),P(x+4,y-12)],fill=INK,width=2)
 def mount(x,y,k=1):
-    s_=12*k; d.polygon([P(x-s_,y),P(x,y-s_*1.5),P(x+s_,y)],fill=(170,160,140,255),outline=INK); d.polygon([P(x,y-s_*1.5),P(x+s_,y),P(x+s_*.1,y)],fill=(112,100,88,255))
-    d.polygon([P(x,y-s_*1.5),P(x-s_*.28,y-s_*.95),P(x,y-s_*1.05),P(x+s_*.28,y-s_*.95)],fill=(245,242,234,255)); d.line([P(x-s_,y),P(x,y-s_*1.5),P(x+s_,y)],fill=INK,width=2)
+    s_=13*k; top=(x+s_*.08,y-s_*1.6)
+    d.polygon([P(x-s_,y),P(*top),P(x+s_,y)],fill=(176,166,146,255)); d.polygon([P(*top),P(x+s_,y),P(x+s_*.12,y)],fill=(112,100,90,255))
+    d.polygon([P(*top),P(x-s_*.32,y-s_*1.02),P(x-s_*.08,y-s_*1.18),P(x+s_*.1,y-s_*1.0),P(x+s_*.3,y-s_*1.1)],fill=(246,244,238,255))
+    for j in range(3): d.line([P(x+s_*(.2+.2*j),y-s_*(.35+.2*j)),P(x+s_*(.5+.15*j),y-s_*.05)],fill=(70,56,46,170),width=1)
+    d.line([P(x-s_,y),P(*top),P(x+s_,y)],fill=INK,width=2)
 def hill(x,y,k=1):
     s_=10*k; d.chord([P(x-s_,y-s_*.8),P(x+s_,y+s_*.8)],180,360,fill=(188,176,120,255),outline=INK)
 def reed(x,y):
@@ -254,6 +260,38 @@ n_=0
 for _ in range(400):
     x,y=R.randint(60,W-60),R.randint(60,H-60)
     if not land[y,x] and 45<dist_c[y,x]<110 and n_<5: ship(x,y,R.uniform(.9,1.2)); n_+=1
+# monstro marinho
+def serpent(x,y,k=1):
+    col=(54,110,96,255); hl=(96,160,132,255)
+    for i in range(3):
+        cx_=x+i*26*k; r=11*k
+        d.chord([P(cx_-r,y-r)[0],P(cx_-r,y-r)[1],P(cx_+r,y+r)[0],P(cx_+r,y+r)[1]],180,360,fill=col,outline=INK)
+        d.arc([P(cx_-r*.6,y-r*.7)[0],P(cx_-r*.6,y-r*.7)[1],P(cx_+r*.6,y+r*.7)[0],P(cx_+r*.6,y+r*.7)[1]],200,340,fill=hl,width=2)
+        d.line([P(cx_-r-3*k,y+2),P(cx_+r+3*k,y+2)],fill=(220,238,240,200),width=2)
+    hx,hy=x-14*k,y-12*k
+    d.ellipse([P(hx-8*k,hy-7*k)[0],P(hx-8*k,hy-7*k)[1],P(hx+8*k,hy+5*k)[0],P(hx+8*k,hy+5*k)[1]],fill=col,outline=INK)
+    d.ellipse([P(hx-4*k,hy-3*k)[0],P(hx-4*k,hy-3*k)[1],P(hx-1*k,hy)[0],P(hx-1*k,hy)[1]],fill=(250,230,120,255),outline=INK)
+    d.polygon([P(hx-8*k,hy-6*k),P(hx-12*k,hy-12*k),P(hx-5*k,hy-8*k)],fill=hl,outline=INK)
+for _ in range(600):
+    x,y=R.randint(120,W-160),R.randint(900,H-120)
+    if not land[y,x] and dist_c[y,x]>120 and not land[max(0,y-40):y+40,max(0,x-40):x+110].any(): serpent(x,y,1.7); break
+# redemoinho
+def whirl(x,y):
+    for i in range(14):
+        a0=i*.55; r=4+i*2.6; d.arc([P(x-r,y-r*.55)[0],P(x-r,y-r*.55)[1],P(x+r,y+r*.55)[0],P(x+r,y+r*.55)[1]],math.degrees(a0),math.degrees(a0)+250,fill=(40,80,108,200),width=2)
+for _ in range(300):
+    x,y=R.randint(700,W-120),R.randint(250,800)
+    if not land[y,x] and dist_c[y,x]>90: whirl(x,y); break
+# nomes do mar (letras espaçadas, levemente inclinadas)
+try:
+    fm=ImageFont.truetype('mmo/assets/fonts/Almendra-Bold.ttf',26*S)
+    def sea_name(txt,cx,cy,ang,col=(44,84,112,185)):
+        sp=5*S; wd=sum(d.textlength(c,font=fm)+sp for c in txt); lay=Image.new('RGBA',(int(wd)+40,70*S),(0,0,0,0)); ld=ImageDraw.Draw(lay); xx=20
+        for c in txt: ld.text((xx,35*S),c,font=fm,fill=col,anchor='lm'); xx+=ld.textlength(c,font=fm)+sp
+        lay=lay.rotate(ang,expand=True,resample=Image.BICUBIC); base.paste(lay,(int(cx*S-lay.width/2),int(cy*S-lay.height/2)),lay)
+    sea_name('MAR DAS BRUMAS',930,1010,-9); sea_name('GOLFO DO ALVORECER',880,1700,7)
+except Exception as e: print('mar',e)
+d=ImageDraw.Draw(base,'RGBA')
 # moldura e bússola
 fr=Image.new('RGBA',base.size,(0,0,0,0)); fd=ImageDraw.Draw(fr)
 for t,wd in((6,4),(16,2),(20,1)): fd.rectangle([t,t,W*S-t,H*S-t],outline=INK,width=wd)

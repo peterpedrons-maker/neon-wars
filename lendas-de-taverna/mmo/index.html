@@ -1220,6 +1220,15 @@ html.cutm #hud,html.cutm #bar,html.cutm #mmenu,html.cutm #joy,html.cutm #chat,ht
 :root:root #win.bk .bc .bn{color:#4a2c14!important}:root:root #win.bk .bc .bk,:root:root #win.bk .bc .bt{color:#5a4026!important}
 :root:root #win.bk .bc .bs{color:#b9791a!important}:root:root #win.bk .bc .bs u{color:rgba(90,64,38,.35)!important;text-decoration:none}
 :root:root #win.bk .bc .bar{background:rgba(90,64,38,.25)!important;border:1px solid #8a6a38!important}
+
+/* Diário: grades alinhadas com as abas e cartões compactos */
+:root:root #win.bk .bgrid,:root:root #win.bk .pgrid{margin:0 8px;gap:8px}
+:root:root #win.bk .bc{padding:8px 6px 9px;gap:3px;min-width:0}
+:root:root #win.bk .bc .bp{width:68px;height:68px}:root:root #win.bk .bc .bp img{max-width:56px;max-height:56px;image-rendering:pixelated}
+:root:root #win.bk .bc .bn{font-size:13px}:root:root #win.bk .bc .bs{font-size:13px;letter-spacing:2px}:root:root #win.bk .bc .bk{font-size:11px}
+:root:root #win.bk .pc{padding:6px 6px 8px;gap:2px;min-width:0}
+:root:root #win.bk .pc .pi{width:78px;height:50px}:root:root #win.bk .pc .pi img{width:78px}
+:root:root #win.bk .pc b{font-size:12.5px}:root:root #win.bk .pc span{font-size:10.5px;min-height:22px}:root:root #win.bk .pc button{height:26px;min-width:70px}
 </style>
 </head>
 <body>
@@ -6205,10 +6214,14 @@ function winConq(){let h='';const n=ACH.filter(a=>SAVE.ach&&SAVE.ach[a.id]).leng
   return h;}
 const BST_MS=[10,50,200,500];
 const MPORT={};
-function mobPortrait(f){if(MPORT[f])return MPORT[f];const sh=SHEETS[MOBS[f].sheet];if(!sh||!sh.walk)return '';
-  const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');x.drawImage(sh.walk,0,128,64,64,0,0,64,64);
-  const d=x.getImageData(0,0,64,64).data;let x0=64,y0=64,x1=0,y1=0;for(let y=0;y<64;y++)for(let xx=0;xx<64;xx++)if(d[(y*64+xx)*4+3]>10){if(xx<x0)x0=xx;if(xx>x1)x1=xx;if(y<y0)y0=y;if(y>y1)y1=y;}
-  if(x1<x0)return '';const w=x1-x0+1,h=y1-y0+1,m=Math.max(w,h),o=document.createElement('canvas');o.width=o.height=m+2;o.getContext('2d').drawImage(c,x0,y0,w,h,1+(m-w)/2|0,1+(m-h)/2|0,w,h);return MPORT[f]=o.toDataURL();}
+function mobPortrait(f){if(MPORT[f])return MPORT[f];const T=MOBS[f];if(!T)return '';
+  const k=T.cx||CXMAP[T.atlas||T.sheet];   /* retrato = sprite chibi pixel art (nunca mais o LPC antigo) */
+  if(!k)return '';
+  if(!CXS[k]){if(CXS[k]===undefined)cxLoad(k).then(()=>{if(G.winOpen)renderWin();});return '';}
+  const fr=cxFrameFor(k,'idle',0,'d');if(!fr)return '';
+  const [img,sx,sy,w,h]=fr,c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(img,sx,sy,w,h,0,0,w,h);
+  const d=x.getImageData(0,0,w,h).data;let x0=w,y0=h,x1=0,y1=0;for(let yy=0;yy<h;yy++)for(let xx=0;xx<w;xx++)if(d[(yy*w+xx)*4+3]>10){if(xx<x0)x0=xx;if(xx>x1)x1=xx;if(yy<y0)y0=yy;if(yy>y1)y1=yy;}
+  if(x1<x0)return '';const ww=x1-x0+1,hh=y1-y0+1,m=Math.max(ww,hh),o=document.createElement('canvas');o.width=o.height=m+4;const ox=o.getContext('2d');ox.imageSmoothingEnabled=false;ox.drawImage(c,x0,y0,ww,hh,2+((m-ww)/2|0),2+((m-hh)/2|0),ww,hh);return MPORT[f]=o.toDataURL();}
 /* ===== PETS: lobos únicos; caem raramente de qualquer monstro (mais chance de elites e chefes) ===== */
 const PETS={
  cinza:{nm:'Lobo Cinzento',w:40,fx:{xp:.06},d:'+6% de experiência',tn:'n'},
