@@ -59,11 +59,19 @@ for _ in range(2600):
     if gaussian_filter is None: pass
     d.arc([P(x-9,y-3)[0],P(x-9,y-3)[1],P(x,y+6)[0],P(x,y+6)[1]],200,340,fill=(70,90,100,160),width=2)
     d.arc([P(x,y-3)[0],P(x,y-3)[1],P(x+9,y+6)[0],P(x+9,y+6)[1]],200,340,fill=(70,90,100,160),width=2)
-# bordas de zona (tracejado fino)
-bm=(ID!=np.roll(ID,1,0))|(ID!=np.roll(ID,1,1)); bm&=land
-ys,xs=np.nonzero(bm); 
-for j in range(0,len(xs),3):
-    if (j//3)%3==0: d.ellipse([xs[j]*S-1,ys[j]*S-1,xs[j]*S+1,ys[j]*S+1],fill=(80,50,24,110))
+# limites de cada zona: contorno tracejado em tinta
+def dashed(pts,on=16,off=9,fill=(70,40,20,215),wd=5):
+    acc=0;draw=True
+    for p,q in zip(pts,pts[1:]):
+        L=math.hypot(q[0]-p[0],q[1]-p[1])
+        if draw: d.line([p,q],fill=fill,width=wd)
+        acc+=L
+        if acc>=(on if draw else off): acc=0;draw=not draw
+for i,k in enumerate(KEYS):
+    m=gaussian_filter(((ID==i)&land).astype(np.float32),4)
+    for c in measure.find_contours(m,.5):
+        if len(c)<30: continue
+        dashed([(p[1]*S,p[0]*S) for p in c[::2]])
 # --- ícones ---
 def tree(x,y,k=1,dark=False):
     g=(38,86,48) if not dark else (28,62,48); gl=(70,128,72) if not dark else (50,92,70)
