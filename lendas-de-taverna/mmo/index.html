@@ -46,13 +46,13 @@ button:active:not(:disabled){transform:scale(.97);filter:brightness(1.15)}
 #tbg .s.one{inset:-6%;opacity:1;animation:tbgone 46s ease-in-out infinite alternate}
 @keyframes tbgone{0%{transform:scale(1.02) translate(-1%,0)}100%{transform:scale(1.12) translate(1.2%,-1%)}}
 #tfx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-#tvig{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(6,4,12,.78) 0,rgba(6,4,12,.18) 30%,rgba(6,4,12,0) 42%,rgba(6,4,12,.55) 62%,rgba(6,4,12,.92) 100%),radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(0,0,0,.55) 100%)}
+#tvig{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(6,4,12,.7) 0,rgba(6,4,12,.1) 28%,rgba(6,4,12,0) 62%,rgba(6,4,12,.7) 78%,rgba(6,4,12,.94) 100%),radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(0,0,0,.55) 100%)}
 #title .tmain,#title .col,#title .tver{position:relative;z-index:2}
 #title .tmain{display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:2vh}
 #title img.tlg{width:92%;max-width:380px;image-rendering:auto;filter:drop-shadow(0 4px 0 rgba(0,0,0,.55)) drop-shadow(0 0 18px rgba(233,185,73,.35));animation:tlgf 4.5s ease-in-out infinite}
 @keyframes tlgf{50%{transform:translateY(-4px)}}
 #title .sub{font:700 12px var(--ft);letter-spacing:.34em;text-transform:uppercase;color:#f3e6c6;text-shadow:0 2px 0 #000,0 0 8px #000}
-#title .col{width:84%;max-width:320px;display:flex;flex-direction:column;gap:9px;margin-top:0}
+#title .col{width:84%;max-width:320px;display:flex;flex-direction:column;gap:8px;margin-top:auto;margin-bottom:6px}
 #title .btn{height:46px;border:2px solid #1b0f08;outline:2px solid #c9a24a;outline-offset:-4px;border-radius:2px;box-shadow:0 3px 0 #000,0 0 16px rgba(233,185,73,.25)}
 #slots .sr .btn.ne{height:36px;border-color:#1b0f08;background:rgba(18,12,28,.72);color:#c9b98a;font-size:11px;outline-color:#6a5a3a;box-shadow:none;text-shadow:none}
 #title .btn.sec{background:linear-gradient(#3a2e4a,#201830);color:#f3e6c6;outline-color:#6a5a8a}
@@ -7101,7 +7101,7 @@ $('cv').addEventListener('pointerdown',ev=>{
   /* na dungeon o modo manual usa o joystick */
 });
 (()=>{const c=$('mm');if(c){c.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();mmToggle();});}})();
-function renderSlots(){const box=$('slots');box.innerHTML='';for(let i=0;i<SLOT_N;i++){const sv=slotRead(i),row=document.createElement('div');row.className='sr';const b=document.createElement('button');b.className='btn';
+function renderSlots(){const box=$('slots');box.innerHTML='';let emp=0;for(let i=0;i<SLOT_N;i++){const sv=slotRead(i);if(!sv&&emp++)continue;const row=document.createElement('div');row.className='sr';const b=document.createElement('button');b.className='btn';
   if(sv){b.textContent=sv.name+' · '+(CLASSES[sv.cls].nome||sv.cls)+' Nv.'+sv.lv;b.onclick=()=>{audioInit();sfx('ui_confirm');SLOT=i;SAVE=slotRead(i);G.zoneLv=clamp(SAVE.zone||1,1,DUN.length);startGame();};row.appendChild(b);
     const d=document.createElement('button');d.className='btn sd';d.textContent='✕';d.setAttribute('aria-label','Apagar herói');d.onclick=()=>{audioInit();gConfirm('Apagar '+sv.name+' (Nv.'+sv.lv+') para sempre?',{title:'Apagar este herói?',ok:'Apagar',no:'Manter',danger:true}).then(ok=>{if(ok){try{localStorage.removeItem(slotKey(i));}catch(e){}renderSlots();}});};row.appendChild(d);}
   else{b.className='btn ne';b.textContent='+ NOVO HERÓI ('+(i+1)+'/'+SLOT_N+')';b.onclick=()=>{SLOT=i;newHero();};row.appendChild(b);}
