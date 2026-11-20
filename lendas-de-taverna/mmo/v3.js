@@ -588,6 +588,46 @@ M3.harp={build(f,g){const gold=_mt(0xffd860,.95,true),H=new T.Group();H.add(new 
 M3.shards={build(f,g){g.userData.S=[];const n=14;for(let i=0;i<n;i++){const an=i*Math.PI*2/n+_R(-.08,.08),L=_R(34,56),c=new T.Mesh(new T.ConeGeometry(_R(4,7),L,4).rotateZ(-Math.PI/2).translate(L/2,0,0),_mt(i%2?0xc040ff:0xff4a8a,.9,true));const w=new T.Group();w.add(c);w.rotation.y=-an;w.rotation.z=0;c.rotation.z=.25;g.add(w);g.userData.S.push({w,L,an,d:_R(.7,1)});}
   g.userData.N=[];for(let i=0;i<5;i++){const n=_note(0xff2a5a,1.2);g.add(n);g.userData.N.push({n,an:i*1.26+.3});}},
  upd(f,g,t){const R=f.r||140,u=Math.min(1,t/.3),e=1-Math.pow(1-u,3);g.userData.S.forEach(p=>{p.w.children[0].position.x=R*.2*e*p.d+10;p.w.scale.setScalar(.3+.7*e);});g.userData.N.forEach(p=>{const d=R*.5*e,h=Math.max(0,60*Math.sin(Math.min(1,t/.7)*Math.PI));p.n.position.set(Math.cos(p.an)*d,h+4,Math.sin(p.an)*d);p.n.rotation.z=t*9;});_fd(g,t>.65?(1-t)/.35:1);g.userData.N.forEach(p=>p.n.traverse(m=>{if(m.isMesh)m.material.opacity=.95*(t>.65?(1-t)/.35:1);}));}};
+/* ===== ANCIÃO CORNALVO (raro da Planície): modelos 3D próprios de cada habilidade ===== */
+/* PISADA DO ANCIÃO: raízes douradas espinhosas rompem o chão em anel, do centro para fora, e afundam */
+M3.roots={build(f,g){const r=f.r||100,n=16;g.userData.R=[];
+  const bark=_mt(0x2a1808,1,false),bark2=_mt(0x3c240e,1,false),gold=_mt(0xffc838,1,true);
+  for(let i=0;i<n;i++){const a=i/n*6.283+_R(-.15,.15),d=r*_R(.35,1),w=new T.Group(),b=new T.Group();
+    const h1=_R(30,46),s1=new T.Mesh(new T.CylinderGeometry(2.6,5.4,h1,6).translate(0,h1/2,0),i%2?bark:bark2);b.add(s1);
+    const k=new T.Group();k.position.y=h1;k.rotation.z=-_R(.4,.7);b.add(k);const h2=_R(16,24),s2=new T.Mesh(new T.CylinderGeometry(.8,2.2,h2,5).translate(0,h2/2,0),bark2);k.add(s2);
+    const tip=new T.Mesh(new T.ConeGeometry(2.4,10,5).translate(0,h2+4,0),gold);k.add(tip);
+    for(let j=0;j<3;j++){const th=new T.Mesh(new T.ConeGeometry(1.2,6,4).translate(0,3,0),bark2);th.position.y=h1*(.3+j*.22);th.rotation.z=(j%2?1:-1)*1.1;b.add(th);}
+    b.rotation.z=-_R(.15,.35);w.add(b);w.rotation.y=-a;w.position.set(Math.cos(a)*d,0,Math.sin(a)*d*.85);g.add(w);g.userData.R.push({w,dl:d/r*.32});}
+  const ring=new T.Mesh(new T.RingGeometry(.86,1,48).rotateX(-Math.PI/2),_mt(0xffe08a,.9,true));g.add(ring);g.userData.ring=ring;},
+ upd(f,g,t){const T0=t*f.max,r=f.r||100;g.userData.R.forEach(p=>{const u=Math.min(1,Math.max(0,(T0-p.dl)*6)),o=u<1?1+.25*Math.sin(u*3.14):1,s=t>.7?Math.max(.01,(1-t)/.3):1;p.w.scale.set(o,Math.max(.01,u*s),o);});
+  const rr=r*(.2+1.1*Math.min(1,t*2.2));g.userData.ring.scale.set(rr,1,rr*.85);g.userData.ring.material.opacity=.9*Math.max(0,1-t*1.8);}};
+/* INVESTIDA: galhada espectral gigante de luz projetada à frente do cervo enquanto ele dispara */
+M3.horns={build(f,g){const H=new T.Group(),gold=_mt(0xffe48a,.75,true),pale=_mt(0xfff6d0,.55,true);
+  for(const sg of[-1,1]){const A=new T.Group();A.position.set(0,46,sg*10);const m=new T.Mesh(new T.TorusGeometry(26,2.4,6,24,Math.PI*.8),gold);m.rotation.set(0,0,.5);A.add(m);
+    for(let j=0;j<4;j++){const tn=new T.Mesh(new T.ConeGeometry(2,14,5).translate(0,7,0),pale);const an=.5+j*.55;tn.position.set(Math.cos(an)*26,Math.sin(an)*26,0);tn.rotation.z=an-.9;A.add(tn);}
+    A.rotation.x=sg*.35;H.add(A);}
+  const wd=new T.Mesh(new T.ConeGeometry(30,90,4,1,true).rotateZ(-Math.PI/2).translate(55,30,0),_mt(0xffd868,.22,true));H.add(wd);H.scale.setScalar(1.5);
+  g.add(H);g.userData.H=H;},
+ upd(f,g,t){const H=g.userData.H;H.rotation.y=-(f.a||0);const p=1.5*(1+.08*Math.sin(t*f.max*18));H.scale.set(p,p,p);_fd(g,t<.15?t/.15:t>.8?(1-t)/.2:1);}};
+/* BRAMIDO: cortina de aurora dourada-esverdeada sobe em anel e o som se espalha pelo chão */
+M3.aurora={build(f,g){const r=f.r||160,tx=_gr([[0,'rgba(255,255,255,0)'],[.35,'rgba(200,255,170,.55)'],[.8,'rgba(255,224,120,.95)'],[1,'rgba(255,255,220,1)']]);g.userData.C=[];
+  for(let i=0;i<14;i++){const a=i/14*6.283,p=new T.Mesh(new T.PlaneGeometry(24,1).translate(0,.5,0),_mt(i%2?0xffe08a:0xb8ff9a,.7,true,tx));p.position.set(Math.cos(a)*r*.45,0,Math.sin(a)*r*.45*.85);p.rotation.y=-a+Math.PI/2;g.add(p);g.userData.C.push({p,a,ph:_R(0,6)});}
+  g.userData.W=[0,1,2].map(i=>{const w=new T.Mesh(new T.TorusGeometry(1,.035,4,64).rotateX(Math.PI/2),_mt(0xfff0b0,.9,true));g.add(w);return w;});},
+ upd(f,g,t){const T0=t*f.max,r=f.r||160;g.userData.C.forEach(c=>{const h=150*Math.min(1,t*3)*(1-Math.max(0,t-.7)/.3)*(0.8+.2*Math.sin(T0*6+c.ph));c.p.scale.y=Math.max(.01,h);const rr=r*(.45+.25*t);c.p.position.set(Math.cos(c.a+T0*.4)*rr,0,Math.sin(c.a+T0*.4)*rr*.85);c.p.rotation.y=-(c.a+T0*.4)+Math.PI/2;});
+  g.userData.W.forEach((w,i)=>{const u=Math.max(0,Math.min(1,(t-i*.12)*2.2)),rr=r*u;w.scale.set(Math.max(.01,rr),Math.max(.01,rr),Math.max(.01,rr*.85));w.material.opacity=.9*(1-u);});}};
+/* COURAÇA DE CASCA: placas de casca com veios dourados orbitam o cervo e folhas giram em espiral */
+M3.bark={build(f,g){g.userData.P=[];const b1=_mt(0x2e1c0a,1,false),b2=_mt(0x40280e,1,false),vein=_mt(0xffc838,1,true),leaf=_mt(0x4a8a20,.95,false);
+  const dm=new T.Mesh(new T.SphereGeometry(58,24,12,0,Math.PI*2,0,Math.PI/2),_mt(0xb8e070,.16,true));dm.scale.set(1,1.4,.85);g.add(dm);
+  for(let i=0;i<9;i++){const P=new T.Group(),pl=new T.Mesh(new T.BoxGeometry(20,30,4),i%2?b1:b2),v=new T.Mesh(new T.BoxGeometry(2,24,4.6),vein),v2=new T.Mesh(new T.BoxGeometry(12,2,4.6),vein);v2.position.y=4;P.add(v2);P.add(pl,v);g.add(P);g.userData.P.push({P,a:i/9*6.283,h:16+(i%3)*16,k:'b'});}
+  for(let i=0;i<12;i++){const L=new T.Mesh(new T.PlaneGeometry(6,4),leaf);g.add(L);g.userData.P.push({P:L,a:_R(0,6.28),h:_R(0,70),k:'l',sp:_R(1,2)});}},
+ upd(f,g,t){const T0=t*f.max,ins=Math.min(1,t*f.max*2.5);g.userData.P.forEach(p=>{if(p.k==='b'){const a=p.a+T0*1.3,R=46-10*(1-ins);p.P.position.set(Math.cos(a)*R,p.h+Math.sin(T0*3+p.a)*2,Math.sin(a)*R*.8);p.P.rotation.y=-a+Math.PI/2;p.P.scale.setScalar(Math.max(.01,ins));}
+  else{const a=p.a+T0*p.sp*2.2,y=(p.h+T0*30)%80;p.P.position.set(Math.cos(a)*(30+y*.2),y,Math.sin(a)*(30+y*.2)*.8);p.P.rotation.set(T0*3,a,T0*2);}});_fd(g,t>.9?(1-t)*10:1);}};
+/* RAÍZES ANCESTRAIS: galhadas de cristal dourado rompem o chão sob o alvo e se estilhaçam */
+M3.antlerspike={build(f,g){g.userData.S=[];const cr=_mt(0xd89418,1,false),cr2=_mt(0xffd040,1,false),gl=_mt(0xfff0a0,.7,true);
+  for(let i=0;i<6;i++){const a=i/6*6.283+_R(-.3,.3),d=_R(4,(f.r||44)*.7),w=new T.Group(),h=_R(52,80);
+    w.add(new T.Mesh(new T.CylinderGeometry(2,5.5,h,5).translate(0,h/2,0),cr));w.add(new T.Mesh(new T.ConeGeometry(4,12,5).translate(0,h+5,0),gl));for(let j=0;j<2;j++){const tn=new T.Mesh(new T.CylinderGeometry(1,2.6,22,4).translate(0,11,0),cr2);tn.position.y=h*(.45+j*.25);tn.rotation.z=(j?1:-1)*.8;w.add(tn);}
+    w.position.set(Math.cos(a)*d,0,Math.sin(a)*d*.85);w.rotation.set(_R(-.35,.35),_R(0,3),_R(-.35,.35));g.add(w);g.userData.S.push({w,dl:_R(0,.08)});}},
+ upd(f,g,t){const T0=t*f.max;g.userData.S.forEach(p=>{const u=Math.min(1,Math.max(0,(T0-p.dl)*9));p.w.scale.set(1,Math.max(.01,u*(t>.65?Math.max(.01,(1-t)/.35):1)),1);});}};
 function syncM3(){
   if(!scn||typeof G==='undefined')return;
   let gg=scn.m3g;if(!gg){gg=scn.m3g=new T.Group();scn.grp.add(gg);}
@@ -596,7 +636,7 @@ function syncM3(){
     if(f.k!=='m3'||f.delay>0)continue;const D=M3[f.n];if(!D)continue;live.add(f);let o=f._g;
     if(!o){const g=new T.Group();g.renderOrder=6;D.build(f,g);g.traverse(m=>{if(m.isMesh)m.renderOrder=6;});o=f._g={mesh:g};gg.add(g);}
     const g=o.mesh,t=Math.min(.999,1-f.life/f.max),H=G.hero;g.visible=true;if(f.need&&H&&!H[f.need]&&f.life>.05)f.life=.05;
-    if(f.fol&&H){f.x=H.x;f.y=H.y;}
+    if(f.fol&&H){f.x=H.x;f.y=H.y;}if(f.ft){if(f.ft.dead&&f.life>.05)f.life=.05;else{f.x=f.ft.x;f.y=f.ft.y;}}
     g.position.set(f.x*U,.02,f.y*U);g.scale.setScalar(U*(f.sc||1));D.upd(f,g,t);
   }
   for(const c of gg.children.slice()){let ok=false;for(const f of live)if(f._g&&f._g.mesh===c){ok=true;break;}if(!ok){gg.remove(c);c.traverse(m=>{if(m.geometry)m.geometry.dispose();if(m.material){if(m.material.map)m.material.map.dispose();m.material.dispose();}});}}
