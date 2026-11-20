@@ -63,3 +63,4 @@ SIL Open Font License 1.1 — Stefie Justprince, via Google Fonts (assets/fonts/
 SIL Open Font License 1.1 — Ryoichi Tsunekawa / Flat It, via Google Fonts (assets/fonts/Almendra-*.ttf).
 
 - Músicas `titulo_mmo`, `criacao`, `abertura`, `amanhecer` e efeitos `cut_*` compostos para o jogo (`tools/mmo/music/abertura_mmo.py`) e renderizados com instrumentos reais amostrados do **GeneralUser GS** (S. Christian Collins), como as demais trilhas.
+- **Som do arco (`bow.ogg`)**: `Bow.wav` do pacote "Battle Sound Effects" (OpenGameArt, CC0) com `arrow-feathers-01` do pacote "Fantasy Sound Effects – TinySized SFX" (OpenGameArt, CC0), recortados e misturados.
