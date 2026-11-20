@@ -2012,7 +2012,7 @@ function audioInit(){
   const m=AC.createGain();m.gain.value=.55;m.connect(AC.destination);sfxGain=AC.createGain();sfxGain.gain.value=1;sfxGain.connect(m);musGain=AC.createGain();musGain.gain.value=.22;musGain.connect(m);
   ['ui_click','ui_confirm','ui_denied','swing','hit_0','hit_1','slash','crit','miss','bow','arrow_hit','spell_cast','spell_hit','heal','coin','levelup','death','victory','sk_golpe','sk_meteoros','sk_flechas','sk_sagrado','sk_corte','sk_grito','tr_equip','tr_open','tr_close','sk_fogo','sk_gelo','sk_raio','sk_terra','sk_veneno','sk_nota','sk_estocada','sk_explosao','st_escudo','buff','dg_title','boss_roar','boss_rei_roar','boss_slam','boss_charge','boss_spin','boss_guard','boss_swarm','boss_plague','boss_burrow','boss_flask','boss_throw','boss_dark','cut_marca','cut_queda','cut_sino'].forEach(n=>loadBuf('../assets/audio/sfx/'+n+'.ogg',n));
   for(const sp of ['rato','javali','goblin','esq','bat','ogro','lobo','aranha','barata','sapo','cobra','tronco','harpia','gnoll','humano','morto','cogu'])for(const k of ['atk','hurt','die'])loadBuf('../assets/audio/sfx/mob_'+sp+'_'+k+'.ogg','mob_'+sp+'_'+k);
-  loadBuf('../assets/audio/sfx/mount_neigh.ogg','mount_neigh');for(const q of ['q_accept','q_obj','q_done'])loadBuf('../assets/audio/sfx/'+q+'.ogg',q);loadBuf('../assets/audio/sfx/mount_snort.ogg','mount_snort');
+  for(const q of ['atk','hurt','die','engage','stomp','charge','bellow','bark','grove','imune','step','glint'])loadBuf('../assets/audio/sfx/cervo_'+q+'.ogg','cervo_'+q);loadBuf('../assets/audio/sfx/mount_neigh.ogg','mount_neigh');for(const q of ['q_accept','q_obj','q_done'])loadBuf('../assets/audio/sfx/'+q+'.ogg',q);loadBuf('../assets/audio/sfx/mount_snort.ogg','mount_snort');
   loadBuf('../assets/audio/music/campina.ogg','m_campina').then(()=>{if(musOn)playMusic();});
   loadBuf('../assets/audio/music/chefe.ogg','m_chefe');loadBuf('../assets/audio/music/vila.ogg','m_vila');
 }
@@ -2946,7 +2946,7 @@ function guardCounter(m){addZone({shape:'circle',x:m.x,y:m.y,r:70,warn:.3,mult:1
 
 /* ===== vozes das criaturas: cada espécie tem seu grunhido de ataque, dor e morte (arquivos mob_<espécie>_<atk|hurt|die>) ===== */
 const MSP={alfa:'lobo',rato:'rato',ratass:'rato',ratarq:'rato',ratalq:'rato',ratking:'rato',javali:'javali',javguer:'javali',javbruto:'javali',javarq:'javali',javmago:'javali',javcap:'javali',goblin:'goblin',gobarq:'goblin',xama:'goblin',skrix:'goblin',botic:'goblin',esq:'esq',esqueleto:'esq',esqmago:'esq',esqfogo:'esq',esqgelo:'esq',morcego:'bat',vamp:'bat',ogro:'ogro',sapador:'goblin',cogumelo:'cogu',aranha:'aranha',lobo:'lobo',carnical:'morto',necro:'esq',cavcaido:'esq',mumia:'morto',ogrinho:'ogro',ogrolenhador:'ogro',gnoll:'gnoll',tronco:'tronco',harpia:'harpia',bandido:'humano',homemrato:'rato',ladrao:'humano',cultlodo:'esq',sapo:'sapo',cobra:'cobra',barata:'barata',afogado:'morto'};
-function mobSnd(m,k){if(!AC||!m||!m.T)return;{const cs=CRS[m.T.atlas];if(cs){const h=G.hero,d=h?Math.hypot(h.x-m.x,h.y-m.y):0,v=Math.max(.12,1-d/460);if(v<=.14)return;const t=G.t;if(k==='hurt'){if(t-(m._sh||-9)<.45)return;m._sh=t;}if(k==='atk'){if(t-(m._sa||-9)<.8)return;m._sa=t;}crSynth(cs,k,v,m.elite);return;}}const sp=MSP[m.type]||MSP[m.T.fam]||MSP[m.T.atlas]||(m.kind==='boss'?'ogro':null);if(!sp)return;
+function mobSnd(m,k){if(!AC||!m||!m.T)return;if(m.type==='cervo'){const h=G.hero,d=h?Math.hypot(h.x-m.x,h.y-m.y):0,v=Math.max(.2,1-d/700),t=G.t;if(k==='hurt'){if(t-(m._sh||-9)<.5)return;m._sh=t;}if(k==='atk'){if(t-(m._sa||-9)<.8)return;m._sa=t;}sfx('cervo_'+k,(k==='die'?1:k==='atk'?.85:.7)*v,.97+Math.random()*.06);return;}{const cs=CRS[m.T.atlas];if(cs){const h=G.hero,d=h?Math.hypot(h.x-m.x,h.y-m.y):0,v=Math.max(.12,1-d/460);if(v<=.14)return;const t=G.t;if(k==='hurt'){if(t-(m._sh||-9)<.45)return;m._sh=t;}if(k==='atk'){if(t-(m._sa||-9)<.8)return;m._sa=t;}crSynth(cs,k,v,m.elite);return;}}const sp=MSP[m.type]||MSP[m.T.fam]||MSP[m.T.atlas]||(m.kind==='boss'?'ogro':null);if(!sp)return;
   const h=G.hero,d=h?Math.hypot(h.x-m.x,h.y-m.y):0,v=Math.max(.12,1-d/460);if(v<=.14)return;
   const key='mob_'+sp+'_'+k,t=G.t;if(k==='hurt'){if(t-(m._sh||-9)<.45)return;m._sh=t;}if(k==='atk'){if(t-(m._sa||-9)<.8)return;m._sa=t;}
   const big=m.kind==='boss'||m.mini,rate=big&&sp!=='ogro'?.62:(m.elite?.88:1)*(.94+Math.random()*.12);
@@ -3731,7 +3731,7 @@ function stMul(e,k){let m=1;if(e&&e.sts)for(const id in e.sts){const v=STDEF[id]
 function stSum(e,k){let m=0;if(e&&e.sts)for(const id in e.sts){const v=STDEF[id][k];if(v)m+=v;}return m;}
 function stRm(e,id){if(e&&e.sts)delete e.sts[id];}
 function stAdd(e,id,dur,o={}){if(!e||e.dead||!STDEF[id])return false;const d=STDEF[id],isH=e.kind==='hero';
-  if(e.imm&&(e.imm[id]||(d.ctrl&&e.imm.ctrl))){if(!e._imT||G.t-e._imT>1.1){e._imT=G.t;floatText(e.x,e.y-(e.type==='cervo'?110:60),e.type==='cervo'?'IMUNE':'Imune','#fff2b0',e.type==='cervo'?10:8,.9,e.type==='cervo'?{pop:1,bold:1}:undefined);}return false;}
+  if(e.imm&&(e.imm[id]||(d.ctrl&&e.imm.ctrl))){if(!e._imT||G.t-e._imT>1.1){e._imT=G.t;if(e.type==='cervo')sfx('cervo_imune',.55,1);floatText(e.x,e.y-(e.type==='cervo'?110:60),e.type==='cervo'?'IMUNE':'Imune','#fff2b0',e.type==='cervo'?10:8,.9,e.type==='cervo'?{pop:1,bold:1}:undefined);}return false;}
   if(d.ctrl&&stHas(e,'inabalavel')){floatText(e.x,e.y-60,'Imune','#e0e8ff',8,.8);return false;}
   if(e.kind==='boss'||e.mini){if(id==='atordoado'||id==='medo'){id='abalado';dur=Math.max(dur,4);}else if(id==='preso'||id==='lento')dur*=.5;}
   const D=STDEF[id];e.sts=e.sts||{};
@@ -6657,28 +6657,31 @@ function rareSpawn(){const R=RARES[G.map];if(!R||!ZONE.region||G.arena||Math.ran
 /* ANCIÃO CORNALVO: kit próprio (cada habilidade com modelo 3D único em v3.js) + passivas */
 function cervoSkill(m,pick,h){const id=pick.id,c1='#ffd868';
   if(id==='stomp'){addZone({shape:'circle',x:m.x,y:m.y,r:pick.r,warn:pick.warn,mult:pick.mult,st:pick.st,src:m,shake:.8,pc:c1});m.act.fxT=pick.warn;
-    m.act.fx=mm=>{VF.m3('roots',mm.x,mm.y,1.7,{r:pick.r*1.15});VF.m3('shock',mm.x,mm.y,.55,{r:pick.r*.9,c:0xffe08a});VF.shake(.8);bossSnd('slam');
+    m.act.fx=mm=>{sfx('cervo_stomp',.95,1);VF.m3('roots',mm.x,mm.y,1.7,{r:pick.r*1.15});VF.m3('shock',mm.x,mm.y,.55,{r:pick.r*.9,c:0xffe08a});VF.shake(.8);bossSnd('slam');
       for(let k=0;k<14;k++)VF.pt(mm.x+rnd(-pick.r,pick.r),mm.y+rnd(-pick.r*.6,pick.r*.6),{vy:-rnd(30,80),vx:rnd(-20,20),life:rnd(.6,1),col:k%3?'#8ad050':'#ffe08a',sz:rnd(1.6,2.6),add:k%3===0});
       addZone({shape:'circle',x:mm.x,y:mm.y,r:pick.r*1.7,warn:.55,mult:pick.mult*.45,src:mm,shake:.4,pc:'#ffe8a0'});};
     floatText(m.x,m.y-112,'Pisada do Ancião','#ffe08a',10,1.2,{pop:1,bold:1});bossSnd('crouch');return true;}
-  if(id==='charge'){VF.m3('horns',m.x,m.y,pick.warn+1.3,{ft:m,a:Math.atan2(h.y-m.y,h.x-m.x)});floatText(m.x,m.y-112,'Investida Sagrada','#ffe08a',10,1.2,{pop:1,bold:1});
+  if(id==='charge'){VF.m3('horns',m.x,m.y,pick.warn+1.3,{ft:m,a:Math.atan2(h.y-m.y,h.x-m.x)});floatText(m.x,m.y-112,'Investida Sagrada','#ffe08a',10,1.2,{pop:1,bold:1});sfx('cervo_charge',.95,1);
     m.act.fxT=pick.warn;m.act.fx=mm=>{for(let k=0;k<10;k++)VF.pt(mm.x+rnd(-10,10),mm.y-rnd(0,6),{vy:-rnd(10,30),vx:rnd(-40,40),life:.6,col:'#a89878',sz:2.6,add:false});};return false;}
   if(id==='bellow'){addZone({shape:'circle',x:m.x,y:m.y,r:pick.r,warn:pick.warn,mult:pick.mult,st:pick.st,src:m,shake:.6,pc:'#c8ff9a'});m.act.fxT=pick.warn;
-    m.act.fx=mm=>{VF.m3('aurora',mm.x,mm.y,1.9,{r:pick.r});VF.glow(mm.x,mm.y-60,90,'#ffe08a',.6);bossSnd('roarbig');floatText(mm.x,mm.y-120,'BRAMIDO','#c8ff9a',13,1.4,{pop:1,bold:1,glow:1});};bossSnd('hum');return true;}
+    m.act.fx=mm=>{VF.m3('aurora',mm.x,mm.y,1.9,{r:pick.r});VF.glow(mm.x,mm.y-60,90,'#ffe08a',.6);sfx('cervo_bellow',1,1);floatText(mm.x,mm.y-120,'BRAMIDO','#c8ff9a',13,1.4,{pop:1,bold:1,glow:1});};bossSnd('hum');return true;}
   if(id==='bark'){m.act.fxT=pick.warn*.7;m.act.fx=mm=>{mm.barkT=7;mm.take=.35;VF.m3('bark',mm.x,mm.y,7,{ft:mm});VF.glow(mm.x,mm.y-40,70,'#8ad050',.6);
-      floatText(mm.x,mm.y-116,'Couraça de Casca','#b8ff8a',10,1.4,{pop:1,bold:1});chat('O Ancião se cobre de casca: dano reduzido e regeneração!',3);};bossSnd('hum');return true;}
-  if(id==='grove'){m.act.fxT=pick.warn*.6;floatText(m.x,m.y-112,'Raízes Ancestrais','#ffe08a',10,1.2,{pop:1,bold:1});
+      sfx('cervo_bark',.9,1);floatText(mm.x,mm.y-116,'Couraça de Casca','#b8ff8a',10,1.4,{pop:1,bold:1});chat('O Ancião se cobre de casca: dano reduzido e regeneração!',3);};bossSnd('hum');return true;}
+  if(id==='grove'){m.act.fxT=pick.warn*.6;floatText(m.x,m.y-112,'Raízes Ancestrais','#ffe08a',10,1.2,{pop:1,bold:1});sfx('cervo_grove',.9,1);
     m.act.fx=mm=>{for(let k=0;k<5;k++)setTimeout(()=>{if(!G.on||mm.dead||G.scene!=='dungeon')return;const hh=G.hero,f=freeSpot(hh.x+rnd(-16,16),hh.y+rnd(-10,10));
       addZone({shape:'circle',x:f[0],y:f[1],r:44,warn:.62,mult:1.4,st:['preso',.8,1.2,0],src:mm,shake:.3,pc:'#ffd868'});VF.m3('antlerspike',f[0],f[1],1.1,{delay:.6,r:44});},k*380);};bossSnd('crouch');return true;}
   return false;}
 function cervoTick(m,dt){const h=G.hero;if(m.dead)return;
   m.stun=0;if(!m.dash){m.kvx=m.kvy=0;}                // imune: nada de atordoar/empurrar (debuffs já são barrados no stAdd)
   if(m.barkT>0){m.barkT-=dt;m.hp=Math.min(m.maxhp,m.hp+m.maxhp*.012*dt);if(Math.random()<dt*8)VF.pt(m.x+rnd(-30,30),m.y-rnd(10,70),{vy:-rnd(8,20),life:.8,col:'#8ad050',sz:2,add:false});if(m.barkT<=0)m.take=null;}
+  {const d0=h?dist(m,h):9e9,v=Math.max(0,1-d0/700);
+    if(m.state==='walk'&&v>.05){m._stT=(m._stT||0)-dt;if(m._stT<=0){m._stT=m.run?.2:.42;sfx('cervo_step',(m.run?.8:.5)*v,.92+Math.random()*.16);}}
+    if(!m.eng&&d0<520){m._glT=(m._glT===undefined?rnd(2,6):m._glT)-dt;if(m._glT<=0){m._glT=rnd(7,13);sfx('cervo_glint',.5*v,1);}}}
   m.run=!!(m.eng&&!m.act&&h&&dist(m,h)>110);m.spdMul=(m.run?1.6:1)*(m.fury?1.2:1);
   const k=m.eng?14:4;if(Math.random()<dt*k){const a=Math.random()*6.28;VF.pt(m.x+Math.cos(a)*rnd(8,34),m.y-rnd(58,104),{vy:-rnd(4,14),vx:rnd(-6,6),life:rnd(.8,1.4),col:Math.random()<.7?'#ffe08a':'#fff6d0',sz:rnd(1.2,2.2),add:true});}
   if(m.eng&&Math.random()<dt*3)VF.pt(m.x+rnd(-24,24),m.y-rnd(40,80),{vy:rnd(10,24),vx:rnd(-10,10),life:1.4,col:'#7ab840',sz:2,add:false});
   if(m.run&&Math.random()<dt*14)VF.pt(m.x+rnd(-10,10),m.y-rnd(0,4),{vy:-rnd(6,14),life:.45,col:'#a89878',sz:2.4,add:false});}
-function rareEngage(m){m.eng=true;m.aggro=1400;m.passive=false;G.hnMob=m;chat(m.name+' foi enfurecido!',3);VF.wave(m.x,m.y,120,'#ffd868',.7,5);VF.shake(.5);sfx('hit_1',.7,.5);}
+function rareEngage(m){if(m.type==='cervo')sfx('cervo_engage',1,1);m.eng=true;m.aggro=1400;m.passive=false;G.hnMob=m;chat(m.name+' foi enfurecido!',3);VF.wave(m.x,m.y,120,'#ffd868',.7,5);VF.shake(.5);sfx('hit_1',.7,.5);}
 function hnTick(dt){hnMusTick();const S=hnS(),a=S.act.alfa;if(!a||a.fim||!a.ok1||G.scene!=='dungeon'||G.arena||G.map!=='zone_planicie')return;const h=G.hero;if(!h||h.state==='ko')return;
   if(G.hnMob&&!G.hnMob.dead&&G.mobs.includes(G.hnMob))return;                                   // o Alfa já está em campo
   if(G.hnMob&&!G.mobs.includes(G.hnMob)){G.hnMob=null;}                                         // sumiu (saiu da zona): recomeça

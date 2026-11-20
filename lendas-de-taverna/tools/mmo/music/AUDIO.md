@@ -22,3 +22,6 @@ Geradores: `mobsfx.py` (voz por formantes + metais/coro/tímpano reais), `cripta
 | Cutscene (panorama de Brumavale) | `amanhecer` (toca uma vez, ~29 s, depois entra `vila`) | ambiente da cidade volta |
 
 Gerador: `abertura_mmo.py` + `lib2.py` (partitura em código → instrumentos reais do GeneralUser GS via `tinysoundfont` → reverb → ogg). `python3 abertura_mmo.py all`.
+
+## Cervo (Ancião Cornalvo)
+`cervo_sfx.py` gera os 12 sons `cervo_*` (voz por formantes + sinos/glockenspiel/celesta/harpa/tímpano do GeneralUser GS). Ver CLAUDE.md "SONS DO ANCIÃO CORNALVO".
