@@ -3190,6 +3190,7 @@ const CMBH={
    if(v==='4')styCls(2.5,'TIRO CARREGADO');}
   if(!t.virt){t.mk=Math.min(5+Math.round(tf('cbp')||0),(t.mk||0)+1);t.mkT=7;if(t.mk>=3)stAdd(t,'marcado',4);cmbLater(h,P,()=>{VF.glow(t.x,t.y-44,10,'#ff5a5a',.4,2);});}
   if(v==='4'){ // TIRO CARREGADO: raio perfurante de longa distância
+   sfx('bow',1,.82);
    const L=Math.max(340,(h.rng||150)*2),ex=h.x+Math.cos(A)*L,ey=h.y+Math.sin(A)*L*.72,ox=h.x+Math.cos(A)*18,oy=h.y-26+Math.sin(A)*9;
    VF.ringw(ox,oy+10,36,'#e8fff0',.4,6);VF.wave(ox,oy+10,50,'#bfe8c0',.4,3);VF.sparks(ox,oy,16,['#e8fff0','#bfe8c0','#fff'],{s0:100,s1:260,a0:A-.4,a1:A+.4});
    const dx=ex-ox,dy=ey-26-oy,ll=Math.hypot(dx,dy)||1,ux=dx/ll,uy=dy/ll;
