@@ -97,11 +97,7 @@ def side(P):
                 off = {'lh': 0, 'lf': .25, 'rh': .5, 'rf': .75}[nm]
             q = 2 * math.pi * (ph + off)
             st = P.get('stride', 4.5 if not gal else 9)
-<<<<<<< HEAD
             fx = bx + lx - math.cos(q) * st + (1.5 if hind else -0.5)
-=======
-            fx = bx + lx + math.cos(q) * st + (1.5 if hind else -0.5)
->>>>>>> origin/main
             fy = gy - max(0, math.sin(q)) * (P.get('step', 3.5) if not gal else 7)
             if P.get('paw') and nm == 'lf': fx += P['paw'] * 3; fy = gy - abs(P['paw']) * 5
         LEGS[nm] = (hip, (fx, fy), hind, far)
