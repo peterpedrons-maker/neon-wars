@@ -2,7 +2,7 @@
 # -> mmo/assets/mapa_regiao1.png, mapa_regiao1_ids.png, mapa_regiao1_layout.json   (use /usr/bin/python3)
 import numpy as np, random, math, json, os
 from PIL import Image, ImageDraw, ImageFilter
-from scipy.ndimage import gaussian_filter, zoom, binary_fill_holes, binary_closing
+from scipy.ndimage import gaussian_filter, zoom, binary_fill_holes, binary_closing, distance_transform_edt
 from skimage import measure
 from skimage.morphology import skeletonize
 A='mmo/assets/'
@@ -61,10 +61,12 @@ INT={'town':'town','estrada':'road','planicie':'plain','ponte':'river','colinas'
 TINT={'town':(214,180,120),'road':(222,196,140),'plain':(204,208,140),'river':(176,198,176),'hills':(196,182,140),'mount':(176,166,150),'dark':(120,150,110),'forest':(150,176,112),'swamp':(150,160,100),'grave':(168,150,170),'lake':(160,190,196)}
 col=np.zeros((H,W,3),np.float32)
 for i,k in enumerate(KEYS): col[ID==i]=TINT[INT.get(k) or {'forest':'forest','dark':'dark','mount':'mount','grave':'grave','swamp':'swamp'}.get(BIOME.get(k),'plain')]
-col=np.stack([gaussian_filter(col[...,c],5) for c in range(3)],-1)
+col=np.stack([gaussian_filter(col[...,c],13) for c in range(3)],-1)
 lm=gaussian_filter(land.astype(np.float32),2)[...,None]
 img=par*(1-.55*lm)+col*.55*lm
-img=img*lm+(par*.8+np.array((178,190,176),np.float32)*.2)*(1-lm)
+dsea=np.clip(distance_transform_edt(~land)/140,0,1)[...,None]
+seac=np.array((170,186,176),np.float32)*(1-.35*dsea)+np.array((150,168,168),np.float32)*(.35*dsea)
+img=img*lm+(par*.72+seac*.28)*(1-lm)
 edge=gaussian_filter(land.astype(np.float32),8); img*=(1-0.25*np.clip(edge*(1-edge)*4,0,1))[...,None]
 base=Image.fromarray(np.clip(img,0,255).astype(np.uint8)).resize((W*S,H*S),Image.BICUBIC); d=ImageDraw.Draw(base,'RGBA')
 INK=(52,34,18,255)
@@ -72,8 +74,13 @@ def P(x,y): return (x*S,y*S)
 for c in measure.find_contours(gaussian_filter(land.astype(np.float32),1.5),.5):
     pts=[(p[1]*S,p[0]*S) for p in c[::3]]
     if len(pts)>5: d.line(pts,fill=INK,width=3)
-from scipy.ndimage import distance_transform_edt
 dist_c=distance_transform_edt(~land)
+dist_s=gaussian_filter(dist_c,2.5)
+for lv,al in((9,150),(20,110),(34,75),(52,45)):
+    for c in measure.find_contours(dist_s,lv):
+        if len(c)<40: continue
+        pts=[(p[1]*S+math.sin(i*.35)*2.2,p[0]*S+math.cos(i*.31)*2.2) for i,p in enumerate(c[::3])]
+        d.line(pts,fill=(96,118,126,al),width=2,joint='curve')
 for _ in range(2200):
     x,y=R.randint(10,W-10),R.randint(10,H-10)
     if land[y,x] or dist_c[y,x]>110: continue
@@ -209,17 +216,51 @@ def seg(p,q_,col,wd):
     for t in range(n+1):
         u=t/n; x=p[0]+(q_[0]-p[0])*u; y=p[1]+(q_[1]-p[1])*u
         if t%2==0: d.ellipse([x*S-wd,y*S-wd,x*S+wd,y*S+wd],fill=col)
+def bez(p0,p1,p2,n=40):
+    return [((1-t)**2*p0[0]+2*(1-t)*t*p1[0]+t*t*p2[0],(1-t)**2*p0[1]+2*(1-t)*t*p1[1]+t*t*p2[1]) for t in np.linspace(0,1,n)]
+def ex_pt(k,sd,pos_):
+    rx,ry,rw,rh=rect[k]; ZW,ZH=SZ[k]
+    return {0:(rx+pos_/ZW*rw,ry),1:(rx+pos_/ZW*rw,ry+rh),2:(rx,ry+pos_/ZH*rh),3:(rx+rw,ry+pos_/ZH*rh)}[sd]
+for a_,sa,pa,b_,pb in LINKS:
+    A_=ex_pt(a_,sa,pa); B_=ex_pt(b_,OPP[sa],pb); mid=((A_[0]+B_[0])/2,(A_[1]+B_[1])/2)
+    if math.hypot(A_[0]-B_[0],A_[1]-B_[1])>45: continue   # ligação em ciclo (zonas não coladas): sem estrada reta atravessando o mapa
+    pts=bez(A_,((A_[0]+mid[0])/2,(A_[1]+mid[1])/2) if math.hypot(A_[0]-B_[0],A_[1]-B_[1])<4 else mid,B_)
+    d.line([(x*S,y*S) for x,y in pts],fill=(104,62,34,235),width=4,joint='curve')
 # ligações de cidade
-for p,q_ in ():
-    seg((p[0]+p[2]*.45,p[1]+p[3]*(0 if p is rect['town'] else 1)),(q_[0]+q_[2]*.45,q_[1]+q_[3]*(1 if p is rect['town'] else 0)),(120,40,28,235),2.6)
+t_,e_,pa_,c2_=rect['town'],rect['estrada'],rect['passo'],rect['cidade2']
+for A_,B_ in (((t_[0]+t_[2]*.45,t_[1]),(e_[0]+e_[2]*.45,e_[1]+e_[3])),((pa_[0]+pa_[2]*.5,pa_[1]),(c2_[0]+c2_[2]*.5,c2_[1]+c2_[3]))):
+    if math.hypot(A_[0]-B_[0],A_[1]-B_[1])<90:
+        pts=bez(A_,((A_[0]+B_[0])/2+6,(A_[1]+B_[1])/2),B_); d.line([(x*S,y*S) for x,y in pts],fill=(104,62,34,235),width=4,joint='curve')
+# navios no mar
+def ship(x,y,k=1):
+    d.polygon([P(x-9*k,y),P(x+9*k,y),P(x+6*k,y+5*k),P(x-6*k,y+5*k)],fill=(120,80,44,255),outline=INK)
+    d.line([P(x,y),P(x,y-16*k)],fill=INK,width=2)
+    d.polygon([P(x,y-15*k),P(x+9*k,y-4*k),P(x,y-4*k)],fill=(240,228,196,255),outline=INK); d.polygon([P(x,y-13*k),P(x-7*k,y-4*k),P(x,y-4*k)],fill=(232,218,182,255),outline=INK)
+n_=0
+for _ in range(400):
+    x,y=R.randint(60,W-60),R.randint(60,H-60)
+    if not land[y,x] and 45<dist_c[y,x]<110 and n_<5: ship(x,y,R.uniform(.9,1.2)); n_+=1
 # moldura e bússola
 fr=Image.new('RGBA',base.size,(0,0,0,0)); fd=ImageDraw.Draw(fr)
 for t,wd in((6,4),(16,2),(20,1)): fd.rectangle([t,t,W*S-t,H*S-t],outline=INK,width=wd)
 base=Image.alpha_composite(base.convert('RGBA'),fr); d=ImageDraw.Draw(base,'RGBA')
-cx,cy=W-100,110
-for a_,l,c in((-90,64,(150,40,30,255)),(0,46,INK),(90,46,INK),(180,46,INK)):
-    r=math.radians(a_); p1=(cx+math.cos(r)*l,cy+math.sin(r)*l); pa=(cx+math.cos(r+1.57)*8,cy+math.sin(r+1.57)*8); pb=(cx+math.cos(r-1.57)*8,cy+math.sin(r-1.57)*8); d.polygon([P(*p1),P(*pa),P(cx,cy),P(*pb)],fill=c,outline=INK)
-d.ellipse([P(cx-72,cy-72)[0],P(cx-72,cy-72)[1],P(cx+72,cy+72)[0],P(cx+72,cy+72)[1]],outline=INK,width=3)
+cx,cy=W-100,112
+for rr,wd in((78,3),(70,1),(52,1)): d.ellipse([P(cx-rr,cy-rr)[0],P(cx-rr,cy-rr)[1],P(cx+rr,cy+rr)[0],P(cx+rr,cy+rr)[1]],outline=INK,width=wd)
+for a_ in range(0,360,15):
+    r=math.radians(a_); d.line([P(cx+math.cos(r)*70,cy+math.sin(r)*70),P(cx+math.cos(r)*(78 if a_%45==0 else 74),cy+math.sin(r)*(78 if a_%45==0 else 74))],fill=INK,width=2)
+for a_,l,c in((-90,60,(160,42,30,255)),(0,60,(236,220,176,255)),(90,60,(236,220,176,255)),(180,60,(236,220,176,255)),(-45,38,(200,170,110,255)),(45,38,(200,170,110,255)),(135,38,(200,170,110,255)),(225,38,(200,170,110,255))):
+    r=math.radians(a_); w_=9 if l>50 else 6
+    p1=(cx+math.cos(r)*l,cy+math.sin(r)*l); pa=(cx+math.cos(r+1.57)*w_,cy+math.sin(r+1.57)*w_); pb=(cx+math.cos(r-1.57)*w_,cy+math.sin(r-1.57)*w_)
+    d.polygon([P(*p1),P(*pa),P(cx,cy),P(*pb)],fill=c,outline=INK)
+d.ellipse([P(cx-5,cy-5)[0],P(cx-5,cy-5)[1],P(cx+5,cy+5)[0],P(cx+5,cy+5)[1]],fill=INK)
+from PIL import ImageFont
+try:
+    ft=ImageFont.truetype('mmo/assets/fonts/Almendra-Bold.ttf',30*S); fs_=ImageFont.truetype('mmo/assets/fonts/Almendra-Regular.ttf',15*S)
+    bx,by=W//2,H-70
+    d.rounded_rectangle([P(bx-190,by-34)[0],P(bx-190,by-34)[1],P(bx+190,by+30)[0],P(bx+190,by+30)[1]],radius=14,fill=(228,208,160,235),outline=INK,width=4)
+    d.rounded_rectangle([P(bx-182,by-28)[0],P(bx-182,by-28)[1],P(bx+182,by+24)[0],P(bx+182,by+24)[1]],radius=10,outline=(120,80,40,200),width=2)
+    d.text(P(bx,by-8),'Região de Brumavale',font=ft,fill=(70,36,16,255),anchor='mm'); d.text(P(bx,by+14),'Nível 1 a 12',font=fs_,fill=(120,56,30,255),anchor='mm')
+except Exception as e: print('fonte',e)
 out=np.array(base.convert('RGB')).astype(np.float32); hh,ww=out.shape[:2]; v=np.mgrid[0:hh,0:ww]; vx=(v[1]/ww-.5)*2; vy=(v[0]/hh-.5)*2
 out*=np.clip(1-.3*(np.maximum(abs(vx),abs(vy))**4),.55,1)[...,None]
 Image.fromarray(np.clip(out,0,255).astype(np.uint8)).resize((W,H),Image.LANCZOS).save(A+'mapa_regiao1.png',optimize=True)
