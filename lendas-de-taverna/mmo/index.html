@@ -1229,6 +1229,17 @@ html.cutm #hud,html.cutm #bar,html.cutm #mmenu,html.cutm #joy,html.cutm #chat,ht
 :root:root #win.bk .pc{padding:6px 6px 8px;gap:2px;min-width:0}
 :root:root #win.bk .pc .pi{width:78px;height:50px}:root:root #win.bk .pc .pi img{width:78px}
 :root:root #win.bk .pc b{font-size:12.5px}:root:root #win.bk .pc span{font-size:10.5px;min-height:22px}:root:root #win.bk .pc button{height:26px;min-width:70px}
+
+/* Diário > Caçadas no livro */
+:root:root #win.bk .hnc{background:linear-gradient(180deg,rgba(247,234,200,.9),rgba(226,204,156,.9))!important;border:2px solid #8a6a38!important;box-shadow:inset 0 0 0 1px rgba(255,246,218,.55);color:#3b2a14;padding:9px 10px;margin:0 8px 8px}
+:root:root #win.bk .hnc.soon{opacity:.72}
+:root:root #win.bk .hnc .hnh b{color:#4a2c14!important}:root:root #win.bk .hnc .hnh em{color:#8a1d1d!important;font-style:normal;font-weight:700}
+:root:root #win.bk .hnc p{color:#4a3a22!important;font-size:12.5px;line-height:1.35;margin:4px 0}
+:root:root #win.bk .hnc .row2 span{color:#5a4026!important}:root:root #win.bk .hnc .row2 span:first-child{color:#8a6a38!important;font-weight:700}
+:root:root #win.bk .hnc .hnn{background:rgba(120,80,30,.12)!important;border:1px dashed #8a6a38!important}:root:root #win.bk .hnc .hnn b,:root:root #win.bk .hnc .hnn p{color:#4a2c14!important}
+:root:root #win.bk .hnb{background:linear-gradient(180deg,rgba(247,234,200,.9),rgba(226,204,156,.9))!important;border:2px solid #8a6a38!important;color:#3b2a14;margin:0 8px 10px}
+:root:root #win.bk .hnb b,:root:root #win.bk .hnb small{color:#4a2c14!important}:root:root #win.bk .hnb .hbar{background:rgba(90,64,38,.25)!important;border:1px solid #8a6a38}
+:root:root #win.bk .sec-h span{color:#7a2a14!important}
 </style>
 </head>
 <body>
@@ -6309,7 +6320,7 @@ function socMenu(m,dun){
   m.appendChild(mk('bBg','assets/hud/mochila.png','Mochila',()=>openPan('bg'),null,1));
   m.appendChild(mk('bHb','assets/hud/hab.png','Habil.',()=>openPan(PL.hab),'bdHb',1));
   m.appendChild(mk('bQ','assets/hud/diario.png','Missões',()=>{if(!['m','f'].includes(G.qtab))G.qtab='m';openWin('diario');},'bdQ',1));
-  m.appendChild(mk('bDi','assets/hud/bestiario.png','Diário',()=>{if(!['b','c','p'].includes(G.qtab))G.qtab='b';openWin('diario');},null,1));
+  m.appendChild(mk('bDi','assets/hud/bestiario.png','Diário',()=>{if(!['b','h','c','p'].includes(G.qtab))G.qtab='b';openWin('diario');},null,1));
   m.appendChild(mk('bGp','assets/hud/social.png','Social',()=>openWin('grupo'),null,1));
   m.appendChild(mk('bMo','assets/hud/montaria.png','Montar',()=>mountToggle(),null,1));
 }
@@ -6861,11 +6872,32 @@ function winMissoes(){$('wtt').textContent='Capitão Ruvel';const c=qMain(),ok=c
   const tk=`<div class="tokb"><img src="${UI}gems.png"><span>Fichas de Brumavale</span><b>${SAVE.tok||0}</b></div>`;
   const tb=`<div class="tabs" style="margin:0 -12px">${[['m','Missões'],['s','Loja de fichas']].map(([k,l])=>`<button data-a="rt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
   $('wbody').innerHTML=hd+tk+tb+(tab==='s'?shopBody():missionsBody()+'<div class="acts"><button data-a="op:diario">Abrir o Diário</button></div>');}
-function winDiario(){{const w=$('win');if(w)w.classList.add('bk');}let tab=G.qtab;if(!['m','f','b','c','p'].includes(tab))tab='m';const qg=(tab==='m'||tab==='f');$('wtt').textContent=qg?'Missões':'Diário';
-  let h=`<div class="tabs" style="margin:0 -12px">${(qg?[['m','Missões'],['f','Facções']]:[['b','Bestiário'],['c','Títulos'],['p','Pets']]).map(([k,l])=>`<button data-a="qt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
+/* ===== DIÁRIO > CAÇADAS (registro das caçadas: ativas com anotações, disponíveis com a pista, concluídas) ===== */
+function huntLogBody(){try{sqCss();}catch(e){}
+  const S=hnS(),rk=hnRank(),R=HRANK[rk],nx=HRANK[rk+1],act=hnAct0();
+  let h=`<div class="hnb hlg"><div><b>Rank ${rk+1} · ${R.n}</b><div class="hbar"><i style="width:${nx?Math.min(100,Math.round((S.pts-R.p)/(nx.p-R.p)*100)):100}%"></i></div><small>${S.pts} pts${nx?' / '+nx.p+' para '+nx.n:' · rank máximo'}</small></div><span class="hs"><img src="${UI}gems.png">${S.sel}<small>Selos</small></span></div>`;
+  const card=(H,st)=>{const a=S.act[H.id],dn=S.done[H.id];
+    const tag={a:a&&a.fim?'Pronta para relatar':'Em andamento',d:'Disponível',l:'Requer rank '+(H.rk+1),c:'✔ Concluída'+(dn>1?' ×'+dn:''),r:'Rumor'}[st];
+    const nt=(st==='a'&&a&&a.notes&&a.notes.length)?`<div class="hnn"><b>Anotações do caçador</b>${a.notes.map(t=>'<p>'+t+'</p>').join('')}</div>`:'';
+    const loc=H.soon?'':`<div class="row2"><span>Local</span><span>${areaName(H.map)} · ${H.nv}</span></div>`;
+    const how=st==='d'?'<div class="row2"><span>Como</span><span>Quadro de Caçadas ou Garrick, na Praça dos Caçadores</span></div>':'';
+    const rw=(!H.soon&&st!=='c')?`<div class="row2"><span>Recompensa</span><span>${H.pts} pts · ${H.sel} Selos · ${H.gold} ouro</span></div>`:'';
+    return `<div class="hnc ${st==='l'||st==='r'?'soon':''}"><div class="hnh"><b><i class="hdf hd${H.dif||'D'}" title="Dificuldade">${H.dif||'D'}</i>${H.tit}</b><em>${tag}</em></div>${st==='c'?'':H.txt.map(t=>'<p>'+t+'</p>').join('')}${loc}${how}${rw}${nt}</div>`;};
+  const grp=(t,list,st)=>list.length?`<div class="sec-h"><span>${t}</span><span>${list.length}</span></div>`+list.map(H=>card(H,st)).join(''):'';
+  const real=HUNTS.filter(H=>!H.soon),rum=HUNTS.filter(H=>H.soon);
+  h+=grp('Em andamento',real.filter(H=>S.act[H.id]),'a');
+  h+=grp('Disponíveis',real.filter(H=>!S.act[H.id]&&hnRank()>=H.rk&&!S.done[H.id]),'d');
+  h+=grp('Bloqueadas por rank',real.filter(H=>!S.act[H.id]&&hnRank()<H.rk),'l');
+  h+=grp('Concluídas',real.filter(H=>S.done[H.id]&&!S.act[H.id]),'c');
+  h+=grp('Rumores',rum,'r');
+  if(!real.length&&!rum.length)h+='<div class="dd" style="text-align:center;padding:18px">Nenhuma caçada conhecida.</div>';
+  return h;}
+function winDiario(){{const w=$('win');if(w)w.classList.add('bk');}let tab=G.qtab;if(!['m','f','b','h','c','p'].includes(tab))tab='m';const qg=(tab==='m'||tab==='f');$('wtt').textContent=qg?'Missões':'Diário';
+  let h=`<div class="tabs" style="margin:0 -12px">${(qg?[['m','Missões'],['f','Facções']]:[['b','Bestiário'],['h','Caçadas'],['c','Títulos'],['p','Pets']]).map(([k,l])=>`<button data-a="qt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
   if(tab==='m')h+=missionsBody();
   else if(tab==='f')h+=facBody();
    else if(tab==='f')h+=facBody();
+  else if(tab==='h')h+=huntLogBody();
   else if(tab==='c')h+=winConq();
   else if(tab==='p')h+=winPets();
   else{h+='<div class="sub">Derrote criaturas para completar o bestiário. Cada marco (10 · 50 · 200 · 500) rende ouro.</div><div class="bgrid">';
