@@ -179,6 +179,15 @@ i_col=KEYS.index('colinas'); rx,ry,rw,rh=rect['colinas']
 for _ in range(60):
     X,Y=rx+R.random()*rw,ry+R.random()*rh
     if 0<=X<W and 0<=Y<H and ID[int(Y),int(X)]==i_col: items.append((Y,hill,(X,Y,R.uniform(.9,1.3))))
+# relevo com sombreado (luz de noroeste): montanhas altas, florestas e colinas levemente elevadas
+Hh=gaussian_filter(Mt,9)*60+gaussian_filter(Fl+Fd+Gv+Sw,9)*2.5+(noise(55,31)-.5)*.9+gaussian_filter(land.astype(np.float32),10)*.6
+Hh=Hh*land
+gy_,gx_=np.gradient(gaussian_filter(Hh,1.6))
+sh_=np.clip((-gx_-gy_)*9,-1,1)                      # luz vindo do canto superior esquerdo
+sh_big=np.array(Image.fromarray(((sh_+1)*127.5).astype(np.uint8)).resize((W*S,H*S),Image.BICUBIC),np.float32)/127.5-1
+lm_big=np.array(Image.fromarray((gaussian_filter(land.astype(np.float32),2)*255).astype(np.uint8)).resize((W*S,H*S),Image.BICUBIC),np.float32)/255
+arr=np.array(base,np.float32)*(1+.27*sh_big*lm_big)[...,None]
+base.paste(Image.fromarray(np.clip(arr,0,255).astype(np.uint8)))
 def stylize(acc_,thr,wash,line,icon,edge_gap,inner_p,sig=6):
     dn=gaussian_filter(acc_,sig); pos_=dn[dn>1e-4]; thr=max(thr,float(np.percentile(pos_,58))) if pos_.size else thr; m=(dn>thr)&land&~water; m=gaussian_filter(m.astype(np.float32),3)>.5
     if not m.any(): return
