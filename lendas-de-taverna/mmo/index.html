@@ -5760,15 +5760,15 @@ function wmRnd(s){s=(s*9301+49297)%233280;return s/233280;}
 function wmEnsure(){let o=$('wmap');if(o)return o;o=document.createElement('div');o.id='wmap';
  o.innerHTML='<div class="wmh"><div class="wmt"><b>Mapa-Múndi</b></div><span>Região 1 · Brumavale</span><button class="wmx" id="wmx">✕</button></div><div class="wmm"><canvas id="wmc"></canvas></div><div class="wmi" id="wmi"></div>';
  $('stage').appendChild(o);$('wmx').onclick=()=>wmClose();
- $('wmc').addEventListener('pointerdown',e=>{if(!WM.idd||!WM.cs)return;const r=e.currentTarget.getBoundingClientRect(),u=(e.clientX-r.left)/WM.cs[0],v=(e.clientY-r.top)/WM.cs[1],d=WM.idd,id=d.data[(Math.min(d.height-1,v*d.height|0)*d.width+Math.min(d.width-1,u*d.width|0))*4],k=WMK[id];if(k&&wmState(k)){WM.sel=k;sfx('ui_click',.5);wmDraw();}});
+ $('wmc').addEventListener('pointerdown',e=>{if(!WM.idd||!WM.cs)return;const r=e.currentTarget.getBoundingClientRect(),u=(e.clientX-r.left)/WM.cs[0],v=(e.clientY-r.top)/WM.cs[1],d=WM.idd,id=d.data[(Math.min(d.height-1,v*d.height|0)*d.width+Math.min(d.width-1,u*d.width|0))*4],k=WM.keys[id];if(k&&wmState(k)){WM.sel=k;sfx('ui_click',.5);wmDraw();}});
  return o;}
 function wmOpen(){const o=wmEnsure();o.classList.add('on');if(MM.big){const m=$('mapfs');if(m)m.classList.remove('on');MM.big=false;}WM.sel=WMZ[G.map]?G.map:null;WM.on=1;wmDraw();clearInterval(WM.iv);WM.iv=setInterval(wmDraw,200);}
 function wmClose(){WM.on=0;clearInterval(WM.iv);const o=$('wmap');if(o)o.classList.remove('on');sfx('ui_click',.4);}
 function wmVis(k){return mmVisited(k);}
 function wmKnown(k){if(wmVis(k))return 2;return MMADJ.some(([a,b])=>(a===k&&wmVis(b))||(b===k&&wmVis(a)))?1:0;}
 function wmPct(k){if(k===G.map&&MM.disc)return mmPct();const m=MAPS[k];const sv=SAVE.disc&&SAVE.disc[k];if(!m||!sv)return k==='town'?100:null;const Z=m.zone,gw=Math.ceil(Z.w/100),gh=Math.ceil(Z.h/100);let g=0,t=0;try{const bb=atob(sv);for(let j=4;j<gh-4;j++)for(let i=4;i<gw-4;i++){t++;const n=j*gw+i;if((bb.charCodeAt(n>>3)||0)&(1<<(n&7)))g++;}}catch(e){return null;}return t?Math.min(100,Math.round(g/t*100)):null;}
-const WMK=['town','zone_estrada','zone_planicie','zone_ponte','zone_colinas','zone_desfiladeiro','zone_passo','zone_goblins','zone_lenhadores','zone_ogros','zone_brejo','zone_brumas','zone_cemiterio','zone_mortos','zone_lago','zone_clareira','zone_eremita','zone_cabana','zone_gruta','zone_mina','cidade2'];
-function wmAssets(){if(WM.img)return WM.ready;WM.img=new Image();WM.img.onload=()=>{WM.ready|=1;wmDraw();};WM.img.src='assets/mapa_regiao1.png';fetch('assets/mapa_regiao1_layout.json').then(r=>r.json()).then(j=>{WM.lay=j;WM.ready|=4;wmDraw();});const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);WM.idd=x.getImageData(0,0,c.width,c.height);WM.ready|=2;wmDraw();};im.src='assets/mapa_regiao1_ids.png';return 0;}
+const WMK0=['town','zone_estrada','zone_planicie','zone_ponte','zone_colinas','zone_desfiladeiro','zone_passo','zone_goblins','zone_lenhadores','zone_ogros','zone_brejo','zone_brumas','zone_cemiterio','zone_mortos','zone_lago','zone_clareira','zone_eremita','zone_cabana','zone_gruta','zone_mina','cidade2'];
+function wmAssets(){if(WM.img)return WM.ready;WM.img=new Image();WM.img.onload=()=>{WM.ready|=1;wmDraw();};WM.img.src='assets/mapa_regiao1.png';fetch('assets/mapa_regiao1_layout.json').then(r=>r.json()).then(j=>{WM.lay=j;WM.keys=j.keys;WM.ready|=4;wmDraw();});const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);WM.idd=x.getImageData(0,0,c.width,c.height);WM.ready|=2;wmDraw();};im.src='assets/mapa_regiao1_ids.png';return 0;}
 function wmState(k){if(k==='cidade2')return wmVis('zone_passo')?1:0;return wmKnown(k);}
 function wmDraw(){const o=wmEnsure();if(!o.classList.contains('on'))return;
  if(wmAssets()!==7){return;}
@@ -5778,17 +5778,17 @@ function wmDraw(){const o=wmEnsure();if(!o.classList.contains('on'))return;
  const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.imageSmoothingEnabled=true;WM.hit=[];
  x.drawImage(WM.img,0,0,cw,ch);
  /* névoa por estado (cache) */
- const st=WMK.map(wmState),sig=st.join('')+cw;
+ const st=WM.keys.map(wmState),sig=st.join('')+cw;
  if(WM.sig!==sig){WM.sig=sig;const d=WM.idd,iw=d.width,ih=d.height,fg=document.createElement('canvas');fg.width=iw;fg.height=ih;const fx=fg.getContext('2d'),od=fx.createImageData(iw,ih);
   const A=[[58,42,24,214],[84,64,40,120],[0,0,0,0]];
-  for(let i=0;i<iw*ih;i++){const id=d.data[i*4];if(id>=WMK.length)continue;const t=st[id]===2?2:st[id],c=A[t];od.data[i*4]=c[0];od.data[i*4+1]=c[1];od.data[i*4+2]=c[2];od.data[i*4+3]=c[3];}
+  for(let i=0;i<iw*ih;i++){const id=d.data[i*4];if(id>=WM.keys.length)continue;const t=st[id]===2?2:st[id],c=A[t];od.data[i*4]=c[0];od.data[i*4+1]=c[1];od.data[i*4+2]=c[2];od.data[i*4+3]=c[3];}
   fx.putImageData(od,0,0);const f2=document.createElement('canvas');f2.width=cw;f2.height=ch;const g=f2.getContext('2d');try{g.filter='blur(3px)';}catch(e){}g.imageSmoothingEnabled=true;g.drawImage(fg,0,0,cw,ch);WM.fog=f2;}
  x.drawImage(WM.fog,0,0);
  const S=v=>v*sc,cur=G.map;
  /* rótulos e marcadores */
  x.textAlign='center';x.lineJoin='round';
- WMK.forEach((k,i)=>{const L=WM.lay.c[k.replace('zone_','')],z=[L[0],L[1],L[2]*.8,L[3]*.8],kn=st[i];if(!kn)return;let cx=S(z[0]);const cy=S(z[1]);
-  const info=k==='cidade2'?['Cidade 2','???']:(MMINFO[k]||['???','']),vis=kn===2&&k!=='cidade2',nm=vis?info[0]:'???',lv=vis?info[1]:'';
+ WM.keys.forEach((k,i)=>{const L=WM.lay.c[k.replace('zone_','')],z=[L[0],L[1],L[2]*.8,L[3]*.8],kn=st[i];if(!kn)return;let cx=S(z[0]);const cy=S(z[1]);
+  const info=k==='cidade2'?['Cidade 2','???']:(MMINFO[k]||[(WM.lay.nm&&WM.lay.nm[k])||'???','']),vis=kn===2&&k!=='cidade2',nm=vis?info[0]:'???',lv=vis?info[1]:'';
   const big=['town','zone_planicie','zone_colinas','zone_passo','zone_goblins','zone_ogros','zone_brumas','zone_cemiterio'].includes(k),fs=big?13:11;
   x.font='700 '+fs+'px Almendra,Rubik,serif';x.lineWidth=3.5;x.strokeStyle='rgba(244,230,190,.92)';x.fillStyle=vis?'#3a220e':'#e8d8b0';if(!vis){x.strokeStyle='rgba(30,18,8,.9)';}
   let ls=[nm];if(nm.length>12&&nm.includes(' ')){const sp=[...nm].map((c,j)=>c===' '?j:-1).filter(j=>j>=0).sort((a,b)=>Math.abs(a-nm.length/2)-Math.abs(b-nm.length/2))[0];ls=[nm.slice(0,sp),nm.slice(sp+1)];}
@@ -5800,7 +5800,7 @@ function wmDraw(){const o=wmEnsure();if(!o.classList.contains('on'))return;
   
   if(cur===k){const p=.5+.5*Math.sin(G.t*4),mx=cx,my=cy+fs+14;x.fillStyle='rgba(255,255,255,'+(.3+.3*p)+')';x.beginPath();x.arc(mx,my,10+3*p,0,7);x.fill();x.fillStyle='#e83a2a';x.strokeStyle='#fff';x.lineWidth=2;x.beginPath();x.arc(mx,my,5.5,0,7);x.fill();x.stroke();}
  });
- if(WM.sel&&wmState(WM.sel)){const si=WMK.indexOf(WM.sel);if(WM.oc!==WM.sel+cw){WM.oc=WM.sel+cw;const d=WM.idd,iw=d.width,ih=d.height,c=document.createElement('canvas');c.width=iw;c.height=ih;const q=c.getContext('2d'),od=q.createImageData(iw,ih);for(let j=0;j<ih;j++)for(let i=0;i<iw;i++){const id=d.data[(j*iw+i)*4];if(id!==si)continue;let e=0;for(const [a,b] of [[1,0],[-1,0],[0,1],[0,-1],[2,0],[-2,0],[0,2],[0,-2]]){const ii=i+a,jj=j+b;if(ii<0||jj<0||ii>=iw||jj>=ih||d.data[(jj*iw+ii)*4]!==si){e=1;break;}}if(e){const o=(j*iw+i)*4;od.data[o]=255;od.data[o+1]=226;od.data[o+2]=110;od.data[o+3]=255;}}q.putImageData(od,0,0);WM.ol=c;}x.save();x.globalAlpha=.65+.35*Math.sin(G.t*4);x.shadowColor='#ffd24a';x.shadowBlur=8;x.imageSmoothingEnabled=false;x.drawImage(WM.ol,0,0,cw,ch);x.restore();}
+ if(WM.sel&&wmState(WM.sel)){const si=WM.keys.indexOf(WM.sel);if(WM.oc!==WM.sel+cw){WM.oc=WM.sel+cw;const d=WM.idd,iw=d.width,ih=d.height,c=document.createElement('canvas');c.width=iw;c.height=ih;const q=c.getContext('2d'),od=q.createImageData(iw,ih);for(let j=0;j<ih;j++)for(let i=0;i<iw;i++){const id=d.data[(j*iw+i)*4];if(id!==si)continue;let e=0;for(const [a,b] of [[1,0],[-1,0],[0,1],[0,-1],[2,0],[-2,0],[0,2],[0,-2]]){const ii=i+a,jj=j+b;if(ii<0||jj<0||ii>=iw||jj>=ih||d.data[(jj*iw+ii)*4]!==si){e=1;break;}}if(e){const o=(j*iw+i)*4;od.data[o]=255;od.data[o+1]=226;od.data[o+2]=110;od.data[o+3]=255;}}q.putImageData(od,0,0);WM.ol=c;}x.save();x.globalAlpha=.65+.35*Math.sin(G.t*4);x.shadowColor='#ffd24a';x.shadowBlur=8;x.imageSmoothingEnabled=false;x.drawImage(WM.ol,0,0,cw,ch);x.restore();}
  mmFrame(x,cw,ch);
  WM.cs=[cw,ch];
  /* cartão de info */
