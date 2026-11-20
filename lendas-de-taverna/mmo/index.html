@@ -1201,6 +1201,25 @@ html.cutm #hud,html.cutm #bar,html.cutm #mmenu,html.cutm #joy,html.cutm #chat,ht
 #cut .cskip{position:absolute;top:calc(14px + env(safe-area-inset-top));right:12px;z-index:3;padding:7px 11px;background:rgba(10,8,16,.7);border:2px solid #8a7440;color:#e8d8a0;font:700 11px var(--f);letter-spacing:.12em}
 .cbox{position:absolute;left:0;right:0;bottom:0;z-index:950;min-height:96px;padding:34px 22px calc(26px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(8,6,14,0),rgba(8,6,14,.5) 45%,rgba(8,6,14,.62));color:rgba(244,236,214,.9);text-shadow:0 1px 3px #000,0 0 8px rgba(0,0,0,.8);text-align:center;font:500 15px/1.6 var(--f)}
 .cbox p{margin:0;min-height:3.1em}.cbox i{position:absolute;right:50%;margin-right:-5px;bottom:8px;font-style:normal;color:rgba(255,214,110,.7);font-size:11px;opacity:0}.cbox.rdy i{opacity:1;animation:cbk .7s steps(2) infinite}@keyframes cbk{50%{transform:translateY(3px)}}
+
+/* DIÁRIO NO LIVRO: nada de caixas pretas sobre o pergaminho */
+:root:root #win.bk .pc{background:linear-gradient(180deg,rgba(247,234,200,.9),rgba(226,204,156,.9))!important;border:2px solid #8a6a38!important;box-shadow:inset 0 0 0 1px rgba(255,246,218,.55),0 2px 0 rgba(60,36,14,.25);color:#3b2a14}
+:root:root #win.bk .pc.on{border-color:#b9791a!important;box-shadow:inset 0 0 0 1px rgba(255,236,170,.8),0 0 8px rgba(214,150,40,.45)}
+:root:root #win.bk .pc b{color:#4a2c14!important}:root:root #win.bk .pc span{color:#5a4026!important}:root:root #win.bk .pc em{color:#8a6a38!important}
+:root:root #win.bk .pc.lk .pi img{filter:brightness(0) sepia(1) opacity(.35)!important}
+:root:root #win.bk .pc .pi{background:radial-gradient(ellipse at 50% 70%,rgba(110,76,36,.22),transparent 70%)}
+:root:root #win.bk .wr .ic{background:linear-gradient(180deg,#7a5230,#4e3119)!important;border:2px solid #2a190d!important;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(255,214,140,.25)}
+:root:root #win.bk .wr .ic.cic{background:none!important;border:0!important;box-shadow:none}
+:root:root #win.bk .wb{padding-left:26px!important;padding-right:24px!important}
+:root:root #win.bk .pgrid{gap:10px}
+
+:root:root #win.bk .bc{background:linear-gradient(180deg,rgba(247,234,200,.92),rgba(226,204,156,.92))!important;border:2px solid #8a6a38!important;box-shadow:inset 0 0 0 1px rgba(255,246,218,.55),0 2px 0 rgba(60,36,14,.25);color:#3b2a14}
+:root:root #win.bk .bc.mx{border-color:#b9791a!important;box-shadow:inset 0 0 0 1px rgba(255,236,170,.8),0 0 8px rgba(214,150,40,.45)}
+:root:root #win.bk .bc .bp{background:radial-gradient(circle,rgba(110,76,36,.22),rgba(110,76,36,.08) 70%)!important;border:2px solid #8a6a38!important}
+:root:root #win.bk .bc.un .bp img{filter:brightness(0) sepia(1) opacity(.4)!important}
+:root:root #win.bk .bc .bn{color:#4a2c14!important}:root:root #win.bk .bc .bk,:root:root #win.bk .bc .bt{color:#5a4026!important}
+:root:root #win.bk .bc .bs{color:#b9791a!important}:root:root #win.bk .bc .bs u{color:rgba(90,64,38,.35)!important;text-decoration:none}
+:root:root #win.bk .bc .bar{background:rgba(90,64,38,.25)!important;border:1px solid #8a6a38!important}
 </style>
 </head>
 <body>
@@ -1274,10 +1293,10 @@ html.cutm #hud,html.cutm #bar,html.cutm #mmenu,html.cutm #joy,html.cutm #chat,ht
   </div>
   <div class="scr" id="ko"><div class="txt-o">Você caiu…<br><span style="font-size:11px">reanimando</span></div></div>
 
-  <div class="scr" id="win"><div class="box"><div class="tmain"><span id="wtt">—</span><button class="xb" id="wx"></button></div><div class="wb" id="wbody"></div></div><div id="wtip" class="tipbox"></div></div>
+  <div class="scr" id="win"><div class="box"><div class="tt"><span id="wtt">—</span><button class="xb" id="wx"></button></div><div class="wb" id="wbody"></div></div><div id="wtip" class="tipbox"></div></div>
   <div id="gc"><div class="gcb"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><h3 id="gct"></h3><p id="gcm"></p><div class="gcbt"><button id="gcn" class="sec"></button><button id="gcy" class="ok"></button></div></div></div>
   <div id="fade"></div>
-  <div class="scr" id="pan"><div class="box"><div class="tmain"><span>Personagem</span><button class="xb" id="pClose"></button></div>
+  <div class="scr" id="pan"><div class="box"><div class="tt"><span>Personagem</span><button class="xb" id="pClose"></button></div>
     <div class="tabs"><button id="tEq" class="on">Equipamento</button><button id="tBg">Mochila</button><button id="tMt">Materiais</button><button id="tAt">Atributos</button><button id="tSk">Habilidades</button><button id="tTl">Passivas</button></div>
     <div class="wb body" id="pBody"></div></div><div id="tip"></div></div>
   <!-- resultado -->

@@ -208,9 +208,7 @@ for k,n,sc in(('town',9,1.3),('cidade2',6,1.15)):
     rx,ry,rw,rh=rect[k]
     for jx in range(n): house(rx+rw*.15+jx*(rw*.7/n)+R.randint(-3,3),ry+rh*.5+R.randint(-10,10),sc)
 # estradas reais (esqueleto do chão) + ligações entre zonas
-sk=skeletonize(gaussian_filter(road.astype(np.float32),1.1)>.3); ys_,xs_=np.nonzero(sk)
-for x,y in zip(xs_,ys_):
-    if land[y,x]: d.ellipse([x*S-1.9,y*S-1.9,x*S+1.9,y*S+1.9],fill=(104,62,34,235))
+# (estradas internas: malha limpa passagem -> centro da zona, desenhada abaixo)
 def seg(p,q_,col,wd):
     L=math.hypot(q_[0]-p[0],q_[1]-p[1]); n=max(2,int(L/3.5))
     for t in range(n+1):
@@ -221,11 +219,27 @@ def bez(p0,p1,p2,n=40):
 def ex_pt(k,sd,pos_):
     rx,ry,rw,rh=rect[k]; ZW,ZH=SZ[k]
     return {0:(rx+pos_/ZW*rw,ry),1:(rx+pos_/ZW*rw,ry+rh),2:(rx,ry+pos_/ZH*rh),3:(rx+rw,ry+pos_/ZH*rh)}[sd]
+def pull(k,pt):
+    i=KEYS.index(k); rx,ry,rw,rh=rect[k]; hub=(rx+rw/2,ry+rh/2)
+    for t in np.linspace(0,1,60):
+        x=pt[0]+(hub[0]-pt[0])*t; y=pt[1]+(hub[1]-pt[1])*t
+        if 0<=x<W and 0<=y<H and land[int(y),int(x)] and ID[int(y),int(x)]==i and not water[int(y),int(x)]: return (x,y)
+    return hub
+def hubpt(k):
+    rx,ry,rw,rh=rect[k]; return pull(k,(rx+rw/2,ry+rh/2))
+def road(pts,w=4): d.line([(x*S,y*S) for x,y in pts],fill=(104,62,34,235),width=w,joint='curve')
+EXITS={}
+for a_,sa,pa,b_,pb in LINKS:
+    EXITS.setdefault(a_,[]).append((sa,pa)); EXITS.setdefault(b_,[]).append((OPP[sa],pb))
+for k,exl in EXITS.items():
+    H_=hubpt(k)
+    for sd,pp in exl:
+        E=pull(k,ex_pt(k,sd,pp)); mid=((E[0]+H_[0])/2+(H_[1]-E[1])*.08,(E[1]+H_[1])/2-(H_[0]-E[0])*.08)
+        road(bez(E,mid,H_,30))
 for a_,sa,pa,b_,pb in LINKS:
     A_=ex_pt(a_,sa,pa); B_=ex_pt(b_,OPP[sa],pb); mid=((A_[0]+B_[0])/2,(A_[1]+B_[1])/2)
     if math.hypot(A_[0]-B_[0],A_[1]-B_[1])>45: continue   # ligação em ciclo (zonas não coladas): sem estrada reta atravessando o mapa
-    pts=bez(A_,((A_[0]+mid[0])/2,(A_[1]+mid[1])/2) if math.hypot(A_[0]-B_[0],A_[1]-B_[1])<4 else mid,B_)
-    d.line([(x*S,y*S) for x,y in pts],fill=(104,62,34,235),width=4,joint='curve')
+    A2,B2=pull(a_,A_),pull(b_,B_); road(bez(A2,((A2[0]+B2[0])/2,(A2[1]+B2[1])/2),B2,24))
 # ligações de cidade
 t_,e_,pa_,c2_=rect['town'],rect['estrada'],rect['passo'],rect['cidade2']
 for A_,B_ in (((t_[0]+t_[2]*.45,t_[1]),(e_[0]+e_[2]*.45,e_[1]+e_[3])),((pa_[0]+pa_[2]*.5,pa_[1]),(c2_[0]+c2_[2]*.5,c2_[1]+c2_[3]))):
