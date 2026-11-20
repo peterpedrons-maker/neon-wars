@@ -27,3 +27,4 @@ Esboços: `mmo/proto_pixel/bestiario_*.png`, código em `tools/mmo/pxengine/data
 
 ### Caçadas (hunts)
 - **Presa-Lunar, o Alfa da Matilha** (lobo gigante, Planície de Brumavale): alvo da caçada "O Silêncio da Matilha" (10 lobos + 10 s parado perto da água). Usa o sprite do lobo ×1,45. Kit: bote + Uivo.
+- **Ancião Cornalvo** (cervo branco gigante, galhada dourada, musgo; RARO pacífico da Planície de Brumavale, ~60% de chance ao entrar na zona, nível 18, 15 mil PV): não ataca ninguém; se ferido enfurece e usa Pisada, Investida e Rugido. Sem quest e fora da Guilda por enquanto. Sprite `fauna.cervo` (atlas `cx_cervo`, escala 1,75).

@@ -428,6 +428,75 @@ def sapo(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=
 DRAW.update({'urso': urso, 'cobra': cobra, 'aranha': aranha, 'barata': barata, 'sapo': sapo})
 
 
+# ------------------------------------------------------------------ ANCIAO CORNALVO (cervo imponente, pacifico)
+PAL.update({
+    'cervo': dict(body=R('#7a7488', '#bcb6c8', '#f2eef8'), belly=R('#b4aec0', '#dcd8e6', '#ffffff'), mane=R('#4a5a3a', '#7a9a52', '#b4d878'),
+                  antler=R('#9a6a14', '#e0a62a', '#fff0a0'), hoof=R('#2a2430', '#4a4256', '#6a6078'), nose=R('#2a2430', '#4a4256', '#6a6078'),
+                  ear=R('#6a6478', '#a8a2b8', '#dcd8e6')),
+})
+
+
+def cervo(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=0, pose=False, fd=0, rd=0, fsw=0, rsw=0, flift=0, rlift=0, legs_top=False, **kw):
+    m = (fd + rd) / 2; head_dy = head_dy + fd
+    c = Cv(); cx = W // 2; gy = BASE
+    EYE = hx('#ffc23a')
+    if view == 'right':
+        bx, by = cx - 3 + lunge * .4, gy - 14 + bob
+        for lx, ph0, far in ((-8, 0, True), (7, math.pi, True), (-7, math.pi, False), (8, 0, False)):
+            lift = max(0, math.sin(ph + ph0)) * 2.8; sw = math.cos(ph + ph0) * 2.6; hyl = by + 3
+            if pose:
+                fr_ = lx > 0; sw = (fsw if fr_ else rsw) * (.8 if far else 1); lift = (flift if fr_ else rlift) * (.8 if far else 1); hyl = by + 3 + (fd if fr_ else rd)
+            leg(c, bx + lx, hyl, gy, sw, lift, 1.8 * (1.3 if pose else 1), 1.1 * (1.3 if pose else 1), 'body', far)
+        c.ell(bx - 6, by + .5 + rd, 5.4, 5.2)
+        c.ell(bx + 1, by - .3 + m, 9.4, 5.6)
+        c.ell(bx + 6.5, by - 1 + fd, 5.4, 6)
+        c.ell(bx + 1, by + 3.4 + m, 7, 2.2, 'belly')
+        c.cap(bx + 8, by - 3 + fd, bx + 13 + lunge * .4, by - 9 + head_dy, 4.6, 2.8)
+        for k in range(5): c.cap(bx + 8 + k * .9, by - 3 - k * 1.4 + fd, bx + 6.6 + k * .9, by - 1.5 - k * 1.4 + fd, 1.4, .8, 'mane')
+        c.cap(bx + 12.5 + lunge * .4, by - 9.5 + head_dy, bx + 18.5 + lunge * .5, by - 7.5 + head_dy, 3.0, 1.9)
+        c.dot(bx + 19.4 + lunge * .5, by - 7.1 + head_dy, hx('#14101c'))
+        c.cap(bx + 11.5, by - 12 + head_dy, bx + 8.5, by - 14 + head_dy, 1.8, .8, 'ear')
+        c.cap(bx - 10, by - 1 + rd, bx - 13, by + 1 + rd + math.sin(tail) * 1.2, 1.8, 1.0, 'belly')
+        hx0, hy0 = bx + 13 + lunge * .4, by - 12 + head_dy
+        c.cap(hx0, hy0, hx0 - 3, hy0 - 8, 1.2, .8, 'antler'); c.cap(hx0 - 3, hy0 - 8, hx0 - 7, hy0 - 10, .8, .5, 'antler')
+        c.cap(hx0 - 2, hy0 - 5, hx0 + 3, hy0 - 9, .8, .5, 'antler'); c.cap(hx0 - 4, hy0 - 10, hx0 - 1, hy0 - 12, .7, .5, 'antler')
+        c.cap(hx0 - 5, hy0 - 9, hx0 - 10, hy0 - 10, .7, .5, 'antler')
+        c.cap(hx0 + 1, hy0 + 1, hx0 - 6, hy0 - 4, 1.0, .7, 'antler'); c.cap(hx0 - 6, hy0 - 4, hx0 - 10, hy0 - 7, .7, .5, 'antler')
+        c.dot(bx + 15.6 + lunge * .4, by - 9.1 + head_dy, EYE if not squint else hx('#14100c'))
+        for q in range(4): c.dot(bx - 2 + q * 3, by - 5 + m + (q % 2), hx('#8ec24a'))
+        if mouth:
+            for q in range(4): c.dot(bx + 16 + q + lunge * .5, by - 6.1 + head_dy, hx('#14101c'))
+        if pose and legs_top:
+            for lx, ph0, far in ((-8, 0, True), (7, math.pi, True), (-7, math.pi, False), (8, 0, False)):
+                fr_ = lx > 0; sw = (fsw if fr_ else rsw) * (.8 if far else 1); lift = (flift if fr_ else rlift) * (.8 if far else 1); hyl = by + 3 + (fd if fr_ else rd)
+                leg(c, bx + lx, hyl, gy, sw, lift, 1.8 * 1.3, 1.1 * 1.3, 'body', far)
+    else:
+        back = view == 'up'; bx = cx; by = gy - 14 + bob
+        for sx, ph0 in ((-4.5, 0), (4.5, math.pi)):
+            lift = max(0, math.sin(ph + ph0)) * 2.8; swv = 0
+            if pose: lift = flift; swv = (1 if sx > 0 else -1) * fsw
+            leg(c, bx + sx, by + 3, gy, swv, lift, 1.9, 1.3, 'body', False)
+        c.ell(bx, by + 1, 7.4, 6.8)
+        for k in range(-2, 3): c.cap(bx + k * 2.2, by - 4, bx + k * 2.2, by - 8 - (k == 0), 1.1, .6, 'mane')
+        hy = by - 8 + head_dy + (lunge * .3 if not back else 0)
+        c.cap(bx, by - 3, bx, hy + 2, 3.8, 3.0)
+        c.ell(bx, hy, 4.2, 4.2)
+        for sg in (-1, 1):
+            c.cap(bx + sg * 3.2, hy - 2, bx + sg * 6.4, hy - 4, 1.8, .8, 'ear')
+            c.cap(bx + sg * 2, hy - 3, bx + sg * 5.5, hy - 10, 1.1, .8, 'antler'); c.cap(bx + sg * 5.5, hy - 8, bx + sg * 4, hy - 12, .9, .5, 'antler')
+            c.cap(bx + sg * 4.6, hy - 6, bx + sg * 9.5, hy - 9, .8, .5, 'antler'); c.cap(bx + sg * 5.5, hy - 8, bx + sg * 9, hy - 12, .8, .5, 'antler')
+            c.cap(bx + sg * 4.8, hy - 10, bx + sg * 1.5, hy - 11.5, .7, .5, 'antler')
+        if back: c.cap(bx, by + 6, bx + math.sin(tail) * 1.2, by + 9, 1.8, 1.0, 'belly')
+        else:
+            c.ell(bx, hy + 3, 2.3, 2.2, 'nose')
+            for sg in (-1, 1): c.dot(bx + sg * 2.6, hy - .5, EYE if not squint else hx('#14101c'))
+            if mouth: [c.dot(bx + q, hy + 5, hx('#14101c')) for q in range(-1, 2)]
+    return c.render(PAL['cervo'], FLAT)
+
+
+DRAW.update({'cervo': cervo})
+
+
 def anim(kind, k, view, dense=2):
     n = {'idle': 6, 'walk': 8, 'attack': 10, 'hurt': 4, 'death': 6}[k] * dense
     d = DRAW[kind]; out = []
