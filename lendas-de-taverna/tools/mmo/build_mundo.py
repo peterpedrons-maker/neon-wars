@@ -361,7 +361,7 @@ for a,sa,pa,b,pb in LINKS:
     sb=OPP[sa]
     EXL[a].append(dict(id=b,nm=NM[b],side=sa,pos=pa,to='zone_'+b,toSide=sb,at=_arrive(b,sb,pb),ready=True))
     EXL[b].append(dict(id=a,nm=NM[a],side=sb,pos=pb,to='zone_'+a,toSide=sa,at=_arrive(a,sa,pa),ready=True))
-EXL['estrada'].append(dict(id='cidade',nm='Brumavale',side=0,pos=500,to='town',toSide=-1,at=[450,1750],ready=True))   # a saída sul da cidade chega pelo TOPO da Estrada (que faz uma ferradura até a Planície)
+EXL['estrada'].append(dict(id='cidade',nm='Brumavale',side=0,pos=500,to='town',toSide=-1,at=[450,170],ready=True))   # a saída sul da cidade chega pelo TOPO da Estrada (que faz uma ferradura até a Planície)
 EXL['passo'].append(dict(id='cidade2',nm='Cidade 2',side=0,pos=2250,to='zone_cidade2',toSide=1,at=[1100,4000],ready=False,
   msg='Portão do Passo: o guarda só deixa passar a partir do nível 10, com a quest dos chefes (em construção).'))
 def auto_roads(name,hub=None):
