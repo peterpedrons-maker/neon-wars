@@ -39,12 +39,38 @@ button:active:not(:disabled){transform:scale(.97);filter:brightness(1.15)}
 .btn.sec{background:linear-gradient(#2a2433,#17131d);border-color:var(--lin);color:var(--papel);text-shadow:none;box-shadow:none}
 .btn:disabled{background:linear-gradient(#26222e,#15121a);border-color:rgba(217,180,95,.25);color:#6c6678;text-shadow:none;box-shadow:none}
 /* título */
-#title{align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 35%,#2d4a1e,#0e150a 70%);padding:24px;gap:14px;text-align:center}
-#title img{width:78%;max-width:300px;image-rendering:auto;filter:drop-shadow(0 4px 0 rgba(0,0,0,.5))}
-#title .sub{font:600 11px var(--ft);letter-spacing:.28em;text-transform:uppercase;color:var(--papel2)}
-#title .col{width:80%;max-width:300px;display:flex;flex-direction:column;gap:10px;margin-top:10px}
-#slots{display:flex;flex-direction:column;gap:8px;width:100%}#slots .sr{display:flex;gap:6px}#slots .sr .btn{height:44px;flex:1;min-width:0;font-size:12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}#slots .sr .btn.sd{flex:none;width:44px;background:linear-gradient(#8a3a30,#5a1c18);color:#ffd8d0;border-color:#c06050}#slots .sr .btn.ne{background:linear-gradient(#3a4a2a,#26331a);color:#d8e8b0;border-color:#6f8a4a}
-#title a{color:var(--papel2);font-size:11px;text-decoration:underline}
+#title{align-items:center;justify-content:space-between;background:#07050f;padding:max(26px,env(safe-area-inset-top)) 22px calc(18px + env(safe-area-inset-bottom));gap:10px;text-align:center;overflow:hidden}
+#tbg{position:absolute;inset:0;overflow:hidden}
+#tbg .s{position:absolute;inset:-4%;background:center 35%/cover no-repeat;image-rendering:pixelated;opacity:0;animation:tbg 24s linear infinite}
+@keyframes tbg{0%{opacity:0;transform:scale(1.02) translateX(-1%)}6%{opacity:1}34%{opacity:1}42%{opacity:0;transform:scale(1.13) translateX(1.5%)}100%{opacity:0;transform:scale(1.13) translateX(1.5%)}}
+#tfx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#tvig{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(6,4,12,.78) 0,rgba(6,4,12,.18) 30%,rgba(6,4,12,0) 42%,rgba(6,4,12,.55) 62%,rgba(6,4,12,.92) 100%),radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(0,0,0,.55) 100%)}
+#title .tmain,#title .col,#title .tver{position:relative;z-index:2}
+#title .tmain{display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:2vh}
+#title img.tlg{width:92%;max-width:380px;image-rendering:auto;filter:drop-shadow(0 4px 0 rgba(0,0,0,.55)) drop-shadow(0 0 18px rgba(233,185,73,.35));animation:tlgf 4.5s ease-in-out infinite}
+@keyframes tlgf{50%{transform:translateY(-4px)}}
+#title .sub{font:700 12px var(--ft);letter-spacing:.34em;text-transform:uppercase;color:#f3e6c6;text-shadow:0 2px 0 #000,0 0 8px #000}
+#title .col{width:84%;max-width:320px;display:flex;flex-direction:column;gap:9px;margin-top:0}
+#title .btn{height:46px;border:2px solid #1b0f08;outline:2px solid #c9a24a;outline-offset:-4px;border-radius:2px;box-shadow:0 3px 0 #000,0 0 16px rgba(233,185,73,.25)}
+#slots .sr .btn.ne{height:36px;border-color:#1b0f08;background:rgba(18,12,28,.72);color:#c9b98a;font-size:11px;outline-color:#6a5a3a;box-shadow:none;text-shadow:none}
+#title .btn.sec{background:linear-gradient(#3a2e4a,#201830);color:#f3e6c6;outline-color:#6a5a8a}
+#title .btn.sec small{margin-left:8px;font:600 9px var(--ft);letter-spacing:.12em;color:#c9a24a}
+#title .tver{font:600 9.5px var(--ft);letter-spacing:.14em;color:rgba(243,230,198,.55);text-shadow:0 1px 0 #000}
+/* abertura e carregamento */
+#boot{position:absolute;inset:0;z-index:400;background:#07050a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px;transition:opacity .7s}
+#boot .bp img{width:min(64vw,300px);filter:drop-shadow(0 4px 0 #000a);opacity:0;animation:bpin 1.4s .2s ease-out forwards}
+@keyframes bpin{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.bb{width:min(220px,58%);height:10px;background:#16101c;border:2px solid #4a3a5c;box-shadow:0 0 0 2px #07050a;overflow:hidden}.bb i{display:block;height:100%;width:0;background:repeating-linear-gradient(90deg,#ffe9a8 0 6px,#e9b949 6px 8px)}
+#boot .bl,#loadg{display:flex;flex-direction:column;align-items:center;gap:10px}
+#boot p,#loadg p{margin:0;font:700 12px var(--ft);letter-spacing:.2em;color:#cdb68a;text-transform:uppercase}
+#boot p.go,#loadg p.go{color:#ffe9b8;animation:blink2 1.2s ease-in-out infinite}@keyframes blink2{50%{opacity:.35}}
+#loadg{position:absolute;inset:0;z-index:420;background:radial-gradient(ellipse at 50% 40%,#1c1530,#07050a 75%);justify-content:center;gap:18px;opacity:0;pointer-events:none;transition:opacity .35s}
+#loadg.on{opacity:1;pointer-events:auto;transition:none}
+#loadg img{width:min(70vw,300px);filter:drop-shadow(0 3px 0 #000a)}
+#loadg .bb i{width:30%;animation:lbar 1.1s ease-in-out infinite}@keyframes lbar{0%{margin-left:-30%}100%{margin-left:100%}}
+#loadg small{max-width:260px;text-align:center;font:600 11px/1.5 var(--ft);color:#a89870;min-height:3em}
+#slots{display:flex;flex-direction:column;gap:8px;width:100%}#slots .sr{display:flex;gap:6px}#slots .sr .btn{height:44px;flex:1;min-width:0;font-size:12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}#slots .sr .btn.sd{flex:none;width:44px;background:linear-gradient(#8a3a30,#5a1c18);color:#ffd8d0;border-color:#c06050}
+#title a{color:#e6d4a8;font-size:11px;text-decoration:underline;text-shadow:0 1px 0 #000}
 /* ---------- criação em 3 etapas ---------- */
 #create{background:radial-gradient(ellipse at 50% 28%,#2b2a3a,#0b0b12 72%);padding:0 12px 14px}
 #csteps{display:flex;justify-content:center;align-items:flex-start;padding-top:12px;flex:none}
@@ -1115,6 +1141,16 @@ html.rage #stage::after{content:'';position:absolute;inset:0;pointer-events:none
 .sqh .sqb.n{display:none}
 #win.bk .sqfl>small{color:#7a5a2a}
 
+/* ===== FACÇÕES no livro: textos e barras legíveis sobre o pergaminho ===== */
+:root:root #win.bk .rp .bar{background:#cdb98c;border:2px solid #6b4a1e;height:12px;box-shadow:inset 0 2px 0 rgba(60,36,10,.25)}
+:root:root #win.bk .rp.o i{background:linear-gradient(#e0a52a,#a8701a)}:root:root #win.bk .rp.g i{background:linear-gradient(#4a9ad0,#276a9c)}:root:root #win.bk .rp.c i{background:linear-gradient(#c84a3a,#8e2418)}
+:root:root #win.bk .rp em{color:#5a3a1c;font:700 13px var(--f)}
+:root:root #win.bk .dd.bg2{padding:8px 12px;background:rgba(214,190,140,.45);border:1px solid #8a6a32;color:#3a2412}
+:root:root #win.bk .dd.bg2 span{font:700 15px var(--f)!important;color:#3a2412!important}
+:root:root #win.bk .dd.bg2 b{font:700 16px var(--f)!important;color:#7a1f14!important}
+:root:root #win.bk .dd{color:#3a2412;font-family:var(--f)}
+:root:root #win.bk .sqs2 span{color:#6b4a22}
+
 /* ===== LIVRO: fonte Almendra, recompensas sem caixa, estrela proporcional, Personagem de couro ===== */
 :root:root #win.bk{--f:'Almendra','PxSans',Georgia,serif}
 :root:root #win.bk .wb{font-size:14px}
@@ -1160,16 +1196,24 @@ html.cutm #hud,html.cutm #bar,html.cutm #mmenu,html.cutm #joy,html.cutm #chat,ht
 
   <!-- título -->
   <div class="scr on" id="title">
-    <img src="assets/logo.png" alt="Hearthblade">
-    <div class="sub">Lendas de Brumavale</div>
+    <div id="tbg"><div class="s" style="background-image:url(assets/cut/p1.png);animation-delay:0s"></div><div class="s" style="background-image:url(assets/cut/p3.png);animation-delay:-16s"></div><div class="s" style="background-image:url(assets/cut/p4.png);animation-delay:-8s"></div></div>
+    <canvas id="tfx"></canvas><div id="tvig"></div>
+    <div class="tmain"><img class="tlg" src="assets/brand/logo.png" alt="Hearthblade"><div class="sub">Lendas de Brumavale</div></div>
     <div class="col">
       <button class="btn" id="bCont" style="display:none">CONTINUAR</button>
       <button class="btn" id="bNew" style="display:none">NOVO HERÓI</button>
       <div id="slots"></div>
-      <a href="../tatico.html" style="margin-top:6px">Jogo tático clássico →</a>
+      <button class="btn sec" id="bLogin" disabled>ENTRAR COM CONTA <small>em breve</small></button>
+      <a href="../tatico.html" style="margin-top:4px">Jogo tático clássico →</a>
       <a href="#" id="bInst" style="margin-top:2px;display:none">Instalar o app →</a>
     </div>
+    <div class="tver">© Javali Torto Games · versão de teste</div>
   </div>
+  <!-- abertura (publicadora + carregamento) -->
+  <div id="boot"><div class="bp"><img src="assets/brand/publisher.png" alt="Javali Torto Games"></div>
+    <div class="bl"><div class="bb"><i id="bbar"></i></div><p id="btxt">Carregando…</p></div></div>
+  <!-- carregando o jogo -->
+  <div id="loadg"><img src="assets/brand/logo.png" alt=""><div class="bb"><i></i></div><p id="ltxt">Carregando…</p><small id="ltip"></small></div>
 
   <!-- criação -->
   <div class="scr" id="create">
@@ -1217,10 +1261,10 @@ html.cutm #hud,html.cutm #bar,html.cutm #mmenu,html.cutm #joy,html.cutm #chat,ht
   </div>
   <div class="scr" id="ko"><div class="txt-o">Você caiu…<br><span style="font-size:11px">reanimando</span></div></div>
 
-  <div class="scr" id="win"><div class="box"><div class="tt"><span id="wtt">—</span><button class="xb" id="wx"></button></div><div class="wb" id="wbody"></div></div><div id="wtip" class="tipbox"></div></div>
+  <div class="scr" id="win"><div class="box"><div class="tmain"><span id="wtt">—</span><button class="xb" id="wx"></button></div><div class="wb" id="wbody"></div></div><div id="wtip" class="tipbox"></div></div>
   <div id="gc"><div class="gcb"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><h3 id="gct"></h3><p id="gcm"></p><div class="gcbt"><button id="gcn" class="sec"></button><button id="gcy" class="ok"></button></div></div></div>
   <div id="fade"></div>
-  <div class="scr" id="pan"><div class="box"><div class="tt"><span>Personagem</span><button class="xb" id="pClose"></button></div>
+  <div class="scr" id="pan"><div class="box"><div class="tmain"><span>Personagem</span><button class="xb" id="pClose"></button></div>
     <div class="tabs"><button id="tEq" class="on">Equipamento</button><button id="tBg">Mochila</button><button id="tMt">Materiais</button><button id="tAt">Atributos</button><button id="tSk">Habilidades</button><button id="tTl">Passivas</button></div>
     <div class="wb body" id="pBody"></div></div><div id="tip"></div></div>
   <!-- resultado -->
@@ -2447,7 +2491,7 @@ function resetZone(){
 }
 function fadeTo(cb){const f=$('fade');f.classList.add('on');setTimeout(()=>{cb();setTimeout(()=>f.classList.remove('on'),220);},380);}
 async function startGame(){
-  BOOTING=1;try{await startGame0();}finally{BOOTING=0;}
+  loadShow();await new Promise(r=>setTimeout(r,60));BOOTING=1;try{await startGame0();}finally{BOOTING=0;loadHide();}
 }
 async function startGame0(){
   migrateSave();qInit();await buildHeroSheet();G.on=true;G.hero=mkHero();G.floats=[];G.fx=[];G.chat=[];G.loot=[];G.auto=false;
@@ -6317,6 +6361,8 @@ html #dlg,html #dlg *,html #npcmk *{white-space:normal!important;text-transform:
 #dlg .dlo{flex:1 1 100%;font:600 13.5px var(--f);color:#fff2cc;background:#3a2a14;border:2px solid #b98a2a;padding:9px 10px;text-align:left}
 #dlg .dlo:active{background:#5a431f}#dlg .dlo.q{color:#ffe08a}#dlg .dlo.r{color:#9ff08a}
 #npcmk{position:absolute;inset:0;pointer-events:none;z-index:3;overflow:hidden}
+#gps{position:absolute;left:0;top:0;z-index:3;pointer-events:none;display:none;transform:translate(-50%,-100%);text-align:center}#gps svg{display:block;margin:0 auto;filter:drop-shadow(0 0 5px rgba(255,214,110,.9)) drop-shadow(0 2px 0 #000);animation:gpsb .9s ease-in-out infinite}@keyframes gpsb{50%{margin-top:-5px}}#gps b{display:block;margin-top:1px;font:700 10px var(--f);color:#ffe9a8;text-shadow:0 1px 0 #000,0 0 4px #000;white-space:nowrap}.gpsm{font-style:normal;color:#ffd66e;margin-right:2px}
+
 #npcmk .nmk{position:absolute;transform:translate(-50%,-100%);animation:mkb .9s infinite;filter:drop-shadow(0 2px 0 #000a)}#npcmk .nmk img{display:block;height:34px;image-rendering:pixelated}#npcmk .nmk.off img{filter:grayscale(1) brightness(.75)}#npcmk .nmk.sd img{filter:hue-rotate(165deg) saturate(1.3)}
 @keyframes mkb{50%{margin-top:-5px}}
 #npcmk .nbub{position:absolute;transform:translate(-50%,-100%);max-width:170px;background:#fff6dc;color:#2a1a0a;border:2px solid #3a2a14;padding:4px 7px;font:600 11px/1.25 var(--f);text-align:center;box-shadow:0 2px 0 #3a2a14}
@@ -6389,6 +6435,44 @@ function bubTick(){if(!G.on||!G.hero)return;BUB.t-=.7;if(BUB.t<=0)BUB.e=null;if(
   if(!best)return;BUB.last.set(best,Date.now());BUB.e=best;BUB.t=4.2;BUB.txt=nGreet({id:best.kind==='vill'?'':best.id});}
 setInterval(()=>{try{stNpcSync();}catch(e){}},300);setInterval(()=>{try{bubTick();}catch(e){}},700);
 (function mkLoop(){try{stMarkers();}catch(e){}requestAnimationFrame(mkLoop);})();
+/* ===== GPS DE MISSÃO: seta sobre a cabeça do herói apontando o caminho (uma missão guiada por vez) ===== */
+const BOSSMAP={'Grunk':'zone_goblins','Gorgash':'zone_ogros','Morvath':'zone_cemiterio','Rei dos Ratos':'zone_brumas'};
+function gpsQuest(k){if(!k)return null;if(k==='m')return stCurQ()||stNext();if(/^[sv]_/.test(k)){const id=k.slice(2);return SEC.find(q=>q.id===id)||null;}return null;}
+function gpsLoc(id){const Z=MAPS.town&&MAPS.town.zone;
+  if(Z){for(const n of Z.npcs||[])if(n.id===id)return {map:'town',x:n.x,y:n.y};for(const d of Z.doors||[])if(d.id===id)return {map:'town',x:d.x,y:d.y+30};}
+  for(const x of TOWN_X)if(x.id===id)return {map:'town',x:x.x,y:x.y};
+  for(const m in ZNPC)for(const x of ZNPC[m])if(x.id===id)return {map:m,x:x.x,y:x.y};return null;}
+function gpsNext(a,b){if(a===b)return a;const q=[a],pv={[a]:null};while(q.length){const c=q.shift();if(c===b)break;for(const [x,y] of MMADJ){const n=x===c?y:y===c?x:null;if(n&&!(n in pv)){pv[n]=c;q.push(n);}}}
+  if(!(b in pv))return null;let c=b;while(pv[c]!==a&&pv[c]!==null)c=pv[c];return pv[c]===null?null:c;}
+function gpsDist(a,b){if(a===b)return 0;const q=[[a,0]],seen={[a]:1};while(q.length){const [c,d]=q.shift();for(const [x,y] of MMADJ){const n=x===c?y:y===c?x:null;if(n&&!seen[n]){if(n===b)return d+1;seen[n]=1;q.push([n,d+1]);}}}return 99;}
+function gpsGoal(){const g=SAVE.gps;if(!g)return null;const q=gpsQuest(g.k);if(!q||q.nm!==g.nm){SAVE.gps=null;return null;}
+  const acc=g.k==='m'?stCurQ()===q:!!stAct().act[q.id];let npc=null,maps=null;const o=q.obj;
+  if(!acc)npc=q.giver;else if(qkReady(q)||o.t==='talk')npc=q.turn;
+  else if(o.t==='boss')maps=[BOSSMAP[o.name]];
+  else if(o.t==='bosses'){const h=SAVE.hunts||{};maps=o.names.filter(n=>!(h[n]>0)).map(n=>BOSSMAP[n]);}
+  else maps=o.maps||[G.map];
+  if(npc){const l=gpsLoc(npc);return l?{map:l.map,x:l.x,y:l.y,txt:(NPCD[npc]||{}).nm||'Missão'}:null;}
+  if(!maps||!maps.length)return null;
+  let best=maps[0],bd=99;for(const m of maps){const d=gpsDist(G.map,m);if(d<bd){bd=d;best=m;}}
+  if(best!==G.map)return {map:best,x:null,y:null,txt:areaName(best)};
+  if(o.t==='boss'||o.t==='bosses'){const b=ZONE.region&&ZONE.region.boss;return b?{map:best,x:b.x,y:b.y,txt:'Chefe'}:null;}
+  const h=G.hero;let bm=null,bdd=1e9;for(const m of G.mobs||[]){if(m.dead||m.kind!=='mob'||m.minion)continue;if(o.t==='fam'&&m.type!==o.f)continue;if(o.t==='elite'&&!m.elite)continue;const d=dist(h,m);if(d<bdd){bdd=d;bm=m;}}
+  return bm?{map:best,x:bm.x,y:bm.y,txt:'Monstros'}:null;}
+let GPS={el:null,t:0,goal:null};
+function gpsDraw(){if(!G.on||!G.hero||!window.V3||!V3.toScreen)return;let el=GPS.el;if(!el){el=GPS.el=document.createElement('div');el.id='gps';el.innerHTML='<svg viewBox="0 0 40 40" width="38" height="38"><path d="M20 3 L36 33 L20 25 L4 33 Z" fill="#ffd66e" stroke="#2a1604" stroke-width="3" stroke-linejoin="round"/><path d="M20 9 L30 29 L20 24 Z" fill="#fff3b8" opacity=".75"/></svg><b></b>';($('stage')||document.body).appendChild(el);}
+  const h=G.hero;if(!SAVE.gps||G.cut||G.winOpen||G.room||G.arena||h.state==='ko'){el.style.display='none';return;}
+  const now=performance.now();if(now-GPS.t>220){GPS.t=now;try{GPS.goal=gpsGoal();}catch(e){GPS.goal=null;}}
+  const g=GPS.goal;if(!g){el.style.display='none';return;}
+  let tx,ty;
+  if(g.map!==G.map){const nx=gpsNext(G.map,g.map);const ex=nx&&(ZONE.exits||[]).find(e=>e.to===nx);if(!ex){el.style.display='none';return;}tx=ex.x+ex.w/2;ty=ex.y+ex.h/2;}
+  else{if(g.x==null){el.style.display='none';return;}tx=g.x;ty=g.y;}
+  const dx=tx-h.x,dy=ty-h.y,d=Math.hypot(dx,dy);if(d<130&&g.map===G.map){el.style.display='none';return;}
+  const ts=V3.toScreen,p0=ts(h.x,h.y,0),p1=ts(h.x+dx/d*80,h.y+dy/d*80,0),ang=Math.atan2(p1[1]-p0[1],p1[0]-p0[0]);
+  const p=ts(h.x,h.y,58);el.style.display='block';el.style.left=p[0]+'px';el.style.top=p[1]+'px';
+  el.firstChild.style.transform='rotate('+(ang*180/Math.PI+90)+'deg)';
+  const lb=el.lastChild,tx2=g.txt+' · '+Math.round(d/40)+' m';if(lb.textContent!==tx2)lb.textContent=tx2;}
+(function gpsLoop(){try{gpsDraw();}catch(e){}requestAnimationFrame(gpsLoop);})();
+
 
 function rwChips(r){const c=[];if(r.gold)c.push(['coins',r.gold]);if(r.xp)c.push(['xp',r.xp]);if(r.pot)c.push(['health-potion',r.pot]);if(r.tok)c.push(['gems',r.tok]);if(r.mat){const M=MATS.find(m=>m.id===r.mat[0]);c.push([M?M.ic:'ni_ferro',r.mat[1]]);}
   return '<div class="rws">'+c.map(([ic,v])=>ic==='xp'?`<span class="rw"><b class="xpt">EXP</b>${v}</span>`:`<span class="rw"><img src="${UI}${ic}.png">${v}</span>`).join('')+'</div>';}
@@ -6466,7 +6550,7 @@ function missionsBody(){sqCss();mlCss();const c=qMain(),L=SAVE.q.d.l,s=stS(),st=
   const cur=stCurQ(),nx=stNext(),mq=cur||nx,blue='hue-rotate(165deg) saturate(1.3)';
   const E={},G2=[];   // E[chave]=html do detalhe; G2=grupos
   const grp=(k,t,rows,def)=>{if(rows.length)G2.push([k,t,rows,def]);};
-  const row=(key,ic,f,nm,sub,end,cls)=>{return {key,h:`<div class="mlr${cls||''}" data-a="ql:${key}"><img src="${ic}"${f?` style="filter:${f}"`:''}><span>${nm}${sub?`<small>${sub}</small>`:''}</span>${end?`<u>${end}</u>`:''}</div>`};};
+  const row=(key,ic,f,nm,sub,end,cls)=>{return {key,h:`<div class="mlr${cls||''}" data-a="ql:${key}"><img src="${ic}"${f?` style="filter:${f}"`:''}><span>${SAVE.gps&&SAVE.gps.k===key?'<i class="gpsm">➤</i>':''}${nm}${sub?`<small>${sub}</small>`:''}</span>${end?`<u>${end}</u>`:''}</div>`};};
   const prg=q=>{const p=qkProg(q);return p[0]>=p[1]?['Pronta!','✔']:[p[0]+'/'+p[1],''];};
   if(mq){E.m=sqCard();const ok=cur&&stProg()[0]>=stProg()[1];grp('main','Principal',[row('m',ok?'assets/kit/B29.png':(cur?'assets/kit/B29.png':'assets/kit/B28.png'),cur&&!ok?'grayscale(1)':'','#'+mq.lv+' '+mq.nm,cur?(ok?'Pronta!':'Em andamento'):(SAVE.lv>=mq.lv?'Disponível':'Nível '+mq.lv),ok?'✔':'')],1);}
   const sRows=(arr,f)=>arr.map(q=>{E['s_'+q.id]=sCard(q);const p=prg(q);return row('s_'+q.id,'assets/kit/B29.png',qkProg(q)[0]>=qkProg(q)[1]?'':'grayscale(1)',q.nm,p[0],p[1]);});
@@ -6480,11 +6564,12 @@ function missionsBody(){sqCss();mlCss();const c=qMain(),L=SAVE.q.d.l,s=stS(),st=
   const hr=[];SQ.slice(0,s.n).forEach((q,i)=>{E['hm_'+i]=doneCard(q.nm,'Missão principal #'+(i+1),q.lv);hr.unshift(row('hm_'+i,'assets/kit/B29.png','grayscale(.4)','#'+(i+1)+' '+q.nm,'Principal','✔',' dn'));});
   [...dS,...dF].forEach(q=>{E['h_'+q.id]=doneCard(q.nm,(q.fac?'Facção · '+Object.keys(q.fac).map(k=>FACN[k]).join('/')+' · ':'Secundária · ')+((NPCD[q.turn]||{}).nm||''),q.lv);hr.push(row('h_'+q.id,'assets/kit/B29.png','grayscale(.4)',q.nm,q.fac?'Facção':'Secundária','✔',' dn'));});
   grp('done','Concluídas ('+hr.length+')',hr,0);
+  const gpsBtn=k=>{if(!(k==='m'||/^[sv]_/.test(k)))return '';const on=SAVE.gps&&SAVE.gps.k===k;return `<div class="acts" style="margin-top:8px"><button class="${on?'':'g'}" data-a="gps:${k}">${on?'Parar de guiar':'➤ Guiar até o objetivo'}</button></div>`;};
   let sel=G.qsel;const all=[];G2.forEach(g=>g[2].forEach(r=>all.push(r.key)));
   if(!E[sel])sel=all[0];G.qsel=sel;
   const L2=G2.map(([k,t,rows,def])=>{const op=qOpen('ml_'+k,!!def);(G.qsd=G.qsd||{})['ml_'+k]=op;
     return `<div class="mlh" data-a="qs:ml_${k}"><b>${t}</b><i>${op?'▾':'▸'}</i></div>`+(op?rows.map(r=>r.key===sel?r.h.replace('class="mlr"','class="mlr on"'):r.h).join(''):'');}).join('');
-  let h=`<div class="ml"><div class="mll">${L2||'<div class="mle">Nenhuma missão.</div>'}</div><div class="mld">${E[sel]||'<div class="mle">Selecione uma missão na lista.</div>'}</div></div>`;
+  let h=`<div class="ml"><div class="mll">${L2||'<div class="mle">Nenhuma missão.</div>'}</div><div class="mld">${E[sel]||'<div class="mle">Selecione uma missão na lista.</div>'}${gpsBtn(sel)}</div></div>`;
   if(rdy>1)h+=`<div class="acts"><button class="g" data-a="qall">Receber tudo (${rdy})</button></div>`;
   return h;}
 /* ===== LOJA DE FICHAS (Capitão Ruvel): moeda das missões, conquistas e encomendas ===== */
@@ -6548,7 +6633,7 @@ function winGrupo(){$('wtt').textContent='Grupo';const tab=G.gtab||'g',P=G.party
     h+=ch==='s'?'':inp('cmsg','Mensagem…','cs')+'<div class="sub">Sem conexão: só você vê estas mensagens.</div>';}
   $('wbody').innerHTML=h;}
 function socAct(a){const [k,v,w]=a.split(':');
-  if(k==='rt'){G.rtab=v;sfx('ui_click');}else if(k==='sb'){shopBuy(v);}else if(k==='pet'){if(petOwn(v)){SAVE.pet=SAVE.pet===v?null:v;G.petE=null;sfx('ui_confirm',.6);}}else if(k==='qall'){const c=qMain();if(c&&qOk(c))qClaim('m',0);SAVE.q.d.l.forEach((d,i)=>{if(!d.c&&qOk(d))qClaim('d',i);});}else if(k==='op'){G.winOpen=v;sfx('ui_click');renderWin();return true;}else if(k==='ti'){setTitle(SAVE.title===v?null:v);sfx('ui_confirm',.6);}else if(k==='qt'){G.qtab=v;sfx('ui_click');}else if(k==='mt'){G.mtab=v;SAVE.mtab=v;sfx('ui_click',.5);writeSave();}else if(k==='qs'){SAVE.qsec=SAVE.qsec||{};if(v==='all'||v==='none'){['main','side','fac','day','trail'].forEach(x=>SAVE.qsec[x]=v==='all');}else SAVE.qsec[v]=!(G.qsd&&G.qsd[v]);sfx('ui_click',.5);writeSave();}else if(k==='qc'){qClaim(v,+w);}else if(k==='ql'){G.qsel=v;sfx('ui_click',.5);}
+  if(k==='rt'){G.rtab=v;sfx('ui_click');}else if(k==='sb'){shopBuy(v);}else if(k==='pet'){if(petOwn(v)){SAVE.pet=SAVE.pet===v?null:v;G.petE=null;sfx('ui_confirm',.6);}}else if(k==='qall'){const c=qMain();if(c&&qOk(c))qClaim('m',0);SAVE.q.d.l.forEach((d,i)=>{if(!d.c&&qOk(d))qClaim('d',i);});}else if(k==='op'){G.winOpen=v;sfx('ui_click');renderWin();return true;}else if(k==='ti'){setTitle(SAVE.title===v?null:v);sfx('ui_confirm',.6);}else if(k==='qt'){G.qtab=v;sfx('ui_click');}else if(k==='mt'){G.mtab=v;SAVE.mtab=v;sfx('ui_click',.5);writeSave();}else if(k==='qs'){SAVE.qsec=SAVE.qsec||{};if(v==='all'||v==='none'){['main','side','fac','day','trail'].forEach(x=>SAVE.qsec[x]=v==='all');}else SAVE.qsec[v]=!(G.qsd&&G.qsd[v]);sfx('ui_click',.5);writeSave();}else if(k==='qc'){qClaim(v,+w);}else if(k==='ql'){G.qsel=v;sfx('ui_click',.5);}else if(k==='gps'){if(SAVE.gps&&SAVE.gps.k===v)SAVE.gps=null;else{const q=gpsQuest(v);if(q)SAVE.gps={k:v,nm:q.nm};}GPS.t=0;sfx('ui_confirm',.5);writeSave();}
   else if(k==='gt'){G.gtab=v;sfx('ui_click');}else if(k==='gi'){G.ginv=+v;sfx('ui_click');}
   else if(k==='gs'){const n=($('gname').value||'').trim();if(n){SAVE.pend.push(n);G.ginv=null;toast('Convite guardado — o online chega em breve',1600);sfx('ui_confirm',.6);}}
   else if(k==='gp'){SAVE.pend.splice(+v,1);}
@@ -7027,12 +7112,29 @@ window.addEventListener('resize',fitStage);window.addEventListener('orientationc
 setInterval(()=>{if(G.on&&SAVE)writeSave();},5000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on)writeSave();});
 /* ------------------------------ início ---------------------------------- */
+/* ===== ABERTURA (publicadora + carregamento), TELA INICIAL e CARREGANDO ===== */
+const BOOT={t0:performance.now(),p:0,ready:false,iv:null};
+function bootInit(){const bar=$('bbar');BOOT.iv=setInterval(()=>{BOOT.p+=(0.86-BOOT.p)*.04;bar.style.width=(BOOT.p*100)+'%';},60);}
+function bootReady(){const wait=Math.max(0,2600-(performance.now()-BOOT.t0));setTimeout(()=>{clearInterval(BOOT.iv);const bar=$('bbar'),tx=$('btxt');bar.style.transition='width .35s';bar.style.width='100%';setTimeout(()=>{tx.textContent='Toque para continuar';tx.classList.add('go');BOOT.ready=true;},420);},wait);}
+$('boot').addEventListener('pointerdown',()=>{if(!BOOT.ready)return;BOOT.ready=false;audioInit();sfx('ui_confirm',.6);sfx('levelup',.35);const b=$('boot');b.style.opacity=0;b.style.pointerEvents='none';setTimeout(()=>b.remove(),800);try{playMusic('m_campina');}catch(e){}});
+const LTIPS=['Segure o botão de ataque para encadear o combo; toque no tempo certo para o Golpe Preciso.','Abra o mapa tocando no minimapa. Áreas já visitadas ficam registradas.','Em Missões, toque em "Guiar até o objetivo" e uma seta mostra o caminho.','A montaria some quando você entra em combate. Chame-a de novo depois.','Habilidades empoderadas saem quando o medidor de estilo chega ao S.','Chuva fortalece raios e enfraquece o fogo. Escolha a habilidade pelo clima.','Vender itens só é possível no Mercador.','Os inimigos desistem da perseguição se você se afastar demais.'];
+let LT0=0;
+function loadShow(){const e=$('loadg');$('ltip').textContent='Dica: '+LTIPS[Math.floor(Math.random()*LTIPS.length)];e.classList.add('on');LT0=performance.now();}
+function loadHide(){const w=Math.max(0,((SAVE&&SAVE.introPending)?350:900)-(performance.now()-LT0));setTimeout(()=>$('loadg').classList.remove('on'),w);}
+(function titleFx(){const c=$('tfx'),x=c.getContext('2d');let P=[],W=0,H=0;
+  function rs(){W=c.width=Math.max(1,c.clientWidth>>1);H=c.height=Math.max(1,c.clientHeight>>1);}
+  function mk(init){return {x:Math.random()*W,y:init?Math.random()*H:H+4,vy:6+Math.random()*14,ph:Math.random()*6.28,c:Math.random()<.7?'255,214,110':'190,140,255',a:.35+Math.random()*.6};}
+  let last=performance.now();
+  (function loop(t){requestAnimationFrame(loop);const t2=$('title');if(!t2||!t2.classList.contains('on'))return;if(!W)rs();if(!P.length)for(let i=0;i<46;i++)P.push(mk(1));
+    const dt=Math.min(.05,(t-last)/1000);last=t;x.clearRect(0,0,W,H);
+    for(const p of P){p.y-=p.vy*dt;p.x+=Math.sin(t/900+p.ph)*8*dt;if(p.y<-4)Object.assign(p,mk(0));const tw=.55+.45*Math.sin(t/260+p.ph);x.fillStyle='rgba('+p.c+','+(p.a*tw).toFixed(2)+')';x.fillRect(p.x|0,p.y|0,1,1);if(p.a>.7)x.fillRect((p.x|0)+1,p.y|0,1,1);}
+  })(performance.now());window.addEventListener('resize',()=>{W=0;});})();
 (async function(){
-  fitStage();
+  fitStage();bootInit();
   SAVE=loadSave();
   $('bCont').style.display='block';$('bCont').disabled=true;$('bCont').textContent='CARREGANDO…';
-  try{await loadAll();}catch(e){$('title').insertAdjacentHTML('beforeend','<div style="color:#f88">Erro ao carregar: '+e.message+'</div>');console.error(e);return;}
-  $('bCont').style.display='none';renderSlots();
+  try{await loadAll();}catch(e){$('boot').style.display='none';$('title').insertAdjacentHTML('beforeend','<div style="color:#f88">Erro ao carregar: '+e.message+'</div>');console.error(e);return;}
+  $('bCont').style.display='none';renderSlots();bootReady();
   if(SAVE)G.zoneLv=clamp(SAVE.zone||1,1,DUN.length);
   window.__mmo={setCreate:(c,k)=>{selCls=c;renderCreate(true);PK=Object.assign(defPK(c),k||{});renderLook();cprevT=99;},entFrame,mobSnd,crSynth,killMob,spawnBoss,update,isWater,blockedAt,evStart,BUF,AMBS,mobSnd,bossSnd,enterRoom,dgTitle,spawnVamp,spawnSkrix,spawnJavcap,spawnBotic,MOBS,killMob,mkMob,dgUnlocked,dgRefresh,xpGapMul,DUN,stAdd,BAL,openWin,levelUpFx,gainXP,banner,hStyle,wCat,skOk,UNIQUES,getZone:()=>ZONE,petTick,PETS,pb,SETS,setCount,sb,genItem,qEv,qCheck,partyAdd,partyClear,QMAIN,qInit,socRefresh,TALENTS,tfCalc,tlTotal,TL_REQ,TL_TIER,potPrice,SLOTS,recalcHero,AMBEV,ambStart,ambStop,AMBS,zoneMusic,TOD,LIFE,evStart,makeElite,ELMOD,addZone,heroDodge,spawnBossNow:spawnBoss,stAdd,STDEF,applySkillStatus,MAIN_ATTR,startDemo,closeWin,VF,SKFX,skFx,PST,enterDungeon,spawnBoss,get ATLAS_J(){return ATLAS_J;},UNIQUES,SHEETS,sheetFrame,heroStats:heroStatsInto,skAvail,skPoints,atPoints,enterTown,openWin,isWater,genItem,addItem,openPan,G,get SAVE(){return SAVE;},get ZONE(){return ZONE;},CLASSES,update,startGame};
   requestAnimationFrame(frame);
