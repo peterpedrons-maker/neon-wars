@@ -339,7 +339,7 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     print(name,'spawns',len(spawns),'props',len(P),Counter(p.get('k') or p.get('t') for p in P).most_common(8),'paredes',len(wall),'saídas',[e['id'] for e in exs])
 
 # ================================================================ TABELA DE ZONAS E LIGAÇÕES (primeira região, Nv 1–10 + áreas das dungeons)
-SIZE=dict(estrada=(2200,2600),planicie=(6000,6000),goblins=(5000,5000),brejo=(2200,4200),ponte=(2200,4200),colinas=(5000,5000),
+SIZE=dict(estrada=(2200,3400),planicie=(6000,6000),goblins=(5000,5000),brejo=(2200,4200),ponte=(2200,4200),colinas=(5000,5000),
   desfiladeiro=(2200,4200),passo=(4500,4500),cemiterio=(5000,5000),mortos=(4200,2200),lenhadores=(2200,4200),ogros=(5000,5000),
   brumas=(5000,5000),clareira=(2400,2400),gruta=(2400,2400),lago=(2400,2400),mina=(2400,2400),eremita=(2400,2400),cabana=(2400,2400))
 NM=dict(estrada='Estrada de Brumavale',planicie='Planície de Brumavale',goblins='Floresta dos Goblins',brejo='Trilha do Brejo',
@@ -349,7 +349,7 @@ NM=dict(estrada='Estrada de Brumavale',planicie='Planície de Brumavale',goblins
   eremita='Bosque do Eremita (secreto)',cabana='Cabana da Bruxa (secreta)')
 OPP={0:1,1:0,2:3,3:2}
 # (zona A, lado em A, posição em A, zona B, posição em B) — B usa o lado oposto
-LINKS=[('estrada',0,1650,'planicie',3000),('planicie',0,3200,'ponte',1100),('planicie',2,2850,'goblins',2500),('planicie',1,1300,'brejo',1100),
+LINKS=[('estrada',0,1100,'planicie',3000),('planicie',0,3200,'ponte',1100),('planicie',2,2850,'goblins',2500),('planicie',1,1300,'brejo',1100),
   ('planicie',3,3950,'lago',1200),('goblins',0,2500,'lenhadores',1100),('goblins',1,1800,'clareira',1200),('brejo',1,1100,'brumas',2500),
   ('brejo',3,2100,'eremita',1200),('ponte',0,1100,'colinas',2500),('colinas',3,2500,'cemiterio',2500),('colinas',0,2500,'desfiladeiro',1100),
   ('desfiladeiro',0,1100,'passo',1200),('lenhadores',0,1100,'ogros',2500),('ogros',0,2500,'passo',3300),('cemiterio',3,2500,'mortos',1100),
@@ -361,7 +361,7 @@ for a,sa,pa,b,pb in LINKS:
     sb=OPP[sa]
     EXL[a].append(dict(id=b,nm=NM[b],side=sa,pos=pa,to='zone_'+b,toSide=sb,at=_arrive(b,sb,pb),ready=True))
     EXL[b].append(dict(id=a,nm=NM[a],side=sb,pos=pb,to='zone_'+a,toSide=sa,at=_arrive(a,sa,pa),ready=True))
-EXL['estrada'].append(dict(id='cidade',nm='Brumavale',side=0,pos=500,to='town',toSide=-1,at=[450,170],ready=True))   # a saída sul da cidade chega pelo TOPO da Estrada (que faz uma ferradura até a Planície)
+EXL['estrada'].append(dict(id='cidade',nm='Brumavale',side=1,pos=1100,to='town',toSide=-1,at=[450,170],ready=True))   # a saída sul da cidade chega pelo TOPO da Estrada (que faz uma ferradura até a Planície)
 EXL['passo'].append(dict(id='cidade2',nm='Cidade 2',side=0,pos=2250,to='zone_cidade2',toSide=1,at=[1100,4000],ready=False,
   msg='Portão do Passo: o guarda só deixa passar a partir do nível 10, com a quest dos chefes (em construção).'))
 def auto_roads(name,hub=None):
@@ -394,8 +394,8 @@ def Z(name,seed,nv,**kw):
 MT=['mount','mount','mount','mount']
 
 # ---------------------------------------------------------------- Estrada de Brumavale (ligação, Nv 1) — sem NPCs: a cidade ainda está atrás
-Z('estrada',101,'Nv 1',roads=[[(500,10),(500,700),(560,1500),(700,2200),(1100,2450),(1500,2200),(1650,1500),(1620,700),(1650,10)]],
-  waters=[(1100,1100,330,230)],pois=[(1100,2000)],start=(500,300),side_theme=['forest','forest','forest','forest'],band=(330,330,360,360),dens=.9)
+Z('estrada',101,'Nv 1',roads=[[(1100,3390),(1060,2800),(1220,2150),(1000,1500),(1180,800),(1100,10)]],
+  waters=[(1700,1500,300,220)],pois=[(1100,1700)],start=(1100,3150),side_theme=['forest','forest','forest','forest'],band=(330,330,360,360),dens=.9)
 # ---------------------------------------------------------------- Planície de Brumavale (Nv 1–3)
 Z('planicie',202,'Nv 1–3',
   roads=[[(3000,5990),(3000,5400),(3100,4600),(2950,3700),(3150,2700),(3050,1700),(3200,700),(3200,10)],
