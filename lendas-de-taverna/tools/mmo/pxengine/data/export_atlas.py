@@ -41,7 +41,10 @@ UNITS.update({
     'n_guarda': dict(kind='c', ap=dict(cls='warrior', hat='helm', outfit='mail', metal='aco', clothes='azul', weapon='espada_ferro')),
     'n_pov_f': dict(kind='e', name='aldeao'),
     'n_ladino_b': dict(kind='c', ap=dict(cls='rogue', weapon='adaga_ferro', clothes='verde')),
-    'n_bardo': dict(kind='c', ap=dict(cls='mage', hat='none', outfit='robe', clothes='vermelho', hair='preto', weapon='cajado_natureza')),
+    'n_bardo': dict(kind='c', ap=dict(cls='mage', hat='none', outfit='robe', clothes='vermelho', hair='preto', weapon='cajado_natureza')),    'n_mago': dict(kind='c', ap=dict(cls='mage', hat='wizard', outfit='robe', clothes='verde', hair='castanho', eyes='verde', weapon='varinha')),
+    'n_ladino': dict(kind='c', ap=dict(cls='mage', hat='none', outfit='robe', clothes='dourado', hair='branco', skin='palida', face_style='cold', weapon='cetro_arcano')),
+    'n_guardiao': dict(kind='c', ap=dict(cls='warrior', hat='none', hairstyle='bald', outfit='cloth', clothes='laranja', metal='ferro', skin='bronze', weapon='martelo_guerra', bulk=1, tn_off=1, face_style='brute')),
+    'n_clerigo': dict(kind='c', ap=dict(cls='mage', hat='circlet', outfit='robe', clothes='branco', hair='branco', skin='clara', weapon='cetro_sagrado')),
 })
 UNITS.update({
     'goblin': dict(kind='m', spec='goblin'), 'grunk': dict(kind='c', ap=dict(cls='warrior', skin='goblin', hair='g_goblin', eyes='brasa', hat='gobking', outfit='mail', metal='ferro', clothes='bronze', weapon='machado', tn_off=2, bulk=1, face_style='brute')), 'goblin_x': dict(kind='m', spec='goblin_x'), 'sapador': dict(kind='m', spec='goblin_sapador'),
