@@ -144,4 +144,6 @@ if __name__ == '__main__':
     finish(bussola(), 'atalhos', '#ffd070')
     finish(mochila(), 'mochila', '#e0a050')
     finish(pack('grimoire_closed'), 'bestiario', '#b890ff')
+    a = pack('bow1'); b = pack('arrow3'); c = Image.new('RGBA', (32, 32), (0, 0, 0, 0)); c.alpha_composite(a); c.alpha_composite(b)
+    finish(c, 'cacador', '#ff9a4a')
     print('ok')
