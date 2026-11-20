@@ -6320,12 +6320,13 @@ function socMenu(m,dun){
   m.appendChild(mk('bBg','assets/hud/mochila.png','Mochila',()=>openPan('bg'),null,1));
   m.appendChild(mk('bHb','assets/hud/hab.png','Habil.',()=>openPan(PL.hab),'bdHb',1));
   m.appendChild(mk('bQ','assets/hud/diario.png','Missões',()=>{if(!['m','f'].includes(G.qtab))G.qtab='m';openWin('diario');},'bdQ',1));
-  m.appendChild(mk('bDi','assets/hud/bestiario.png','Diário',()=>{if(!['b','h','c','p'].includes(G.qtab))G.qtab='b';openWin('diario');},null,1));
+  m.appendChild(mk('bDi','assets/hud/bestiario.png','Diário',()=>{if(!['b','c','p'].includes(G.qtab))G.qtab='b';openWin('diario');},null,1));
+  m.appendChild(mk('bCa','assets/hud/cacador.png','Caçador',()=>{G.ctab=G.ctab||'c';openWin('cacador');},null,1));
   m.appendChild(mk('bGp','assets/hud/social.png','Social',()=>openWin('grupo'),null,1));
   m.appendChild(mk('bMo','assets/hud/montaria.png','Montar',()=>mountToggle(),null,1));
 }
 
-const SOCW={missoes:()=>winMissoes(),diario:()=>winDiario(),grupo:()=>winGrupo()};
+const SOCW={missoes:()=>winMissoes(),diario:()=>winDiario(),cacador:()=>winCacador(),grupo:()=>winGrupo()};
 /* ===== DIÁLOGO COM NPCs + MISSÕES DA HISTÓRIA (Ato 1) — ver HISTORIA.md =====
    Todo NPC (inclusive moradores) fala: balão de fala ao chegar perto e caixa de diálogo ao tocar "Falar".
    Serviços (loja, forja…) falam primeiro e só então abrem a janela. A missão principal é UMA por nível:
@@ -6892,8 +6893,20 @@ function huntLogBody(){try{sqCss();}catch(e){}
   h+=grp('Rumores',rum,'r');
   if(!real.length&&!rum.length)h+='<div class="dd" style="text-align:center;padding:18px">Nenhuma caçada conhecida.</div>';
   return h;}
-function winDiario(){{const w=$('win');if(w)w.classList.add('bk');}let tab=G.qtab;if(!['m','f','b','h','c','p'].includes(tab))tab='m';const qg=(tab==='m'||tab==='f');$('wtt').textContent=qg?'Missões':'Diário';
-  let h=`<div class="tabs" style="margin:0 -12px">${(qg?[['m','Missões'],['f','Facções']]:[['b','Bestiário'],['h','Caçadas'],['c','Títulos'],['p','Pets']]).map(([k,l])=>`<button data-a="qt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
+function huntRankBody(){const S=hnS(),rk=hnRank();
+  return '<div class="sec-h"><span>Prêmios de rank</span><span>ganhe pontos caçando</span></div>'+HRANK.slice(1).map((x,i)=>{i++;const ok=rk>=i,cl=S.cl[i],r=x.r;const txt=[r.sel?r.sel+' Selos':'',r.gold?r.gold+' ouro':'',r.pot?r.pot+' poções':'',r.item?SLOT_NAME[r.item[0]]+' '+RAR[r.item[1]].n:''].filter(Boolean).join(' · ');
+    return `<div class="hnc ${ok?'':'soon'}"><div class="hnh"><b>Rank ${i+1} · ${x.n}</b><em>${x.p} pts</em></div><div class="row2"><span>Prêmio</span><span>${txt}</span></div><div class="hna">${cl?'<span class="hl ok">✔ recebido</span>':ok?`<button class="gb" data-a="ct:rk:${i}">Receber</button>`:'<span class="hl">Bloqueado</span>'}</div></div>`;}).join('');}
+const HMOB={alfa:'alfa'};
+function huntTargetsBody(){const S=hnS();let h='<div class="sub">Os alvos das caçadas. Só aparecem aqui depois que você descobre quem é o alvo.</div><div class="bgrid">';
+  for(const H of HUNTS.filter(x=>!x.soon)){const f=HMOB[H.id],T=f&&MOBS[f],dn=S.done[H.id]||0,a=S.act[H.id],known=T&&(dn||(a&&(a.fim||a.ok1))),k=(SAVE.hunts&&T&&SAVE.hunts[T.nome])||dn;
+    h+=`<div class="bc${known?'':' un'}${dn?' mx':''}"><div class="bp">${known?`<img src="${mobPortrait(f)}">`:''}</div><b class="bn">${known?T.nome:'???'}</b><div class="bs"><i class="hdf hd${H.dif||'D'}">${H.dif||'D'}</i></div><span class="bk">${dn?'Abatido · '+k+'×':a?'Rastro em andamento':'Não encontrado'}</span><span class="bt">${known?areaName(H.map):'Local: '+areaName(H.map)}</span></div>`;}
+  return h+'</div>';}
+function winCacador(){{const w=$('win');if(w)w.classList.add('bk');}let tab=G.ctab||'c';if(!['c','a','r'].includes(tab))tab='c';$('wtt').textContent='Caçador';
+  let h=`<div class="tabs" style="margin:0 -12px">${[['c','Caçadas'],['a','Alvos'],['r','Rank']].map(([k,l])=>`<button data-a="ct:tab:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
+  h+=tab==='c'?huntLogBody():tab==='a'?huntTargetsBody():huntRankBody();
+  $('wbody').innerHTML=h;}
+function winDiario(){{const w=$('win');if(w)w.classList.add('bk');}let tab=G.qtab;if(!['m','f','b','c','p'].includes(tab))tab='m';const qg=(tab==='m'||tab==='f');$('wtt').textContent=qg?'Missões':'Diário';
+  let h=`<div class="tabs" style="margin:0 -12px">${(qg?[['m','Missões'],['f','Facções']]:[['b','Bestiário'],['c','Títulos'],['p','Pets']]).map(([k,l])=>`<button data-a="qt:${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}</div>`;
   if(tab==='m')h+=missionsBody();
   else if(tab==='f')h+=facBody();
    else if(tab==='f')h+=facBody();
@@ -6924,7 +6937,7 @@ function winGrupo(){$('wtt').textContent='Grupo';const tab=G.gtab||'g',P=G.party
     h+=ch==='s'?'':inp('cmsg','Mensagem…','cs')+'<div class="sub">Sem conexão: só você vê estas mensagens.</div>';}
   $('wbody').innerHTML=h;}
 function socAct(a){const [k,v,w]=a.split(':');
-  if(k==='rt'){G.rtab=v;sfx('ui_click');}else if(k==='sb'){shopBuy(v);}else if(k==='pet'){if(petOwn(v)){SAVE.pet=SAVE.pet===v?null:v;G.petE=null;sfx('ui_confirm',.6);}}else if(k==='qall'){const c=qMain();if(c&&qOk(c))qClaim('m',0);SAVE.q.d.l.forEach((d,i)=>{if(!d.c&&qOk(d))qClaim('d',i);});}else if(k==='op'){G.winOpen=v;sfx('ui_click');renderWin();return true;}else if(k==='ti'){setTitle(SAVE.title===v?null:v);sfx('ui_confirm',.6);}else if(k==='qt'){G.qtab=v;sfx('ui_click');}else if(k==='mt'){G.mtab=v;SAVE.mtab=v;sfx('ui_click',.5);writeSave();}else if(k==='qs'){SAVE.qsec=SAVE.qsec||{};if(v==='all'||v==='none'){['main','side','fac','day','trail'].forEach(x=>SAVE.qsec[x]=v==='all');}else SAVE.qsec[v]=!(G.qsd&&G.qsd[v]);sfx('ui_click',.5);writeSave();}else if(k==='qc'){qClaim(v,+w);}else if(k==='ql'){G.qsel=v;sfx('ui_click',.5);}else if(k==='gps'){if(SAVE.gps&&SAVE.gps.k===v)SAVE.gps=null;else{const q=gpsQuest(v);if(q)SAVE.gps={k:v,nm:q.nm};}GPS.t=0;sfx('ui_confirm',.5);writeSave();}
+  if(k==='rt'){G.rtab=v;sfx('ui_click');}else if(k==='sb'){shopBuy(v);}else if(k==='pet'){if(petOwn(v)){SAVE.pet=SAVE.pet===v?null:v;G.petE=null;sfx('ui_confirm',.6);}}else if(k==='qall'){const c=qMain();if(c&&qOk(c))qClaim('m',0);SAVE.q.d.l.forEach((d,i)=>{if(!d.c&&qOk(d))qClaim('d',i);});}else if(k==='op'){G.winOpen=v;sfx('ui_click');renderWin();return true;}else if(k==='ti'){setTitle(SAVE.title===v?null:v);sfx('ui_confirm',.6);}else if(k==='qt'){G.qtab=v;sfx('ui_click');}else if(k==='ct'){if(v==='tab'){G.ctab=w;sfx('ui_click',.5);}else if(v==='rk'){hnClaimRank(+w);}}else if(k==='mt'){G.mtab=v;SAVE.mtab=v;sfx('ui_click',.5);writeSave();}else if(k==='qs'){SAVE.qsec=SAVE.qsec||{};if(v==='all'||v==='none'){['main','side','fac','day','trail'].forEach(x=>SAVE.qsec[x]=v==='all');}else SAVE.qsec[v]=!(G.qsd&&G.qsd[v]);sfx('ui_click',.5);writeSave();}else if(k==='qc'){qClaim(v,+w);}else if(k==='ql'){G.qsel=v;sfx('ui_click',.5);}else if(k==='gps'){if(SAVE.gps&&SAVE.gps.k===v)SAVE.gps=null;else{const q=gpsQuest(v);if(q)SAVE.gps={k:v,nm:q.nm};}GPS.t=0;sfx('ui_confirm',.5);writeSave();}
   else if(k==='gt'){G.gtab=v;sfx('ui_click');}else if(k==='gi'){G.ginv=+v;sfx('ui_click');}
   else if(k==='gs'){const n=($('gname').value||'').trim();if(n){SAVE.pend.push(n);G.ginv=null;toast('Convite guardado — o online chega em breve',1600);sfx('ui_confirm',.6);}}
   else if(k==='gp'){SAVE.pend.splice(+v,1);}
@@ -6935,7 +6948,7 @@ function socAct(a){const [k,v,w]=a.split(':');
   else if(k==='cs'){const t=($('cmsg').value||'').trim();if(t){(G.clog=G.clog||[]).push({c:G.cch,who:SAVE.name,t,col:G.cch==='p'?'#8ec2ff':'#e6dcc2'});sfx('ui_click',.4);}}
   else return false;
   writeSave();renderWin();return true;}
-function openWin(id){{const w=$('win');if(w){w.classList.toggle('bk',id==='diario');w.dataset.art=id;}}if(id==='portal'){sfx('tr_open',.6);G.winOpen='portal';G.wsel=null;G.wp=null;$('toast').style.display='none';pzOpen();return;}sfx('tr_open',.6);G.winOpen=id;G.wsel=null;G.wp=null;if(id==='forja'&&!G.fslot)G.fslot=SLOTS.find(k=>SAVE.eq[k])||'arma';if(id==='mercador'&&!G.shop)restock(true);
+function openWin(id){{const w=$('win');if(w){w.classList.toggle('bk',id==='diario'||id==='cacador');w.dataset.art=id;}}if(id==='portal'){sfx('tr_open',.6);G.winOpen='portal';G.wsel=null;G.wp=null;$('toast').style.display='none';pzOpen();return;}sfx('tr_open',.6);G.winOpen=id;G.wsel=null;G.wp=null;if(id==='forja'&&!G.fslot)G.fslot=SLOTS.find(k=>SAVE.eq[k])||'arma';if(id==='mercador'&&!G.shop)restock(true);
   $('toast').style.display='none';$('win').classList.add('on');renderWin();}
 function closeWin(){G.winOpen=null;$('win').classList.remove('on');pzClose();}
 $('wx').onclick=()=>{sfx('tr_close',.6);closeWin();};
