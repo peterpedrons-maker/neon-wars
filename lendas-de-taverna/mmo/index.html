@@ -1240,6 +1240,22 @@ html.cutm #hud,html.cutm #bar,html.cutm #mmenu,html.cutm #joy,html.cutm #chat,ht
 :root:root #win.bk .hnb{background:linear-gradient(180deg,rgba(247,234,200,.9),rgba(226,204,156,.9))!important;border:2px solid #8a6a38!important;color:#3b2a14;margin:0 8px 10px}
 :root:root #win.bk .hnb b,:root:root #win.bk .hnb small{color:#4a2c14!important}:root:root #win.bk .hnb .hbar{background:rgba(90,64,38,.25)!important;border:1px solid #8a6a38}
 :root:root #win.bk .sec-h span{color:#7a2a14!important}
+:root:root #win.bk .nh{background:linear-gradient(180deg,rgba(247,234,200,.9),rgba(226,204,156,.9))!important;border:2px solid #8a6a38!important;margin:0 8px 8px;color:#3b2a14}
+:root:root #win.bk .nh div b,:root:root #win.bk .nh>div>b{color:#4a2c14!important;-webkit-text-fill-color:#4a2c14!important;background:none!important;filter:none!important;text-shadow:none!important}
+:root:root #win.bk .hnb .hs{color:#3a5a8a!important}:root:root #win.bk .hnb .hs img{filter:brightness(.55) saturate(2.2)}:root:root #win.bk .nh span{color:#5a4026!important;font-style:italic}
+:root:root #win.bk .nh .np{background:rgba(120,80,30,.18)!important;border:2px solid #8a6a38!important}
+:root:root #win.bk .hm{margin:0 8px 8px}
+:root:root #win.bk .hr{background:linear-gradient(180deg,rgba(247,234,200,.9),rgba(226,204,156,.9))!important;border:2px solid #8a6a38!important;color:#3b2a14!important}
+:root:root #win.bk .hr.on{border-color:#8a1d1d!important;background:linear-gradient(180deg,#fff3cf,#ecd49a)!important;box-shadow:0 0 0 1px #8a1d1d}
+:root:root #win.bk .hdv{background:linear-gradient(180deg,rgba(247,234,200,.92),rgba(226,204,156,.92))!important;border:2px solid #8a6a38!important}
+:root:root #win.bk .hdv p{color:#4a3a22!important}:root:root #win.bk .hdv .hlo{color:#3a2f55!important;border-left-color:#8a1d1d!important}:root:root #win.bk .hdv .hfd{color:#8a6a38!important}
+:root:root #win.bk .hdt b{color:#4a2c14!important}:root:root #win.bk .hdt em{color:#8a1d1d!important}
+:root:root #win.bk .hpt{background:radial-gradient(circle,#e9d7a8,#c9b078)!important;border:2px solid #8a6a38!important}:root:root #win.bk .hpt b{color:#8a6a38!important}
+:root:root #win.bk .hf{color:#8a6a38!important}:root:root #win.bk .hf b{color:#3b2a14!important}
+:root:root #win.bk .hf .s-ok,:root:root #win.bk .hf .s-dn{color:#2a6a2a!important}:root:root #win.bk .hf .s-go{color:#2a4a9a!important}:root:root #win.bk .hf .s-av{color:#8a1d1d!important}:root:root #win.bk .hf .s-lk,:root:root #win.bk .hf .s-soon{color:#8a7a5a!important}
+:root:root #win.bk .hsec{color:#7a2a14!important;border-bottom:1px solid #8a6a38!important}
+:root:root #win.bk .hl{color:#8a6a38!important}:root:root #win.bk .hl.ok{color:#2a6a2a!important}
+:root:root #win.bk .sub{color:#5a4026!important}
 </style>
 </head>
 <body>
@@ -6655,7 +6671,7 @@ function hnDetail(H){const S=hnS(),a=S.act[H.id],dn=S.done[H.id],st=hnStat(H),lo
   <div class="hsec">Pedido</div>${a||dn?H.txt.map(t=>'<p>'+t+'</p>').join(''):`<p><i>${H.rumor||H.txt[0]}</i></p><p class="hfd">Aceite a caçada para ler o pedido completo.</p>`}
   ${lore.length?`<div class="hsec">Bestiário da Guilda</div>`+lore.map(t=>'<p class="hlo">'+t+'</p>').join('')+(!dn&&H.lore.length>1?'<p class="hfd">… o restante do registro só se revela depois que o alvo cair.</p>':''):''}
   ${nt}<div class="hsec">Recompensa</div><div class="hf"><span>Guilda</span><b>${H.pts} pts · ${H.sel} Selos</b></div><div class="hf"><span>Espólio</span><b>${H.gold} ouro${H.item?' · '+SLOT_NAME[H.item[0]]+' '+RAR[H.item[1]].n:''}</b></div><div class="hna">${b}</div>`;}
-function winCacadas(){sqCss();
+function winCacadas(){sqCss();{const w=$('win');if(w)w.classList.add('bk');}
   $('wtt').textContent='Guilda dos Caçadores';const S=hnS(),rk=hnRank(),R=HRANK[rk],nx=HRANK[rk+1];let tab=G.htab||'q';if(!['q','e','r','l'].includes(tab))tab='q';const pr=hnMarkNpc();
   let h=npcHead('crossed-swords','Garrick, Mestre Caçador','“'+hnGarrickLine()+'”',false);
   h+=`<div class="hnb"><div><b>Rank ${rk+1} · ${R.n}</b><div class="hbar"><i style="width:${nx?Math.min(100,Math.round((S.pts-R.p)/(nx.p-R.p)*100)):100}%"></i></div><small>${S.pts} pts${nx?' / '+nx.p+' para '+nx.n:' · rank máximo'}</small></div><span class="hs"><img src="${UI}gems.png">${S.sel}<small>Selos</small></span></div>`;
@@ -6974,7 +6990,7 @@ function socAct(a){const [k,v,w]=a.split(':');
   else if(k==='cs'){const t=($('cmsg').value||'').trim();if(t){(G.clog=G.clog||[]).push({c:G.cch,who:SAVE.name,t,col:G.cch==='p'?'#8ec2ff':'#e6dcc2'});sfx('ui_click',.4);}}
   else return false;
   writeSave();renderWin();return true;}
-function openWin(id){{const w=$('win');if(w){w.classList.toggle('bk',id==='diario'||id==='cacador');w.dataset.art=id;}}if(id==='portal'){sfx('tr_open',.6);G.winOpen='portal';G.wsel=null;G.wp=null;$('toast').style.display='none';pzOpen();return;}sfx('tr_open',.6);G.winOpen=id;G.wsel=null;G.wp=null;if(id==='forja'&&!G.fslot)G.fslot=SLOTS.find(k=>SAVE.eq[k])||'arma';if(id==='mercador'&&!G.shop)restock(true);
+function openWin(id){{const w=$('win');if(w){w.classList.toggle('bk',id==='diario'||id==='cacador'||id==='cacadas');w.dataset.art=id;}}if(id==='portal'){sfx('tr_open',.6);G.winOpen='portal';G.wsel=null;G.wp=null;$('toast').style.display='none';pzOpen();return;}sfx('tr_open',.6);G.winOpen=id;G.wsel=null;G.wp=null;if(id==='forja'&&!G.fslot)G.fslot=SLOTS.find(k=>SAVE.eq[k])||'arma';if(id==='mercador'&&!G.shop)restock(true);
   $('toast').style.display='none';$('win').classList.add('on');renderWin();}
 function closeWin(){G.winOpen=null;$('win').classList.remove('on');pzClose();}
 $('wx').onclick=()=>{sfx('tr_close',.6);closeWin();};
