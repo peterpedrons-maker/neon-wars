@@ -242,24 +242,47 @@ def pull(k,pt):
     return hub
 def hubpt(k):
     rx,ry,rw,rh=rect[k]; return pull(k,(rx+rw/2,ry+rh/2))
-def road(pts,w=4): d.line([(x*S,y*S) for x,y in pts],fill=(104,62,34,235),width=w,joint='curve')
+ROADS=[]; MARKS=[]
+MAINZ=['town','estrada','planicie','ponte','colinas','desfiladeiro','passo','cidade2']
+def ismain(a,b): return a in MAINZ and b in MAINZ and abs(MAINZ.index(a)-MAINZ.index(b))==1
+def road(pts,main=False): ROADS.append(([(x*S,y*S) for x,y in pts],main))
 EXITS={}
 for a_,sa,pa,b_,pb in LINKS:
-    EXITS.setdefault(a_,[]).append((sa,pa)); EXITS.setdefault(b_,[]).append((OPP[sa],pb))
+    EXITS.setdefault(a_,[]).append((sa,pa,b_)); EXITS.setdefault(b_,[]).append((OPP[sa],pb,a_))
 for k,exl in EXITS.items():
     H_=hubpt(k)
-    for sd,pp in exl:
+    for sd,pp,nb in exl:
         E=pull(k,ex_pt(k,sd,pp)); mid=((E[0]+H_[0])/2+(H_[1]-E[1])*.08,(E[1]+H_[1])/2-(H_[0]-E[0])*.08)
-        road(bez(E,mid,H_,30))
+        road(bez(E,mid,H_,30),ismain(k,nb))
 for a_,sa,pa,b_,pb in LINKS:
-    A_=ex_pt(a_,sa,pa); B_=ex_pt(b_,OPP[sa],pb); mid=((A_[0]+B_[0])/2,(A_[1]+B_[1])/2)
-    if math.hypot(A_[0]-B_[0],A_[1]-B_[1])>45: continue   # ligação em ciclo (zonas não coladas): sem estrada reta atravessando o mapa
-    A2,B2=pull(a_,A_),pull(b_,B_); road(bez(A2,((A2[0]+B2[0])/2,(A2[1]+B2[1])/2),B2,24))
-# ligações de cidade
+    A_=ex_pt(a_,sa,pa); B_=ex_pt(b_,OPP[sa],pb)
+    if math.hypot(A_[0]-B_[0],A_[1]-B_[1])>45: continue   # ligação em ciclo: sem estrada reta atravessando o mapa
+    A2,B2=pull(a_,A_),pull(b_,B_); road(bez(A2,((A2[0]+B2[0])/2,(A2[1]+B2[1])/2),B2,24),ismain(a_,b_)); MARKS.append(((A_[0]+B_[0])/2,(A_[1]+B_[1])/2,ismain(a_,b_)))
 t_,e_,pa_,c2_=rect['town'],rect['estrada'],rect['passo'],rect['cidade2']
-for A_,B_ in (((t_[0]+t_[2]*.45,t_[1]),(e_[0]+e_[2]*.45,e_[1]+e_[3])),((pa_[0]+pa_[2]*.5,pa_[1]),(c2_[0]+c2_[2]*.5,c2_[1]+c2_[3]))):
-    if math.hypot(A_[0]-B_[0],A_[1]-B_[1])<90:
-        pts=bez(A_,((A_[0]+B_[0])/2+6,(A_[1]+B_[1])/2),B_); d.line([(x*S,y*S) for x,y in pts],fill=(104,62,34,235),width=4,joint='curve')
+for A_,B_,mk in (((t_[0]+t_[2]*.45,t_[1]),(e_[0]+e_[2]*.45,e_[1]+e_[3]),('town','estrada')),((pa_[0]+pa_[2]*.5,pa_[1]),(c2_[0]+c2_[2]*.5,c2_[1]+c2_[3]),('passo','cidade2'))):
+    if math.hypot(A_[0]-B_[0],A_[1]-B_[1])<90: road(bez(A_,((A_[0]+B_[0])/2+6,(A_[1]+B_[1])/2),B_),True)
+# desenho em camadas: contorno escuro -> miolo de terra batida -> fio central (principal = vermelho tracejado)
+def strokes(w,col,main_only=None):
+    for pts,mn in ROADS:
+        if main_only is True and not mn: continue
+        if main_only is False and mn: continue
+        d.line(pts,fill=col,width=w,joint='curve')
+        for q in (pts[0],pts[-1]): d.ellipse([q[0]-w/2,q[1]-w/2,q[0]+w/2,q[1]+w/2],fill=col)
+strokes(10,(58,34,16,235),False); strokes(14,(58,34,16,240),True)
+strokes(6,(218,188,132,255),False); strokes(9,(236,206,126,255),True)
+for pts,mn in ROADS:
+    if not mn: continue
+    acc=0;dr=True
+    for p_,q_ in zip(pts,pts[1:]):
+        L=math.hypot(q_[0]-p_[0],q_[1]-p_[1])
+        if dr: d.line([p_,q_],fill=(150,48,32,235),width=2)
+        acc+=L
+        if acc>=(14 if dr else 9): acc=0;dr=not dr
+# marcos de pedra nas passagens entre zonas
+for x,y,mn in MARKS:
+    r=(7 if mn else 5)*S/2
+    d.ellipse([x*S-r-2,y*S-r-2,x*S+r+2,y*S+r+2],fill=(58,34,16,255)); d.ellipse([x*S-r,y*S-r,x*S+r,y*S+r],fill=(214,206,190,255))
+    d.arc([x*S-r,y*S-r,x*S+r,y*S+r],200,340,fill=(255,255,255,200),width=2)
 # navios no mar
 def ship(x,y,k=1):
     d.polygon([P(x-9*k,y),P(x+9*k,y),P(x+6*k,y+5*k),P(x-6*k,y+5*k)],fill=(120,80,44,255),outline=INK)
