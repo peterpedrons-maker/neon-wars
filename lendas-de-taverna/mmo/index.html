@@ -1550,7 +1550,7 @@ const IMG_ICO={};
 const xpNeed=L=>Math.round(38*Math.pow(L,1.6)+30);
 /* ===== CURVA DE XP (calibrada com o dono): KPL(L) = quantos abates de um monstro PADRÃO do nível L para subir de nível; sxp(L) = XP desse monstro; kx(n,L) = XP de "n abates" (usado nas recompensas de missão/caçada).
    Metas: só missões principais ≈ Nv 8; + secundárias ≈ Nv 10; Nv 12–13 só com caçadas, elites e abates extras. Tabelas em TABELAS.md (gerar: node tools/mmo/gen_tabelas.js) ===== */
-const KPL=L=>Math.min(140,Math.round(8+1.75*Math.pow(L,1.55))),sxp=L=>xpNeed(L)/KPL(L),kx=(n,L)=>Math.max(1,Math.round(n*sxp(L)));
+const KPL=L=>Math.min(170,Math.round(1.2*(8+1.75*Math.pow(L,1.55)))),sxp=L=>xpNeed(L)/KPL(L),kx=(n,L)=>Math.max(1,Math.round(n*sxp(L)));
 
 /* ------------------------------ assets ---------------------------------- */
 const IMG={};
