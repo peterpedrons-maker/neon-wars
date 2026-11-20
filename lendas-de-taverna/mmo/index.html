@@ -43,6 +43,8 @@ button:active:not(:disabled){transform:scale(.97);filter:brightness(1.15)}
 #tbg{position:absolute;inset:0;overflow:hidden}
 #tbg .s{position:absolute;inset:-4%;background:center 35%/cover no-repeat;image-rendering:pixelated;opacity:0;animation:tbg 24s linear infinite}
 @keyframes tbg{0%{opacity:0;transform:scale(1.02) translateX(-1%)}6%{opacity:1}34%{opacity:1}42%{opacity:0;transform:scale(1.13) translateX(1.5%)}100%{opacity:0;transform:scale(1.13) translateX(1.5%)}}
+#tbg .s.one{inset:-6%;opacity:1;animation:tbgone 46s ease-in-out infinite alternate}
+@keyframes tbgone{0%{transform:scale(1.02) translate(-1%,0)}100%{transform:scale(1.12) translate(1.2%,-1%)}}
 #tfx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 #tvig{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(6,4,12,.78) 0,rgba(6,4,12,.18) 30%,rgba(6,4,12,0) 42%,rgba(6,4,12,.55) 62%,rgba(6,4,12,.92) 100%),radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(0,0,0,.55) 100%)}
 #title .tmain,#title .col,#title .tver{position:relative;z-index:2}
@@ -1908,7 +1910,7 @@ let AC=null,sfxGain=null,musGain=null;const BUF={};let musSrc=null,musOn=false;
 function audioInit(){
   if(AC)return;try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return;}
   const m=AC.createGain();m.gain.value=.55;m.connect(AC.destination);sfxGain=AC.createGain();sfxGain.gain.value=1;sfxGain.connect(m);musGain=AC.createGain();musGain.gain.value=.22;musGain.connect(m);
-  ['ui_click','ui_confirm','ui_denied','swing','hit_0','hit_1','slash','crit','miss','bow','arrow_hit','spell_cast','spell_hit','heal','coin','levelup','death','victory','sk_golpe','sk_meteoros','sk_flechas','sk_sagrado','sk_corte','sk_grito','tr_equip','tr_open','tr_close','sk_fogo','sk_gelo','sk_raio','sk_terra','sk_veneno','sk_nota','sk_estocada','sk_explosao','st_escudo','buff','dg_title','boss_roar','boss_rei_roar','boss_slam','boss_charge','boss_spin','boss_guard','boss_swarm','boss_plague','boss_burrow','boss_flask','boss_throw','boss_dark'].forEach(n=>loadBuf('../assets/audio/sfx/'+n+'.ogg',n));
+  ['ui_click','ui_confirm','ui_denied','swing','hit_0','hit_1','slash','crit','miss','bow','arrow_hit','spell_cast','spell_hit','heal','coin','levelup','death','victory','sk_golpe','sk_meteoros','sk_flechas','sk_sagrado','sk_corte','sk_grito','tr_equip','tr_open','tr_close','sk_fogo','sk_gelo','sk_raio','sk_terra','sk_veneno','sk_nota','sk_estocada','sk_explosao','st_escudo','buff','dg_title','boss_roar','boss_rei_roar','boss_slam','boss_charge','boss_spin','boss_guard','boss_swarm','boss_plague','boss_burrow','boss_flask','boss_throw','boss_dark','cut_marca','cut_queda','cut_sino'].forEach(n=>loadBuf('../assets/audio/sfx/'+n+'.ogg',n));
   for(const sp of ['rato','javali','goblin','esq','bat','ogro','lobo','aranha','barata','sapo','cobra','tronco','harpia','gnoll','humano','morto','cogu'])for(const k of ['atk','hurt','die'])loadBuf('../assets/audio/sfx/mob_'+sp+'_'+k+'.ogg','mob_'+sp+'_'+k);
   loadBuf('../assets/audio/sfx/mount_neigh.ogg','mount_neigh');loadBuf('../assets/audio/sfx/mount_snort.ogg','mount_snort');
   loadBuf('../assets/audio/music/campina.ogg','m_campina').then(()=>{if(musOn)playMusic();});
@@ -2011,8 +2013,14 @@ function ambStart(kind){if(!AC)return;ambStop();kind=kind||'dg';const fam=kind==
     if(T>=next){const E=Object.entries(F.ev).filter(([k,w])=>w>0&&!(k==='bird'&&n>.45)&&!((k==='owl'||k==='howl')&&n<.3));let tot=E.reduce((a,[,w])=>a+w,0),r=Math.random()*tot,pick=E[0];for(const e of E){r-=e[1];if(r<=0){pick=e;break;}}
       if(pick&&AMBEV[pick[0]])AMBEV[pick[0]]();next=T+3+Math.random()*7;}
     if(n>.5&&(fam==='javali'||fam==='goblin'||fam==='town')&&T>cr){cr=T+.55;for(let i=0;i<3;i++)ambTone(4300,4500,.04,'square',.012,6000,i*.07);}},500);}
-function playMusic(key='m_campina'){musOn=true;if(!AC||!BUF[key])return;stopTense();if(musSrc){try{musSrc.stop();}catch(e){}}
-  musSrc=AC.createBufferSource();musSrc.buffer=BUF[key];musSrc.loop=true;musSrc.connect(musGain);musSrc.start();musSrc.__k=key;}
+function playMusic(key='m_campina',opt){musOn=true;if(!AC||!BUF[key])return;stopTense();
+  const old=musSrc;if(old){const og=old.__g;if(og){try{const t=AC.currentTime;og.gain.cancelScheduledValues(t);og.gain.setValueAtTime(og.gain.value,t);og.gain.linearRampToValueAtTime(0,t+.8);}catch(e){}setTimeout(()=>{try{old.stop();}catch(e){}},900);}else{try{old.stop();}catch(e){}}}
+  const s=musSrc=AC.createBufferSource();s.buffer=BUF[key];s.loop=!(opt&&opt.loop===false);const g=AC.createGain();g.gain.setValueAtTime(0,AC.currentTime);g.gain.linearRampToValueAtTime(1,AC.currentTime+((opt&&opt.fade)||.9));s.connect(g);g.connect(musGain);s.__g=g;s.start();s.__k=key;
+  if(opt&&opt.next){s.onended=()=>{if(musSrc===s)playMusic(opt.next);};}}
+/* música de arquivo sob demanda (abertura, título, criação...): carrega e toca com fade; ignora se outra faixa foi pedida no meio */
+let MUSWANT=null;
+function musFile(nm,key,opt){MUSWANT=key;audioInit();if(!AC)return;if(BUF[key]){if(!(musSrc&&musSrc.__k===key))playMusic(key,opt);return;}musOn=true;loadBuf('../assets/audio/music/'+nm+'.ogg',key).then(()=>{if(MUSWANT===key)playMusic(key,opt);});}
+const titleMusic=()=>musFile('titulo_mmo','m_titulo'),createMusic=()=>musFile('criacao','m_criacao');
 
 /* ------------------------------ estado ---------------------------------- */
 let SAVE=null;           // {name,cls,lv,xp,gold,kills,zone}
@@ -2034,7 +2042,8 @@ function writeSave(){try{SAVE.kills=SAVE.kills||0;localStorage.setItem(slotKey(S
 
 /* ------------------------------ telas ----------------------------------- */
 function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));if(id!=='pan')closePanSafe();if(id)$(id).classList.add('on');
-  $('cv').style.display=(id==='hud'||id==='res'||id==='ko')?'block':'none';}
+  $('cv').style.display=(id==='hud'||id==='res'||id==='ko')?'block':'none';
+  if(AC){if(id==='title'){try{ambStop();}catch(e){}titleMusic();}else if(id==='create')createMusic();}}
 function fitStage(){const w=Math.min(innerWidth,innerHeight*0.62);$('stage').style.width=w+'px';resizeCanvas();}
 function resizeCanvas(){
   const st=$('stage'),dpr=Math.min(window.devicePixelRatio||1,3),cw=Math.round(st.clientWidth*dpr),ch=Math.round(st.clientHeight*dpr),cv=$('cv');
@@ -2523,9 +2532,9 @@ function enterTown(first,instant,opts){
 /* ===== CUTSCENES: abertura estilo 16 bits (painéis com câmera passeando + texto), panorama de Brumavale e chegada da Maren ===== */
 const CUT_P=[
  {bg:1,mv:'zin',L:['Antes dos reinos, antes dos nomes, havia algo sob as montanhas que o mundo não podia lembrar.','Para trancá-lo, nasceu a Ordem do Selo, e o Selo foi gravado no céu como um círculo de ouro que nunca se apaga.','Mas um selo, por mais forte que seja, precisa de mãos que o sustentem.']},
- {bg:2,mv:'pl',L:['Assim surgiram os Escolhidos.','Homens e mulheres que acordavam com uma marca queimando na palma da mão, sem jamais terem pedido por ela.','Alguns a chamaram de dádiva. Outros, de sentença.','Todos descobriram, cedo ou tarde, que ninguém recusa o chamado do Selo.']},
- {bg:3,mv:'zout',L:['Entre eles houve um que ousou olhar para aquilo que estava trancado.','Ninguém sabe o que ele viu. Sabe-se apenas que caiu, e que a Ordem apagou seu nome de cada livro, de cada pedra e de cada memória.','Mas o que é esquecido não desaparece. Espera.','Nas ruínas, uma coroa sem dono ainda aguarda, e dois olhos roxos ainda vigiam a estrada.']},
- {bg:4,mv:'pr',L:['Longe dali, em Brumavale, mais um dia começa. O sino da torre toca, o pão sai do forno, e ninguém repara no céu.','Mas o Selo repara. Ele sempre repara.','E, em algum lugar da cidade, a luz volta a brilhar na palma de uma mão que ainda não sabe o que isso significa.','O ciclo recomeça.']}];
+ {bg:2,mv:'pl',sfx:'cut_marca',L:['Assim surgiram os Escolhidos.','Homens e mulheres que acordavam com uma marca queimando na palma da mão, sem jamais terem pedido por ela.','Alguns a chamaram de dádiva. Outros, de sentença.','Todos descobriram, cedo ou tarde, que ninguém recusa o chamado do Selo.']},
+ {bg:3,mv:'zout',sfx:'cut_queda',L:['Entre eles houve um que ousou olhar para aquilo que estava trancado.','Ninguém sabe o que ele viu. Sabe-se apenas que caiu, e que a Ordem apagou seu nome de cada livro, de cada pedra e de cada memória.','Mas o que é esquecido não desaparece. Espera.','Nas ruínas, uma coroa sem dono ainda aguarda, e dois olhos roxos ainda vigiam a estrada.']},
+ {bg:4,mv:'pr',sfx:'cut_sino',L:['Longe dali, em Brumavale, mais um dia começa. O sino da torre toca, o pão sai do forno, e ninguém repara no céu.','Mas o Selo repara. Ele sempre repara.','E, em algum lugar da cidade, a luz volta a brilhar na palma de uma mão que ainda não sabe o que isso significa.','O ciclo recomeça.']}];
 const CUT_MARK={guerreiro:['Na palma de {n}, a marca queima como brasa viva.','Seus dedos se fecham sozinhos, firmes, como se a mão já lembrasse o peso de uma espada.'],mago:['Na palma de {n}, a marca arde em silêncio.','Ao redor, o ar esquenta e a chama de uma vela distante se inclina, como se respondesse a um chamado.'],ladino:['Na palma de {n}, a marca pulsa devagar.','As sombras da rua se alongam, abrindo caminho como quem reconhece um velho conhecido.'],clerigo:['Na palma de {n}, a marca aquece, calma e constante.','Uma luz suave desce sobre os ombros, e o sino da torre parece tocar só para {n}.'],arqueiro:['Na palma de {n}, a marca vibra como uma corda esticada.','O mundo ganha contornos mais nítidos, e cada folha ao longe parece ao alcance do olhar.'],bardo:['Na palma de {n}, a marca vibra em um compasso que ninguém mais escuta.','Uma melodia desconhecida começa a nascer, e o vento da manhã parece saber a letra.']};
 function cutBgCanvas(k){const W=120,H=260,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');let sd=k*977;const R=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
   const sky=(a,b)=>{const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,a);g.addColorStop(1,b);x.fillStyle=g;x.fillRect(0,0,W,H);};
@@ -2553,6 +2562,7 @@ async function cutPanels(){
     gsap.to(bg,{opacity:1,duration:1.1});old.forEach(o=>gsap.to(o,{opacity:0,duration:1.1,onComplete:()=>o.remove()}));
     const mv={zin:[{scale:1,xPercent:0,yPercent:0},{scale:1.22,xPercent:0,yPercent:-3}],zout:[{scale:1.25,xPercent:0,yPercent:-4},{scale:1.02,xPercent:0,yPercent:0}],pl:[{scale:1.18,xPercent:5,yPercent:0},{scale:1.18,xPercent:-5,yPercent:-2}],pr:[{scale:1.18,xPercent:-5,yPercent:0},{scale:1.2,xPercent:5,yPercent:-3}]}[pn.mv];
     gsap.fromTo(bg,mv[0],{...mv[1],duration:18,ease:'none'});
+    if(pn.sfx)setTimeout(()=>{if(G.cut)sfx(pn.sfx,.9);},900);
     await Promise.race([cutBox(pn.L),new Promise(r=>{const iv=setInterval(()=>{if(skip){clearInterval(iv);r();}},60);})]);
     document.querySelectorAll('.cbox').forEach(b=>b.remove());}
   await new Promise(r=>gsap.to(root.querySelector('.cbgw'),{opacity:0,duration:.8,onComplete:r}));
@@ -2561,21 +2571,22 @@ function cutWalk(n,tx,ty,sp){return new Promise(res=>{G.cut.walk={n,tx,ty,sp,res
 function cutTick(dt){const c=G.cut;if(!c)return;const w=c.walk;if(!w)return;const n=w.n,d=Math.hypot(w.tx-n.x,w.ty-n.y);
   if(d<10||(c.skip&&c.walkSkip)){n.moving=false;n.x=w.tx;n.y=w.ty;c.walk=null;w.res();return;}
   n.moving=true;n.row=dir4(w.tx-n.x,w.ty-n.y);n.animT=(n.animT||0)+dt*(w.sp/70);moveTo(n,w.tx,w.ty,w.sp,dt);}
-function cutEnd(){G.cut=null;document.documentElement.classList.remove('cutm');const r=$('cut');if(r)r.remove();document.querySelectorAll('.cbox').forEach(b=>b.remove());}
+function cutEnd(){const sk=G.cut&&G.cut.skip;try{if(!(musSrc&&musSrc.__k==='m_amanhecer')||sk){MUSWANT='m_vila';playMusic('m_vila');ambStart('town');}}catch(e){}G.cut=null;document.documentElement.classList.remove('cutm');const r=$('cut');if(r)r.remove();document.querySelectorAll('.cbox').forEach(b=>b.remove());}
 async function introCut(replay){
   if(G.cut||!G.on||G.scene!=='town')return;const h=G.hero;
   try{gsap.ticker.lagSmoothing(0);}catch(e){}G.cut={lock:1,cam:null,zoom:null,skip:0,walk:null};document.documentElement.classList.add('cutm');G.wp=null;
+  try{ambStop();}catch(e){}musFile('abertura','m_abertura',{fade:2});
   const root=await cutPanels();
   /* panorama: câmera passeia por Brumavale do norte até o herói */
   const LW=G.LW,LH=G.LH,hy=h.y+10-LH/2+10,st={x:ZONE.w/2,y:150,z:1.95};
   G.cut.zoom=st.z;G.cut.cam={x:st.x-LW/2,y:st.y-LH/2};
-  if(!G.cut.skip){root.style.background='#000';gsap.to(root,{opacity:0,duration:1.4});
+  if(!G.cut.skip){try{musFile('amanhecer','m_amanhecer',{loop:false,next:'m_vila',fade:1.8});ambStart('town');}catch(e){}root.style.background='#000';gsap.to(root,{opacity:0,duration:1.4});
     await new Promise(r=>{gsap.to(st,{y:h.y-20,x:h.x,z:1.18,duration:9,ease:'power1.inOut',onUpdate:()=>{if(G.cut.skip)return;G.cut.cam={x:st.x-LW/2,y:st.y-LH/2};G.cut.zoom=st.z;},onComplete:r});const iv=setInterval(()=>{if(!G.cut||G.cut.skip){clearInterval(iv);r();}},60);setTimeout(()=>clearInterval(iv),12000);});
   }
   root.remove();G.cut.cam=null;G.cut.zoom=null;G.cut.skip=0;
   if(replay){cutEnd();return;}
   /* a marca brilha */
-  h.state='idle';h.row=2;G.fx.push({k:'ring',x:h.x,y:h.y,life:.9,max:.9,col:'#ffe08a'});setTimeout(()=>G.cut&&G.fx.push({k:'ring',x:h.x,y:h.y,life:.9,max:.9,col:'#ffd070'}),380);sfx('levelup',.5);for(let i=0;i<14;i++)VF.pt(h.x+rnd(-14,14),h.y-rnd(4,30),{vy:-rnd(25,55),life:.9,col:'#ffe08a',sz:2});
+  h.state='idle';h.row=2;G.fx.push({k:'ring',x:h.x,y:h.y,life:.9,max:.9,col:'#ffe08a'});setTimeout(()=>G.cut&&G.fx.push({k:'ring',x:h.x,y:h.y,life:.9,max:.9,col:'#ffd070'}),380);sfx('cut_marca',.95);for(let i=0;i<14;i++)VF.pt(h.x+rnd(-14,14),h.y-rnd(4,30),{vy:-rnd(25,55),life:.9,col:'#ffe08a',sz:2});
   await cutSleep(.8);await cutBox((CUT_MARK[SAVE.cls]||CUT_MARK.guerreiro).map(t=>t.replace(/\{n\}/g,SAVE.name||'O herói')));
   /* Maren chega e entrega a primeira missão */
   let m=G.npcs.find(n=>n.id==='maren');
@@ -7095,7 +7106,7 @@ function renderSlots(){const box=$('slots');box.innerHTML='';for(let i=0;i<SLOT_
     const d=document.createElement('button');d.className='btn sd';d.textContent='✕';d.setAttribute('aria-label','Apagar herói');d.onclick=()=>{audioInit();gConfirm('Apagar '+sv.name+' (Nv.'+sv.lv+') para sempre?',{title:'Apagar este herói?',ok:'Apagar',no:'Manter',danger:true}).then(ok=>{if(ok){try{localStorage.removeItem(slotKey(i));}catch(e){}renderSlots();}});};row.appendChild(d);}
   else{b.className='btn ne';b.textContent='+ NOVO HERÓI ('+(i+1)+'/'+SLOT_N+')';b.onclick=()=>{SLOT=i;newHero();};row.appendChild(b);}
   box.appendChild(row);}}
-const newHero=()=>{audioInit();sfx('ui_confirm');SAVE={name:'',cls:'guerreiro',lv:1,xp:0,gold:0,zone:1,inv:[],eq:{},potions:2,potL:0,elix:{forca:0,vigor:0,sorte:0},zoneMax:1,sk:[1,0,0,0,0,0,0,0,0,0,0,0,0,0],eqs:[0,-1,-1],sub:null,at:{for:0,des:0,int:0,vit:0,sor:0},autoEq:true};selCls='guerreiro';$('cname').value='';show('create');buildCreate();playMusic('m_campina');};
+const newHero=()=>{audioInit();sfx('ui_confirm');SAVE={name:'',cls:'guerreiro',lv:1,xp:0,gold:0,zone:1,inv:[],eq:{},potions:2,potL:0,elix:{forca:0,vigor:0,sorte:0},zoneMax:1,sk:[1,0,0,0,0,0,0,0,0,0,0,0,0,0],eqs:[0,-1,-1],sub:null,at:{for:0,des:0,int:0,vit:0,sor:0},autoEq:true};selCls='guerreiro';$('cname').value='';show('create');buildCreate();};
 $('bNew').onclick=()=>{};$('bCont').onclick=()=>{};
 $('cname').addEventListener('input',()=>{updCreateBtn();});
 document.querySelectorAll('.ctabs button').forEach(b=>b.onclick=()=>{ctab=b.dataset.t;document.querySelectorAll('.ctabs button').forEach(x=>x.classList.toggle('on',x===b));sfx('ui_click',.6);renderLook();});
@@ -7116,11 +7127,13 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
 const BOOT={t0:performance.now(),p:0,ready:false,iv:null};
 function bootInit(){const bar=$('bbar');BOOT.iv=setInterval(()=>{BOOT.p+=(0.86-BOOT.p)*.04;bar.style.width=(BOOT.p*100)+'%';},60);}
 function bootReady(){const wait=Math.max(0,2600-(performance.now()-BOOT.t0));setTimeout(()=>{clearInterval(BOOT.iv);const bar=$('bbar'),tx=$('btxt');bar.style.transition='width .35s';bar.style.width='100%';setTimeout(()=>{tx.textContent='Toque para continuar';tx.classList.add('go');BOOT.ready=true;},420);},wait);}
-$('boot').addEventListener('pointerdown',()=>{if(!BOOT.ready)return;BOOT.ready=false;audioInit();sfx('ui_confirm',.6);sfx('levelup',.35);const b=$('boot');b.style.opacity=0;b.style.pointerEvents='none';setTimeout(()=>b.remove(),800);try{playMusic('m_campina');}catch(e){}});
+$('boot').addEventListener('pointerdown',()=>{if(!BOOT.ready)return;BOOT.ready=false;audioInit();sfx('ui_confirm',.6);sfx('levelup',.35);const b=$('boot');b.style.opacity=0;b.style.pointerEvents='none';setTimeout(()=>b.remove(),800);try{titleMusic();}catch(e){}});
 const LTIPS=['Segure o botão de ataque para encadear o combo; toque no tempo certo para o Golpe Preciso.','Abra o mapa tocando no minimapa. Áreas já visitadas ficam registradas.','Em Missões, toque em "Guiar até o objetivo" e uma seta mostra o caminho.','A montaria some quando você entra em combate. Chame-a de novo depois.','Habilidades empoderadas saem quando o medidor de estilo chega ao S.','Chuva fortalece raios e enfraquece o fogo. Escolha a habilidade pelo clima.','Vender itens só é possível no Mercador.','Os inimigos desistem da perseguição se você se afastar demais.'];
 let LT0=0;
 function loadShow(){const e=$('loadg');$('ltip').textContent='Dica: '+LTIPS[Math.floor(Math.random()*LTIPS.length)];e.classList.add('on');LT0=performance.now();}
 function loadHide(){const w=Math.max(0,((SAVE&&SAVE.introPending)?350:900)-(performance.now()-LT0));setTimeout(()=>$('loadg').classList.remove('on'),w);}
+/* arte própria da tela inicial: se existir assets/brand/titulo_bg.png, ela substitui a sequência de artes da abertura */
+(()=>{const im=new Image();im.onload=()=>{const t=$('tbg');if(t)t.innerHTML='<div class="s one" style="background-image:url(assets/brand/titulo_bg.png)"></div>';};im.src='assets/brand/titulo_bg.png';})();
 (function titleFx(){const c=$('tfx'),x=c.getContext('2d');let P=[],W=0,H=0;
   function rs(){W=c.width=Math.max(1,c.clientWidth>>1);H=c.height=Math.max(1,c.clientHeight>>1);}
   function mk(init){return {x:Math.random()*W,y:init?Math.random()*H:H+4,vy:6+Math.random()*14,ph:Math.random()*6.28,c:Math.random()<.7?'255,214,110':'190,140,255',a:.35+Math.random()*.6};}

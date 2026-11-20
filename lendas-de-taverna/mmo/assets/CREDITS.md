@@ -61,3 +61,5 @@ SIL Open Font License 1.1 — Stefie Justprince, via Google Fonts (assets/fonts/
 
 ## Almendra (fonte do Diário)
 SIL Open Font License 1.1 — Ryoichi Tsunekawa / Flat It, via Google Fonts (assets/fonts/Almendra-*.ttf).
+
+- Músicas `titulo_mmo`, `criacao`, `abertura`, `amanhecer` e efeitos `cut_*` compostos para o jogo (`tools/mmo/music/abertura_mmo.py`) e renderizados com instrumentos reais amostrados do **GeneralUser GS** (S. Christian Collins), como as demais trilhas.
