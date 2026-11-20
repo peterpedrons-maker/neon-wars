@@ -1520,7 +1520,7 @@ MOBS.skrix=MOB_SKRIX;MOBS.totem=MOB_TOTEM;
 MOBS.alfa=Object.assign({},MOBS.lobo,{nome:'Presa-Lunar',cx:'alfa',enrageAt:.4,aura:['#bcd0ff','#ffffff'],noElite:1,hp:330,atk:12,xp:120,gold:[30,60],speed:84,aggro:340,rng:30,aspd:1.05,sw:24,st:['sangramento',.3,5,.02],
   msk:[{id:'charge',hp:1,cd:6,warn:.7,w:34,len:230,mult:1.8,min:60,max:360,st:['sangramento',.6,5,.02],wt:3},{id:'dive',hp:.9,cd:9,warn:.9,r:62,mult:1.5,st:['sangramento',.6,5,.02],wt:3},{id:'howl',hp:.75,cd:15,warn:1.0,wt:3}]});
 /* Ancião Cornalvo: RARO pacífico da Planície (sem quest, ainda sem caçada). Não ataca ninguém; se ferido vira um monstro devastador */
-MOBS.cervo=Object.assign({},MOBS.lobo,{nome:'Ancião Cornalvo',cx:'cervo',passive:1,aura:['#ffd868','#fff6c0'],noElite:1,hp:1500,atk:22,xp:600,gold:[200,400],speed:70,aggro:0,rng:46,aspd:1.5,sw:34,st:['atordoado',.15,1,0],
+MOBS.cervo=Object.assign({},MOBS.lobo,{nome:'Ancião Cornalvo',cx:'cervo',passive:1,aura:['#ffd868','#fff6c0'],noElite:1,hp:2200,atk:30,xp:1500,gold:[400,800],speed:70,aggro:0,rng:46,aspd:1.5,sw:34,st:['atordoado',.15,1,0],
   msk:[{id:'slam',hp:1,cd:6,warn:.95,r:92,mult:2.2,st:['abalado',.6,5,0],wt:3},{id:'charge',hp:.75,cd:8,warn:.8,w:46,len:280,mult:2.6,st:['atordoado',.9,1,0],wt:3},{id:'roar',hp:.5,cd:11,warn:1.2,r:160,mult:1.8,st:['medo',1,2.4,0],wt:2}]});
 /* Capitão Presa-de-Ferro: mini-chefe da Floresta de Brumavale (família javali). Luta sozinho: guarda com contra-ataque, investida em zigue-zague, machadada giratória */
 const MOB_JAVCAP={nome:'Capitão Presa-de-Ferro',atlas:'javcap',afterimg:1,rad:20,shr:34,fam:'javali',aura:['#d0503a','#ffd070'],noElite:1,hp:760,atk:11,xp:170,gold:[45,90],speed:52,aggro:260,rng:44,aspd:1.6,sw:28,dur:.85,fire:.5,st:['atordoado',.2,1,0],
@@ -5136,7 +5136,7 @@ function nearInt(){const h=G.hero;if((G.scene!=='town'&&!(G.scene==='dungeon'&&(
   for(const v of G.vill){if(v.pet)continue;if(dist(h,v)<36){if(!v.vn)v.vn=VNAMES[G.vill.indexOf(v)%VNAMES.length];return {k:'npc',t:v,lb:'Falar',nm:v.vn,ic:'hood'};}}
   if(!G.room&&ZONE.boards)for(const b of ZONE.boards)if(Math.hypot(h.x-b.x,h.y-b.y)<58)return {k:'board',b,lb:'Ver caçadas',nm:b.nm,ic:b.ic};
   if(!G.room){if(ZONE.doors)for(const d of ZONE.doors)if(Math.abs(h.x-d.x)<34&&h.y<d.y+8&&h.y>d.y-36)return {k:'door',d,lb:'Entrar',nm:d.nm,ic:d.ic};
-    const P=ZONE.portal;if(P&&Math.abs(h.x-P.x)<38&&h.y<P.stand[1]+8&&h.y>P.y-22)return {k:'portal',lb:'Entrar',nm:'Portal das Dungeons',ic:'greek-temple'};}
+    const P=ZONE.portal;if(P&&!P.off&&Math.abs(h.x-P.x)<38&&h.y<P.stand[1]+8&&h.y>P.y-22)return {k:'portal',lb:'Entrar',nm:'Portal das Dungeons',ic:'greek-temple'};}
   return null;}
 /* portões das dungeons no mapa aberto: o vórtice (PixelFx) toca em volta de cada portão enquanto o herói está por perto */
 function gateFx(dt){const h=G.hero;for(const g of ZONE.gates){if(dist(h,g)>620){g._t=0;continue;}g._t=(g._t||0)-dt;if(g._t<=0){g._t=2.4;VF.spr(g.x,g.y-34,'portal_arcano',.9);}}}
@@ -5682,7 +5682,7 @@ function mmSmall(c){const Z=ZONE,h=G.hero,dpr=Math.min(2,window.devicePixelRatio
     else if(m.k==='poi')dia(X,Y,2.6*dpr,'#9ad8ff');else dia(X,Y,3*dpr,'#ff7a6a');}
   for(const g of Z.gates||[])if(inr(g.x,g.y))dia(px(g.x),py(g.y),3.4*dpr,'#c8a0ff');
   if(G.scene!=='town'&&Z.gate&&inr(Z.gate[0],Z.gate[1]))dia(px(Z.gate[0]),py(Z.gate[1]),3*dpr,'#7ae08a');
-  if(G.scene==='town'){if(Z.portal&&inr(Z.portal.x,Z.portal.y))dia(px(Z.portal.x),py(Z.portal.y),3.4*dpr,'#c8a0ff');for(const n of G.npcs||[])if(inr(n.x,n.y)){x.fillStyle='#000';x.fillRect(px(n.x)-2*dpr,py(n.y)-2*dpr,4*dpr,4*dpr);x.fillStyle='#ffd870';x.fillRect(px(n.x)-1.3*dpr,py(n.y)-1.3*dpr,2.6*dpr,2.6*dpr);}}
+  if(G.scene==='town'){if(Z.portal&&!Z.portal.off&&inr(Z.portal.x,Z.portal.y))dia(px(Z.portal.x),py(Z.portal.y),3.4*dpr,'#c8a0ff');for(const n of G.npcs||[])if(inr(n.x,n.y)){x.fillStyle='#000';x.fillRect(px(n.x)-2*dpr,py(n.y)-2*dpr,4*dpr,4*dpr);x.fillStyle='#ffd870';x.fillRect(px(n.x)-1.3*dpr,py(n.y)-1.3*dpr,2.6*dpr,2.6*dpr);}}
   if(G.chest&&!G.chest.open&&inr(G.chest.x,G.chest.y))dia(px(G.chest.x),py(G.chest.y),2.6*dpr,'#ffc83c');
   for(const q of qmList()){const ic=qmIcon(q.m[0],q.m[1]);if(!ic)continue;const d=Math.hypot(q.x-h.x,q.y-h.y);let X,Y;if(d<R*.9){X=px(q.x);Y=py(q.y);}else{const a=Math.atan2(q.y-h.y,q.x-h.x);X=cx+Math.cos(a)*(cx-8*dpr);Y=cx+Math.sin(a)*(cx-8*dpr);}
     const hh=13*dpr,ww=hh*ic.width/ic.height;x.fillStyle='rgba(0,0,0,.55)';x.beginPath();x.arc(X,Y,hh*.55,0,7);x.fill();x.drawImage(ic,X-ww/2,Y-hh/2,ww,hh);}
@@ -5725,7 +5725,7 @@ function mmDrawBig(c){const Z=ZONE;
   const h=G.hero,vis=(e)=>Math.hypot(e.x-h.x,e.y-h.y)<330;
   // pontos de interesse: portão da floresta / portal da cidade
   const poi=(P,col,sz)=>{if(!P)return;const px=(P.x!==undefined?P.x:P[0])*k,py=(P.y!==undefined?P.y:P[1])*k;x.fillStyle='#000';x.fillRect(px-sz-1,py-sz-1,sz*2+2,sz*2+2);x.fillStyle=col;x.fillRect(px-sz,py-sz,sz*2,sz*2);};
-  if(G.scene!=='town'){if(Z.gate)poi(Z.gate,'#7ae08a',1.4*u);}else{if(Z.portal)poi(Z.portal,'#c8a0ff',1.6*u);for(const n of G.npcs||[])poi(n,'#ffd870',1*u);}
+  if(G.scene!=='town'){if(Z.gate)poi(Z.gate,'#7ae08a',1.4*u);}else{if(Z.portal&&!Z.portal.off)poi(Z.portal,'#c8a0ff',1.6*u);for(const n of G.npcs||[])poi(n,'#ffd870',1*u);}
   if(G.scene==='town'&&Z.doors)for(const d of Z.doors){x.fillStyle='#000';x.fillRect(d.x*k-1.5*u,d.y*k-1.5*u,3*u,3*u);x.fillStyle='#ffd070';x.fillRect(d.x*k-1.1*u,d.y*k-1.1*u,2.2*u,2.2*u);}
   if(G.chest&&!G.chest.open){const pl=.6+.4*Math.sin(G.t*5);x.fillStyle='rgba(255,200,60,'+pl+')';x.fillRect(G.chest.x*k-1.8*u,G.chest.y*k-1.4*u,3.6*u,2.8*u);x.strokeStyle='#000';x.lineWidth=dpr;x.strokeRect(G.chest.x*k-1.8*u,G.chest.y*k-1.4*u,3.6*u,2.8*u);}
   for(const L of G.loot){if(L.it.rar<1)continue;x.fillStyle=RAR[L.it.rar].c;x.fillRect(L.x*k-.9*u,L.y*k-.9*u,1.8*u,1.8*u);}
@@ -5816,7 +5816,7 @@ function mmFsDraw(){const o=mmFsEnsure();if(!o.classList.contains('on'))o.classL
   for(const g of Z.gates||[])if(seen(g.x,g.y))lab(g.x,g.y,g.nm,'#c8a0ff','dia');
   for(const m of Z.marks||[]){if(!seen(m.x,m.y))continue;if(m.k==='camp')lab(m.x,m.y,m.nm,'#e8a050','tri');else if(m.k==='shrine'||m.k==='lair')lab(m.x,m.y,m.nm,'#ff7a6a','dia');else if(m.k==='poi')lab(m.x,m.y,'★','#9ad8ff','dia');}
   {const ql=D.live?qmList():qmStatic(D.k);for(const q of ql){if(D.k!=='town'&&!seen(q.x,q.y))continue;const ic=qmIcon(q.m[0],q.m[1]);if(!ic)continue;const X=q.x*kk,Y=q.y*kk,hh=30,ww=hh*ic.width/ic.height;x.fillStyle='rgba(0,0,0,.55)';x.beginPath();x.arc(X,Y,hh*.55,0,7);x.fill();x.drawImage(ic,X-ww/2,Y-hh/2,ww,hh);}}
-  if(D.k==='town'&&Z.portal)lab(Z.portal.x!==undefined?Z.portal.x:Z.portal[0],Z.portal.y!==undefined?Z.portal.y:Z.portal[1],'Portal','#c8a0ff','dia');
+  if(D.k==='town'&&Z.portal&&!Z.portal.off)lab(Z.portal.x!==undefined?Z.portal.x:Z.portal[0],Z.portal.y!==undefined?Z.portal.y:Z.portal[1],'Portal','#c8a0ff','dia');
   if(D.k==='town'&&Z.doors)for(const d of Z.doors)lab(d.x,d.y,'','#ffd070','sq');
   if(D.live){const h=G.hero,vis=e=>Math.hypot(e.x-h.x,e.y-h.y)<520;
     if(G.chest&&!G.chest.open){x.fillStyle='rgba(255,200,60,'+(.6+.4*Math.sin(G.t*5))+')';x.fillRect(G.chest.x*kk-4,G.chest.y*kk-3,8,6);x.strokeStyle='#000';x.strokeRect(G.chest.x*kk-4,G.chest.y*kk-3,8,6);}
@@ -5904,7 +5904,7 @@ function wmDraw(){const o=wmEnsure();if(!o.classList.contains('on'))return;
  if(inf._h!==h){inf._h=h;inf.innerHTML=h;const b=$('wmo');if(b)b.onclick=()=>{const kk=WM.sel;wmClose();MM.big=true;MM.view=kk;MM.vc[kk]=null;mmFsOpen();MM.view=kk;mmFsDraw();};}
 }
 function mmToggle(){if(MM.big){mmFsClose();return;}MM.big=true;MM.view=G.map;sfx('ui_click',.5);const c=$('mm');if(c)c._w='';mmFsOpen();}
-function plateTag(e){if(e.kind==='hero')return G.scene==='town'?e.name+'  Nv.'+SAVE.lv:'';if(e.kind==='boss')return '';const h=G.hero;return ((h&&(h.tg===e||(h.act&&h.act.tgt===e)))||e.mini||e.elite)?e.name+'  Nv.'+e.lv:'';}
+function plateTag(e){if(e.kind==='hero')return G.scene==='town'?e.name+'  Nv.'+SAVE.lv:'';if(e.kind==='boss')return '';const h=G.hero;return ((h&&(h.tg===e||(h.act&&h.act.tgt===e)))||e.mini||e.elite)?e.name+'  Nv.'+(e.rare?'??':e.lv):'';}
 /* posiciona os nomes sem sobreposição: herói e chefe têm prioridade, os demais sobem até achar espaço */
 function plateLayout(list){const P=[];for(const it of list){if(it.e)it.e._pl=null;}for(const it of list){const e=it.e;if(!e||e.dead||e.kind==='vill'||e.kind==='npc')continue;const sx0=e.x-G.cam.x,sy0=e.y-G.cam.y-(e.kind==='boss'?98:(e.kind==='hero'?56:55));if(sx0<-30||sx0>G.LW+30||sy0<-20||sy0>G.LH+40)continue;
     ctx.font='700 8px Rubik,sans-serif';const tag=plateTag(e),hbar=e.kind==='hero'?G.scene!=='town':e.hp>0&&!e.ent;if(!tag&&!hbar&&!(e.sts&&Object.keys(e.sts).length))continue;const w=tag?ctx.measureText(tag).width+6:30;P.push({e,tag,w,sx:clamp(sx0,w/2+3,G.LW-w/2-3),sy:sy0,pri:e.kind==='hero'?0:e.kind==='boss'?1:2,bar:hbar});}
@@ -6007,7 +6007,7 @@ function render(){
   for(const [x,y,col] of glow){const c=col||'#ffaa46',g=ctx.createRadialGradient(x,y,2,x,y,col==='#ffd278'?36:54);g.addColorStop(0,c+(col?'66':'57'));g.addColorStop(1,c+'00');ctx.fillStyle=g;ctx.fillRect(x-56,y-56,112,112);}
   if(h.act&&(h.act.cast||h.act.bow)&&h.act.ch>0&&!h.act.done&&h.state!=='ko'){const p=Math.min(1,h.act.t/(h.act.ch+.32)),X=Math.round(h.x-cx),Y=Math.round(h.y-cy-60);ctx.fillStyle='rgba(8,6,12,.88)';ctx.fillRect(X-16,Y,32,6);ctx.fillStyle=CHCOL[h.cls];ctx.fillRect(X-15,Y+1,30*p,4);ctx.strokeStyle='#000';ctx.lineWidth=1;ctx.strokeRect(X-16.5,Y-.5,33,7);}
   // nameplates
-  if(G.scene==='town'&&!SAVE.entered){const P=ZONE.portal,bob=Math.sin(G.t*5)*3;ctx.font='700 14px Rubik,sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#1a0a2a';ctx.strokeText('▼',P.x-cx,P.y-cy-86+bob);ctx.fillStyle='#e6d2ff';ctx.fillText('▼',P.x-cx,P.y-cy-86+bob);}
+  if(G.scene==='town'&&!SAVE.entered&&ZONE.portal&&!ZONE.portal.off){const P=ZONE.portal,bob=Math.sin(G.t*5)*3;ctx.font='700 14px Rubik,sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#1a0a2a';ctx.strokeText('▼',P.x-cx,P.y-cy-86+bob);ctx.fillStyle='#e6d2ff';ctx.fillText('▼',P.x-cx,P.y-cy-86+bob);}
   mmDraw();
   plateLayout(list);
   for(const it of list){const e=it.e;if(!e||e.dead)continue;if(e.kind==='vill')continue;if(e.kind==='npc'){drawNpcTag(e);continue;}if(e.kind==='hero')drawNameplate(e,'#bfe8ff');else if(e.kind==='boss')drawNameplate(e,'#ffa680');else drawNameplate(e,e.elite?(e.tier==='gold'?'#ffd24a':'#8ec2ff'):'#ffecd6');}
@@ -6646,7 +6646,7 @@ function hnMusTick(){const on=!!(G.hnMob&&!G.hnMob.dead&&G.mobs.includes(G.hnMob
   if(on&&!G.hnMus){G.hnMus=1;if(BUF.m_chefe)playMusic('m_chefe');else loadBuf('../assets/audio/music/chefe.ogg','m_chefe').then(()=>{if(G.hnMus&&BUF.m_chefe)playMusic('m_chefe');});}
   else if(!on&&G.hnMus){G.hnMus=0;if(G.scene==='dungeon'&&!G.boss)zoneMusic();}}
 /* RAROS pacíficos por mapa: chance de nascer ao entrar na zona; só reagem se forem atacados */
-const RARES={zone_planicie:{type:'cervo',chance:.6,lv:18,nm:'Ancião Cornalvo',tier:'S'}};
+const RARES={zone_planicie:{type:'cervo',chance:.6,lv:40,nm:'Ancião Cornalvo',tier:'S'}};
 function rareSpawn(){const R=RARES[G.map];if(!R||!ZONE.region||G.arena||Math.random()>=R.chance)return;
   const sp=ZONE.spawns||[];if(!sp.length)return;let best=null;for(let t=0;t<30;t++){const s=sp[Math.floor(Math.random()*sp.length)],a=Math.random()*6.283,x=s[0]+Math.cos(a)*260,y=s[1]+Math.sin(a)*260;if(Math.hypot(x-G.hero.x,y-G.hero.y)>900){best=[x,y];break;}}
   if(!best)return;const f=freeSpot(best[0],best[1]),lv=R.lv,m=mkMob(R.type,f[0],f[1],-1),FM=FAMM.javali;m.lv=lv;m.maxhp=Math.round(m.T.hp*FM[0]*mobHpMul(lv));m.hp=m.maxhp;m.pow=m.T.atk*FM[1]*mobAtkMul(lv);m.def=lv*1.3;
@@ -7541,7 +7541,7 @@ $('cv').addEventListener('pointerdown',ev=>{
     if(V){const hn=V3.hitNpc(ev.clientX,ev.clientY);if(hn){G.wp=hn.ap?{x:hn.ap[0],y:hn.ap[1],target:hn}:{x:hn.x,y:hn.y+8,target:hn};fx();return;}const hd=V3.hitDoor(ev.clientX,ev.clientY);if(hd){const tt={kind:'door',id:hd.id,room:hd.room};G.wp={x:hd.x,y:hd.y-2,target:tt};fx();return;}}
     let t=null;if(!V)for(const n of G.npcs)if(Math.abs(lx-n.x)<24&&ly>n.y-62&&ly<n.y+10)t=n;
     if(!t&&ZONE.doors)for(const d of ZONE.doors)if(Math.abs(lx-d.x)<d.w/2&&ly>d.y-d.h&&ly<d.y+12){t={kind:'door',id:d.id,room:d.room};G.wp={x:d.x,y:d.y-2,target:t};fx();return;}
-    if(!t){const P=ZONE.portal;if(Math.abs(lx-P.x)<46&&ly>P.y-90&&ly<P.y+14)t={kind:'portal'};}
+    if(!t){const P=ZONE.portal;if(P&&!P.off&&Math.abs(lx-P.x)<46&&ly>P.y-90&&ly<P.y+14)t={kind:'portal'};}
     if(t&&t.kind==='npc')G.wp=t.ap?{x:t.ap[0],y:t.ap[1],target:t}:{x:t.x,y:t.y+8,target:t};else if(t)G.wp={x:ZONE.portal.stand[0],y:ZONE.portal.stand[1],target:t};else G.wp={x:lx,y:ly};
     fx();return;
   }

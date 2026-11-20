@@ -184,7 +184,7 @@ function townExtras(sc,add,rnd){
     gr.userData={mats,o:1,box:new T.Box3(new T.Vector3(gr.position.x-w/2-.7,0,gr.position.z-d-.7),new T.Vector3(gr.position.x+w/2+.7,h+1.7,gr.position.z+.5)),id,w,d,h};sc.houses.push(gr);add(gr);}
   for(const p of ZONE.props)if(p.id&&p.id.startsWith('b_'))house(p.id,p.x,p.y);
   // portal 3D (arco + vórtice)
-  {const P=ZONE.portal,pg=new T.Group();pg.position.set(P.x*U,0,P.y*U);add(pg);const sm=new T.MeshStandardMaterial({color:0x2f3338,roughness:.95});
+  if(ZONE.portal&&!ZONE.portal.off){const P=ZONE.portal,pg=new T.Group();pg.position.set(P.x*U,0,P.y*U);add(pg);const sm=new T.MeshStandardMaterial({color:0x2f3338,roughness:.95});
     for(const s of[-1,1]){const p1=new T.Mesh(new T.BoxGeometry(.9,3.4,.9),sm);p1.position.set(s*1.75,1.7,0);pg.add(p1);const b1=new T.Mesh(new T.BoxGeometry(1.2,.35,1.2),sm);b1.position.set(s*1.75,.18,0);pg.add(b1);const c1=new T.Mesh(new T.BoxGeometry(1.1,.3,1.1),sm);c1.position.set(s*1.75,3.5,0);pg.add(c1);}
     const arc=new T.Mesh(new T.TorusGeometry(1.75,.42,12,36,Math.PI),sm);arc.position.set(0,3.4,0);pg.add(arc);
     sc.vm=new T.ShaderMaterial({transparent:true,depthWrite:false,blending:T.AdditiveBlending,uniforms:{t:{value:0}},vertexShader:'varying vec2 u;void main(){u=uv*2.-1.;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
@@ -725,7 +725,7 @@ function overlay2D(h,list){
       ctx.fillStyle='#e8f8ff';for(let i=0;i<5;i++){const ph=(tm*.6+i*.2)%1,an=i*1.9+tm*.4;ctx.globalAlpha=(1-ph)*.9;ctx.fillRect(Math.cos(an)*Rx*.9-1,Ry*.8-ph*Ry*1.6,2,2);}ctx.globalAlpha=1;ctx.restore();},hel);}
   if(h.buff&&h.buff.t>0)base(h.x,h.y,()=>{ctx.strokeStyle='rgba(255,170,60,'+(.4+.3*Math.sin(G.t*9))+')';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(0,0,14,6,0,0,7);ctx.stroke();},hel);
   if(h.act&&(h.act.cast||h.act.bow)&&h.act.ch>0&&!h.act.done&&h.state!=='ko')base(h.x,h.y,()=>{const p=Math.min(1,h.act.t/(h.act.ch+.32));ctx.fillStyle='rgba(8,6,12,.88)';ctx.fillRect(-16,-66,32,6);ctx.fillStyle=CHCOL[h.cls];ctx.fillRect(-15,-65,30*p,4);ctx.strokeStyle='#000';ctx.lineWidth=1;ctx.strokeRect(-16.5,-66.5,33,7);},hel);
-  if(G.scene==='town'&&!G.room&&!SAVE.entered&&ZONE.portal){const P=ZONE.portal,bob=Math.sin(G.t*5)*3;base(P.x,P.y,()=>{ctx.font='700 14px Rubik,sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#1a0a2a';ctx.strokeText('▼',0,-86+bob);ctx.fillStyle='#e6d2ff';ctx.fillText('▼',0,-86+bob);});}
+  if(G.scene==='town'&&!G.room&&!SAVE.entered&&ZONE.portal&&!ZONE.portal.off){const P=ZONE.portal,bob=Math.sin(G.t*5)*3;base(P.x,P.y,()=>{ctx.font='700 14px Rubik,sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#1a0a2a';ctx.strokeText('▼',0,-86+bob);ctx.fillStyle='#e6d2ff';ctx.fillText('▼',0,-86+bob);});}
   // barra de canalização: toda habilidade de chefe/mini-chefe mostra nome, barra enchendo e um aviso, para o jogador saber o que vem
   const SKN={forget:'Esquecimento',echo:'Eco',rift:'Fenda do Vazio',crown:'Coroa de Almas',dark:'Trevas',slam:'Pancada no chão',charge:'Investida',roar:'Rugido',leap:'Salto',summon:'Invocação',plague:'Praga',swarm:'Enxame',burrow:'Escavar',totem:'Totem',curse:'Maldição',blink:'Teletransporte',rain:'Chuva de frascos',bounce:'Frasco ricochete',potion:'Poção misteriosa',guard:'Guarda',spin:'Machadada giratória',zig:'Investida em zigue-zague',dive:'Mergulho',screech:'Grito'};
   for(const e of list){if(!e||e.dead||!e.act||!e.act.skill||(e.kind!=='boss'&&!e.mini))continue;const a=e.act,w=Math.max(.2,a.dur-.45),p=Math.min(1,a.t/w);if(a.t>=a.dur)continue;
