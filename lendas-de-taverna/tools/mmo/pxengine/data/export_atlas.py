@@ -44,6 +44,7 @@ UNITS.update({
     'n_bardo': dict(kind='c', ap=dict(cls='mage', hat='none', outfit='robe', clothes='vermelho', hair='preto', weapon='cajado_natureza')),    'n_mago': dict(kind='c', ap=dict(cls='mage', hat='wizard', outfit='robe', clothes='verde', hair='castanho', eyes='verde', weapon='varinha')),
     'n_ladino': dict(kind='c', ap=dict(cls='mage', hat='none', outfit='robe', clothes='dourado', hair='branco', skin='palida', face_style='cold', weapon='cetro_arcano')),
     'n_guardiao': dict(kind='c', ap=dict(cls='warrior', hat='none', hairstyle='bald', outfit='cloth', clothes='laranja', metal='ferro', skin='bronze', weapon='martelo_guerra', bulk=1, tn_off=1, face_style='brute')),
+    'n_cacador': dict(kind='c', ap=dict(cls='archer', hat='cap', outfit='cloth', clothes='verde', hair='castanho', eyes='verde', skin='bronze', weapon='arco_longo', face_style='cold')),
     'n_clerigo': dict(kind='c', ap=dict(cls='mage', hat='circlet', outfit='robe', clothes='branco', hair='branco', skin='clara', weapon='cetro_sagrado')),
 })
 UNITS.update({

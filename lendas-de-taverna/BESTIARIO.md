@@ -24,3 +24,6 @@ Esboços: `mmo/proto_pixel/bestiario_*.png`, código em `tools/mmo/pxengine/data
 - **Castelo/cavaleiros:** cavaleiro negro, arqueiro de elite, mago de batalha, gárgula, armadura assombrada, inquisidor, cão de guerra.
 - **Planos/abismo (nível 50–60):** demônio menor, súcubo, cavaleiro da morte, aberração, devorador de mentes, dragão jovem, lich, arconte caído.
 - **Chefes futuros sugeridos:** sapo gigante do esgoto (já aprovado), rei troll, rainha aranha, lich, dragão, senhor do fogo, rei dos mortos, hidra, titã de gelo.
+
+### Caçadas (hunts)
+- **Presa-Lunar, o Alfa da Matilha** (lobo gigante, Planície de Brumavale): alvo da caçada "O Silêncio da Matilha" (10 lobos + 10 s parado perto da água). Usa o sprite do lobo ×1,45. Kit: bote + Uivo.
