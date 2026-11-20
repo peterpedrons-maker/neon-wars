@@ -2526,7 +2526,7 @@ async function introCut(replay){
   const LW=G.LW,LH=G.LH,hy=h.y+10-LH/2+10,st={x:ZONE.w/2,y:150,z:1.95};
   G.cut.zoom=st.z;G.cut.cam={x:st.x-LW/2,y:st.y-LH/2};
   if(!G.cut.skip){root.style.background='#000';gsap.to(root,{opacity:0,duration:1.4});
-    await new Promise(r=>{gsap.to(st,{y:h.y-20,x:h.x,z:1.18,duration:9,ease:'power1.inOut',onUpdate:()=>{if(G.cut.skip)return;G.cut.cam={x:st.x-LW/2,y:st.y-LH/2};G.cut.zoom=st.z;},onComplete:r});const iv=setInterval(()=>{if(G.cut.skip){clearInterval(iv);r();}},60);});
+    await new Promise(r=>{gsap.to(st,{y:h.y-20,x:h.x,z:1.18,duration:9,ease:'power1.inOut',onUpdate:()=>{if(G.cut.skip)return;G.cut.cam={x:st.x-LW/2,y:st.y-LH/2};G.cut.zoom=st.z;},onComplete:r});const iv=setInterval(()=>{if(!G.cut||G.cut.skip){clearInterval(iv);r();}},60);setTimeout(()=>clearInterval(iv),12000);});
   }
   root.remove();G.cut.cam=null;G.cut.zoom=null;G.cut.skip=0;
   if(replay){cutEnd();return;}
