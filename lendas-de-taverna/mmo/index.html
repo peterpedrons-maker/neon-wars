@@ -1265,6 +1265,20 @@ html.cutm #hud,html.cutm #bar,html.cutm #mmenu,html.cutm #joy,html.cutm #chat,ht
 :root:root #win.bk .vi{background:linear-gradient(180deg,rgba(247,234,200,.9),rgba(226,204,156,.9))!important;border:2px solid #8a6a38!important;color:#3b2a14}
 :root:root #win.bk .vi b{color:#4a2c14!important}:root:root #win.bk .vi span,:root:root #win.bk .vi .tx2 span{color:#5a4026!important}
 :root:root #win.bk .vi .ic2{background:rgba(120,80,30,.2)!important}
+:root:root #win.bk .vi .pr2{color:#6a3a08!important;text-shadow:none!important}:root:root #win.bk .vi .pr2.bad{color:#a01818!important}
+:root:root #win.bk .vi .st2{color:#7a5a30!important}:root:root #win.bk .vi.sel{border-color:#8a1d1d!important;box-shadow:0 0 0 1px #8a1d1d}
+:root:root #win.bk .vi.no{opacity:.6}
+:root:root #win.bk .acts button,:root:root #win.bk .gb{background:linear-gradient(#8a5a28,#5a3416)!important;color:#ffe9a8!important;border:2px solid #2a1608!important;text-shadow:0 1px 0 #2a1608}
+:root:root #win.bk .acts button.g,:root:root #win.bk .gb.big{background:linear-gradient(#e8c058,#b98a2a)!important;color:#2a1608!important;text-shadow:none}
+:root:root #win.bk button[disabled]{opacity:.5}
+:root:root #win.bk .db{background:linear-gradient(#8a5a28,#5a3416)!important;color:#ffe9a8!important;border:2px solid #2a1608!important;text-shadow:0 1px 0 #2a1608}
+:root:root #win.bk .sbc{background:linear-gradient(180deg,rgba(247,234,200,.9),rgba(226,204,156,.9))!important;border:2px solid #8a6a38!important;color:#3b2a14;margin:0 8px 10px}
+:root:root #win.bk .sbc.sel{border-color:#8a1d1d!important}
+:root:root #win.bk .sbc b{color:#4a2c14!important;-webkit-text-fill-color:#4a2c14!important;background:none!important}
+:root:root #win.bk .sbc span,:root:root #win.bk .sbc p,:root:root #win.bk .sbc em{color:#4a3a22!important}
+:root:root #win.bk .sbh span{color:#2a6a2a!important;font-weight:700}
+:root:root #win.bk .sbk em{color:#4a2c14!important}
+:root:root #win.bk .vfoot{padding:0 8px}
 </style>
 </head>
 <body>
@@ -6697,6 +6711,7 @@ function winCacadas(){sqCss();{const w=$('win');if(w)w.classList.add('bk');}
 function hnCss(){if(document.getElementById('hncss'))return;const st=document.createElement('style');st.id='hncss';st.textContent=`#fanim{position:absolute;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:rgba(12,7,4,.82)}
 #fanim .fbox{text-align:center;padding:14px 18px 12px;background:linear-gradient(180deg,#3a2616,#1e130a);border:3px solid #b98a2a;box-shadow:0 0 0 2px #14101a,0 10px 30px #000a}
 #fanim canvas{width:288px;height:216px;image-rendering:pixelated;display:block;margin:0 auto 6px;background:radial-gradient(ellipse at 50% 70%,#4a2810,#120a06)}
+#fanim b.res{animation:fres .45s cubic-bezier(.2,1.6,.4,1)}@keyframes fres{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
 #fanim b{display:block;font:700 15px var(--fd,serif);letter-spacing:.14em;color:#ffd66e;text-transform:uppercase}#fanim small{font:500 11px var(--f);color:#c9b98a}
 .hm{display:flex;gap:6px;margin-top:6px;align-items:flex-start}.hl2{flex:0 0 36%;display:flex;flex-direction:column;gap:4px}.hr{display:flex;align-items:center;gap:5px;padding:6px 5px;text-align:left;background:linear-gradient(180deg,#241c2a,#16111b);border:2px solid #5a4620;color:#d9cfb4;font:600 11px var(--f);cursor:pointer}.hr.on{border-color:#ffd66e;background:linear-gradient(180deg,#3a2c3a,#221a28)}.hr span{flex:1;min-width:0;line-height:1.2}.hr .hdf{margin:0;min-width:16px;font-size:11px;line-height:16px}
 .hr u{width:8px;height:8px;border-radius:50%;background:#555;flex:none}.s-ok{color:#9be08a}.s-go{color:#8ab4ff}.s-av{color:#ffd66e}.s-dn{color:#9be08a}.s-lk,.s-soon{color:#9a8d6e}.hr u.s-ok{background:#9be08a}.hr u.s-go{background:#8ab4ff}.hr u.s-av{background:#ffd66e}.hr u.s-dn{background:#4a8a3a}
@@ -7003,7 +7018,7 @@ function socAct(a){const [k,v,w]=a.split(':');
   else if(k==='cs'){const t=($('cmsg').value||'').trim();if(t){(G.clog=G.clog||[]).push({c:G.cch,who:SAVE.name,t,col:G.cch==='p'?'#8ec2ff':'#e6dcc2'});sfx('ui_click',.4);}}
   else return false;
   writeSave();renderWin();return true;}
-function openWin(id){{const w=$('win');if(w){w.classList.toggle('bk',['diario','cacador','cacadas','forja','alquimista','cofre','leilao','locais'].includes(id));w.dataset.art=id;}}if(id==='portal'){sfx('tr_open',.6);G.winOpen='portal';G.wsel=null;G.wp=null;$('toast').style.display='none';pzOpen();return;}sfx('tr_open',.6);G.winOpen=id;G.wsel=null;G.wp=null;if(id==='forja'&&!G.fslot)G.fslot=SLOTS.find(k=>SAVE.eq[k])||'arma';if(id==='mercador'&&!G.shop)restock(true);
+function openWin(id){{const w=$('win');if(w){{const BK=['diario','cacador','cacadas','forja','alquimista','cofre','leilao','locais','mercador','subclasse','grupo','missoes'].includes(id);w.classList.toggle('bk',BK);w.dataset.art=BK?'':id;}}}if(id==='portal'){sfx('tr_open',.6);G.winOpen='portal';G.wsel=null;G.wp=null;$('toast').style.display='none';pzOpen();return;}sfx('tr_open',.6);G.winOpen=id;G.wsel=null;G.wp=null;if(id==='forja'&&!G.fslot)G.fslot=SLOTS.find(k=>SAVE.eq[k])||'arma';if(id==='mercador'&&!G.shop)restock(true);
   $('toast').style.display='none';$('win').classList.add('on');renderWin();}
 function closeWin(){G.winOpen=null;$('win').classList.remove('on');pzClose();}
 $('wx').onclick=()=>{sfx('tr_close',.6);closeWin();};
@@ -7119,10 +7134,10 @@ function upCost(it){return Math.round((18+it.ilvl*5)*((it.up||0)+1)*(1+it.rar*.4
 const UPCH=[1,1,1,.95,.85,.60,.38,.20,.08,.01];   // chance de chegar a +1…+10 (o +10 é raríssimo, como nos MMOs: item de endgame)
 function upChance(it){return UPCH[Math.min(9,it.up||0)];}
 /* ===== ANIMAÇÃO DA FORJA: bigorna + martelo batendo no item (3 marteladas, depois o resultado) ===== */
-function forgeAnim(it,done,win){const w=$('win');if(!w){done();return;}const old=$('fanim');if(old)old.remove();
+function forgeAnim(it,done,win){const RES=win?['SUCESSO!','#ffe27a','O item foi aprimorado']:['FALHOU!','#ff7a6a','O aço não aceitou o golpe'];const w=$('win');if(!w){done();return;}const old=$('fanim');if(old)old.remove();
   const ov=document.createElement('div');ov.id='fanim';ov.innerHTML='<div class="fbox"><canvas id="fcv" width="96" height="72"></canvas><b>Forjando…</b><small>'+itemName(it)+'</small></div>';w.appendChild(ov);
   const cv=$('fcv'),x=cv.getContext('2d');x.imageSmoothingEnabled=false;const img=new Image();img.src='../assets/ico/'+it.icon+'.png';
-  const T0=performance.now(),HIT=[.55,1.05,1.55],DUR=2.1,P=[];let hits=0,flash=0,shake=0;
+  const T0=performance.now(),HIT=[.55,1.05,1.55],DUR=3.3,P=[],RT=1.8;let shown=0;let hits=0,flash=0,shake=0;
   const R=(a,b,c,d,col)=>{x.fillStyle=col;x.fillRect(a|0,b|0,c|0,d|0);};
   function anvil(){const o='#14101a',a='#3a3a4a',b='#5a5a70',c='#8a8aa4',d='#b8b8d0';
     // base, cintura, corpo, mesa e chifre
@@ -7147,6 +7162,10 @@ function forgeAnim(it,done,win){const w=$('win');if(!w){done();return;}const old
     hammer(ang);
     for(const p of P){p.l-=1/60;p.x+=p.vx/60;p.y+=p.vy/60;p.vy+=140/60;if(p.l>0)R(p.x,p.y,2,2,p.c);}
     x.restore();flash*=.86;shake*=.8;
+    if(t>=RT&&!shown){shown=1;flash=1;const fb=ov.querySelector('.fbox'),b=fb.querySelector('b'),sm=fb.querySelector('small');b.textContent=RES[0];b.style.color=RES[1];b.style.fontSize='24px';b.classList.add('res');sm.textContent=RES[2];
+      if(win){sfx('levelup',.8);for(let i=0;i<40;i++)P.push({x:48,y:34,vx:(Math.random()-.5)*130,vy:-Math.random()*90-20,l:.8+Math.random()*.6,c:Math.random()<.5?'#fff2a0':'#ffc030'});}
+      else{sfx('ui_denied',.9);for(let i=0;i<26;i++)P.push({x:48,y:34,vx:(Math.random()-.5)*50,vy:-Math.random()*40-5,l:.9+Math.random()*.6,c:Math.random()<.5?'#6a6a7a':'#4a4a58'});}}
+    if(t>=RT&&!win){x.globalAlpha=.35;x.fillStyle='#000';x.fillRect(0,0,96,72);x.globalAlpha=1;}
     if(t<DUR)requestAnimationFrame(frame);else{ov.remove();done();}}
   requestAnimationFrame(frame);}
 function winForja(){
