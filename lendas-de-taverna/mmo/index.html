@@ -1547,10 +1547,11 @@ const BASES={
 const STAT_LBL={atk:'Ataque',def:'Defesa',hp:'Vida',crit:'Crítico %',spd:'Velocidade %',kb:'Empurrão %',kd:'Queda %'};
 const PASS=[['vigor','Vigor','+8% de vida por nível'],['forca','Força','+6% de ataque por nível'],['arm','Armadura','+6% de defesa por nível'],['sorte','Sorte','+3% de crítico por nível']];
 const IMG_ICO={};
-const xpNeed=L=>Math.round(38*Math.pow(L,1.6)+30);
-/* ===== CURVA DE XP (calibrada com o dono): KPL(L) = quantos abates de um monstro PADRÃO do nível L para subir de nível; sxp(L) = XP desse monstro; kx(n,L) = XP de "n abates" (usado nas recompensas de missão/caçada).
-   Metas: só missões principais ≈ Nv 8; + secundárias ≈ Nv 10; Nv 12–13 só com caçadas, elites e abates extras. Tabelas em TABELAS.md (gerar: node tools/mmo/gen_tabelas.js) ===== */
-const KPL=L=>Math.min(170,Math.round(1.2*(8+1.75*Math.pow(L,1.55)))),sxp=L=>xpNeed(L)/KPL(L),kx=(n,L)=>Math.max(1,Math.round(n*sxp(L)));
+/* ===== TABELAS DE XP (calibradas com o dono) =====
+   XPN[N] = XP para ir do nível N ao N+1; XPM[N] = XP de um inimigo PADRÃO de nível N (cada inimigo multiplica pelo seu peso: XP base × mult. da família ÷ 22; elite ×2/×3,5).
+   Mais de 4 níveis acima do inimigo (exceto chefe) = 1 XP. Tabelas legíveis em TABELAS.md (gerar: node tools/mmo/gen_tabelas.cjs). kx(n,L) = XP de n inimigos padrão do nível L (recompensa de missão). */
+const XPN=[0,1000,3030,5800,9190,13130,17580,22500,27860,33630,39810,46370,53300,60580,68200,76160,84450,93050,101960,111170,120680,130480,140560,150930,161560,172470,183640,195070,206750,218690,230880,243320,256000,268920,282080,295470,309090,322940,337020,351320,365840],XPM=[0,83,190,280,330,380,410,430,450,460,470,480,490,500,510,510,510,550,600,650,710,770,830,890,950,1000,1100,1100,1200,1300,1400,1400,1500,1600,1700,1700,1800,1900,2000,2100,2200];
+const xpNeed=L=>XPN[L]||Math.round(1000*Math.pow(L,1.6)/10)*10,sxp=L=>XPM[L]||Math.round(xpNeed(L)/Math.min(170,1.2*(8+1.75*Math.pow(L,1.55)))),kx=(n,L)=>Math.max(1,Math.round(n*sxp(L)));
 
 /* ------------------------------ assets ---------------------------------- */
 const IMG={};
@@ -1917,7 +1918,7 @@ function audioInit(){
   const m=AC.createGain();m.gain.value=.55;m.connect(AC.destination);sfxGain=AC.createGain();sfxGain.gain.value=1;sfxGain.connect(m);musGain=AC.createGain();musGain.gain.value=.22;musGain.connect(m);
   ['ui_click','ui_confirm','ui_denied','swing','hit_0','hit_1','slash','crit','miss','bow','arrow_hit','spell_cast','spell_hit','heal','coin','levelup','death','victory','sk_golpe','sk_meteoros','sk_flechas','sk_sagrado','sk_corte','sk_grito','tr_equip','tr_open','tr_close','sk_fogo','sk_gelo','sk_raio','sk_terra','sk_veneno','sk_nota','sk_estocada','sk_explosao','st_escudo','buff','dg_title','boss_roar','boss_rei_roar','boss_slam','boss_charge','boss_spin','boss_guard','boss_swarm','boss_plague','boss_burrow','boss_flask','boss_throw','boss_dark','cut_marca','cut_queda','cut_sino'].forEach(n=>loadBuf('../assets/audio/sfx/'+n+'.ogg',n));
   for(const sp of ['rato','javali','goblin','esq','bat','ogro','lobo','aranha','barata','sapo','cobra','tronco','harpia','gnoll','humano','morto','cogu'])for(const k of ['atk','hurt','die'])loadBuf('../assets/audio/sfx/mob_'+sp+'_'+k+'.ogg','mob_'+sp+'_'+k);
-  loadBuf('../assets/audio/sfx/mount_neigh.ogg','mount_neigh');loadBuf('../assets/audio/sfx/mount_snort.ogg','mount_snort');
+  loadBuf('../assets/audio/sfx/mount_neigh.ogg','mount_neigh');for(const q of ['q_accept','q_obj','q_done'])loadBuf('../assets/audio/sfx/'+q+'.ogg',q);loadBuf('../assets/audio/sfx/mount_snort.ogg','mount_snort');
   loadBuf('../assets/audio/music/campina.ogg','m_campina').then(()=>{if(musOn)playMusic();});
   loadBuf('../assets/audio/music/chefe.ogg','m_chefe');loadBuf('../assets/audio/music/vila.ogg','m_vila');
 }
@@ -2483,7 +2484,7 @@ const TEST_UNLOCK=true;   /* TESTE: todas as dungeons e arenas abertas, sem requ
 function dgUnlocked(z){if(TEST_UNLOCK||z<=1)return true;if(z===5)return SAVE.lv>=DUN[4].unlock;const d=DUN[z-1];return !!(d&&SAVE.dgDone&&SAVE.dgDone[z-1]&&SAVE.lv>=d.unlock);}
 function dgRefresh(){let m=1;for(let z=2;z<=DUN.length;z++)if(dgUnlocked(z))m=z;if(m>(SAVE.zoneMax||1)){SAVE.zoneMax=m;chat('Nova dungeon liberada: '+DUN[m-1].nm+'!',4);sfx('levelup',.4);if(G.hero)floatText(G.hero.x,G.hero.y-80,'Nova dungeon!','#8ef08a',9,1.4);}SAVE.zoneMax=Math.max(1,Math.min(DUN.length,SAVE.zoneMax||1));}
 // experiência estilo Cabal: monstro muito abaixo do seu nível rende 1 de XP (chefes mantêm um mínimo)
-const xpGapMul=g=>g<=2?1:g===3?.85:g===4?.7:g===5?.5:g===6?.3:g===7?.15:g===8?.07:0;
+const xpGapMul=g=>g<=1?1:g===2?.7:g===3?.35:g===4?.12:0;   /* herói muito acima do inimigo: 0 = só 1 XP (chefes têm piso próprio) */
 const FAMS=['goblin','esq','javali','rato'],FAMM={goblin:[1.13,1.1,1.24],esq:[.85,.86,.83],javali:[.71,.77,.68],rato:[2.1,1.9,2]};
 const famOf=z=>{z=clamp(z||1,1,DUN.length);return z===5?'esq':z>=6?'goblin':FAMS[(z-1)%FAMS.length];};
 function mkMob(kind,x,y,sp){
@@ -2880,7 +2881,7 @@ function killMob(m){
   if(!m.dead&&(m.kind==='boss'||m.mini)&&!G.arena){SAVE.hunts=SAVE.hunts||{};const hk=m.name||(m.T&&m.T.nome)||m.type;SAVE.hunts[hk]=(SAVE.hunts[hk]||0)+1;}   /* registro de caça por herói: as mortes de chefes contam para a quest do portão */
   if(!m.dead)mobSnd(m,'die');
   m.hide=false;m.dead=true;m.deadT=0;m.hp=0;if(m.onDie&&!G.ev){const f=m.onDie;m.onDie=null;f();}const T=m.T;
-  const gap=SAVE.lv-m.lv,gm=xpGapMul(gap),boss=m.kind==='boss',xp=Math.max(1,Math.round((m.elite?(m.tier==='gold'?3.5:2):1)*sxp(m.lv)*(T.xp*((FAMM[m.T.fam||m.type]||[1,1,1])[2])/22)*(boss?Math.max(.05,gm):gm)*(1+uf('xp'))*(gm>0||boss?1:0)));let g=rint(T.gold[0],T.gold[1])*(1+.2*(m.lv-1))*(1+uf('gold'));if(SAVE.cls==='bardo')g*=1.4;g=Math.round(g*(m.elite?(m.tier==='gold'?2.2:1.5):1));
+  const gap=SAVE.lv-m.lv,gm=xpGapMul(gap),boss=m.kind==='boss',xp=Math.max(1,Math.round((m.elite?(m.tier==='gold'?3.5:2):1)*sxp(m.lv)*(T.xp*((FAMM[m.T.fam||m.type]||[1,1,1])[2])/22)*(boss?Math.max(.25,gm):gm)*(1+uf('xp'))*(gm>0||boss?1:0)));let g=rint(T.gold[0],T.gold[1])*(1+.2*(m.lv-1))*(1+uf('gold'));if(SAVE.cls==='bardo')g*=1.4;g=Math.round(g*(m.elite?(m.tier==='gold'?2.2:1.5):1));
   SAVE.gold+=g;gainXP(G.arena?Math.max(1,Math.round(xp*.2)):xp,m);floatText(m.x+12,m.y-30,'+'+g+' ouro','#ffd65a',8,1.1);sfx('coin',.5);
   SAVE.totalKills=(SAVE.totalKills||0)+1;{const fm=m.T.fam||m.type;bstAdd(fm,m.elite);qEv('kill');qEv('fam',fm);if(m.elite)qEv('elite');if(m.kind==='boss'&&!G.arena){SAVE.bosses=(SAVE.bosses||0)+1;qEv('boss');}}
   dropLoot(m);dropMats(m);petDrop(m.kind==='boss',!!m.elite,m.tier==='gold');
@@ -6230,7 +6231,7 @@ const ZNPC={
  zone_colinas:[{id:'eremita',sh:'ladino_b',x:1700,y:3400}],
  zone_passo:[{id:'guardap',sh:'guarda',x:2060,y:320},{id:'emis_o',sh:'pov_f',x:1950,y:600},{id:'emis_g',sh:'bardo',x:2250,y:560},{id:'emis_r',sh:'ladino_b',x:2550,y:600}]
 };
-const TOWN_X=[{id:'maren',sh:'pov_f',x:385,y:330},{id:'hilda',sh:'guarda',x:505,y:1715},{id:'cacador',sh:'cacador',x:560,y:1442,win:'cacadas'}];
+const TOWN_X=[{id:'maren',sh:'pov_f',x:385,y:330},{id:'hilda',sh:'guarda',x:505,y:1640},{id:'cacador',sh:'cacador',x:560,y:1442,win:'cacadas'}];
 const SQ=[
  {lv:1,nm:'O Selo',giver:'maren',turn:'hilda',obj:{t:'talk'},fac:{ordem:10},
   give:['Você chegou. Eu vi o Selo brilhar assim que atravessou o portão.','Todo Escolhido recebe um Selo da Ordem. Ele dá força... e laços.','Procure a Sargento Hilda, perto da saída sul. Ela vai lhe mostrar a estrada.'],
@@ -6328,7 +6329,7 @@ const qkReady=q=>{const p=qkProg(q);return p[0]>=p[1];};
 const secAvail=q=>{const s=stAct();return !s.sd[q.id]&&!s.act[q.id]&&SAVE.lv>=q.lv;};
 const secActive=()=>{const s=stAct();return SEC.filter(q=>s.act[q.id]);};
 function qkEv(q,t,f){const st=qkSt(q),o=q.obj;if(!st||(o.t!=='kill'&&o.t!=='fam'&&o.t!=='elite')||o.t!==t)return;if(o.t==='fam'&&o.f!==f)return;if(o.maps&&!o.maps.includes(G.map))return;if((st.p||0)>=o.n)return;st.p=(st.p||0)+1;
-  if(st.p>=o.n){chat('Objetivo concluído: '+q.nm+' — fale com '+((NPCD[q.turn]||{}).nm||'o NPC')+'.',4);sfx('levelup',.4);}}
+  if(st.p>=o.n){chat('Objetivo concluído: '+q.nm+' — fale com '+((NPCD[q.turn]||{}).nm||'o NPC')+'.',4);sfx('q_obj',.85);}}
 function stEv(t,f){if(!['kill','fam','elite'].includes(t))return;const q=stCurQ();if(q)qkEv(q,t,f);for(const x of secActive())qkEv(x,t,f);socRefresh();}
 function stProg(){const q=stCurQ();return q?qkProg(q):[0,1];}
 const stReady=()=>{const q=stCurQ();return q?qkReady(q):false;};
@@ -6350,11 +6351,13 @@ function stFacTxt(f){return Object.keys(f||{}).map(k=>'+'+f[k]+' '+FACN[k]).join
 function stFinish(q,ch,pick){const s=stAct();const r=stRewOf(q,ch);const v=qkItems(q),need=v?v.f.length+(v.c.length?1:0):0;
   if(v&&v.c.length&&(pick==null||!v.c[pick]))return false;if(need&&SAVE.inv.length+need>BAG_MAX){toast('Mochila cheia! Libere espaço para receber os itens.',2200);sfx('ui_denied');return false;}
   const giveIt=()=>{if(!v)return;for(const it of v.f)addItem(it);if(v.c.length)addItem(v.c[pick]);delete s.rv[q.id];};
-  if(q.k==='side'){delete s.act[q.id];s.sd[q.id]=1;stFac(q.fac);qGive(r);chat('Missão concluída: '+q.nm+' · '+qRewTxt(r),4);sfx('levelup',.5);if(G.hero)floatText(G.hero.x,G.hero.y-80,'Missão concluída!','#ffe08a',9,1.6);giveIt();sfx('coin',.8);writeSave();socRefresh();return true;}
-  giveIt();stFac(q.fac);if(ch)stFac(ch.fac);qGive(r);chat('Missão principal concluída: '+q.nm+' · '+qRewTxt(r),4);sfx('levelup',.6);if(G.hero)floatText(G.hero.x,G.hero.y-80,'Missão principal concluída!','#ffe08a',9,1.6);
+  if(q.k==='side'){delete s.act[q.id];s.sd[q.id]=1;stFac(q.fac);qGive(r);chat('Missão concluída: '+q.nm+' · '+qRewTxt(r),4);qDoneFx(q);giveIt();sfx('coin',.45);writeSave();socRefresh();return true;}
+  giveIt();stFac(q.fac);if(ch)stFac(ch.fac);qGive(r);chat('Missão principal concluída: '+q.nm+' · '+qRewTxt(r),4);qDoneFx(q);
   s.n++;s.cur=null;if(q.lv===10)s.gate=1;const nx=SQ[s.n];if(nx)chat('Próxima missão principal: '+nx.nm+(SAVE.lv>=nx.lv?' — fale com '+NPCD[nx.giver].nm+'.':' — alcance o nível '+nx.lv+'.'),4);
-  sfx('coin',.8);writeSave();socRefresh();return true;}
-function stLvUp(){const q=stNext();if(q&&SAVE.lv===q.lv){chat('Nova missão principal: '+q.nm+' — fale com '+NPCD[q.giver].nm+'.',4);sfx('levelup',.3);}}
+  sfx('coin',.45);writeSave();socRefresh();gpsAuto();return true;}
+function qDoneFx(q){sfx('q_done',.85);let o=document.getElementById('qdone');if(o)o.remove();o=document.createElement('div');o.id='qdone';
+  o.innerHTML='<small>'+(q.k==='main'?'MISSÃO PRINCIPAL':'MISSÃO')+' COMPLETA</small><b>'+q.nm+'</b>';($('stage')||document.body).appendChild(o);setTimeout(()=>o.remove(),3800);}
+function stLvUp(){const q=stNext();if(q&&SAVE.lv===q.lv){chat('Nova missão principal: '+q.nm+' — fale com '+NPCD[q.giver].nm+'.',4);sfx('q_obj',.7);gpsAuto();}}
 /* ---- caixa de diálogo ---- */
 const D={el:null,q:[],i:0,full:'',n:0,tm:0,opts:null,t:null};
 function dlgInit(){if(D.el)return;const st=document.createElement('style');st.textContent=`
@@ -6421,7 +6424,7 @@ function talkMenu(t,who,lines){
 const qTitle=q=>q.nm+'<small>'+qTag(q)+'</small>';
 function stOffer(t,who,q){dlgShow(who,q.give,[{lb:'Aceitar missão',c:'q',p:1,fn:()=>{const s=stAct();
   if(q.k==='side'){if(secActive().length>=QMAXA){toast('Diário cheio ('+QMAXA+' missões).',1800);return;}s.act[q.id]={p:0,b0:0};}else s.cur={i:s.n,p:0,b0:q.obj.t==='boss'?((SAVE.hunts||{})[q.obj.name]||0):0};
-  qkItems(q);chat((q.k==='main'?'Missão principal aceita: ':'Missão aceita: ')+q.nm,4);sfx('levelup',.4);writeSave();socRefresh();talkMenu(t,who,['Boa sorte, Escolhido.']);}},{lb:'Recusar',s:1,fn:()=>talkMenu(t,who,['Volte quando estiver pronto.'])}],stInfo(q,0,1,'offer'),qTitle(q));}
+  qkItems(q);chat((q.k==='main'?'Missão principal aceita: ':'Missão aceita: ')+q.nm,4);sfx('q_accept',.85);if(q.k==='main')gpsAuto();writeSave();socRefresh();talkMenu(t,who,['Boa sorte, Escolhido.']);}},{lb:'Recusar',s:1,fn:()=>talkMenu(t,who,['Volte quando estiver pronto.'])}],stInfo(q,0,1,'offer'),qTitle(q));}
 function stProgScr(t,who,q){dlgShow(who,q.prog||['Ainda não terminou.'],[{lb:'Voltar',s:1,fn:()=>talkMenu(t,who,[nGreet(who)])}],stInfo(q,1,1,'prog'),qTitle(q));}
 function stTurn(t,who,q){const bk={lb:'Voltar',s:1,fn:()=>talkMenu(t,who,[nGreet(who)])},v=qkItems(q),pickN=v&&v.c.length;
   const done=(ch)=>()=>{if(stFinish(q,ch,D.sel))talkMenu(t,who,['Obrigado, Escolhido.']);};
@@ -6473,13 +6476,13 @@ function hnTick(dt){hnMusTick();const S=hnS(),a=S.act.alfa;if(!a||a.fim||!a.ok1|
       if(!sp){const f=freeSpot(h.x+300,h.y);sp=[f[0],f[1]];}
       hnNote(a,'Parado à beira da água, o silêncio trouxe o Alfa.');spawnAlfa(sp[0],sp[1]);chat('Um uivo longo rasga o silêncio. O Alfa desceu para beber.',3);floatText(h.x,h.y-90,'O Alfa se aproxima!','#ff8a70',11,1.8,{pop:1,bold:1,glow:1});VF.shake(.5);writeSave();}}
   else rt.w=Math.max(0,rt.w-rdt*2.5);}
-function hnAccept(id){const S=hnS(),H=HUNTS.find(x=>x.id===id);if(!H||H.soon||hnRank()<H.rk)return;if(S.act[id])return;S.act[id]={k:0,ok1:0,fim:0,notes:[]};chat('Caçada aceita: '+H.nm,4);sfx('levelup',.4);writeSave();}
+function hnAccept(id){const S=hnS(),H=HUNTS.find(x=>x.id===id);if(!H||H.soon||hnRank()<H.rk)return;if(S.act[id])return;S.act[id]={k:0,ok1:0,fim:0,notes:[]};chat('Caçada aceita: '+H.nm,4);sfx('q_accept',.85);writeSave();}
 function hnAbandon(id){const S=hnS();delete S.act[id];if(id==='alfa'){G.hnRT=null;}writeSave();sfx('ui_click',.5);}
 function hnGive(slot,rar){if(SAVE.inv.length>=BAG_MAX){toast('Mochila cheia! Libere espaço.',2000);sfx('ui_denied');return false;}const it=genSlotItem(slot,rar,Math.max(SAVE.lv,HLV));addItem(it);return it;}
 function hnClaim(id){const S=hnS(),H=HUNTS.find(x=>x.id===id),a=S.act[id];if(!H||!a||!a.fim)return;
   if(H.item&&SAVE.inv.length>=BAG_MAX){toast('Mochila cheia! Libere espaço.',2000);sfx('ui_denied');return;}
   const r0=hnRank();SAVE.gold+=H.gold||0;S.pts+=H.pts||0;S.sel+=H.sel||0;{const xv=hxp(H);if(xv)gainXP(xv,G.hero);}if(H.item)hnGive(H.item[0],H.item[1]);
-  S.done[id]=(S.done[id]||0)+1;delete S.act[id];G.hnRT=null;sfx('levelup',.6);chat('Caçada relatada: +'+H.pts+' pts · +'+H.sel+' Selos · +'+H.gold+' ouro',4);
+  S.done[id]=(S.done[id]||0)+1;delete S.act[id];G.hnRT=null;sfx('q_done',.85);chat('Caçada relatada: +'+H.pts+' pts · +'+H.sel+' Selos · +'+H.gold+' ouro',4);
   const r1=hnRank();if(r1>r0)banner('RANK '+(r1+1),HRANK[r1].n,'');writeSave();}
 function hnClaimRank(i){const S=hnS(),R=HRANK[i];if(!R||!R.r||S.cl[i]||hnRank()<i)return;const r=R.r;if(r.item&&SAVE.inv.length>=BAG_MAX){toast('Mochila cheia! Libere espaço.',2000);sfx('ui_denied');return;}
   S.cl[i]=1;if(r.sel)S.sel+=r.sel;if(r.gold)SAVE.gold+=r.gold;if(r.pot)SAVE.potions=(SAVE.potions||0)+r.pot;if(r.item)hnGive(r.item[0],r.item[1]);sfx('levelup',.5);chat('Prêmio de rank: '+R.n,4);writeSave();}
@@ -6514,7 +6517,11 @@ function winCacadas(){sqCss();
       return `<div class="hnc ${ok?'':'soon'}"><div class="hnh"><b>Rank ${i+1} · ${x.n}</b><em>${x.p} pts</em></div><div class="row2"><span>Prêmio</span><span>${txt}</span></div><div class="hna">${cl?'<span class="hl ok">✔ recebido</span>':ok?`<button class="gb" data-a="hn:rk:${i}">Receber</button>`:'<span class="hl">Bloqueado</span>'}</div></div>`;}).join('');}
   else{h+=`<div class="sec-h"><span>Loja da Guilda</span><span>pague com Selos de Caça</span></div>`+HSHOP.map(x=>{const lock=hnRank()<x.rk,can=!lock&&S.sel>=x.c;return `<div class="hnc ${lock?'soon':''}"><div class="hnh"><b>${x.nm}</b><em>${x.c} Selos</em></div><div class="hna">${lock?`<span class="hl">Requer rank ${x.rk+1}</span>`:`<button class="gb" data-a="hn:buy:${x.id}" ${can?'':'disabled'}>Comprar</button>`}</div></div>`;}).join('');}
   $('wbody').innerHTML=h;}
-function hnCss(){if(document.getElementById('hncss'))return;const st=document.createElement('style');st.id='hncss';st.textContent=`#hdone{position:absolute;left:0;right:0;top:27%;z-index:400;pointer-events:none;text-align:center;animation:hdA 6.2s ease-in-out forwards}
+function hnCss(){if(document.getElementById('hncss'))return;const st=document.createElement('style');st.id='hncss';st.textContent=`#qdone{position:absolute;left:0;right:0;top:35%;z-index:350;pointer-events:none;text-align:center;animation:qdA 3.8s ease forwards}
+#qdone small{display:inline-block;font:700 11px var(--fd,serif);letter-spacing:.3em;color:#f6cf63;text-shadow:0 2px 3px #000,0 0 8px rgba(255,190,70,.6);padding:0 14px;border-top:1px solid rgba(246,207,99,.7);border-bottom:1px solid rgba(246,207,99,.7);background:linear-gradient(90deg,transparent,rgba(10,8,18,.6),transparent)}
+#qdone b{display:block;margin-top:6px;font:600 15px var(--fd,serif);color:#fff;text-shadow:0 2px 4px #000}
+@keyframes qdA{0%{opacity:0;transform:translateY(8px)}10%{opacity:1;transform:none}82%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}
+#hdone{position:absolute;left:0;right:0;top:27%;z-index:400;pointer-events:none;text-align:center;animation:hdA 6.2s ease-in-out forwards}
 #hdone .hdg{position:absolute;left:-10%;right:-10%;top:-30px;bottom:-30px;background:radial-gradient(ellipse at center,rgba(255,190,70,.38),rgba(255,150,40,.12) 45%,transparent 70%);opacity:0;animation:hdG 6.2s ease-out forwards}
 #hdone .hw{display:block;white-space:nowrap;line-height:1.05;position:relative}
 #hdone i{display:inline-block;font:700 min(60px,15vw)/1 var(--fd,serif);font-style:normal;letter-spacing:.06em;color:transparent;background:linear-gradient(100deg,#fff6cf 0%,#ffd451 38%,#ffffff 50%,#ffd451 62%,#c47a14 100%);background-size:260% 100%;-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 3px 0 #6a3a08) drop-shadow(0 0 14px rgba(255,190,70,.95));opacity:0;transform-origin:50% 100%;
@@ -6575,8 +6582,11 @@ function gpsLoc(id){const Z=MAPS.town&&MAPS.town.zone;
 function gpsNext(a,b){if(a===b)return a;const q=[a],pv={[a]:null};while(q.length){const c=q.shift();if(c===b)break;for(const [x,y] of MMADJ){const n=x===c?y:y===c?x:null;if(n&&!(n in pv)){pv[n]=c;q.push(n);}}}
   if(!(b in pv))return null;let c=b;while(pv[c]!==a&&pv[c]!==null)c=pv[c];return pv[c]===null?null:c;}
 function gpsDist(a,b){if(a===b)return 0;const q=[[a,0]],seen={[a]:1};while(q.length){const [c,d]=q.shift();for(const [x,y] of MMADJ){const n=x===c?y:y===c?x:null;if(n&&!seen[n]){if(n===b)return d+1;seen[n]=1;q.push([n,d+1]);}}}return 99;}
+/* guia a missão principal atual (ou a próxima disponível) — chamado ao aceitar/entregar missão e ao subir de nível */
+function gpsAuto(){try{const q=stCurQ()||stNext();if(q&&SAVE.lv>=q.lv)SAVE.gps={k:'m',nm:q.nm};}catch(e){}}
 function gpsGoal(){const g=SAVE.gps;if(!g)return null;const q=gpsQuest(g.k);if(!q||q.nm!==g.nm){SAVE.gps=null;return null;}
   const acc=g.k==='m'?stCurQ()===q:!!stAct().act[q.id];let npc=null,maps=null;const o=q.obj;
+  if(!acc&&SAVE.lv<q.lv)return null;   /* ainda não liberada pelo nível: sem seta */
   if(!acc)npc=q.giver;else if(qkReady(q)||o.t==='talk')npc=q.turn;
   else if(o.t==='boss')maps=[BOSSMAP[o.name]];
   else if(o.t==='bosses'){const h=SAVE.hunts||{};maps=o.names.filter(n=>!(h[n]>0)).map(n=>BOSSMAP[n]);}
@@ -6585,9 +6595,9 @@ function gpsGoal(){const g=SAVE.gps;if(!g)return null;const q=gpsQuest(g.k);if(!
   if(!maps||!maps.length)return null;
   let best=maps[0],bd=99;for(const m of maps){const d=gpsDist(G.map,m);if(d<bd){bd=d;best=m;}}
   if(best!==G.map)return {map:best,x:null,y:null,txt:areaName(best)};
+  if(o.t==='kill'||o.t==='fam'||o.t==='elite'){const nm=o.t==='fam'?((MOBS[o.f]||{}).nome||'monstros'):o.t==='elite'?'monstros elite':'monstros';return {map:best,x:null,y:null,here:1,txt:'Área da missão',alvo:nm};}   /* na zona certa a seta some: o jogador procura sozinho */
   if(o.t==='boss'||o.t==='bosses'){const b=ZONE.region&&ZONE.region.boss;return b?{map:best,x:b.x,y:b.y,txt:'Chefe'}:null;}
-  const h=G.hero;let bm=null,bdd=1e9;for(const m of G.mobs||[]){if(m.dead||m.kind!=='mob'||m.minion)continue;if(o.t==='fam'&&m.type!==o.f)continue;if(o.t==='elite'&&!m.elite)continue;const d=dist(h,m);if(d<bdd){bdd=d;bm=m;}}
-  return bm?{map:best,x:bm.x,y:bm.y,txt:'Monstros'}:null;}
+  return {map:best,x:null,y:null,here:1,txt:'Área da missão',alvo:'monstros'};}
 let GPS={el:null,t:0,goal:null};
 function gpsDraw(){window.GPSV=window.GPSV||{on:false};GPSV.on=false;if(!G.on||!G.hero||!window.V3||!V3.toScreen)return;let el=GPS.el;if(!el){el=GPS.el=document.createElement('div');el.id='gps';el.innerHTML='<svg viewBox="0 0 40 40" width="38" height="38"><path d="M20 3 L36 33 L20 25 L4 33 Z" fill="#ffd66e" stroke="#2a1604" stroke-width="3" stroke-linejoin="round"/><path d="M20 9 L30 29 L20 24 Z" fill="#fff3b8" opacity=".75"/></svg><b></b>';($('stage')||document.body).appendChild(el);}
   const h=G.hero;if(!SAVE.gps||G.cut||G.winOpen||G.room||G.arena||h.state==='ko'){el.style.display='none';return;}
@@ -6595,11 +6605,11 @@ function gpsDraw(){window.GPSV=window.GPSV||{on:false};GPSV.on=false;if(!G.on||!
   const g=GPS.goal;if(!g){el.style.display='none';return;}
   let tx,ty;
   if(g.map!==G.map){const nx=gpsNext(G.map,g.map);const ex=nx&&(ZONE.exits||[]).find(e=>e.to===nx);if(!ex){el.style.display='none';return;}tx=ex.x+ex.w/2;ty=ex.y+ex.h/2;}
-  else{if(g.x==null){el.style.display='none';return;}tx=g.x;ty=g.y;}
+  else{if(g.x==null){el.style.display='none';if(g.here){const key=SAVE.gps.nm+'|'+G.map;if(GPS.areaKey!==key){GPS.areaKey=key;chat('Você chegou à área da missão. Procure: '+g.alvo+'.',3);toast('Área da missão — procure '+g.alvo,2600);sfx('q_obj',.6);}}return;}tx=g.x;ty=g.y;}
   const dx=tx-h.x,dy=ty-h.y,d=Math.hypot(dx,dy);if(d<130&&g.map===G.map){el.style.display='none';return;}
   /* a seta é um objeto 3D deitado no chão (v3.js syncGps); aqui só vai o rótulo, em texto, ancorado no ponto da seta */
   GPSV.on=true;GPSV.x=h.x;GPSV.y=h.y;GPSV.ax=dx/d;GPSV.ay=dy/d;
-  const p=V3.toScreen(h.x+dx/d*74,h.y+dy/d*74,30);el.style.display='block';el.style.left=p[0]+'px';el.style.top=p[1]+'px';
+  const p=V3.toScreen(h.x+dx/d*50,h.y+dy/d*50,24);el.style.display='block';el.style.left=p[0]+'px';el.style.top=p[1]+'px';
   const lb=el.lastChild,tx2=g.txt+' · '+Math.round(d/40)+' m';if(lb.textContent!==tx2)lb.textContent=tx2;}
 (function gpsLoop(){try{gpsDraw();}catch(e){}requestAnimationFrame(gpsLoop);})();
 
@@ -7222,9 +7232,9 @@ $('cv').addEventListener('pointerdown',ev=>{
 });
 (()=>{const c=$('mm');if(c){c.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();mmToggle();});}})();
 function renderSlots(){const box=$('slots');box.innerHTML='';let emp=0;for(let i=0;i<SLOT_N;i++){const sv=slotRead(i);if(!sv&&emp++)continue;const row=document.createElement('div');row.className='sr';const b=document.createElement('button');b.className='btn';
-  if(sv){b.textContent=sv.name+' · '+(CLASSES[sv.cls].nome||sv.cls)+' Nv.'+sv.lv;b.onclick=()=>{audioInit();sfx('ui_confirm');SLOT=i;SAVE=slotRead(i);G.zoneLv=clamp(SAVE.zone||1,1,DUN.length);startGame();};row.appendChild(b);
+  if(sv){b.textContent=sv.name+' · '+(CLASSES[sv.cls].nome||sv.cls)+' Nv.'+sv.lv;b.onclick=()=>{if(performance.now()<(window.__bootGuard||0))return;audioInit();sfx('ui_confirm');SLOT=i;SAVE=slotRead(i);G.zoneLv=clamp(SAVE.zone||1,1,DUN.length);startGame();};row.appendChild(b);
     const d=document.createElement('button');d.className='btn sd';d.textContent='✕';d.setAttribute('aria-label','Apagar herói');d.onclick=()=>{audioInit();gConfirm('Apagar '+sv.name+' (Nv.'+sv.lv+') para sempre?',{title:'Apagar este herói?',ok:'Apagar',no:'Manter',danger:true}).then(ok=>{if(ok){try{localStorage.removeItem(slotKey(i));}catch(e){}renderSlots();}});};row.appendChild(d);}
-  else{b.className='btn ne';b.textContent='+ NOVO HERÓI ('+(i+1)+'/'+SLOT_N+')';b.onclick=()=>{SLOT=i;newHero();};row.appendChild(b);}
+  else{b.className='btn ne';b.textContent='+ NOVO HERÓI ('+(i+1)+'/'+SLOT_N+')';b.onclick=()=>{if(performance.now()<(window.__bootGuard||0))return;SLOT=i;newHero();};row.appendChild(b);}
   box.appendChild(row);}}
 const newHero=()=>{audioInit();sfx('ui_confirm');SAVE={name:'',cls:'guerreiro',lv:1,xp:0,gold:0,zone:1,inv:[],eq:{},potions:2,potL:0,elix:{forca:0,vigor:0,sorte:0},zoneMax:1,sk:[1,0,0,0,0,0,0,0,0,0,0,0,0,0],eqs:[0,-1,-1],sub:null,at:{for:0,des:0,int:0,vit:0,sor:0},autoEq:true};selCls='guerreiro';$('cname').value='';show('create');buildCreate();};
 $('bNew').onclick=()=>{};$('bCont').onclick=()=>{};
@@ -7247,7 +7257,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&SAVE&&G.on
 const BOOT={t0:performance.now(),p:0,ready:false,iv:null};
 function bootInit(){const bar=$('bbar');BOOT.iv=setInterval(()=>{BOOT.p+=(0.86-BOOT.p)*.04;bar.style.width=(BOOT.p*100)+'%';},60);}
 function bootReady(){const wait=Math.max(0,2600-(performance.now()-BOOT.t0));setTimeout(()=>{clearInterval(BOOT.iv);const bar=$('bbar'),tx=$('btxt');bar.style.transition='width .35s';bar.style.width='100%';setTimeout(()=>{tx.textContent='Toque para continuar';tx.classList.add('go');BOOT.ready=true;},420);},wait);}
-$('boot').addEventListener('pointerdown',()=>{if(!BOOT.ready)return;BOOT.ready=false;audioInit();sfx('ui_confirm',.6);sfx('levelup',.35);const b=$('boot');b.style.opacity=0;b.style.pointerEvents='none';setTimeout(()=>b.remove(),800);try{titleMusic();}catch(e){}});
+$('boot').addEventListener('click',()=>{if(!BOOT.ready)return;BOOT.ready=false;window.__bootGuard=performance.now()+800;audioInit();sfx('ui_confirm',.6);sfx('levelup',.35);const b=$('boot');b.style.opacity=0;b.style.pointerEvents='none';setTimeout(()=>b.remove(),800);try{titleMusic();}catch(e){}});
 const LTIPS=['Segure o botão de ataque para encadear o combo; toque no tempo certo para o Golpe Preciso.','Abra o mapa tocando no minimapa. Áreas já visitadas ficam registradas.','Em Missões, toque em "Guiar até o objetivo" e uma seta mostra o caminho.','A montaria some quando você entra em combate. Chame-a de novo depois.','Habilidades empoderadas saem quando o medidor de estilo chega ao S.','Chuva fortalece raios e enfraquece o fogo. Escolha a habilidade pelo clima.','Vender itens só é possível no Mercador.','Os inimigos desistem da perseguição se você se afastar demais.'];
 let LT0=0;
 function loadShow(){const e=$('loadg');$('ltip').textContent='Dica: '+LTIPS[Math.floor(Math.random()*LTIPS.length)];e.classList.add('on');LT0=performance.now();}

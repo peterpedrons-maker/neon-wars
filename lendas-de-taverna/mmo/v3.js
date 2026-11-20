@@ -360,10 +360,10 @@ function syncGps(){
     hi.position.y=.002;fill.position.y=.001;outl.renderOrder=6;fill.renderOrder=7;hi.renderOrder=8;grp.add(outl,fill,hi);scn.grp.add(grp);o=scn.gps={grp,fill,hi};
   }
   const g=window.GPSV;if(!g||!g.on){o.grp.visible=false;return;}
-  const t=performance.now()/1000,pulse=.5+.5*Math.sin(t*3.4),off=(84+pulse*8);
+  const t=performance.now()/1000,pulse=.5+.5*Math.sin(t*3.4),off=(54+pulse*5);
   o.grp.visible=true;o.grp.position.set((g.x+g.ax*off)*U,.07,(g.y+g.ay*off)*U);
   /* a ponta da malha aponta para -Z; gira em Y para apontar para (ax,ay) no mundo */
-  o.grp.rotation.y=Math.atan2(-g.ax,-g.ay);o.grp.scale.setScalar(2.1+pulse*.2);
+  o.grp.rotation.y=Math.atan2(-g.ax,-g.ay);o.grp.scale.setScalar(1.2+pulse*.12);
   o.fill.material.opacity=.78+.22*pulse;
 }
 function syncGroundFx(){
