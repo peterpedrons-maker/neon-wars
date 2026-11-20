@@ -2684,8 +2684,9 @@ function dgTitle(name,sub,tag,theme){const el=$('dgt');if(!el)return;clearTimeou
   sfx('dg_title',.8);try{VF.shake(.25);}catch(e){}
   DGT_T=setTimeout(()=>{el.classList.add('out');DGT_T=setTimeout(()=>{el.className='';},800);},4000);}
 function huntDone(nm,dif){let o=document.getElementById('hdone');if(o)o.remove();o=document.createElement('div');o.id='hdone';
-  o.innerHTML=`<div class="hdb"><i class="hdl"></i><small>${nm?'RANK '+(dif||'D'):''}</small><b>CAÇADA CONCLUÍDA</b><span>${nm||''}</span><i class="hdl"></i></div>`;
-  $('stage').appendChild(o);sfx('levelup',.6);setTimeout(()=>{try{VF.shake(.25);}catch(e){}},420);setTimeout(()=>o.remove(),5200);}
+  const L=(w,d0)=>[...w].map((c,k)=>`<i style="--d:${(d0+k*.07).toFixed(2)}s">${c}</i>`).join('');
+  o.innerHTML=`<div class="hw">${L('CAÇADA',0)}</div><div class="hw">${L('CONCLUÍDA',.5)}</div><span>${nm||''}</span>`;
+  $('stage').appendChild(o);sfx('levelup',.6);setTimeout(()=>{try{VF.shake(.3);}catch(e){}},500);setTimeout(()=>o.remove(),5600);}
 function banner(t,sub,kind){$('bnT').textContent=t;$('bnT').style.fontSize=t.length>16?'66%':'';$('bnS').textContent=sub||'';const b=$('banner');b.className='';void b.offsetWidth;b.className='show'+(kind?' '+kind:'');}
 function levelUpFx(lv){const st=$('stage');if(!st)return;const old=st.querySelector('.lvfx');if(old)old.remove();const d=document.createElement('div');d.className='lvfx';
   let sp='';for(let i=0;i<22;i++){const a=Math.random()*6.283,r=90+Math.random()*150;sp+=`<i style="--dx:${Math.round(Math.cos(a)*r)}px;--dy:${Math.round(Math.sin(a)*r*.7-30)}px;--d:${(Math.random()*.5).toFixed(2)}s;--s:${(3+Math.random()*4).toFixed(1)}px"></i>`;}
@@ -6503,13 +6504,12 @@ function winCacadas(){sqCss();
       return `<div class="hnc ${ok?'':'soon'}"><div class="hnh"><b>Rank ${i+1} · ${x.n}</b><em>${x.p} pts</em></div><div class="row2"><span>Prêmio</span><span>${txt}</span></div><div class="hna">${cl?'<span class="hl ok">✔ recebido</span>':ok?`<button class="gb" data-a="hn:rk:${i}">Receber</button>`:'<span class="hl">Bloqueado</span>'}</div></div>`;}).join('');}
   else{h+=`<div class="sec-h"><span>Loja da Guilda</span><span>pague com Selos de Caça</span></div>`+HSHOP.map(x=>{const lock=hnRank()<x.rk,can=!lock&&S.sel>=x.c;return `<div class="hnc ${lock?'soon':''}"><div class="hnh"><b>${x.nm}</b><em>${x.c} Selos</em></div><div class="hna">${lock?`<span class="hl">Requer rank ${x.rk+1}</span>`:`<button class="gb" data-a="hn:buy:${x.id}" ${can?'':'disabled'}>Comprar</button>`}</div></div>`;}).join('');}
   $('wbody').innerHTML=h;}
-function hnCss(){if(document.getElementById('hncss'))return;const st=document.createElement('style');st.id='hncss';st.textContent=`#hdone{position:absolute;left:0;right:0;top:30%;z-index:400;pointer-events:none;text-align:center;animation:hdA 5.2s ease-in-out forwards}
-#hdone .hdb{position:relative;padding:18px 10px 16px;background:linear-gradient(90deg,transparent,rgba(10,8,18,.88) 18%,rgba(10,8,18,.88) 82%,transparent);animation:hdS 5.2s cubic-bezier(.2,.8,.2,1) forwards}
-#hdone .hdl{position:absolute;left:6%;right:6%;height:2px;background:linear-gradient(90deg,transparent,#f6cf63,transparent)}#hdone .hdl:first-child{top:0}#hdone .hdl:last-child{bottom:0}
-#hdone b{display:block;font:700 min(34px,8.4vw)/1.1 var(--fd,serif);letter-spacing:.14em;color:#fff3c8;text-shadow:0 0 14px rgba(255,190,70,.9),0 2px 0 #7a4a10,0 0 2px #000}
-#hdone small{display:block;font:700 12px var(--fd,serif);letter-spacing:.4em;color:#f6cf63;margin-bottom:6px}
-#hdone span{display:block;margin-top:8px;font:italic 15px var(--fd,serif);color:#dfe6ff;letter-spacing:.06em}
-@keyframes hdA{0%{opacity:0}10%{opacity:1}82%{opacity:1}100%{opacity:0}}@keyframes hdS{0%{transform:scaleY(.05)}12%{transform:scaleY(1)}}
+function hnCss(){if(document.getElementById('hncss'))return;const st=document.createElement('style');st.id='hncss';st.textContent=`#hdone{position:absolute;left:0;right:0;top:28%;z-index:400;pointer-events:none;text-align:center;animation:hdA 5.6s ease-in-out forwards}
+#hdone .hw{display:block;white-space:nowrap;line-height:1.05}
+#hdone i{display:inline-block;font:700 min(58px,14.5vw)/1 var(--fd,serif);font-style:normal;letter-spacing:.06em;color:#fff6d0;text-shadow:0 0 18px rgba(255,200,80,.95),0 3px 0 #8a5412,0 6px 0 #4a2a08,0 0 3px #000;opacity:0;animation:hdL .55s cubic-bezier(.2,.9,.3,1) var(--d) forwards}
+#hdone span{display:block;margin-top:14px;font:italic 16px var(--fd,serif);color:#e8eeff;letter-spacing:.08em;text-shadow:0 2px 4px #000;opacity:0;animation:hdN .6s 1.6s forwards}
+@keyframes hdL{0%{opacity:0;transform:translateY(-260px) scale(2.6) rotate(-12deg)}60%{opacity:1;transform:translateY(6px) scale(.92)}100%{opacity:1;transform:none}}
+@keyframes hdN{to{opacity:1}}@keyframes hdA{0%,86%{opacity:1}100%{opacity:0}}
 #boss.hunt{filter:hue-rotate(195deg) saturate(.85)}
 .hdf{display:inline-block;min-width:20px;margin-right:8px;padding:0 5px;text-align:center;font:700 13px/20px var(--fd,serif);font-style:normal;border-radius:3px;border:1px solid #fff6;color:#fff}.hdD{background:#4a8a3a}.hdC{background:#3a7ab0}.hdB{background:#8a4ab0}.hdA{background:#c06a1a}.hdS{background:#c02a2a}
 .hnb{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 0 8px;padding:8px 10px;background:linear-gradient(180deg,#2a2130,#17121d);border:2px solid #b98a2a}.hnb b{font:700 13px var(--f);color:#ffd66e}.hnb small{display:block;font:500 10px var(--f);color:#9a8d6e;margin-top:2px}.hbar{height:7px;background:#0c0912;border:1px solid #5a4620;margin-top:4px;min-width:150px}.hbar i{display:block;height:100%;background:linear-gradient(#9be08a,#4a9a3a)}.hnb .hs{display:flex;align-items:center;gap:5px;font:700 14px var(--f);color:#d6f0ff}.hnb .hs img{width:18px;height:18px;image-rendering:pixelated}.hnb .hs small{margin:0 0 0 2px;color:#9aa8c0}

@@ -232,7 +232,7 @@ def lobo(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=
         c.cap(bx + 14, by - 2.5 + head_dy, bx + 20 + lunge * .5, by - .5 + head_dy, 3.0, 2.0)
         c.cap(bx + 12.5, by - 6 + head_dy, bx + 12, by - 10 + head_dy, 1.7, .8, 'ear')
         c.cap(bx - 10, by - .5 + rd, bx - 18, by + 3 + rd + math.sin(tail) * 2, 2.0, 1.2)
-        c.dot(bx + 15, by - 3.5 + head_dy, EYE if not squint else hx('#14101c'))
+        c.dot(bx + 14, by - 3.5 + head_dy, EYE if not squint else hx('#14101c')); c.dot(bx + 17, by - 3.5 + head_dy, EYE if not squint else hx('#14101c'))
         c.dot(bx + 21, by - 1 + head_dy, hx('#14101c'))
         if alpha:
             for i in range(5): c.cap(bx + 8 - i * 3.6, by - 5 + i * .5 + m, bx + 6.5 - i * 3.6, by - 10.5 + i * .5 + m, 1.7, .5, 'ear')
