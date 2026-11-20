@@ -213,9 +213,10 @@ def rato(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=
 
 
 # ------------------------------------------------------------------ LOBO
-def lobo(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=0, pose=False, fd=0, rd=0, fsw=0, rsw=0, flift=0, rlift=0, legs_top=False, **kw):
+def lobo(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=0, pose=False, fd=0, rd=0, fsw=0, rsw=0, flift=0, rlift=0, legs_top=False, alpha=False, **kw):
     m = (fd + rd) / 2; head_dy = head_dy + fd
     c = Cv(); cx = W // 2; gy = BASE
+    EYE = hx('#ff3a28') if alpha else hx('#ffd030')
     if view == 'right':
         bx, by = cx - 3 + lunge * .4, gy - 13 + bob
         for lx, ph0, far in ((-8, 0, True), (7, math.pi, True), (-7, math.pi, False), (8, 0, False)):
@@ -231,8 +232,13 @@ def lobo(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=
         c.cap(bx + 14, by - 2.5 + head_dy, bx + 20 + lunge * .5, by - .5 + head_dy, 3.0, 2.0)
         c.cap(bx + 12.5, by - 6 + head_dy, bx + 12, by - 10 + head_dy, 1.7, .8, 'ear')
         c.cap(bx - 10, by - .5 + rd, bx - 18, by + 3 + rd + math.sin(tail) * 2, 2.0, 1.2)
-        c.dot(bx + 15, by - 3.5 + head_dy, hx('#ffd030') if not squint else hx('#14101c'))
+        c.dot(bx + 15, by - 3.5 + head_dy, EYE if not squint else hx('#14101c'))
         c.dot(bx + 21, by - 1 + head_dy, hx('#14101c'))
+        if alpha:
+            for i in range(5): c.cap(bx + 8 - i * 3.6, by - 5 + i * .5 + m, bx + 6.5 - i * 3.6, by - 10.5 + i * .5 + m, 1.7, .5, 'ear')
+            c.cap(bx + 12.5, by - 6 + head_dy, bx + 10, by - 11.5 + head_dy, 1.9, .7, 'ear')
+            for q in range(3): c.dot(bx - 1 + q * 2, by - 1 + q + m, hx('#2a2030'))
+            c.dot(bx + 18, by + 2.4 + head_dy, hx('#f8f4e8')); c.dot(bx + 20, by + 2.4 + head_dy, hx('#f8f4e8'))
         if mouth:
             for q in range(5): c.dot(bx + 16 + q + lunge * .5, by + 1.2 + head_dy, hx('#14101c'))
             c.dot(bx + 17, by + 2 + head_dy, hx('#f8f4e8')); c.dot(bx + 19, by + 2 + head_dy, hx('#f8f4e8'))
@@ -252,19 +258,29 @@ def lobo(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=
         hy = by - 3 + head_dy + (lunge * .3 if not back else 0)
         c.ell(bx, hy, 6, 5.4)
         for sg in (-1, 1): c.cap(bx + sg * 4.2, hy - 4, bx + sg * 4.8, hy - 8.6, 1.9, .9, 'ear')
+        if alpha and back:
+            for i in range(4): c.cap(bx + (i % 2 * 2 - 1) * 2.5, by - 4 + i * 2, bx + (i % 2 * 2 - 1) * 3, by - 8 + i * 2, 1.5, .5, 'ear')
         if back: c.cap(bx, by + 6, bx + math.sin(tail) * 2, by + 11, 2, 1.2)
         else:
             c.ell(bx, hy + 3.2, 2.9, 2.5, 'belly')
             c.dot(bx, hy + 3, hx('#14141c')); c.dot(bx, hy + 4, hx('#14141c'))
-            for sg in (-1, 1): c.dot(bx + sg * 3, hy - 1.5, hx('#ffd030') if not squint else hx('#14101c'))
+            for sg in (-1, 1): c.dot(bx + sg * 3, hy - 1.5, EYE if not squint else hx('#14101c'))
+            if alpha:
+                for sg in (-1, 1): c.cap(bx + sg * 3, hy - 4.5, bx + sg * 6, hy - 10.5, 1.4, .5, 'ear'); c.dot(bx + sg * 1.6, hy + 6, hx('#f8f4e8'))
+                for i in (-1, 0, 1): c.cap(bx + i * 3, hy - 5.5, bx + i * 3.4, hy - 9.5, 1.3, .5, 'ear')
             if mouth: [c.dot(bx + q, hy + 6, hx('#14101c')) for q in range(-2, 3)]
-    return c.render(PAL['lobo'], FLAT)
+    return c.render(PAL['alfa' if alpha else 'lobo'], FLAT)
 
 
-DRAW = {'javali': javali, 'rato': rato, 'lobo': lobo}
+def alfa(view, *a, **kw): return lobo(view, *a, alpha=True, **kw)
+
+
+DRAW = {'javali': javali, 'rato': rato, 'lobo': lobo, 'alfa': alfa}
 
 
 PAL.update({
+    'alfa': dict(body=R('#8a90a8', '#c4cade', '#f0f4ff'), belly=R('#c0c6d8', '#e4e8f4', '#ffffff'), ear=R('#1c1c2c', '#34344c', '#54547a'),
+                 nose=R('#14141c', '#2a2a34', '#44444e'), paw=R('#1c1c2c', '#34344c', '#54547a')),
     'urso': dict(body=R('#3a2418', '#6a4028', '#94603c'), belly=R('#5a3a28', '#84583a', '#b08058'), snout=R('#8a6a48', '#b8946a', '#d8b88a'),
                  ear=R('#2a1810', '#4a2c1c', '#6a4228'), paw=R('#2a1810', '#4a2c1c', '#6a4228')),
     'cobra': dict(body=R('#2a5a2a', '#4a8a3a', '#7ac04a'), belly=R('#9a9a4a', '#cacd70', '#eef0a0'), mark=R('#1a3a1a', '#2a5a2a', '#3a7a30'), tongue=R('#a8203a', '#d8405a', '#f07a8a')),
