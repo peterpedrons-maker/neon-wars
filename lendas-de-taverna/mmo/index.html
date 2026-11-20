@@ -1149,8 +1149,8 @@ html.cutm #hud,html.cutm #bar,html.cutm #mmenu,html.cutm #joy,html.cutm #chat,ht
 #cut .cbg canvas,#cut .cbg img{position:absolute;left:50%;top:50%;height:100%;width:auto;min-width:100%;transform:translate(-50%,-50%);image-rendering:pixelated;object-fit:cover}
 #cut .cvig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 45%,rgba(0,0,0,.75) 100%)}
 #cut .cskip{position:absolute;top:calc(14px + env(safe-area-inset-top));right:12px;z-index:3;padding:7px 11px;background:rgba(10,8,16,.7);border:2px solid #8a7440;color:#e8d8a0;font:700 11px var(--f);letter-spacing:.12em}
-.cbox{position:absolute;left:10px;right:10px;bottom:calc(34px + env(safe-area-inset-bottom));z-index:950;min-height:104px;padding:14px 16px 20px;background:linear-gradient(180deg,rgba(26,20,40,.96),rgba(10,8,18,.96));border:3px solid #8a7440;outline:2px solid #1a1208;box-shadow:inset 0 0 0 2px rgba(255,226,150,.18),0 8px 24px rgba(0,0,0,.7);color:#f3ead0;font:600 15px/1.55 var(--f)}
-.cbox p{margin:0;min-height:3.1em}.cbox i{position:absolute;right:12px;bottom:6px;font-style:normal;color:#ffd66e;opacity:0}.cbox.rdy i{opacity:1;animation:cbk .7s steps(2) infinite}@keyframes cbk{50%{transform:translateY(3px)}}
+.cbox{position:absolute;left:0;right:0;bottom:0;z-index:950;min-height:96px;padding:34px 22px calc(26px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(8,6,14,0),rgba(8,6,14,.5) 45%,rgba(8,6,14,.62));color:rgba(244,236,214,.9);text-shadow:0 1px 3px #000,0 0 8px rgba(0,0,0,.8);text-align:center;font:500 15px/1.6 var(--f)}
+.cbox p{margin:0;min-height:3.1em}.cbox i{position:absolute;right:50%;margin-right:-5px;bottom:8px;font-style:normal;color:rgba(255,214,110,.7);font-size:11px;opacity:0}.cbox.rdy i{opacity:1;animation:cbk .7s steps(2) infinite}@keyframes cbk{50%{transform:translateY(3px)}}
 </style>
 </head>
 <body>
@@ -2478,11 +2478,11 @@ function enterTown(first,instant,opts){
 
 /* ===== CUTSCENES: abertura estilo 16 bits (painéis com câmera passeando + texto), panorama de Brumavale e chegada da Maren ===== */
 const CUT_P=[
- {bg:1,mv:'zin',L:['Há muito tempo, a Ordem do Selo trancou aquilo que o mundo não podia lembrar.','E, para guardar o Selo, ela precisava de guardiões.']},
- {bg:2,mv:'pl',L:['Os Escolhidos.','Homens e mulheres marcados na palma da mão, com um poder que nunca pediram.']},
- {bg:3,mv:'zout',L:['Um deles caiu.','Seu nome foi apagado de todos os registros, e ninguém mais se lembra do rei que ele foi.','Ninguém... exceto o Selo.']},
- {bg:4,mv:'pr',L:['Hoje, a marca brilha em outra mão.','A sua.','Brumavale, ao amanhecer.']}];
-const CUT_MARK={guerreiro:'A marca queima na palma. Seus dedos se fecham sozinhos, firmes, como se já segurassem a espada.',mago:'A marca arde na palma. O fogo responde, mesmo sem ser chamado.',ladino:'A marca pulsa na palma. Até as sombras parecem abrir caminho.',clerigo:'A marca aquece a palma. Uma luz calma desce sobre você.',arqueiro:'A marca vibra na palma. Seu olhar ficou mais nítido do que nunca.',bardo:'A marca vibra na palma. Uma melodia que você nunca ouviu começa a soar.'};
+ {bg:1,mv:'zin',L:['Antes dos reinos, antes dos nomes, havia algo sob as montanhas que o mundo não podia lembrar.','Para trancá-lo, nasceu a Ordem do Selo, e o Selo foi gravado no céu como um círculo de ouro que nunca se apaga.','Mas um selo, por mais forte que seja, precisa de mãos que o sustentem.']},
+ {bg:2,mv:'pl',L:['Assim surgiram os Escolhidos.','Homens e mulheres que acordavam com uma marca queimando na palma da mão, sem jamais terem pedido por ela.','Alguns a chamaram de dádiva. Outros, de sentença.','Todos descobriram, cedo ou tarde, que ninguém recusa o chamado do Selo.']},
+ {bg:3,mv:'zout',L:['Entre eles houve um que ousou olhar para aquilo que estava trancado.','Ninguém sabe o que ele viu. Sabe-se apenas que caiu, e que a Ordem apagou seu nome de cada livro, de cada pedra e de cada memória.','Mas o que é esquecido não desaparece. Espera.','Nas ruínas, uma coroa sem dono ainda aguarda, e dois olhos roxos ainda vigiam a estrada.']},
+ {bg:4,mv:'pr',L:['Longe dali, em Brumavale, mais um dia começa. O sino da torre toca, o pão sai do forno, e ninguém repara no céu.','Mas o Selo repara. Ele sempre repara.','E, em algum lugar da cidade, a luz volta a brilhar na palma de uma mão que ainda não sabe o que isso significa.','O ciclo recomeça.']}];
+const CUT_MARK={guerreiro:['Na palma de {n}, a marca queima como brasa viva.','Seus dedos se fecham sozinhos, firmes, como se a mão já lembrasse o peso de uma espada.'],mago:['Na palma de {n}, a marca arde em silêncio.','Ao redor, o ar esquenta e a chama de uma vela distante se inclina, como se respondesse a um chamado.'],ladino:['Na palma de {n}, a marca pulsa devagar.','As sombras da rua se alongam, abrindo caminho como quem reconhece um velho conhecido.'],clerigo:['Na palma de {n}, a marca aquece, calma e constante.','Uma luz suave desce sobre os ombros, e o sino da torre parece tocar só para {n}.'],arqueiro:['Na palma de {n}, a marca vibra como uma corda esticada.','O mundo ganha contornos mais nítidos, e cada folha ao longe parece ao alcance do olhar.'],bardo:['Na palma de {n}, a marca vibra em um compasso que ninguém mais escuta.','Uma melodia desconhecida começa a nascer, e o vento da manhã parece saber a letra.']};
 function cutBgCanvas(k){const W=120,H=260,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');let sd=k*977;const R=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
   const sky=(a,b)=>{const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,a);g.addColorStop(1,b);x.fillStyle=g;x.fillRect(0,0,W,H);};
   const stars=n=>{for(let i=0;i<n;i++){x.fillStyle='rgba(255,246,214,'+(.3+R()*.7)+')';x.fillRect(Math.floor(R()*W),Math.floor(R()*H*.7),1,1);}};
@@ -2499,7 +2499,7 @@ function cutSleep(sec){return new Promise(r=>{const t0=performance.now(),iv=setI
 function cutBox(lines,opt){   // caixa de texto estilo 16 bits; toque termina a digitação e avança
   return new Promise(res=>{opt=opt||{};const el=document.createElement('div');el.className='cbox';el.innerHTML='<p></p><i>▼</i>';($('stage')||document.body).appendChild(el);const P=el.querySelector('p');let li=0,ci=0,iv=null,typing=0;
     const fin=()=>{clearInterval(iv);el.remove();res();};
-    const next=()=>{if(li>=lines.length){fin();return;}P.textContent='';ci=0;typing=1;el.classList.remove('rdy');const L=lines[li];iv=setInterval(()=>{ci++;P.textContent=L.slice(0,ci);if(ci>=L.length){clearInterval(iv);typing=0;el.classList.add('rdy');}},opt.speed||26);};
+    const next=()=>{if(li>=lines.length){fin();return;}P.textContent='';ci=0;typing=1;el.classList.remove('rdy');const L=lines[li];iv=setInterval(()=>{ci++;P.textContent=L.slice(0,ci);if(ci>=L.length){clearInterval(iv);typing=0;el.classList.add('rdy');}},opt.speed||34);};
     el.onclick=ev=>{ev.stopPropagation();if(typing){clearInterval(iv);P.textContent=lines[li];typing=0;el.classList.add('rdy');return;}li++;next();};next();});}
 async function cutPanels(){
   const root=document.createElement('div');root.id='cut';root.innerHTML='<div class="cbgw"></div><div class="cvig"></div><button class="cskip">PULAR ▸▸</button>';($('stage')||document.body).appendChild(root);
@@ -2532,7 +2532,7 @@ async function introCut(replay){
   if(replay){cutEnd();return;}
   /* a marca brilha */
   h.state='idle';h.row=2;G.fx.push({k:'ring',x:h.x,y:h.y,life:.9,max:.9,col:'#ffe08a'});setTimeout(()=>G.cut&&G.fx.push({k:'ring',x:h.x,y:h.y,life:.9,max:.9,col:'#ffd070'}),380);sfx('levelup',.5);for(let i=0;i<14;i++)VF.pt(h.x+rnd(-14,14),h.y-rnd(4,30),{vy:-rnd(25,55),life:.9,col:'#ffe08a',sz:2});
-  await cutSleep(.8);await cutBox([CUT_MARK[SAVE.cls]||CUT_MARK.guerreiro]);
+  await cutSleep(.8);await cutBox((CUT_MARK[SAVE.cls]||CUT_MARK.guerreiro).map(t=>t.replace(/\{n\}/g,SAVE.name||'O herói')));
   /* Maren chega e entrega a primeira missão */
   let m=G.npcs.find(n=>n.id==='maren');
   if(m){const hx=h.x,hy2=h.y;await cutWalk(m,hx+6,hy2-46,64);h.row=dir4(m.x-h.x,m.y-h.y);m.row=dir4(h.x-m.x,h.y-m.y);m.moving=false;await cutSleep(.4);
