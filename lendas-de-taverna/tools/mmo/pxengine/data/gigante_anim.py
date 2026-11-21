@@ -13,7 +13,7 @@ import rotsprite as RS
 
 PAL = dict(CO.PAL); FLAT = dict(CO.FLAT)
 SK = 1.6                      # escala do gigante (mais pixels, não esticado)
-DW, DH, XO, YO = 300, 500, 20, 70   # quadro de projeto (coordenadas do esboço + folga p/ braços e perna erguidos)
+DW, DH, XO, YO = 340, 500, 40, 70   # quadro de projeto (coordenadas do esboço + folga p/ braços e perna erguidos)
 CX, FY = 130, 408              # centro e chão (coordenadas do esboço)
 
 def _fast(cv):
@@ -60,7 +60,8 @@ def draw(P, t=0.0):
     cv = _fast(FA.Cv()); cv.contact = False
     c = Sc(cv, SK)
     g = lambda k, d=0.0: P.get(k, d)
-    ox, oy = g('lean'), g('dy') + g('crouch')
+    pr = g('prone')
+    ox, oy = g('lean'), g('dy') + g('crouch') + pr * 110
     hx, hy, jaw = g('headx'), g('heady'), g('jaw')
     br = g('breath')
     cx = CX
@@ -72,6 +73,9 @@ def draw(P, t=0.0):
         foot = (cx + sg * 36 + sp + ox * .15, FY - up)
         mid = ((hip[0] + foot[0]) / 2, (hip[1] + foot[1]) / 2)
         kn = (mid[0] + sg * (g('crouch') * .55 + g('bend' + key) * 26), mid[1] - up * .12)
+        kl = g('kneel')
+        if kl > 0:      # ajoelhado: joelho no chão, canela dobrada para trás (pé fica atrás/embaixo)
+            kn = (hip[0] + sg * (26 + kl * 26), lerp(kn[1], FY - 18, kl)); foot = (kn[0] - sg * 6, lerp(foot[1], FY - 26, kl))
         c.cap(hip[0], hip[1], kn[0], kn[1], 31, 23, 'fur')
         tufts(c, hip[0] + sg * 29, hip[1] + 16, kn[0] + sg * 22, kn[1] - 8, 5, sg, 7, 3.4)
         tufts(c, hip[0] - sg * 26, hip[1] + 20, kn[0] - sg * 21, kn[1] - 6, 4, -sg, 7, 3.2)
@@ -79,14 +83,16 @@ def draw(P, t=0.0):
         c.cap(kn[0], kn[1] + 4, foot[0], foot[1] - 20, 19, 15, 'body')
         tufts(c, kn[0] - 14, kn[1] + 16, kn[0] + 14, kn[1] + 18, 5, 1, 14, 2.8)
         feet.append(foot)
-        c.ell(foot[0], foot[1] - 11, 34, 13 - (3 if up > 40 else 0), 'hoof')
-        for kk in range(-2, 3): c.cap(foot[0] + kk * 12, foot[1] - 10, foot[0] + kk * 13, foot[1] - 2, 6.4, 5, 'hoof')
-        for kk in range(-2, 3): c.cap(foot[0] + kk * 13, foot[1] - 4, foot[0] + kk * 14, foot[1] + 2, 2.6, 1.2, 'horn')
+        fs = 1 - .25 * kl
+        c.ell(foot[0], foot[1] - 11, 34 * fs, (13 - (3 if up > 40 else 0)) * fs, 'hoof')
+        for kk in range(-2, 3): c.cap(foot[0] + kk * 12 * fs, foot[1] - 10, foot[0] + kk * 13 * fs, foot[1] - 2, 6.4 * fs, 5 * fs, 'hoof')
+        for kk in range(-2, 3): c.cap(foot[0] + kk * 13 * fs, foot[1] - 4, foot[0] + kk * 14 * fs, foot[1] + 2, 2.6, 1.2, 'horn')
     # ---- tanga e tronco (tudo acompanha ox/oy)
     c.ell(cx + ox * .5, 222 + oy * .8, 78, 36, 'fur'); tufts(c, cx - 70 + ox * .5, 240 + oy * .8, cx + 70 + ox * .5, 242 + oy * .8, 14, 1, 22, 5)
     s = 1 + br * .02
-    c.ell(cx + ox, 156 + oy, 80 * s, 80 * s, 'body'); c.ell(cx + ox, 198 + oy, 62 * s, 46, 'body'); c.ell(cx + ox, 128 + oy, 52 * s, 34, 'fur')
-    c.ell(cx + ox, 98 + oy, 58, 22, 'fur')
+    sy = 1 - .45 * pr; wx = 1 + .12 * pr          # caindo para frente: o tronco encurta (escorço) e alarga
+    c.ell(cx + ox, 156 + oy + (1 - sy) * 50, 80 * s * wx, 80 * s * sy, 'body'); c.ell(cx + ox, 198 + oy - (1 - sy) * 20, 62 * s * wx, 46 * sy, 'body'); c.ell(cx + ox, 128 + oy + (1 - sy) * 40, 52 * s * wx, 34 * sy, 'fur')
+    c.ell(cx + ox, 98 + oy + (1 - sy) * 36, 58 * wx, 22, 'fur')
     c.ell(cx + ox + hx * .5, 84 + oy + hy * .5, 46, 18, 'fur'); tufts(c, cx - 44 + ox + hx * .5, 90 + oy + hy * .5, cx + 44 + ox + hx * .5, 90 + oy + hy * .5, 10, 1, 18, 4.6)
     # ---- braços (cinemática: ombro -> cotovelo -> mão)
     hands = []
@@ -98,14 +104,17 @@ def draw(P, t=0.0):
         a1 = g('a1' + key, .10); e = g('e' + key, .0)
         sh = (S0[0] + sg * 10, S0[1] + 12)
         dx, dy = v2(a1, 82); el = (sh[0] + sg * dx, sh[1] + dy)
-        dx2, dy2 = v2(a1 + e, 78); hd = (el[0] + sg * dx2, el[1] + dy2)
+        fl = g('f' + key)                                   # flexão para a câmera: antebraço encurta (escorço) e o cotovelo salta
+        dx2, dy2 = v2(a1 + e, 78 * (1 - .5 * fl)); hd = (el[0] + sg * dx2, el[1] + dy2)
         c.cap(sh[0], sh[1], el[0], el[1], 30, 23, 'body'); tufts(c, sh[0] + sg * 24, sh[1] + 12, el[0] + sg * 22, el[1] - 4, 5, sg, 10, 3.4)
-        c.ell(el[0], el[1], 25, 22, 'fur')
-        c.cap(el[0], el[1], hd[0], hd[1], 23, 17, 'body')
+        c.ell(el[0], el[1], 25 * (1 + .22 * fl), 22 * (1 + .22 * fl), 'fur')
+        if abs(e) > .35 or fl > .25:                        # dobra visível no cotovelo (sombra da dobra + calombo)
+            c.ell(el[0] - sg * 4, el[1] + 8, 13 + 6 * fl, 7, 'far'); c.ell(el[0] + sg * 8, el[1] - 6, 8, 6, 'stone')
+        c.cap(el[0], el[1], hd[0], hd[1], 23 + 4 * fl, 17, 'body')
         mx, my = (el[0] * .35 + hd[0] * .65), (el[1] * .35 + hd[1] * .65)
         c.ell(mx, my, 24, 6, 'stone')
         tufts(c, el[0] - 16, el[1] + 18, el[0] + 18, el[1] + 20, 5, 1, 14, 3.2)
-        c.ell(hd[0], hd[1] + 4, 26, 28, 'skin')
+        c.ell(hd[0], hd[1] + 4, 26 * (1 + .1 * fl), 28 * (1 + .1 * fl), 'skin')
         ux, uy = math.sin(a1 + e) * sg, math.cos(a1 + e)   # direção da mão
         px_, py_ = -uy * sg, ux * sg
         for q in range(4):
@@ -114,7 +123,7 @@ def draw(P, t=0.0):
             c.cap(bx, by, bx + ux * 24, by + uy * 24, 5.6, 4, 'skin'); c.cap(bx + ux * 22, by + uy * 22, bx + ux * 31, by + uy * 31, 2.4, 1, 'horn')
         hands.append(hd)
     # ---- cabeça
-    H0 = (cx + ox + hx, 56 + oy + hy)
+    H0 = (cx + ox + hx, 56 + oy + hy + pr * 18)
     c.ell(H0[0], H0[1], 37, 34, 'fur'); c.ell(H0[0], H0[1] + 6, 29, 29, 'body')
     for sg in (-1, 1):
         c.cap(H0[0] + sg * 28, H0[1] - 18, H0[0] + sg * 46, H0[1] - 40, 8, 4.8, 'horn'); c.cap(H0[0] + sg * 46, H0[1] - 40, H0[0] + sg * 49, H0[1] - 68, 4.8, 1.2, 'horn')
@@ -151,32 +160,32 @@ def seq(name):
     if name == 'idle':
         for i in range(16):
             ph = i / 16 * 2 * math.pi
-            o.append(dict(breath=math.sin(ph), dy=-1.5 * math.sin(ph), lean=2 * math.sin(ph * .5 + 1), a1L=.10 + .03 * math.sin(ph + 1), a1R=.10 + .03 * math.sin(ph + 2.2), headx=math.sin(ph) * 1.5, heady=1.2 * math.sin(ph + .5), _t=ph))
+            o.append(dict(breath=math.sin(ph), dy=-1.5 * math.sin(ph), lean=2 * math.sin(ph * .5 + 1), a1L=.10 + .03 * math.sin(ph + 1), a1R=.10 + .03 * math.sin(ph + 2.2), eL=.25 + .06 * math.sin(ph), eR=.25 + .06 * math.sin(ph + 1.5), fL=.18, fR=.18, headx=math.sin(ph) * 1.5, heady=1.2 * math.sin(ph + .5), _t=ph))
     elif name == 'walk':
         for i in range(24):
             ph = i / 24 * 2 * math.pi
             o.append(dict(dy=-abs(math.sin(ph)) * 7, lean=math.sin(ph) * 9, upL=max(0, math.sin(ph)) * 30, upR=max(0, -math.sin(ph)) * 30, bendL=max(0, math.sin(ph)) * .6, bendR=max(0, -math.sin(ph)) * .6,
-                          a1L=.14 - .22 * math.sin(ph), a1R=.14 + .22 * math.sin(ph), eL=.12 + .1 * math.sin(ph), eR=.12 - .1 * math.sin(ph), heady=math.sin(ph * 2) * 1.5, breath=math.sin(ph * 2), _t=ph * 1.3))
+                          a1L=.14 - .22 * math.sin(ph), a1R=.14 + .22 * math.sin(ph), eL=.35 + .5 * max(0, math.sin(ph)), eR=.35 + .5 * max(0, -math.sin(ph)), fL=.2 + .5 * max(0, math.sin(ph)), fR=.2 + .5 * max(0, -math.sin(ph)), heady=math.sin(ph * 2) * 1.5, breath=math.sin(ph * 2), _t=ph * 1.3))
     elif name == 'stomp':     # ergue a perna direita, bate o pé no chão, o corpo cede e treme
         for i in range(24):
-            if i < 11: u = ease(i / 10); P = dict(upR=95 * u, bendR=.9 * u, lean=-14 * u, crouch=-4 * u, a1L=.1 + .5 * u, a1R=.1 + .9 * u, eR=.3 * u, headx=-3 * u, heady=-3 * u, glow=u)
-            elif i < 13: P = dict(upR=95, bendR=.9, lean=-14, crouch=-4, a1L=.6, a1R=1.0, eR=.3, glow=1, headx=-3, heady=-3)
-            elif i < 15: u = (i - 12) / 2; P = dict(upR=95 * (1 - u), bendR=.9 * (1 - u), lean=lerp(-14, 8, u), crouch=lerp(-4, 22, u), a1L=lerp(.6, .3, u), a1R=lerp(1.0, .3, u), headx=2, heady=lerp(-3, 8, u), jaw=.5 * u)
-            elif i < 19: u = (i - 14) / 4; P = dict(lean=8 - 3 * u, crouch=22 - 6 * u, a1L=.3, a1R=.3, heady=8 - 4 * u, jaw=.5 * (1 - u), shake=(1 if i % 2 else -1) * 3 * (1 - u))
+            if i < 11: u = ease(i / 10); P = dict(upR=95 * u, bendR=.9 * u, lean=-14 * u, crouch=-4 * u, a1L=.1 + .6 * u, a1R=.1 + .9 * u, eL=.3 + .7 * u, eR=.3 + .8 * u, fL=.5 * u, fR=.4 * u, headx=-3 * u, heady=-3 * u, glow=u)
+            elif i < 13: P = dict(upR=95, bendR=.9, lean=-14, crouch=-4, a1L=.7, a1R=1.0, eL=1.0, eR=1.1, fL=.5, fR=.4, glow=1, headx=-3, heady=-3)
+            elif i < 15: u = (i - 12) / 2; P = dict(upR=95 * (1 - u), bendR=.9 * (1 - u), lean=lerp(-14, 8, u), crouch=lerp(-4, 22, u), a1L=lerp(.7, .3, u), a1R=lerp(1.0, .3, u), eL=lerp(1.0, .3, u), eR=lerp(1.1, .3, u), fL=.3, fR=.3, headx=2, heady=lerp(-3, 8, u), jaw=.5 * u)
+            elif i < 19: u = (i - 14) / 4; P = dict(lean=8 - 3 * u, crouch=22 - 6 * u, a1L=.3, a1R=.3, eL=.3, eR=.3, fL=.3, fR=.3, heady=8 - 4 * u, jaw=.5 * (1 - u), shake=(1 if i % 2 else -1) * 3 * (1 - u))
             else: u = ease((i - 18) / 5); P = dict(lean=lerp(5, 0, u), crouch=lerp(16, 0, u), a1L=lerp(.3, .1, u), a1R=lerp(.3, .1, u), heady=lerp(4, 0, u))
             P['lean'] = P.get('lean', 0) + P.get('shake', 0); P['_t'] = i * .5; o.append(P)
     elif name == 'smash':     # os dois braços sobem, descem esmagando; corpo inclina e treme no impacto
         for i in range(24):
-            if i < 11: u = ease(i / 10); P = dict(a1L=lerp(.1, 2.9, u), a1R=lerp(.1, 2.9, u), eL=.2 * u, eR=.2 * u, crouch=-6 * u, lean=-6 * u, heady=-4 * u, jaw=.4 * u, glow=u, breath=u)
-            elif i < 13: P = dict(a1L=2.9, a1R=2.9, eL=.2, eR=.2, crouch=-6, lean=-6, heady=-4, jaw=.5, glow=1)
-            elif i < 15: u = (i - 12) / 2; P = dict(a1L=lerp(2.9, .35, u), a1R=lerp(2.9, .35, u), eL=lerp(.2, .1, u), eR=lerp(.2, .1, u), crouch=lerp(-6, 26, u), lean=0, heady=lerp(-4, 12, u), jaw=.6)
+            if i < 11: u = ease(i / 10); P = dict(a1L=lerp(.1, 2.6, u), a1R=lerp(.1, 2.6, u), eL=lerp(.25, 1.5, u), eR=lerp(.25, 1.5, u), fL=.5 * u, fR=.5 * u, crouch=-6 * u, lean=-6 * u, heady=-4 * u, jaw=.4 * u, glow=u, breath=u)
+            elif i < 13: P = dict(a1L=2.6, a1R=2.6, eL=1.5, eR=1.5, fL=.5, fR=.5, crouch=-6, lean=-6, heady=-4, jaw=.5, glow=1)
+            elif i < 15: u = (i - 12) / 2; P = dict(a1L=lerp(2.6, .35, u), a1R=lerp(2.6, .35, u), eL=lerp(1.5, .2, u), eR=lerp(1.5, .2, u), fL=lerp(.5, .1, u), fR=lerp(.5, .1, u), crouch=lerp(-6, 26, u), lean=0, heady=lerp(-4, 12, u), jaw=.6)
             elif i < 19: u = (i - 14) / 4; P = dict(a1L=.35, a1R=.35, crouch=26 - 8 * u, heady=12 - 5 * u, jaw=.4 * (1 - u), shake=(1 if i % 2 else -1) * 4 * (1 - u))
             else: u = ease((i - 18) / 5); P = dict(a1L=lerp(.35, .1, u), a1R=lerp(.35, .1, u), crouch=lerp(18, 0, u), heady=lerp(7, 0, u))
             P['lean'] = P.get('lean', 0) + P.get('shake', 0); P['_t'] = i * .6; o.append(P)
     elif name == 'sweep':     # varrida com o braço direito (de fora para dentro)
         for i in range(24):
-            if i < 9: u = ease(i / 8); P = dict(a1R=lerp(.1, 1.9, u), eR=lerp(0, -.3, u), lean=-10 * u, a1L=.1 + .2 * u, heady=-2 * u, glow=u)
-            elif i < 12: u = (i - 8) / 3; P = dict(a1R=lerp(1.9, -.35, ease(u)), eR=lerp(-.3, .1, u), lean=lerp(-10, 16, ease(u)), a1L=.3, crouch=8 * u, jaw=.3 * u)
+            if i < 9: u = ease(i / 8); P = dict(a1R=lerp(.1, 1.5, u), eR=lerp(.25, -1.3, u), fR=.4 * u, lean=-10 * u, a1L=.1 + .2 * u, eL=.5, fL=.3, heady=-2 * u, glow=u)
+            elif i < 12: u = (i - 8) / 3; P = dict(a1R=lerp(1.5, -.2, ease(u)), eR=lerp(-1.3, .1, ease(u)), fR=lerp(.4, 0, u), lean=lerp(-10, 16, ease(u)), a1L=.3, eL=.5, fL=.3, crouch=8 * u, jaw=.3 * u)
             elif i < 17: u = (i - 11) / 5; P = dict(a1R=lerp(-.35, .0, u), lean=lerp(16, 8, u), crouch=lerp(8, 4, u), a1L=.3)
             else: u = ease((i - 16) / 7); P = dict(a1R=lerp(.0, .1, u), lean=lerp(8, 0, u), crouch=lerp(4, 0, u), a1L=lerp(.3, .1, u))
             P['_t'] = i * .6; o.append(P)
@@ -184,17 +193,19 @@ def seq(name):
         for i in range(20):
             u = ease(min(1, i / 7)) * (1 - ease((i - 15) / 5) if i > 15 else 1)
             sh = (1 if i % 2 else -1) * 2.5 * u if 7 <= i <= 15 else 0
-            o.append(dict(a1L=.1 + .9 * u, a1R=.1 + .9 * u, eL=.3 * u, eR=.3 * u, heady=-7 * u, jaw=1.0 * u, breath=2 * u, glow=u, lean=sh, crouch=-3 * u, _t=i * .8))
+            o.append(dict(a1L=.1 + .8 * u, a1R=.1 + .8 * u, eL=.3 + 1.0 * u, eR=.3 + 1.0 * u, fL=.35 * u, fR=.35 * u, heady=-7 * u, jaw=1.0 * u, breath=2 * u, glow=u, lean=sh, crouch=-3 * u, _t=i * .8))
     elif name == 'hurt':
         for i in range(10):
             u = math.sin(min(1, i / 6) * math.pi)
-            o.append(dict(lean=10 * u, headx=8 * u, heady=-4 * u, a1L=.1 + .25 * u, a1R=.1 + .25 * u, crouch=4 * u, jaw=.5 * u, _t=i * .7, _flash=1 if i == 1 else 0))
-    elif name == 'death':
-        for i in range(28):
-            if i < 8: u = ease(i / 7); P = dict(lean=14 * math.sin(u * 2.4), crouch=lerp(0, 24, u), bendL=.5 * u, bendR=.5 * u, heady=6 * u, a1L=.1 + .3 * u, a1R=.1 + .3 * u, jaw=.5 * u)
-            elif i < 12: u = ease((i - 8) / 3); P = dict(lean=lerp(0, -10, u), crouch=lerp(24, 46, u), bendL=.5 + .4 * u, bendR=.5 + .4 * u, heady=lerp(6, 12, u), a1L=.4, a1R=.4, jaw=.8)
-            else: P = dict(crouch=46, bendL=.9, bendR=.9, heady=12, a1L=.4, a1R=.4, jaw=.8, _fall=(i - 12) / 15)
-            P['_t'] = i * .4; o.append(P)
+            o.append(dict(lean=10 * u, headx=8 * u, heady=-4 * u, a1L=.1 + .4 * u, a1R=.1 + .4 * u, eL=.3 + .7 * u, eR=.3 + .7 * u, fL=.4 * u, fR=.4 * u, crouch=4 * u, jaw=.5 * u, _t=i * .7, _flash=1 if i == 1 else 0))
+    elif name == 'death':     # cambaleia, as pernas cedem, ajoelha, tomba PARA FRENTE (para a câmera) e deita
+        for i in range(32):
+            if i < 8: u = ease(i / 7); P = dict(lean=10 * math.sin(u * 3), crouch=lerp(0, 22, u), bendL=.5 * u, bendR=.5 * u, heady=5 * u, a1L=.1 + .4 * u, a1R=.1 + .4 * u, eL=.3 + .5 * u, eR=.3 + .5 * u, fL=.3 * u, fR=.3 * u, jaw=.5 * u)
+            elif i < 15: u = ease((i - 8) / 6); P = dict(lean=lerp(0, -6, u), crouch=lerp(22, 74, u), kneel=u, heady=lerp(5, 14, u), a1L=.5, a1R=.5, eL=.8, eR=.8, fL=.3, fR=.3, jaw=.8, bendL=.5, bendR=.5)
+            elif i < 17: P = dict(lean=-4, crouch=74, kneel=1, heady=14, a1L=.5, a1R=.5, eL=.8, eR=.8, fL=.3, fR=.3, jaw=.8, bendL=.5, bendR=.5)      # pausa ajoelhado
+            elif i < 25: u = ((i - 17) / 7) ** 2; P = dict(lean=lerp(-4, 0, u), crouch=74 + 6 * u, kneel=1, prone=u, heady=lerp(14, 30, u), a1L=lerp(.5, .9, u), a1R=lerp(.5, .9, u), eL=lerp(.8, .3, u), eR=lerp(.8, .3, u), fL=lerp(.3, .6, u), fR=lerp(.3, .6, u), jaw=.4 * (1 - u), bendL=.5, bendR=.5)
+            else: u = (i - 25) / 6; P = dict(crouch=80, kneel=1, prone=1 - .05 * math.sin(u * math.pi) * (1 - u), heady=30, a1L=.9, a1R=.9, eL=.3, eR=.3, fL=.6, fR=.6, jaw=0, bendL=.5, bendR=.5, shake=(1 if i % 2 else -1) * 2.5 * (1 - u))
+            P['lean'] = P.get('lean', 0) + P.get('shake', 0); P['_t'] = i * .35; o.append(P)
     return o
 
 DWpx, DHpx = int(DW * SK), int(DH * SK)
@@ -204,7 +215,7 @@ def frame(args):
     name, i, P = args
     img = draw(P, P.get('_t', 0))
     can = Image.new('RGBA', (OUT_W, OUT_H), (0, 0, 0, 0))
-    fall = P.get('_fall')
+    fall = None
     if fall is None:
         can.alpha_composite(img, ((OUT_W - DWpx) // 2, 0))
     else:      # queda: gira em torno dos pés (RotSprite), acelerando (gravidade), com quique no fim
