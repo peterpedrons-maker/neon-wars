@@ -12,6 +12,19 @@ Leia antes de criar qualquer inimigo. Regras do dono: inimigos combinam com o **
 | Cripta do Rei Esquecido | Rei Esquecido | ✔ guarda-caveira, cultista, espectro, gárgula, zumbi sineiro |
 | Pântano das Brumas | (goblins emprestados) | … a definir (sapo, cobra, sanguessuga, fogo-fátuo, troll do pântano, lagarto-homem) |
 
+## Região 2 — Terras Áridas de Cinzamuro (27 inimigos NO JOGO; sprites próprios, `fauna3.py` + `humano.py`; folha `mmo/proto_pixel/bestiario_deserto.png`)
+| Zona | Inimigos |
+|---|---|
+| Estrada da Muralha / Planalto Árido | ✔ Escorpião do Deserto, ✔ Lagarto-de-Pedra, ✔ Chacal, ✔ Bandido do Deserto, ✔ Abutre-Carniceiro |
+| Garganta do Vento / Cânion do Eco | ✔ Saqueador, ✔ Atirador do Deserto (arqueiro), ✔ Chacal, ✔ Abutre-Carniceiro |
+| Mesas Rubras / Desfiladeiro Rubro | ✔ Troll das Mesas, ✔ Golem de Pedra, ✔ Lobo-da-Poeira, ✔ Ogro do Deserto, ✔ Saqueador |
+| Leito do Rio Seco / Oásis / Mirante | ✔ Escaravelho Sagrado, ✔ Verme das Areias, ✔ Lagarto-de-Pedra, ✔ Chacal |
+| Salinas Brancas / Cisterna | ✔ Escorpião de Sal, ✔ Kobold Mineiro, ✔ Golem de Sal |
+| Ruínas do Sol Caído / Tumba | ✔ Múmia Solar, ✔ Cultista do Sol (mago), ✔ Escaravelho Sagrado |
+| Caminho/Campo dos Cercos / Saqueadores / Portão | ✔ Cavaleiro Negro, ✔ Armadura Assombrada, ✔ Mago de Batalha, ✔ Cão de Guerra, ✔ Atirador do Deserto |
+| Vale das Forjas Mortas / Gruta de Obsidiana | ✔ Salamandra, ✔ Imp, ✔ Golem de Magma, ✔ Cão Infernal, ✔ Anão Renegado |
+Ainda SEM chefe de zona (Matriarca Escorpião, Rei das Mesas, Rainha Escorpião, Hierofante Solar, Marechal Sem-Nome, Titã de Magma, Capitão Vento-Seco) e sem mini-chefes. Stats são primeira versão. Reserva ainda livre: djinn, esfinge, naga, cultista de areia, gárgula de areia, drake menor, elemental de fogo, aranha de cristal, morcego gigante.
+
 Esboços: `mmo/proto_pixel/bestiario_*.png`, código em `tools/mmo/pxengine/data/fauna.py`, `fauna2.py`, `bestiario_sheet.py`.
 
 ## Reserva para níveis mais altos (temas WoW/fantasia; NÃO usados ainda)

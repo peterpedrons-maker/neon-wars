@@ -29,6 +29,19 @@ def weapon(c, x, y, ang, L, kind, reg_w='wood', reg_m='metal'):
         c.cap(x - dx * 5, y - dy * 5, x + dx * L, y + dy * L, .8, .8, 'wood')
     elif kind == 'club': c.cap(x, y, x + dx * L, y + dy * L, .9, 1.0, 'wood'); c.cap(x + dx * (L - 4), y + dy * (L - 4), x + dx * (L + 1), y + dy * (L + 1), 2.2, 2.7, 'wood')
     elif kind == 'bomb': c.ell(x, y, 2.9, 2.9, 'bomb'); c.cap(x, y - 2.4, x + 1.4, y - 4.4, .5, .5, 'wood'); c.dot(x + 1.6, y - 5, hx('#ffb030'))
+    elif kind == 'sunstaff':
+        c.cap(x - dx * 5, y - dy * 5, x + dx * L, y + dy * L, .8, .8, 'wood'); c.ell(x + dx * (L + 2), y + dy * (L + 2), 3.0, 3.0, 'gem'); c.ell(x + dx * (L + 2), y + dy * (L + 2), 1.3, 1.3, 'wood')
+        for k in range(8): a = k * .785; c.dot(x + dx * (L + 2) + math.cos(a) * 4.4, y + dy * (L + 2) + math.sin(a) * 4.4, hx('#ffe070'))
+    elif kind == 'pick':
+        c.cap(x - dx * 2, y - dy * 2, x + dx * L, y + dy * L, .8, .8, 'wood'); px, py = -dy, dx
+        c.cap(x + dx * (L - 1) + px * 4, y + dy * (L - 1) + py * 4, x + dx * (L - 1) - px * 4, y + dy * (L - 1) - py * 4, 1.0, 1.0, 'metal')
+    elif kind == 'spear':
+        c.cap(x - dx * 4, y - dy * 4, x + dx * L, y + dy * L, .8, .8, 'wood'); c.cap(x + dx * L, y + dy * L, x + dx * (L + 4), y + dy * (L + 4), 1.5, .3, 'metal'); px, py = -dy, dx
+        c.cap(x + dx * (L - 1) + px * 2.4, y + dy * (L - 1) + py * 2.4, x + dx * (L + 2.4) + px * 2.4, y + dy * (L + 2.4) + py * 2.4, .5, .4, 'metal'); c.cap(x + dx * (L - 1) - px * 2.4, y + dy * (L - 1) - py * 2.4, x + dx * (L + 2.4) - px * 2.4, y + dy * (L + 2.4) - py * 2.4, .5, .4, 'metal')
+    elif kind == 'bow':
+        px, py = -dy, dx
+        c.cap(x - dx * 1 + px * 6, y - dy * 1 + py * 6, x + dx * 4, y + dy * 4, .9, .9, 'wood'); c.cap(x - dx * 1 - px * 6, y - dy * 1 - py * 6, x + dx * 4, y + dy * 4, .9, .9, 'wood')
+        for k in range(-5, 6): c.dot(x - dx * 1.6 + px * k * 1.1, y - dy * 1.6 + py * k * 1.1, hx('#e8e0c8'))
     elif kind == 'scythe':
         c.cap(x - dx * 3, y - dy * 3, x + dx * L, y + dy * L, .8, .8, 'wood'); px, py = -dy, dx
         c.cap(x + dx * L, y + dy * L, x + dx * L + px * 6, y + dy * L + py * 6 - 1, 1.3, .5, 'metal')
@@ -46,10 +59,10 @@ def eye2(c, x, y, col, hi=True, squint=False):
 
 def build(spec):
     S = spec; P = {}
-    for k in ('skin', 'hair', 'cloth', 'cloth2', 'pants', 'boots', 'hood', 'metal2', 'belly', 'wrap', 'ear'):
+    for k in ('skin', 'hair', 'cloth', 'cloth2', 'pants', 'boots', 'hood', 'metal2', 'belly', 'wrap', 'ear', 'turban'):
         if k in S: P[k] = ramp(S[k] if isinstance(S[k], str) else S.get('hood_c', S.get('cloth', '#808080')))
     P['body'] = P['skin']; P['wood'] = ramp('#7a5230'); P['metal'] = ramp(S.get('blade', '#c8d0e0')); P['bomb'] = ramp('#2a2430')
-    P['cape'] = ramp(S.get('cape', '#3a2a30')); P['gem'] = ramp(S.get('gem', '#60e090'))
+    P['cape'] = ramp(S.get('cape', '#3a2a30')); P['gem'] = ramp(S.get('gem', '#60e090')); P.setdefault('metal2', ramp('#8a92a8')); P.setdefault('turban', ramp('#d8c8a0'))
     return P
 
 
@@ -112,6 +125,10 @@ def draw(S, view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, head_dy=0, **kw
         if S.get('mask'): c.ell(hxx + hr * .5, hy + hr * .66, hr * .5, hr * .3, 'cloth2'); c.cap(hxx - hr * .7, hy + hr * .3, hxx - hr - 3, hy + hr * .6 + math.sin(ph) * 1.2, 1.0, .5, 'cloth2')
         if S.get('bandana'): c.ell(hxx - .2, hy - hr * .55, hr * .98, 1.9, 'cloth2'); c.cap(hxx - hr + .5, hy - hr * .55, hxx - hr - 3, hy - hr * .2 + math.sin(ph) * 1.5, 1.0, .4, 'cloth2')
         if S.get('hat'): c.ell(hxx, hy - hr * .72, hr + 3.2, 1.6, 'cloth2'); c.ell(hxx + .3, hy - hr - 2, hr * .66, 3.6, 'cloth2')
+        if S.get('turban'):
+            c.ell(hxx - .4, hy - hr * .5, hr + 1.2, hr * .62 + .8, 'turban'); c.ell(hxx - .6, hy - hr * .9, hr * .72, 2.6, 'turban'); c.cap(hxx - hr + .4, hy - 1, hxx - hr - 3, hy + 4 + math.sin(ph) * 1.2, 1.8, .8, 'turban')
+        if S.get('beard'): c.ell(hxx + 1.4, hy + hr * .78, hr * .66, hr * .6 + S['beard'] * .6, 'hair')
+        if S.get('crests'): [c.cap(hxx - 1 + k * 2.4, hy - hr + .8, hxx - 1.6 + k * 2.4, hy - hr - 3.4 - (k % 2), 1.2, .4, 'cloth2') for k in range(-1, 3)]
         ex, ey = hxx + hr * .5, hy - .6
         col = S.get('eye', '#14101c'); eye2(c, ex, ey - .5, col, S.get('eye_hi', 1), squint)
         if S.get('eye2'): c.dot(ex + 2, ey, hx(S['eye2']))
@@ -172,6 +189,11 @@ def draw(S, view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, head_dy=0, **kw
             for sg in (-1, 1): c.cap(bx + sg * (hr - 2), hh - hr + 2, bx + sg * (hr - .5), hh - hr - 3.8, 1.7, .5, 'horn')
         if S.get('bandana'): c.ell(bx, hh - hr * .55, hr, 1.9, 'cloth2')
         if S.get('hat'): c.ell(bx, hh - hr * .72, hr + 3.2, 1.6, 'cloth2'); c.ell(bx, hh - hr - 2, hr * .66, 3.6, 'cloth2')
+        if S.get('turban'):
+            c.ell(bx, hh - hr * .5, hr + 1.2, hr * .62 + .8, 'turban'); c.ell(bx, hh - hr * .9, hr * .72, 2.6, 'turban')
+            if back: c.cap(bx + 1, hh + 1, bx + 2.4, hh + hr + 3, 1.8, .8, 'turban')
+        if S.get('beard') and not back: c.ell(bx, hh + hr * .78, hr * .7, hr * .6 + S['beard'] * .6, 'hair')
+        if S.get('crests'): [c.cap(bx - 3 + k * 2, hh - hr + .8, bx - 3.4 + k * 2, hh - hr - 3.4 - (k % 2), 1.2, .4, 'cloth2') for k in range(0, 4)]
         if not back:
             col = S.get('eye', '#14101c')
             for sg in (-1, 1):
@@ -258,6 +280,19 @@ def details(c, S, view, bx, by, hh, hr, w, ty, back, ph):
             for q in range(-4, 5): c.dot(c0 + q + (1.5 if view == 'right' else 0), hh - 1, hx('#1a1812'))
             for sg in (-1, 1): c.dot(c0 + sg * 2.4 + (1.5 if view == 'right' else 0), hh - 1, hx(S.get('eye', '#40e8a0')))
         for k in range(4): c.dot(c0 - hr + (3 if view != 'right' else -2) - k * .6, hh + 3 + k * 1.4 + math.sin(ph + k) * .6, hx('#d8ccA4'))
+    if S.get('cracks'):
+        cc = hx(S.get('crack_c', '#3a3a46'))
+        for k in range(5): c.dot(bx - 3 + k * 1.4 + (1 if view == 'right' else 0), by - ty + 1 + k * 1.6, cc); c.dot(bx + 2 - k * .8, by - 1 + k * 1.2, cc)
+    if S.get('lava'):
+        lc = [hx('#ff9a30'), hx('#ffd060')]
+        for k in range(6): c.dot(bx - 3 + k * 1.2, by - ty + 2 + (k * 7) % 5, lc[k % 2]); c.dot(bx + 2 - k * .7, by + (k * 5) % 4, lc[(k + 1) % 2])
+        if not back: c.dot(bx, hh - 1, lc[1])
+    if S.get('crystals'):
+        cr = [hx('#a8d8ff'), hx('#e0f4ff')]
+        for sg in (-1, 1):
+            for k in range(3): c.cap(bx + sg * (w - 1 + k * .6), by - ty + 1, bx + sg * (w + k * 1.6), by - ty - 3 - k, 1.1, .3, 'gem') if False else [c.dot(bx + sg * (w + k * 1.5), by - ty - j + 1, cr[(j + k) % 2]) for j in range(2 + k)]
+    if S.get('lamp'):
+        lx_ = bx + (3 if view == 'right' else 0); c.dot(lx_, hh - hr - 1, hx('#ffe070')); c.dot(lx_ + 1, hh - hr - 1, hx('#fff6b0')); c.dot(lx_, hh - hr, hx('#ffe070'))
     if S.get('sockets') and not back:
         if view == 'right': c.dot(bx + 4, hh - 1, dk); c.dot(bx + 4, hh - 2, dk)
         else:
@@ -288,6 +323,25 @@ SPECS = {
  'ladrao_esgoto': dict(skin='#c89a78', hair='#5a3a20', hair_style='fringe', bandana=1, hat=1, mask=1, cloth='#2e4a34', cloth2='#4a6a3a', pants='#2a2a2a', boots='#1a1a1a', weapon='dagger', wlen=10, eye='#e8e050', eye_hi=0, head=7.0, torso=4.6, sleeves=1, belt=1, strap=1),
  'cultista_lodo': dict(skin='#14200e', robe=1, hood='#3a5a2a', hood_point=1, cloth='#2a4a1e', cloth2='#6a9a3a', pants='#2a4a1e', boots='#1a2a14', weapon='staff', wlen=15, wang=-1.2, wang_f=-1.4, eye='#a0ff60', eye_hi=0, head=7.2, torso=5.0, sleeves=1, tunic=1, belt=1, belt_c='#7ac03a', skull=1),
 }
+SPECS.update({
+ # ---- Região 2 (Terras Áridas): humanoides do deserto, cada um com silhueta própria
+ 'bandido_deserto': dict(skin='#c89a6a', turban='#e0d0a8', mask=1, cloth='#c8a060', cloth2='#a83a2a', pants='#6a5a40', boots='#4a3a28', weapon='sword', wlen=11, wang=-.95, eye='#2a1a10', eye_hi=1, head=7.0, torso=5.0, tunic=1, belt=1, belt_c='#7a2a1a', strap=1, strap_c='#5a3a20', sleeves=1, cape='#8a3a2a', scar=1),
+ 'saqueador': dict(skin='#a8704a', helm=1, metal2='#7a6a58', hair='#2a1a10', beard=1.2, cloth='#6a4a30', cloth2='#3a2a1c', pants='#4a3a2a', boots='#2a1a12', weapon='axe', wlen=13, wang=-.9, eye='#e8c040', eye_hi=0, head=7.4, torso=5.8, torso_h=5.6, bulk=1.6, pads=1, scar=1, belt=1, strap=1, sleeves=1, rivets=1, cape='#5a2a1a'),
+ 'atirador_deserto': dict(skin='#d0a070', turban='#6a7a4a', mask=1, cloth='#8a7a4a', cloth2='#5a6a3a', pants='#5a4a30', boots='#3a2a1a', weapon='bow', wlen=9, wang=-1.5, wang_f=-1.6, eye='#2a3a1a', eye_hi=1, head=6.8, torso=4.8, tunic=1, belt=1, strap=1, strap_c='#4a3a20', sleeves=1),
+ 'cultista_sol': dict(skin='#8a5a30', robe=1, hood='#e8b830', hood_point=1, cloth='#c87a18', cloth2='#f0d060', pants='#c87a18', boots='#6a4a18', weapon='sunstaff', wlen=16, wang=-1.2, wang_f=-1.4, gem='#ffe070', eye='#fff080', eye_hi=0, head=7.2, torso=5.0, sleeves=1, tunic=1, belt=1, belt_c='#f0d060'),
+ 'mumia_solar': dict(skin='#e4d49c', wraps=1, turban='#e8c040', cloth='#e0cc88', wrap='#f0e0a0', cloth2='#c8a850', pants='#d8c484', boots='#b8a064', eye='#ffd040', eye_hi=0, arms_fwd=1, head=7.4, bulk=.8, stripes=1, stripe_c='#b8902a', head_stripes=1, torso=5.2, sleeves=1, crests=1, belt=1, belt_c='#e8c040'),
+ 'kobold': dict(skin='#a0603a', ears=1, nose=2.0, helm=1, metal2='#8a8a96', lamp=1, cloth='#6a4a34', cloth2='#8a6a44', pants='#4a3a2a', boots='#3a2a1a', weapon='pick', wlen=10, wang=-.9, eye='#ffe040', eye_hi=1, head=7.8, torso=3.8, torso_h=4.2, leg=4.2, tunic=1, belt=1, strap=1, strap_c='#3a2a18'),
+ 'anao_renegado': dict(skin='#d8a070', hair='#a8481a', beard=2.4, helm=1, metal2='#6a6a78', cloth='#5a2a2a', cloth2='#8a8a96', pants='#3a2a2a', boots='#2a1a1a', weapon='axe', wlen=12, wang=-.9, eye='#ff7a30', eye_hi=0, head=7.4, torso=6.2, torso_h=5.0, leg=4.4, bulk=2.6, pads=1, rivets=1, belt=1, belt_c='#6a3a1a', scar=1, sleeves=1, tunic=1),
+ 'golem_pedra': dict(skin='#8a8a94', cloth='#7a7a86', cloth2='#9a9aa6', pants='#6a6a76', boots='#5a5a66', metal2='#9a9aa6', chest=1, pads=1, cracks=1, crack_c='#3a3a46', eye='#ffa030', eye_hi=0, head=5.4, torso=7.6, torso_h=7.0, leg=5.2, bulk=3.8, arm_reg='cloth2', arms_fwd=1),
+ 'golem_sal': dict(skin='#e8e4e8', cloth='#d8d4dc', cloth2='#f4f0f6', pants='#c8c4cc', boots='#b8b4bc', metal2='#f4f0f6', chest=1, pads=1, crystals=1, cracks=1, crack_c='#9aa8c8', eye='#60c0ff', eye_hi=0, head=5.4, torso=7.4, torso_h=6.8, leg=5.2, bulk=3.6, arm_reg='cloth2', arms_fwd=1),
+ 'golem_magma': dict(skin='#2a2024', cloth='#3a2a2a', cloth2='#5a3a30', pants='#2a1c1c', boots='#1a1212', metal2='#e0601a', chest=1, pads=1, lava=1, eye='#ffe060', eye_hi=0, head=5.4, torso=7.6, torso_h=7.0, leg=5.2, bulk=3.8, arm_reg='cloth2', arms_fwd=1, horns=1),
+ 'cav_negro': dict(skin='#2a2630', helm=1, metal2='#3a3a48', cloth='#26262e', cloth2='#4a4a5a', pants='#1e1e26', boots='#14141c', weapon='sword', wlen=16, wang=-1.0, pads=1, eye='#ff3030', eye_hi=0, bulk=2.2, head=7.4, torso=5.9, sleeves=1, cape='#6a1a1a', visor=1, plume=1, plume_c='#8a1a1a', rivets=1, belt=1, belt_c='#6a1a1a'),
+ 'armadura': dict(skin='#14101c', helm=1, metal2='#8a92a8', cloth='#6a7288', cloth2='#a8b0c4', pants='#4a5268', boots='#3a4258', weapon='sword', wlen=13, wang=-1.0, pads=1, eye='#a060ff', eye_hi=0, bulk=2.4, head=7.2, torso=5.8, sleeves=1, visor=1, rivets=1, belt=1, belt_c='#2a2e3a', arms_fwd=1, stoop=1),
+ 'mago_batalha': dict(skin='#c89a78', robe=1, hat=1, hair='#e8e4e0', beard=1.6, cloth='#3a4a8a', cloth2='#d8a830', pants='#3a4a8a', boots='#2a2a4a', weapon='staff', wlen=15, wang=-1.2, wang_f=-1.4, eye='#a0d0ff', eye_hi=0, head=7.0, torso=5.0, sleeves=1, tunic=1, belt=1, belt_c='#d8a830', skull=0),
+ 'imp': dict(skin='#c83a28', horns=1, ears=1, nose=1.6, cloth='#3a1a1a', cloth2='#c83a28', pants='#c83a28', boots='#8a2a20', weapon='spear', wlen=12, wang=-.95, eye='#ffe040', eye_hi=0, head=7.8, torso=3.8, torso_h=4.4, leg=4.2, tunic=1, scar=0, cape='#5a1a14'),
+ 'troll_mesas': dict(skin='#7a6a8a', tusks=1, hair='#3a2a4a', hair_style='mohawk', belly='#9a8aa8', cloth='#6a4a3a', cloth2='#8a6a4a', pants='#4a3a2a', boots='#3a2a1a', weapon='club', wlen=14, wang=-.9, eye='#ffd040', eye_hi=0, head=7.6, torso=6.6, torso_h=6.4, leg=6.4, bulk=3.0, pads=1, scar=1, belt=1, tunic=1),
+ 'ogro_deserto': dict(skin='#b09a58', tusks=1, horns=1, turban='#8a3a2a', belly='#c8b878', cloth='#8a5a30', cloth2='#6a3a20', pants='#4a3a2a', boots='#3a2a20', weapon='axe', wlen=13, wang=-.9, eye='#a02a10', eye_hi=0, head=8.0, torso=6.4, torso_h=6.0, leg=6.0, bulk=2.4, scar=1, belt=1, tunic=1, strap=1, strap_c='#5a2a18'),
+})
 for k, S in SPECS.items(): S.setdefault('has_cape', 1)
 
 

@@ -544,7 +544,7 @@ Z('cabana',1919,'Nv 10–11',waters=[(1500,1500,320,220)],pois=[(1000,1200)],sta
 # ---------------------------------------------------------------- Estrada da Muralha (ligação, Região 2, Nv 10–11): sai pelo portão norte de Cinzamuro; segue para o Planalto Árido (em obras)
 Z('muralha',2020,'Nv 10–11',roads=[[(1100,4190),(1020,3500),(1180,2800),(1050,2100),(1160,1300),(1100,10)]],pois=[(1100,2100)],camps=[(1500,2900)],start=(1100,4030),
   side_theme=MT,band=(380,380,420,420),dens=.45,fdens=.4,conifer=.5,ground='rock',hills=lambda x,y:.9,packs=22,pack_n=3,
-  region_extra=dict(zlv=1,lv=[10,11],respawn=45,reg='Terras Áridas',dif=dict(hp=1.4,atk=1.3,agg=1.5),mobs=['bandido','gnoll','javbruto','harpia','ogrinho','bandido']))
+  region_extra=dict(zlv=1,lv=[10,11],respawn=45,reg='Terras Áridas',dif=dict(hp=1.4,atk=1.3,agg=1.5),mobs=['bandidodeserto', 'chacal', 'lagarto', 'abutre']))
 
 # ================================================================ REGIÃO 2 — Terras Áridas de Cinzamuro (Nv 10–20)
 # Terreno: rocha/areia/argila/sal/cinza, cordilheira em todas as bordas (a região é montanhosa e seca). Inimigos provisórios: reaproveitam os do jogo por terreno
@@ -571,58 +571,58 @@ def r2(name,seed,nv,lv,mobs,ground,**kw):
     Z(name,seed,nv,ground=ground,region_extra=re,**kw)
 
 # ---- Planalto Árido (Nv 10–12): a primeira zona de verdade; chão de areia, acampamento de bandidos, covil da Matriarca Escorpião (santuário)
-r2('planalto',2121,'Nv 10–12',[10,12],['bandido','gnoll','aranha','cobra','harpia','barata','bandido'],'sand',
+r2('planalto',2121,'Nv 10–12',[10,12],['escorpiao', 'lagarto', 'chacal', 'bandidodeserto', 'abutre', 'chacal', 'escorpiao'],'sand',
    roads=[[(3200,6390),(3100,5500),(3350,4500),(3200,3500),(3300,2400),(3200,1200),(3200,10)],[(3200,3500),(2200,3300),(1100,3000),(10,2800)],[(3300,4000),(4400,3800),(5400,3500),(6390,3400)]],
    camps=[(2100,4500)],shrines=[(4700,1700)],pois=[(3200,3300),(1500,1300)],start=(3200,6150),packs=34)
 # ---- Garganta do Vento (Nv 12–13): desfiladeiro estreito e sinuoso, ventos fortes
-r2('garganta',2222,'Nv 12–13',[12,13],['harpia','gnoll','bandido','morcego','harpia'],'rock',
+r2('garganta',2222,'Nv 12–13',[12,13],['saqueador', 'chacal', 'abutre', 'bandidodeserto', 'lagarto'],'rock',
    roads=[[(1100,4790),(1000,4000),(1250,3100),(1000,2200),(1200,1300),(1100,10)]],pois=[(1100,2400)],start=(1100,4600),band=(420,420,420,420),dens=.7)
 # ---- Mesas Rubras (Nv 13–15): argila vermelha com mesas gigantes (blocos de rocha)
-r2('mesas',2323,'Nv 13–15',[13,15],['ogrolenhador','javbruto','gnoll','bandido','ogrinho','javbruto'],'red',
+r2('mesas',2323,'Nv 13–15',[13,15],['trollmesas', 'golempedra', 'lobopoeira', 'ogrodeserto', 'saqueador', 'lobopoeira'],'red',
    roads=[[(3200,6390),(3150,5400),(3300,4500),(3200,3600),(3250,2400),(3200,1200),(3200,10)],[(3200,3700),(2200,3650),(1000,3600),(10,3600)],[(3250,3000),(4200,2800),(5400,2500),(6390,2400)]],
    extra_k=mesas_rocks(6400,6400,34,2323,avoid=[(3200,y) for y in range(300,6300,600)]),camps=[(4800,4800)],shrines=[(1800,1500)],pois=[(3200,3600)],start=(3200,6150),packs=36)
 # ---- Leito do Rio Seco (Nv 14–15): leito largo e sinuoso, areia branca e pedregulhos
-r2('leito',2424,'Nv 14–15',[14,15],['cobra','barata','bandido','aranha','gnoll'],'sand',
+r2('leito',2424,'Nv 14–15',[14,15],['escaravelho', 'lagarto', 'verme', 'chacal', 'escorpiao'],'sand',
    roads=[[(1200,5590),(1050,4700),(1300,3800),(1000,2900),(1250,2000),(1200,1100),(1200,10)],[(1100,3000),(500,3000),(10,3000)],[(1250,4200),(1800,4200),(2390,4200)]],
    trails=[[(1200,5500),(1500,4600),(900,3700),(1500,2800),(950,1900),(1400,1000)]],pois=[(1200,2900)],start=(1200,5400),band=(340,340,380,380),dens=.55)
 # ---- Salinas Brancas (Nv 15–17): planície de sal ofuscante, lago salgado, entrada das Minas de Sal Esquecidas
-r2('salinas',2525,'Nv 15–17',[15,17],['sapador','aranha','gnoll','javbruto','aranha','bandido'],'salt',
+r2('salinas',2525,'Nv 15–17',[15,17],['escorpiaosal', 'kobold', 'golemsal', 'escorpiaosal', 'kobold'],'salt',
    roads=[[(3200,6390),(3100,5400),(3300,4500),(3200,3600),(3250,2500),(3200,1200),(3200,10)]],waters=[(2000,3000,900,520,120),(4700,4300,600,380,100)],
    camps=[(4600,2000)],shrines=[(1500,1300)],pois=[(3200,3500),(5200,1400)],start=(3200,6150),packs=36,dens=.4)
 # ---- Desfiladeiro Rubro (Nv 17–18): garganta de argila vermelha, mais estreita e mais perigosa
-r2('rubro',2626,'Nv 17–18',[17,18],['bandido','ogrolenhador','gargula','harpia','javbruto'],'red',
+r2('rubro',2626,'Nv 17–18',[17,18],['lobopoeira', 'saqueador', 'golempedra', 'atiradordeserto', 'ogrodeserto'],'red',
    roads=[[(1100,4790),(1000,3900),(1250,3000),(1000,2000),(1200,1000),(1100,10)]],pois=[(1100,2500)],start=(1100,4600),band=(420,420,420,420),dens=.65,packs=12)
 # ---- Vale das Forjas Mortas (Nv 18–20): cinza vulcânica, forjas em ruína, entrada da Forja de Pedranegra
-r2('forjas',2727,'Nv 18–20',[18,20],['ogrolenhador','gargula','cavcaido','javbruto','esqmago','gargula'],'ash',
+r2('forjas',2727,'Nv 18–20',[18,20],['salamandra', 'imp', 'golemmagma', 'caoinfernal', 'anaorenegado', 'salamandra'],'ash',
    roads=[[(3000,5990),(2900,5000),(3100,4000),(3000,3000),(3100,2000),(3000,900),(3000,10)],[(3000,3000),(2000,2500),(1000,2400),(10,2400)]],
    camps=[(4400,3500)],shrines=[(4700,1500),(1400,1400)],pois=[(3000,3000)],start=(3000,5780),packs=34)
 # ---- Portão do Deserto (Nv 19–20): fortificação do fim da região; guarda e missão "Abrir o Portão" (Região 3 em obras)
-r2('portao',2828,'Nv 19–20',[19,20],['cavcaido','gargula','ogrolenhador','esq','javbruto'],'rock',
+r2('portao',2828,'Nv 19–20',[19,20],['cavnegro', 'armadura', 'atiradordeserto', 'golempedra', 'ogrodeserto'],'rock',
    roads=[[(2250,4490),(2300,3500),(2200,2500),(2250,1400),(2250,10)]],camps=[(3300,3300)],pois=[(2250,1300)],start=(2250,4300),packs=18,band=(420,420,420,420))
 # ---- Cânion do Eco (Nv 12–14): desvio a oeste do Planalto; paredões vermelhos
-r2('canion',2929,'Nv 12–14',[12,14],['bandido','harpia','aranha','morcego','bandido'],'red',
+r2('canion',2929,'Nv 12–14',[12,14],['atiradordeserto', 'bandidodeserto', 'abutre', 'escorpiao', 'lagarto'],'red',
    roads=[[(5190,2600),(4200,2700),(3000,2500),(1800,2600),(800,2500),(10,2400)]],shrines=[(1000,1500)],pois=[(2600,2600)],start=(4900,2600),packs=22,
    extra_k=mesas_rocks(5200,5200,16,2929,avoid=[(x,2600) for x in range(300,5000,500)]))
 # ---- Caminho dos Cercos (Nv 16–17): estrada de ligação, restos de guerra
-r2('cercos1',3030,'Nv 16–17',[16,17],['bandido','cavcaido','lobo','esq'],'sand',
+r2('cercos1',3030,'Nv 16–17',[16,17],['bandidodeserto', 'saqueador', 'caoguerra', 'atiradordeserto'],'sand',
    roads=[[(10,1100),(1200,1050),(2300,1150),(3400,1050),(4590,1100)]],pois=[(2300,1100)],start=(300,1100),packs=8,band=(340,340,380,380),dens=.5)
 # ---- Campo dos Cercos (Nv 17–19): campo de batalha antigo, entrada da Bastilha Negra
-r2('cercos',3131,'Nv 17–19',[17,19],['cavcaido','esq','guarda','esqmago','lobo','cavcaido'],'rock',
+r2('cercos',3131,'Nv 17–19',[17,19],['cavnegro', 'armadura', 'magobatalha', 'caoguerra', 'atiradordeserto', 'cavnegro'],'rock',
    roads=[[(10,3200),(1200,3100),(2400,3200),(3300,3150),(4400,2900),(5400,2800),(6390,2800)]],camps=[(3400,3800),(2600,2200)],shrines=[(4800,1300)],pois=[(3300,3150)],start=(300,3200),packs=34,
    extra_k=ruin_set(4800,1500,16,700,3131)+ruin_set(2800,4600,10,500,3132))
 # ---- Trilha dos Abutres (Nv 15–16): trilha seca, abutres (harpias) sobrevoam
-r2('abutres',3232,'Nv 15–16',[15,16],['harpia','bandido','lobo','cobra'],'sand',
+r2('abutres',3232,'Nv 15–16',[15,16],['abutre', 'chacal', 'escorpiao', 'lagarto'],'sand',
    roads=[[(10,1100),(1100,1000),(2300,1200),(3400,1050),(4590,1100)]],pois=[(2300,1100)],start=(300,1100),packs=8,band=(340,340,380,380),dens=.45)
 # ---- Ruínas do Sol Caído (Nv 16–18): templo solar em ruínas, entrada do Templo do Sol Soterrado
-r2('ruinas',3333,'Nv 16–18',[16,18],['mumia','esq','cult','gargula','necro','mumia'],'sand',
+r2('ruinas',3333,'Nv 16–18',[16,18],['mumiasolar', 'escaravelho', 'cultistasol', 'mumiasolar', 'escaravelho', 'cultistasol'],'sand',
    roads=[[(10,5400),(1200,5300),(2500,4300),(2900,3200),(3500,2900),(5790,2900)]],camps=[],shrines=[(2900,2200)],pois=[(2900,2900)],start=(300,5400),packs=30,
    extra_k=ruin_set(2900,2300,30,900,3333)+ruin_set(1300,4300,12,500,3334)+ruin_set(4500,1400,12,500,3335))
 # ---- zonas secretas (becos sem saída)
 SEC2=dict(side_theme=MT,band=(300,300,300,300),dens=.5,packs=6,pack_n=3)
-r2('oasis',3434,'Nv 11–12',[11,12],['cobra','barata','bandido'],'sand',waters=[(1200,1300,420,280,80)],pois=[(1200,900)],start=(300,1200),**SEC2)
-r2('mirante',3535,'Nv 12–13',[12,13],['harpia','aranha','gnoll'],'rock',pois=[(1200,1200)],start=(300,1200),**SEC2)
-r2('tumba',3636,'Nv 14–15',[14,15],['mumia','esq','cobra'],'sand',pois=[(1200,1200)],start=(300,1200),extra_k=ruin_set(1200,1200,8,400,3636),**SEC2)
-r2('cisterna',3737,'Nv 14–15',[14,15],['aranha','morcego','barata'],'rock',pois=[(1200,1200)],start=(300,1200),waters=[(1500,1500,260,180,60)],**SEC2)
-r2('saqueadores',3838,'Nv 17–18',[17,18],['bandido','ladrao','javbruto'],'sand',camps=[(1300,1300)],pois=[(1300,900)],start=(300,1300),**{**SEC2,'packs':9})
-r2('verme',3939,'Nv 18–19',[18,19],['aranha','cobra','barata'],'sand',shrines=[(1300,1500)],pois=[(1300,1200)],start=(300,1300),**{**SEC2,'packs':9})
-r2('obsidiana',4040,'Nv 19–20',[19,20],['gargula','morcego','esqmago'],'ash',pois=[(1300,1300)],start=(300,1300),**{**SEC2,'packs':9})
+r2('oasis',3434,'Nv 11–12',[11,12],['escaravelho', 'lagarto', 'chacal'],'sand',waters=[(1200,1300,420,280,80)],pois=[(1200,900)],start=(300,1200),**SEC2)
+r2('mirante',3535,'Nv 12–13',[12,13],['abutre', 'lagarto', 'escorpiao'],'rock',pois=[(1200,1200)],start=(300,1200),**SEC2)
+r2('tumba',3636,'Nv 14–15',[14,15],['mumiasolar', 'escaravelho', 'cultistasol'],'sand',pois=[(1200,1200)],start=(300,1200),extra_k=ruin_set(1200,1200,8,400,3636),**SEC2)
+r2('cisterna',3737,'Nv 14–15',[14,15],['escorpiaosal', 'kobold', 'lagarto'],'rock',pois=[(1200,1200)],start=(300,1200),waters=[(1500,1500,260,180,60)],**SEC2)
+r2('saqueadores',3838,'Nv 17–18',[17,18],['saqueador', 'bandidodeserto', 'atiradordeserto', 'caoguerra'],'sand',camps=[(1300,1300)],pois=[(1300,900)],start=(300,1300),**{**SEC2,'packs':9})
+r2('verme',3939,'Nv 18–19',[18,19],['verme', 'escaravelho', 'escorpiao'],'sand',shrines=[(1300,1500)],pois=[(1300,1200)],start=(300,1300),**{**SEC2,'packs':9})
+r2('obsidiana',4040,'Nv 19–20',[19,20],['golemmagma', 'imp', 'caoinfernal', 'salamandra'],'ash',pois=[(1300,1300)],start=(300,1300),**{**SEC2,'packs':9})
