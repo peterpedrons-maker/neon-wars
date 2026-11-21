@@ -671,6 +671,10 @@ M3.tsunami={build(f,g){const L=f.len||1600,Hh=f.h||110;const wall=new T.Mesh(new
   for(let i=0;i<40;i++){const d=new T.Mesh(new T.SphereGeometry(_R(3,6),6,4),_mt(0xeafcff,.9,false));W.add(d);g.userData.S.push({d,x:_R(-L/2,L/2),p:_R(0,1),h:_R(10,50)});}},
  upd(f,g,t){const U=g.userData,T0=t*f.max,z=T0*(f.spd||280),rise=Math.min(1,T0/.35),fall=t>.9?Math.max(.01,(1-t)/.1):1;U.W.position.z=z;U.W.scale.set(1,Math.max(.01,rise*fall*(1+.06*Math.sin(T0*8))),1);
   U.crest.rotation.x=T0*6;U.S.forEach(p=>{const u=(T0*1.6+p.p)%1;p.d.position.set(p.x+Math.sin(T0*3+p.p*9)*6,U.Hh+p.h*Math.sin(u*Math.PI),12+u*30);p.d.material.opacity=.9*(1-u);});}};
+/* PEDREGULHO (cuspe do Colosso): rocha girando com rastro de poeira, segue o projétil (ft) */
+M3.boulder={build(f,g){const r=new T.Mesh(new T.DodecahedronGeometry(13,0),_mt(0x8a7a60,1,false)),c=new T.Mesh(new T.DodecahedronGeometry(9,0),_mt(0xc8b890,.9,false));const H=new T.Group();H.position.y=24;H.add(r,c);g.add(H);g.userData.H=H;
+  g.userData.T=[0,1,2,3].map(i=>{const d=new T.Mesh(new T.SphereGeometry(4-i*.7,5,4),_mt(0xb8a888,.55-i*.1,false));g.add(d);return d;});const sh=new T.Mesh(new T.CircleGeometry(11,14).rotateX(-Math.PI/2),_mt(0x20180c,.4,false));g.add(sh);},
+ upd(f,g,t){const T0=t*f.max;g.userData.H.rotation.set(T0*6,T0*4,T0*3);g.userData.H.position.y=24+Math.sin(T0*10)*2;g.userData.T.forEach((d,i)=>{d.position.set(-(i+1)*9*Math.cos(f.a||0),22+i*2,-(i+1)*9*Math.sin(f.a||0));});}};
 function syncM3(){
   if(!scn||typeof G==='undefined')return;
   let gg=scn.m3g;if(!gg){gg=scn.m3g=new T.Group();scn.grp.add(gg);}

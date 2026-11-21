@@ -2012,7 +2012,7 @@ function audioInit(){
   const m=AC.createGain();m.gain.value=.55;m.connect(AC.destination);sfxGain=AC.createGain();sfxGain.gain.value=1;sfxGain.connect(m);musGain=AC.createGain();musGain.gain.value=.22;musGain.connect(m);
   ['ui_click','ui_confirm','ui_denied','swing','hit_0','hit_1','slash','crit','miss','bow','arrow_hit','spell_cast','spell_hit','heal','coin','levelup','death','victory','sk_golpe','sk_meteoros','sk_flechas','sk_sagrado','sk_corte','sk_grito','tr_equip','tr_open','tr_close','sk_fogo','sk_gelo','sk_raio','sk_terra','sk_veneno','sk_nota','sk_estocada','sk_explosao','st_escudo','buff','dg_title','boss_roar','boss_rei_roar','boss_slam','boss_charge','boss_spin','boss_guard','boss_swarm','boss_plague','boss_burrow','boss_flask','boss_throw','boss_dark','cut_marca','cut_queda','cut_sino'].forEach(n=>loadBuf('../assets/audio/sfx/'+n+'.ogg',n));
   for(const sp of ['rato','javali','goblin','esq','bat','ogro','lobo','aranha','barata','sapo','cobra','tronco','harpia','gnoll','humano','morto','cogu'])for(const k of ['atk','hurt','die'])loadBuf('../assets/audio/sfx/mob_'+sp+'_'+k+'.ogg','mob_'+sp+'_'+k);
-  for(const q of ['atk','hurt','die','engage','stomp','charge','bellow','bark','grove','imune','step','glint'])loadBuf('../assets/audio/sfx/cervo_'+q+'.ogg','cervo_'+q);loadBuf('../assets/audio/sfx/mount_neigh.ogg','mount_neigh');for(const q of ['roar','hurt','die','atk','slam','sweep','cast','orb','orbhit','geyser','grab','whirl','dive','tsunami','emerge','bubbles'])loadBuf('../assets/audio/sfx/mare_'+q+'.ogg','mare_'+q);for(const q of ['q_accept','q_obj','q_done'])loadBuf('../assets/audio/sfx/'+q+'.ogg',q);loadBuf('../assets/audio/sfx/mount_snort.ogg','mount_snort');
+  for(const q of ['atk','hurt','die','engage','stomp','charge','bellow','bark','grove','imune','step','glint'])loadBuf('../assets/audio/sfx/cervo_'+q+'.ogg','cervo_'+q);loadBuf('../assets/audio/sfx/mount_neigh.ogg','mount_neigh');for(const q of ['roar','step','stomp','sweep','fall','bite','spit','die'])loadBuf('../assets/audio/sfx/col_'+q+'.ogg','col_'+q);for(const q of ['roar','hurt','die','atk','slam','sweep','cast','orb','orbhit','geyser','grab','whirl','dive','tsunami','emerge','bubbles'])loadBuf('../assets/audio/sfx/mare_'+q+'.ogg','mare_'+q);for(const q of ['q_accept','q_obj','q_done'])loadBuf('../assets/audio/sfx/'+q+'.ogg',q);loadBuf('../assets/audio/sfx/mount_snort.ogg','mount_snort');
   loadBuf('../assets/audio/music/campina.ogg','m_campina').then(()=>{if(musOn)playMusic();});
   loadBuf('../assets/audio/music/chefe.ogg','m_chefe');loadBuf('../assets/audio/music/vila.ogg','m_vila');
 }
@@ -2946,13 +2946,13 @@ function guardCounter(m){addZone({shape:'circle',x:m.x,y:m.y,r:70,warn:.3,mult:1
 
 /* ===== vozes das criaturas: cada espécie tem seu grunhido de ataque, dor e morte (arquivos mob_<espécie>_<atk|hurt|die>) ===== */
 const MSP={alfa:'lobo',rato:'rato',ratass:'rato',ratarq:'rato',ratalq:'rato',ratking:'rato',javali:'javali',javguer:'javali',javbruto:'javali',javarq:'javali',javmago:'javali',javcap:'javali',goblin:'goblin',gobarq:'goblin',xama:'goblin',skrix:'goblin',botic:'goblin',esq:'esq',esqueleto:'esq',esqmago:'esq',esqfogo:'esq',esqgelo:'esq',morcego:'bat',vamp:'bat',ogro:'ogro',sapador:'goblin',cogumelo:'cogu',aranha:'aranha',lobo:'lobo',carnical:'morto',necro:'esq',cavcaido:'esq',mumia:'morto',ogrinho:'ogro',ogrolenhador:'ogro',gnoll:'gnoll',tronco:'tronco',harpia:'harpia',bandido:'humano',homemrato:'rato',ladrao:'humano',cultlodo:'esq',sapo:'sapo',cobra:'cobra',barata:'barata',afogado:'morto'};
-function mobSnd(m,k){if(!AC||!m||!m.T)return;if(m.type==='mare'){const t=G.t;if(k==='hurt'){if(t-(m._sh||-9)<.7)return;m._sh=t;sfx('mare_hurt',.6,.95+Math.random()*.1);}return;}if(m.type==='cervo'){const h=G.hero,d=h?Math.hypot(h.x-m.x,h.y-m.y):0,v=Math.max(.2,1-d/700),t=G.t;if(k==='hurt'){if(t-(m._sh||-9)<.5)return;m._sh=t;}if(k==='atk'){if(t-(m._sa||-9)<.8)return;m._sa=t;}sfx('cervo_'+k,(k==='die'?1:k==='atk'?.85:.7)*v,.97+Math.random()*.06);return;}{const cs=CRS[m.T.atlas];if(cs){const h=G.hero,d=h?Math.hypot(h.x-m.x,h.y-m.y):0,v=Math.max(.12,1-d/460);if(v<=.14)return;const t=G.t;if(k==='hurt'){if(t-(m._sh||-9)<.45)return;m._sh=t;}if(k==='atk'){if(t-(m._sa||-9)<.8)return;m._sa=t;}crSynth(cs,k,v,m.elite);return;}}const sp=MSP[m.type]||MSP[m.T.fam]||MSP[m.T.atlas]||(m.kind==='boss'?'ogro':null);if(!sp)return;
+function mobSnd(m,k){if(!AC||!m||!m.T)return;if(m.type==='cperna'||m.type==='ccabeca'){const t=G.t;if(k==='hurt'){if(t-(m._sh||-9)<.6)return;m._sh=t;sfx('col_stomp',.35,1.25+Math.random()*.2);}return;}if(m.type==='mare'){const t=G.t;if(k==='hurt'){if(t-(m._sh||-9)<.7)return;m._sh=t;sfx('mare_hurt',.6,.95+Math.random()*.1);}return;}if(m.type==='cervo'){const h=G.hero,d=h?Math.hypot(h.x-m.x,h.y-m.y):0,v=Math.max(.2,1-d/700),t=G.t;if(k==='hurt'){if(t-(m._sh||-9)<.5)return;m._sh=t;}if(k==='atk'){if(t-(m._sa||-9)<.8)return;m._sa=t;}sfx('cervo_'+k,(k==='die'?1:k==='atk'?.85:.7)*v,.97+Math.random()*.06);return;}{const cs=CRS[m.T.atlas];if(cs){const h=G.hero,d=h?Math.hypot(h.x-m.x,h.y-m.y):0,v=Math.max(.12,1-d/460);if(v<=.14)return;const t=G.t;if(k==='hurt'){if(t-(m._sh||-9)<.45)return;m._sh=t;}if(k==='atk'){if(t-(m._sa||-9)<.8)return;m._sa=t;}crSynth(cs,k,v,m.elite);return;}}const sp=MSP[m.type]||MSP[m.T.fam]||MSP[m.T.atlas]||(m.kind==='boss'?'ogro':null);if(!sp)return;
   const h=G.hero,d=h?Math.hypot(h.x-m.x,h.y-m.y):0,v=Math.max(.12,1-d/460);if(v<=.14)return;
   const key='mob_'+sp+'_'+k,t=G.t;if(k==='hurt'){if(t-(m._sh||-9)<.45)return;m._sh=t;}if(k==='atk'){if(t-(m._sa||-9)<.8)return;m._sa=t;}
   const big=m.kind==='boss'||m.mini,rate=big&&sp!=='ogro'?.62:(m.elite?.88:1)*(.94+Math.random()*.12);
   sfx(key,(k==='die'?.6:k==='atk'?.5:.4)*v*(big?1.35:1),rate);}
 function hitMob(m,dmg,crit,fromX,fromY,kf=1){
-  if(m.dead||m.ent)return;if(m.guardT>0&&!(m.gcd>0)){m.gcd=1.1;guardCounter(m);}if(m.vuln>0)dmg=Math.round(dmg*1.15);if(m.take)dmg=Math.max(1,Math.round(dmg*m.take));{const tk=stMul(m,'taken');if(tk!==1)dmg=Math.max(1,Math.round(dmg*tk));}if(crit){const cd=tf('critd');if(cd)dmg=Math.round(dmg*(1+cd/1.8));}if(m.maxhp&&m.hp<m.maxhp*.3){const ex=tf('exec');if(ex)dmg=Math.round(dmg*(1+ex));}if(m.kind==='boss'||m.elite){const bs=tf('boss');if(bs)dmg=Math.round(dmg*(1+bs));}
+  if(m.dead||m.ent||m.hide||(m.type==='ccabeca'&&m.mst&&!m.mst.hold))return;if(m.guardT>0&&!(m.gcd>0)){m.gcd=1.1;guardCounter(m);}if(m.vuln>0)dmg=Math.round(dmg*1.15);if(m.take)dmg=Math.max(1,Math.round(dmg*m.take));{const tk=stMul(m,'taken');if(tk!==1)dmg=Math.max(1,Math.round(dmg*tk));}if(crit){const cd=tf('critd');if(cd)dmg=Math.round(dmg*(1+cd/1.8));}if(m.maxhp&&m.hp<m.maxhp*.3){const ex=tf('exec');if(ex)dmg=Math.round(dmg*(1+ex));}if(m.kind==='boss'||m.elite){const bs=tf('boss');if(bs)dmg=Math.round(dmg*(1+bs));}
   if(m.hunt&&G.t<m.hunt)dmg=Math.round(dmg*1.35);m.hp-=dmg;if(m.mark)m.mark.acc+=dmg;styHit(dmg,crit);if(m.hp>0)mobSnd(m,'hurt');{const ls=uf('ls')+(G.hero&&G.hero.rage?.14:0);if(ls>0&&G.hero&&G.hero.state!=='ko'){G.hero.hp=Math.min(G.hero.maxhp,G.hero.hp+dmg*ls);G.lsAcc=(G.lsAcc||0)+dmg*ls;if(G.t-(G.lsT||-9)>.55){floatText(G.hero.x+16,G.hero.y-46,'+'+Math.max(1,Math.round(G.lsAcc)),'#ff7ab8',9.5,1,{k:'steal',vy:22,pop:1});G.lsAcc=0;G.lsT=G.t;sfx('heal',.16,1.9);}}}m.flash=.14;if(m.kind==='boss'||m.mini){poiseHit(m,dmg,crit);}else{m.stun=crit?.35:.16;m.act=null;}
   {const big=!crit&&dmg>=m.maxhp*(m.kind==='boss'||m.mini?.03:.18);floatText(m.x+rnd(-12,12),m.y-(m.kind==='boss'?70:m.T.numY||30),crit?nfm(dmg)+'!':nfm(dmg),crit?'#ffc83a':big?'#ffe9a0':'#ffffff',crit?15:big?11.5:9,crit?1.1:.8,{pop:crit||big,vy:crit?24:18,bold:crit||big,glow:crit,k:crit?'crit':'dmg'});}
   spark(m.x,m.y-(m.kind==='boss'?40:16),crit?9:5);
@@ -4276,6 +4276,7 @@ function updateMob(m,dt){
     if(m.kind==='mob'){m.respawn-=dt;if(m.respawn<=0&&(G.phase==='farm'||G.phase==='boss')){const n=mkMob(m.type,m.sx,m.sy,m.sp);Object.assign(m,n);}}return;}
   m.flash=Math.max(0,m.flash-dt);
   if(m.type==='mare'){mareTick(m,dt);return;}
+  if(m.type==='cperna'){colLegTick(m,dt);return;}if(m.type==='ccabeca'){colHeadTick(m,dt);return;}
   if(m.type==='cervo')cervoTick(m,dt);
   if(m.T.totem){totemStep(m,dt);return;}
   if(m.T.atlas==='skrix')skrixTick(m,dt);
@@ -5030,7 +5031,7 @@ function updateMProjs(dt){
           const r=dmgCalc(m.pow*stMul(m,'dmg'),heroDef(h),1,.05);hurtHero(r.d,p.sx,p.sy,.6);const st=p.eff?[p.eff,1,3,.015]:null;if(st&&h.state!=='ko')stAdd(h,st[0],st[2],{dps:Math.max(1,Math.round(h.maxhp*st[3]))});}}
       continue;}
     if(p.kind==='wo'){p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;if(Math.random()<dt*30)VF.pt(p.x+rnd(-4,4),p.y+rnd(-2,2),{vy:rnd(4,16),life:.4,col:'#bff4ff',sz:1.8,add:false});
-      const gone=()=>{p.dead=true;G.mp.splice(i,1);VF.burst(p.x,p.y,10,['#7fe8ff','#ffffff'],{s0:40,s1:120,flat:.4,up:40,g:200});VF.wave(p.x,p.y,26,'#bff4ff',.4,3);sfx('mare_orbhit',.55,.9+Math.random()*.2);};
+      const gone=()=>{p.dead=true;G.mp.splice(i,1);if(p.boulder){VF.burst(p.x,p.y,14,['#a89878','#6a5a48','#d8c8a8'],{s0:40,s1:130,flat:.4,up:50,g:220});sfx('col_stomp',.5,1.3);}else{VF.burst(p.x,p.y,10,['#7fe8ff','#ffffff'],{s0:40,s1:120,flat:.4,up:40,g:200});VF.wave(p.x,p.y,26,'#bff4ff',.4,3);sfx('mare_orbhit',.55,.9+Math.random()*.2);}};
       if(p.life<=0||p.x<0||p.y<0||p.x>ZONE.w||p.y>ZONE.h||(p.life<3.6&&blockedAt(p.x,p.y,2)&&!isWater(p.x,p.y))){gone();continue;}
       if(h.state!=='ko'&&Math.hypot(p.x-h.x,(p.y-(h.y-14))*1.2)<p.rad+8){gone();if(h.inv>0){floatText(h.x,h.y-58,'Esquivou!','#cfe9ff',9,1);continue;}
         const m=p.m,r=dmgCalc(m.pow*(p.mult||1)*stMul(m,'dmg'),heroDef(h),1,.05);hurtHero(r.d,p.x-p.vx,p.y-p.vy,.8);if(p.st&&h.state!=='ko')stAdd(h,p.st[0],p.st[2]);}
@@ -5370,7 +5371,7 @@ const CXS={},CXP={};
 const CXMAP={goblin:'goblin',gobarq:'goblin',xama:'goblin_x',esqueleto:'esqueleto',esqmago:'esqmago',esqfogo:'esqueleto',esqgelo:'esqueleto',javali:'javali',javguer:'javali',javbruto:'javali',javarq:'javali',javmago:'javali',rato:'rato',ratass:'rato',ratarq:'rato',ratalq:'rato',cult:'cultista',guardac:'guarda_c',grunk:'grunk',morvath:'morvath',gorgash:'gorgash',ratking:'ratking',skrix:'skrix',vamp:'vampiro',javcap:'presa',botic:'boticario',espectro:'espectro',gargula:'gargula',zumbi:'zumbi',bat:'morcego',rei:'rei'};
 const CXHERO={guerreiro:'h_guerreiro',mago:'h_mago',ladino:'h_ladino',clerigo:'h_clerigo',arqueiro:'h_arqueiro',bardo:'h_bardo'};
 function cxLoad(k){if(!CXON||!k)return null;if(!CXP[k])CXP[k]=Promise.all([loadImg('assets/chars/cx_'+k+'_atlas.png'),fetch('assets/chars/cx_'+k+'_atlas.json').then(r=>r.json())]).then(([img,meta])=>{CXS[k]={atlasImg:img,meta};}).catch(()=>{CXS[k]=null;});return CXP[k];}
-function cxZone(zlv){fxsLoad('rei_explosao_roxa');['fx_fogo','fx_gelo','fx_raio','fx_sagrado','fx_impacto','fx_veneno','fx_terremoto','fx_maldicao','fx_ciclone','fx_corte','fx_pouso','fx_invoca','fx_runa','fx_escudo'].forEach(fxsLoad);const f=famOf(zlv),L=f==='goblin'?['goblin','goblin_x','sapador','cogumelo','aranha','lobo']:f==='esq'?['esqueleto','esqmago','guarda_c','cultista','gargula','zumbi','espectro','morcego','carnical','necro','cav_caido','mumia','aranha']:f==='rato'?['rato','ratkin','ladrao','cult_lodo','sapo','cobra','barata','afogado']:['javali','ogrinho','ogro_lenhador','gnoll','bandido','tronco','harpia','lobo'];if(zlv===5)L.push('rei');L.push('alfa');L.push('cervo');if(G.map==='zone_lago')L.push('mare');L.push(...(f==='goblin'?['grunk','skrix']:f==='esq'?['morvath','vampiro']:f==='rato'?['ratking','boticario']:['gorgash','presa']));L.push(CXHERO[SAVE.cls]);for(const k of L)cxLoad(k);}
+function cxZone(zlv){fxsLoad('rei_explosao_roxa');['fx_fogo','fx_gelo','fx_raio','fx_sagrado','fx_impacto','fx_veneno','fx_terremoto','fx_maldicao','fx_ciclone','fx_corte','fx_pouso','fx_invoca','fx_runa','fx_escudo'].forEach(fxsLoad);const f=famOf(zlv),L=f==='goblin'?['goblin','goblin_x','sapador','cogumelo','aranha','lobo']:f==='esq'?['esqueleto','esqmago','guarda_c','cultista','gargula','zumbi','espectro','morcego','carnical','necro','cav_caido','mumia','aranha']:f==='rato'?['rato','ratkin','ladrao','cult_lodo','sapo','cobra','barata','afogado']:['javali','ogrinho','ogro_lenhador','gnoll','bandido','tronco','harpia','lobo'];if(zlv===5)L.push('rei');L.push('alfa');L.push('cervo');if(G.map==='zone_lago')L.push('mare');if(G.map==='zone_colinas'){L.push('perna');L.push('ccabeca');}L.push(...(f==='goblin'?['grunk','skrix']:f==='esq'?['morvath','vampiro']:f==='rato'?['ratking','boticario']:['gorgash','presa']));L.push(CXHERO[SAVE.cls]);for(const k of L)cxLoad(k);}
 const CXNPC={cacador:'n_cacador',guarda:'n_guarda',pov_f:'n_pov_f',ladino_b:'n_ladino_b',bardo:'n_bardo',mago:'n_mago',ladino:'n_ladino',guardiao:'n_guardiao',clerigo:'n_clerigo'};
 /* O SPRITE DO HERÓI MUDA COM A ARMA EQUIPADA: atlas extra por tipo de arma (cx_h_<classe>_<variante>); sem variante = arma padrão da classe */
 const HVAR={guerreiro:{Machado:'machado',Martelo:'martelo'},ladino:{'Espada Curta':'espadacurta'},mago:{Cetro:'cetro',Varinha:'varinha'},clerigo:{Martelo:'martelo','Cetro Sagrado':'cetro'},arqueiro:{'Arco Longo':'longo'},bardo:{Flauta:'flauta'}};
@@ -5428,7 +5429,7 @@ function cxStill(cls,view,i,pk){const k=CXON&&heroCx(cls,pk),sh=k&&CXS[k];if(!CX
 for(const k in MOBS){const T=MOBS[k];if(!T.ranged&&!T.totem&&T.rng>=18&&T.rng<=30&&!T._rg){T.rng+=6;T._rg=1;}}
 const CXSC=.75;   /* escala dos sprites pixel art no mundo (1 = pixel nativo x2). Dono: personagens grandes demais -> .75 */
 // Tamanho por criatura (1 = herói). Variedade de altura: pequenos x grandes.
-const CXSIZE={mare:2,cervo:1,alfa:1.25,rato:.78,ratkin:.9,barata:.7,aranha:.85,cobra:.85,sapo:.9,goblin:.85,goblin_x:.9,sapador:.8,ladrao:.92,cogumelo:.9,morcego:.8,harpia:.95,necro:.95,cult_lodo:.95,
+const CXSIZE={perna:1.6,ccabeca:1.5,mare:2,cervo:1,alfa:1.25,rato:.78,ratkin:.9,barata:.7,aranha:.85,cobra:.85,sapo:.9,goblin:.85,goblin_x:.9,sapador:.8,ladrao:.92,cogumelo:.9,morcego:.8,harpia:.95,necro:.95,cult_lodo:.95,
  javali:1.05,lobo:1.0,gnoll:1.12,carnical:1.05,mumia:1.12,afogado:1.12,zumbi:1.2,ogrinho:1.15,ogro_lenhador:1.4,tronco:1.45,cav_caido:1.3,gargula:1.15,guarda_c:1.15,ogro:1.3,esqueleto:.95,
  grunk:1.15,morvath:1.2,gorgash:1.35,ratking:1.1,skrix:1.05,presa:1.25,vampiro:1.15,boticario:1.0,rei:1.2};
 function cxSize(e){const k=cxKeyOf(e);return (k&&CXSIZE[k])||1;}
@@ -6646,6 +6647,15 @@ const HUNTS=[
   lore:['Maragon guardava o lago muito antes de Brumavale ter nome. Os antigos deixavam peixes na margem para ele; quando pararam, ele parou de ser gentil.',
         'Ele não sai da água porque a água é o corpo dele: cada onda que bate na praia é um braço que ele ainda não ergueu. Quando mergulha, o lago inteiro se levanta numa muralha.',
         'A Guilda anotou o padrão: depois de cada tsunami ele emerge exposto, cansado, por alguns instantes. Aos 30% de vida ele se enfurece e a água responde mais rápido do que qualquer caçador.']},
+ {id:'colosso',nm:'Os Passos Que Sacodem o Vale',rk:0,dif:'A',map:'zone_colinas',modo:'Solo',nv:'Nv 12+',dica:'obscura',tit:'Procura-se: o Colosso das Colinas',
+  txt:['Os pastores das Colinas Rochosas contam de um trovão sem tempestade: o chão treme em passos lentos, e as nuvens baixas parecem ter pernas.',
+       'Ninguém viu o corpo dele. Dizem que só se enxergam as patas — grossas como torres, cobertas de musgo — e que elas se cansam, uma de cada vez.',
+       '“No círculo de pedras do meio do vale, fique parado, calado, e deixe o chão falar. Quando duas patas caírem, ele vai querer olhar quem o derrubou.”'],
+  pts:150,sel:20,gold:800,xk:50,lvx:12,item:['armadura',3],mob:'cperna',cli:'Pastores das Colinas',esp:'Quadrúpede colossal · Gigante das nuvens',
+  rumor:'As ovelhas das Colinas fogem antes de cada tremor. Os pastores dizem que a terra tem pegadas do tamanho de um celeiro.',
+  lore:['Os antigos chamavam o Colosso de "o Vale que Anda". Ele passa as eras entre as nuvens e só desce quando algo o acorda: um chão parado demais, silêncio demais.',
+        'Cada pata tem vontade própria. Quebre uma e as outras ficam mais lentas; quebre duas e a cabeça vem ver quem ousou.',
+        'Quando as quatro patas caem, ele não se levanta mais. A cabeça desaba, os chifres arranham a terra e, por um instante, o gigante parece só um animal cansado.']},
  {id:'g1',soon:1,elite:1,rk:1,dif:'C',modo:'Grupo (2–4)',nm:'???',tit:'Caçada ainda sem pista',txt:['A Guilda ainda não decifrou este rastro. Volte com mais rank.']},
  {id:'g2',soon:1,elite:1,rk:2,dif:'B',modo:'Grupo (2–4)',nm:'???',tit:'Caçada ainda sem pista',txt:['Rumores de algo grande nas colinas. Ninguém voltou para contar.']}];
 const HLV=5;
@@ -6786,7 +6796,61 @@ function mareHuntTick(dt){const S=hnS(),a=S.act.mare;if(!a||a.fim||G.scene!=='du
     if(rt.w>4&&!rt.m4){rt.m4=1;chat('Bolhas sobem do fundo... algo enorme respira lá embaixo.',3);VF.m3('whirl',R.x,R.y+10,2,{r:70});VF.shake(.3);}
     if(rt.w>=6){rt.w=0;rt.m2=rt.m4=0;hnNote(a,'Parado diante do lago, em silêncio, a água respondeu.');spawnMare();writeSave();}}
   else rt.w=Math.max(0,rt.w-rdt*2);}
-function hnTick(dt){hnMusTick();mareHuntTick(dt);mareArena(dt);const S=hnS(),a=S.act.alfa;if(!a||a.fim||!a.ok1||G.scene!=='dungeon'||G.arena||G.map!=='zone_planicie')return;const h=G.hero;if(!h||h.state==='ko')return;
+/* ===================== COLOSSO DAS COLINAS (caçada "Os Passos Que Sacodem o Vale", Colinas Rochosas) =====================
+   Um bicho tão grande que só aparecem as 4 PERNAS (somem em nuvem no alto). Cada perna é um alvo com vida própria, persegue o herói devagar
+   e ataca: PISADA (círculo no pé) e CHUTE LATERAL (faixa). Perna que cai desabilita aquele lado. Com 2 pernas caídas a CABEÇA desce:
+   Mordida, Rugido (medo) e Pedregulho. Com 4 pernas caídas a cabeça desaba no chão e fica exposta (+50% dano). Matar a cabeça encerra a caçada.
+   Sprites: cx_perna / cx_ccabeca (colosso.py); efeitos 3D: M3.shock/rocks/boulder. */
+MOBS.cperna={nome:'Pata do Colosso',cx:'perna',rad:36,shr:44,fam:'javali',noElite:1,hp:400,atk:10,xp:300,gold:[60,120],speed:30,aggro:2400,rng:70,aspd:99,sw:40,deathDur:1.2,numY:64,aura:['#c8a070','#fff0c0']};
+MOBS.ccabeca={nome:'Cabeça do Colosso',cx:'ccabeca',rad:46,shr:54,fam:'javali',noElite:1,hp:800,atk:11,xp:1500,gold:[500,900],speed:0,aggro:2400,rng:0,aspd:99,sw:44,deathDur:1.6,numY:66,aura:['#ffcf4a','#fff6c0']};
+const COL_LV=14,COL_OFF=[[-250,-120],[250,-120],[-200,110],[200,110]];
+function colMob(kind,x,y){const lv=COL_LV,m=mkMob(kind,x,y,-1),FM=FAMM.javali;m.lv=lv;m.maxhp=Math.round(m.T.hp*FM[0]*mobHpMul(lv));m.hp=m.maxhp;m.pow=m.T.atk*FM[1]*mobAtkMul(lv);m.def=lv*1.3;
+  m.minion=true;m.respawn=1e9;m.hunt=true;m.mini=true;m.name=m.T.nome;m.eng=true;m.msk={};m.cd=1+Math.random();m.imm={ctrl:1,atordoado:1,preso:1,lento:1,gelado:1,medo:1};m.row=2;G.mobs.push(m);return m;}
+function spawnColosso(){const R=ZONE.region&&ZONE.region.colo;if(!R)return null;cxLoad('perna');cxLoad('ccabeca');const C=G.colo={x:R.x,y:R.y,legs:[],head:null,phase:0,gcd:2,t:0};
+  COL_OFF.forEach(o=>{const f=freeSpot(R.x+o[0],R.y+o[1]),m=colMob('cperna',f[0],f[1]);m.cl=C;m.cdx=o[0];m.cdy=o[1];C.legs.push(m);
+    m.onDie=()=>{const k=C.legs.filter(l=>l.dead||l.hp<=0).length;VF.shake(1);VF.m3('shock',m.x,m.y,.8,{r:150,c:0xd8c8a8});VF.m3('rocks',m.x,m.y,1.4,{r:130,n:14});sfx('col_fall',1,1);G.hs=Math.max(G.hs||0,.18);
+      chat('Uma das patas do Colosso desabou! ('+k+'/4)',3);floatText(m.x,m.y-110,'PATA CAÍDA!','#ffd070',12,1.6,{pop:1,bold:1,glow:1});if(k>=2&&!C.head)colHead();if(k>=4&&C.head&&!C.head.dead){C.head.take=.5;C.head.vuln=99;C.head.mst={a:'death',t:0,dur:1,hold:1};C.head.fell=1;floatText(C.head.x,C.head.y-120,'A CABEÇA DESABA!','#ffe070',13,1.8,{pop:1,bold:1,glow:1});sfx('col_roar',1,.9);}};});
+  C.head=null;G.hnMob=C.legs[0];VF.shake(1);sfx('col_roar',1,1);sfx('col_step',1,1);
+  floatText(R.x,R.y-170,'O VALE TREME... O COLOSSO CHEGOU!','#ffd070',13,2.2,{pop:1,bold:1,glow:1});chat('O chão racha: as patas do Colosso atravessam as nuvens!',4);return C;}
+function colHead(){const C=G.colo,R=C;const m=colMob('ccabeca',R.x,R.y-230);m.sx=m.x;m.sy=m.y;m.ch1=1;C.head=m;m.mst={a:'descend',t:0,dur:1.6};m.take=0;G.hnMob=m;sfx('col_roar',1,.85);VF.shake(1);
+  m.onDie=()=>{evLoot(m.x,m.y+40,7,3);const a=hnS().act.colosso;if(a){a.fim=1;hnNote(a,'O Colosso das Colinas tombou. Volte à Guilda dos Caçadores.');}G.colo&&(G.colo.done=1);for(const l of C.legs)if(!l.dead)killMob(l);
+    SAVE.hunts=SAVE.hunts||{};SAVE.hunts['Colosso das Colinas']=(SAVE.hunts['Colosso das Colinas']||0)+1;sfx('col_die',1,1);chat('O Colosso das Colinas tombou! Relate a caçada na Guilda dos Caçadores.',4);huntDone('Colosso das Colinas','A');G.hnMob=null;writeSave();};
+  floatText(m.x,m.y-130,'A CABEÇA DESCE!','#ffe070',13,1.8,{pop:1,bold:1,glow:1});chat('Duas patas caíram: a cabeça do Colosso desce das nuvens!',4);}
+function colZ(m,o){addZone(Object.assign({src:m,nodash:1,nofx:1,pc:'#d8b070',wc:[210,170,100]},o));}
+function colLegSkill(m,pick){const h=G.hero,C=m.cl;C.gcd=1.1;m.act={t:0,dur:pick+.5,skill:true,anim:pick===1.0?'stomp':'sweep',hit:pick/(pick+.5)};
+  if(m.act.anim==='stomp'){const a=Math.atan2(h.y-m.y,h.x-m.x),px=m.x+Math.cos(a)*Math.min(70,dist(m,h)),py=m.y+Math.sin(a)*Math.min(70,dist(m,h))*.8;
+    colZ(m,{shape:'circle',x:px,y:py,r:92,warn:pick,mult:2.3,st:['abalado',.6,4,0],shake:.9,onDet:z=>{VF.m3('shock',z.x,z.y,.7,{r:z.r,c:0xe8d8b0});VF.m3('rocks',z.x,z.y,1.2,{r:z.r*1.1,n:10});VF.burst(z.x,z.y,16,['#a89878','#6a5a48','#d8c8a8'],{s0:40,s1:150,flat:.5,up:60,g:220});sfx('col_stomp',1,.9+Math.random()*.2);VF.shake(1);}});
+    floatText(m.x,m.y-130,'Pisada','#ffe0a0',10,1,{pop:1,bold:1});sfx('col_step',.7,1);return;}
+  const a=Math.atan2(h.y-m.y,h.x-m.x);colZ(m,{shape:'line',x:m.x,y:m.y,a,len:260,w:96,warn:pick,mult:1.8,st:['atordoado',.5,.7,0],shake:.5,onDet:z=>{VF.burst(m.x+Math.cos(a)*130,m.y+Math.sin(a)*130,18,['#a89878','#d8c8a8','#fff'],{s0:60,s1:190,flat:.4,up:40,g:200});sfx('col_sweep',.9,1);VF.m3('shock',m.x+Math.cos(a)*120,m.y+Math.sin(a)*120,.5,{r:90,c:0xe8d8b0});}});
+  floatText(m.x,m.y-130,'Chute','#ffe0a0',10,1,{pop:1,bold:1});sfx('col_step',.7,.85);}
+function colLegTick(m,dt){const h=G.hero,C=m.cl;m.row=2;m.stun=0;m.stagger=0;m.kvx=m.kvy=0;m.dash=null;if(m.sts){stUpdate(m,dt);if(m.dead)return;}
+  if(m.act){const a=m.act;a.t+=dt;m.state='atk';if(a.t>=a.dur){m.act=null;m.cd=rnd(.7,1.4);}return;}
+  if(!h||h.state==='ko'){m.state='idle';return;}
+  const d=dist(m,h),home={x:C.x+m.cdx,y:C.y+m.cdy};
+  if(d>110||Math.hypot(m.x-home.x,m.y-home.y)>520){const tx=d>110?h.x:home.x,ty=d>110?h.y:home.y;if(d>110&&Math.hypot(m.x-C.x,m.y-C.y)>520){moveTo(m,home.x,home.y,m.T.speed*MOVE*(m.fury?1.5:1),dt,1);}else moveTo(m,tx,ty,m.T.speed*MOVE*(m.fury?1.5:1),dt,1);
+    collide(m,10);m.wx=m.x;m.wy=m.y;m.state='walk';m.animT+=dt*8;if(Math.random()<dt*3){sfx('col_step',.28*Math.max(.2,1-d/700),.85+Math.random()*.15);if(d<700)VF.shake(.12);}}else m.state='idle';
+  m.cd-=dt;if(m.cd>0||C.gcd>0||d>150)return;m.cd=rnd(2.2,3.4)*(m.fury?.65:1);C.gcd=1.1;colLegSkill(m,d<95||Math.random()<.65?1.0:1.1);}
+function colHeadSkill(m,id){const h=G.hero,C=m.cl||G.colo;C.gcd=1;const w=id==='bite'?.9:id==='roar'?1.0:.8;m.act={t:0,dur:w+.55,skill:true,anim:id,hit:w/(w+.55)};
+  if(id==='bite'){const f=freeSpot(h.x,h.y);colZ(m,{shape:'circle',x:f[0],y:f[1],r:78,warn:w,mult:2.6,st:['atordoado',.6,.9,0],shake:.8,onDet:z=>{VF.m3('shock',z.x,z.y,.6,{r:z.r,c:0xe8d8b0});VF.burst(z.x,z.y,14,['#a89878','#fff'],{s0:50,s1:150,flat:.5,up:50,g:200});sfx('col_bite',1,1);VF.shake(1);}});floatText(m.x,m.y-140,'Mordida','#ffe0a0',10,1,{pop:1,bold:1});sfx('col_roar',.6,1.2);return;}
+  if(id==='roar'){colZ(m,{shape:'circle',x:m.x,y:m.y+110,r:230,warn:w,mult:1.2,st:['medo',1,2,0],shake:.7,onDet:z=>{VF.m3('aurora',z.x,z.y,1.4,{r:z.r});sfx('col_roar',1,1);VF.shake(1);}});floatText(m.x,m.y-140,'RUGIDO','#ffcf4a',12,1.2,{pop:1,bold:1,glow:1});return;}
+  m.act.fxT=w;m.act.fx=mm=>{const hh=G.hero,n=m.fury?3:1,a0=Math.atan2(hh.y-(mm.y-10),hh.x-mm.x);for(let i=0;i<n;i++){const a=a0+(i-(n-1)/2)*.28,sp=170,p={kind:'wo',x:mm.x,y:mm.y+10,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:5,m:mm,rad:17,mult:1.9,st:['abalado',1,3,0],col:'#d8c8a8',boulder:1};G.mp.push(p);VF.m3('boulder',p.x,p.y,5.2,{ft:p,a});}sfx('col_spit',1,1);};
+  floatText(m.x,m.y-140,'Pedregulho','#ffe0a0',10,1,{pop:1,bold:1});}
+function colHeadTick(m,dt){const h=G.hero,C=G.colo;m.x=m.sx;m.y=m.sy;m.kvx=m.kvy=0;m.stun=0;m.stagger=0;m.row=2;if(m.sts){stUpdate(m,dt);if(m.dead)return;}
+  if(m.mst){const q=m.mst;q.t+=dt;m.state='atk';if(q.hold){if(q.t>=q.dur){q.t=q.dur-.01;}return;}if(q.t>=q.dur){m.mst=null;m.take=m.fell?.5:null;floatText(m.x,m.y-130,'Ataque a cabeça!','#ffe070',11,1.4,{pop:1,bold:1});m.cd=1.4;}return;}
+  if(!m.fury&&m.hp<m.maxhp*.35){m.fury=1;floatText(m.x,m.y-140,'O COLOSSO ENFURECE!','#ff7a5a',13,1.8,{pop:1,bold:1,glow:1});sfx('col_roar',1,.8);VF.shake(1);C.legs.forEach(l=>{if(!l.dead)l.fury=1;});}
+  if(m.act){const a=m.act;a.t+=dt;m.state='atk';if(a.fx&&a.t>=a.fxT){const f=a.fx;a.fx=null;f(m);}if(a.t>=a.dur){m.act=null;m.cd=rnd(.6,1.1)*(m.fury?.6:1);}return;}
+  m.state='idle';if(!h||h.state==='ko')return;m.cd-=dt;if(m.cd>0||C.gcd>0)return;const ids=['bite','roar','spit'];if(m.fell)ids.push('bite','bite');
+  const fr=m.hp/m.maxhp;let id=ids[Math.floor(Math.random()*ids.length)];if(id==='roar'&&(m.msk.roar||0)>G.t)id='bite';m.msk[id]=G.t+(id==='roar'?9:3);colHeadSkill(m,id);}
+function colArena(dt){const C=G.colo;if(!C||G.scene!=='dungeon'||G.map!=='zone_colinas')return;C.gcd=Math.max(0,C.gcd-dt);C.t+=dt;if(Math.random()<dt*5){const l=C.legs[Math.floor(Math.random()*4)];if(l&&!l.dead)VF.pt(l.x+rnd(-30,30),l.y-rnd(0,10),{vy:-rnd(5,16),life:.6,col:'#a89878',sz:2.4,add:false});}}
+function colHuntTick(dt){const S=hnS(),a=S.act.colosso;if(!a||a.fim||G.scene!=='dungeon'||G.map!=='zone_colinas'||G.arena)return;const h=G.hero;if(!h||h.state==='ko')return;const R=ZONE.region&&ZONE.region.colo;if(!R)return;
+  if(G.colo&&!G.colo.done&&G.mobs.some(m=>(m.type==='cperna'||m.type==='ccabeca')&&!m.dead))return;if(G.colo&&G.colo.done)G.colo=null;
+  const rt=G.clT||(G.clT={w:0,x:h.x,y:h.y}),moved=Math.hypot(h.x-rt.x,h.y-rt.y);rt.x=h.x;rt.y=h.y;const rdt=dt/TEMPO,near=Math.hypot(h.x-R.x,h.y-R.y)<260;
+  if(near&&moved<.25&&!h.act&&!(G.joy&&G.joy.m>.05)&&!inCombat(h)){rt.w+=rdt;
+    if(rt.w>2&&!rt.m2){rt.m2=1;chat('O chão vibra sob seus pés, num ritmo lento e pesado.',3);VF.shake(.2);}
+    if(rt.w>4.5&&!rt.m4){rt.m4=1;chat('Poeira cai das pedras. Algo enorme respira acima das nuvens...',3);VF.shake(.4);sfx('col_step',.6,.8);}
+    if(rt.w>=7){rt.w=0;rt.m2=rt.m4=0;hnNote(a,'Parado no círculo de pedras, o vale respondeu com passos.');spawnColosso();writeSave();}}
+  else rt.w=Math.max(0,rt.w-rdt*2);}
+function hnTick(dt){hnMusTick();mareHuntTick(dt);mareArena(dt);colHuntTick(dt);colArena(dt);const S=hnS(),a=S.act.alfa;if(!a||a.fim||!a.ok1||G.scene!=='dungeon'||G.arena||G.map!=='zone_planicie')return;const h=G.hero;if(!h||h.state==='ko')return;
   if(G.hnMob&&!G.hnMob.dead&&G.mobs.includes(G.hnMob))return;                                   // o Alfa já está em campo
   if(G.hnMob&&!G.mobs.includes(G.hnMob)){G.hnMob=null;}                                         // sumiu (saiu da zona): recomeça
   const rt=G.hnRT||(G.hnRT={w:0,x:h.x,y:h.y}),moved=Math.hypot(h.x-rt.x,h.y-rt.y);rt.x=h.x;rt.y=h.y;const rdt=dt/TEMPO;
@@ -6951,7 +7015,7 @@ function dmkImg(k){if(DMK[k])return DMK[k];const P={skull:['.XXXXX.','XXXXXXX','
 function dangerMarkers(){const mk=$('dmk')||(()=>{const d=document.createElement('div');d.id='dmk';d.style.cssText='position:absolute;inset:0;pointer-events:none;z-index:3;overflow:hidden';const st=document.createElement('style');st.textContent='#dmk img{position:absolute;transform:translate(-50%,-100%);width:27px;height:27px;image-rendering:pixelated;animation:dmkb .9s infinite;filter:drop-shadow(0 2px 0 #000a)}#dmk img.rr{width:36px;height:36px;filter:drop-shadow(0 0 6px #ff5a4a)}@keyframes dmkb{50%{margin-top:-4px}}';document.head.appendChild(st);$('stage').appendChild(d);return d;})();
   let i=0;if(G.on&&G.hero&&G.scene==='dungeon'&&window.V3&&V3.toScreen&&!G.winOpen&&!G.cut){const ts=V3.toScreen;
     for(const m of G.mobs||[]){if(m.dead||m.hide||dist(m,G.hero)>760)continue;let k=null;if(m.rare)k='gem_rare';else if(m.tier==='gold')k='skull_gold';else if(m.tier==='blue')k='skull_blue';else if(m.mini&&!m.minion)k='gem_rare';if(!k)continue;
-      while(mk.children.length<=i)mk.appendChild(document.createElement('img'));const e=mk.children[i++],hh=(m.type==='mare'?66:m.type==='cervo'?104:m.rare?46:(m.mini?42:38))*cxSize(m),p=ts(m.x,m.y,hh);
+      while(mk.children.length<=i)mk.appendChild(document.createElement('img'));const e=mk.children[i++],hh=(m.type==='cperna'?90:m.type==='ccabeca'?85:m.type==='mare'?66:m.type==='cervo'?104:m.rare?46:(m.mini?42:38))*cxSize(m),p=ts(m.x,m.y,hh);
       const u=dmkImg(k);if(e.dataset.k!==k){e.dataset.k=k;e.src=u;e.className=m.rare?'rr':'';}e.style.left=p[0]+'px';e.style.top=p[1]+'px';e.style.display='block';}}
   for(;i<mk.children.length;i++)mk.children[i].style.display='none';}
 /* ===== GPS DE MISSÃO: seta sobre a cabeça do herói apontando o caminho (uma missão guiada por vez) ===== */
@@ -7147,7 +7211,7 @@ function huntLogBody(){try{sqCss();}catch(e){}
 function huntRankBody(){const S=hnS(),rk=hnRank();
   return '<div class="sec-h"><span>Prêmios de rank</span><span>ganhe pontos caçando</span></div>'+HRANK.slice(1).map((x,i)=>{i++;const ok=rk>=i,cl=S.cl[i],r=x.r;const txt=[r.sel?r.sel+' Selos':'',r.gold?r.gold+' ouro':'',r.pot?r.pot+' poções':'',r.item?SLOT_NAME[r.item[0]]+' '+RAR[r.item[1]].n:''].filter(Boolean).join(' · ');
     return `<div class="hnc ${ok?'':'soon'}"><div class="hnh"><b>Rank ${i+1} · ${x.n}</b><em>${x.p} pts</em></div><div class="row2"><span>Prêmio</span><span>${txt}</span></div><div class="hna">${cl?'<span class="hl ok">✔ recebido</span>':ok?`<button class="gb" data-a="ct:rk:${i}">Receber</button>`:'<span class="hl">Bloqueado</span>'}</div></div>`;}).join('');}
-const HMOB={alfa:'alfa',mare:'mare'};
+const HMOB={alfa:'alfa',mare:'mare',colosso:'cperna'};
 function huntTargetsBody(){const S=hnS();let h='<div class="sub">Os alvos das caçadas. Só aparecem aqui depois que você descobre quem é o alvo.</div><div class="bgrid">';
   for(const H of HUNTS.filter(x=>!x.soon)){const f=HMOB[H.id],T=f&&MOBS[f],dn=S.done[H.id]||0,a=S.act[H.id],known=T&&(dn||(a&&(a.fim||a.ok1))),k=(SAVE.hunts&&T&&SAVE.hunts[T.nome])||dn;
     h+=`<div class="bc${known?'':' un'}${dn?' mx':''}"><div class="bp">${known?`<img src="${mobPortrait(f)}">`:''}</div><b class="bn">${known?T.nome:'???'}</b><div class="bs"><i class="hdf hd${H.dif||'D'}">${H.dif||'D'}</i></div><span class="bk">${dn?'Abatido · '+k+'×':a?'Rastro em andamento':'Não encontrado'}</span><span class="bt">${known?areaName(H.map):'Local: '+areaName(H.map)}</span></div>`;}
