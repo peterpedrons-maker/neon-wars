@@ -2,7 +2,7 @@
 # -> mmo/assets/mapa_regiao<N>.png, mapa_regiao<N>_ids.png, mapa_regiao<N>_layout.json   (use /usr/bin/python3)
 # Região 1: /usr/bin/python3 tools/mmo/build_mapamundi.py      Região 2: REG=2 /usr/bin/python3 tools/mmo/build_mapamundi.py
 # REGRA: toda região nova ganha o MESMO tipo de mapa (relevo, estradas, florestas/montanhas em mancha, zonas orgânicas, nomes) — ver bloco REG==2 e docs.
-import numpy as np, random, math, json, os
+import numpy as np, random, math, json, os, sys
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from scipy.ndimage import gaussian_filter, zoom, binary_fill_holes, binary_closing, distance_transform_edt
 from skimage import measure
@@ -38,7 +38,7 @@ while q:
 if REG==1: pos['estrada']=(4900,6000)            # a Estrada faz uma ferradura: desenhada ao lado, sem bater no Brejo
 SZ=dict(SIZE); SZ['town']=(2600,1500); SZ['cidade2']=(3000,1800); SZ['cinzamuro']=(2600,1500)
 if REG==1:
-    pos['town']=(4900+1100-1300,8700); pos['cidade2']=(pos['passo'][0]+2250-1500,pos['passo'][1]-1800)
+    pos['town']=(pos['estrada'][0]+1100-1300,pos['estrada'][1]+SIZE['estrada'][1]-100); pos['cidade2']=(pos['passo'][0]+2250-1500,pos['passo'][1]-1800+100)
 else: pos['cinzamuro']=(pos['muralha'][0]+1100-1300,pos['muralha'][1]+SIZE['muralha'][1]-100)
 xs=[pos[k][0] for k in KEYS]+[pos[k][0]+SZ[k][0] for k in KEYS]; ys=[pos[k][1] for k in KEYS]+[pos[k][1]+SZ[k][1] for k in KEYS]
 M=600 if REG==1 else 2600; x0,x1,y0,y1=min(xs)-M,max(xs)+M,min(ys)-M,max(ys)+M
@@ -51,17 +51,30 @@ nA=noise(40,1)-.5; nB=noise(16,2)-.5; nC=noise(80,3)-.5
 yy,xx=np.mgrid[0:H,0:W].astype(np.float32)
 WARP=60 if REG==1 else 110
 wx=xx+nA*WARP+nB*22; wy=yy+nC*WARP+nB*22
-Dm=np.zeros((len(KEYS),H,W),np.float32)
+# --- FORMATO = o mesmo que a zona tem no jogo (tools/mmo/zoneshape.py): o mapa-múndi mostra exatamente o contorno explorável ---
+sys.path.insert(0,os.path.dirname(os.path.abspath(__file__))); import zoneshape as ZS
+MASK=np.zeros((len(KEYS),H,W),bool)
 for i,k in enumerate(KEYS):
-    rx,ry,rw,rh=rect[k]; cx,cy=rx+rw/2,ry+rh/2
-    if REG==1: Dm[i]=((np.abs(wx-cx)/(rw/2))**3.2+(np.abs(wy-cy)/(rh/2))**3.2)**(1/3.2)
+    rx,ry,rw,rh=rect[k]; zw,zh=SZ[k]
+    x0_=max(0,int(rx)-2);x1_=min(W,int(rx+rw)+3);y0_=max(0,int(ry)-2);y1_=min(H,int(ry+rh)+3)
+    gx,gy=np.meshgrid(np.arange(x0_,x1_)+.5,np.arange(y0_,y1_)+.5); X=(gx-rx)/rw*zw; Y=(gy-ry)/rh*zh
+    if k in TOWNK: m=(np.abs((X-zw/2)/(zw/2))**4+np.abs((Y-zh/2)/(zh/2))**4)<1
     else:
-        rr=np.random.RandomState(100+i); ang=np.arctan2(wy-cy,wx-cx); ex_=rr.uniform(2.1,2.7)
-        mod=1.16+.15*np.sin(3*ang+rr.uniform(0,6.3))+.09*np.sin(5*ang+rr.uniform(0,6.3))+.06*np.sin(8*ang+rr.uniform(0,6.3))
-        Dm[i]=((np.abs(wx-cx)/(rw/2))**ex_+(np.abs(wy-cy)/(rh/2))**ex_)**(1/ex_)/mod
-ID=Dm.argmin(0); DM=Dm.min(0)
-land=DM<1.14+nB*.35
-land=binary_fill_holes(binary_closing(land,iterations=14)); land=gaussian_filter(land.astype(np.float32),5)>.5
+        jj=json.load(open(A+'zone_%s.json'%k)); ex=[dict(side=e['side'],pos=(e['x']+e['w']/2 if e['side']<2 else e['y']+e['h']/2)) for e in jj['exits'] if e.get('side',-1)>=0]
+        m=ZS.inside(k,zw,zh,ex,X,Y)
+    MASK[i,y0_:y1_,x0_:x1_]=m
+land=MASK.any(0); ID=np.where(land,MASK.argmax(0),0)
+# ligações cujas bocas não se encontram (a Estrada fica deslocada): istmo estreito entre as duas saídas
+def _expt(k,sd,pos_):
+    rx,ry,rw,rh=rect[k]; zw,zh=SZ[k]
+    return {0:(rx+pos_/zw*rw,ry),1:(rx+pos_/zw*rw,ry+rh),2:(rx,ry+pos_/zh*rh),3:(rx+rw,ry+pos_/zh*rh)}[sd]
+_im=Image.new('L',(W,H),0); _dd=ImageDraw.Draw(_im)
+for a_,sa,pa,b_,pb in LINKS:
+    A_=_expt(a_,sa,pa); B_=_expt(b_,OPP[sa],pb)
+    if 12<math.hypot(A_[0]-B_[0],A_[1]-B_[1])<150: _dd.line([A_,((A_[0]+B_[0])/2+6,(A_[1]+B_[1])/2),B_],fill=255,width=int(ZS.CORRW*2*K))
+_is=np.array(_im)>0
+ID=np.where(_is&~land,KEYS.index(LINKS[0][0]) if False else ID,ID); land|=_is
+land=gaussian_filter(land.astype(np.float32),2)>.5
 land[:12]=False;land[-12:]=False;land[:,:12]=False;land[:,-12:]=False
 # --- dados reais das zonas: água e estradas (do chão), props ---
 water=np.zeros((H,W),bool); road=np.zeros((H,W),bool); Zj={}
