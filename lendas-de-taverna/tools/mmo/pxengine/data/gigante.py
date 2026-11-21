@@ -44,7 +44,6 @@ def giant(view='d'):
             for k in range(3): c.cap(x0 + 44 + k * 4, fy - 11 + k * 5, x0 + 52 + k * 4, fy - 7 + k * 5, 2.4, 1.2, 'horn', f)
         c.ell(sx(-12), 224, 62, 36, 'fur')                                         # tanga
         tufts(c, sx(-58), 240, sx(30), 244, 11, 1, 20, 4.6)
-        c.cap(sx(-56), 236, sx(40), 236, 6, 6, 'hoof'); c.ell(sx(-6), 236, 11, 9, 'stone')   # cinto de couro
         c.ell(sx(-4), 150, 60, 78, 'body'); c.ell(sx(-30), 150, 38, 74, 'fur'); c.ell(sx(12), 198, 44, 38, 'body')
         tufts(c, sx(-62), 110, sx(-52), 210, 8, -1, 16, 4.6)                       # costas peludas
         c.cap(sx(-6), 94, sx(30), 62, 34, 22, 'fur'); tufts(c, sx(-24), 74, sx(14), 92, 6, -1, 14, 4.6)
@@ -82,7 +81,6 @@ def giant(view='d'):
                 for k in range(-2, 3): c.cap(x0 + sg * 6 + k * 13, fy - 4, x0 + sg * 6 + k * 14, fy + 2, 2.6, 1.2, 'horn')
         c.ell(cx, 222, 78, 36, bm)                                                       # tanga de pele
         tufts(c, cx - 70, 240, cx + 70, 242, 14, 1, 22, 5, bm)
-        c.cap(cx - 72, 236, cx + 72, 236, 6, 6, 'hoof'); c.ell(cx, 236, 13, 10, 'stone'); c.ell(cx, 236, 5, 4, 'moss')   # cinto de couro com fivela de pedra
         c.ell(cx, 156, 80, 80, bb); c.ell(cx, 198, 62, 46, bb)                            # torso e barriga
         c.ell(cx, 128, 52, 34, 'fur' if not back else 'far')                                # peitoral peludo
         c.ell(cx, 98, 58, 22, 'fur')                                                          # trapezio
@@ -132,7 +130,43 @@ def giant(view='d'):
             for dx_ in (-1, 0, 1, 2):
                 for dy_ in (0, 1): c.dot(ex + dx_, ey + dy_, FLAT['eye'])
             c.dot(ex, ey, FLAT['eye2'])
-    return c.render(PAL, FLAT)
+    img = c.render(PAL, FLAT)
+    return fur(c, img, view, back)
+
+import numpy as np
+from scipy.ndimage import gaussian_filter, binary_erosion
+def fur(c, img, view, back, t=0.0, seed=3):
+    """PELO COMO GRAMA: (1) franja de fios saindo da silhueta (entram na mascara e ganham contorno/sombra do motor);
+    (2) fios curtos por cima do corpo, claros na ponta e escuros na raiz, com balanco (t) para animar."""
+    rng = np.random.RandomState(seed)
+    a = np.array(img)[:, :, 3] > 0
+    bl = gaussian_filter(a.astype(float), 2.2); gy, gx = np.gradient(bl)
+    rgb = np.array(img)[:, :, :3].astype(int)
+    notbone = ~((rgb[:, :, 0] > 175) & (rgb[:, :, 1] > 150))      # chifres, garras e presas ficam lisos
+    edge = a & ~binary_erosion(a, iterations=2) & notbone
+    ys, xs = np.where(edge)
+    reg = 'far' if back else 'fur'
+    for i in rng.choice(len(xs), min(len(xs), int(len(xs) * .22)), replace=False):
+        x, y = xs[i], ys[i]
+        nx, ny = -gx[y, x], -gy[y, x]; L = math.hypot(nx, ny) or 1; nx, ny = nx / L, ny / L
+        ny = ny * .6 + .55            # os fios caem um pouco para baixo (peso)
+        ln = rng.uniform(4, 9) * c.k / 1.3
+        sw = math.sin(t + x * .07) * 1.6
+        c.cv.cap(x, y, x + nx * ln + sw, y + ny * ln, 2.0, .5, reg)
+    img2 = c.cv.render(PAL, FLAT)
+    arr = np.array(img2).astype(float); m = arr[:, :, 3] > 0
+    inner = binary_erosion(m, iterations=4) & ~((arr[:, :, 0] > 175) & (arr[:, :, 1] > 150))
+    yy, xx = np.where(inner)
+    cxm = arr.shape[1] / 2
+    for i in rng.choice(len(xx), min(len(xx), int(len(xx) * .07)), replace=False):
+        x, y = xx[i], yy[i]; base = arr[y, x, :3].copy()
+        ln = int(rng.randint(4, 9)); dxs = (np.sign(x - cxm) * .3 + math.sin(t + y * .05 + x * .03) * .5)
+        for k in range(ln):
+            px_, py_ = int(round(x + dxs * k)), y + k
+            if 0 <= px_ < arr.shape[1] and 0 <= py_ < arr.shape[0] and inner[py_, px_]:
+                f = .82 + .4 * (k / max(1, ln - 1))      # raiz escura -> ponta clara
+                arr[py_, px_, :3] = np.clip(base * f + (8 if k == ln - 1 else 0), 0, 255)
+    return Image.fromarray(arr.astype(np.uint8), 'RGBA')
 
 def sheet(path, hero_png=''):
     V = [giant(v) for v in ('d', 's', 'u')]
