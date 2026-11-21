@@ -106,7 +106,7 @@ function buildScene(key){
     const a=ATLAS_J[p.id];if(!a)continue;
     if(mood==='room'&&p.id.slice(0,4)==='f1a3')continue;   /* lustre preto (arte sem luz): fica só a luz */
     if(p.t==='flat'||(mood==='room'&&TOPDOWN.has(p.id.slice(0,4)))){flats.push([p.id,p.x,p.y]);continue;}
-    if(key==='town'&&p.id.startsWith('b_'))continue;stand.push([p.id,p.x,p.y]);
+    if((key==='town'&&p.id.startsWith('b_'))||(key==='cinzamuro'&&/^(s_|hs\d)/.test(p.id)))continue;stand.push([p.id,p.x,p.y]);
     if((key==='town'||key==='cinzamuro')&&a[2]<=24&&a[3]>=80)lampsP.push([p.x*U,2.3,p.y*U]);}
   if(key==='zone_pantano'&&V3.proc)V3.proc.direct(add,ZONE.props.filter(p=>p.k),sc);
   if(ZONE.region&&V3.proc)V3.proc.direct(add,ZONE.props.filter(p=>p.k),sc);
@@ -129,7 +129,7 @@ function buildScene(key){
     put(b,0,Z);put(fi,18,Z+.02);const geo=bufGeo(pos,uv,idx,1);
     add(new T.Mesh(geo,new T.MeshLambertMaterial({map:aTex,alphaTest:.3,side:T.DoubleSide,emissive:0xffffff,emissiveMap:aTex,emissiveIntensity:.35})));sc.fireGeos.push(geo);}
   // ---- extras por cenário
-  if(key==='town')townExtras(sc,add,rnd);
+  if(key==='town'||key==='cinzamuro')townExtras(sc,add,rnd);
   if(key==='zone_cripta2')crpExtras(sc,add,sc.proc);
   // ---- luzes
   for(const [x,y,z] of lampsP)sc.sources.push({p:new T.Vector3(x,y,z),c:0xffc878,k:1.5,night:1});
@@ -149,13 +149,16 @@ function buildScene(key){
   return sc;
 }
 function townExtras(sc,add,rnd){
-  const HC={b_fer:{name:'Ferreiro',roof:'#2d3540',wall:'#b99a74',glow:'#ff8a2a',smoke:1},b_mer:{name:'Mercador',roof:'#7a3b29',wall:'#c4a58a',glow:'#ffd27a'},b_mes:{name:'Mestre de Classe',roof:'#34455a',wall:'#c9b8a8',glow:'#ffd27a'},b_alq:{name:'Alquimista',roof:'#355868',wall:'#a99aa6',glow:'#9affc0',smoke:1},b_lei:{name:'Leilão',roof:'#562729',wall:'#b98f6c',glow:'#ffd27a'},b_cof:{name:'Cofre',roof:'#364b42',wall:'#6a6668',glow:'#8ac8ff'}};
+  const SLT=['#46506c','#5e4650','#3f5f60','#675c46'],CZW='#8b93a6',CZH=(nm,roof,w,gl,sm)=>({name:nm,roof:SLT[roof],wall:CZW,glow:gl||'#ffd27a',smoke:sm,stone:1,pw:w});
+  const HC={s_fer:CZH('Ferreiro',1,200,'#ff8a2a',1),s_mer:CZH('Mercador',0,210),s_alq:CZH('Alquimista',2,180,'#9affc0',1),s_mes:CZH('Mestre de Classe',0,200),s_lei:CZH('Leilão',3,200),s_cof:CZH('Cofre',1,180,'#8ac8ff'),
+    hs0:CZH('',0,150),hs1:CZH('',1,166,0,1),hs2:CZH('',2,182),hs3:CZH('',3,150),hs4:CZH('',0,166,0,1),hs5:CZH('',1,182),b_fer:{name:'Ferreiro',roof:'#2d3540',wall:'#b99a74',glow:'#ff8a2a',smoke:1},b_mer:{name:'Mercador',roof:'#7a3b29',wall:'#c4a58a',glow:'#ffd27a'},b_mes:{name:'Mestre de Classe',roof:'#34455a',wall:'#c9b8a8',glow:'#ffd27a'},b_alq:{name:'Alquimista',roof:'#355868',wall:'#a99aa6',glow:'#9affc0',smoke:1},b_lei:{name:'Leilão',roof:'#562729',wall:'#b98f6c',glow:'#ffd27a'},b_cof:{name:'Cofre',roof:'#364b42',wall:'#6a6668',glow:'#8ac8ff'}};
   function facade(cfg){const W=512,H=384,c=cvs(W,H),x=c.getContext('2d'),e=cvs(W,H),y=e.getContext('2d');
     x.fillStyle=cfg.wall;x.fillRect(0,0,W,H);for(let i=0;i<500;i++){x.fillStyle=`rgba(${rnd()<.5?'0,0,0':'255,255,255'},${.03+rnd()*.05})`;x.fillRect(rnd()*W,rnd()*H,2+rnd()*6,2+rnd()*3);}
     y.fillStyle='#000';y.fillRect(0,0,W,H);const stoneH=70;x.fillStyle='#6a6e72';x.fillRect(0,H-stoneH,W,stoneH);
     for(let j=0;j<3;j++)for(let i=0;i<10;i++){x.fillStyle=`hsl(210,6%,${34+rnd()*14}%)`;x.fillRect(i*52+(j%2)*26+2,H-stoneH+j*23+2,48,19);}
-    x.fillStyle='#3a2616';const bw=14;x.fillRect(0,0,W,bw);x.fillRect(0,H-stoneH-bw/2,W,bw);x.fillRect(0,H*.38,W,bw);for(const px of[0,W/4,W/2,3*W/4,W-bw])x.fillRect(px,0,bw,H-stoneH);
-    x.strokeStyle='#3a2616';x.lineWidth=10;x.beginPath();x.moveTo(0,H*.38);x.lineTo(W/4,0);x.moveTo(W,H*.38);x.lineTo(3*W/4,0);x.stroke();
+    if(cfg.stone){for(let j=0;j<H;j+=24)for(let i=-1;i<9;i++){const o=(j/24%2)*32;x.fillStyle=`hsl(225,${8+rnd()*6}%,${46+rnd()*14}%)`;x.fillRect(i*64+o+2,j+2,60,20);x.fillStyle='rgba(255,255,255,.12)';x.fillRect(i*64+o+2,j+2,60,2);}x.fillStyle='#4a3020';x.fillRect(0,0,W,10);x.fillRect(0,H-stoneH-7,W,10);x.fillRect(0,0,12,H-stoneH);x.fillRect(W-12,0,12,H-stoneH);}
+    else{x.fillStyle='#3a2616';const bw=14;x.fillRect(0,0,W,bw);x.fillRect(0,H-stoneH-bw/2,W,bw);x.fillRect(0,H*.38,W,bw);for(const px of[0,W/4,W/2,3*W/4,W-bw])x.fillRect(px,0,bw,H-stoneH);
+    x.strokeStyle='#3a2616';x.lineWidth=10;x.beginPath();x.moveTo(0,H*.38);x.lineTo(W/4,0);x.moveTo(W,H*.38);x.lineTo(3*W/4,0);x.stroke();}
     const dx=W/2-44,dy=H-stoneH-130,dw=88,dh=130+stoneH;
     x.fillStyle='#2c3034';x.beginPath();x.moveTo(dx-8,H);x.lineTo(dx-8,dy+30);x.arc(W/2,dy+30,dw/2+8,Math.PI,0);x.lineTo(dx+dw+8,H);x.fill();
     x.fillStyle='#4a2d18';x.beginPath();x.moveTo(dx,H);x.lineTo(dx,dy+30);x.arc(W/2,dy+30,dw/2,Math.PI,0);x.lineTo(dx+dw,H);x.fill();
@@ -163,11 +166,11 @@ function townExtras(sc,add,rnd){
     for(const wxp of[70,W-70-82]){x.fillStyle='#2c1a0e';x.fillRect(wxp-6,H*.5-6,94,84);x.fillStyle='#1a2230';x.fillRect(wxp,H*.5,82,72);x.fillStyle='#5a3a1e';x.fillRect(wxp-14,H*.5,14,72);x.fillRect(wxp+82,H*.5,14,72);
       y.fillStyle=cfg.glow;y.fillRect(wxp,H*.5,82,72);x.fillStyle=cfg.glow;x.globalAlpha=.18;x.fillRect(wxp,H*.5,82,72);x.globalAlpha=1;x.fillStyle='#2c1a0e';x.fillRect(wxp+39,H*.5,4,72);x.fillRect(wxp,H*.5+34,82,4);y.fillStyle='#000';y.fillRect(wxp+39,H*.5,4,72);y.fillRect(wxp,H*.5+34,82,4);}
     const t=new T.CanvasTexture(c),et=new T.CanvasTexture(e);t.encoding=T.sRGBEncoding;et.encoding=T.sRGBEncoding;t.anisotropy=4;return [t,et];}
-  function sideTex(cfg){const c=cvs(256,256),x=c.getContext('2d');x.fillStyle=cfg.wall;x.fillRect(0,0,256,256);x.fillStyle='#3a2616';x.fillRect(0,0,256,10);x.fillRect(0,100,256,10);for(const p of[0,120,246])x.fillRect(p,0,10,256);x.fillStyle='#6a6e72';x.fillRect(0,196,256,60);const t=new T.CanvasTexture(c);t.encoding=T.sRGBEncoding;return t;}
+  function sideTex(cfg){const c=cvs(256,256),x=c.getContext('2d');x.fillStyle=cfg.wall;x.fillRect(0,0,256,256);if(cfg.stone){for(let j=0;j<256;j+=24)for(let i=-1;i<5;i++){const o=(j/24%2)*32;x.fillStyle=`hsl(225,${8+rnd()*6}%,${42+rnd()*14}%)`;x.fillRect(i*64+o+2,j+2,60,20);}x.fillStyle='#4a3020';for(const p of[0,246])x.fillRect(p,0,10,256);x.fillStyle='#6a6e72';x.fillRect(0,196,256,60);const t0=new T.CanvasTexture(c);t0.encoding=T.sRGBEncoding;return t0;}x.fillStyle='#3a2616';x.fillRect(0,0,256,10);x.fillRect(0,100,256,10);for(const p of[0,120,246])x.fillRect(p,0,10,256);x.fillStyle='#6a6e72';x.fillRect(0,196,256,60);const t=new T.CanvasTexture(c);t.encoding=T.sRGBEncoding;return t;}
   function roofTex(col){const c=cvs(256,256),x=c.getContext('2d');x.fillStyle=col;x.fillRect(0,0,256,256);for(let j=0;j<16;j++)for(let i=-1;i<9;i++){const px=i*32+(j%2)*16,py=j*16;x.fillStyle=`rgba(${rnd()<.5?'0,0,0':'255,255,255'},${.05+rnd()*.12})`;x.fillRect(px+1,py+1,30,14);x.fillStyle='rgba(0,0,0,.3)';x.fillRect(px,py+14,32,2);}const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(3,2);t.encoding=T.sRGBEncoding;return t;}
   function sign(name){const c=cvs(256,96),x=c.getContext('2d');x.fillStyle='#3a2210';x.fillRect(0,0,256,96);x.fillStyle='#5a3a1e';x.fillRect(5,5,246,86);x.fillStyle='#f0d890';x.font='700 30px Georgia';x.textAlign='center';x.textBaseline='middle';x.fillText(name,128,50,230);const t=new T.CanvasTexture(c);t.encoding=T.sRGBEncoding;return t;}
   function house(id,px,py){const cfg=HC[id];if(!cfg)return;const gr=new T.Group();gr.position.set(px*U,0,py*U);
-    const w=5.3,d=4.5,h=2.9,[ft,fe]=facade(cfg),st=sideTex(cfg);
+    const w=cfg.pw?cfg.pw*U:5.3,d=cfg.pw?w*.8:4.5,h=cfg.pw?3.1+(cfg.pw-150)/90:2.9,[ft,fe]=facade(cfg),st=sideTex(cfg);
     const ws=new T.MeshStandardMaterial({map:st,roughness:.9}),wf=new T.MeshStandardMaterial({map:ft,emissiveMap:fe,emissive:0xffffff,emissiveIntensity:.25,roughness:.9});sc.winMats.push(wf);
     const body=new T.Mesh(new T.BoxGeometry(w,h,d),[ws,ws,new T.MeshStandardMaterial({color:0x444}),new T.MeshStandardMaterial({color:0x222}),wf,ws]);body.position.set(0,h/2,-d/2);gr.add(body);
     const rt=roofTex(cfg.roof),hip=new T.BufferGeometry(),a=w/2+.45,b=d/2+.45,rh=1.45,ra=1.0,v=[[-a,0,b],[a,0,b],[a,0,-b],[-a,0,-b],[-ra,rh,-.1],[ra,rh,-.1]];
@@ -177,12 +180,12 @@ function townExtras(sc,add,rnd){
     const rim=new T.Mesh(new T.BoxGeometry(w+1,.14,d+1),new T.MeshStandardMaterial({color:0x2a1a0e,roughness:.9}));rim.position.set(0,h+.04,-d/2);gr.add(rim);
     const ch=new T.Mesh(new T.BoxGeometry(.7,1.2,.7),new T.MeshStandardMaterial({color:0x3b3b40,roughness:.9}));ch.position.set(w*.28,h+1.1,-d*.6);gr.add(ch);
     if(cfg.smoke)sc.chimneys.push({x:gr.position.x+w*.28,y:h+1.8,z:gr.position.z-d*.6});
-    const sg=new T.Mesh(new T.PlaneGeometry(1.5,.56),new T.MeshBasicMaterial({map:sign(cfg.name),side:T.DoubleSide}));sg.position.set(0,h*.72,.35);gr.add(sg);
-    const br=new T.Mesh(new T.BoxGeometry(.06,.06,.6),new T.MeshStandardMaterial({color:0x222}));br.position.set(0,h*.72+.34,.1);gr.add(br);
+    if(cfg.name){const sg=new T.Mesh(new T.PlaneGeometry(1.5,.56),new T.MeshBasicMaterial({map:sign(cfg.name),side:T.DoubleSide}));sg.position.set(0,h*.72,.35);gr.add(sg);
+    const br=new T.Mesh(new T.BoxGeometry(.06,.06,.6),new T.MeshStandardMaterial({color:0x222}));br.position.set(0,h*.72+.34,.1);gr.add(br);}
     for(let i=0;i<2;i++){const s2=new T.Mesh(new T.BoxGeometry(1.6-i*.3,.12,.5),new T.MeshStandardMaterial({color:0x5a5d62,roughness:.9}));s2.position.set(0,.06+i*.12,.28+(1-i)*.25);gr.add(s2);}
     const mats=[];gr.traverse(o=>{if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{if(!mats.includes(m))mats.push(m);});});
     gr.userData={mats,o:1,box:new T.Box3(new T.Vector3(gr.position.x-w/2-.7,0,gr.position.z-d-.7),new T.Vector3(gr.position.x+w/2+.7,h+1.7,gr.position.z+.5)),id,w,d,h};sc.houses.push(gr);add(gr);}
-  for(const p of ZONE.props)if(p.id&&p.id.startsWith('b_'))house(p.id,p.x,p.y);
+  for(const p of ZONE.props)if(p.id&&(p.id.startsWith('b_')||(sc.key==='cinzamuro'&&/^(s_|hs\d)/.test(p.id))))house(p.id,p.x,p.y);
   // portal 3D (arco + vórtice)
   if(ZONE.portal&&!ZONE.portal.off){const P=ZONE.portal,pg=new T.Group();pg.position.set(P.x*U,0,P.y*U);add(pg);const sm=new T.MeshStandardMaterial({color:0x2f3338,roughness:.95});
     for(const s of[-1,1]){const p1=new T.Mesh(new T.BoxGeometry(.9,3.4,.9),sm);p1.position.set(s*1.75,1.7,0);pg.add(p1);const b1=new T.Mesh(new T.BoxGeometry(1.2,.35,1.2),sm);b1.position.set(s*1.75,.18,0);pg.add(b1);const c1=new T.Mesh(new T.BoxGeometry(1.1,.3,1.1),sm);c1.position.set(s*1.75,3.5,0);pg.add(c1);}

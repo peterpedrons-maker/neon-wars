@@ -256,11 +256,13 @@ def build_atlas():
     for i in range(4): sprites['pine%d' % i] = pine(i + 1)
     for kd in range(3):
         for i in range(2): sprites['rock%d_%d' % (kd, i)] = boulder(kd, 10 * kd + i)
-    for i in range(6): sprites['hs%d' % i] = house(30 + i, 150 + 16 * (i % 3), 150 + 8 * (i % 2), roof=i)
+    PH = (Image.new('RGBA', (4, 4), (0, 0, 0, 0)), (2, 3))
+    for i in range(6): sprites['hs%d' % i] = PH
+    for i in range(0): sprites['hs%d' % i] = house(30 + i, 150 + 16 * (i % 3), 150 + 8 * (i % 2), roof=i)
     SHOPS = {'fer': dict(w=210, h=190, roof=1, sign='anvil', chim_glow=True), 'mer': dict(w=220, h=180, roof=0, sign='scales', awning=((176, 52, 48), (236, 222, 190))),
              'alq': dict(w=190, h=200, roof=2, sign='flask', chim_glow=False), 'mes': dict(w=210, h=190, roof=0, sign='star'),
              'lei': dict(w=210, h=180, roof=3, sign='coin', awning=((60, 100, 170), (236, 222, 190))), 'cof': dict(w=190, h=170, roof=1, sign='lock')}
-    for k, kw in SHOPS.items(): sprites['s_' + k] = house(90 + len(k) * 7 + ord(k[0]), **kw)
+    for k, kw in SHOPS.items(): sprites['s_' + k] = PH
     for k in ('v_well', 'v_lamp1', 'v_lamp2', 'v_banner1', 'v_banner2', 'v_sign', 'v_crates', 'v_stall', 'v_post', 'v_barrel1', 'v_barrel2', 'v_hay1', 'v_hay2', 'v_bench1', 'v_bench2', 'v_sack1', 'v_sack2', 'v_torch1', 'v_torch2', 'v_torch3'):
         x, y, w, h, ax, ay = base[k]; sprites[k] = (bim.crop((x, y, x + w, y + h)), (ax, ay))
     AW = 1360; xx = yy = rowh = 0; fr = {}; pos = {}
@@ -316,13 +318,14 @@ def build():
     # --- Terraço 3 (alto): Bastião, Mestre, Leilão, casas
     P('p', 'keep', 1230, 1180, circ_row(1230, 1180, 420, 240, step=20))
     doors = []
+    SWP = {'fer': 200, 'mer': 210, 'alq': 180, 'mes': 200, 'lei': 200, 'cof': 180}
+    HWP = [150, 166, 182, 150, 166, 182]
     SH = [('fer', 'Ferreiro', 'anvil', 330, 1760), ('mer', 'Mercador', 'scales', 610, 1760), ('alq', 'Alquimista', 'magic-swirl', 880, 1760), ('cof', 'Cofre', 'locked-chest', 1130, 1790),
           ('mes', 'Mestre de Classe', 'holy-symbol', 560, 1230), ('lei', 'Leilão', 'two-coins', 840, 1230)]
     for (i, nm, ic, x, y) in SH:
-        sw = {'fer': 210, 'mer': 220, 'alq': 190, 'mes': 210, 'lei': 210, 'cof': 190}[i]
-        P('p', 's_' + i, x, y, [[a + 23, b, r] for a, b, r in circ_row(x, y, sw + 46, 160, step=20)]); doors.append({'id': i, 'nm': nm, 'x': x, 'y': y + 6, 'w': 64, 'h': 82, 'room': 'int_' + i, 'ic': ic})
+        P('p', 's_' + i, x, y, circ_row(x, y, SWP[i], int(SWP[i] * .8), step=20)); doors.append({'id': i, 'nm': nm, 'x': x, 'y': y + 6, 'w': 64, 'h': 82, 'room': 'int_' + i, 'ic': ic})
     for (x, y, k) in ((250, 930, 0), (700, 940, 1), (900, 940, 2), (250, 1140, 3), (1030, 880, 4), (300, 2160, 5), (480, 2170, 1), (1120, 2170, 2), (1320, 2170, 4)):
-        P('p', 'hs%d' % k, x, y, [[a + 23, b, r] for a, b, r in circ_row(x, y, 150 + 16 * (k % 3) + 46, 100, step=20)])
+        P('p', 'hs%d' % k, x, y, circ_row(x, y, HWP[k], int(HWP[k] * .8), step=20))
     # --- decoração: poço, lampiões, braseiros, barracas, estandartes
     P('p', 'v_well', 800, 2120, [[0, -4, 22], [0, -26, 22]])
     for (x, y) in ((690, 2280), (910, 2280)): P('p', 'v_torch1', x, y, [[0, -3, 6]])
