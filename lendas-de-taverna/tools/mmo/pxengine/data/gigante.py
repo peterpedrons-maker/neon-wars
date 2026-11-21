@@ -8,6 +8,15 @@ import fauna as FA
 import colosso as CO
 PAL = dict(CO.PAL); FLAT = dict(CO.FLAT)
 GW, GH = 260, 420
+SC = 1.3          # o gigante e' ~30% maior que o esboco anterior (desenhado com mais pixels, nao esticado)
+
+class Sc:
+    def __init__(s, cv, k): s.cv, s.k = cv, k
+    def ell(s, x, y, rx, ry, reg='body', far=False): s.cv.ell(x * s.k, y * s.k, rx * s.k, ry * s.k, reg, far)
+    def cap(s, x0, y0, x1, y1, r0, r1, reg='body', far=False): s.cv.cap(x0 * s.k, y0 * s.k, x1 * s.k, y1 * s.k, r0 * s.k, max(1, r1 * s.k), reg, far)
+    def dot(s, x, y, col):
+        s.cv.dot(x * s.k, y * s.k, col)
+    def render(s, p, f): return s.cv.render(p, f)
 
 def tufts(c, x0, y0, x1, y1, n, sg, ln, r0=3.4, reg='fur'):
     """pelos ao longo de um segmento (sg = lado para onde caem)"""
@@ -16,8 +25,8 @@ def tufts(c, x0, y0, x1, y1, n, sg, ln, r0=3.4, reg='fur'):
         c.cap(x, y, x + sg * (4 + (k % 3)), y + ln + (k % 2) * 4, r0, 1, reg)
 
 def giant(view='d'):
-    FA.W, FA.H = GW, GH
-    c = FA.Cv(); c.contact = False
+    FA.W, FA.H = int(GW * SC), int(GH * SC)
+    c = Sc(FA.Cv(), SC); c.cv.contact = False
     cx = GW // 2; fy = 408
     back = (view == 'u'); bm = 'far' if back else 'fur'; bb = 'far' if back else 'body'
     runes = []
@@ -35,7 +44,7 @@ def giant(view='d'):
             for k in range(3): c.cap(x0 + 44 + k * 4, fy - 11 + k * 5, x0 + 52 + k * 4, fy - 7 + k * 5, 2.4, 1.2, 'horn', f)
         c.ell(sx(-12), 224, 62, 36, 'fur')                                         # tanga
         tufts(c, sx(-58), 240, sx(30), 244, 11, 1, 20, 4.6)
-        for k in range(5): c.cap(sx(-44 + k * 18), 238, sx(-46 + k * 18), 252, 3.4, 2.4, 'tusk')   # ossos do cinto
+        c.cap(sx(-56), 236, sx(40), 236, 6, 6, 'hoof'); c.ell(sx(-6), 236, 11, 9, 'stone')   # cinto de couro
         c.ell(sx(-4), 150, 60, 78, 'body'); c.ell(sx(-30), 150, 38, 74, 'fur'); c.ell(sx(12), 198, 44, 38, 'body')
         tufts(c, sx(-62), 110, sx(-52), 210, 8, -1, 16, 4.6)                       # costas peludas
         c.cap(sx(-6), 94, sx(30), 62, 34, 22, 'fur'); tufts(c, sx(-24), 74, sx(14), 92, 6, -1, 14, 4.6)
@@ -73,11 +82,9 @@ def giant(view='d'):
                 for k in range(-2, 3): c.cap(x0 + sg * 6 + k * 13, fy - 4, x0 + sg * 6 + k * 14, fy + 2, 2.6, 1.2, 'horn')
         c.ell(cx, 222, 78, 36, bm)                                                       # tanga de pele
         tufts(c, cx - 70, 240, cx + 70, 242, 14, 1, 22, 5, bm)
-        for k in range(7): c.cap(cx - 54 + k * 18, 236, cx - 56 + k * 18, 252, 3.6, 2.6, 'tusk')   # cinto de ossos
-        c.ell(cx, 232, 12, 8, 'stone')
+        c.cap(cx - 72, 236, cx + 72, 236, 6, 6, 'hoof'); c.ell(cx, 236, 13, 10, 'stone'); c.ell(cx, 236, 5, 4, 'moss')   # cinto de couro com fivela de pedra
         c.ell(cx, 156, 80, 80, bb); c.ell(cx, 198, 62, 46, bb)                            # torso e barriga
         c.ell(cx, 128, 52, 34, 'fur' if not back else 'far')                                # peitoral peludo
-        tufts(c, cx - 44, 150, cx + 44, 150, 9, 1, 22, 4.6, bm)
         c.ell(cx, 98, 58, 22, 'fur')                                                          # trapezio
         # juba
         c.ell(cx, 84, 46, 18, 'fur'); tufts(c, cx - 44, 90, cx + 44, 90, 10, 1, 18, 4.6, 'fur')
@@ -130,14 +137,15 @@ def giant(view='d'):
 def sheet(path, hero_png=''):
     V = [giant(v) for v in ('d', 's', 'u')]
     pad = 20
-    S = Image.new('RGBA', (GW * 3 + 150 + pad * 6, GH + pad * 2), (92, 120, 84, 255))
-    for i, im in enumerate(V): S.alpha_composite(im, (pad + i * (GW + pad), pad))
+    W_, H_ = V[0].size
+    S = Image.new('RGBA', (W_ * 3 + 150 + pad * 6, H_ + pad * 2), (92, 120, 84, 255))
+    for i, im in enumerate(V): S.alpha_composite(im, (pad + i * (W_ + pad), pad))
     try:
-        H = Image.open(hero_png).convert('RGBA'); S.alpha_composite(H, (GW * 3 + pad * 4, GH + pad - H.height))
+        H = Image.open(hero_png).convert('RGBA'); S.alpha_composite(H, (W_ * 3 + pad * 4, H_ + pad - H.height))
     except Exception as e: print('hero', e)
     S.save(path); print(path, S.size)
     # ampliacao da frente para conferir o detalhe
-    big = V[0].crop((0, 0, GW, GH)).resize((GW * 3, GH * 3), Image.NEAREST)
+    big = V[0].resize((W_ * 3, H_ * 3), Image.NEAREST)
     bg = Image.new('RGBA', big.size, (92, 120, 84, 255)); bg.alpha_composite(big)
     bg.save(path.replace('.png', '_frente_grande.png'))
 
