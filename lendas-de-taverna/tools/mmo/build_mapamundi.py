@@ -615,7 +615,7 @@ Image.fromarray(np.clip(out,0,255).astype(np.uint8)).resize((W,H),Image.LANCZOS)
 Image.fromarray(np.where(land,ID,255).astype(np.uint8)).resize((W//2,H//2),Image.NEAREST).save(A+'mapa_regiao%d_ids.png'%REG)
 # centros dos rótulos = centro da região visível (centróide da máscara)
 NMd=ns.get('NM') or {}
-lay={'w':W,'h':H,'keys':[k if k in TOWNK else 'zone_'+k for k in KEYS],'nm':{('zone_'+k):NMd.get(k,k) for k in KEYS if k not in TOWNK},'c':{}}
+lay={'w':W,'h':H,'keys':[k if k in TOWNK else 'zone_'+k for k in KEYS],'nm':{('zone_'+k):NMd.get(k,k) for k in KEYS if k not in TOWNK},'c':{},'rect':{k:[round(v,2) for v in rect[k]] for k in KEYS},'zsz':{k:list(SZ[k]) for k in KEYS}}
 for i,k in enumerate(KEYS):
     m=(ID==i)&land; ys2,xs2=np.nonzero(m)
     lay['c'][k]=[float(xs2.mean()),float(ys2.mean()),float(np.ptp(xs2)),float(np.ptp(ys2))] if len(xs2) else [0,0,0,0]

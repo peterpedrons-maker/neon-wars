@@ -921,6 +921,7 @@ html #dgt .c{top:22%}
 #wmap .wmh{width:100%;display:flex;flex-direction:column;align-items:center;padding:10px 56px 4px;position:relative;box-sizing:border-box;gap:2px}
 #wmap .wmt{background:url(assets/kit/B14.png) center/100% 100% no-repeat;padding:8px 34px;color:#fff3c8;font:700 15px Almendra,Rubik,serif;text-shadow:0 1px 2px #000}
 #wmap .wmh span{color:#d8c8a0;font-size:11px}
+#wmap .wmtabs{display:flex;gap:6px;justify-content:center;padding:2px 0 4px}#wmap .wmtabs button{background:#2a1c10;color:#d8c8a0;border:1px solid #6a4a22;border-radius:3px;padding:3px 12px;font:600 11px Rubik,sans-serif}#wmap .wmtabs button.on{background:#7a4a1c;color:#fff4d8;border-color:#e8c060}
 #wmap .wmx,#mapfs .mfw{border:2px solid #a07828;background:#1a1522;color:#ffe08a;font:700 12px Rubik,sans-serif}
 #wmap .wmx{position:absolute;right:10px;top:10px;width:38px;height:38px;font-size:18px}
 #mapfs .mfw{position:absolute;left:10px;top:10px;height:38px;padding:0 10px}
@@ -5870,24 +5871,32 @@ const WMC2={k:'cidade2',x:560,y:160,w:320,h:110};
 const WMBOSS={zone_goblins:['Grunk','Skrix'],zone_ogros:['Gorgash','Capitão Presa-de-Ferro'],zone_cemiterio:['Morvath','Morcego-Vampiro'],zone_brumas:['Rei dos Ratos','Boticário Podre']};
 const WMGATE={zone_cemiterio:'Cripta do Rei Esquecido',zone_brumas:'Esgotos'};
 const WMMAIN=['town','zone_estrada','zone_planicie','zone_ponte','zone_colinas','zone_desfiladeiro','zone_passo'];
-const WM={hit:[],sel:null};
+const WM={hit:[],sel:null,reg:1};
+const WMR2=new Set(['cinzamuro','zone_muralha','zone_planalto','zone_garganta','zone_mesas','zone_leito','zone_salinas','zone_rubro','zone_forjas','zone_portao','zone_canion','zone_cercos1','zone_cercos','zone_abutres','zone_ruinas','zone_oasis','zone_mirante','zone_tumba','zone_cisterna','zone_saqueadores','zone_verme','zone_obsidiana']);
+const WMREG={1:'Região 1 · Brumavale',2:'Região 2 · Terras Áridas de Cinzamuro'};
+function wmRegOf(k){return WMR2.has(k)?2:1;}
 function wmRnd(s){s=(s*9301+49297)%233280;return s/233280;}
 function wmEnsure(){let o=$('wmap');if(o)return o;o=document.createElement('div');o.id='wmap';
- o.innerHTML='<div class="wmh"><div class="wmt"><b>Mapa-Múndi</b></div><span>Região 1 · Brumavale</span><button class="wmx" id="wmx">✕</button></div><div class="wmm"><canvas id="wmc"></canvas></div><div class="wmi" id="wmi"></div>';
- $('stage').appendChild(o);$('wmx').onclick=()=>wmClose();
+ o.innerHTML='<div class="wmh"><div class="wmt"><b>Mapa-Múndi</b></div><span id="wmrt">Região 1 · Brumavale</span><button class="wmx" id="wmx">✕</button></div><div class="wmtabs" id="wmtabs"><button data-r="1">Região 1</button><button data-r="2">Região 2</button></div><div class="wmm"><canvas id="wmc"></canvas></div><div class="wmi" id="wmi"></div>';
+ $('stage').appendChild(o);$('wmx').onclick=()=>wmClose();$('wmtabs').onclick=e=>{const r=+(e.target.dataset&&e.target.dataset.r);if(!r||r===WM.reg)return;WM.reg=r;WM.sel=null;WM.sig='';WM.oc='';WM.ol=null;sfx('ui_click',.5);wmDraw();};
  $('wmc').addEventListener('pointerdown',e=>{if(!WM.idd||!WM.cs)return;const r=e.currentTarget.getBoundingClientRect(),u=(e.clientX-r.left)/WM.cs[0],v=(e.clientY-r.top)/WM.cs[1],d=WM.idd,id=d.data[(Math.min(d.height-1,v*d.height|0)*d.width+Math.min(d.width-1,u*d.width|0))*4],k=WM.keys[id];if(k&&wmState(k)){WM.sel=k;sfx('ui_click',.5);wmDraw();}});
  return o;}
-function wmOpen(){const o=wmEnsure();o.classList.add('on');if(MM.big){const m=$('mapfs');if(m)m.classList.remove('on');MM.big=false;}WM.sel=WMZ[G.map]?G.map:null;WM.on=1;wmDraw();clearInterval(WM.iv);WM.iv=setInterval(wmDraw,200);}
+function wmOpen(){const o=wmEnsure();o.classList.add('on');if(MM.big){const m=$('mapfs');if(m)m.classList.remove('on');MM.big=false;}WM.reg=wmRegOf(G.scene==='town'?(G.townMap||'town'):G.map);WM.sig='';WM.oc='';WM.ol=null;WM.sel=(G.scene==='town'?(G.townMap||'town'):G.map);WM.on=1;wmDraw();clearInterval(WM.iv);WM.iv=setInterval(wmDraw,200);}
 function wmClose(){WM.on=0;clearInterval(WM.iv);const o=$('wmap');if(o)o.classList.remove('on');sfx('ui_click',.4);}
 function wmVis(k){return mmVisited(k);}
 function wmKnown(k){if(wmVis(k))return 2;return MMADJ.some(([a,b])=>(a===k&&wmVis(b))||(b===k&&wmVis(a)))?1:0;}
 function wmPct(k){if(k===G.map&&MM.disc)return mmPct();const m=MAPS[k];const sv=SAVE.disc&&SAVE.disc[k];if(!m||!sv)return isTw(k)?100:null;const Z=m.zone,gw=Math.ceil(Z.w/100),gh=Math.ceil(Z.h/100);let g=0,t=0;try{const bb=atob(sv);for(let j=4;j<gh-4;j++)for(let i=4;i<gw-4;i++){t++;const n=j*gw+i;if((bb.charCodeAt(n>>3)||0)&(1<<(n&7)))g++;}}catch(e){return null;}return t?Math.min(100,Math.round(g/t*100)):null;}
 const WMK0=['town','zone_estrada','zone_planicie','zone_ponte','zone_colinas','zone_desfiladeiro','zone_passo','zone_goblins','zone_lenhadores','zone_ogros','zone_brejo','zone_brumas','zone_cemiterio','zone_mortos','zone_lago','zone_clareira','zone_eremita','zone_cabana','zone_gruta','zone_mina','cidade2'];
-function wmAssets(){if(WM.img)return WM.ready;WM.img=new Image();WM.img.onload=()=>{WM.ready|=1;wmDraw();};WM.img.src='assets/mapa_regiao1.png';fetch('assets/mapa_regiao1_layout.json').then(r=>r.json()).then(j=>{WM.lay=j;WM.keys=j.keys;WM.ready|=4;wmDraw();});const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);WM.idd=x.getImageData(0,0,c.width,c.height);WM.ready|=2;wmDraw();};im.src='assets/mapa_regiao1_ids.png';return 0;}
+function wmAssets(){const r=WM.reg||1;let A=(WM.A=WM.A||{})[r];
+ if(!A){A=WM.A[r]={ready:0};const f='assets/mapa_regiao'+r;A.img=new Image();A.img.onload=()=>{A.ready|=1;wmDraw();};A.img.src=f+'.png';
+  fetch(f+'_layout.json').then(x=>x.json()).then(j=>{A.lay=j;A.keys=j.keys;A.ready|=4;wmDraw();});
+  const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);A.idd=x.getImageData(0,0,c.width,c.height);A.ready|=2;wmDraw();};im.src=f+'_ids.png';}
+ if(A.ready===7){WM.img=A.img;WM.lay=A.lay;WM.keys=A.keys;WM.idd=A.idd;}return A.ready;}
 function wmState(k){if(k==='cidade2')return wmVis('zone_passo')?1:0;return wmKnown(k);}
 function wmDraw(){const o=wmEnsure();if(!o.classList.contains('on'))return;
+ {const t=$('wmrt');if(t&&t._r!==WM.reg){t._r=WM.reg;t.textContent=WMREG[WM.reg];}document.querySelectorAll('#wmtabs button').forEach(b=>b.classList.toggle('on',+b.dataset.r===WM.reg));}
  if(wmAssets()!==7){return;}
- const cv=$('wmc'),dpr=Math.min(2,window.devicePixelRatio||1),aw=o.clientWidth-12,ah=o.clientHeight-170;if(aw<50||ah<50)return;
+ const cv=$('wmc'),dpr=Math.min(2,window.devicePixelRatio||1),aw=o.clientWidth-12,ah=o.clientHeight-200;if(aw<50||ah<50)return;
  const WW=WM.lay.w,HH=WM.lay.h,sc=Math.min(aw/WW,ah/HH),cw=Math.round(WW*sc),ch=Math.round(HH*sc);
  if(cv._s!==cw+'x'+ch){cv._s=cw+'x'+ch;cv.width=cw*dpr;cv.height=ch*dpr;cv.style.width=cw+'px';cv.style.height=ch+'px';WM.sig='';}
  const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.imageSmoothingEnabled=true;WM.hit=[];
@@ -5903,8 +5912,8 @@ function wmDraw(){const o=wmEnsure();if(!o.classList.contains('on'))return;
  /* rótulos e marcadores */
  x.textAlign='center';x.lineJoin='round';
  WM.keys.forEach((k,i)=>{const L=WM.lay.c[k.replace('zone_','')],z=[L[0],L[1],L[2]*.8,L[3]*.8],kn=st[i];if(!kn)return;let cx=S(z[0]);const cy=S(z[1]);
-  const info=k==='cidade2'?['Cidade 2','???']:(MMINFO[k]||[(WM.lay.nm&&WM.lay.nm[k])||'???','']),vis=kn===2&&k!=='cidade2',nm=vis?info[0]:'???',lv=vis?info[1]:'';
-  const big=['town','zone_planicie','zone_colinas','zone_passo','zone_goblins','zone_ogros','zone_brumas','zone_cemiterio'].includes(k),fs=big?13:11;
+  const info=k==='cidade2'?(MMINFO.cinzamuro||['Cinzamuro','']):(MMINFO[k]||[(WM.lay.nm&&WM.lay.nm[k])||'???','']),vis=kn===2&&k!=='cidade2',nm=vis?info[0]:'???',lv=vis?info[1]:'';
+  const big=['town','cinzamuro','zone_planicie','zone_colinas','zone_passo','zone_goblins','zone_ogros','zone_brumas','zone_cemiterio','zone_planalto','zone_mesas','zone_salinas','zone_forjas','zone_cercos','zone_ruinas','zone_canion'].includes(k),fs=big?13:11;
   x.font='700 '+fs+'px Almendra,Rubik,serif';x.lineWidth=3.5;x.strokeStyle='rgba(244,230,190,.92)';x.fillStyle=vis?'#3a220e':'#e8d8b0';if(!vis){x.strokeStyle='rgba(30,18,8,.9)';}
   let ls=[nm];if(nm.length>12&&nm.includes(' ')){const sp=[...nm].map((c,j)=>c===' '?j:-1).filter(j=>j>=0).sort((a,b)=>Math.abs(a-nm.length/2)-Math.abs(b-nm.length/2))[0];ls=[nm.slice(0,sp),nm.slice(sp+1)];}
   {const hw=Math.max(...ls.map(t=>x.measureText(t).width))/2+8;cx=Math.max(hw,Math.min(cw-hw,cx));}
@@ -5924,14 +5933,14 @@ function wmDraw(){const o=wmEnsure();if(!o.classList.contains('on'))return;
  WM.cs=[cw,ch];
  /* cartão de info */
  const inf=$('wmi'),k=WM.sel;let h='';
- if(k&&(WMZ[k]||k==='cidade2')&&wmState(k)){const v=wmVis(k)&&k!=='cidade2',I=MMINFO[k]||['???',''];
+ if(k&&WM.keys&&WM.keys.includes(k)&&wmState(k)){const v=wmVis(k)&&k!=='cidade2',I=MMINFO[k]||['???',''];
   if(!v)h='<b>???</b><span>Área desconhecida — chegue perto da passagem para descobrir.</span>';
   else{const p=wmPct(k),bs=WMBOSS[k];h='<b>'+I[0]+'</b><span>'+I[1]+(p!=null?' · Explorado '+p+'%':'')+(cur===k?' · <em>Você está aqui</em>':'')+'</span>';
    if(bs){const a=(SAVE.hunts&&SAVE.hunts[bs[0]])||0,b2=(SAVE.hunts&&SAVE.hunts[bs[1]])||0;h+='<span>☠ Chefe: '+bs[0]+(a?' ✔ ×'+a:'')+' · Mini: '+bs[1]+(b2?' ✔ ×'+b2:'')+'</span>';}
    if(WMGATE[k])h+='<span>◆ Entrada: '+WMGATE[k]+'</span>';
    if(k!==cur||true)h+='<button id="wmo">Ver mapa da área</button>';}}
  else h='<span>Toque numa área para ver detalhes.</span>';
- if(inf._h!==h){inf._h=h;inf.innerHTML=h;const b=$('wmo');if(b)b.onclick=()=>{const kk=WM.sel;wmClose();MM.big=true;MM.view=kk;MM.vc[kk]=null;mmFsOpen();MM.view=kk;mmFsDraw();};}
+ if(inf._h!==h){inf._h=h;inf.innerHTML=h;const b=$('wmo');if(b)b.onclick=()=>{const kk=WM.sel==='cidade2'?'cinzamuro':WM.sel;wmClose();MM.big=true;MM.view=kk;MM.vc[kk]=null;mmFsOpen();MM.view=kk;mmFsDraw();};}
 }
 function mmToggle(){if(MM.big){mmFsClose();return;}MM.big=true;MM.view=G.map;sfx('ui_click',.5);const c=$('mm');if(c)c._w='';mmFsOpen();}
 function plateTag(e){if(e.kind==='hero')return G.scene==='town'?e.name+'  Nv.'+SAVE.lv:'';if(e.kind==='boss')return '';const h=G.hero;return ((h&&(h.tg===e||(h.act&&h.act.tgt===e)))||e.mini||e.elite)?e.name+(e.noLv?'':'  Nv.'+(e.rare?'??':e.lv)):'';}
