@@ -5,7 +5,7 @@ Vistas: d (frente), u (costas), s (lado direito; esquerda = espelho em tempo de 
 Uso: python3 export_atlas.py [chave ...]"""
 import json, math, os, sys
 from PIL import Image
-import chibi as C, beast as BE, creature as CRE, fauna as FA, fauna2, humano as HM
+import chibi as C, beast as BE, creature as CRE, fauna as FA, fauna2, fauna3, humano as HM
 import jogo_pixel as J
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '..', 'mmo', 'assets', 'chars')
@@ -131,6 +131,20 @@ GEN = {   # (ataque, dano, morte) para inimigos fora do motor chibi
     'ogrinho': ('slam', 'stoic', 'topple'), 'espectro': ('cast', 'stagger', 'dissolve'), 'morcego': ('pounce', 'stagger', 'flip'), 'slime': ('pounce', 'flinch', 'melt'),
     'vampiro': ('pounce', 'stagger', 'flip'),
 }
+# ---- REGIÃO 2 (Terras Áridas): inimigos do deserto (fauna3.py / humano.py) ----
+for _k in ('escorpiao', 'escorpiao_sal', 'lagarto', 'salamandra', 'chacal', 'lobo_poeira', 'cao_guerra', 'cao_infernal', 'abutre', 'escaravelho', 'verme'):
+    UNITS[_k] = dict(kind='f', name=_k)
+for _k in ('bandido_deserto', 'saqueador', 'atirador_deserto', 'cultista_sol', 'mumia_solar', 'kobold', 'anao_renegado', 'golem_pedra', 'golem_sal', 'golem_magma',
+           'cav_negro', 'armadura', 'mago_batalha', 'imp', 'troll_mesas', 'ogro_deserto'):
+    UNITS[_k] = dict(kind='m', spec=_k)
+GEN.update({
+    'escorpiao': ('pounce', 'flinch', 'flip'), 'escorpiao_sal': ('pounce', 'flinch', 'flip'), 'lagarto': ('lunge', 'flinch', 'flip'), 'salamandra': ('lunge', 'flinch', 'melt'),
+    'chacal': ('pounce', 'flinch', 'collapse'), 'lobo_poeira': ('pounce', 'stoic', 'collapse'), 'cao_guerra': ('pounce', 'stoic', 'collapse'), 'cao_infernal': ('pounce', 'flinch', 'dissolve'),
+    'abutre': ('pounce', 'stagger', 'flip'), 'escaravelho': ('pounce', 'flinch', 'flip'), 'verme': ('slam', 'flinch', 'melt'),
+    'bandido_deserto': ('lunge', 'flinch', 'fall'), 'saqueador': ('slam', 'stoic', 'fall'), 'atirador_deserto': ('lunge', 'flinch', 'tumble'), 'cultista_sol': ('cast', 'stagger', 'dissolve'),
+    'mumia_solar': ('slam', 'stoic', 'dissolve'), 'kobold': ('lunge', 'flinch', 'tumble'), 'anao_renegado': ('slam', 'stoic', 'topple'), 'golem_pedra': ('slam', 'stoic', 'topple'),
+    'golem_sal': ('slam', 'stoic', 'dissolve'), 'golem_magma': ('slam', 'stoic', 'melt'), 'cav_negro': ('slam', 'stoic', 'topple'), 'armadura': ('slam', 'stoic', 'topple'),
+    'mago_batalha': ('cast', 'stagger', 'dissolve'), 'imp': ('lunge', 'flinch', 'tumble'), 'troll_mesas': ('slam', 'stoic', 'topple'), 'ogro_deserto': ('slam', 'stoic', 'topple')})
 for _k, _v in GCAST.items():
     if _k in UNITS: UNITS[_k]['gcast'] = _v
 for _k, _v in GEN.items():
