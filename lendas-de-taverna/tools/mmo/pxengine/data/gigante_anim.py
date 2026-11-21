@@ -214,6 +214,80 @@ def seq(name):
             P['lean'] = P.get('lean', 0) + P.get('shake', 0); P['_t'] = i * .35; o.append(P)
     return o
 
+
+# ------------------------------------------------------------------ VISTA DE LADO (perfil, virado para a direita; a esquerda é espelho)
+def draw_side(P, t=0.0):
+    FA.W, FA.H = int(DW * SK), int(DH * SK)
+    cv = _fast(FA.Cv()); cv.contact = False
+    c = Sc(cv, SK)
+    g = lambda k, d=0.0: P.get(k, d)
+    cx = CX; ox = g('lean'); oy = g('dy') + g('crouch'); br = g('breath'); hx, hy, jaw = g('headx'), g('heady'), g('jaw')
+    def leg(hipx, stp, up, far):
+        reg = 'far' if far else 'fur'; hip = (hipx + ox * .3, 216 + oy * .9); foot = (hip[0] + stp, FY - up)
+        kn = ((hip[0] + foot[0]) / 2 + 16, (hip[1] + foot[1]) / 2 - up * .12)
+        c.cap(hip[0], hip[1], kn[0], kn[1], 29, 22, reg); c.ell(kn[0], kn[1], 24, 21, reg)
+        if not far: c.ell(kn[0] + 4, kn[1] - 3, 8, 6, 'stone')
+        c.cap(kn[0], kn[1] + 4, foot[0] - 2, foot[1] - 18, 19, 14, 'far' if far else 'body')
+        tufts(c, kn[0] - 14, kn[1] + 10, kn[0] - 10, kn[1] + 40, 4, -1, 8, 3)
+        c.ell(foot[0] + 12, foot[1] - 11, 38, 13, 'hoof')
+        for kk in range(3): c.cap(foot[0] + 26 + kk * 8, foot[1] - 9, foot[0] + 38 + kk * 8, foot[1] - 2, 5, 3.4, 'hoof'); c.cap(foot[0] + 38 + kk * 8, foot[1] - 4, foot[0] + 44 + kk * 8, foot[1] + 1, 2.4, 1.2, 'horn')
+    leg(cx - 10, g('stF'), g('upF'), True); leg(cx + 8, g('stN'), g('upN'), False)
+    # braço de trás (atrás do tronco)
+    def arm(a1, e, far):
+        sh = (cx + 4 + ox, 120 + oy); reg = 'far' if far else 'body'
+        el = (sh[0] + math.sin(a1) * 82, sh[1] + math.cos(a1) * 82); hd = (el[0] + math.sin(a1 + e) * 78, el[1] + math.cos(a1 + e) * 78)
+        c.cap(sh[0], sh[1], el[0], el[1], 28, 22, 'far' if far else 'body'); c.ell(el[0], el[1], 22, 20, 'far' if far else 'fur')
+        c.cap(el[0], el[1], hd[0], hd[1], 22, 17, reg); c.ell(hd[0], hd[1] + 4, 25, 27, 'far' if far else 'skin')
+        if not far:
+            ux, uy = math.sin(a1 + e), math.cos(a1 + e)
+            for q in range(3):
+                off = (q - 1) * 11; bx, by = hd[0] + uy * off * -1, hd[1] + 4 + ux * off
+                c.cap(bx, by, bx + ux * 22, by + uy * 22, 5.4, 4, 'skin'); c.cap(bx + ux * 21, by + uy * 21, bx + ux * 29, by + uy * 29, 2.4, 1, 'horn')
+    arm(g('aF'), g('eF', .25), True)
+    # tanga, tronco, corcunda, barriga
+    c.ell(cx + ox * .5, 222 + oy * .8, 58, 34, 'fur'); tufts(c, cx - 52 + ox * .5, 240 + oy * .8, cx + 52 + ox * .5, 242 + oy * .8, 10, 1, 20, 5)
+    s0 = 1 + br * .02
+    c.ell(cx + ox, 160 + oy, 56 * s0, 82 * s0, 'body'); c.ell(cx - 28 + ox, 116 + oy, 44, 40, 'fur'); c.ell(cx + 16 + ox, 178 + oy, 40 * s0, 50 * s0, 'fur')
+    c.ell(cx - 6 + ox, 152 + oy, 36, 60, 'fur')
+    tufts(c, cx - 50 + ox, 130 + oy, cx - 36 + ox, 220 + oy, 7, -1, 16, 4.4)          # franja de pelo nas costas
+    # ombro de pedra com espinhos + musgo
+    c.ell(cx + 2 + ox, 112 + oy, 36, 28, 'stone'); c.ell(cx + ox, 106 + oy, 32, 22, 'fur')
+    for q in range(3): c.cap(cx - 12 + q * 12 + ox, 92 + oy, cx - 8 + q * 13 + ox, 66 - q * 4 + oy, 6, 1.4, 'horn')
+    c.ell(cx + 8 + ox, 100 + oy, 9, 6, 'moss'); c.ell(cx + 20 + ox, 170 + oy, 8, 6, 'moss'); c.ell(cx - 10 + ox, 200 + oy, 7, 5, 'stone')
+    # pescoço + cabeça (focinho para a direita)
+    H0 = (cx + 20 + ox + hx, 62 + oy + hy)
+    c.cap(cx + 2 + ox, 112 + oy, H0[0] - 6, H0[1] + 10, 26, 22, 'fur')
+    c.ell(H0[0], H0[1], 36, 33, 'fur'); c.ell(H0[0] + 8, H0[1] + 6, 28, 26, 'body')
+    c.ell(H0[0] + 34, H0[1] + 14, 21, 14, 'skin'); c.ell(H0[0] + 26, H0[1] + 28 + jaw * 10, 19, 9 + jaw * 3, 'body')
+    c.cap(H0[0] + 30, H0[1] + 27 + jaw * 9, H0[0] + 36, H0[1] + 6, 3.4, 1.4, 'tusk')
+    c.cap(H0[0] + 12, H0[1] - 26, H0[0] + 28, H0[1] - 50, 7, 4, 'horn'); c.cap(H0[0] + 28, H0[1] - 50, H0[0] + 30, H0[1] - 74, 4, 1.2, 'horn')
+    c.cap(H0[0] - 6, H0[1] - 24, H0[0] - 26, H0[1] - 46, 8.4, 5, 'horn'); c.cap(H0[0] - 26, H0[1] - 46, H0[0] - 32, H0[1] - 72, 5, 1.2, 'horn')
+    c.cap(H0[0] - 14, H0[1] + 6, H0[0] - 34, H0[1] + 16, 5, 3, 'horn')
+    c.ell(H0[0] - 16, H0[1] - 10, 11, 7, 'stone'); c.ell(H0[0] + 6, H0[1] - 14, 10, 7, 'moss')
+    tufts(c, H0[0] - 36, H0[1] + 8, H0[0] - 8, H0[1] + 38, 6, -1, 15, 4)               # juba
+    for dx_ in (0, 1, 2, 3):
+        for dy_ in (0, 1, 2): c.dot(H0[0] + 22 + dx_, H0[1] + 4 + dy_, FLAT['eye'])
+    c.dot(H0[0] + 24, H0[1] + 5, FLAT['eye2'])
+    for (rx, ry) in ((cx + 6, 140), (cx + 22, 168), (cx - 4, 190)): c.dot(rx + ox, ry + oy, FLAT['rune']); c.dot(rx + ox + 1, ry + oy, FLAT['eye2'])
+    arm(g('aN'), g('eN', .25), False)
+    def add(x, y, x2, y2, r0, r1): cv.cap(x, y, x2, y2, r0, r1, 'fur')
+    return furpass.apply(lambda: cv.render(PAL, FLAT), add, t=t, k=SK)
+
+def seq_side(name):
+    o = []
+    if name == 'idle':
+        for i in range(8):
+            ph = i / 8 * 2 * math.pi; o.append(dict(breath=math.sin(ph), dy=-1.5 * math.sin(ph), lean=1.5 * math.sin(ph * .5 + 1), aN=.1 + .04 * math.sin(ph + 1), aF=.1 + .04 * math.sin(ph + 2.2), eN=.25, eF=.25, heady=1.2 * math.sin(ph + .5), _t=ph))
+    elif name == 'walk':
+        for i in range(12):
+            ph = i / 12 * 2 * math.pi; sn, cs = math.sin(ph), math.cos(ph)
+            o.append(dict(dy=-abs(sn) * 7, lean=3 + sn * 3, stN=44 * cs, upN=30 * max(0, -sn), stF=-44 * cs, upF=30 * max(0, sn), aN=-.5 * cs, aF=.5 * cs, eN=.3 + .25 * max(0, cs), eF=.3 + .25 * max(0, -cs),
+                          heady=math.sin(ph * 2) * 1.5, breath=math.sin(ph * 2), _t=ph * 1.3))
+    elif name == 'hurt':
+        for i in range(10):
+            u = ease(min(1, i / 2)) * (1 - ease(max(0, (i - 4) / 5))); o.append(dict(lean=-16 * u, headx=-6 * u, heady=-8 * u, jaw=.6 * u, aN=.1 + .5 * u, aF=.1 + .5 * u, eN=.3 + .5 * u, eF=.3 + .5 * u, crouch=4 * u, _t=i * .7, _flash=1 if i == 1 else 0))
+    return o
+
 DWpx, DHpx = int(DW * SK), int(DH * SK)
 OUT_W, OUT_H = int(DW * SK * 1.45), int(DH * SK)    # quadro final (largo p/ a queda lateral)
 
@@ -267,9 +341,10 @@ def export(out_dir='../../../../mmo/assets/chars'):
     SK = .6
     front = ['idle', 'walk', 'stomp', 'smash', 'sweep', 'roar', 'hurt', 'death']
     backn = ['idle', 'walk', 'hurt']
-    jobs = [(n, i, P, 'd') for n in front for i, P in enumerate(seq(n))] + [(n, i, P, 'u') for n in backn for i, P in enumerate(seq(n))]
+    sidn = ['idle', 'walk', 'hurt']
+    jobs = [(n, i, P, 'd') for n in front for i, P in enumerate(seq(n))] + [(n, i, P, 'u') for n in backn for i, P in enumerate(seq(n))] + [(n, i, P, 's') for n in sidn for i, P in enumerate(seq_side(n))]
     with Pool(4) as p: imgs = p.map(_fv, jobs, chunksize=3)
-    w, h = int(DW * SK), int(DH * SK); cols = 19; rows = -(-len(imgs) // cols)
+    w, h = int(DW * SK), int(DH * SK); cols = 20; rows = -(-len(imgs) // cols)
     A = Image.new('RGBA', (cols * w, rows * h), (0, 0, 0, 0)); idx = {}
     for k, ((n, i, P, v), im) in enumerate(zip(jobs, imgs)):
         A.alpha_composite(im, ((k % cols) * w, (k // cols) * h)); idx.setdefault((n, v), []).append(k)
@@ -279,7 +354,7 @@ def export(out_dir='../../../../mmo/assets/chars'):
         src = alias.get(nm, nm)
         f = idx[(src, 'd')]
         b = idx.get((src, 'u'), f)
-        an[nm + '_d'] = f; an[nm + '_s'] = f; an[nm + '_u'] = b
+        an[nm + '_d'] = f; an[nm + '_s'] = idx.get((src, 's'), f); an[nm + '_u'] = b
     d = idx[('death', 'd')]; an['kneel_d'] = an['kneel_s'] = an['kneel_u'] = d[:17]
     for v in 'dsu': an['death_' + v] = d[17:]      # a morte do jogo parte do joelho no chão (ele só morre ajoelhado)
     assert A.width <= 4096 and A.height <= 4096, A.size
@@ -291,7 +366,7 @@ def _fv(a):
     n, i, P, v = a
     global SK
     SK = .6
-    return draw(P, P.get('_t', 0), v)
+    return draw_side(P, P.get('_t', 0)) if v == 's' else draw(P, P.get('_t', 0), v)
 
 
 if __name__ == '__main__':
