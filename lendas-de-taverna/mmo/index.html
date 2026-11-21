@@ -5912,11 +5912,15 @@ function wmEnsure(){let o=$('wmap');if(o)return o;o=document.createElement('div'
  o.innerHTML='<div class="wmh"><div class="wmt"><b>Mapa-Múndi</b></div><span id="wmrt">Região 1 · Brumavale</span><button class="wmx" id="wmx">✕</button></div><div class="wmtabs" id="wmtabs"><button data-r="1">Região 1</button><button data-r="2">Região 2</button><button data-z="-1">−</button><button data-z="1">+</button></div><div class="wmm"><canvas id="wmc"></canvas></div><div class="wmi" id="wmi"></div>';
  $('stage').appendChild(o);$('wmx').onclick=()=>wmClose();$('wmtabs').onclick=e=>{const z=+(e.target.dataset&&e.target.dataset.z);if(z){WM.z=Math.max(1,Math.min(4,(WM.z||2)+z*.5));WM.sig='';WM.oc='';sfx('ui_click',.5);wmDraw();return;}const r=+(e.target.dataset&&e.target.dataset.r);if(!r||r===WM.reg)return;WM.reg=r;WM.sel=null;WM.sig='';WM.oc='';WM.ol=null;sfx('ui_click',.5);wmDraw();};
  const wmPick=e=>{if(!WM.idd||!WM.cs)return;const r=e.currentTarget.getBoundingClientRect(),u=(e.clientX-r.left)/WM.cs[0],v=(e.clientY-r.top)/WM.cs[1],d=WM.idd,id=d.data[(Math.min(d.height-1,v*d.height|0)*d.width+Math.min(d.width-1,u*d.width|0))*4],k=WM.keys[id];if(k&&wmState(k)){WM.sel=k;sfx('ui_click',.5);wmDraw();}};
- {const cv=$('wmc'),bx=cv.parentNode;let dr=null;cv.style.touchAction='none';
-  cv.addEventListener('pointerdown',e=>{dr={x:e.clientX,y:e.clientY,sl:bx.scrollLeft,st:bx.scrollTop,m:0};try{cv.setPointerCapture(e.pointerId);}catch(_){}});
-  cv.addEventListener('pointermove',e=>{if(!dr)return;const dx=e.clientX-dr.x,dy=e.clientY-dr.y;if(!dr.m&&Math.hypot(dx,dy)>6)dr.m=1;if(dr.m){bx.scrollLeft=dr.sl-dx;bx.scrollTop=dr.st-dy;}});
-  const up=e=>{if(dr&&!dr.m&&e.type==='pointerup')wmPick(e);dr=null;};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
-  bx.addEventListener('wheel',e=>{e.preventDefault();WM.z=Math.max(1,Math.min(4,(WM.z||2)*(e.deltaY<0?1.15:1/1.15)));WM.sig='';WM.oc='';wmDraw();},{passive:false});}
+ {const cv=$('wmc'),bx=cv.parentNode;let dr=null;const P=new Map();let pz=null;cv.style.touchAction='none';
+  const zoomTo=(z,cx,cy)=>{const o=WM.z||2;z=Math.max(1,Math.min(4,z));if(z===o)return;const r=bx.getBoundingClientRect(),fx=(bx.scrollLeft+cx-r.left)/o,fy=(bx.scrollTop+cy-r.top)/o;WM.z=z;WM.sig='';WM.oc='';wmDraw();bx.scrollLeft=fx*z-(cx-r.left);bx.scrollTop=fy*z-(cy-r.top);};
+  cv.addEventListener('pointerdown',e=>{P.set(e.pointerId,[e.clientX,e.clientY]);try{cv.setPointerCapture(e.pointerId);}catch(_){}
+   if(P.size===2){const a=[...P.values()];pz={d:Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]),z:WM.z||2};dr=null;}else if(P.size===1)dr={x:e.clientX,y:e.clientY,sl:bx.scrollLeft,st:bx.scrollTop,m:0};});
+  cv.addEventListener('pointermove',e=>{if(!P.has(e.pointerId))return;P.set(e.pointerId,[e.clientX,e.clientY]);
+   if(P.size===2&&pz){const a=[...P.values()],d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);zoomTo(pz.z*d/Math.max(1,pz.d),(a[0][0]+a[1][0])/2,(a[0][1]+a[1][1])/2);return;}
+   if(!dr)return;const dx=e.clientX-dr.x,dy=e.clientY-dr.y;if(!dr.m&&Math.hypot(dx,dy)>6)dr.m=1;if(dr.m){bx.scrollLeft=dr.sl-dx;bx.scrollTop=dr.st-dy;}});
+  const up=e=>{const was=P.size;P.delete(e.pointerId);if(was===1&&dr&&!dr.m&&e.type==='pointerup')wmPick(e);if(P.size<2)pz=null;dr=null;};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+  bx.addEventListener('wheel',e=>{e.preventDefault();zoomTo((WM.z||2)*(e.deltaY<0?1.15:1/1.15),e.clientX,e.clientY);},{passive:false});}
  return o;}
 function wmOpen(){const o=wmEnsure();o.classList.add('on');if(MM.big){const m=$('mapfs');if(m)m.classList.remove('on');MM.big=false;}WM.reg=wmRegOf(G.scene==='town'?(G.townMap||'town'):G.map);WM.sig='';WM.oc='';WM.ol=null;WM.sel=(G.scene==='town'?(G.townMap||'town'):G.map);WM.on=1;WM.first=1;wmDraw();clearInterval(WM.iv);WM.iv=setInterval(wmDraw,200);}
 function wmClose(){WM.on=0;clearInterval(WM.iv);const o=$('wmap');if(o)o.classList.remove('on');sfx('ui_click',.4);}
