@@ -36,35 +36,53 @@ def mist(img, top, bot, W, H):
 LW, LH, LB = 150, 160, 154
 
 
-def leg(P):
+def leg(P, view='d'):
     FA.W, FA.H = LW, LH
     c = FA.Cv(); c.contact = False
-    cx = LW // 2 + P.get('dx', 0); up = P.get('up', 0); sq = P.get('sq', 0); bend = P.get('bend', 0); sw = P.get('sway', 0); fall = P.get('fall', 0)
+    cx = LW // 2 + P.get('dx', 0); up = P.get('up', 0); sq = P.get('sq', 0); bend = P.get('bend', 0); sw = P.get('sway', 0)
     ty = 8 + P.get('drop', 0)
-    fy = LB - up - fall * 0                                         # pé
-    # sombra da pata nao entra (o jogo desenha)
-    knee = (cx + sw * .3 + bend * 10, LB - 62 - up * .5 + P.get('kn', 0))
-    top = (cx + sw, ty + 34)
-    # coxa peluda (muito larga) -> joelho -> canela fina -> tornozelo -> casco largo
+    fy = LB - up
     fx = cx + P.get('foot', 0)
-    c.ell(top[0], top[1] + 6, 29, 22, 'fur'); c.cap(top[0], top[1] + 10, knee[0], knee[1], 27, 19, 'fur')
-    c.cap(knee[0], knee[1], fx, fy - 18, 17, 11.5 + sq * 1.5, 'body')
-    c.ell(knee[0], knee[1], 21, 17, 'fur')                              # joelho (protuberancia)
-    for sg in (-1, 1):                                                   # tufos de pelo nas laterais (silhueta peluda)
-        for k in range(5):
-            yy = top[1] + 8 + k * 10; xx = top[0] + sg * (27 - k * 1.2) + (knee[0] - top[0]) * k / 7
-            c.cap(xx, yy, xx + sg * 5, yy + 8 + (k % 2) * 3, 3.2, 1, 'fur')
-    c.ell(knee[0] - 8, knee[1] - 4, 8, 6, 'stone'); c.ell(knee[0] + 9, knee[1] + 7, 5, 4, 'moss')
-    c.ell(top[0] + 14, top[1] + 12, 12, 8, 'moss'); c.ell(top[0] - 18, top[1] + 28, 8, 5, 'stone')
-    c.ell(fx, fy - 10, 25 + sq * 4, 10 - sq * 2, 'hoof')                # pata larga
-    for s_ in (-1, 0, 1): c.cap(fx + s_ * 15, fy - 7, fx + s_ * 18, fy - 1 + sq, 7, 5.2, 'hoof')       # tres cascos
-    for s_ in (-1, 1): c.cap(fx + s_ * 19, fy - 10, fx + s_ * 22, fy - 2, 3, 1.6, 'horn')               # garras
-    # pelos pendurados
-    for i, ox in enumerate((-18, -9, 0, 9, 18)): c.cap(knee[0] + ox, knee[1] + 12, knee[0] + ox + sw * .2, knee[1] + 24 + (i % 2) * 5, 2.8, 1, 'fur')
-    # runas rachadas (brilho) na coxa
-    rg = P.get('rune', 0)
-    for i, (rx, ry) in enumerate(((-10, 46), (9, 52), (-2, 60), (14, 38))):
-        c.dot(cx + rx + sw * .3, ty + ry, FLAT['rune'] if (i + rg) % 3 else hx('#fff0a0'))
+    if view == 's':      # PERFIL (vira para a direita; a esquerda e' espelho): coxa estreita, joelho para a frente, canela inclinada, casco com dedos para a frente
+        top = (cx + sw * .4, ty + 34)
+        knee = (cx + 9 + bend * 16 + sw * .5, LB - 62 - up * .5 + P.get('kn', 0))
+        c.ell(top[0], top[1] + 6, 21, 22, 'fur'); c.cap(top[0], top[1] + 10, knee[0], knee[1], 20, 15, 'fur')
+        c.cap(knee[0], knee[1], fx + 2, fy - 16, 12, 8.5 + sq, 'body')
+        c.ell(knee[0], knee[1], 16, 15, 'fur')
+        for k in range(5):                                                   # pelos caindo atras da coxa
+            yy = top[1] + 6 + k * 11; xx = top[0] - 20 + k * .8
+            c.cap(xx, yy, xx - 6, yy + 9 + (k % 2) * 3, 3.4, 1, 'fur')
+        for i in range(4): c.cap(knee[0] - 8 + i * 5, knee[1] + 10, knee[0] - 10 + i * 5 + sw * .2, knee[1] + 22 + (i % 2) * 5, 2.6, 1, 'fur')
+        c.ell(knee[0] - 5, knee[1] - 5, 7, 5, 'stone'); c.ell(top[0] + 6, top[1] + 14, 9, 7, 'moss')
+        c.ell(fx + 6, fy - 9, 19 + sq * 3, 9 - sq * 2, 'hoof')
+        for s_ in (0, 1): c.cap(fx + 12 + s_ * 6, fy - 8 + s_ * 2, fx + 22 + s_ * 6, fy - 2 + sq, 5.6, 4.4, 'hoof')
+        c.cap(fx + 24, fy - 5, fx + 31, fy - 1, 2.6, 1.4, 'horn')
+        rg = P.get('rune', 0)
+        for i, (rx, ry) in enumerate(((2, 46), (-4, 58))): c.dot(cx + rx + sw * .3, ty + ry, FLAT['rune'] if (i + rg) % 3 else hx('#fff0a0'))
+    else:                # FRENTE ('d') e COSTAS ('u')
+        back = (view == 'u'); bm = 'far' if back else 'fur'
+        knee = (cx + sw * .3 + bend * 10, LB - 62 - up * .5 + P.get('kn', 0))
+        top = (cx + sw, ty + 34)
+        c.ell(top[0], top[1] + 6, 29, 22, bm); c.cap(top[0], top[1] + 10, knee[0], knee[1], 27, 19, bm)
+        c.cap(knee[0], knee[1], fx, fy - 18, 17, 11.5 + sq * 1.5, 'body')
+        c.ell(knee[0], knee[1], 21, 17, bm)
+        for sg in (-1, 1):
+            for k in range(5):
+                yy = top[1] + 8 + k * 10; xx = top[0] + sg * (27 - k * 1.2) + (knee[0] - top[0]) * k / 7
+                c.cap(xx, yy, xx + sg * 5, yy + 8 + (k % 2) * 3, 3.2, 1, bm)
+        c.ell(knee[0] - 8, knee[1] - 4, 8, 6, 'stone'); c.ell(knee[0] + 9, knee[1] + 7, 5, 4, 'moss')
+        c.ell(top[0] + 14, top[1] + 12, 12, 8, 'moss'); c.ell(top[0] - 18, top[1] + 28, 8, 5, 'stone')
+        c.ell(fx, fy - 10, 25 + sq * 4, 10 - sq * 2, 'hoof')
+        if back:                                                             # de costas: calcanhar largo e vinco atras do joelho
+            c.ell(fx, fy - 8, 17, 8, 'hoof'); c.cap(knee[0] - 12, knee[1] + 4, knee[0] + 12, knee[1] + 4, 3, 3, 'far')
+        else:
+            for s_ in (-1, 0, 1): c.cap(fx + s_ * 15, fy - 7, fx + s_ * 18, fy - 1 + sq, 7, 5.2, 'hoof')
+            for s_ in (-1, 1): c.cap(fx + s_ * 19, fy - 10, fx + s_ * 22, fy - 2, 3, 1.6, 'horn')
+        for i, ox in enumerate((-18, -9, 0, 9, 18)): c.cap(knee[0] + ox, knee[1] + 12, knee[0] + ox + sw * .2, knee[1] + 24 + (i % 2) * 5, 2.8, 1, bm)
+        if not back:
+            rg = P.get('rune', 0)
+            for i, (rx, ry) in enumerate(((-10, 46), (9, 52), (-2, 60), (14, 38))):
+                c.dot(cx + rx + sw * .3, ty + ry, FLAT['rune'] if (i + rg) % 3 else hx('#fff0a0'))
     img = c.render(PAL, FLAT)
     if P.get('crack'):
         px = img.load()
@@ -73,7 +91,16 @@ def leg(P):
             for j in range(6):
                 xx, yy = x + j % 2, y + j
                 if 0 <= xx < LW and 0 <= yy < LH and px[xx, yy][3]: px[xx, yy] = (20, 12, 10, 255)
-    return mist(img, int(ty + 4), int(ty + 46), LW, LH)
+    # a coxa continua para CIMA sem fim: acima da linha ROW repete-se a linha da coxa com textura periodica de 12 quadros (o jogo empilha essa faixa ate o topo da tela)
+    px = img.load(); ROW = 44
+    for x in range(LW):
+        r, g, b, a = px[x, ROW]
+        for y in range(0, ROW):
+            if a == 0: px[x, y] = (0, 0, 0, 0); continue
+            h = (x * 7 + (y % 12) * 13 + (x // 5) * 11) % 9
+            k = 1.0 + (h - 4) * .02 + .05 * math.sin(x * .9) - (.1 if y % 12 in (0, 1) else 0)
+            px[x, y] = (max(0, min(255, int(r * k))), max(0, min(255, int(g * k))), max(0, min(255, int(b * k))), 255)
+    return img
 
 
 def ease(t): return t * t * (3 - 2 * t)
@@ -106,7 +133,7 @@ def seq_leg(kind):
         for i in range(20):
             if i < 6: t = ease(i / 5); o.append(dict(kn=14 * t, bend=.7 * t, sway=-3 * t, sq=1, rune=0))
             else: t = ease(min(1, (i - 6) / 12)); o.append(dict(kn=14 + 14 * t, bend=.7 + .7 * t, sway=-3 - 8 * t, drop=int(60 * t), dx=int(-6 * t), sq=2, crack=12))
-    return [leg(P) for P in o]
+    return [[leg(P, v) for P in o] for v in ('d', 'u', 's')]
 
 
 # ------------------------------------------------------------------ CABEÇA
@@ -186,6 +213,10 @@ def seq_head(kind):
 def pack(imgs_by_kind, W, H, name, out_dir, base, cut_to=None):
     imgs, anims = [], {}
     for kind, fr in imgs_by_kind.items():
+        if fr and isinstance(fr[0], list):      # um conjunto de quadros por vista (d, u, s)
+            for v, f3 in zip(('d', 'u', 's'), fr):
+                anims[f'{kind}_{v}'] = list(range(len(imgs), len(imgs) + len(f3))); imgs += f3
+            continue
         idx = list(range(len(imgs), len(imgs) + len(fr))); imgs += fr
         for v in ('d', 'u', 's'): anims[f'{kind}_{v}'] = idx
     bb = None
@@ -219,7 +250,7 @@ def export(out):
 
 
 def sheet(path):
-    rows = [(LW, LH, seq_leg(k)) for k in ('idle', 'walk', 'stomp', 'sweep', 'hurt', 'death')] + [(HW, HH, seq_head(k)) for k in ('idle', 'descend', 'bite', 'roar', 'spit', 'hurt', 'death')]
+    rows = [(LW, LH, seq_leg(k)[2]) for k in ('idle', 'walk', 'stomp', 'sweep', 'hurt', 'death')] + [(HW, HH, seq_head(k)) for k in ('idle', 'descend', 'bite', 'roar', 'spit', 'hurt', 'death')]
     cols = max(len(r[2]) for r in rows); Hs = max(r[1] for r in rows); Ws = max(r[0] for r in rows)
     S = Image.new('RGBA', (cols * Ws, len(rows) * Hs), (92, 120, 84, 255))
     for j, (w, h, fr) in enumerate(rows):
