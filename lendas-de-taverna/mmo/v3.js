@@ -55,7 +55,7 @@ const TOPDOWN=new Set(['5b39','a94a','dca1','64c7','0367']);   /* arte desenhada
 const hex=(s,d)=>{try{const v=parseInt(String(s||'').replace('#','').slice(0,6),16);return isNaN(v)?d:v;}catch(e){return d;}};
 // ------------------------------------------------------------------ cenários
 function buildScene(key){
-  const mood=ZONE.room?'room':ZONE.dark?'dark':key==='town'?'town':'field';
+  const mood=ZONE.room?'room':ZONE.dark?'dark':(key==='town'||key==='cinzamuro')?'town':'field';
   const rnd=rndSeed(11);
   const sc={key,mood,grp:new T.Group(),houses:[],winMats:[],sources:[],pool:[],glows:[],smoke:[],chimneys:[],fires:[],fireGeos:[],ents:new Map(),labels:new Map(),dist:mood==='room'?12:mood==='town'?12.5:20,used:0};
   const g=sc.grp,add=o=>{g.add(o);return o;};
@@ -79,9 +79,9 @@ function buildScene(key){
   }else{
     const procOn=(mood==='field'||mood==='dark'||mood==='town')&&V3.proc&&!window.V3_NOPROC;sc.proc=procOn;
     dgrid=(procOn&&mood==='dark')?dungeonGrid(key):null;
-    const envP={W:ZONE.w,H:ZONE.h,WATER:mood==='town'?null:WATER,WCW,GROUND,stoneNonGreen:mood==='town',S:ZONE.w>3000?.3:.5,themes:!!ZONE.region};
+    const envP={W:ZONE.w,H:ZONE.h,WATER:mood==='town'?null:WATER,WCW,GROUND,stoneNonGreen:mood==='town'&&key!=='cinzamuro',arid:key==='cinzamuro',S:ZONE.w>3000?.3:.5,themes:!!ZONE.region};
     let gimg=key==='zone_cripta2'?crpFloor:GROUND;
-    if(procOn&&(mood==='field'||mood==='town'))gimg=V3.proc.ground(envP,mood==='town'?V3.proc.palCidade:(key==='zone_pantano'||(ZONE.region&&ZONE.region.ground==='swamp'))?V3.proc.palPantano:V3.proc.palFloresta,key==='zone1'?5:key==='town'?9:7);
+    if(procOn&&(mood==='field'||mood==='town'))gimg=V3.proc.ground(envP,key==='cinzamuro'?V3.proc.palArido:mood==='town'?V3.proc.palCidade:(key==='zone_pantano'||(ZONE.region&&ZONE.region.ground==='swamp'))?V3.proc.palPantano:V3.proc.palFloresta,key==='zone1'?5:key==='town'?9:7);
     else if(procOn){const pal=key==='zone_esgoto'?V3.proc.palEsgoto:key==='zone_cripta2'?V3.proc.palCripta2:V3.proc.palCripta;gimg=V3.proc.dungeonFloor(envP,pal,key==='zone_esgoto'?4:key==='zone_cripta2'?6:3);
       {const x=gimg.canvas.getContext('2d'),S0=gimg.canvas.width/ZONE.w;x.fillStyle='#030409';for(let cy=0;cy<dgrid.rows;cy++)for(let cx=0;cx<dgrid.cols;cx++)if(!dgrid.isF(cx,cy))x.fillRect(Math.floor((dgrid.ox+cx*dgrid.cw)*S0),Math.floor((dgrid.oy+cy*dgrid.ch)*S0),Math.ceil(dgrid.cw*S0)+1,Math.ceil(dgrid.ch*S0)+1);}}
     const pg=procOn?gimg:null,gTex=texOf(pg?pg.canvas:gimg,1);gTex.anisotropy=8;
@@ -107,7 +107,7 @@ function buildScene(key){
     if(mood==='room'&&p.id.slice(0,4)==='f1a3')continue;   /* lustre preto (arte sem luz): fica só a luz */
     if(p.t==='flat'||(mood==='room'&&TOPDOWN.has(p.id.slice(0,4)))){flats.push([p.id,p.x,p.y]);continue;}
     if(key==='town'&&p.id.startsWith('b_'))continue;stand.push([p.id,p.x,p.y]);
-    if(key==='town'&&a[2]<=24&&a[3]>=80)lampsP.push([p.x*U,2.3,p.y*U]);}
+    if((key==='town'||key==='cinzamuro')&&a[2]<=24&&a[3]>=80)lampsP.push([p.x*U,2.3,p.y*U]);}
   if(key==='zone_pantano'&&V3.proc)V3.proc.direct(add,ZONE.props.filter(p=>p.k),sc);
   if(ZONE.region&&V3.proc)V3.proc.direct(add,ZONE.props.filter(p=>p.k),sc);
   if(key==='zone_cripta2'&&V3.proc){   // Cripta: cada prop do atlas vira o modelo certo (nada de adivinhar pela cor)
