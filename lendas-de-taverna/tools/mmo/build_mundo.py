@@ -14,7 +14,7 @@ TALL_C=['6f5e5b765c','615799f946','a012171cf1','5a100d7474']
 BUSH=['5e132ed62f','87f51eb8a1','5369c15f09','1055f1c689']
 ROCK=['d876089903','244580aa96','ca1d87b329','8f3ce74d92','ce03221eb2','498aebd592','545a9bb762']
 FLATS=[k for k,v in AJ.items() if not k.startswith(('b_','v_')) and v[2]<=16 and v[3]<=19 and k not in('fi0','fi1','fi2','fi3','bf0','bf1','bf2','bf3')]
-GR=np.array([74,138,58]);GR2=np.array([66,124,52]);DR=np.array([136,98,62]);WT=np.array([58,116,214]);SH=np.array([196,176,120]);DFc=np.array([40,100,60]);GVc=np.array([96,84,120]);RKc=np.array([108,112,124]);SWc=np.array([74,92,40])
+GR=np.array([74,138,58]);GR2=np.array([66,124,52]);DR=np.array([136,98,62]);WT=np.array([58,116,214]);SH=np.array([196,176,120]);DFc=np.array([40,100,60]);GVc=np.array([96,84,120]);RKc=np.array([108,112,124]);RDc=np.array([168,92,70]);SLc=np.array([226,228,232]);ASc=np.array([60,56,62]);SDc=np.array([206,178,130]);SWc=np.array([74,92,40])
 
 def seg_d(px,py,a,b):
     ax,ay=a;bx,by=b;dx,dy=bx-ax,by-ay;L=dx*dx+dy*dy or 1;t=np.clip(((px-ax)*dx+(py-ay)*dy)/L,0,1);return np.hypot(px-(ax+t*dx),py-(ay+t*dy))
@@ -102,7 +102,7 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     img=np.zeros((gh,gw,3));t=smooth(seed+31,8)
     img[:]=GR[None,None,:]*(1-t[...,None])+GR2[None,None,:]*t[...,None]
     img[dirt]=DR;img[shore]=SH
-    GCOL={'dark':DFc,'grave':GVc,'swamp':SWc,'rock':RKc}
+    GCOL={'dark':DFc,'grave':GVc,'swamp':SWc,'rock':RKc,'red':RDc,'salt':SLc,'ash':ASc,'sand':SDc}
     if ground in GCOL:img[~water&~shore]=GCOL[ground]
     for sd,th in enumerate(side_theme):
         if th in('dark','grave','swamp'):img[BAND&(side==sd)&~water&~CORR]={'dark':DFc,'grave':GVc,'swamp':SWc}[th]
@@ -112,6 +112,7 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     def at(m,x,y):i,j=gi(x,y);return m[i,j]
     P=[]
     def addk(k,x,y,s,r=0,wf=None):
+        if k=='rock' and ground in('rock','red','salt','ash','sand'):k='crag'    # deserto: rocha sem musgo
         d=dict(t='k',k=k,x=round(x),y=round(y),s=s)
         if r:d['col']=[[0,0,r]]
         if wf:d['wf']=wf
@@ -132,7 +133,7 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
                 x=gx+rr.uniform(-1,1)*step*jit;y=gy+rr.uniform(-1,1)*step*jit
                 if 40<x<W-40 and 40<y<H-40 and not at(BAND,x,y):fn(x,y)
     def tree(x,y):
-        if not free(x,y):return
+        if ground in ARID or not free(x,y):return    # deserto: sem árvores (espinheiros e rochas vêm de mid/deco)
         f=(.30+at(N3,x,y)*.9)*(.4+at(N1,x,y))*grove(x,y,.56 if fdens<=1 else .40)*fdens
         if hills and hills(x,y)>.2:
             if rr.random()<.45*grove(x,y,.5):spr(rr.choice(TALL_C),x,y)
@@ -140,9 +141,14 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
         if rr.random()<min(.9,f*.78):
             if dead and rr.random()<dead:addk('dead',x,y,rr.randint(100,150),7)
             else:spr(rr.choice(TALL_C if rr.random()<conifer else TALL_B),x,y)
+    ARID=('rock','red','salt','ash','sand')
     def mid(x,y):
         if not free(x,y):return
         r=rr.random();d=grove(x,y,.55)
+        if ground in ARID:
+            if r<.10:addk('thorn',x,y,rr.randint(40,58),10)
+            elif r<.17:addk('rock',x,y,rr.randint(40,90),14)
+            return
         if hills and hills(x,y)>.25:
             if r<.42:spr(rr.choice(ROCK),x,y)
             return
@@ -151,7 +157,8 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     def flat(x,y):
         if at(water,x,y) or at(CORR,x,y):return
         if rr.random()<.20+.5*max(0,at(CL,x,y)-.5):P.append(dict(t='flat',id=rr.choice(FLATS),x=round(x),y=round(y)))
-    place_grid(58,tree);place_grid(74,mid);place_grid(28,flat,.5)
+    place_grid(58,tree);place_grid(74,mid)
+    if ground not in ARID:place_grid(28,flat,.5)
     def deco(x,y):
         if not free(x,y,50) or any(math.hypot(x-g['x'],y-g['y'])<190 for g in gates):return
         r=rr.random()
@@ -159,12 +166,17 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
             if r<.36:addk('tombstone',x,y,rr.randint(30,48),9)
             elif r<.46:addk('bones',x,y,22)
             elif r<.52:addk('thorn',x,y,42,10)
+        elif ground in ARID:
+            if r<.22:addk('rock',x,y,rr.randint(40,90),14)
+            elif r<.34:addk('thorn',x,y,rr.randint(42,60),10)
+            elif r<.42:addk('bones',x,y,20)
+            elif r<.50 and ground in('red','rock'):addk('rock',x,y,rr.randint(70,130),22)
         elif ground=='swamp':
             if r<.40:addk('puddle',x,y,rr.randint(30,60))
             elif r<.52:addk('mush',x,y,26)
             elif r<.60:addk('thorn',x,y,40,10)
             elif r<.64:addk('bones',x,y,18)
-    if ground in('grave','swamp'):place_grid(72,deco,.5)
+    if ground in('grave','swamp')+ARID:place_grid(72,deco,.5)
     # ---- retoques de cenário: lagos com juncos, vitórias-régias e pedras; flores em clareiras; capim e seixos na beira dos caminhos
     def erode(m,k):
         r=m.copy()
@@ -177,14 +189,15 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
             if at(CORR,x,y) or at(road_d,x,y)<60 or at(BAND,x,y):continue
             r=rr.random()
             if r<.075:
+                if ground in ARID and ground!='sand':continue
                 for _k in range(rr.randint(1,3)):addk('reed',x+rr.uniform(-22,22),y+rr.uniform(-14,14),rr.randint(34,54))
             elif r<.115:addk('rock',x,y,rr.randint(20,34),8)
             elif r<.17:addk('tuft',x,y,rr.randint(14,20))
         deep=erode(water,3)&~erode(water,14);ys,xs=np.nonzero(deep)
         for i in range(0,len(ys),4):
-            if rr.random()<.07:
+            if rr.random()<.07 and (ground not in ARID or ground=='sand'):
                 x=float(wx[ys[i],xs[i]]);y=float(wy[ys[i],xs[i]]);P.append(dict(t='k',k='lily',x=round(x),y=round(y),s=rr.randint(26,40),lift=.06))
-    if ground not in('grave','swamp'):
+    if ground not in('grave','swamp')+ARID:
         def meadow(x,y):
             if not free(x,y,50) or grove(x,y,.5)>.25 or rr.random()>.16:return
             for _k in range(rr.randint(4,7)):addk('flower',x+rr.uniform(-46,46),y+rr.uniform(-34,34),rr.randint(16,24))
@@ -268,8 +281,8 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
             elif r<.8:addk('mush',x,y,28)
             else:addk('puddle',x,y,rr.randint(34,60))
         elif th=='mount':
-            if r<.5:spr(rr.choice(ROCK),x,y)
-            elif r<.8:addk('rock',x,y,rr.randint(110,200),22)
+            if r<.5 and ground not in ARID:spr(rr.choice(ROCK),x,y)
+            elif r<.8 or ground in ARID:addk('rock',x,y,rr.randint(110,200),22)
             else:spr(rr.choice(TALL_C),x,y)
         else:
             if r<.6:spr(rr.choice(TALL_C),x,y)
@@ -364,7 +377,14 @@ LINKS=[('estrada',0,1100,'planicie',3000),('planicie',0,3200,'ponte',1100),('pla
 def _arrive(b,sd,pos):
     W,H=SIZE[b];return {0:[pos,170],1:[pos,H-170],2:[170,pos],3:[W-170,pos]}[sd]
 # Região 2 (Terras Áridas de Cinzamuro): ficam FORA do trecho SIZE..LINKS que o build_mapamundi.py (Região 1) lê; ganham mapa-múndi próprio depois
-SIZE['muralha']=(2200,4200); NM['muralha']='Estrada da Muralha'
+SIZE.update(muralha=(2200,4200),planalto=(6400,6400),garganta=(2200,4800),mesas=(6400,6400),leito=(2400,5600),salinas=(6400,6400),rubro=(2200,4800),forjas=(6000,6000),
+  portao=(4500,4500),canion=(5200,5200),cercos1=(4600,2200),cercos=(6400,6400),abutres=(4600,2200),ruinas=(5800,5800),oasis=(2400,2400),mirante=(2400,2400),
+  tumba=(2400,2400),cisterna=(2400,2400),saqueadores=(2600,2600),verme=(2600,2600),obsidiana=(2600,2600))
+NM.update(muralha='Estrada da Muralha',planalto='Planalto Árido',garganta='Garganta do Vento',mesas='Mesas Rubras',leito='Leito do Rio Seco',salinas='Salinas Brancas',
+  rubro='Desfiladeiro Rubro',forjas='Vale das Forjas Mortas',portao='Portão do Deserto',canion='Cânion do Eco',cercos1='Caminho dos Cercos',cercos='Campo dos Cercos',
+  abutres='Trilha dos Abutres',ruinas='Ruínas do Sol Caído',oasis='Oásis Escondido (secreto)',mirante='Mirante dos Abutres (secreto)',tumba='Tumba do Nômade (secreta)',
+  cisterna='Cisterna Antiga (secreta)',saqueadores='Acampamento dos Saqueadores (secreto)',verme='Covil do Verme (secreto)',obsidiana='Gruta de Obsidiana (secreta)')
+R2=['muralha','planalto','garganta','mesas','leito','salinas','rubro','forjas','portao','canion','cercos1','cercos','abutres','ruinas','oasis','mirante','tumba','cisterna','saqueadores','verme','obsidiana']
 EXL={k:[] for k in SIZE}
 for a,sa,pa,b,pb in LINKS:
     sb=OPP[sa]
@@ -374,7 +394,17 @@ EXL['estrada'].append(dict(id='cidade',nm='Brumavale',side=1,pos=1100,to='town',
 EXL['passo'].append(dict(id='cidade2',nm='Cinzamuro',side=0,pos=2250,to='cinzamuro',toSide=1,at=[800,2420],ready=True,
   msg='Portão do Passo: o guarda só deixa passar a partir do nível 10, com a quest dos chefes (em construção).'))
 EXL['muralha'].append(dict(id='cidade2',nm='Cinzamuro',side=1,pos=1100,to='cinzamuro',toSide=-1,at=[470,170],ready=True))
-EXL['muralha'].append(dict(id='planalto',nm='Planalto Árido',side=0,pos=1100,to='zone_planalto',toSide=1,at=[1100,4030],ready=False,msg='O Planalto Árido ainda está em obras.'))
+# ligações da Região 2 (A, lado em A, posição em A, B, posição em B; B usa o lado oposto)
+LINKS2=[('muralha',0,1100,'planalto',3200),('planalto',0,3200,'garganta',1100),('planalto',2,2800,'canion',2600),('planalto',3,3400,'oasis',1200),
+  ('garganta',0,1100,'mesas',3200),('garganta',3,2400,'mirante',1200),('mesas',0,3200,'leito',1200),('mesas',2,3600,'tumba',1200),('mesas',3,2400,'cercos1',1100),
+  ('cercos1',3,1100,'cercos',3200),('cercos',3,2800,'saqueadores',1300),('leito',0,1200,'salinas',3200),('leito',2,3000,'cisterna',1200),('leito',3,4200,'abutres',1100),
+  ('abutres',3,1100,'ruinas',2900),('ruinas',1,2900,'verme',1300),('salinas',0,3200,'rubro',1100),('rubro',0,1100,'forjas',3000),('forjas',0,3000,'portao',2250),
+  ('forjas',2,2400,'obsidiana',1300)]
+for a,sa,pa,b,pb in LINKS2:
+    sb=OPP[sa]
+    EXL[a].append(dict(id=b,nm=NM[b],side=sa,pos=pa,to='zone_'+b,toSide=sb,at=_arrive(b,sb,pb),ready=True))
+    EXL[b].append(dict(id=a,nm=NM[a],side=sb,pos=pb,to='zone_'+a,toSide=sa,at=_arrive(a,sa,pa),ready=True))
+EXL['portao'].append(dict(id='regiao3',nm='Região 3',side=0,pos=2250,to='zone_regiao3',toSide=1,at=[2250,4330],ready=False,msg='O Portão do Deserto ainda está fechado: a Região 3 está em obras.'))
 def auto_roads(name,hub=None):
     W,H=SIZE[name];hub=hub or (W//2,H//2);r_=random.Random(len(name)*7+W);roads=[]
     for e in EXL[name]:
@@ -384,12 +414,12 @@ def auto_roads(name,hub=None):
         mid=((P1[0]+hub[0])/2+r_.uniform(-140,140),(P1[1]+hub[1])/2+r_.uniform(-140,140));roads.append([P0,P1,mid,hub])
     return roads
 # clima por zona (pesos de clear/rain/storm): perto da cidade quase sempre aberto; pântano e cemitério carregados
-WX_BY=dict(planicie=dict(clear=6,rain=2),goblins=dict(clear=3,rain=3),brejo=dict(clear=2,rain=4),ponte=dict(clear=3,rain=3),colinas=dict(clear=4,rain=2,storm=1),
+WX_BY=dict(**{k:dict(clear=8,storm=1) for k in R2},planicie=dict(clear=6,rain=2),goblins=dict(clear=3,rain=3),brejo=dict(clear=2,rain=4),ponte=dict(clear=3,rain=3),colinas=dict(clear=4,rain=2,storm=1),
   desfiladeiro=dict(clear=3,rain=2,storm=2),passo=dict(clear=3,rain=2,storm=2),cemiterio=dict(clear=2,rain=3,storm=2),mortos=dict(clear=2,rain=3,storm=2),
   lenhadores=dict(clear=3,rain=3),ogros=dict(clear=3,rain=3,storm=1),brumas=dict(clear=1,rain=5,storm=2),clareira=dict(clear=3,rain=2),gruta=dict(rain=3,storm=2),
   lago=dict(clear=3,rain=3),mina=dict(clear=3,rain=2,storm=1),eremita=dict(clear=2,rain=3),cabana=dict(clear=1,rain=4,storm=3))
 # bioma de cada zona: as bordas fecham com o relevo da zona VIZINHA (planície que dá em montanha fecha com montanha)
-BIOME=dict(muralha='mount',estrada='forest',planicie='forest',goblins='dark',brejo='dark',ponte='forest',colinas='mount',desfiladeiro='mount',passo='mount',cemiterio='grave',
+BIOME=dict(**{k:'mount' for k in R2},estrada='forest',planicie='forest',goblins='dark',brejo='dark',ponte='forest',colinas='mount',desfiladeiro='mount',passo='mount',cemiterio='grave',
   mortos='grave',lenhadores='dark',ogros='forest',brumas='swamp',clareira='dark',gruta='grave',lago='forest',mina='mount',eremita='dark',cabana='swamp')
 def auto_theme(name):
     th=[BIOME[name]]*4
@@ -480,4 +510,85 @@ Z('cabana',1919,'Nv 10–11',waters=[(1500,1500,320,220)],pois=[(1000,1200)],sta
 # ---------------------------------------------------------------- Estrada da Muralha (ligação, Região 2, Nv 10–11): sai pelo portão norte de Cinzamuro; segue para o Planalto Árido (em obras)
 Z('muralha',2020,'Nv 10–11',roads=[[(1100,4190),(1020,3500),(1180,2800),(1050,2100),(1160,1300),(1100,10)]],pois=[(1100,2100)],camps=[(1500,2900)],start=(1100,4030),
   side_theme=MT,band=(380,380,420,420),dens=.45,fdens=.4,conifer=.5,ground='rock',hills=lambda x,y:.9,packs=22,pack_n=3,
-  region_extra=dict(zlv=1,lv=[10,11],respawn=45,reg='Terras Áridas',mobs=['bandido','gnoll','javbruto','harpia','ogrinho','bandido']))
+  region_extra=dict(zlv=1,lv=[10,11],respawn=45,reg='Terras Áridas',dif=dict(hp=1.4,atk=1.3,agg=1.5),mobs=['bandido','gnoll','javbruto','harpia','ogrinho','bandido']))
+
+# ================================================================ REGIÃO 2 — Terras Áridas de Cinzamuro (Nv 10–20)
+# Terreno: rocha/areia/argila/sal/cinza, cordilheira em todas as bordas (a região é montanhosa e seca). Inimigos provisórios: reaproveitam os do jogo por terreno
+# (bandido, gnoll, harpia, aranha, cobra, barata, múmia, esqueleto, gárgula...) até existirem os bichos do deserto do BESTIARIO.md.
+R2X=dict(zlv=1,respawn=45,reg='Terras Áridas',dif=dict(hp=1.4,atk=1.3,agg=1.5))   # Região 2: bichos mais fortes e agressivos (a Região 1 é o tutorial)
+def _rr(seed):return random.Random(seed)
+def mesas_rocks(W,H,n,seed,avoid=()):
+    r=_rr(seed);out=[]
+    while len(out)<n:
+        x,y=r.randint(500,W-500),r.randint(500,H-500)
+        if any(abs(x-ax)<260 and abs(y-ay)<260 for ax,ay in avoid):continue
+        out.append(('rock',x,y,r.randint(170,300),40))
+    return out
+def ruin_set(cx,cy,n,rad,seed):
+    r=_rr(seed);out=[]
+    for i in range(n):
+        a=r.uniform(0,6.28);d=r.uniform(.2,1)*rad
+        out.append((r.choice(['column','column','block','tombstone']),round(cx+math.cos(a)*d),round(cy+math.sin(a)*d*.7),r.randint(50,110),20))
+    return out
+def r2(name,seed,nv,lv,mobs,ground,**kw):
+    kw.setdefault('side_theme',MT);kw.setdefault('band',(380,380,420,420));kw.setdefault('dens',.5);kw.setdefault('fdens',.25);kw.setdefault('conifer',0.0);kw.setdefault('dead',1.0)
+    kw.setdefault('pack_n',4);kw.setdefault('packs',max(6,int(SIZE[name][0]*SIZE[name][1]/1.1e6)))
+    re=dict(R2X,lv=lv,mobs=mobs,**kw.pop('region_extra',{}))
+    Z(name,seed,nv,ground=ground,region_extra=re,**kw)
+
+# ---- Planalto Árido (Nv 10–12): a primeira zona de verdade; chão de areia, acampamento de bandidos, covil da Matriarca Escorpião (santuário)
+r2('planalto',2121,'Nv 10–12',[10,12],['bandido','gnoll','aranha','cobra','harpia','barata','bandido'],'sand',
+   roads=[[(3200,6390),(3100,5500),(3350,4500),(3200,3500),(3300,2400),(3200,1200),(3200,10)],[(3200,3500),(2200,3300),(1100,3000),(10,2800)],[(3300,4000),(4400,3800),(5400,3500),(6390,3400)]],
+   camps=[(2100,4500)],shrines=[(4700,1700)],pois=[(3200,3300),(1500,1300)],start=(3200,6150),packs=34)
+# ---- Garganta do Vento (Nv 12–13): desfiladeiro estreito e sinuoso, ventos fortes
+r2('garganta',2222,'Nv 12–13',[12,13],['harpia','gnoll','bandido','morcego','harpia'],'rock',
+   roads=[[(1100,4790),(1000,4000),(1250,3100),(1000,2200),(1200,1300),(1100,10)]],pois=[(1100,2400)],start=(1100,4600),band=(420,420,420,420),dens=.7)
+# ---- Mesas Rubras (Nv 13–15): argila vermelha com mesas gigantes (blocos de rocha)
+r2('mesas',2323,'Nv 13–15',[13,15],['ogrolenhador','javbruto','gnoll','bandido','ogrinho','javbruto'],'red',
+   roads=[[(3200,6390),(3150,5400),(3300,4500),(3200,3600),(3250,2400),(3200,1200),(3200,10)],[(3200,3700),(2200,3650),(1000,3600),(10,3600)],[(3250,3000),(4200,2800),(5400,2500),(6390,2400)]],
+   extra_k=mesas_rocks(6400,6400,34,2323,avoid=[(3200,y) for y in range(300,6300,600)]),camps=[(4800,4800)],shrines=[(1800,1500)],pois=[(3200,3600)],start=(3200,6150),packs=36)
+# ---- Leito do Rio Seco (Nv 14–15): leito largo e sinuoso, areia branca e pedregulhos
+r2('leito',2424,'Nv 14–15',[14,15],['cobra','barata','bandido','aranha','gnoll'],'sand',
+   roads=[[(1200,5590),(1050,4700),(1300,3800),(1000,2900),(1250,2000),(1200,1100),(1200,10)],[(1100,3000),(500,3000),(10,3000)],[(1250,4200),(1800,4200),(2390,4200)]],
+   trails=[[(1200,5500),(1500,4600),(900,3700),(1500,2800),(950,1900),(1400,1000)]],pois=[(1200,2900)],start=(1200,5400),band=(340,340,380,380),dens=.55)
+# ---- Salinas Brancas (Nv 15–17): planície de sal ofuscante, lago salgado, entrada das Minas de Sal Esquecidas
+r2('salinas',2525,'Nv 15–17',[15,17],['sapador','aranha','gnoll','javbruto','aranha','bandido'],'salt',
+   roads=[[(3200,6390),(3100,5400),(3300,4500),(3200,3600),(3250,2500),(3200,1200),(3200,10)]],waters=[(2000,3000,900,520,120),(4700,4300,600,380,100)],
+   camps=[(4600,2000)],shrines=[(1500,1300)],pois=[(3200,3500),(5200,1400)],start=(3200,6150),packs=36,dens=.4)
+# ---- Desfiladeiro Rubro (Nv 17–18): garganta de argila vermelha, mais estreita e mais perigosa
+r2('rubro',2626,'Nv 17–18',[17,18],['bandido','ogrolenhador','gargula','harpia','javbruto'],'red',
+   roads=[[(1100,4790),(1000,3900),(1250,3000),(1000,2000),(1200,1000),(1100,10)]],pois=[(1100,2500)],start=(1100,4600),band=(420,420,420,420),dens=.65,packs=12)
+# ---- Vale das Forjas Mortas (Nv 18–20): cinza vulcânica, forjas em ruína, entrada da Forja de Pedranegra
+r2('forjas',2727,'Nv 18–20',[18,20],['ogrolenhador','gargula','cavcaido','javbruto','esqmago','gargula'],'ash',
+   roads=[[(3000,5990),(2900,5000),(3100,4000),(3000,3000),(3100,2000),(3000,900),(3000,10)],[(3000,3000),(2000,2500),(1000,2400),(10,2400)]],
+   camps=[(4400,3500)],shrines=[(4700,1500),(1400,1400)],pois=[(3000,3000)],start=(3000,5780),packs=34)
+# ---- Portão do Deserto (Nv 19–20): fortificação do fim da região; guarda e missão "Abrir o Portão" (Região 3 em obras)
+r2('portao',2828,'Nv 19–20',[19,20],['cavcaido','gargula','ogrolenhador','esq','javbruto'],'rock',
+   roads=[[(2250,4490),(2300,3500),(2200,2500),(2250,1400),(2250,10)]],camps=[(3300,3300)],pois=[(2250,1300)],start=(2250,4300),packs=18,band=(420,420,420,420))
+# ---- Cânion do Eco (Nv 12–14): desvio a oeste do Planalto; paredões vermelhos
+r2('canion',2929,'Nv 12–14',[12,14],['bandido','harpia','aranha','morcego','bandido'],'red',
+   roads=[[(5190,2600),(4200,2700),(3000,2500),(1800,2600),(800,2500),(10,2400)]],shrines=[(1000,1500)],pois=[(2600,2600)],start=(4900,2600),packs=22,
+   extra_k=mesas_rocks(5200,5200,16,2929,avoid=[(x,2600) for x in range(300,5000,500)]))
+# ---- Caminho dos Cercos (Nv 16–17): estrada de ligação, restos de guerra
+r2('cercos1',3030,'Nv 16–17',[16,17],['bandido','cavcaido','lobo','esq'],'sand',
+   roads=[[(10,1100),(1200,1050),(2300,1150),(3400,1050),(4590,1100)]],pois=[(2300,1100)],start=(300,1100),packs=8,band=(340,340,380,380),dens=.5)
+# ---- Campo dos Cercos (Nv 17–19): campo de batalha antigo, entrada da Bastilha Negra
+r2('cercos',3131,'Nv 17–19',[17,19],['cavcaido','esq','guarda','esqmago','lobo','cavcaido'],'rock',
+   roads=[[(10,3200),(1200,3100),(2400,3200),(3300,3150),(4400,2900),(5400,2800),(6390,2800)]],camps=[(3400,3800),(2600,2200)],shrines=[(4800,1300)],pois=[(3300,3150)],start=(300,3200),packs=34,
+   extra_k=ruin_set(4800,1500,16,700,3131)+ruin_set(2800,4600,10,500,3132))
+# ---- Trilha dos Abutres (Nv 15–16): trilha seca, abutres (harpias) sobrevoam
+r2('abutres',3232,'Nv 15–16',[15,16],['harpia','bandido','lobo','cobra'],'sand',
+   roads=[[(10,1100),(1100,1000),(2300,1200),(3400,1050),(4590,1100)]],pois=[(2300,1100)],start=(300,1100),packs=8,band=(340,340,380,380),dens=.45)
+# ---- Ruínas do Sol Caído (Nv 16–18): templo solar em ruínas, entrada do Templo do Sol Soterrado
+r2('ruinas',3333,'Nv 16–18',[16,18],['mumia','esq','cult','gargula','necro','mumia'],'sand',
+   roads=[[(10,2900),(1200,2850),(2500,2950),(2900,2900),(2900,4300),(2900,5790)]],camps=[],shrines=[(2900,2200)],pois=[(2900,2900)],start=(300,2900),packs=30,
+   extra_k=ruin_set(2900,2300,30,900,3333)+ruin_set(1300,4300,12,500,3334)+ruin_set(4500,1400,12,500,3335))
+# ---- zonas secretas (becos sem saída)
+SEC2=dict(side_theme=MT,band=(300,300,300,300),dens=.5,packs=6,pack_n=3)
+r2('oasis',3434,'Nv 11–12',[11,12],['cobra','barata','bandido'],'sand',waters=[(1200,1300,420,280,80)],pois=[(1200,900)],start=(300,1200),**SEC2)
+r2('mirante',3535,'Nv 12–13',[12,13],['harpia','aranha','gnoll'],'rock',pois=[(1200,1200)],start=(300,1200),**SEC2)
+r2('tumba',3636,'Nv 14–15',[14,15],['mumia','esq','cobra'],'sand',pois=[(1200,1200)],start=(300,1200),extra_k=ruin_set(1200,1200,8,400,3636),**SEC2)
+r2('cisterna',3737,'Nv 14–15',[14,15],['aranha','morcego','barata'],'rock',pois=[(1200,1200)],start=(300,1200),waters=[(1500,1500,260,180,60)],**SEC2)
+r2('saqueadores',3838,'Nv 17–18',[17,18],['bandido','ladrao','javbruto'],'sand',camps=[(1300,1300)],pois=[(1300,900)],start=(300,1300),**{**SEC2,'packs':9})
+r2('verme',3939,'Nv 18–19',[18,19],['aranha','cobra','barata'],'sand',shrines=[(1300,1500)],pois=[(1300,1200)],start=(1300,300),**{**SEC2,'packs':9})
+r2('obsidiana',4040,'Nv 19–20',[19,20],['gargula','morcego','esqmago'],'ash',pois=[(1300,1300)],start=(300,1300),**{**SEC2,'packs':9})
