@@ -286,6 +286,42 @@ def seq_side(name):
     elif name == 'hurt':
         for i in range(10):
             u = ease(min(1, i / 2)) * (1 - ease(max(0, (i - 4) / 5))); o.append(dict(lean=-16 * u, headx=-6 * u, heady=-8 * u, jaw=.6 * u, aN=.1 + .5 * u, aF=.1 + .5 * u, eN=.3 + .5 * u, eF=.3 + .5 * u, crouch=4 * u, _t=i * .7, _flash=1 if i == 1 else 0))
+    elif name == 'stomp':     # perfil: ergue a perna de perto, bate o pé, corpo cede e treme
+        for i in range(24):
+            if i < 11: u = ease(i / 10); P = dict(upN=95 * u, stN=26 * u, lean=-14 * u, crouch=-4 * u, aN=.1 + .9 * u, aF=.1 + .6 * u, eN=.3 + .5 * u, eF=.3 + .4 * u, headx=-3 * u, heady=-3 * u)
+            elif i < 13: P = dict(upN=95, stN=26, lean=-14, crouch=-4, aN=1.0, aF=.7, eN=.8, eF=.7, headx=-3, heady=-3)
+            elif i < 15: u = (i - 12) / 2; P = dict(upN=95 * (1 - u), stN=26 * (1 - u), lean=lerp(-14, 8, u), crouch=lerp(-4, 22, u), aN=lerp(1.0, .3, u), aF=lerp(.7, .3, u), eN=.3, eF=.3, heady=lerp(-3, 8, u), jaw=.5 * u)
+            elif i < 19: u = (i - 14) / 4; P = dict(lean=8 - 3 * u, crouch=22 - 6 * u, aN=.3, aF=.3, eN=.3, eF=.3, heady=8 - 4 * u, jaw=.5 * (1 - u), shake=(1 if i % 2 else -1) * 3 * (1 - u))
+            else: u = ease((i - 18) / 5); P = dict(lean=lerp(5, 0, u), crouch=lerp(16, 0, u), aN=lerp(.3, .1, u), aF=lerp(.3, .1, u), heady=lerp(4, 0, u))
+            P['lean'] = P.get('lean', 0) + P.get('shake', 0); P['_t'] = i * .5; o.append(P)
+    elif name == 'smash':     # perfil: os dois braços sobem acima da cabeça e descem esmagando
+        for i in range(24):
+            if i < 11: u = ease(i / 10); P = dict(aN=lerp(.1, 2.5, u), aF=lerp(.1, 2.4, u), eN=lerp(.25, .5, u), eF=lerp(.25, .5, u), crouch=-6 * u, lean=-8 * u, heady=-4 * u, jaw=.4 * u, breath=u)
+            elif i < 13: P = dict(aN=2.5, aF=2.4, eN=.5, eF=.5, crouch=-6, lean=-8, heady=-4, jaw=.5)
+            elif i < 15: u = (i - 12) / 2; P = dict(aN=lerp(2.5, .45, u), aF=lerp(2.4, .4, u), eN=lerp(.5, .2, u), eF=lerp(.5, .2, u), crouch=lerp(-6, 26, u), lean=lerp(-8, 10, u), heady=lerp(-4, 12, u), jaw=.6)
+            elif i < 19: u = (i - 14) / 4; P = dict(aN=.45, aF=.4, crouch=26 - 8 * u, lean=10 - 4 * u, heady=12 - 5 * u, jaw=.4 * (1 - u), shake=(1 if i % 2 else -1) * 4 * (1 - u))
+            else: u = ease((i - 18) / 5); P = dict(aN=lerp(.45, .1, u), aF=lerp(.4, .1, u), crouch=lerp(18, 0, u), lean=lerp(6, 0, u), heady=lerp(7, 0, u))
+            P['lean'] = P.get('lean', 0) + P.get('shake', 0); P['_t'] = i * .6; o.append(P)
+    elif name == 'sweep':     # perfil: SOCO NO CHÃO — punho para trás/cima, agacha e bate a mão no chão à frente
+        for i in range(24):
+            if i < 9: u = ease(i / 8); P = dict(aN=lerp(.1, 2.3, u), eN=lerp(.25, .7, u), aF=.1 + .3 * u, eF=.4, lean=-12 * u, heady=-2 * u)
+            elif i < 12: u = ease((i - 8) / 3); P = dict(aN=lerp(2.3, .32, u), eN=lerp(.7, .1, u), aF=.4, eF=.4, lean=lerp(-12, 14, u), crouch=118 * u, heady=10 * u, jaw=.4 * u, stN=22 * u, stF=-10 * u)
+            elif i < 18: u = (i - 12) / 5; P = dict(aN=.32, eN=.1, aF=.4, eF=.4, lean=14, crouch=118, heady=10, stN=22, stF=-10, shake=(1 if i % 2 else -1) * 3 * (1 - u))
+            else: u = ease((i - 17) / 6); P = dict(aN=lerp(.32, .1, u), eN=lerp(.1, .25, u), aF=lerp(.4, .1, u), lean=lerp(14, 0, u), crouch=lerp(118, 0, u), heady=lerp(10, 0, u), stN=lerp(22, 0, u), stF=lerp(-10, 0, u))
+            P['lean'] = P.get('lean', 0) + P.get('shake', 0); P['_t'] = i * .5; o.append(P)
+    elif name == 'roar':
+        for i in range(20):
+            u = ease(min(1, i / 7)) * (1 - ease((i - 15) / 5) if i > 15 else 1)
+            sh = (1 if i % 2 else -1) * 2.5 * u if 7 <= i <= 15 else 0
+            o.append(dict(aN=.1 + .9 * u, aF=.1 + .9 * u, eN=.3 + .7 * u, eF=.3 + .7 * u, heady=-7 * u, headx=-4 * u, jaw=1.0 * u, breath=2 * u, lean=-6 * u + sh, crouch=-3 * u, _t=i * .8))
+    elif name == 'death':     # perfil: cambaleia, ajoelha, pausa, e tomba para a frente até deitar com a cabeça e as mãos no chão
+        for i in range(32):
+            if i < 8: u = ease(i / 7); P = dict(lean=10 * math.sin(u * 3), crouch=lerp(0, 22, u), heady=5 * u, aN=.1 + .4 * u, aF=.1 + .4 * u, eN=.3 + .5 * u, eF=.3 + .5 * u, jaw=.5 * u, stN=12 * u)
+            elif i < 15: u = ease((i - 8) / 6); P = dict(lean=lerp(0, -6, u), crouch=lerp(22, 74, u), heady=lerp(5, 14, u), aN=.5, aF=.5, eN=.8, eF=.8, jaw=.8, stN=lerp(12, 30, u), stF=-20 * u)
+            elif i < 17: P = dict(lean=-4 + 5 * math.sin((i - 15) * 2.2), crouch=74, heady=lerp(14, 20, (i - 15) / 2), aN=.3, aF=.3, eN=.25, eF=.25, jaw=.8, stN=30, stF=-20)
+            elif i < 25: u = ((i - 17) / 7) ** 2; P = dict(lean=lerp(-4, 36, u), crouch=lerp(74, 96, u), heady=lerp(14, 52, u), headx=12 * u, aN=lerp(.5, .5, u), aF=lerp(.5, .5, u), eN=.3, eF=.3, jaw=.4 * (1 - u), stN=30, stF=-20)
+            else: u = (i - 25) / 6; P = dict(lean=36, crouch=96, heady=52, headx=12, aN=.5, aF=.5, eN=.3, eF=.3, jaw=0, stN=30, stF=-20, shake=(1 if i % 2 else -1) * 2.5 * (1 - u))
+            P['lean'] = P.get('lean', 0) + P.get('shake', 0); P['_t'] = i * .35; o.append(P)
     return o
 
 DWpx, DHpx = int(DW * SK), int(DH * SK)
@@ -338,13 +374,13 @@ def preview(path, names=None, hero=None):
 def export(out_dir='../../../../mmo/assets/chars'):
     import json, os
     global SK
-    SK = .6
+    SK = .5
     front = ['idle', 'walk', 'stomp', 'smash', 'sweep', 'roar', 'hurt', 'death']
     backn = ['idle', 'walk', 'hurt']
-    sidn = ['idle', 'walk', 'hurt']
+    sidn = ['idle', 'walk', 'hurt', 'stomp', 'smash', 'sweep', 'roar', 'death']
     jobs = [(n, i, P, 'd') for n in front for i, P in enumerate(seq(n))] + [(n, i, P, 'u') for n in backn for i, P in enumerate(seq(n))] + [(n, i, P, 's') for n in sidn for i, P in enumerate(seq_side(n))]
     with Pool(4) as p: imgs = p.map(_fv, jobs, chunksize=3)
-    w, h = int(DW * SK), int(DH * SK); cols = 20; rows = -(-len(imgs) // cols)
+    w, h = int(DW * SK), int(DH * SK); cols = 24; rows = -(-len(imgs) // cols)
     A = Image.new('RGBA', (cols * w, rows * h), (0, 0, 0, 0)); idx = {}
     for k, ((n, i, P, v), im) in enumerate(zip(jobs, imgs)):
         A.alpha_composite(im, ((k % cols) * w, (k // cols) * h)); idx.setdefault((n, v), []).append(k)
@@ -355,8 +391,8 @@ def export(out_dir='../../../../mmo/assets/chars'):
         f = idx[(src, 'd')]
         b = idx.get((src, 'u'), f)
         an[nm + '_d'] = f; an[nm + '_s'] = idx.get((src, 's'), f); an[nm + '_u'] = b
-    d = idx[('death', 'd')]; an['kneel_d'] = an['kneel_s'] = an['kneel_u'] = d[:17]
-    for v in 'dsu': an['death_' + v] = d[17:]      # a morte do jogo parte do joelho no chão (ele só morre ajoelhado)
+    d = idx[('death', 'd')]; an['kneel_d'] = an['kneel_u'] = d[:17]; an['kneel_s'] = idx[('death', 's')][:17]
+    for v in 'dsu': an['death_' + v] = (idx[('death', v)] if v == 's' else d)[17:]      # a morte do jogo parte do joelho no chão (ele só morre ajoelhado)
     assert A.width <= 4096 and A.height <= 4096, A.size
     A.save(os.path.join(out_dir, 'cx_gigante_atlas.png'), optimize=True)
     json.dump(dict(w=w, h=h, ax=(CX + XO) * SK, ay=(FY + YO) * SK, cols=cols, anims=an), open(os.path.join(out_dir, 'cx_gigante_atlas.json'), 'w'))
@@ -365,7 +401,7 @@ def export(out_dir='../../../../mmo/assets/chars'):
 def _fv(a):
     n, i, P, v = a
     global SK
-    SK = .6
+    SK = .5
     return draw_side(P, P.get('_t', 0)) if v == 's' else draw(P, P.get('_t', 0), v)
 
 
