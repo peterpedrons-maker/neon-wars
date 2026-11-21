@@ -423,8 +423,8 @@ Z('ponte',505,'Nv 3–4',roads=[[(1100,4190),(1050,3300),(1100,2300),(1150,1200)
   pois=[(1500,2900)],start=(1100,4000),side_theme=['forest','forest','forest','forest'],band=(330,330,360,360),dens=.9,packs=10,
   region_extra=dict(zlv=1,lv=[3,4],respawn=40,mobs=['javali','lobo','ogrinho','javali']))
 # ---------------------------------------------------------------- Colinas Rochosas (Nv 4–6)
-Z('colinas',606,'Nv 4–6',waters=[(3600,3600,380,240)],camps=[(1700,3400),(3700,1300)],start=(2500,4800),side_theme=MT,band=(420,300,400,420),dens=.8,
-  hills=lambda x,y:.75,packs=36,pack_n=3,region_extra=dict(zlv=1,lv=[4,6],respawn=45,mobs=['javali','lobo','gnoll','harpia','gnoll','javbruto']))
+Z('colinas',606,'Nv 4–6',waters=[(3600,3600,380,240)],camps=[(1700,3400),(3700,1300)],pois=[(2500,2300)],start=(2500,4800),side_theme=MT,band=(420,300,400,420),dens=.8,
+  hills=lambda x,y:.75,packs=36,pack_n=3,region_extra=dict(zlv=1,lv=[4,6],respawn=45,mobs=['javali','lobo','gnoll','harpia','gnoll','javbruto'],colo=dict(x=2500,y=2300)))
 # ---------------------------------------------------------------- Desfiladeiro (ligação, Nv 7–8)
 Z('desfiladeiro',707,'Nv 7–8',pois=[(1300,2200)],start=(1100,4000),side_theme=MT,band=(300,300,420,420),dens=.7,hills=lambda x,y:.8,packs=12,pack_n=3,
   region_extra=dict(zlv=1,lv=[7,8],respawn=45,mobs=['gnoll','harpia','bandido','lobo']))
