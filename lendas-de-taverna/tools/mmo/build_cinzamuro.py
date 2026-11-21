@@ -196,7 +196,26 @@ def house(seed, w=176, h=170, roof=0, sign=None, awning=None, chim_glow=False, d
         glyph(d, sign, sx + 1, rh + 55, .9)
     if chim_glow:
         d.ellipse([cx + 4, 6, cx + 18, 14], fill=(255, 140, 50))
-    return outline(shade_side(im, 12, 8)), (w // 2, h - 1)
+    # --- volume (vista 3/4): parede lateral + água do telhado à direita, profundidade DX x DY
+    DX, DY = 46, 26; big = Image.new('RGBA', (w + DX, h + DY), (0, 0, 0, 0)); big.alpha_composite(im, (0, DY)); d = ImageDraw.Draw(big)
+    ry = rh + 12 + DY; base = h + DY
+    d.polygon([(w - 6, ry), (w - 6 + DX, ry - DY), (w - 6 + DX, base - 2 - DY), (w - 6, base - 2)], fill=SL[3] if False else L4)      # parede lateral
+    for yy_ in range(ry + 14, base - 2, 16):
+        o = (yy_ - ry) // 16 % 2 * 14
+        d.line([(w - 6, yy_), (w - 6 + DX, yy_ - DY)], fill=MORT)
+    for xx_ in range(10, DX, 22):
+        d.line([(w - 6 + xx_, ry - int(xx_ * DY / DX)), (w - 6 + xx_, base - 2 - int(xx_ * DY / DX))], fill=MORT)
+    d.line([(w - 6 + DX, ry - DY), (w - 6 + DX, base - 2 - DY)], fill=L5, width=2)
+    wx0 = w - 6 + DX // 2; wy0 = ry + 26 - DY // 2
+    d.rectangle([wx0 - 7, wy0, wx0 + 7, wy0 + 22], fill=WOOD); d.rectangle([wx0 - 5, wy0 + 2, wx0 + 5, wy0 + 20], fill=(150, 120, 80))   # janela lateral
+    A = (int(w * .2), 6 + DY); B = (int(w * .8), 6 + DY); Bp = (B[0] + DX, B[1] - DY); Cc = (w - 3, rh + 6 + DY); Ccp = (w - 3 + DX, rh + 6 + DY - DY)
+    d.polygon([Cc, Ccp, Bp, B], fill=tuple(int(v * .62) for v in rc))                                                               # água lateral do telhado
+    for k_ in range(1, 7):
+        t = k_ / 7; a1 = (Cc[0] + (B[0] - Cc[0]) * t, Cc[1] + (B[1] - Cc[1]) * t); a2 = (a1[0] + DX, a1[1] - DY)
+        d.line([a1, a2], fill=tuple(int(v * .5) for v in rc))
+    d.line([B, Bp], fill=tuple(min(255, int(v * 1.2)) for v in rc), width=3)
+    d.polygon([(Cc[0], Cc[1]), (Ccp[0], Ccp[1]), (Ccp[0], Ccp[1] + 8), (Cc[0], Cc[1] + 8)], fill=tuple(int(v * .45) for v in rc))       # beiral lateral
+    return outline(shade_side(big, 12, 8)), (w // 2, h + DY - 1)
 def pine(seed):
     rr = random.Random(seed); W_, H_ = 58, 124; im = Image.new('RGBA', (W_, H_), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
     d.rectangle([W_ // 2 - 4, H_ - 24, W_ // 2 + 4, H_ - 1], fill=(70, 52, 40))
@@ -301,9 +320,9 @@ def build():
           ('mes', 'Mestre de Classe', 'holy-symbol', 560, 1230), ('lei', 'Leilão', 'two-coins', 840, 1230)]
     for (i, nm, ic, x, y) in SH:
         sw = {'fer': 210, 'mer': 220, 'alq': 190, 'mes': 210, 'lei': 210, 'cof': 190}[i]
-        P('p', 's_' + i, x, y, circ_row(x, y, sw, 160, step=20)); doors.append({'id': i, 'nm': nm, 'x': x, 'y': y + 6, 'w': 64, 'h': 82, 'room': 'int_' + i, 'ic': ic})
+        P('p', 's_' + i, x, y, [[a + 23, b, r] for a, b, r in circ_row(x, y, sw + 46, 160, step=20)]); doors.append({'id': i, 'nm': nm, 'x': x, 'y': y + 6, 'w': 64, 'h': 82, 'room': 'int_' + i, 'ic': ic})
     for (x, y, k) in ((250, 930, 0), (700, 940, 1), (900, 940, 2), (250, 1140, 3), (1030, 880, 4), (300, 2160, 5), (480, 2170, 1), (1120, 2170, 2), (1320, 2170, 4)):
-        P('p', 'hs%d' % k, x, y, circ_row(x, y, 150 + 16 * (k % 3), 100, step=20))
+        P('p', 'hs%d' % k, x, y, [[a + 23, b, r] for a, b, r in circ_row(x, y, 150 + 16 * (k % 3) + 46, 100, step=20)])
     # --- decoração: poço, lampiões, braseiros, barracas, estandartes
     P('p', 'v_well', 800, 2120, [[0, -4, 22], [0, -26, 22]])
     for (x, y) in ((690, 2280), (910, 2280)): P('p', 'v_torch1', x, y, [[0, -3, 6]])
