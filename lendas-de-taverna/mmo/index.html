@@ -6721,7 +6721,7 @@ function rareEngage(m){if(m.type==='cervo')sfx('cervo_engage',1,1);m.eng=true;m.
    Abaixo de 70% e de 40%: TSUNAMI (mergulha, some, uma muralha d'água atravessa a praia; só as PEDRAS ALTAS protegem,
    ou uma esquiva no momento certo) e depois emerge EXPOSTO (leva mais dano). Abaixo de 55%: Redemoinho que puxa.
    Abaixo de 30%: Fúria (mais rápido, mais orbes e gêiseres). Animações em cx_mare_atlas (mare.py), efeitos em v3.js (M3.w*). */
-MOBS.mare={fixed:1,nome:'Maragon, Senhor das Marés',cx:'mare',numY:104,rad:44,shr:52,fam:'rato',noElite:1,hp:1450,atk:10,xp:1200,gold:[500,900],speed:0,aggro:1800,rng:0,aspd:99,sw:40,deathDur:2,aura:['#5fe8ff','#d8fbff']};
+MOBS.mare={fixed:1,nome:'Maragon, Senhor das Marés',cx:'mare',numY:104,rad:44,shr:52,fam:'rato',noElite:1,hp:14500,atk:50,xp:1200,gold:[500,900],speed:0,aggro:1800,rng:0,aspd:99,sw:40,deathDur:2,aura:['#5fe8ff','#d8fbff']};
 const MARE_SK=[{id:'slam',anim:'slam',cd:4.2,warn:.95,wt:5,maxd:360},{id:'sweep',anim:'sweep',cd:7.5,warn:1.05,wt:3,maxd:420},{id:'orb',anim:'cast',cd:5,warn:.7,wt:3},
   {id:'geyser',anim:'roar',cd:9,warn:.85,wt:3,hp:.92},{id:'grab',anim:'grab',cd:11,warn:.8,wt:3,hp:.85,mind:170},{id:'whirl',anim:'roar',cd:17,warn:.9,wt:3,hp:.55}];
 const MARE_LV=12;
@@ -6803,8 +6803,8 @@ function mareHuntTick(dt){const S=hnS(),a=S.act.mare;if(!a||a.fim||G.scene!=='du
    e ataca: PISADA (círculo no pé) e CHUTE LATERAL (faixa). Perna que cai desabilita aquele lado. Com 2 pernas caídas a CABEÇA desce:
    Mordida, Rugido (medo) e Pedregulho. Com 4 pernas caídas a cabeça desaba no chão e fica exposta (+50% dano). Matar a cabeça encerra a caçada.
    Sprites: cx_perna / cx_ccabeca (colosso.py); efeitos 3D: M3.shock/rocks/boulder. */
-MOBS.cperna={nome:'Gigante das Colinas',cx:'gigante',rad:130,shr:170,fam:'javali',noElite:1,hp:1700,atk:11,xp:1800,gold:[60,120],speed:42,aggro:2400,rng:200,aspd:99,sw:120,deathDur:2.6,numY:260,aura:['#c8a070','#fff0c0']};
-MOBS.ccabeca={fixed:1,nome:'Cabeça do Gigante',cx:'ccabeca',rad:46,shr:54,fam:'javali',noElite:1,hp:800,atk:11,xp:1500,gold:[500,900],speed:0,aggro:2400,rng:0,aspd:99,sw:44,deathDur:1.6,numY:66,aura:['#ffcf4a','#fff6c0']};
+MOBS.cperna={nome:'Gigante das Colinas',cx:'gigante',rad:130,shr:170,fam:'javali',noElite:1,hp:17000,atk:55,xp:1800,gold:[60,120],speed:42,aggro:2400,rng:200,aspd:99,sw:120,deathDur:2.6,numY:260,aura:['#c8a070','#fff0c0']};
+MOBS.ccabeca={fixed:1,nome:'Cabeça do Gigante',cx:'ccabeca',rad:46,shr:54,fam:'javali',noElite:1,hp:8000,atk:55,xp:1500,gold:[500,900],speed:0,aggro:2400,rng:0,aspd:99,sw:44,deathDur:1.6,numY:66,aura:['#ffcf4a','#fff6c0']};
 const COL_LV=14;
 /* formação das 4 patas por direção do corpo (0 norte,1 oeste,2 sul,3 leste); índice 0/1 = traseiras, 2/3 = dianteiras; diagonais (0,3) e (1,2) andam juntas */
 const COL_LAY={0:[[0,0]],1:[[0,0]],2:[[0,0]],3:[[0,0]]};   /* gigante humanoide: um corpo só (a hitbox fica nos pés) */
