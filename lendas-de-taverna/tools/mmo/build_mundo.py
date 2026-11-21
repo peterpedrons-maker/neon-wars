@@ -14,7 +14,7 @@ TALL_C=['6f5e5b765c','615799f946','a012171cf1','5a100d7474']
 BUSH=['5e132ed62f','87f51eb8a1','5369c15f09','1055f1c689']
 ROCK=['d876089903','244580aa96','ca1d87b329','8f3ce74d92','ce03221eb2','498aebd592','545a9bb762']
 FLATS=[k for k,v in AJ.items() if not k.startswith(('b_','v_')) and v[2]<=16 and v[3]<=19 and k not in('fi0','fi1','fi2','fi3','bf0','bf1','bf2','bf3')]
-GR=np.array([74,138,58]);GR2=np.array([66,124,52]);DR=np.array([136,98,62]);WT=np.array([58,116,214]);SH=np.array([196,176,120]);DFc=np.array([40,100,60]);GVc=np.array([96,84,120]);SWc=np.array([74,92,40])
+GR=np.array([74,138,58]);GR2=np.array([66,124,52]);DR=np.array([136,98,62]);WT=np.array([58,116,214]);SH=np.array([196,176,120]);DFc=np.array([40,100,60]);GVc=np.array([96,84,120]);RKc=np.array([108,112,124]);SWc=np.array([74,92,40])
 
 def seg_d(px,py,a,b):
     ax,ay=a;bx,by=b;dx,dy=bx-ax,by-ay;L=dx*dx+dy*dy or 1;t=np.clip(((px-ax)*dx+(py-ay)*dy)/L,0,1);return np.hypot(px-(ax+t*dx),py-(ay+t*dy))
@@ -102,7 +102,7 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     img=np.zeros((gh,gw,3));t=smooth(seed+31,8)
     img[:]=GR[None,None,:]*(1-t[...,None])+GR2[None,None,:]*t[...,None]
     img[dirt]=DR;img[shore]=SH
-    GCOL={'dark':DFc,'grave':GVc,'swamp':SWc}
+    GCOL={'dark':DFc,'grave':GVc,'swamp':SWc,'rock':RKc}
     if ground in GCOL:img[~water&~shore]=GCOL[ground]
     for sd,th in enumerate(side_theme):
         if th in('dark','grave','swamp'):img[BAND&(side==sd)&~water&~CORR]={'dark':DFc,'grave':GVc,'swamp':SWc}[th]
@@ -363,6 +363,8 @@ LINKS=[('estrada',0,1100,'planicie',3000),('planicie',0,3200,'ponte',1100),('pla
   ('mortos',3,1100,'passo',2250),('cemiterio',1,2500,'gruta',1200),('passo',3,2250,'mina',1200),('brumas',3,2500,'cabana',1200)]
 def _arrive(b,sd,pos):
     W,H=SIZE[b];return {0:[pos,170],1:[pos,H-170],2:[170,pos],3:[W-170,pos]}[sd]
+# Região 2 (Terras Áridas de Cinzamuro): ficam FORA do trecho SIZE..LINKS que o build_mapamundi.py (Região 1) lê; ganham mapa-múndi próprio depois
+SIZE['muralha']=(2200,4200); NM['muralha']='Estrada da Muralha'
 EXL={k:[] for k in SIZE}
 for a,sa,pa,b,pb in LINKS:
     sb=OPP[sa]
@@ -371,6 +373,8 @@ for a,sa,pa,b,pb in LINKS:
 EXL['estrada'].append(dict(id='cidade',nm='Brumavale',side=1,pos=1100,to='town',toSide=-1,at=[450,170],ready=True))   # a saída sul da cidade chega pelo TOPO da Estrada (que faz uma ferradura até a Planície)
 EXL['passo'].append(dict(id='cidade2',nm='Cinzamuro',side=0,pos=2250,to='cinzamuro',toSide=1,at=[800,2420],ready=True,
   msg='Portão do Passo: o guarda só deixa passar a partir do nível 10, com a quest dos chefes (em construção).'))
+EXL['muralha'].append(dict(id='cidade2',nm='Cinzamuro',side=1,pos=1100,to='cinzamuro',toSide=-1,at=[470,170],ready=True))
+EXL['muralha'].append(dict(id='planalto',nm='Planalto Árido',side=0,pos=1100,to='zone_planalto',toSide=1,at=[1100,4030],ready=False,msg='O Planalto Árido ainda está em obras.'))
 def auto_roads(name,hub=None):
     W,H=SIZE[name];hub=hub or (W//2,H//2);r_=random.Random(len(name)*7+W);roads=[]
     for e in EXL[name]:
@@ -385,7 +389,7 @@ WX_BY=dict(planicie=dict(clear=6,rain=2),goblins=dict(clear=3,rain=3),brejo=dict
   lenhadores=dict(clear=3,rain=3),ogros=dict(clear=3,rain=3,storm=1),brumas=dict(clear=1,rain=5,storm=2),clareira=dict(clear=3,rain=2),gruta=dict(rain=3,storm=2),
   lago=dict(clear=3,rain=3),mina=dict(clear=3,rain=2,storm=1),eremita=dict(clear=2,rain=3),cabana=dict(clear=1,rain=4,storm=3))
 # bioma de cada zona: as bordas fecham com o relevo da zona VIZINHA (planície que dá em montanha fecha com montanha)
-BIOME=dict(estrada='forest',planicie='forest',goblins='dark',brejo='dark',ponte='forest',colinas='mount',desfiladeiro='mount',passo='mount',cemiterio='grave',
+BIOME=dict(muralha='mount',estrada='forest',planicie='forest',goblins='dark',brejo='dark',ponte='forest',colinas='mount',desfiladeiro='mount',passo='mount',cemiterio='grave',
   mortos='grave',lenhadores='dark',ogros='forest',brumas='swamp',clareira='dark',gruta='grave',lago='forest',mina='mount',eremita='dark',cabana='swamp')
 def auto_theme(name):
     th=[BIOME[name]]*4
@@ -473,3 +477,7 @@ Z('mina',1717,'Nv 7–8',pois=[(1200,1200)],start=(300,1200),**{**SEC,'side_them
 Z('eremita',1818,'Nv 3–4',pois=[(1200,1200)],start=(300,1200),**{**SEC,'ground':'dark','fdens':1.4},region_extra=dict(zlv=1,lv=[3,4],respawn=40,mobs=['lobo','aranha','cogumelo']))
 Z('cabana',1919,'Nv 10–11',waters=[(1500,1500,320,220)],pois=[(1000,1200)],start=(300,1200),**{**SEC,'side_theme':['swamp']*4,'ground':'swamp','dead':.8,'fdens':.5},
   region_extra=dict(zlv=4,lv=[10,11],respawn=45,mobs=['homemrato','cultlodo','sapo','afogado']))
+# ---------------------------------------------------------------- Estrada da Muralha (ligação, Região 2, Nv 10–11): sai pelo portão norte de Cinzamuro; segue para o Planalto Árido (em obras)
+Z('muralha',2020,'Nv 10–11',roads=[[(1100,4190),(1020,3500),(1180,2800),(1050,2100),(1160,1300),(1100,10)]],pois=[(1100,2100)],camps=[(1500,2900)],start=(1100,4030),
+  side_theme=MT,band=(380,380,420,420),dens=.45,fdens=.4,conifer=.5,ground='rock',hills=lambda x,y:.9,packs=22,pack_n=3,
+  region_extra=dict(zlv=1,lv=[10,11],respawn=45,reg='Terras Áridas',mobs=['bandido','gnoll','javbruto','harpia','ogrinho','bandido']))

@@ -365,7 +365,7 @@ def build():
     town = {'w': W, 'h': H, 'props': props, 'start': [800, 2220], 'portal': {'x': 800, 'y': 1650, 'stand': [800, 2000], 'fx': {'dx': 0, 'dy': 0, 'rx': 1, 'ry': 1}, 'off': True},
             'npcs': npcs, 'vill': vill, 'doors': doors, 'fx': fx, 'plaza': {'x': 800, 'y': 2130, 'nm': 'Praça dos Registros'}, 'boards': [],
             'exits': [{'id': 'passo', 'nm': 'Passo da Montanha', 'side': 1, 'x': 700, 'y': H - 70, 'w': 200, 'h': 70, 'to': 'zone_passo', 'at': [2250, 330], 'ready': True, 'msg': '', 'toSide': 0},
-                      {'id': 'muralha', 'nm': 'Estrada da Muralha', 'side': 0, 'x': 370, 'y': 0, 'w': 200, 'h': 70, 'to': 'zone_muralha', 'at': [1100, 3000], 'ready': False, 'msg': 'A Estrada da Muralha ainda está em obras.', 'toSide': 1}]}
+                      {'id': 'muralha', 'nm': 'Estrada da Muralha', 'side': 0, 'x': 370, 'y': 0, 'w': 200, 'h': 70, 'to': 'zone_muralha', 'at': [1100, 4030], 'ready': True, 'msg': '', 'toSide': 1}]}
     json.dump(town, open(A + 'cinzamuro.json', 'w'))
     # ---------------- chão (1 px = 1 px do mundo)
     rg = np.random.RandomState(3); g = np.zeros((H, W, 3), 'uint8'); yy, xx = np.mgrid[0:H, 0:W]
