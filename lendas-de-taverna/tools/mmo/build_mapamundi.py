@@ -168,8 +168,9 @@ for i,k in enumerate(KEYS):
     for p_ in j['props']:
         X=rx+p_['x']/ZW*rw; Y=ry+p_['y']/ZH*rh; t,kk=p_.get('t'),p_.get('k')
         if not(0<=X<W and 0<=Y<H) or not zm[int(Y),int(X)]: continue
-        if t=='p': acc(Mt if REG==2 else Fd if inter=='dark' else (Sw if inter=='swamp' else (Gv if inter=='grave' else (Mt if inter=='mount' else Fl))),X,Y)
-        elif kk=='mount': acc(Mt,X,Y,3)
+        if t=='p' and REG==2: pass
+        elif t=='p': acc(Fd if inter=='dark' else (Sw if inter=='swamp' else (Gv if inter=='grave' else (Mt if inter=='mount' else Fl))),X,Y)
+        elif kk=='mount': (acc(Mt,X,Y,3) if REG==1 else None)
         elif kk=='crag' and REG==2: acc(Rk,X,Y,.25)
         elif kk=='thorn' and REG==2: acc(Th,X,Y,.7)
         elif kk=='tombstone': acc(Gv,X,Y)
@@ -195,7 +196,7 @@ for i,k in enumerate(KEYS):
             if s_!=sd: continue
             if sd<2: strip[:,int(rx+c-14):int(rx+c+14)]=False
             else: strip[int(ry+c-14):int(ry+c+14),:]=False
-        if REG==2: strip&=(noise(22,sd+60)>.36+.1*(sd%2))
+        if REG==2: continue
         tgt[strip]+=.09
     for m_ in j.get('marks',[]):
         if m_['k']=='camp': items.append((ry+m_['y']/ZH*rh,tent,(rx+m_['x']/ZW*rw,ry+m_['y']/ZH*rh)))
@@ -274,11 +275,15 @@ if REG==1:
     stylize(Sw,.03,(110,130,60,255),(70,84,36,190),sw,22,34)
 else:
     d_=ImageDraw.Draw(base,'RGBA'); D2=lambda: ImageDraw.Draw(base,'RGBA')
+    def rpal(x,y):
+        g=['sand','red','salt','ash','rock'][GRI[min(H-1,max(0,int(y))),min(W-1,max(0,int(x)))]]
+        return {'ash':((100,94,102),(58,54,64)),'salt':((206,202,196),(150,146,146))}.get(g,((176,162,142),(116,102,86)))
     def mount_n(x,y,k=1):
-        c1,c2=gpal(x,y); s_=13*k; tx=x+s_*R.uniform(-.2,.28); top=(tx,y-s_*R.uniform(1.3,1.9)); dd=D2()
-        dd.polygon([P(x-s_,y),P(*top),P(x+s_*R.uniform(.8,1.1),y)],fill=c1+(255,)); dd.polygon([P(*top),P(x+s_,y),P(x+s_*.1,y)],fill=c2+(255,))
-        for j in range(R.randint(2,4)): dd.line([P(tx+s_*(.1+.2*j),y-s_*(.5+.15*j)),P(tx+s_*(.35+.15*j),y-s_*.05)],fill=(60,44,36,140),width=1)
-        dd.line([P(x-s_,y),P(*top),P(x+s_,y)],fill=INK,width=2)
+        c1,c2=rpal(x,y); s_=13*k; tx=x+s_*R.uniform(-.15,.25); top=(tx,y-s_*R.uniform(1.15,1.55)); dd=D2()
+        dd.polygon([P(x-s_*1.15,y),P(*top),P(x+s_*1.15,y)],fill=c1+(255,)); dd.polygon([P(*top),P(x+s_*1.15,y),P(x+s_*.1,y)],fill=c2+(255,))
+        if k>1.0: dd.polygon([P(*top),P(tx-s_*.3,top[1]+s_*.5),P(tx-s_*.05,top[1]+s_*.4),P(tx+s_*.18,top[1]+s_*.55),P(tx+s_*.3,top[1]+s_*.42)],fill=(244,242,236,255))
+        for j in range(R.randint(2,3)): dd.line([P(tx+s_*(.1+.2*j),y-s_*(.4+.12*j)),P(tx+s_*(.4+.15*j),y-s_*.05)],fill=(60,44,36,140),width=1)
+        dd.line([P(x-s_*1.15,y),P(*top),P(x+s_*1.15,y)],fill=INK,width=2)
     def mesa_n(x,y,k=1):
         c1,c2=gpal(x,y); w_=R.uniform(8,15)*k; h_=R.uniform(8,16)*k; dd=D2(); sl=R.uniform(.7,.9)
         dd.ellipse([P(x-w_*1.1,y-2)[0],P(x-w_*1.1,y-2)[1],P(x+w_*1.3,y+3)[0],P(x+w_*1.3,y+3)[1]],fill=(70,40,24,70))
@@ -354,12 +359,17 @@ else:
         for _ in range(n): ang+=R.uniform(-wob,wob); x+=math.cos(ang)*step; y+=math.sin(ang)*step; pts.append((x,y))
         return pts
     # montanhas: cordilheiras irregulares (picos grandes no miolo, morros menores nas bordas, espaçamento aleatório)
-    mm=stylize(Mt,.035,(130,118,108,255),(70,56,44,200),None,34,70)
+    sea_d=distance_transform_edt(land); rockz=np.zeros((H,W),bool)
+    for i_,k_ in enumerate(KEYS):
+        if INT.get(k_) in('rock','ash'): rockz|=(ID==i_)
+    nz=noise(18,77)
+    Mt=((land&(sea_d<=20)&(nz>.40))|(rockz&land&(nz>.46))).astype(np.float32)
+    mm=stylize(Mt,.2,(130,118,108,255),(70,56,44,200),None,34,70)
     if mm is not None and mm.any():
         dm=distance_transform_edt(mm); ys_,xs_=np.nonzero(mm); out=[]
         for _ in range(len(xs_)//10):
-            j=R.randrange(len(xs_)); x,y=float(xs_[j]),float(ys_[j]); sz=.55+min(1.1,dm[int(y),int(x)]/8)*R.uniform(.6,1.2); md=9+sz*6
-            if R.random()<.45 or any((x-a)**2+(y-b)**2<md*md for a,b in out): continue
+            j=R.randrange(len(xs_)); x,y=float(xs_[j]),float(ys_[j]); sz=.55+min(1.1,dm[int(y),int(x)]/8)*R.uniform(.6,1.2); md=11+sz*7
+            if R.random()<.5 or any((x-a)**2+(y-b)**2<md*md for a,b in out): continue
             out.append((x,y)); items.append((y,mount_n,(x,y,sz)))
     ZG=lambda k: INT.get(k,'sand')
     for i_,k_ in enumerate(KEYS):
