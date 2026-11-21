@@ -49,11 +49,16 @@ def noise(sc,seed,hh=None,ww=None):
     hh=hh or H; ww=ww or W; r=np.random.RandomState(seed); g=gaussian_filter(r.rand(hh//sc+3,ww//sc+3),1.2); z=zoom(g,sc,order=3)[:hh,:ww]; return (z-z.min())/(z.max()-z.min())
 nA=noise(40,1)-.5; nB=noise(16,2)-.5; nC=noise(80,3)-.5
 yy,xx=np.mgrid[0:H,0:W].astype(np.float32)
-wx=xx+nA*60+nB*22; wy=yy+nC*60+nB*22
+WARP=60 if REG==1 else 110
+wx=xx+nA*WARP+nB*22; wy=yy+nC*WARP+nB*22
 Dm=np.zeros((len(KEYS),H,W),np.float32)
 for i,k in enumerate(KEYS):
     rx,ry,rw,rh=rect[k]; cx,cy=rx+rw/2,ry+rh/2
-    Dm[i]=((np.abs(wx-cx)/(rw/2))**3.2+(np.abs(wy-cy)/(rh/2))**3.2)**(1/3.2)
+    if REG==1: Dm[i]=((np.abs(wx-cx)/(rw/2))**3.2+(np.abs(wy-cy)/(rh/2))**3.2)**(1/3.2)
+    else:
+        rr=np.random.RandomState(100+i); ang=np.arctan2(wy-cy,wx-cx); ex_=rr.uniform(2.1,2.7)
+        mod=1.16+.15*np.sin(3*ang+rr.uniform(0,6.3))+.09*np.sin(5*ang+rr.uniform(0,6.3))+.06*np.sin(8*ang+rr.uniform(0,6.3))
+        Dm[i]=((np.abs(wx-cx)/(rw/2))**ex_+(np.abs(wy-cy)/(rh/2))**ex_)**(1/ex_)/mod
 ID=Dm.argmin(0); DM=Dm.min(0)
 land=DM<1.14+nB*.35
 land=binary_fill_holes(binary_closing(land,iterations=14)); land=gaussian_filter(land.astype(np.float32),5)>.5
@@ -209,7 +214,7 @@ arr=np.array(base,np.float32)*(1+.27*sh_big*lm_big)[...,None]
 base.paste(Image.fromarray(np.clip(arr,0,255).astype(np.uint8)))
 def stylize(acc_,thr,wash,line,icon,edge_gap,inner_p,sig=6):
     dn=gaussian_filter(acc_,sig); pos_=dn[dn>1e-4]; thr=max(thr,float(np.percentile(pos_,58))) if pos_.size else thr; m=(dn>thr)&land&~water; m=gaussian_filter(m.astype(np.float32),3)>.5
-    if not m.any(): return
+    if not m.any(): return m
     mk=np.array(Image.fromarray((m*255).astype(np.uint8)).resize((W*S,H*S),Image.BICUBIC).filter(ImageFilter.GaussianBlur(2)))
     base.paste(Image.new('RGBA',base.size,wash),(0,0),Image.fromarray((mk>128).astype(np.uint8)*110))
     dd=ImageDraw.Draw(base,'RGBA')
@@ -219,10 +224,11 @@ def stylize(acc_,thr,wash,line,icon,edge_gap,inner_p,sig=6):
         L=0;prev=c[0]
         for p in c[::2]:
             L+=math.hypot(p[0]-prev[0],p[1]-prev[1]);prev=p
-            if L>=edge_gap:
+            if L>=edge_gap and icon:
                 L=0; items.append((p[0],icon,(p[1]+R.uniform(-2,2),p[0]+R.uniform(-1,3))))
     ys_,xs_=np.nonzero(m)
-    for j in R.sample(range(len(xs_)),min(len(xs_),int(len(xs_)/float(inner_p**2)))): items.append((ys_[j],icon,(xs_[j]+R.uniform(-2,2),ys_[j])))
+    for j in (R.sample(range(len(xs_)),min(len(xs_),int(len(xs_)/float(inner_p**2)))) if icon else []): items.append((ys_[j],icon,(xs_[j]+R.uniform(-2,2),ys_[j])))
+    return m
 dk=(0,0,0)
 def f_light(x,y,k=1): tree(x,y,R.uniform(.9,1.15),False)
 def f_dark(x,y,k=1): tree(x,y,R.uniform(.9,1.15),True)
@@ -267,20 +273,181 @@ if REG==1:
     stylize(Gv,.025,(130,110,140,255),(70,50,80,190),gv,22,30)
     stylize(Sw,.03,(110,130,60,255),(70,84,36,190),sw,22,34)
 else:
-    def mt2(x,y,k=1): mount_c(x,y,R.uniform(1.0,1.5))
-    def mesa2(x,y,k=1):
-        (mesa if GRI[min(H-1,max(0,int(y))),min(W-1,max(0,int(x)))]==1 else rockpile)(x,y,R.uniform(.9,1.3))
-    stylize(Mt,.035,(130,118,108,255),(70,56,44,200),mt2,34,70)
-    stylize(Rk,.004,(150,96,70,255),(90,50,34,170),mesa2,30,26)
-    stylize(Th,.003,(140,130,70,255),(90,82,44,150),thorn,30,26)
-    # dunas e crateras suaves nas zonas de areia / sal
+    d_=ImageDraw.Draw(base,'RGBA'); D2=lambda: ImageDraw.Draw(base,'RGBA')
+    def mount_n(x,y,k=1):
+        c1,c2=gpal(x,y); s_=13*k; tx=x+s_*R.uniform(-.2,.28); top=(tx,y-s_*R.uniform(1.3,1.9)); dd=D2()
+        dd.polygon([P(x-s_,y),P(*top),P(x+s_*R.uniform(.8,1.1),y)],fill=c1+(255,)); dd.polygon([P(*top),P(x+s_,y),P(x+s_*.1,y)],fill=c2+(255,))
+        for j in range(R.randint(2,4)): dd.line([P(tx+s_*(.1+.2*j),y-s_*(.5+.15*j)),P(tx+s_*(.35+.15*j),y-s_*.05)],fill=(60,44,36,140),width=1)
+        dd.line([P(x-s_,y),P(*top),P(x+s_,y)],fill=INK,width=2)
+    def mesa_n(x,y,k=1):
+        c1,c2=gpal(x,y); w_=R.uniform(8,15)*k; h_=R.uniform(8,16)*k; dd=D2(); sl=R.uniform(.7,.9)
+        dd.ellipse([P(x-w_*1.1,y-2)[0],P(x-w_*1.1,y-2)[1],P(x+w_*1.3,y+3)[0],P(x+w_*1.3,y+3)[1]],fill=(70,40,24,70))
+        dd.polygon([P(x-w_,y),P(x-w_*sl,y-h_),P(x+w_*sl,y-h_),P(x+w_,y)],fill=c1+(255,)); dd.polygon([P(x+w_*.2,y-h_),P(x+w_*sl,y-h_),P(x+w_,y),P(x+w_*.2,y)],fill=c2+(255,))
+        dd.polygon([P(x-w_*sl,y-h_),P(x+w_*sl,y-h_),P(x+w_*(sl-.1),y-h_-3*k),P(x-w_*(sl-.1),y-h_-3*k)],fill=tuple(min(255,v+36) for v in c1)+(255,))
+        for j in (.25,.5,.75): dd.line([P(x-w_*(1-.2*j),y-h_*j),P(x+w_*(1-.2*j),y-h_*j)],fill=c2+(255,),width=1)
+        dd.line([P(x-w_,y),P(x-w_*sl,y-h_),P(x-w_*(sl-.1),y-h_-3*k),P(x+w_*(sl-.1),y-h_-3*k),P(x+w_*sl,y-h_),P(x+w_,y)],fill=INK,width=2)
+    def dune_n(x,y,k=1):
+        c1,c2=gpal(x,y); dd=D2()
+        for j in range(R.randint(2,4)):
+            ox=R.uniform(-9,9); oy=R.uniform(-3,6); w_=R.uniform(7,13)
+            dd.arc([P(x+ox-w_,y+oy-w_*.45)[0],P(x+ox-w_,y+oy-w_*.45)[1],P(x+ox+w_,y+oy+w_*.45)[0],P(x+ox+w_,y+oy+w_*.45)[1]],195,345,fill=tuple(int(v*.66) for v in c1)+(220,),width=2)
+    def bones(x,y,k=1):
+        dd=D2(); dd.ellipse([P(x-3,y-3)[0],P(x-3,y-3)[1],P(x+3,y+2)[0],P(x+3,y+2)[1]],fill=(238,232,214,255),outline=INK)
+        for ex in(-1.2,1.2): dd.point(P(x+ex,y-.5),fill=INK)
+        for j in range(3): dd.line([P(x-6+j*1,y+4+j*1.5),P(x+6-j*1,y+4+j*1.5)],fill=(226,220,200,255),width=1)
+    def volcano(x,y,k=1):
+        dd=D2(); s_=17*k
+        dd.polygon([P(x-s_,y),P(x-s_*.28,y-s_*1.3),P(x+s_*.28,y-s_*1.3),P(x+s_,y)],fill=(86,78,88,255)); dd.polygon([P(x+s_*.28,y-s_*1.3),P(x+s_,y),P(x+s_*.2,y)],fill=(48,42,52,255))
+        dd.ellipse([P(x-s_*.3,y-s_*1.4)[0],P(x-s_*.3,y-s_*1.4)[1],P(x+s_*.3,y-s_*1.2)[0],P(x+s_*.3,y-s_*1.2)[1]],fill=(236,110,40,255),outline=INK)
+        dd.line([P(x-s_*.1,y-s_*1.2),P(x-s_*.35,y-s_*.5),P(x-s_*.2,y-s_*.1)],fill=(236,120,44,255),width=2)
+        for j in range(4): dd.ellipse([P(x+j*2-2,y-s_*1.5-j*5)[0],P(x+j*2-2,y-s_*1.5-j*5)[1],P(x+j*2+4+j,y-s_*1.5-j*5+5+j)[0],P(x+j*2+4+j,y-s_*1.5-j*5+5+j)[1]],fill=(90,86,90,140-j*25))
+        dd.line([P(x-s_,y),P(x-s_*.28,y-s_*1.3),P(x+s_*.28,y-s_*1.3),P(x+s_,y)],fill=INK,width=2)
+    def palm(x,y,k=1):
+        dd=D2(); dd.line([P(x,y),P(x+2*k,y-7*k),P(x+1*k,y-12*k)],fill=(98,68,36,255),width=2)
+        for a_ in(-160,-120,-60,-20,-90):
+            r=math.radians(a_); dd.line([P(x+1*k,y-12*k),P(x+1*k+math.cos(r)*8*k,y-12*k+math.sin(r)*6*k+3*k)],fill=(48,112,52,255),width=2)
+    def crystal(x,y,k=1):
+        dd=D2(); c=R.choice(((222,236,242),(196,220,236),(240,240,232)))
+        for dx,h_ in((-3,5),(0,8),(3,4)): dd.polygon([P(x+dx-2,y),P(x+dx,y-h_*k),P(x+dx+2,y)],fill=c+(255,),outline=INK)
+    def ocrystal(x,y,k=1):
+        dd=D2()
+        for dx,h_ in((-3,7),(0,11),(3,6)): dd.polygon([P(x+dx-2,y),P(x+dx,y-h_*k),P(x+dx+2,y)],fill=(44,40,60,255),outline=(150,120,200,255))
+    def pyramid(x,y,k=1):
+        dd=D2(); s_=13*k; dd.polygon([P(x-s_,y),P(x,y-s_*.95),P(x+s_,y)],fill=(226,196,140,255)); dd.polygon([P(x,y-s_*.95),P(x+s_,y),P(x+s_*.1,y)],fill=(170,134,90,255))
+        for j in(.3,.55,.75): dd.line([P(x-s_*(1-j),y-s_*.95*j),P(x+s_*(1-j),y-s_*.95*j)],fill=(150,116,76,200),width=1)
+        dd.line([P(x-s_,y),P(x,y-s_*.95),P(x+s_,y)],fill=INK,width=2)
+    def ruin(x,y,k=1):
+        dd=D2()
+        for dx,h_ in((-6,9),(0,13),(6,6)):
+            dd.rectangle([P(x+dx-2,y-h_)[0],P(x+dx-2,y-h_)[1],P(x+dx+2,y)[0],P(x+dx+2,y)[1]],fill=(224,212,188,255),outline=INK)
+        dd.polygon([P(x+3,y-1),P(x+9,y-1),P(x+8,y+2),P(x+2,y+2)],fill=(190,178,154,255),outline=INK)
+    def shrine(x,y,k=1):
+        dd=D2(); dd.rectangle([P(x-7,y-7)[0],P(x-7,y-7)[1],P(x+7,y)[0],P(x+7,y)[1]],fill=(220,208,184,255),outline=INK); dd.polygon([P(x-9,y-7),P(x,y-14),P(x+9,y-7)],fill=(196,170,110,255),outline=INK)
+        for dx in(-4,0,4): dd.line([P(x+dx,y-6),P(x+dx,y)],fill=INK,width=1)
+    def well(x,y,k=1):
+        dd=D2(); dd.ellipse([P(x-6,y-3)[0],P(x-6,y-3)[1],P(x+6,y+3)[0],P(x+6,y+3)[1]],fill=(150,142,130,255),outline=INK); dd.ellipse([P(x-3.5,y-1.5)[0],P(x-3.5,y-1.5)[1],P(x+3.5,y+1.5)[0],P(x+3.5,y+1.5)[1]],fill=(74,120,150,255))
+    def flame(x,y,k=1):
+        dd=D2(); dd.polygon([P(x,y-11),P(x+4,y-3),P(x+2,y),P(x-2,y),P(x-4,y-3)],fill=(240,130,40,255),outline=INK); dd.polygon([P(x,y-6),P(x+2,y-1),P(x-2,y-1)],fill=(252,220,90,255))
+        for j in range(3): dd.ellipse([P(x+j*2,y-14-j*4)[0],P(x+j*2,y-14-j*4)[1],P(x+j*2+5,y-14-j*4+5)[0],P(x+j*2+5,y-14-j*4+5)[1]],fill=(80,76,80,130-j*30))
+    def vulture(x,y,k=1):
+        dd=D2(); dd.line([P(x-6,y-2),P(x-3,y-4),P(x,y),P(x+3,y-4),P(x+6,y-2)],fill=(40,30,30,255),width=2)
+    def gate_icon(x,y,k=1):
+        dd=D2()
+        for dx in(-12,12): dd.rectangle([P(x+dx-5,y-20)[0],P(x+dx-5,y-20)[1],P(x+dx+5,y)[0],P(x+dx+5,y)[1]],fill=(160,160,172,255),outline=INK); dd.polygon([P(x+dx-6,y-20),P(x+dx,y-27),P(x+dx+6,y-20)],fill=(140,56,44,255),outline=INK)
+        dd.rectangle([P(x-8,y-12)[0],P(x-8,y-12)[1],P(x+8,y)[0],P(x+8,y)[1]],fill=(120,118,130,255),outline=INK); dd.arc([P(x-6,y-14)[0],P(x-6,y-14)[1],P(x+6,y-2)[0],P(x+6,y-2)[1]],180,360,fill=INK,width=2)
+    def worm(x,y,k=1):
+        dd=D2()
+        for i_ in range(4):
+            cx_=x+i_*13-20; dd.chord([P(cx_-6,y-8)[0],P(cx_-6,y-8)[1],P(cx_+6,y+6)[0],P(cx_+6,y+6)[1]],180,360,fill=(160,110,84,255),outline=INK)
+        dd.ellipse([P(x-30,y-9)[0],P(x-30,y-9)[1],P(x-18,y+1)[0],P(x-18,y+1)[1]],fill=(190,130,100,255),outline=INK)
+    def tent2(x,y,k=1): tent(x,y)
+    def zrand(zm,n,mind=9,edge=0):
+        ys_,xs_=np.nonzero(zm); out=[]
+        if not len(xs_): return out
+        for _ in range(n*12):
+            if len(out)>=n: break
+            j=R.randrange(len(xs_)); x,y=float(xs_[j])+R.uniform(-.4,.4),float(ys_[j])+R.uniform(-.4,.4)
+            if all((x-a)**2+(y-b)**2>mind*mind for a,b in out): out.append((x,y))
+        return out
+    def rwalk(x,y,ang,n,step,wob):
+        pts=[(x,y)]
+        for _ in range(n): ang+=R.uniform(-wob,wob); x+=math.cos(ang)*step; y+=math.sin(ang)*step; pts.append((x,y))
+        return pts
+    # montanhas: cordilheiras irregulares (picos grandes no miolo, morros menores nas bordas, espaçamento aleatório)
+    mm=stylize(Mt,.035,(130,118,108,255),(70,56,44,200),None,34,70)
+    if mm is not None and mm.any():
+        dm=distance_transform_edt(mm); ys_,xs_=np.nonzero(mm); out=[]
+        for _ in range(len(xs_)//10):
+            j=R.randrange(len(xs_)); x,y=float(xs_[j]),float(ys_[j]); sz=.55+min(1.1,dm[int(y),int(x)]/8)*R.uniform(.6,1.2); md=9+sz*6
+            if R.random()<.45 or any((x-a)**2+(y-b)**2<md*md for a,b in out): continue
+            out.append((x,y)); items.append((y,mount_n,(x,y,sz)))
+    ZG=lambda k: INT.get(k,'sand')
     for i_,k_ in enumerate(KEYS):
-        if INT.get(k_) not in('sand','salt'): continue
-        rx_,ry_,rw_,rh_=rect[k_]
-        for _ in range(int(rw_*rh_/600)):
-            X,Y=rx_+R.random()*rw_,ry_+R.random()*rh_
-            if 0<=X<W and 0<=Y<H and ID[int(Y),int(X)]==i_: items.append((Y,dune,(X,Y)))
+        if k_ in TOWNK: continue
+        zm=(ID==i_)&land&~water; ar=int(zm.sum()); n=max(8,ar//900); g=ZG(k_); rx_,ry_,rw_,rh_=rect[k_]
+        ing=gaussian_filter(zm.astype(np.float32),5)>.82     # interior: longe da borda
+        zi=zm&ing
+        dr=ImageDraw.Draw(base,'RGBA')
+        if g=='sand':
+            for x,y in zrand(zi,n//3,16): items.append((y,dune_n,(x,y)))
+            for x,y in zrand(zi,n//2,11): items.append((y,thorn,(x,y)))
+            for x,y in zrand(zi,n//8,26): items.append((y,dead,(x,y)))
+            for x,y in zrand(zi,n//9,30): items.append((y,bones,(x,y)))
+            for x,y in zrand(zi,n//6,22): items.append((y,rockpile,(x,y)))
+        elif g=='red':
+            for cx_,cy_ in zrand(zi,max(2,ar//7000),34):
+                for _ in range(R.randint(3,6)):
+                    a_=R.uniform(0,6.3); r_=R.uniform(3,16); x,y=cx_+math.cos(a_)*r_,cy_+math.sin(a_)*r_*.7
+                    if 0<=x<W and 0<=y<H and zm[int(y),int(x)]: items.append((y,mesa_n,(x,y,R.uniform(.8,1.5))))
+            for _ in range(max(2,ar//14000)):
+                x,y=zrand(zi,1,1)[0] if zi.any() else (rx_,ry_); pts=rwalk(x,y,R.uniform(0,6.3),R.randint(10,22),R.uniform(2.5,4),.6)
+                dr.line([(a*S,b*S) for a,b in pts],fill=(80,38,26,170),width=3,joint='curve')
+            for x,y in zrand(zi,n//5,16): items.append((y,thorn,(x,y)))
+            for x,y in zrand(zi,n//6,20): items.append((y,rockpile,(x,y)))
+        elif g=='salt':
+            for _ in range(max(6,ar//3500)):
+                x,y=zrand(zi,1,1)[0] if zi.any() else (rx_,ry_); pts=rwalk(x,y,R.uniform(0,6.3),R.randint(5,12),R.uniform(3,5),.8)
+                dr.line([(a*S,b*S) for a,b in pts],fill=(150,150,156,190),width=2,joint='curve')
+            for x,y in zrand(zi,n//3,12): items.append((y,crystal,(x,y)))
+            for x,y in zrand(zi,n//9,28): items.append((y,bones,(x,y)))
+            for x,y in zrand(zi,n//8,22): items.append((y,thorn,(x,y)))
+        elif g=='ash':
+            for x,y in zrand(zi,max(1,ar//9000),34): items.append((y,volcano,(x,y,R.uniform(.9,1.5))))
+            for _ in range(max(2,ar//9000)):
+                x,y=zrand(zi,1,1)[0] if zi.any() else (rx_,ry_); pts=rwalk(x,y,R.uniform(0,6.3),R.randint(10,20),R.uniform(3,4.5),.5)
+                dr.line([(a*S,b*S) for a,b in pts],fill=(40,20,16,255),width=7,joint='curve'); dr.line([(a*S,b*S) for a,b in pts],fill=(238,112,40,255),width=4,joint='curve')
+            for x,y in zrand(zi,n//3,12): items.append((y,rockpile,(x,y)))
+            for x,y in zrand(zi,n//9,30): items.append((y,dead,(x,y)))
+            if k_=='obsidiana':
+                for x,y in zrand(zi,n//2,10): items.append((y,ocrystal,(x,y)))
+        else:
+            for x,y in zrand(zi,n//2,13): items.append((y,rockpile,(x,y)))
+            for x,y in zrand(zi,n//5,20): items.append((y,dead,(x,y)))
+            for x,y in zrand(zi,n//4,14): items.append((y,thorn,(x,y)))
+        # marcas reais da zona
+        j_=Zj[k_]; ZW_,ZH_=j_['w'],j_['h']
+        for m_ in j_.get('marks',[]):
+            X=rx_+m_['x']/ZW_*rw_; Y=ry_+m_['y']/ZH_*rh_
+            if m_['k']=='shrine': items.append((Y,shrine,(X,Y)))
+        for p_ in j_['props']:
+            X=rx_+p_['x']/ZW_*rw_; Y=ry_+p_['y']/ZH_*rh_
+            if not(0<=X<W and 0<=Y<H) or ID[int(Y),int(X)]!=i_: continue
+            if p_.get('k')=='fire' or p_.get('t')=='fire': items.append((Y,flame,(X,Y)))
+            elif p_.get('k') in('column','block') and R.random()<.5: items.append((Y,ruin,(X,Y)))
+        # personalidade de cada zona
+        if k_=='leito':
+            cx_,cy_=rx_+rw_/2,ry_+rh_/2; pts=[(cx_+math.sin(t*5)*rw_*.12,ry_+rh_*t) for t in np.linspace(.04,.96,50)]
+            dr.line([(a*S,b*S) for a,b in pts],fill=(120,86,56,255),width=14,joint='curve'); dr.line([(a*S,b*S) for a,b in pts],fill=(210,176,128,255),width=9,joint='curve')
+            for a,b in pts[::3]: dr.line([(a*S-3,b*S-2),(a*S+3,b*S+2)],fill=(140,104,70,255),width=1)
+        if k_=='oasis':
+            ys_,xs_=np.nonzero(gaussian_filter(water.astype(np.float32)*(ID==i_),3)>.15)
+            for _ in range(10):
+                if len(xs_)==0: break
+                j=R.randrange(len(xs_)); a_=R.uniform(0,6.3); x,y=xs_[j]+math.cos(a_)*7,ys_[j]+math.sin(a_)*6
+                if 0<=x<W and 0<=y<H and land[int(y),int(x)] and not water[int(y),int(x)]: items.append((y,palm,(x,y,R.uniform(.9,1.3))))
+        if k_ in('tumba','ruinas'): 
+            x,y=rx_+rw_*.5,ry_+rh_*.5; items.append((y,pyramid,(x,y,1.6 if k_=='ruinas' else 1.1)))
+        if k_=='cisterna': items.append((ry_+rh_*.5,well,(rx_+rw_*.5,ry_+rh_*.5)))
+        if k_=='verme': items.append((ry_+rh_*.5,worm,(rx_+rw_*.5,ry_+rh_*.5)))
+        if k_=='portao': items.append((ry_+rh_*.18,gate_icon,(rx_+rw_*.5,ry_+rh_*.18,1.4)))
+        if k_ in('abutres','mirante','garganta'):
+            for x,y in zrand(zm,4,18): items.append((y-8,vulture,(x,y-8)))
+        if k_ in('cercos','cercos1','saqueadores'):
+            for x,y in zrand(zi,8 if k_=='cercos' else 5,12): items.append((y,tent2,(x,y)))
+        if k_=='forjas':
+            for x,y in zrand(zi,5,24): items.append((y,flame,(x,y)))
 items.sort(key=lambda t:t[0])
+if REG==2:
+    def sized(fn,sc):
+        def w(x,y,*a):
+            global P
+            old=P; P=lambda u,v:((x+(u-x)*sc)*S,(y+(v-y)*sc)*S)
+            try: fn(x,y,*a)
+            finally: P=old
+        return w
+    SC2={dune_n:1.6,thorn:1.7,dead:1.6,bones:1.7,rockpile:1.7,mesa_n:1.35,crystal:1.7,ocrystal:1.6,volcano:1.35,palm:1.6,flame:1.6,ruin:1.5,shrine:1.5,pyramid:1.25,vulture:1.7,tent2:1.6,well:1.7,worm:1.4}
+    items=[(y,sized(fn,SC2[fn]) if fn in SC2 else fn,a) for y,fn,a in items]
+    items.sort(key=lambda t:t[0])
 d=ImageDraw.Draw(base,'RGBA')
 for _,fn,a in items: put(fn,*a)
 # cidades
