@@ -250,13 +250,13 @@ def brazier():
 def build_atlas():
     base = json.load(open(A + 'atlas_regiao1.json')); bim = Image.open(A + 'atlas_regiao1.png').convert('RGBA')
     sprites = {}
-    for k, f in (('w_seg', wall_seg()), ('w_side', wall_side()), ('tower', tower()), ('gate', gate_arch()), ('keep', keep()), ('stairs', stairs_sprite()), ('brazier', brazier())):
-        sprites[k] = f
-    for i in range(3): sprites['cliff%d' % i] = cliff_seg(i + 1)
+    PH = (Image.new('RGBA', (4, 4), (0, 0, 0, 0)), (2, 3))
+    sprites['brazier'] = brazier()
+    for k in ('w_seg', 'w_side', 'tower', 'gate', 'keep'): sprites[k] = PH            # agora são malhas 3D em v3.js
+    for i in range(3): sprites['cliff%d' % i] = PH
     for i in range(4): sprites['pine%d' % i] = pine(i + 1)
     for kd in range(3):
         for i in range(2): sprites['rock%d_%d' % (kd, i)] = boulder(kd, 10 * kd + i)
-    PH = (Image.new('RGBA', (4, 4), (0, 0, 0, 0)), (2, 3))
     for i in range(6): sprites['hs%d' % i] = PH
     for i in range(0): sprites['hs%d' % i] = house(30 + i, 150 + 16 * (i % 3), 150 + 8 * (i % 2), roof=i)
     SHOPS = {'fer': dict(w=210, h=190, roof=1, sign='anvil', chim_glow=True), 'mer': dict(w=220, h=180, roof=0, sign='scales', awning=((176, 52, 48), (236, 222, 190))),
@@ -300,23 +300,22 @@ def build():
         x = x0 + step // 2
         while x < x1:
             if any(g0 - step // 2 < x < g1 + step // 2 for g0, g1 in gaps): x += step; continue
-            P('p', idp if idp != 'cliff' else 'cliff%d' % ((x // step) % 3), x, yb, circ_row(x, yb, step, h)); x += step
+            P('p', idp if idp != 'cliff' else 'cliff%d' % ((x // step) % 3), x, yb, circ_row(x, yb, step, 56)); x += step
     # --- muralha externa (norte e sul com portões) + laterais
     hwall(SY, WX0, WX1, [(SG0, SG1)]); hwall(NY, WX0, WX1, [(NG0, NG1)])
     for xb in (WX0, WX1):
         y = NY + 60
         while y <= SY - 10:
             P('p', 'w_side', xb, y, [[0, -4, 13], [0, -22, 13], [0, -40, 13]]); y += 56
-    for (x, y) in ((WX0, NY), (WX1, NY), (WX0, SY), (WX1, SY), (SG0 - 62, SY), (SG1 + 62, SY), (NG0 - 62, NY), (NG1 + 62, NY)): P('p', 'tower', x, y + 10, circ_row(x, y, 110, 200))
-    gate_col = lambda: [[dx, dy, 13] for dy in (-4, -22, -40, -58, -76, -94) for dx in (-120, -102, -84, 84, 102, 120)]
+    for (x, y) in ((WX0, NY), (WX1, NY), (WX0, SY), (WX1, SY), (SG0 - 62, SY), (SG1 + 62, SY), (NG0 - 62, NY), (NG1 + 62, NY)): P('p', 'tower', x, y + 10, [[0, -53, 46], [-32, -53, 20], [32, -53, 20], [0, -18, 22], [0, -88, 22]])
+    gate_col = lambda: [[dx, dy, 13] for dy in (-4, -22, -40, -58) for dx in (-130, -112, -94, -76, 76, 94, 112, 130)]
     P('p', 'gate', (SG0 + SG1) // 2, SY + 10, gate_col()); P('p', 'gate', (NG0 + NG1) // 2, NY + 10, gate_col())
     # --- muros de arrimo dos terraços (rocha) com vão para as escadas
     hwall(C1, WX0 + 24, WX1 - 24, [ST1], 'cliff', 128, 90); hwall(C2, WX0 + 24, WX1 - 24, [ST2], 'cliff', 128, 90)
     for (g0, g1, yb) in ((ST1[0], ST1[1], C1), (ST2[0], ST2[1], C2)):
-        P('p', 'stairs', (g0 + g1) // 2, yb + 6, [[0, 80, 1]])
         for x in (g0 - 16, g1 + 16): P('p', 'brazier', x, yb + 4, [[0, -3, 8]])
     # --- Terraço 3 (alto): Bastião, Mestre, Leilão, casas
-    P('p', 'keep', 1230, 1180, circ_row(1230, 1180, 420, 240, step=20))
+    P('p', 'keep', 1230, 1180, circ_row(1230, 1180, 420, 190, step=20))
     doors = []
     SWP = {'fer': 200, 'mer': 210, 'alq': 180, 'mes': 200, 'lei': 200, 'cof': 180}
     HWP = [150, 166, 182, 150, 166, 182]
@@ -389,10 +388,13 @@ def build():
     lane2 = (yy > 1840) & (yy < 1900) & (xx > 200) & (xx < 1400); g[lane2 & inn] = cobs((120, 108, 94), (112, 100, 88), 26, 26)[lane2 & inn]
     lane3 = (yy > 1380) & (yy < 1440) & (xx > 200) & (xx < 1420); g[lane3 & inn] = cobs((120, 108, 94), (112, 100, 88), 26, 26)[lane3 & inn]
     up = (xx > NG0 + 10) & (xx < NG1 - 10) & (yy > NY - 30) & (yy < C2); g[up & inn] = cobs((120, 108, 94), (112, 100, 88), 26, 26)[up & inn]
-    # degraus desenhados no chão (faixas claras/escuras) e rampas
+    # degraus pintados no chão (faixas claras/escuras com aresta) nos vãos dos muros de arrimo
     for (s0, s1, yb) in ((ST1[0], ST1[1], C1), (ST2[0], ST2[1], C2)):
-        for k in range(8):
-            y0 = yb - 6 + k * -0 - 4 + k * 10 - 40; 
+        for k, y0 in enumerate(range(yb - 96, yb + 26, 16)):
+            sh = 0 if k % 2 == 0 else -14
+            g[y0:y0 + 16, s0:s1] = np.array([166 + sh, 168 + sh, 178 + sh]) + rg.randint(-4, 4, (16, s1 - s0, 3))
+            g[y0:y0 + 2, s0:s1] = (206, 208, 216); g[y0 + 14:y0 + 16, s0:s1] = (90, 92, 104)
+        g[yb - 96:yb + 26, s0:s0 + 6] = (96, 98, 110); g[yb - 96:yb + 26, s1 - 6:s1] = (96, 98, 110)
     # estrada de pedra até os portões (fora)
     road = ((abs(xx - 800) < 70) & (yy > SY)) | ((abs(xx - 470) < 70) & (yy < NY)); g[road] = (cobs((120, 112, 104), (112, 104, 98), 30, 30)[road]) if False else (146, 128, 106) + rg.randint(-7, 7, (road.sum(), 1))
     # pegada escura sob muros
