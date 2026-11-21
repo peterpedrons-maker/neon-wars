@@ -628,6 +628,49 @@ M3.antlerspike={build(f,g){g.userData.S=[];const cr=_mt(0xd89418,1,false),cr2=_m
     w.add(new T.Mesh(new T.CylinderGeometry(2,5.5,h,5).translate(0,h/2,0),cr));w.add(new T.Mesh(new T.ConeGeometry(4,12,5).translate(0,h+5,0),gl));for(let j=0;j<2;j++){const tn=new T.Mesh(new T.CylinderGeometry(1,2.6,22,4).translate(0,11,0),cr2);tn.position.y=h*(.45+j*.25);tn.rotation.z=(j?1:-1)*.8;w.add(tn);}
     w.position.set(Math.cos(a)*d,0,Math.sin(a)*d*.85);w.rotation.set(_R(-.35,.35),_R(0,3),_R(-.35,.35));g.add(w);g.userData.S.push({w,dl:_R(0,.08)});}},
  upd(f,g,t){const T0=t*f.max;g.userData.S.forEach(p=>{const u=Math.min(1,Math.max(0,(T0-p.dl)*9));p.w.scale.set(1,Math.max(.01,u*(t>.65?Math.max(.01,(1-t)/.35):1)),1);});}};
+/* ===== SENHOR DAS MARÉS (caçada da Margem do Lago): toda a água dele é malha 3D no mundo ===== */
+const _wcol=(a)=>_gr([[0,'rgba(255,255,255,'+a+')'],[.25,'rgba(190,245,255,.9)'],[.7,'rgba(70,170,220,.75)'],[1,'rgba(30,90,150,.35)']]);
+/* ORBE D'ÁGUA: esfera translúcida com anel girando e gotas (segue o projétil via ft) */
+M3.worb={build(f,g){const s=new T.Mesh(new T.SphereGeometry(11,14,10),_mt(0x7fe8ff,.55,false)),c=new T.Mesh(new T.SphereGeometry(6,10,8),_mt(0xffffff,.8,true)),r=new T.Mesh(new T.TorusGeometry(15,1.4,5,24),_mt(0xc8f8ff,.8,true));
+  const H=new T.Group();H.position.y=26;H.add(s,c,r);g.add(H);g.userData.H=H;g.userData.r=r;const sh=new T.Mesh(new T.CircleGeometry(10,16).rotateX(-Math.PI/2),_mt(0x0a3050,.35,false));g.add(sh);},
+ upd(f,g,t){const T0=t*f.max,H=g.userData.H;H.rotation.y=T0*5;g.userData.r.rotation.x=1.2+Math.sin(T0*7)*.3;const p=1+.12*Math.sin(T0*18);H.scale.setScalar(p);H.position.y=26+Math.sin(T0*9)*2;}};
+/* GÊISER: jato d'água sobe do chão, abre em leque no topo e cai em gotas */
+M3.geyser={build(f,g){const col=new T.Mesh(new T.CylinderGeometry(9,15,1,12,1,true).translate(0,.5,0),_mt(0xbff4ff,.85,false,_wcol(.95))),core=new T.Mesh(new T.CylinderGeometry(4,7,1,8,1,true).translate(0,.5,0),_mt(0xffffff,.9,true));
+  const cap=new T.Mesh(new T.SphereGeometry(16,12,8,0,Math.PI*2,0,Math.PI/2),_mt(0xe6fbff,.8,false));const ring=new T.Mesh(new T.RingGeometry(.8,1,32).rotateX(-Math.PI/2),_mt(0xe8fcff,.9,true));
+  g.add(col,core,cap,ring);g.userData={col,core,cap,ring,D:[]};for(let i=0;i<14;i++){const d=new T.Mesh(new T.SphereGeometry(_R(2,3.6),6,4),_mt(0xdff8ff,.9,false));g.add(d);g.userData.D.push({d,a:_R(0,6.28),v:_R(40,90),h:_R(70,120)});}},
+ upd(f,g,t){const U=g.userData,up=Math.min(1,t/.22),dn=t>.6?Math.max(.01,1-(t-.6)/.4):1,H=150*up*dn;U.col.scale.set(1,Math.max(.01,H),1);U.core.scale.set(1,Math.max(.01,H*1.06),1);U.cap.position.y=H;U.cap.scale.setScalar(Math.max(.01,up*(1+.2*Math.sin(t*40))));U.cap.material.opacity=.8*dn;
+  const rr=20+70*t;U.ring.scale.set(rr,1,rr*.85);U.ring.material.opacity=.9*(1-t);
+  U.D.forEach(p=>{const u=Math.max(0,t-.25)/.75,x=Math.cos(p.a)*p.v*u,z=Math.sin(p.a)*p.v*u*.85,y=Math.max(0,p.h*(1-u)+H*.6*(1-u)-260*u*u*.2);p.d.position.set(x,y,z);p.d.visible=t>.2;p.d.material.opacity=.9*(1-u);});}};
+/* MARTELADA NA PRAIA: coroa de água que explode do impacto + anel de espuma */
+M3.wslam={build(f,g){const r=f.r||70;g.userData.W=[];for(let i=0;i<18;i++){const a=i/18*6.283,s=new T.Mesh(new T.ConeGeometry(5,1,5).translate(0,.5,0),_mt(i%2?0xe8fcff:0x9fe4ff,.9,false));s.position.set(Math.cos(a)*r*.55,0,Math.sin(a)*r*.55*.85);s.rotation.set(Math.sin(a)*.5,0,-Math.cos(a)*.5);g.add(s);g.userData.W.push({s,h:_R(40,80)});}
+  g.userData.R=[0,1].map(i=>{const m=new T.Mesh(new T.RingGeometry(.78,1,48).rotateX(-Math.PI/2),_mt(0xeafcff,.9,true));g.add(m);return m;});const pd=new T.Mesh(new T.CircleGeometry(1,32).rotateX(-Math.PI/2),_mt(0x2a7aa0,.45,false));g.add(pd);g.userData.pd=pd;},
+ upd(f,g,t){const r=f.r||70,U=g.userData;U.W.forEach(p=>{const u=Math.sin(Math.min(1,t*2.2)*Math.PI);p.s.scale.set(1,Math.max(.01,p.h*u),1);});U.R.forEach((m,i)=>{const u=Math.min(1,Math.max(0,(t-i*.12)*1.8)),rr=r*(.3+1.1*u);m.scale.set(rr,1,rr*.85);m.material.opacity=.9*(1-u);});
+  const pr=r*.9*Math.min(1,t*4);U.pd.scale.set(pr,1,pr*.85);U.pd.material.opacity=.45*(1-t);}};
+/* VARRIDA: muralha baixa de água atravessa a praia da esquerda para a direita */
+M3.wsweep={build(f,g){const L=f.len||620;const w=new T.Mesh(new T.CylinderGeometry(26,26,90,16,1,true,0,Math.PI).rotateX(Math.PI/2).rotateY(Math.PI/2),_mt(0x9fe4ff,.75,false,_wcol(.95)));
+  const cr=new T.Mesh(new T.TorusGeometry(26,4,6,16,Math.PI).rotateY(Math.PI/2),_mt(0xffffff,.9,true));const H=new T.Group();H.add(w,cr);g.add(H);g.userData={H,L,S:[]};
+  for(let i=0;i<10;i++){const d=new T.Mesh(new T.SphereGeometry(_R(2,4),6,4),_mt(0xe8fbff,.9,false));g.add(d);g.userData.S.push({d,o:_R(-40,40),p:_R(0,1)});}},
+ upd(f,g,t){const U=g.userData,x=-U.L/2+U.L*Math.min(1,t*1.25);U.H.position.set(x,20,0);U.H.scale.setScalar(Math.max(.01,Math.min(1,t*6))*(t>.82?Math.max(.01,(1-t)/.18):1));
+  U.S.forEach(p=>{const u=(t*3+p.p)%1;p.d.position.set(x-u*60,40*Math.sin(u*Math.PI)+10,p.o);p.d.material.opacity=.9*(1-u);});}};
+/* AGARRÃO: tentáculo d'água sai do chefe até o alvo e recolhe */
+M3.tendril={build(f,g){const n=12;g.userData.N=[];for(let i=0;i<n;i++){const s=new T.Mesh(new T.SphereGeometry(9-i*.45,8,6),_mt(i%2?0x7fdcf8:0xbff4ff,.8,false));g.add(s);g.userData.N.push(s);}
+  const hd=new T.Mesh(new T.ConeGeometry(9,22,6).rotateZ(-Math.PI/2),_mt(0xe8fcff,.9,false));g.add(hd);g.userData.hd=hd;},
+ upd(f,g,t){const dx=(f.tx||0)-f.x,dy=(f.ty||0)-f.y,u=t<.35?t/.35:t<.6?1:Math.max(0,1-(t-.6)/.4),n=g.userData.N.length,a=Math.atan2(dy,dx);
+  g.userData.N.forEach((s,i)=>{const k=i/(n-1)*u;s.position.set(dx*k,28+Math.sin(k*Math.PI)*30+Math.sin(t*20+i)*3,dy*k*1.0);s.visible=u>.02;});g.userData.hd.position.set(dx*u,30,dy*u);g.userData.hd.rotation.y=-a;g.userData.hd.visible=u>.02;}};
+/* REDEMOINHO: espiral d'água gira no chão e puxa (anéis em espiral + coluna de espuma no centro) */
+M3.whirl={build(f,g){const r=f.r||150;g.userData.R=[];for(let i=0;i<5;i++){const m=new T.Mesh(new T.TorusGeometry(1,.035,4,48,Math.PI*1.4).rotateX(Math.PI/2),_mt(i%2?0xbff4ff:0x5fc8f0,.8,true));g.add(m);g.userData.R.push({m,k:.25+i*.18,s:1.6-i*.2});}
+  const pl=new T.Mesh(new T.CircleGeometry(1,40).rotateX(-Math.PI/2),_mt(0x1a5a88,.42,false));g.add(pl);g.userData.pl=pl;const c=new T.Mesh(new T.CylinderGeometry(4,16,46,10,1,true).translate(0,23,0),_mt(0xe0faff,.55,true));g.add(c);g.userData.c=c;},
+ upd(f,g,t){const r=f.r||150,T0=t*f.max,ins=Math.min(1,t*f.max*2),out=t>.88?(1-t)/.12:1,a=Math.max(.01,ins*out);g.userData.R.forEach(p=>{p.m.rotation.y=T0*p.s*3;const rr=r*p.k;p.m.scale.set(rr*a,rr*a,rr*a*.85);});
+  g.userData.pl.scale.set(r*a,1,r*a*.85);g.userData.c.rotation.y=-T0*6;g.userData.c.scale.set(a,a*(1+.15*Math.sin(T0*9)),a);}};
+/* TSUNAMI: muralha d'água larga avança da margem para o sul (f.spd px/s), crista de espuma e respingos */
+M3.tsunami={build(f,g){const L=f.len||1600,Hh=f.h||110;const wall=new T.Mesh(new T.PlaneGeometry(L,Hh).translate(0,Hh/2,0),_mt(0x58b8e8,.8,false,_wcol(1)));
+  const back=new T.Mesh(new T.PlaneGeometry(L,Hh*.8).translate(0,Hh*.4,-26),_mt(0x2a7ab0,.65,false));back.rotation.x=-.5;
+  const crest=new T.Mesh(new T.CylinderGeometry(14,14,L,10,1,true).rotateZ(Math.PI/2),_mt(0xf0fdff,.92,false));crest.position.y=Hh;
+  const sh=new T.Mesh(new T.PlaneGeometry(L,60).rotateX(-Math.PI/2),_mt(0x0a2a48,.32,false));sh.position.z=30;
+  const W=new T.Group();W.add(back,wall,crest,sh);g.add(W);g.userData={W,crest,S:[],L,Hh};
+  for(let i=0;i<40;i++){const d=new T.Mesh(new T.SphereGeometry(_R(3,6),6,4),_mt(0xeafcff,.9,false));W.add(d);g.userData.S.push({d,x:_R(-L/2,L/2),p:_R(0,1),h:_R(10,50)});}},
+ upd(f,g,t){const U=g.userData,T0=t*f.max,z=T0*(f.spd||280),rise=Math.min(1,T0/.35),fall=t>.9?Math.max(.01,(1-t)/.1):1;U.W.position.z=z;U.W.scale.set(1,Math.max(.01,rise*fall*(1+.06*Math.sin(T0*8))),1);
+  U.crest.rotation.x=T0*6;U.S.forEach(p=>{const u=(T0*1.6+p.p)%1;p.d.position.set(p.x+Math.sin(T0*3+p.p*9)*6,U.Hh+p.h*Math.sin(u*Math.PI),12+u*30);p.d.material.opacity=.9*(1-u);});}};
 function syncM3(){
   if(!scn||typeof G==='undefined')return;
   let gg=scn.m3g;if(!gg){gg=scn.m3g=new T.Group();scn.grp.add(gg);}

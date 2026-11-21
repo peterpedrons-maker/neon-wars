@@ -68,7 +68,7 @@ def declutter(P,W,H):
         if p['t']=='k' and p['k'] in _COVER and hit(p['x'],p['y'],4,0) is not None:rm.add(i);dropped+=1
     P[:]=[p for i,p in enumerate(P) if i not in rm];return moved,dropped
 
-def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_theme,band=(380,380,380,380),dens=1.0,hills=None,packs=0,lairs=(),fdens=1.0,conifer=.3,ground=None,region_extra=None,pack_n=3,gates=(),dead=0.0,shrines=(),wxw=None):
+def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_theme,band=(380,380,380,380),dens=1.0,hills=None,packs=0,lairs=(),fdens=1.0,conifer=.3,ground=None,region_extra=None,pack_n=3,gates=(),dead=0.0,shrines=(),wxw=None,extra_k=()):
     """side: 0=N 1=S 2=W 3=E. waters: lista de (cx,cy,rx,ry). exits: dict(id,nm,side,pos,to,at,ready,msg). camps/pois: (x,y)."""
     rr=random.Random(seed);gw=W//GS;gh=H//GS
     def smooth(sd,step):
@@ -83,8 +83,9 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     trail_d=np.full(wx.shape,1e9)
     for r in trails:trail_d=np.minimum(trail_d,path_d(qx,qy,r))
     water=np.zeros(wx.shape,bool);shore=np.zeros(wx.shape,bool)
-    for cx,cy,rx,ry in waters:
-        e=((wx-cx+(N2-.5)*240)/rx)**2+((wy-cy+(N1-.5)*240)/ry)**2;water|=e<1;shore|=(e<1.4)
+    for w_ in waters:
+        cx,cy,rx,ry=w_[:4];nz=w_[4] if len(w_)>4 else 240   # 5º valor: irregularidade da margem (arena = margem quase lisa)
+        e=((wx-cx+(N2-.5)*nz)/rx)**2+((wy-cy+(N1-.5)*nz)/ry)**2;water|=e<1;shore|=(e<1.4)
     shore&=~water
     # ---- borda: lado mais próximo define a espessura e o tema da barreira
     dists=np.stack([wy,H-wy,wx,W-wx]);side=np.argmin(dists,axis=0);ed=np.min(dists,axis=0)
@@ -122,7 +123,7 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     def spr(i,x,y):P.append(dict(t='p',id=i,x=round(x),y=round(y)))
     camp_d=lambda x,y:min([math.hypot(x-cx,y-cy) for cx,cy in list(camps)+list(lairs)+list(shrines)+[(g['x'],g['y']) for g in gates]]+[1e9])
     poi_d=lambda x,y:min([math.hypot(x-cx,y-cy) for cx,cy in pois]+[1e9])
-    def free(x,y,m=44):return not(at(water,x,y) or (at(shore,x,y) and rr.random()<.7) or at(road_d,x,y)<m or at(trail_d,x,y)<m*.6 or camp_d(x,y)<260 or poi_d(x,y)<200 or at(CORR,x,y))
+    def free(x,y,m=44):return not(any(math.hypot(x-ex[1],y-ex[2])<ex[4]+70 for ex in extra_k) or at(water,x,y) or (at(shore,x,y) and rr.random()<.7) or at(road_d,x,y)<m or at(trail_d,x,y)<m*.6 or camp_d(x,y)<260 or poi_d(x,y)<200 or at(CORR,x,y))
     def grove(x,y,lo):v=at(CL,x,y);return min(1.0,max(0.0,(v-lo)*7))
     def place_grid(step,fn,jit=.45):
         step=int(step/ math.sqrt(dens))
@@ -328,6 +329,7 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
             n=rr.choices([1,2,3,4],[.32,.3,.24,.14])[0]   # isolados, duplas, grupos pequenos (dá para puxar um a um ou agrupar)
             for i in range(n):
                 a=i*6.283/n+rr.uniform(-.5,.5);rad=0 if n==1 else 55+10*n;spawns.append([round(cx+math.cos(a)*rad),round(cy+math.sin(a)*rad*.75),gi])
+    for k_,x_,y_,s_,r_ in extra_k:addk(k_,x_,y_,s_,r_)
     _mv,_dr=declutter(P,W,H);print('   anti-sobreposição:',name,'movidos',_mv,'removidos',_dr)
     P.sort(key=lambda p:p['y'])
     exs=[dict(id=e['id'],nm=e['nm'],side=e['side'],toSide=e.get('toSide',-1),x=e['rect'][0],y=e['rect'][1],w=e['rect'][2],h=e['rect'][3],to=e['to'],at=e['at'],ready=e['ready'],msg=e.get('msg','')) for e in exits]
@@ -456,7 +458,12 @@ Z('brumas',1313,'Nv 10–12',roads=auto_roads('brumas',(2500,2500)),waters=[(130
 SEC=dict(side_theme=['dark']*4,band=(300,300,300,300),dens=.8,packs=5,pack_n=3)
 Z('clareira',1414,'Nv 4–5',pois=[(1200,1200)],start=(1200,300),**{**SEC,'ground':'dark'},region_extra=dict(zlv=1,lv=[4,5],respawn=45,mobs=['goblin','sapador','xama','cogumelo']))
 Z('gruta',1515,'Nv 10–11',pois=[(1200,1200)],start=(1200,300),**{**SEC,'side_theme':['grave']*4,'ground':'grave','dead':.8,'fdens':.5},region_extra=dict(zlv=2,lv=[10,11],respawn=45,mobs=['esq','necro','mumia','esqmago']))
-Z('lago',1616,'Nv 2–3',waters=[(1200,1250,500,330)],pois=[(1200,500)],start=(300,1200),**{**SEC,'side_theme':['forest']*4},region_extra=dict(zlv=1,lv=[2,3],respawn=40,mobs=['rato','javali','lobo']))
+# Margem do Lago = arena do Senhor das Marés (caçada): lago no extremo norte com margem quase lisa (o chefe fica na água, de frente para a praia)
+# e 5 pedras altas na praia que servem de abrigo contra o Tsunami (region.cover)
+LAGO_COVER=[(880,1300),(1520,1300),(1200,1560),(640,1620),(1760,1620)]
+Z('lago',1616,'Nv 2–3',waters=[(1200,470,1250,560,50)],pois=[(1200,1200)],start=(300,1200),**{**SEC,'side_theme':['forest']*4,'packs':3},
+  extra_k=[('rock',x,y,150,30) for x,y in LAGO_COVER],
+  region_extra=dict(zlv=1,lv=[2,3],respawn=40,mobs=['rato','javali','lobo'],mare=dict(x=1200,y=975),cover=[[x,y,30] for x,y in LAGO_COVER]))
 Z('mina',1717,'Nv 7–8',pois=[(1200,1200)],start=(300,1200),**{**SEC,'side_theme':MT},hills=lambda x,y:.8,region_extra=dict(zlv=1,lv=[7,8],respawn=45,mobs=['bandido','gnoll','morcego']))
 Z('eremita',1818,'Nv 3–4',pois=[(1200,1200)],start=(300,1200),**{**SEC,'ground':'dark','fdens':1.4},region_extra=dict(zlv=1,lv=[3,4],respawn=40,mobs=['lobo','aranha','cogumelo']))
 Z('cabana',1919,'Nv 10–11',waters=[(1500,1500,320,220)],pois=[(1000,1200)],start=(300,1200),**{**SEC,'side_theme':['swamp']*4,'ground':'swamp','dead':.8,'fdens':.5},
