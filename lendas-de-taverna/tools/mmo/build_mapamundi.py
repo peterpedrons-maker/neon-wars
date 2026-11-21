@@ -35,7 +35,7 @@ while q:
         if b in pos: continue
         ax,ay=pos[a];aw,ah=SIZE[a];bw,bh=SIZE[b]
         pos[b]={0:(ax+pa-pb,ay-bh),1:(ax+pa-pb,ay+ah),2:(ax-bw,ay+pa-pb),3:(ax+aw,ay+pa-pb)}[sa]; q.append(b)
-if REG==1: pos['estrada']=(4900,6000)            # a Estrada faz uma ferradura: desenhada ao lado, sem bater no Brejo
+if False: pos['estrada']=(4900,6000)            # a Estrada faz uma ferradura: desenhada ao lado, sem bater no Brejo
 SZ=dict(SIZE); SZ['town']=(2600,1500); SZ['cidade2']=(3000,1800); SZ['cinzamuro']=(2600,1500)
 if REG==1:
     pos['town']=(pos['estrada'][0]+1100-1300,pos['estrada'][1]+SIZE['estrada'][1]-100); pos['cidade2']=(pos['passo'][0]+2250-1500,pos['passo'][1]-1800+100)

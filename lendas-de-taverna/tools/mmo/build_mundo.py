@@ -394,7 +394,7 @@ NM=dict(estrada='Estrada de Brumavale',planicie='Planície de Brumavale',goblins
   eremita='Bosque do Eremita (secreto)',cabana='Cabana da Bruxa (secreta)')
 OPP={0:1,1:0,2:3,3:2}
 # (zona A, lado em A, posição em A, zona B, posição em B) — B usa o lado oposto
-LINKS=[('estrada',0,1100,'planicie',3000),('planicie',0,3200,'ponte',1100),('planicie',2,2850,'goblins',2500),('planicie',1,1300,'brejo',1100),
+LINKS=[('estrada',0,1100,'planicie',3700),('planicie',0,3200,'ponte',1100),('planicie',2,2850,'goblins',2500),('planicie',1,1300,'brejo',1100),
   ('planicie',3,3950,'lago',1200),('goblins',0,2500,'lenhadores',1100),('goblins',1,1800,'clareira',1200),('brejo',1,1100,'brumas',2500),
   ('brejo',3,2100,'eremita',1200),('ponte',0,1100,'colinas',2500),('colinas',3,2500,'cemiterio',2500),('colinas',0,2500,'desfiladeiro',1100),
   ('desfiladeiro',0,1100,'passo',1200),('lenhadores',0,1100,'ogros',2500),('ogros',0,2500,'passo',3300),('cemiterio',3,2500,'mortos',1100),
@@ -464,11 +464,11 @@ Z('estrada',101,'Nv 1',roads=[[(1100,3390),(1060,2800),(1220,2150),(1000,1500),(
   waters=[(1700,1500,300,220)],pois=[(1100,1700)],start=(1100,3150),side_theme=['forest','forest','forest','forest'],band=(330,330,360,360),dens=.9)
 # ---------------------------------------------------------------- Planície de Brumavale (Nv 1–3)
 Z('planicie',202,'Nv 1–3',
-  roads=[[(3000,5990),(3000,5400),(3100,4600),(2950,3700),(3150,2700),(3050,1700),(3200,700),(3200,10)],
+  roads=[[(3700,5990),(3600,5400),(3100,4600),(2950,3700),(3150,2700),(3050,1700),(3200,700),(3200,10)],
          [(2950,3700),(2100,3500),(1300,3100),(600,2900),(10,2850)],
          [(3100,4600),(2300,5000),(1600,5500),(1300,5990)]],
   trails=[[(3150,3450),(3900,3300),(4800,3300),(5400,3700),(5990,3950)]],waters=[(4300,4150,700,430)],
-  camps=[(2200,2300),(4300,1900)],start=(3000,5740),side_theme=['mount','forest','dark','mount'],band=(400,300,420,420),dens=.8,
+  camps=[(2200,2300),(4300,1900)],start=(3700,5740),side_theme=['mount','forest','dark','mount'],band=(400,300,420,420),dens=.8,
   hills=lambda x,y:max(0,min(1,(1400-y)/700)),packs=40,pack_n=3,
   region_extra=dict(zlv=1,lv=[1,3],respawn=40,mobs=['rato','javali','rato','lobo','javali']))
 # ---------------------------------------------------------------- Floresta dos Goblins (Nv 3–5)

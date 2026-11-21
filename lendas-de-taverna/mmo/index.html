@@ -2728,7 +2728,7 @@ async function regBack(){   /* volta da dungeon para a zona do mundo onde fica a
   try{if(!MAPS[m])toast('Voltando…',20000);await ensureMap(m);$('toast').style.display='none';enterDungeon(((MAPS[m].zone.region||{}).zlv)||1,{map:m,at:r?[r.x,r.y]:undefined});}catch(e){console.error(e);enterRegion();}
 }
 async function enterRegion(){   // atalho do Portal (teste): leva ao começo da Planície
-  if(G.xfer)return;G.xfer=1;try{toast('Carregando a Planície…',20000);await ensureMap('zone_planicie');$('toast').style.display='none';enterDungeon(1,{map:'zone_planicie',at:[3000,5740],dir:[0,-1]});}catch(e){console.error(e);toast('Não foi possível carregar o mapa.',2500);}setTimeout(()=>{G.xfer=0;},1500);}
+  if(G.xfer)return;G.xfer=1;try{toast('Carregando a Planície…',20000);await ensureMap('zone_planicie');$('toast').style.display='none';enterDungeon(1,{map:'zone_planicie',at:[3700,5740],dir:[0,-1]});}catch(e){console.error(e);toast('Não foi possível carregar o mapa.',2500);}setTimeout(()=>{G.xfer=0;},1500);}
 function enterDungeon(zlv,opts){try{styReset();}catch(e){}
   zlv=clamp(zlv||1,1,DUN.length);if(!dgUnlocked(zlv)&&!(opts&&(opts.arena||opts.map))){sfx('ui_denied');return;}
   if(whenReady(()=>enterDungeon(zlv,opts)))return;
