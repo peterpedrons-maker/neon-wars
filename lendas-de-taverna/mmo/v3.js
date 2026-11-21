@@ -106,6 +106,7 @@ function buildScene(key){
     const a=ATLAS_J[p.id];if(!a)continue;
     if(mood==='room'&&p.id.slice(0,4)==='f1a3')continue;   /* lustre preto (arte sem luz): fica só a luz */
     if(p.t==='flat'||(mood==='room'&&TOPDOWN.has(p.id.slice(0,4)))){flats.push([p.id,p.x,p.y]);continue;}
+    if((key==='town'||key==='cinzamuro')&&/^(9304|7c7e|8a8b|bf9c|v_banner|v_sign|v_post)/.test(p.id))continue;   /* arte 2D vira camada texturizada em 3D (townExtras) */
     if((key==='town'&&p.id.startsWith('b_'))||(key==='cinzamuro'&&/^(s_|hs\d|w_|tower|gate|keep|cliff|stairs)/.test(p.id)))continue;stand.push([p.id,p.x,p.y]);
     if((key==='town'||key==='cinzamuro')&&a[2]<=24&&a[3]>=80)lampsP.push([p.x*U,2.3,p.y*U]);}
   if(key==='zone_pantano'&&V3.proc)V3.proc.direct(add,ZONE.props.filter(p=>p.k),sc);
@@ -129,7 +130,7 @@ function buildScene(key){
     put(b,0,Z);put(fi,18,Z+.02);const geo=bufGeo(pos,uv,idx,1);
     add(new T.Mesh(geo,new T.MeshLambertMaterial({map:aTex,alphaTest:.3,side:T.DoubleSide,emissive:0xffffff,emissiveMap:aTex,emissiveIntensity:.35})));sc.fireGeos.push(geo);}
   // ---- extras por cenário
-  if(key==='town'||key==='cinzamuro')townExtras(sc,add,rnd);
+  if(key==='town'||key==='cinzamuro')townExtras(sc,add,rnd,aTex,AW,AH);
   if(key==='zone_cripta2')crpExtras(sc,add,sc.proc);
   // ---- luzes
   for(const [x,y,z] of lampsP)sc.sources.push({p:new T.Vector3(x,y,z),c:0xffc878,k:1.5,night:1});
@@ -148,7 +149,7 @@ function buildScene(key){
   sc.lifeFn=buildLife(sc,add);
   return sc;
 }
-function townExtras(sc,add,rnd){
+function townExtras(sc,add,rnd,aTex,AW,AH){
   const SLT=['#46506c','#5e4650','#3f5f60','#675c46'],CZW='#8b93a6',CZH=(nm,roof,w,gl,sm)=>({name:nm,roof:SLT[roof],wall:CZW,glow:gl||'#ffd27a',smoke:sm,stone:1,pw:w});
   const HC={s_fer:CZH('Ferreiro',1,200,'#ff8a2a',1),s_mer:CZH('Mercador',0,210),s_alq:CZH('Alquimista',2,180,'#9affc0',1),s_mes:CZH('Mestre de Classe',0,200),s_lei:CZH('Leilão',3,200),s_cof:CZH('Cofre',1,180,'#8ac8ff'),
     hs0:CZH('',0,150),hs1:CZH('',1,166,0,1),hs2:CZH('',2,182),hs3:CZH('',3,150),hs4:CZH('',0,166,0,1),hs5:CZH('',1,182),b_fer:{name:'Ferreiro',roof:'#2d3540',wall:'#b99a74',glow:'#ff8a2a',smoke:1},b_mer:{name:'Mercador',roof:'#7a3b29',wall:'#c4a58a',glow:'#ffd27a'},b_mes:{name:'Mestre de Classe',roof:'#34455a',wall:'#c9b8a8',glow:'#ffd27a'},b_alq:{name:'Alquimista',roof:'#355868',wall:'#a99aa6',glow:'#9affc0',smoke:1},b_lei:{name:'Leilão',roof:'#562729',wall:'#b98f6c',glow:'#ffd27a'},b_cof:{name:'Cofre',roof:'#364b42',wall:'#6a6668',glow:'#8ac8ff'}};
@@ -186,6 +187,15 @@ function townExtras(sc,add,rnd){
     const mats=[];gr.traverse(o=>{if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{if(!mats.includes(m))mats.push(m);});});
     gr.userData={mats,o:1,box:new T.Box3(new T.Vector3(gr.position.x-w/2-.7,0,gr.position.z-d-.7),new T.Vector3(gr.position.x+w/2+.7,h+1.7,gr.position.z+.5)),id,w,d,h};sc.houses.push(gr);add(gr);}
   for(const p of ZONE.props)if(p.id&&(p.id.startsWith('b_')||(sc.key==='cinzamuro'&&/^(s_|hs\d)/.test(p.id))))house(p.id,p.x,p.y);
+  // ---- arte 2D original aplicada como CAMADA TEXTURIZADA no mundo 3D (estandartes, placas): duas folhas com espessura, giro leve e balanço ao vento
+  if(aTex&&(sc.key==='town'||sc.key==='cinzamuro')){sc.sway=sc.sway||[];
+    for(const p of ZONE.props){if(!p.id||!/^(9304|7c7e|8a8b|bf9c|v_banner|v_sign|v_post)/.test(p.id))continue;const a=ATLAS_J[p.id];if(!a)continue;
+      const [sx,sy,sw,sh,ax,ay]=a,X=0,pos=[],uv=[],idx=[0,1,2,0,2,3];
+      [[-ax,ay],[sw-ax,ay],[sw-ax,ay-sh],[-ax,ay-sh]].forEach(([cx,cy],i)=>{pos.push(cx*U,Math.max(0,cy*U/CT),0);uv.push((sx+[0,1,1,0][i]*sw)/AW,1-(sy+[0,0,1,1][i]*sh)/AH);});
+      const geo=bufGeo(pos,uv,idx,1),mk=()=>new T.MeshLambertMaterial({map:aTex,alphaTest:.3,side:T.DoubleSide,emissive:0xffffff,emissiveMap:aTex,emissiveIntensity:.3});
+      const g=new T.Group();g.position.set(p.x*U,0,p.y*U);const h0=((p.x*31+p.y*17)%7)/7,ry=(h0-.5)*.5;g.rotation.y=ry;
+      const f=new T.Mesh(geo,mk());f.position.z=.03;g.add(f);const b=new T.Mesh(geo,mk());b.position.z=-.03;g.add(b);add(g);
+      if(/^(9304|7c7e|v_banner)/.test(p.id))sc.sway.push({g,t:h0*6,ph:h0*6.28,amp:.035,ry});}}
   // ---- Cinzamuro: muralhas, torres, portões, muros de arrimo e Bastião em 3D real (caixas/cilindros com textura de pedra)
   if(sc.key==='cinzamuro'){
     const base=(()=>{const c=cvs(256,256),x=c.getContext('2d');x.fillStyle='#8b93a6';x.fillRect(0,0,256,256);
@@ -868,6 +878,7 @@ function render3(){
   if(scn.lifeFn)scn.lifeFn(t,dt,n,camT.x,camT.z);
   if(scn.flies){const p=scn.flies.pts.geometry.attributes.position,b=scn.flies.base;for(let i=0;i<scn.flies.n;i++){p.setY(i,.8+((i*37)%10)/6+Math.sin(t*1.5+i)*.3);p.setX(i,b[i*3]+Math.sin(t*.8+i)*.4);}p.needsUpdate=true;}
   if(scn.vm){scn.winMats.forEach(m=>m.emissiveIntensity=.2+n*1.4);scn.vm.uniforms.t.value=t;if(scn.pt){const i=Math.floor(t*20)%48;scn.pt.offset.set((i%8)/8,1-(Math.floor(i/8)+1)/6);}scn.pl.intensity=1.4+.4*Math.sin(t*2);}
+  for(const w of scn.sway||[]){w.t+=dt;w.g.rotation.z=Math.sin(w.t*1.5+w.ph)*w.amp;w.g.rotation.y=w.ry+Math.sin(w.t*.9+w.ph)*.06;}
   for(const s of scn.smoke){s.t+=dt;const u=(s.t%4)/4;s.sp.position.set(s.x+u*.9,s.y+u*2.6,s.z+Math.sin(u*5+s.t)*.1);const q=.5+u*1.8;s.sp.scale.set(q,q,1);s.sp.material.opacity=Math.sin(u*Math.PI)*.35*(1-n*.4);}
   if(V3.proc&&V3.proc.stU){const q=V3.proc.stU;if(!ZONE.room&&!ZONE.dark&&h){const v=new T.Vector3(h.x*U,1.1,h.y*U).project(cam),bs=R.getDrawingBufferSize(new T.Vector2());q.hp.value.set((v.x*.5+.5)*bs.x,(v.y*.5+.5)*bs.y);q.hz.value=(v.z+1)/2;q.r.value=bs.x*.2;}else q.r.value=0;}
   try{syncDecals();}catch(e){}try{syncGroundFx();}catch(e){}try{syncGps();}catch(e){}try{syncM3();}catch(e){console.error('m3',e);}
