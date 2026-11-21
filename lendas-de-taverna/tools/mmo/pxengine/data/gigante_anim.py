@@ -165,13 +165,13 @@ def seq(name):
     if name == 'idle':
         for i in range(16):
             ph = i / 16 * 2 * math.pi
-            o.append(dict(breath=math.sin(ph), dy=-1.5 * math.sin(ph), lean=2 * math.sin(ph * .5 + 1), a1L=.10 + .03 * math.sin(ph + 1), a1R=.10 + .03 * math.sin(ph + 2.2), eL=.25 + .06 * math.sin(ph), eR=.25 + .06 * math.sin(ph + 1.5), fL=.18, fR=.18, headx=math.sin(ph) * 1.5, heady=1.2 * math.sin(ph + .5), _t=ph))
+            o.append(dict(breath=1.6 * math.sin(ph), dy=-2.2 * math.sin(ph), lean=3.5 * math.sin(ph * .5 + 1), a1L=.10 + .05 * math.sin(ph + 1), a1R=.10 + .05 * math.sin(ph + 2.2), eL=.25 + .09 * math.sin(ph), eR=.25 + .09 * math.sin(ph + 1.5), fL=.18, fR=.18, headx=4 * math.sin(ph * .5 + .3), heady=1.8 * math.sin(ph + .5), jaw=.12 * max(0, math.sin(ph * .5 - .6)), _t=ph))
     elif name == 'walk':
         for i in range(24):
             ph = i / 24 * 2 * math.pi; sn = math.sin(ph)
             # braços pendurados e RELAXADOS: só balançam um pouco (o da frente avança em escorço), sem abrir de lado
-            o.append(dict(dy=-abs(sn) * 7, lean=sn * 7, upL=max(0, sn) * 30, upR=max(0, -sn) * 30, bendL=max(0, sn) * .6, bendR=max(0, -sn) * .6,
-                          a1L=.07, a1R=.07, sL=-.42 * sn, sR=.42 * sn, eL=.2, eR=.2, fL=.1, fR=.1, heady=math.sin(ph * 2) * 1.5, breath=math.sin(ph * 2), _t=ph * 1.3))
+            o.append(dict(dy=-abs(sn) * 9 + 4 * max(0, -math.cos(ph * 2)), lean=sn * 10, headx=-sn * 4, upL=max(0, sn) * 30, upR=max(0, -sn) * 30, bendL=max(0, sn) * .6, bendR=max(0, -sn) * .6,
+                          a1L=.07, a1R=.07, sL=-.5 * sn, sR=.5 * sn, eL=.2 + .25 * max(0, sn), eR=.2 + .25 * max(0, -sn), fL=.1, fR=.1, heady=math.sin(ph * 2) * 2.4 + 2, breath=math.sin(ph * 2), _t=ph * 1.3))
     elif name == 'stomp':     # ergue a perna direita, bate o pé no chão, o corpo cede e treme
         for i in range(24):
             if i < 11: u = ease(i / 10); P = dict(upR=95 * u, bendR=.9 * u, lean=-14 * u, crouch=-4 * u, a1L=.1 + .6 * u, a1R=.1 + .9 * u, eL=.3 + .7 * u, eR=.3 + .8 * u, fL=.5 * u, fR=.4 * u, headx=-3 * u, heady=-3 * u, glow=u)
@@ -277,11 +277,11 @@ def seq_side(name):
     o = []
     if name == 'idle':
         for i in range(8):
-            ph = i / 8 * 2 * math.pi; o.append(dict(breath=math.sin(ph), dy=-1.5 * math.sin(ph), lean=1.5 * math.sin(ph * .5 + 1), aN=.1 + .04 * math.sin(ph + 1), aF=.1 + .04 * math.sin(ph + 2.2), eN=.25, eF=.25, heady=1.2 * math.sin(ph + .5), _t=ph))
+            ph = i / 8 * 2 * math.pi; o.append(dict(breath=1.6 * math.sin(ph), dy=-2.2 * math.sin(ph), lean=2.5 * math.sin(ph * .5 + 1), aN=.1 + .06 * math.sin(ph + 1), aF=.1 + .06 * math.sin(ph + 2.2), eN=.25 + .08 * math.sin(ph), eF=.25, headx=3 * math.sin(ph * .5), heady=1.8 * math.sin(ph + .5), _t=ph))
     elif name == 'walk':
         for i in range(12):
             ph = i / 12 * 2 * math.pi; sn, cs = math.sin(ph), math.cos(ph)
-            o.append(dict(dy=-abs(sn) * 7, lean=3 + sn * 3, stN=44 * cs, upN=30 * max(0, -sn), stF=-44 * cs, upF=30 * max(0, sn), aN=-.5 * cs, aF=.5 * cs, eN=.3 + .25 * max(0, cs), eF=.3 + .25 * max(0, -cs),
+            o.append(dict(dy=-abs(sn) * 9 + 4 * max(0, -math.cos(ph * 2)), lean=4 + sn * 5, headx=-sn * 3, stN=48 * cs, upN=34 * max(0, -sn), stF=-48 * cs, upF=34 * max(0, sn), aN=-.5 * cs, aF=.5 * cs, eN=.3 + .25 * max(0, cs), eF=.3 + .25 * max(0, -cs),
                           heady=math.sin(ph * 2) * 1.5, breath=math.sin(ph * 2), _t=ph * 1.3))
     elif name == 'hurt':
         for i in range(10):
