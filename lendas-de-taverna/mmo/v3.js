@@ -276,7 +276,7 @@ function drawEnt(sc,e,frame){
   if(e.pet){fr=[0,0,128,128,64,116];scale=1;S0=128;}
   else{fr=entFrame(e);if(!fr)return;scale=e.kind==='boss'?(typeof bsc==='function'?bsc(e):e.T.scale):(typeof msc==='function'?msc(e):(e.sc||1));S0=Math.max(128,Math.ceil(Math.max(fr[3],fr[4])*scale*1.5/64)*64);}
   const r=entRec(sc,e,S0);r.seen=frame;
-  let al=e.dead?Math.max(0,1-Math.max(0,e.deadT-.5)/.6):1;if(e.giant&&!e.dead&&G.hero&&G.hero.y<e.y-60&&Math.abs(G.hero.x-e.x)<300)al=.4;
+  let al=e.dead?Math.max(0,1-Math.max(0,e.deadT-.5)/.6):1;if(e.giant&&!e.dead&&G.hero&&G.hero.y<e.y-60&&Math.abs(G.hero.x-e.x)<300)al=.55;
   const dyn=e.kind==='hero'||e.kind==='boss'||e.flash>0||e.tint||e.shd>0||e.pet||e.elite||(e.dod!=null);
   const dxk=e.dx?Math.round(e.dx.y*2)+','+Math.round(e.dx.rot*60)+','+Math.round(e.dx.sx*40)+','+Math.round(e.dx.sy*40)+','+Math.round(e.dx.x*2):'',key=e.pet?'':fr[0]+','+fr[1]+','+(e.flash>0?1:0)+','+al.toFixed(2)+','+scale+','+dxk;
   if(dyn||key!==r.key){r.key=key;

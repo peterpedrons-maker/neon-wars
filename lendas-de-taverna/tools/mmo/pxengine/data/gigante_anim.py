@@ -374,13 +374,14 @@ def preview(path, names=None, hero=None):
 def export(out_dir='../../../../mmo/assets/chars'):
     import json, os
     global SK
-    SK = .5
+    SK = .45
     front = ['idle', 'walk', 'stomp', 'smash', 'sweep', 'roar', 'hurt', 'death']
     backn = ['idle', 'walk', 'hurt']
+    backh = ['stomp', 'smash', 'sweep', 'roar', 'death']       # costas: metade dos quadros (limite de textura)
     sidn = ['idle', 'walk', 'hurt', 'stomp', 'smash', 'sweep', 'roar', 'death']
-    jobs = [(n, i, P, 'd') for n in front for i, P in enumerate(seq(n))] + [(n, i, P, 'u') for n in backn for i, P in enumerate(seq(n))] + [(n, i, P, 's') for n in sidn for i, P in enumerate(seq_side(n))]
+    jobs = [(n, i, P, 'd') for n in front for i, P in enumerate(seq(n))] + [(n, i, P, 'u') for n in backn for i, P in enumerate(seq(n))] + [(n, i, P, 'u') for n in backh for i, P in enumerate(seq(n)[::2])] + [(n, i, P, 's') for n in sidn for i, P in enumerate(seq_side(n))]
     with Pool(4) as p: imgs = p.map(_fv, jobs, chunksize=3)
-    w, h = int(DW * SK), int(DH * SK); cols = 24; rows = -(-len(imgs) // cols)
+    w, h = int(DW * SK), int(DH * SK); cols = 26; rows = -(-len(imgs) // cols)
     A = Image.new('RGBA', (cols * w, rows * h), (0, 0, 0, 0)); idx = {}
     for k, ((n, i, P, v), im) in enumerate(zip(jobs, imgs)):
         A.alpha_composite(im, ((k % cols) * w, (k // cols) * h)); idx.setdefault((n, v), []).append(k)
@@ -391,8 +392,8 @@ def export(out_dir='../../../../mmo/assets/chars'):
         f = idx[(src, 'd')]
         b = idx.get((src, 'u'), f)
         an[nm + '_d'] = f; an[nm + '_s'] = idx.get((src, 's'), f); an[nm + '_u'] = b
-    d = idx[('death', 'd')]; an['kneel_d'] = an['kneel_u'] = d[:17]; an['kneel_s'] = idx[('death', 's')][:17]
-    for v in 'dsu': an['death_' + v] = (idx[('death', v)] if v == 's' else d)[17:]      # a morte do jogo parte do joelho no chão (ele só morre ajoelhado)
+    d = idx[('death', 'd')]; an['kneel_d'] = d[:17]; an['kneel_u'] = idx[('death', 'u')][:9]; an['kneel_s'] = idx[('death', 's')][:17]
+    for v in 'dsu': an['death_' + v] = (d if v == 'd' else idx[('death', v)])[17 if v != 'u' else 9:]      # a morte do jogo parte do joelho no chão (ele só morre ajoelhado)
     assert A.width <= 4096 and A.height <= 4096, A.size
     A.save(os.path.join(out_dir, 'cx_gigante_atlas.png'), optimize=True)
     json.dump(dict(w=w, h=h, ax=(CX + XO) * SK, ay=(FY + YO) * SK, cols=cols, anims=an), open(os.path.join(out_dir, 'cx_gigante_atlas.json'), 'w'))
@@ -401,7 +402,7 @@ def export(out_dir='../../../../mmo/assets/chars'):
 def _fv(a):
     n, i, P, v = a
     global SK
-    SK = .5
+    SK = .45
     return draw_side(P, P.get('_t', 0)) if v == 's' else draw(P, P.get('_t', 0), v)
 
 
