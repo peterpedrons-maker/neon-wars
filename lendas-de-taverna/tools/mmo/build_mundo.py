@@ -354,6 +354,15 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
             if x<40 or y<40 or x>W-40 or y>H-40:continue            # boca dos corredores (borda do retângulo): aberta
             sd=int(at(side,x,y));wall.append([round(x),round(y),26]);wi+=1
             if wi%2==0 and not at(CORR,x,y) and not at(water,x,y):ridge(x,y,sd,wi//2)
+    # contorno jogável (polígonos fechados, ~32px entre pontos): minimapa e mapa de área recortam por ele
+    shape=[]
+    for c_ in measure.find_contours(np.pad(INSIDE,1,constant_values=False).astype(float),.5):
+        pts=[];acc_=1e9;prev=c_[0]
+        for q_ in c_:
+            acc_+=math.hypot(q_[0]-prev[0],q_[1]-prev[1])*GS;prev=q_
+            if acc_<32:continue
+            acc_=0;pts.append([int(min(W,max(0,(q_[1]-1)*GS+GS/2))),int(min(H,max(0,(q_[0]-1)*GS+GS/2)))])
+        if len(pts)>=12:shape.append(pts)
     spawns=[]
     if packs:
         tries=0;centers=[]
@@ -378,7 +387,7 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     exs=[dict(id=e['id'],nm=e['nm'],side=e['side'],toSide=e.get('toSide',-1),x=e['rect'][0],y=e['rect'][1],w=e['rect'][2],h=e['rect'][3],to=e['to'],at=e['at'],ready=e['ready'],msg=e.get('msg','')) for e in exits]
     marks=[dict(k='camp',x=cx_,y=cy_,nm='Acampamento') for cx_,cy_ in camps]+[dict(k='poi',x=x_,y=y_,nm='Ponto de interesse') for x_,y_ in pois]+[dict(k='lair',x=x_,y=y_,nm='Covil') for x_,y_ in lairs]+[dict(k='shrine',x=x_,y=y_,nm='Santuário') for x_,y_ in shrines]
     Z=dict(w=W,h=H,props=P,spawns=spawns,plaza=[0,0,1,1],pond=[0,0,1,1],road=[],start=list(start),boss=[W//2,H//2],gate=list(start),
-           region=dict(nome=nome,nv=nv,gs=1/GS,mundo=name,ground=ground or '',**({'wx':wxw} if wxw else {}),**(region_extra or {})),exits=exs,marks=marks,fx=[],wallc=wall,**({'gates':[dict(nm=g['nm'],dg=g['dg'],x=g['x'],y=g['y'],r=g.get('r',130)) for g in gates]} if gates else {}))
+           region=dict(nome=nome,nv=nv,gs=1/GS,mundo=name,ground=ground or '',shape=shape,**({'wx':wxw} if wxw else {}),**(region_extra or {})),exits=exs,marks=marks,fx=[],wallc=wall,**({'gates':[dict(nm=g['nm'],dg=g['dg'],x=g['x'],y=g['y'],r=g.get('r',130)) for g in gates]} if gates else {}))
     json.dump(Z,open(f'{A}/{name}.json','w'),separators=(',',':'))
     from collections import Counter
     print(name,'spawns',len(spawns),'props',len(P),Counter(p.get('k') or p.get('t') for p in P).most_common(8),'paredes',len(wall),'saídas',[e['id'] for e in exs])
