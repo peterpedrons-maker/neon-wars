@@ -17,7 +17,7 @@ W, H, WL = 176, 158, 108
 FA.W, FA.H = W, H
 R, hx = FA.R, FA.hx
 PAL = dict(body=R('#173f52', '#2a7a84', '#5cbfae'), skin=R('#173f52', '#2a7a84', '#5cbfae'), arm=R('#173f52', '#2a7a84', '#5cbfae'), belly=R('#4f7466', '#93bc98', '#d6efc4'),
-           shell=R('#4a3b2c', '#8f7c58', '#d6c49a'), fin=R('#2d2266', '#5e50c0', '#a294f0'), coral=R('#7a1e40', '#d85474', '#ffacb4'),
+           shell=R('#7a3a14', '#d98a2c', '#ffd06a'), fin=R('#2a2448', '#4f4a86', '#8f88c4'), coral=R('#7a1e40', '#d85474', '#ffacb4'),
            kelp=R('#1f2e12', '#3f6024', '#77983c'), claw=R('#3a3630', '#bdb49a', '#f2ecd8'), far=R('#123240', '#215f68', '#3f8f88'),
            hand=R('#173f52', '#2a7a84', '#5cbfae'))
 FLAT = {'foam': hx('#e8fbff'), 'foam2': hx('#9fe0f2'), 'mouth': hx('#3a0c1c'), 'orb': hx('#8ff6ff'), 'orb2': hx('#ffffff'), 'eye': hx('#fff2a0')}
@@ -41,8 +41,8 @@ def arm(c, sx, sy, tx, ty, side, k=1.0, fist=0.0, far=False, kelp=0.0):
     l1, l2 = 17 * k, 17 * k
     ex, ey, hx_, hy_ = ik(sx, sy, tx, ty, l1, l2, -side)          # cotovelo para fora
     reg = 'far' if far else 'arm'
-    c.cap(sx, sy, ex, ey, 6.2 * k, 5.0 * k, reg, far)
-    c.cap(ex, ey, hx_, hy_, 5.0 * k, 4.4 * k, reg, far)
+    c.cap(sx, sy, ex, ey, 7.0 * k, 5.6 * k, reg, far)
+    c.cap(ex, ey, hx_, hy_, 5.6 * k, 4.8 * k, reg, far)
     # nadadeira do antebraco (para fora)
     nx, ny = -(hy_ - ey), (hx_ - ex); nl = math.hypot(nx, ny) or 1; nx, ny = nx / nl * side, ny / nl * side
     if nx * side < 0: nx, ny = -nx, -ny
@@ -87,7 +87,7 @@ def frame(P):
     c.ell(bx, by - 14, 30, 13)                                  # ombros largos
     c.ell(bx, by + 4, 16, 18, 'belly')                          # placa ventral
     for sgn in (-1, 1):
-        c.ell(bx + sgn * 26, by - 19 - sh, 11, 9, 'shell')       # ombreiras de concha/cracas
+        c.ell(bx + sgn * 26, by - 19 - sh, 12, 10, 'shell')       # ombreiras de concha/cracas
         c.cap(bx + sgn * 22, by - 26 - sh, bx + sgn * 33, by - 31 - sh, 2.4, 1.0, 'shell')   # espinho da ombreira
     # pescoco + cabeca
     c.cap(bx, by - 26, hxp, hy + 6, 10, 9)
@@ -98,9 +98,9 @@ def frame(P):
     for sgn in (-1, 1):
         c.cap(hxp + sgn * 14, hy - 2, hxp + sgn * (26 + fl), hy - 9 + fl * .5, 3.2, .8, 'fin')
         c.cap(hxp + sgn * 14, hy + 2, hxp + sgn * (23 + fl * .6), hy + 2, 2.2, .6, 'fin')
-    crest = [(0, -14, 0, -32), (-6, -12, -11, -27), (6, -12, 11, -27), (-11, -9, -18, -20), (11, -9, 18, -20)]
+    crest = [(0, -14, 0, -33), (-5, -13, -9, -31), (5, -13, 9, -31), (-9, -11, -16, -28), (9, -11, 16, -28), (-12, -8, -22, -21), (12, -8, 22, -21), (-14, -3, -25, -12), (14, -3, 25, -12)]
     for x0, y0, x1, y1 in crest:
-        c.cap(hxp + x0, hy + y0, hxp + x1 + fl * .3 * (1 if x1 > 0 else -1), hy + y1 - back * 2, 3.0 if x0 == 0 else 2.4, .6, 'fin')
+        c.cap(hxp + x0, hy + y0, hxp + x1 + fl * .3 * (1 if x1 > 0 else -1), hy + y1 - back * 2, 3.2 if x0 == 0 else 2.6, .6, 'fin')
     for x0, y0, x1, y1 in ((-4, -12, -5, -17), (3, -13, 4, -19), (9, -10, 10, -15)):
         c.cap(hxp + x0, hy + y0, hxp + x1, hy + y1, 1.4, .8, 'coral')                         # coral na cabeca
     # bracos da frente
@@ -143,8 +143,8 @@ def frame(P):
                     for yy in range(0, int(1 + m * 3)): c.dot(hxp + xx, hy + 6 + yy, FLAT['mouth'])
                 for xx in (-5, -2, 2, 5): c.dot(hxp + xx, hy + 6, TEETH); c.dot(hxp + xx, hy + 6 + int(m * 3), TEETH)
             else:
-                for xx in range(-5, 6): c.dot(hxp + xx, hy + 7, GILL)
-                c.dot(hxp - 4, hy + 8, TEETH); c.dot(hxp + 4, hy + 8, TEETH)
+                for xx in range(-7, 8): c.dot(hxp + xx, hy + 7, GILL)
+                for xx in (-6, -4, -2, 2, 4, 6): c.dot(hxp + xx, hy + 8, TEETH)
         for sgn in (-1, 1):
             for i in range(3):
                 gy = by - 24 + i * 3
