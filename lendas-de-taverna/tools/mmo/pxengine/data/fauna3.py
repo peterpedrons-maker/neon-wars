@@ -15,7 +15,7 @@ PAL.update({
     'infernal': dict(body=R('#1a1216', '#32242a', '#523c44'), belly=R('#5a2418', '#9a3a1c', '#d85a24'), ear=R('#120c10', '#24181c', '#3a2a30'), nose=R('#ff6a20', '#ffa040', '#ffd080'), paw=R('#14100e', '#2a201c', '#46362e'), mane=R('#8a2410', '#e0501c', '#ffa83a'), horn=R('#3a2a2a', '#5a4040', '#7a5a5a'), armor=R('#5a5a68', '#8a8a9a', '#bcbccc')),
     'abutre': dict(body=R('#3a2a24', '#5e463a', '#86685a'), wing=R('#241812', '#3e2c22', '#5e4434'), neck=R('#a86a5a', '#d49080', '#f0baa8'), head=R('#a05a4a', '#cc8070', '#ecaa98'), beak=R('#8a7a30', '#c8b448', '#ece07a'), ruff=R('#c8bca0', '#e6dcc0', '#f8f0dc'), talon=R('#5a4a30', '#8a7448', '#b0986a')),
     'escaravelho': dict(body=R('#143a40', '#1e7a78', '#3ad0b0'), shell=R('#102a50', '#1c58b0', '#5a9cff'), leg=R('#101820', '#24303c', '#44566a'), horn=R('#1a1a22', '#323240', '#505064'), gold=R('#8a6a10', '#d8a820', '#fff070')),
-    'verme': dict(body=R('#7a5a38', '#b08a58', '#dcb884'), ring=R('#5a3a20', '#8a5e34', '#b08850'), maw=R('#4a1018', '#8a2030', '#c04050'), tooth=R('#bca880', '#e8dcb8', '#fff8e0')),
+    'verme': dict(sand=R('#a08850', '#d0b878', '#f0dca0'), body=R('#7a5a38', '#b08a58', '#dcb884'), ring=R('#5a3a20', '#8a5e34', '#b08850'), maw=R('#4a1018', '#8a2030', '#c04050'), tooth=R('#bca880', '#e8dcb8', '#fff8e0')),
 })
 
 
@@ -168,31 +168,38 @@ def _canino(pal, size=1.0, lean=1.0, mane=False, horns=False, armor=False, ember
 def abutre(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=0, **kw):
     c = Cv(); cx = W // 2; gy = BASE
     if view == 'right':
-        bx, by = cx - 2 + lunge * .4, gy - 15 + bob
-        for lx, p0, far in ((-1.5, 0, True), (1.5, math.pi, False)):
-            lift = max(0, math.sin(ph + p0)) * 2.2; sw = math.cos(ph + p0) * 2.2
-            c.cap(bx + lx, by + 5, bx + lx + sw * .5, gy - 2.4 - lift, 1.5, 1.0, 'talon', far); c.cap(bx + lx + sw * .5, gy - 2.4 - lift, bx + lx + sw + 3, gy - lift, 1.0, .8, 'talon', far)
-        c.ell(bx - 2, by + 1, 8.4, 7.4)                                   # tronco curvado
-        c.cap(bx - 8, by + 3, bx - 15 + math.sin(tail) * .8, by + 9, 3.2, 1.8, 'wing')   # cauda
-        c.ell(bx - 3, by - 1, 7.4, 6, 'wing')                              # asa dobrada
-        c.cap(bx + 4, by - 3, bx + 8 + lunge * .3, by - 10 + head_dy, 2.4, 1.9, 'neck')   # pescoço
-        c.ell(bx + 5, by - 3.4, 5.6, 3.6, 'ruff')                          # gola de penas
-        hxx, hyy = bx + 9 + lunge * .5, by - 12 + head_dy
-        c.ell(hxx, hyy, 3.4, 3.2, 'head')
-        c.cap(hxx + 2.4, hyy + .4, hxx + 7.4, hyy + 2.4 + (1.8 if mouth else 0), 1.8, .7, 'beak')
-        c.dot(hxx + 1, hyy - .8, hx('#101010') if squint else hx('#ffd030'))
+        bx, by = cx - 2 + lunge * .4, gy - 16 + bob
+        for lx, p0, far in ((-1.5, 0, True), (2, math.pi, False)):
+            lift = max(0, math.sin(ph + p0)) * 2.4; sw = math.cos(ph + p0) * 2.4
+            c.cap(bx + lx, by + 6, bx + lx + sw * .5, gy - 2.6 - lift, 1.7, 1.2, 'talon', far); c.cap(bx + lx + sw * .5, gy - 2.6 - lift, bx + lx + sw + 3.4, gy - lift, 1.2, .9, 'talon', far)
+            c.cap(bx + lx + sw + 2, gy - lift - .4, bx + lx + sw + 4.8, gy - lift, .6, .4, 'talon', far)
+        c.ell(bx - 2, by + 1, 9.4, 8.4)                                    # tronco curvado
+        for k in range(4): c.cap(bx - 8 - k * 1.6, by + 3 + k * 1.1, bx - 13 - k * 1.8 + math.sin(tail + k) * .6, by + 8 + k * 2.2, 1.8, .6, 'wing')   # penas da cauda
+        c.ell(bx - 3, by - .4, 8.4, 6.8, 'wing')                           # asa dobrada
+        for k in range(4): c.cap(bx - 7 + k * 2.6, by + 3, bx - 8 + k * 2.6, by + 7.4 + (k % 2), 1.4, .5, 'wing')                                 # pontas das penas
+        c.cap(bx + 4, by - 3, bx + 8.6 + lunge * .3, by - 10.4 + head_dy, 2.5, 1.9, 'neck')   # pescoço pelado
+        c.ell(bx + 5.4, by - 3.4, 6.2, 4.2, 'ruff')                         # gola de penas brancas
+        hxx, hyy = bx + 9.6 + lunge * .5, by - 12.6 + head_dy
+        c.ell(hxx, hyy, 3.8, 3.5, 'head')
+        c.cap(hxx + 2.6, hyy + .6, hxx + 8, hyy + 2.8 + (2 if mouth else 0), 2.0, .8, 'beak'); c.cap(hxx + 7, hyy + 2.2, hxx + 8.6, hyy + 4.6, .6, .3, 'beak')
+        c.dot(hxx + 1.2, hyy - .8, hx('#101010') if squint else hx('#ffd030'))
     else:
-        back = view == 'up'; bx = cx; by = gy - 15 + bob
+        back = view == 'up'; bx = cx; by = gy - 16 + bob
         for sx in (-3, 3):
-            lift = max(0, math.sin(ph + (0 if sx > 0 else math.pi))) * 2.2
-            c.cap(bx + sx, by + 6, bx + sx, gy - 2.4 - lift, 1.5, 1.0, 'talon'); c.cap(bx + sx, gy - 2.4 - lift, bx + sx, gy - lift, 1.2, 1.1, 'talon')
-        c.ell(bx, by + 1, 7.4, 8.2)
-        for sg in (-1, 1): c.ell(bx + sg * 7.4, by + 1, 4.2, 8.4, 'wing')
-        if back: c.ell(bx, by - 2, 6, 6, 'wing')
+            lift = max(0, math.sin(ph + (0 if sx > 0 else math.pi))) * 2.4
+            c.cap(bx + sx, by + 6, bx + sx, gy - 2.6 - lift, 1.6, 1.1, 'talon'); c.cap(bx + sx, gy - 2.6 - lift, bx + sx, gy - lift, 1.3, 1.2, 'talon')
+        c.ell(bx, by + 1, 8, 9, 'body')
+        for sg in (-1, 1): c.ell(bx + sg * 8, by + 1.4, 4.6, 8.8, 'wing')
+        for sg in (-1, 1):
+            for k in range(3): c.cap(bx + sg * (7 + k * 1.6), by + 8, bx + sg * (7.6 + k * 1.8), by + 12 + (k % 2) * 1.4, 1.5, .5, 'wing')
+        if back:
+            c.ell(bx, by - 2, 6.4, 7, 'wing')
+            for k in range(3): c.cap(bx - 3 + k * 3, by + 8, bx - 3.4 + k * 3, by + 14 + (k % 2), 1.7, .5, 'wing')           # cauda
+            c.ell(bx, by - 8, 3.2, 3, 'head')
         else:
-            c.ell(bx, by - 4, 5.4, 3.6, 'ruff'); c.cap(bx, by - 5, bx, by - 10 + head_dy, 2.2, 1.8, 'neck'); c.ell(bx, by - 13 + head_dy, 3.4, 3.2, 'head')
-            c.cap(bx, by - 12 + head_dy, bx + 1, by - 8 + head_dy + (2 if mouth else 0), 1.6, .6, 'beak')
-            for sg in (-1, 1): c.dot(bx + sg * 1.8, by - 14 + head_dy, hx('#101010') if squint else hx('#ffd030'))
+            c.ell(bx, by - 4.4, 6.2, 3.8, 'ruff'); c.cap(bx, by - 5, bx, by - 10 + head_dy, 2.3, 1.9, 'neck'); c.ell(bx, by - 13 + head_dy, 3.7, 3.4, 'head')
+            c.cap(bx, by - 12 + head_dy, bx + 1, by - 7.6 + head_dy + (2 if mouth else 0), 1.8, .6, 'beak')
+            for sg in (-1, 1): c.dot(bx + sg * 2, by - 14 + head_dy, hx('#101010') if squint else hx('#ffd030'))
     return c.render(PAL['abutre'], FLAT)
 
 
@@ -200,48 +207,59 @@ def abutre(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_d
 def escaravelho(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=0, **kw):
     c = Cv(); cx = W // 2; gy = BASE
     if view == 'right':
-        bx, by = cx - 1 + lunge * .4, gy - 7 + bob
+        bx, by = cx - 2 + lunge * .4, gy - 10 + bob
         for i in range(3):
-            lift = max(0, math.sin(ph * 2 + i * 2.1)) * 1.8
+            lift = max(0, math.sin(ph * 2 + i * 2.1)) * 2.0
             for far in (True, False):
-                o = 1.4 if far else 0
-                c.cap(bx - 4 + i * 4 + o, by + 2, bx - 6 + i * 4.4 + o, by + 4.4 - lift * .4, 1.0, .8, 'leg', far); c.cap(bx - 6 + i * 4.4 + o, by + 4.4 - lift * .4, bx - 7 + i * 4.6 + o, gy - lift, .8, .5, 'leg', far)
-        c.ell(bx - 1, by - 1, 10, 6.6, 'shell')                           # élitros (cúpula brilhante)
-        c.cap(bx - 8, by - 1.6, bx - 8, by + 1.2, .5, .5, 'leg') if False else None
-        c.ell(bx + 8.4, by - .4, 4.4, 3.6)                                 # pronoto
-        c.ell(bx + 12.6 + lunge * .5, by + .6 + head_dy, 3.2, 2.6)       # cabeça
-        c.cap(bx + 13, by - 1.6 + head_dy, bx + 14.4 + lunge * .5, by - 6 + head_dy - (1 if mouth else 0), 1.4, .4, 'horn')   # chifre
-        c.ell(bx - 1, by - 4.6, 3.6, 1.4, 'gold'); c.ell(bx + 3, by - 3, 1.8, 1.2, 'gold')                                  # filetes dourados
-        c.dot(bx + 13, by - .2 + head_dy, hx('#101010') if squint else hx('#ff4030'))
+                o = 1.6 if far else 0
+                kx = bx - 5 + i * 5 + o
+                c.cap(kx, by + 3, kx - 3 - (i == 2) * 2, by + 6 - lift * .4, 1.1, .9, 'leg', far); c.cap(kx - 3 - (i == 2) * 2, by + 6 - lift * .4, kx - 4.6 - (i == 2) * 2.4, gy - lift, .9, .6, 'leg', far)
+        c.ell(bx - 1, by - 1, 12, 8.4, 'shell')                                    # cúpula dos élitros
+        c.ell(bx - 1, by + 5, 11, 2.6, 'body')                                      # barriga escura
+        c.cap(bx - 12, by + 1, bx + 9, by - 6, .5, .5, 'gold')                      # sutura dourada
+        c.ell(bx - 4, by - 5.6, 3.8, 1.5, 'gold'); c.ell(bx + 2, by - 7, 1.6, 1.1, 'gold')   # brilho
+        c.ell(bx + 10, by - .6, 4.8, 4.0)                                           # pronoto
+        c.ell(bx + 14.6 + lunge * .5, by + .8 + head_dy, 3.6, 3.0)                  # cabeça
+        c.cap(bx + 12.4, by - 3, bx + 15 + lunge * .5, by - 7.4 + head_dy, 1.8, .9, 'horn'); c.cap(bx + 15 + lunge * .5, by - 7.4 + head_dy, bx + 18, by - 9.4 + head_dy - (1 if mouth else 0), .9, .3, 'horn')   # chifre curvo
+        c.cap(bx + 16, by + .4 + head_dy, bx + 20, by - 3.4 + head_dy + math.sin(tail) * .6, .5, .3, 'leg')   # antena
+        for k in range(2): c.cap(bx + 15, by + 3 + head_dy, bx + 19, by + 4.4 + head_dy - (1 if mouth else 0) * (k * 2 - 1), .9, .4, 'horn')   # mandíbulas
+        c.dot(bx + 15, by + head_dy, hx('#101010') if squint else hx('#ff4030'))
     else:
-        back = view == 'up'; bx = cx; by = gy - 8 + bob
+        back = view == 'up'; bx = cx; by = gy - 10 + bob
         for i in range(3):
             for sg in (-1, 1):
                 lift = max(0, math.sin(ph * 2 + i * 2.1 + (0 if sg > 0 else math.pi))) * 1.8
-                c.cap(bx + sg * 4, by + (i - 1) * 3.4, bx + sg * 10, by + (i - 1) * 3.8 + 2 - lift * .4, 1.0, .8, 'leg', sg < 0); c.cap(bx + sg * 10, by + (i - 1) * 3.8 + 2 - lift * .4, bx + sg * 11.6, gy - lift, .8, .5, 'leg', sg < 0)
-        c.ell(bx, by + 1.6, 7, 8, 'shell'); c.cap(bx, by - 5, bx, by + 9, .5, .5, 'gold')
-        c.ell(bx, by - 6.4, 4.6, 3.4)
+                y0 = by + (i - 1) * 4
+                c.cap(bx + sg * 6, y0, bx + sg * 12, y0 + 2.4 - lift * .4, 1.1, .9, 'leg', sg < 0); c.cap(bx + sg * 12, y0 + 2.4 - lift * .4, bx + sg * 13.6, gy - lift, .9, .6, 'leg', sg < 0)
+        c.ell(bx, by + 2, 9, 9.6, 'shell'); c.cap(bx, by - 6, bx, by + 11, .6, .6, 'gold')
+        for sg in (-1, 1): c.ell(bx + sg * 4, by - 1, 1.8, 1.2, 'gold')
+        c.ell(bx, by - 8.6, 5.2, 3.8)
         if not back:
-            c.cap(bx, by - 9, bx, by - 14 - (1 if mouth else 0), 1.4, .4, 'horn')
-            for sg in (-1, 1): c.dot(bx + sg * 2, by - 7, hx('#101010') if squint else hx('#ff4030'))
+            c.cap(bx, by - 11, bx, by - 17 - (1 if mouth else 0), 1.8, .5, 'horn')
+            for sg in (-1, 1): c.dot(bx + sg * 2.4, by - 9, hx('#101010') if squint else hx('#ff4030')); c.cap(bx + sg * 2.4, by - 12, bx + sg * 5, by - 16, .5, .3, 'leg')
     return c.render(PAL['escaravelho'], FLAT)
 
 
 # ------------------------------------------------------------------ VERME DAS AREIAS
 def verme(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=0, **kw):
     c = Cv(); cx = W // 2; gy = BASE
-    N = 9
-    for i in range(N):                                    # corpo segmentado que sobe da areia
+    c.ell(cx - 2, gy - 1.2, 15, 3.4, 'sand'); c.ell(cx - 2, gy - 3, 10, 3.4, 'sand')          # monte de areia
+    N = 11
+    pts = []
+    for i in range(N):
         t = i / (N - 1)
-        x = cx - 14 + t * 14 + lunge * .5 * t; y = gy - 2 - (math.sin(t * math.pi) * (9 + bob) + t * 8) + math.sin(ph * 2 - t * 6) * 1.2
-        r = 4.6 + 3 * t
-        c.ell(x, y, r, r * .9)
-        c.cap(x - r * .5, y - r * .6, x - r * .5, y + r * .6, .6, .6, 'ring')
-    hxx = cx + lunge * .6 + 1; hyy = gy - 2 - 8 - 8 + head_dy
-    c.ell(hxx, hyy, 7.4, 6.2); c.ell(hxx + 2.4, hyy + .6, 4.4, 4.2, 'maw')
-    for k in range(6):
-        a = k * 1.05; c.cap(hxx + 2.4 + math.cos(a) * 4, hyy + .6 + math.sin(a) * 3.8, hxx + 2.4 + math.cos(a) * 2.4, hyy + .6 + math.sin(a) * 2.2, .8, .3, 'tooth')
-    c.dot(hxx - 3, hyy - 3, hx('#101010') if squint else hx('#101010'))
+        x = cx - 5 + math.sin(t * 2.6 + ph * .8) * 3.4 + t * 6 + lunge * .6 * t
+        y = gy - 3 - t * (27 + bob) + math.sin(ph * 2 - t * 5) * .8
+        r = 5.4 + 3.2 * t
+        pts.append((x, y, r))
+    for (x, y, r) in pts: c.ell(x, y, r, r * .85)
+    for (x, y, r) in pts[1:-1]: c.cap(x - r * .9, y, x + r * .9, y, .5, .5, 'ring')           # anéis
+    hxx, hyy, hr = pts[-1][0] + 1 + lunge * .5, pts[-1][1] - 4 + head_dy, 8.4
+    c.ell(hxx, hyy, hr, hr * .86)
+    c.ell(hxx + 2.2, hyy + .6, 5.6, 5.0, 'maw'); c.ell(hxx + 2.6, hyy + .8, 3.0, 2.6, 'maw')
+    for k in range(10):                                                                        # dentes em anel
+        a = k * .628 + (0.3 if mouth else 0); c.cap(hxx + 2.2 + math.cos(a) * 5.4, hyy + .6 + math.sin(a) * 4.8, hxx + 2.2 + math.cos(a) * 2.8, hyy + .6 + math.sin(a) * 2.5, .9, .25, 'tooth')
+    for sg in (-1, 1): c.dot(hxx - 4.4, hyy - 3.4 + sg * 2.6, hx('#2a1010'))
     return c.render(PAL['verme'], FLAT)
 
 
