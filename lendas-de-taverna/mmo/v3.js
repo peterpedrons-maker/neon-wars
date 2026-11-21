@@ -662,15 +662,42 @@ M3.whirl={build(f,g){const r=f.r||150;g.userData.R=[];for(let i=0;i<5;i++){const
   const pl=new T.Mesh(new T.CircleGeometry(1,40).rotateX(-Math.PI/2),_mt(0x1a5a88,.42,false));g.add(pl);g.userData.pl=pl;const c=new T.Mesh(new T.CylinderGeometry(4,16,46,10,1,true).translate(0,23,0),_mt(0xe0faff,.55,true));g.add(c);g.userData.c=c;},
  upd(f,g,t){const r=f.r||150,T0=t*f.max,ins=Math.min(1,t*f.max*2),out=t>.88?(1-t)/.12:1,a=Math.max(.01,ins*out);g.userData.R.forEach(p=>{p.m.rotation.y=T0*p.s*3;const rr=r*p.k;p.m.scale.set(rr*a,rr*a,rr*a*.85);});
   g.userData.pl.scale.set(r*a,1,r*a*.85);g.userData.c.rotation.y=-T0*6;g.userData.c.scale.set(a,a*(1+.15*Math.sin(T0*9)),a);}};
-/* TSUNAMI: muralha d'água larga avança da margem para o sul (f.spd px/s), crista de espuma e respingos */
-M3.tsunami={build(f,g){const L=f.len||1600,Hh=f.h||110;const wall=new T.Mesh(new T.PlaneGeometry(L,Hh).translate(0,Hh/2,0),_mt(0x58b8e8,.8,false,_wcol(1)));
-  const back=new T.Mesh(new T.PlaneGeometry(L,Hh*.8).translate(0,Hh*.4,-26),_mt(0x2a7ab0,.65,false));back.rotation.x=-.5;
-  const crest=new T.Mesh(new T.CylinderGeometry(14,14,L,10,1,true).rotateZ(Math.PI/2),_mt(0xf0fdff,.92,false));crest.position.y=Hh;
-  const sh=new T.Mesh(new T.PlaneGeometry(L,60).rotateX(-Math.PI/2),_mt(0x0a2a48,.32,false));sh.position.z=30;
-  const W=new T.Group();W.add(back,wall,crest,sh);g.add(W);g.userData={W,crest,S:[],L,Hh};
-  for(let i=0;i<40;i++){const d=new T.Mesh(new T.SphereGeometry(_R(3,6),6,4),_mt(0xeafcff,.9,false));W.add(d);g.userData.S.push({d,x:_R(-L/2,L/2),p:_R(0,1),h:_R(10,50)});}},
- upd(f,g,t){const U=g.userData,T0=t*f.max,z=T0*(f.spd||280),rise=Math.min(1,T0/.35),fall=t>.9?Math.max(.01,(1-t)/.1):1;U.W.position.z=z;U.W.scale.set(1,Math.max(.01,rise*fall*(1+.06*Math.sin(T0*8))),1);
-  U.crest.rotation.x=T0*6;U.S.forEach(p=>{const u=(T0*1.6+p.p)%1;p.d.position.set(p.x+Math.sin(T0*3+p.p*9)*6,U.Hh+p.h*Math.sin(u*Math.PI),12+u*30);p.d.material.opacity=.9*(1-u);});}};
+/* TSUNAMI em pixel art: texturas desenhadas por código (ondas em 5 tons com dither, crista de espuma recortada, lâmina d'água no chão) */
+const _TSU={};
+function _tsuTex(kind){if(_TSU[kind])return _TSU[kind];
+  const W=64,Hh=kind==='wall'?32:kind==='lip'?10:64,c=document.createElement('canvas');c.width=W;c.height=Hh;const x=c.getContext('2d');
+  const px=(i,j,col,a)=>{x.globalAlpha=a==null?1:a;x.fillStyle=col;x.fillRect(((i%W)+W)%W,j,1,1);};
+  const D=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];const dth=(i,j,k)=>(D[j&3][i&3]/16)<k;
+  if(kind==='wall'){const P=['#ffffff','#a0e4f8','#3a9ee0','#1f6cba','#154f98','#0e3676'];
+    for(let i=0;i<W;i++){const top=3+Math.round(2.2*Math.sin(i*.4)+1.6*Math.sin(i*.93+1));
+      for(let j=top;j<Hh;j++){const u=(j-top)/(Hh-top);let k=u<.08?0:u<.2?1:u<.42?2:u<.68?3:u<.86?4:5;
+        const wv=Math.sin(i*.5+j*.9)+Math.sin(i*.21-j*.6);if(u>.2&&dth(i,j,.5)){if(wv>1.2&&k>1)k--;else if(wv<-1.3&&k<5)k++;}
+        px(i,j,P[k]);}
+      for(let j=0;j<top;j++){if(j>top-3&&((i+j)&1)==0)px(i,j,P[0]);}}
+    for(let n=0;n<22;n++){const i=(n*37+5)%W,j=9+((n*19)%20);px(i,j,P[1]);px(i+1,j,P[1]);if(n%3==0)px(i+2,j,P[0]);}}
+  else if(kind==='lip'){for(let i=0;i<W;i++){const h=3+Math.round(3*Math.sin(i*.35)+2*Math.sin(i*1.1+2));for(let j=0;j<Hh;j++){const d=j-(Hh-1-h);if(d<0)continue;px(i,j,d<=1?'#ffffff':d<4?'#e2fbff':'#9ae0f4');}}
+    for(let n=0;n<14;n++){const i=(n*23+3)%W;px(i,0,'#ffffff');px(i+1,1,'#e2fbff');}}
+  else if(kind==='sheet'){const P=['#6fd0ee','#3a96d8','#2670b8','#1a508e'];
+    for(let i=0;i<W;i++)for(let j=0;j<Hh;j++){const w=Math.sin(i*.31+j*.19)+Math.sin(i*.17-j*.43+1.7)+Math.sin(j*.7+i*.09);let k=w>1.6?0:w>.3?1:w>-1?2:3;if(dth(i,j,.4)&&k<3&&Math.sin(i*.8+j*1.3)>.6)k++;px(i,j,P[k],.5+.12*(3-k)/3);}
+    for(let n=0;n<26;n++){const i=(n*29+7)%W,j=(n*47+3)%Hh,l=2+(n%4);for(let q=0;q<l;q++)px(i+q,j,'#d8f8ff',.8);}}
+  else{let sd=7;const rn=()=>(sd=(sd*1103515245+12345)&0x7fffffff)/0x7fffffff;for(let n=0;n<150;n++){const i=Math.floor(rn()*W),j=Math.floor(rn()*Hh);px(i,j,rn()<.7?'#ffffff':'#d8f8ff',.9);if(rn()<.4)px(i+1,j,'#ffffff',.8);if(rn()<.2)px(i,j+1,'#d8f8ff',.8);}}
+  const t=new T.CanvasTexture(c);t.magFilter=T.NearestFilter;t.minFilter=T.NearestFilter;t.generateMipmaps=false;t.wrapS=t.wrapT=T.RepeatWrapping;t.encoding=T.sRGBEncoding;return _TSU[kind]=t;}
+const _tsuMat=(kind,op)=>{const t=_tsuTex(kind).clone();t.needsUpdate=true;return new T.MeshBasicMaterial({map:t,transparent:true,opacity:op==null?1:op,depthWrite:false,side:T.DoubleSide,alphaTest:.02,toneMapped:false});};
+M3.tsunami={build(f,g){const L=f.len||1600,Hh=f.h||230,PX=5;
+  const wallM=_tsuMat('wall'),wall=new T.Mesh(new T.PlaneGeometry(L,Hh).translate(0,Hh/2,0),wallM);wallM.map.repeat.set(L/(64*PX),1);
+  const wall2M=_tsuMat('wall',.75),wall2=new T.Mesh(new T.PlaneGeometry(L,Hh*.86).translate(0,Hh*.43,-22),wall2M);wall2M.map.repeat.set(L/(64*PX*1.3),1);wall2.rotation.x=-.2;
+  const lipM=_tsuMat('lip'),lip=new T.Mesh(new T.PlaneGeometry(L,60).translate(0,0,0),lipM);lipM.map.repeat.set(L/(64*PX),1);lip.rotation.x=1.1;lip.position.set(0,Hh-4,14);
+  const sh=new T.Mesh(new T.PlaneGeometry(L,70).rotateX(-Math.PI/2),_mt(0x08284a,.3,false));sh.position.z=34;
+  const frM=_tsuMat('foam',.95),fr=new T.Mesh(new T.PlaneGeometry(L,46).rotateX(-Math.PI/2),frM);frM.map.repeat.set(L/(64*PX),46/(64*PX)*1.4);fr.position.set(0,1.2,30);
+  const TL=new T.Group();TL.rotation.x=.5;TL.add(wall2,wall,lip);const W=new T.Group();W.add(TL,sh,fr);g.add(W);
+  const shM=_tsuMat('sheet',.9),shn=new T.Mesh(new T.PlaneGeometry(L,1).rotateX(-Math.PI/2),shM);shn.position.y=.6;g.add(shn);
+  g.userData={W,wallM,wall2M,lipM,frM,shM,shn,S:[],L,Hh};
+  for(let i=0;i<70;i++){const sz=_R(3,7),d=new T.Mesh(new T.BoxGeometry(sz,sz,sz),_mt(i%3?0xffffff:0xc8f4ff,.95,false));W.add(d);g.userData.S.push({d,x:_R(-L/2,L/2),p:_R(0,1),h:_R(14,60),sz});}},
+ upd(f,g,t){const U=g.userData,T0=t*f.max,z=T0*(f.spd||280),rise=Math.min(1,T0/.35),fall=t>.9?Math.max(.01,(1-t)/.1):1,PX=4;
+  U.W.position.z=z;U.W.scale.set(1,Math.max(.01,rise*fall*(1+.05*Math.sin(T0*7))),1);
+  U.wallM.map.offset.x=T0*.9;U.wall2M.map.offset.x=-T0*.6+.3;U.lipM.map.offset.x=-T0*1.7;U.frM.map.offset.x=T0*1.3;U.frM.map.offset.y=T0*1.8;
+  U.shn.scale.set(1,1,Math.max(1,z));U.shn.position.z=z/2;U.shM.map.repeat.set(U.L/(64*PX),Math.max(1,z)/(64*PX));U.shM.map.offset.y=-T0*.5;U.shM.map.offset.x=T0*.2;U.shM.opacity=.85*Math.min(1,fall*1.4)*Math.max(0,1-(T0-(f.max*.55))/(f.max*.45+.01)*.35);
+  U.S.forEach(p=>{const u=(T0*1.6+p.p)%1;p.d.position.set(p.x+Math.sin(T0*3+p.p*9)*6,U.Hh+p.h*Math.sin(u*Math.PI)-4,10+u*34);p.d.rotation.set(u*6,u*4,0);p.d.material.opacity=.95*(1-u*u);});}};
 /* PEDREGULHO (cuspe do Colosso): rocha girando com rastro de poeira, segue o projétil (ft) */
 M3.boulder={build(f,g){const r=new T.Mesh(new T.DodecahedronGeometry(13,0),_mt(0x8a7a60,1,false)),c=new T.Mesh(new T.DodecahedronGeometry(9,0),_mt(0xc8b890,.9,false));const H=new T.Group();H.position.y=24;H.add(r,c);g.add(H);g.userData.H=H;
   g.userData.T=[0,1,2,3].map(i=>{const d=new T.Mesh(new T.SphereGeometry(4-i*.7,5,4),_mt(0xb8a888,.55-i*.1,false));g.add(d);return d;});const sh=new T.Mesh(new T.CircleGeometry(11,14).rotateX(-Math.PI/2),_mt(0x20180c,.4,false));g.add(sh);},

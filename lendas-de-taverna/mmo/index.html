@@ -6759,7 +6759,7 @@ function mareTick(m,dt){const h=G.hero;m.x=m.sx;m.y=m.sy;m.wx=m.x;m.wy=m.y;m.kvx
   /* sequência roteirizada (emergir na chegada / tsunami) */
   if(m.mst){const q=m.mst;q.t+=dt;m.state='atk';
     if(q.tsu===1&&q.t>=q.dur){m.mst={a:'under',t:0,dur:2.1,tsu:2,loop:1};m.hide=true;VF.m3('whirl',m.x,m.y+10,2.2,{r:90});sfx('mare_bubbles',.8,1);}
-    else if(q.tsu===2){if(!q.w&&q.t>=.35){q.w=1;const y0=m.shY-6,spd=300,L=ZONE.w+400;G.mtsu={y0,y:y0,spd,t:0,end:y0+1100,hit:0};VF.m3('tsunami',ZONE.w/2,y0,1100/spd+.4,{spd,len:L,h:110});sfx('mare_tsunami',1,1);VF.shake(.6);}
+    else if(q.tsu===2){if(!q.w&&q.t>=.35){q.w=1;const y0=m.shY-6,spd=300,L=ZONE.w+400;G.mtsu={y0,y:y0,spd,t:0,end:y0+1100,hit:0};VF.m3('tsunami',ZONE.w/2,y0,1100/spd+.4,{spd,len:L,h:230});sfx('mare_tsunami',1,1);VF.shake(.6);}
       if(q.t>=q.dur){m.mst={a:'emerge',t:0,dur:1.1,tsu:3};m.hide=false;sfx('mare_emerge',1,1);sfx('mare_roar',.9,1.05);VF.m3('geyser',m.x,m.y+20,1.2,{});VF.shake(.6);}}
     else if(q.tsu===3&&q.t>=q.dur){m.mst=null;m.vuln=4;m.take=1.35;m.expT=4;floatText(m.x,m.y-150,'EXPOSTO!','#ffe070',13,1.6,{pop:1,bold:1,glow:1});chat('Ele emergiu exposto: ataque agora!',3);m.cd=2.2;}
     else if(!q.tsu&&q.t>=q.dur){m.mst=null;}
@@ -6803,11 +6803,11 @@ function mareHuntTick(dt){const S=hnS(),a=S.act.mare;if(!a||a.fim||G.scene!=='du
    Sprites: cx_perna / cx_ccabeca (colosso.py); efeitos 3D: M3.shock/rocks/boulder. */
 MOBS.cperna={nome:'Pata do Colosso',cx:'perna',rad:36,shr:44,fam:'javali',noElite:1,hp:400,atk:10,xp:300,gold:[60,120],speed:30,aggro:2400,rng:70,aspd:99,sw:40,deathDur:1.2,numY:64,aura:['#c8a070','#fff0c0']};
 MOBS.ccabeca={nome:'Cabeça do Colosso',cx:'ccabeca',rad:46,shr:54,fam:'javali',noElite:1,hp:800,atk:11,xp:1500,gold:[500,900],speed:0,aggro:2400,rng:0,aspd:99,sw:44,deathDur:1.6,numY:66,aura:['#ffcf4a','#fff6c0']};
-const COL_LV=14,COL_OFF=[[-250,-120],[250,-120],[-200,110],[200,110]];
+const COL_LV=14,COL_OFF=[[-125,-22],[-90,24],[90,-22],[125,24]];
 function colMob(kind,x,y){const lv=COL_LV,m=mkMob(kind,x,y,-1),FM=FAMM.javali;m.lv=lv;m.maxhp=Math.round(m.T.hp*FM[0]*mobHpMul(lv));m.hp=m.maxhp;m.pow=m.T.atk*FM[1]*mobAtkMul(lv);m.def=lv*1.3;
   m.minion=true;m.respawn=1e9;m.hunt=true;m.mini=true;m.name=m.T.nome;m.eng=true;m.msk={};m.cd=1+Math.random();m.imm={ctrl:1,atordoado:1,preso:1,lento:1,gelado:1,medo:1};m.row=2;G.mobs.push(m);return m;}
-function spawnColosso(){const R=ZONE.region&&ZONE.region.colo;if(!R)return null;cxLoad('perna');cxLoad('ccabeca');const C=G.colo={x:R.x,y:R.y,legs:[],head:null,phase:0,gcd:2,t:0};
-  COL_OFF.forEach(o=>{const f=freeSpot(R.x+o[0],R.y+o[1]),m=colMob('cperna',f[0],f[1]);m.cl=C;m.cdx=o[0];m.cdy=o[1];C.legs.push(m);
+function spawnColosso(){const R=ZONE.region&&ZONE.region.colo;if(!R)return null;cxLoad('perna');cxLoad('ccabeca');const C=G.colo={x:R.x,y:R.y,ox:R.x,oy:R.y,at:0,mv:0,legs:[],head:null,phase:0,gcd:2,t:0};
+  COL_OFF.forEach(o=>{const m=colMob('cperna',R.x+o[0],R.y+o[1]);m.cl=C;m.cdx=o[0];m.cdy=o[1];C.legs.push(m);
     m.onDie=()=>{const k=C.legs.filter(l=>l.dead||l.hp<=0).length;VF.shake(1);VF.m3('shock',m.x,m.y,.8,{r:150,c:0xd8c8a8});VF.m3('rocks',m.x,m.y,1.4,{r:130,n:14});sfx('col_fall',1,1);G.hs=Math.max(G.hs||0,.18);
       chat('Uma das patas do Colosso desabou! ('+k+'/4)',3);floatText(m.x,m.y-110,'PATA CAÍDA!','#ffd070',12,1.6,{pop:1,bold:1,glow:1});if(k>=2&&!C.head)colHead();if(k>=4&&C.head&&!C.head.dead){C.head.take=.5;C.head.vuln=99;C.head.mst={a:'death',t:0,dur:1,hold:1};C.head.fell=1;floatText(C.head.x,C.head.y-120,'A CABEÇA DESABA!','#ffe070',13,1.8,{pop:1,bold:1,glow:1});sfx('col_roar',1,.9);}};});
   C.head=null;G.hnMob=C.legs[0];VF.shake(1);sfx('col_roar',1,1);sfx('col_step',1,1);
@@ -6826,9 +6826,8 @@ function colLegSkill(m,pick){const h=G.hero,C=m.cl;C.gcd=1.1;m.act={t:0,dur:pick
 function colLegTick(m,dt){const h=G.hero,C=m.cl;m.row=2;m.stun=0;m.stagger=0;m.kvx=m.kvy=0;m.dash=null;if(m.sts){stUpdate(m,dt);if(m.dead)return;}
   if(m.act){const a=m.act;a.t+=dt;m.state='atk';if(a.t>=a.dur){m.act=null;m.cd=rnd(.7,1.4);}return;}
   if(!h||h.state==='ko'){m.state='idle';return;}
-  const d=dist(m,h),home={x:C.x+m.cdx,y:C.y+m.cdy};
-  if(d>110||Math.hypot(m.x-home.x,m.y-home.y)>520){const tx=d>110?h.x:home.x,ty=d>110?h.y:home.y;if(d>110&&Math.hypot(m.x-C.x,m.y-C.y)>520){moveTo(m,home.x,home.y,m.T.speed*MOVE*(m.fury?1.5:1),dt,1);}else moveTo(m,tx,ty,m.T.speed*MOVE*(m.fury?1.5:1),dt,1);
-    collide(m,10);m.wx=m.x;m.wy=m.y;m.state='walk';m.animT+=dt*8;if(Math.random()<dt*3){sfx('col_step',.28*Math.max(.2,1-d/700),.85+Math.random()*.15);if(d<700)VF.shake(.12);}}else m.state='idle';
+  const d=dist(m,h);m.x=C.x+m.cdx;m.y=C.y+m.cdy;m.wx=m.x;m.wy=m.y;
+  if(C.mv){m.state='walk';m.animT=C.at+((m.cdx*m.cdy>0)?0:8/14);}else m.state='idle';
   m.cd-=dt;if(m.cd>0||C.gcd>0||d>150)return;m.cd=rnd(2.2,3.4)*(m.fury?.65:1);C.gcd=1.1;colLegSkill(m,d<95||Math.random()<.65?1.0:1.1);}
 function colHeadSkill(m,id){const h=G.hero,C=m.cl||G.colo;C.gcd=1;const w=id==='bite'?.9:id==='roar'?1.0:.8;m.act={t:0,dur:w+.55,skill:true,anim:id,hit:w/(w+.55)};
   if(id==='bite'){const f=freeSpot(h.x,h.y);colZ(m,{shape:'circle',x:f[0],y:f[1],r:78,warn:w,mult:2.6,st:['atordoado',.6,.9,0],shake:.8,onDet:z=>{VF.m3('shock',z.x,z.y,.6,{r:z.r,c:0xe8d8b0});VF.burst(z.x,z.y,14,['#a89878','#fff'],{s0:50,s1:150,flat:.5,up:50,g:200});sfx('col_bite',1,1);VF.shake(1);}});floatText(m.x,m.y-140,'Mordida','#ffe0a0',10,1,{pop:1,bold:1});sfx('col_roar',.6,1.2);return;}
@@ -6841,7 +6840,10 @@ function colHeadTick(m,dt){const h=G.hero,C=G.colo;m.x=m.sx;m.y=m.sy;m.kvx=m.kvy
   if(m.act){const a=m.act;a.t+=dt;m.state='atk';if(a.fx&&a.t>=a.fxT){const f=a.fx;a.fx=null;f(m);}if(a.t>=a.dur){m.act=null;m.cd=rnd(.6,1.1)*(m.fury?.6:1);}return;}
   m.state='idle';if(!h||h.state==='ko')return;m.cd-=dt;if(m.cd>0||C.gcd>0)return;const ids=['bite','roar','spit'];if(m.fell)ids.push('bite','bite');
   const fr=m.hp/m.maxhp;let id=ids[Math.floor(Math.random()*ids.length)];if(id==='roar'&&(m.msk.roar||0)>G.t)id='bite';m.msk[id]=G.t+(id==='roar'?9:3);colHeadSkill(m,id);}
-function colArena(dt){const C=G.colo;if(!C||G.scene!=='dungeon'||G.map!=='zone_colinas')return;C.gcd=Math.max(0,C.gcd-dt);C.t+=dt;if(Math.random()<dt*5){const l=C.legs[Math.floor(Math.random()*4)];if(l&&!l.dead)VF.pt(l.x+rnd(-30,30),l.y-rnd(0,10),{vy:-rnd(5,16),life:.6,col:'#a89878',sz:2.4,add:false});}}
+function colArena(dt){const C=G.colo;if(!C||G.scene!=='dungeon'||G.map!=='zone_colinas')return;C.gcd=Math.max(0,C.gcd-dt);C.t+=dt;
+  {const h=G.hero,al=C.legs.filter(l=>!l.dead&&l.hp>0);C.mv=0;if(h&&h.state!=='ko'&&al.length&&!al.some(l=>l.act)){let nl=al[0],nd=1e9;for(const l of al){const q=dist(l,h);if(q<nd){nd=q;nl=l;}}
+    if(nd>115){const sp=al[0].T.speed*MOVE*(al[0].fury?1.5:1)*.8,dx=h.x-nl.x,dy=h.y-nl.y,L=Math.hypot(dx,dy)||1,nx=C.x+dx/L*sp*dt,ny=C.y+dy/L*sp*dt;if(Math.hypot(nx-C.ox,ny-C.oy)<560){C.x=nx;C.y=ny;C.mv=1;C.at+=dt*(sp/46);if(Math.random()<dt*3){sfx('col_step',.3,.85+Math.random()*.15);VF.shake(.12);}}}}}
+if(Math.random()<dt*5){const l=C.legs[Math.floor(Math.random()*4)];if(l&&!l.dead)VF.pt(l.x+rnd(-30,30),l.y-rnd(0,10),{vy:-rnd(5,16),life:.6,col:'#a89878',sz:2.4,add:false});}}
 function colHuntTick(dt){const S=hnS(),a=S.act.colosso;if(!a||a.fim||G.scene!=='dungeon'||G.map!=='zone_colinas'||G.arena)return;const h=G.hero;if(!h||h.state==='ko')return;const R=ZONE.region&&ZONE.region.colo;if(!R)return;
   if(G.colo&&!G.colo.done&&G.mobs.some(m=>(m.type==='cperna'||m.type==='ccabeca')&&!m.dead))return;if(G.colo&&G.colo.done)G.colo=null;
   const rt=G.clT||(G.clT={w:0,x:h.x,y:h.y}),moved=Math.hypot(h.x-rt.x,h.y-rt.y);rt.x=h.x;rt.y=h.y;const rdt=dt/TEMPO,near=Math.hypot(h.x-R.x,h.y-R.y)<260;
