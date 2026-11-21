@@ -677,7 +677,7 @@ M3.wsweep={build(f,g){const L=f.len||620,U=g.userData,H=new T.Group();
 M3.tendril={build(f,g){const n=12;g.userData.N=[];for(let i=0;i<n;i++){const sz=11-i*.5,s=new T.Mesh(new T.BoxGeometry(sz,sz,sz),_pb(_WC[1+(i%3)],.92));g.add(s);g.userData.N.push(s);}
   const hd=new T.Mesh(new T.ConeGeometry(8,24,4).rotateZ(-Math.PI/2),_pb(0xffffff,.95));g.add(hd);g.userData.hd=hd;},
  upd(f,g,t){const dx=(f.tx||0)-f.x,dy=(f.ty||0)-f.y,u=t<.35?t/.35:t<.6?1:Math.max(0,1-(t-.6)/.4),n=g.userData.N.length,a=Math.atan2(dy,dx);
-  g.userData.N.forEach((s,i)=>{const k=i/(n-1)*u;s.position.set(dx*k,28+Math.sin(k*Math.PI)*30+Math.sin(t*20+i)*3,dy*k*1.0);s.rotation.set(t*7+i,t*5,i);s.visible=u>.02;});g.userData.hd.position.set(dx*u,30,dy*u);g.userData.hd.rotation.y=-a;g.userData.hd.visible=u>.02;}};
+  g.userData.N.forEach((s,i)=>{const k=i/(n-1)*u;s.position.set(dx*k,((f.h0||28)*(1-k)+28*k)+Math.sin(k*Math.PI)*30+Math.sin(t*20+i)*3,dy*k*1.0);s.rotation.set(t*7+i,t*5,i);s.visible=u>.02;});g.userData.hd.position.set(dx*u,(f.h0||28)*(1-u)+30*u,dy*u);g.userData.hd.rotation.y=-a;g.userData.hd.visible=u>.02;}};
 /* REDEMOINHO: lâmina d'água em pixel art girando no chão, arcos de espuma em espiral e coluna de água no centro */
 M3.whirl={build(f,g){const U=g.userData;U.R=[];for(let i=0;i<5;i++){const m=new T.Mesh(new T.TorusGeometry(1,.04,3,32,Math.PI*1.4).rotateX(Math.PI/2),_pb(i%2?0xffffff:0xa0e4f8,.9));g.add(m);U.R.push({m,k:.25+i*.18,s:1.6-i*.2});}
   U.pm=_tsuMat('sheet',.9);U.pl=new T.Mesh(new T.PlaneGeometry(2,2).rotateX(-Math.PI/2),U.pm);U.pl.position.y=.5;g.add(U.pl);
