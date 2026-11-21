@@ -405,7 +405,7 @@ OPP={0:1,1:0,2:3,3:2}
 # (zona A, lado em A, posição em A, zona B, posição em B) — B usa o lado oposto
 LINKS=[('estrada',0,1100,'planicie',3700),('planicie',0,3200,'ponte',1100),('planicie',2,2850,'goblins',2500),('planicie',1,1300,'brejo',1100),
   ('planicie',3,3950,'lago',1200),('goblins',0,2500,'lenhadores',1100),('goblins',1,1800,'clareira',1200),('brejo',1,1100,'brumas',2500),
-  ('brejo',3,2100,'eremita',1200),('ponte',0,1100,'colinas',2500),('colinas',3,2500,'cemiterio',2500),('colinas',0,2500,'desfiladeiro',1100),
+  ('brejo',2,3500,'eremita',1200),('ponte',0,1100,'colinas',2500),('colinas',3,2500,'cemiterio',2500),('colinas',0,2500,'desfiladeiro',1100),
   ('desfiladeiro',0,1100,'passo',1200),('lenhadores',0,1100,'ogros',2500),('ogros',0,2500,'passo',3300),('cemiterio',3,2500,'mortos',1100),
   ('mortos',3,1100,'passo',2250),('cemiterio',1,2500,'gruta',1200),('passo',3,2250,'mina',1200),('brumas',3,2500,'cabana',1200)]
 def _arrive(b,sd,pos):
@@ -432,7 +432,7 @@ EXL['muralha'].append(dict(id='cidade2',nm='Cinzamuro',side=1,pos=1100,to='cinza
 LINKS2=[('muralha',0,1100,'planalto',3200),('planalto',0,3200,'garganta',1100),('planalto',2,2800,'canion',2600),('planalto',3,3400,'oasis',1200),
   ('garganta',0,1100,'mesas',3200),('garganta',3,2400,'mirante',1200),('mesas',0,3200,'leito',1200),('mesas',2,3600,'tumba',1200),('mesas',3,2400,'cercos1',1100),
   ('cercos1',3,1100,'cercos',3200),('cercos',3,2800,'saqueadores',1300),('leito',0,1200,'salinas',3200),('leito',2,3000,'cisterna',1200),('leito',3,4200,'abutres',1100),
-  ('abutres',3,1100,'ruinas',2900),('ruinas',1,2900,'verme',1300),('salinas',0,3200,'rubro',1100),('rubro',0,1100,'forjas',3000),('forjas',0,3000,'portao',2250),
+  ('abutres',3,1100,'ruinas',5400),('ruinas',3,2900,'verme',1300),('salinas',0,3200,'rubro',1100),('rubro',0,1100,'forjas',3000),('forjas',0,3000,'portao',2250),
   ('forjas',2,2400,'obsidiana',1300)]
 for a,sa,pa,b,pb in LINKS2:
     sb=OPP[sa]
@@ -488,7 +488,7 @@ Z('goblins',303,'Nv 3–5',
   region_extra=dict(zlv=1,lv=[3,5],respawn=45,boss=dict(x=1500,y=1550,lv=6,aggro=440,respawn=300),minis=[dict(type='skrix',x=3300,y=3200,aggro=420,respawn=240)]))
 # ---------------------------------------------------------------- Trilha do Brejo (ligação, Nv 3–4)
 Z('brejo',404,'Nv 3–4',
-  roads=[[(1100,10),(1000,700),(1250,1500),(1000,2300),(1200,3200),(1100,4190)],[(2190,2100),(1800,2100),(1200,2100)]],
+  roads=[[(1100,10),(1000,700),(1250,1500),(1000,2300),(1200,3200),(1100,4190)],[(10,3500),(600,3450),(1200,3300)]],
   waters=[(1700,2000,300,220),(500,3100,260,200)],pois=[(1200,2100)],start=(1100,150),side_theme=['forest','dark','dark','dark'],band=(330,330,360,360),
   dens=.9,fdens=1.2,conifer=.4,ground='dark',packs=10,pack_n=3,region_extra=dict(zlv=1,lv=[3,4],respawn=40,mobs=['lobo','rato','javali','lobo']))
 # ---------------------------------------------------------------- Ponte do Rio (ligação, Nv 3–4): rio com vau/ponte no meio
@@ -538,7 +538,7 @@ Z('lago',1616,'Nv 2–3',waters=[(1200,470,1250,560,50)],pois=[(1200,1200)],star
   extra_k=[('rock',x,y,150,30) for x,y in LAGO_COVER],
   region_extra=dict(zlv=1,lv=[2,3],respawn=40,mobs=['rato','javali','lobo'],mare=dict(x=1200,y=975),cover=[[x,y,30] for x,y in LAGO_COVER]))
 Z('mina',1717,'Nv 7–8',pois=[(1200,1200)],start=(300,1200),**{**SEC,'side_theme':MT},hills=lambda x,y:.8,region_extra=dict(zlv=1,lv=[7,8],respawn=45,mobs=['bandido','gnoll','morcego']))
-Z('eremita',1818,'Nv 3–4',pois=[(1200,1200)],start=(300,1200),**{**SEC,'ground':'dark','fdens':1.4},region_extra=dict(zlv=1,lv=[3,4],respawn=40,mobs=['lobo','aranha','cogumelo']))
+Z('eremita',1818,'Nv 3–4',pois=[(1200,1200)],start=(2100,1200),**{**SEC,'ground':'dark','fdens':1.4},region_extra=dict(zlv=1,lv=[3,4],respawn=40,mobs=['lobo','aranha','cogumelo']))
 Z('cabana',1919,'Nv 10–11',waters=[(1500,1500,320,220)],pois=[(1000,1200)],start=(300,1200),**{**SEC,'side_theme':['swamp']*4,'ground':'swamp','dead':.8,'fdens':.5},
   region_extra=dict(zlv=4,lv=[10,11],respawn=45,mobs=['homemrato','cultlodo','sapo','afogado']))
 # ---------------------------------------------------------------- Estrada da Muralha (ligação, Região 2, Nv 10–11): sai pelo portão norte de Cinzamuro; segue para o Planalto Árido (em obras)
@@ -615,7 +615,7 @@ r2('abutres',3232,'Nv 15–16',[15,16],['harpia','bandido','lobo','cobra'],'sand
    roads=[[(10,1100),(1100,1000),(2300,1200),(3400,1050),(4590,1100)]],pois=[(2300,1100)],start=(300,1100),packs=8,band=(340,340,380,380),dens=.45)
 # ---- Ruínas do Sol Caído (Nv 16–18): templo solar em ruínas, entrada do Templo do Sol Soterrado
 r2('ruinas',3333,'Nv 16–18',[16,18],['mumia','esq','cult','gargula','necro','mumia'],'sand',
-   roads=[[(10,2900),(1200,2850),(2500,2950),(2900,2900),(2900,4300),(2900,5790)]],camps=[],shrines=[(2900,2200)],pois=[(2900,2900)],start=(300,2900),packs=30,
+   roads=[[(10,5400),(1200,5300),(2500,4300),(2900,3200),(3500,2900),(5790,2900)]],camps=[],shrines=[(2900,2200)],pois=[(2900,2900)],start=(300,5400),packs=30,
    extra_k=ruin_set(2900,2300,30,900,3333)+ruin_set(1300,4300,12,500,3334)+ruin_set(4500,1400,12,500,3335))
 # ---- zonas secretas (becos sem saída)
 SEC2=dict(side_theme=MT,band=(300,300,300,300),dens=.5,packs=6,pack_n=3)
@@ -624,5 +624,5 @@ r2('mirante',3535,'Nv 12–13',[12,13],['harpia','aranha','gnoll'],'rock',pois=[
 r2('tumba',3636,'Nv 14–15',[14,15],['mumia','esq','cobra'],'sand',pois=[(1200,1200)],start=(300,1200),extra_k=ruin_set(1200,1200,8,400,3636),**SEC2)
 r2('cisterna',3737,'Nv 14–15',[14,15],['aranha','morcego','barata'],'rock',pois=[(1200,1200)],start=(300,1200),waters=[(1500,1500,260,180,60)],**SEC2)
 r2('saqueadores',3838,'Nv 17–18',[17,18],['bandido','ladrao','javbruto'],'sand',camps=[(1300,1300)],pois=[(1300,900)],start=(300,1300),**{**SEC2,'packs':9})
-r2('verme',3939,'Nv 18–19',[18,19],['aranha','cobra','barata'],'sand',shrines=[(1300,1500)],pois=[(1300,1200)],start=(1300,300),**{**SEC2,'packs':9})
+r2('verme',3939,'Nv 18–19',[18,19],['aranha','cobra','barata'],'sand',shrines=[(1300,1500)],pois=[(1300,1200)],start=(300,1300),**{**SEC2,'packs':9})
 r2('obsidiana',4040,'Nv 19–20',[19,20],['gargula','morcego','esqmago'],'ash',pois=[(1300,1300)],start=(300,1300),**{**SEC2,'packs':9})
