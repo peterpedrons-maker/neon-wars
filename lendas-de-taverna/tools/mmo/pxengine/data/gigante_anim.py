@@ -168,9 +168,10 @@ def seq(name):
             o.append(dict(breath=math.sin(ph), dy=-1.5 * math.sin(ph), lean=2 * math.sin(ph * .5 + 1), a1L=.10 + .03 * math.sin(ph + 1), a1R=.10 + .03 * math.sin(ph + 2.2), eL=.25 + .06 * math.sin(ph), eR=.25 + .06 * math.sin(ph + 1.5), fL=.18, fR=.18, headx=math.sin(ph) * 1.5, heady=1.2 * math.sin(ph + .5), _t=ph))
     elif name == 'walk':
         for i in range(24):
-            ph = i / 24 * 2 * math.pi
-            o.append(dict(dy=-abs(math.sin(ph)) * 7, lean=math.sin(ph) * 9, upL=max(0, math.sin(ph)) * 30, upR=max(0, -math.sin(ph)) * 30, bendL=max(0, math.sin(ph)) * .6, bendR=max(0, -math.sin(ph)) * .6,
-                          a1L=.12, a1R=.12, sL=-math.sin(ph), sR=math.sin(ph), eL=.3 + .45 * max(0, -math.sin(ph)), eR=.3 + .45 * max(0, math.sin(ph)), fL=.15, fR=.15, heady=math.sin(ph * 2) * 1.5, breath=math.sin(ph * 2), _t=ph * 1.3))
+            ph = i / 24 * 2 * math.pi; sn = math.sin(ph)
+            # braços pendurados e RELAXADOS: só balançam um pouco (o da frente avança em escorço), sem abrir de lado
+            o.append(dict(dy=-abs(sn) * 7, lean=sn * 7, upL=max(0, sn) * 30, upR=max(0, -sn) * 30, bendL=max(0, sn) * .6, bendR=max(0, -sn) * .6,
+                          a1L=.07, a1R=.07, sL=-.42 * sn, sR=.42 * sn, eL=.2, eR=.2, fL=.1, fR=.1, heady=math.sin(ph * 2) * 1.5, breath=math.sin(ph * 2), _t=ph * 1.3))
     elif name == 'stomp':     # ergue a perna direita, bate o pé no chão, o corpo cede e treme
         for i in range(24):
             if i < 11: u = ease(i / 10); P = dict(upR=95 * u, bendR=.9 * u, lean=-14 * u, crouch=-4 * u, a1L=.1 + .6 * u, a1R=.1 + .9 * u, eL=.3 + .7 * u, eR=.3 + .8 * u, fL=.5 * u, fR=.4 * u, headx=-3 * u, heady=-3 * u, glow=u)
@@ -187,13 +188,13 @@ def seq(name):
             elif i < 19: u = (i - 14) / 4; P = dict(a1L=.35, a1R=.35, crouch=26 - 8 * u, heady=12 - 5 * u, jaw=.4 * (1 - u), shake=(1 if i % 2 else -1) * 4 * (1 - u))
             else: u = ease((i - 18) / 5); P = dict(a1L=lerp(.35, .1, u), a1R=lerp(.35, .1, u), crouch=lerp(18, 0, u), heady=lerp(7, 0, u))
             P['lean'] = P.get('lean', 0) + P.get('shake', 0); P['_t'] = i * .6; o.append(P)
-    elif name == 'sweep':     # varrida com o braço direito (de fora para dentro)
+    elif name == 'sweep':     # SOCO NO CHÃO: levanta o punho, desce o corpo todo (agacha e curva) e bate a mão no chão
         for i in range(24):
             if i < 9: u = ease(i / 8); P = dict(a1R=lerp(.1, 1.5, u), eR=lerp(.25, -1.3, u), fR=.4 * u, lean=-10 * u, a1L=.1 + .2 * u, eL=.5, fL=.3, heady=-2 * u, glow=u)
-            elif i < 12: u = (i - 8) / 3; P = dict(a1R=lerp(1.5, -.2, ease(u)), eR=lerp(-1.3, .1, ease(u)), fR=lerp(.4, 0, u), lean=lerp(-10, 16, ease(u)), a1L=.3, eL=.5, fL=.3, crouch=8 * u, jaw=.3 * u)
-            elif i < 17: u = (i - 11) / 5; P = dict(a1R=lerp(-.35, .0, u), lean=lerp(16, 8, u), crouch=lerp(8, 4, u), a1L=.3)
-            else: u = ease((i - 16) / 7); P = dict(a1R=lerp(.0, .1, u), lean=lerp(8, 0, u), crouch=lerp(4, 0, u), a1L=lerp(.3, .1, u))
-            P['_t'] = i * .6; o.append(P)
+            elif i < 12: u = ease((i - 8) / 3); P = dict(a1R=lerp(1.5, .12, u), eR=lerp(-1.3, .05, u), fR=0, lean=lerp(-10, 12, u), a1L=.3, eL=.5, fL=.3, crouch=118 * u, bendL=.8 * u, bendR=.8 * u, heady=10 * u, jaw=.4 * u)
+            elif i < 18: u = (i - 12) / 5; P = dict(a1R=.12, eR=.05, a1L=.3, eL=.5, fL=.3, lean=12, crouch=118, bendL=.8, bendR=.8, heady=10, shake=(1 if i % 2 else -1) * 3 * (1 - u))
+            else: u = ease((i - 17) / 6); P = dict(a1R=lerp(.12, .1, u), eR=lerp(.05, .25, u), a1L=lerp(.3, .1, u), lean=lerp(12, 0, u), crouch=lerp(118, 0, u), bendL=lerp(.8, 0, u), bendR=lerp(.8, 0, u), heady=lerp(10, 0, u))
+            P['lean'] = P.get('lean', 0) + P.get('shake', 0); P['_t'] = i * .5; o.append(P)
     elif name == 'roar':
         for i in range(20):
             u = ease(min(1, i / 7)) * (1 - ease((i - 15) / 5) if i > 15 else 1)
