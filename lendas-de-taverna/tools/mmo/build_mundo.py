@@ -3,9 +3,13 @@ Usa o atlas já gerado (assets/atlas_regiao1.png/json: floresta + props de vila 
 (1 px = 4 px) cujas cores o renderizador reconhece. Cada zona tem `exits` (saída por caminho + fade) e uma barreira de borda
 (props densos + parede invisível `wallc`) com aberturas só nas saídas.
 Uso (em lendas-de-taverna/tools/mmo):  python3 build_mundo.py   -> assets/zone_estrada.json/_ground.png, zone_planicie.json/_ground.png"""
-import os,json,math,random
+import os,json,math,random,sys
 import numpy as np
 from PIL import Image
+from scipy.ndimage import distance_transform_edt
+from skimage import measure
+sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
+import zoneshape as ZS
 HERE=os.path.dirname(os.path.abspath(__file__));A=os.path.join(HERE,'..','..','mmo','assets')
 AJ=json.load(open(f'{A}/atlas_regiao1.json'))
 GS=4
@@ -78,6 +82,24 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     yy,xx=np.mgrid[0:gh,0:gw];wx=xx*GS+GS/2;wy=yy*GS+GS/2
     N1=fbm(seed+3);N2=fbm(seed+8,(60,30,12),(.5,.35,.15));N3=fbm(seed+14,(120,60,30),(.55,.3,.15));CL=fbm(seed+40,(90,45,22),(.62,.28,.10))
     qx=wx+(N2-.5)*90;qy=wy+(N1-.5)*90
+    # ---- FORMATO JOGÁVEL (mesmo do mapa-múndi): tudo fora do contorno é barreira
+    INSIDE,CORRM=ZS.inside(name.replace('zone_',''),W,H,exits,wx,wy,True)
+    DIN=distance_transform_edt(INSIDE)*GS;DOUT=distance_transform_edt(~INSIDE)*GS
+    _inner=DIN>200;_ii=distance_transform_edt(~_inner,return_indices=True)[1]
+    def fixpt(x,y):
+        i=min(gh-1,max(0,int(y)//GS));j=min(gw-1,max(0,int(x)//GS))
+        if _inner[i,j]:return x,y
+        a,b=_ii[0][i,j],_ii[1][i,j];return float(wx[a,b]),float(wy[a,b])
+    camps=[fixpt(*c) for c in camps];pois=[fixpt(*c) for c in pois];lairs=[fixpt(*c) for c in lairs];shrines=[fixpt(*c) for c in shrines]
+    start=fixpt(*start);gates=[dict(g,**dict(zip(('x','y'),fixpt(g['x'],g['y'])))) for g in gates]
+    extra_k=[(k_,*fixpt(x_,y_),s_,r_) for k_,x_,y_,s_,r_ in extra_k]
+    if region_extra:
+        re_=dict(region_extra)
+        for k_ in('boss','colo','mare'):
+            if k_ in re_:re_[k_]=dict(re_[k_],**dict(zip(('x','y'),map(round,fixpt(re_[k_]['x'],re_[k_]['y'])))))
+        if 'minis' in re_:re_['minis']=[dict(m_,**dict(zip(('x','y'),map(round,fixpt(m_['x'],m_['y']))))) for m_ in re_['minis']]
+        if 'cover' in re_:re_['cover']=[[*map(round,fixpt(c_[0],c_[1])),*c_[2:]] for c_ in re_['cover']]
+        region_extra=re_
     road_d=np.full(wx.shape,1e9)
     for r in roads:road_d=np.minimum(road_d,path_d(qx,qy,r))
     trail_d=np.full(wx.shape,1e9)
@@ -86,16 +108,16 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     for w_ in waters:
         cx,cy,rx,ry=w_[:4];nz=w_[4] if len(w_)>4 else 240   # 5º valor: irregularidade da margem (arena = margem quase lisa)
         e=((wx-cx+(N2-.5)*nz)/rx)**2+((wy-cy+(N1-.5)*nz)/ry)**2;water|=e<1;shore|=(e<1.4)
-    shore&=~water
+    water&=INSIDE;shore&=INSIDE;shore&=~water
     # ---- borda: lado mais próximo define a espessura e o tema da barreira
     dists=np.stack([wy,H-wy,wx,W-wx]);side=np.argmin(dists,axis=0);ed=np.min(dists,axis=0)
-    BT=np.choose(side,[band[0],band[1],band[2],band[3]])+(N3-.5)*120;BAND=ed<BT
+    BT=np.choose(side,[band[0],band[1],band[2],band[3]])+(N3-.5)*120;BAND=~INSIDE
     # corredores das saídas (sem barreira nem props)
     CORR=np.zeros(wx.shape,bool);LANEP=np.zeros(wx.shape,bool)
     for e in exits:
         along=wx if e['side'] in(0,1) else wy;depth=dists[e['side']]
-        CORR|=(np.abs(along-e['pos'])<250+(N2-.5)*40)&(depth<BT+300)
-        LANEP|=(np.abs(along-e['pos'])<100)&(depth<BT+280)
+        LANEP|=(np.abs(along-e['pos'])<100)&(depth<680)
+    CORR|=CORRM
     ground_near=np.full(wx.shape,1e9)
     for cx,cy in camps:ground_near=np.minimum(ground_near,np.hypot(wx-cx,wy-cy))
     dirt=((road_d<28)|(trail_d<14)|(N2>.8)&(wy>600)|(ground_near<150)|shore)&~water
@@ -292,13 +314,15 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     for gy in range(20,H-20,step):
         for gx in range(20,W-20,step):
             x=gx+rr.uniform(-.5,.5)*step;y=gy+rr.uniform(-.5,.5)*step
-            if 0<x<W and 0<y<H and at(BAND,x,y):band_item(x,y,int(at(side,x,y)))
+            if 0<x<W and 0<y<H and at(BAND,x,y):
+                if at(DOUT,x,y)>520 and ((gx//step+gy//step)%3):continue
+                band_item(x,y,int(at(side,x,y)))
     for gy in range(40,H-40,110):
         for gx in range(40,W-40,110):
             x=gx+rr.uniform(-.4,.4)*110;y=gy+rr.uniform(-.4,.4)*110
             if not(0<x<W and 0<y<H):continue
             sd=int(at(side,x,y))
-            if at(BAND,x,y) and side_theme[sd]=='mount' and at(ed,x,y)<at(BT,x,y)*.6 and not at(water,x,y) and not at(CORR,x,y):addk('mount',x,y,rr.randint(190,270),0,1.5)
+            if at(BAND,x,y) and side_theme[sd]=='mount' and 60<at(DOUT,x,y)<700 and not at(water,x,y) and not at(CORR,x,y):addk('mount',x,y,rr.randint(190,270),0,1.5)
     wall=[];KW=.36   # a barreira fica na entrada da faixa: o que o herói vê (crista de montanhas / mata fechada) é exatamente o que o bloqueia
     def ridge(x,y,sd,i):
         th=side_theme[sd];j=lambda a:rr.uniform(-a,a)
@@ -321,20 +345,30 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
             if i%2==0:addk('thorn',x+j(18),y+j(18)+16,rr.randint(48,62),10)
             if i%3==0:addk('mush',x+j(18),y+j(18)+24,28)
     wi=0
-    for t_ in range(40,max(W,H)-40,26):
-        pts=[]
-        if t_<W-40:pts+=[(t_,KW*at(BT,t_,40),0,t_),(t_,H-KW*at(BT,t_,H-40),1,t_)]
-        if t_<H-40:pts+=[(KW*at(BT,40,t_),t_,2,t_),(W-KW*at(BT,W-40,t_),t_,3,t_)]
-        for x,y,sd,al in pts:
-            if any(e['side']==sd and abs(al-e['pos'])<200 for e in exits):continue
-            wall.append([round(x),round(y),26]);wi+=1
+    for c_ in measure.find_contours(np.pad(INSIDE,1,constant_values=False).astype(float),.5):
+        acc_=0.0;prev=c_[0]
+        for q_ in c_[::1]:
+            acc_+=math.hypot(q_[0]-prev[0],q_[1]-prev[1])*GS;prev=q_
+            if acc_<26:continue
+            acc_=0.0;x=(q_[1]-1)*GS+GS/2;y=(q_[0]-1)*GS+GS/2
+            if x<40 or y<40 or x>W-40 or y>H-40:continue            # boca dos corredores (borda do retângulo): aberta
+            sd=int(at(side,x,y));wall.append([round(x),round(y),26]);wi+=1
             if wi%2==0 and not at(CORR,x,y) and not at(water,x,y):ridge(x,y,sd,wi//2)
+    # contorno jogável (polígonos fechados, ~32px entre pontos): minimapa e mapa de área recortam por ele
+    shape=[]
+    for c_ in measure.find_contours(np.pad(INSIDE,1,constant_values=False).astype(float),.5):
+        pts=[];acc_=1e9;prev=c_[0]
+        for q_ in c_:
+            acc_+=math.hypot(q_[0]-prev[0],q_[1]-prev[1])*GS;prev=q_
+            if acc_<32:continue
+            acc_=0;pts.append([int(min(W,max(0,(q_[1]-1)*GS+GS/2))),int(min(H,max(0,(q_[0]-1)*GS+GS/2)))])
+        if len(pts)>=12:shape.append(pts)
     spawns=[]
     if packs:
         tries=0;centers=[]
         while len(centers)<packs and tries<4000:
             tries+=1;x=rr.uniform(500,W-500);y=rr.uniform(500,H-500)
-            if at(BAND,x,y) or at(water,x,y) or at(CORR,x,y) or camp_d(x,y)<420:continue
+            if at(BAND,x,y) or at(DIN,x,y)<260 or at(water,x,y) or at(CORR,x,y) or camp_d(x,y)<420:continue
             if any(math.hypot(x-e['rect'][0]-e['rect'][2]/2,y-e['rect'][1]-e['rect'][3]/2)<900 for e in exits):continue
             if any(math.hypot(x-cx,y-cy)<430 for cx,cy in centers):continue
             centers.append((x,y))
@@ -353,7 +387,7 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     exs=[dict(id=e['id'],nm=e['nm'],side=e['side'],toSide=e.get('toSide',-1),x=e['rect'][0],y=e['rect'][1],w=e['rect'][2],h=e['rect'][3],to=e['to'],at=e['at'],ready=e['ready'],msg=e.get('msg','')) for e in exits]
     marks=[dict(k='camp',x=cx_,y=cy_,nm='Acampamento') for cx_,cy_ in camps]+[dict(k='poi',x=x_,y=y_,nm='Ponto de interesse') for x_,y_ in pois]+[dict(k='lair',x=x_,y=y_,nm='Covil') for x_,y_ in lairs]+[dict(k='shrine',x=x_,y=y_,nm='Santuário') for x_,y_ in shrines]
     Z=dict(w=W,h=H,props=P,spawns=spawns,plaza=[0,0,1,1],pond=[0,0,1,1],road=[],start=list(start),boss=[W//2,H//2],gate=list(start),
-           region=dict(nome=nome,nv=nv,gs=1/GS,mundo=name,ground=ground or '',**({'wx':wxw} if wxw else {}),**(region_extra or {})),exits=exs,marks=marks,fx=[],wallc=wall,**({'gates':[dict(nm=g['nm'],dg=g['dg'],x=g['x'],y=g['y'],r=g.get('r',130)) for g in gates]} if gates else {}))
+           region=dict(nome=nome,nv=nv,gs=1/GS,mundo=name,ground=ground or '',shape=shape,**({'wx':wxw} if wxw else {}),**(region_extra or {})),exits=exs,marks=marks,fx=[],wallc=wall,**({'gates':[dict(nm=g['nm'],dg=g['dg'],x=g['x'],y=g['y'],r=g.get('r',130)) for g in gates]} if gates else {}))
     json.dump(Z,open(f'{A}/{name}.json','w'),separators=(',',':'))
     from collections import Counter
     print(name,'spawns',len(spawns),'props',len(P),Counter(p.get('k') or p.get('t') for p in P).most_common(8),'paredes',len(wall),'saídas',[e['id'] for e in exs])
@@ -369,7 +403,7 @@ NM=dict(estrada='Estrada de Brumavale',planicie='Planície de Brumavale',goblins
   eremita='Bosque do Eremita (secreto)',cabana='Cabana da Bruxa (secreta)')
 OPP={0:1,1:0,2:3,3:2}
 # (zona A, lado em A, posição em A, zona B, posição em B) — B usa o lado oposto
-LINKS=[('estrada',0,1100,'planicie',3000),('planicie',0,3200,'ponte',1100),('planicie',2,2850,'goblins',2500),('planicie',1,1300,'brejo',1100),
+LINKS=[('estrada',0,1100,'planicie',3700),('planicie',0,3200,'ponte',1100),('planicie',2,2850,'goblins',2500),('planicie',1,1300,'brejo',1100),
   ('planicie',3,3950,'lago',1200),('goblins',0,2500,'lenhadores',1100),('goblins',1,1800,'clareira',1200),('brejo',1,1100,'brumas',2500),
   ('brejo',3,2100,'eremita',1200),('ponte',0,1100,'colinas',2500),('colinas',3,2500,'cemiterio',2500),('colinas',0,2500,'desfiladeiro',1100),
   ('desfiladeiro',0,1100,'passo',1200),('lenhadores',0,1100,'ogros',2500),('ogros',0,2500,'passo',3300),('cemiterio',3,2500,'mortos',1100),
@@ -439,11 +473,11 @@ Z('estrada',101,'Nv 1',roads=[[(1100,3390),(1060,2800),(1220,2150),(1000,1500),(
   waters=[(1700,1500,300,220)],pois=[(1100,1700)],start=(1100,3150),side_theme=['forest','forest','forest','forest'],band=(330,330,360,360),dens=.9)
 # ---------------------------------------------------------------- Planície de Brumavale (Nv 1–3)
 Z('planicie',202,'Nv 1–3',
-  roads=[[(3000,5990),(3000,5400),(3100,4600),(2950,3700),(3150,2700),(3050,1700),(3200,700),(3200,10)],
+  roads=[[(3700,5990),(3600,5400),(3100,4600),(2950,3700),(3150,2700),(3050,1700),(3200,700),(3200,10)],
          [(2950,3700),(2100,3500),(1300,3100),(600,2900),(10,2850)],
          [(3100,4600),(2300,5000),(1600,5500),(1300,5990)]],
   trails=[[(3150,3450),(3900,3300),(4800,3300),(5400,3700),(5990,3950)]],waters=[(4300,4150,700,430)],
-  camps=[(2200,2300),(4300,1900)],start=(3000,5740),side_theme=['mount','forest','dark','mount'],band=(400,300,420,420),dens=.8,
+  camps=[(2200,2300),(4300,1900)],start=(3700,5740),side_theme=['mount','forest','dark','mount'],band=(400,300,420,420),dens=.8,
   hills=lambda x,y:max(0,min(1,(1400-y)/700)),packs=40,pack_n=3,
   region_extra=dict(zlv=1,lv=[1,3],respawn=40,mobs=['rato','javali','rato','lobo','javali']))
 # ---------------------------------------------------------------- Floresta dos Goblins (Nv 3–5)

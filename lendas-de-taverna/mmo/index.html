@@ -2728,7 +2728,7 @@ async function regBack(){   /* volta da dungeon para a zona do mundo onde fica a
   try{if(!MAPS[m])toast('Voltando…',20000);await ensureMap(m);$('toast').style.display='none';enterDungeon(((MAPS[m].zone.region||{}).zlv)||1,{map:m,at:r?[r.x,r.y]:undefined});}catch(e){console.error(e);enterRegion();}
 }
 async function enterRegion(){   // atalho do Portal (teste): leva ao começo da Planície
-  if(G.xfer)return;G.xfer=1;try{toast('Carregando a Planície…',20000);await ensureMap('zone_planicie');$('toast').style.display='none';enterDungeon(1,{map:'zone_planicie',at:[3000,5740],dir:[0,-1]});}catch(e){console.error(e);toast('Não foi possível carregar o mapa.',2500);}setTimeout(()=>{G.xfer=0;},1500);}
+  if(G.xfer)return;G.xfer=1;try{toast('Carregando a Planície…',20000);await ensureMap('zone_planicie');$('toast').style.display='none';enterDungeon(1,{map:'zone_planicie',at:[3700,5740],dir:[0,-1]});}catch(e){console.error(e);toast('Não foi possível carregar o mapa.',2500);}setTimeout(()=>{G.xfer=0;},1500);}
 function enterDungeon(zlv,opts){try{styReset();}catch(e){}
   zlv=clamp(zlv||1,1,DUN.length);if(!dgUnlocked(zlv)&&!(opts&&(opts.arena||opts.map))){sfx('ui_denied');return;}
   if(whenReady(()=>enterDungeon(zlv,opts)))return;
@@ -5660,6 +5660,13 @@ function mmPaint(Z,s,GROUND_,ATLAS_J_,ATLAS_){  const GR=GROUND_||GROUND,AJ=ATLA
   for(const p of Z.props||[]){if(p.t==='fire'){x.fillStyle='#ff9a3a';x.fillRect(Math.round(p.x*s)-1,Math.round(p.y*s)-1,2,2);continue;}if(p.t!=='p'||!AJ)continue;const a=AJ[p.id];if(!a)continue;const w=a[2];
     if(w>=44){x.fillStyle='rgba(18,62,28,.92)';const r=Math.max(1.4,w*.2*s*1.1);x.beginPath();x.ellipse(p.x*s,(p.y-a[3]*.18)*s,r,r*.9,0,0,7);x.fill();}
     else if(w>=26){x.fillStyle='rgba(60,92,40,.8)';const r=Math.max(1,w*.14*s*1.1);x.beginPath();x.arc(p.x*s,p.y*s,r,0,7);x.fill();}}
+  // FORMATO JOGÁVEL: fora do contorno é "mar" (igual ao mapa-múndi); costa em tinta com marolas
+  const sh=Z.region&&Z.region.shape;
+  if(sh&&sh.length){const path=()=>{x.beginPath();for(const po of sh){x.moveTo(po[0][0]*s,po[0][1]*s);for(let i=1;i<po.length;i++)x.lineTo(po[i][0]*s,po[i][1]*s);x.closePath();}};
+    x.save();x.beginPath();x.rect(0,0,W,H);for(const po of sh){x.moveTo(po[0][0]*s,po[0][1]*s);for(let i=1;i<po.length;i++)x.lineTo(po[i][0]*s,po[i][1]*s);x.closePath();}x.fillStyle='rgb(132,184,190)';x.fill('evenodd');
+    x.beginPath();x.rect(0,0,W,H);for(const po of sh){x.moveTo(po[0][0]*s,po[0][1]*s);for(let i=1;i<po.length;i++)x.lineTo(po[i][0]*s,po[i][1]*s);x.closePath();}x.clip('evenodd');
+    x.lineJoin='round';path();x.strokeStyle='rgba(168,214,214,.55)';x.lineWidth=Math.max(6,Math.min(W,H)*.03);x.stroke();path();x.strokeStyle='rgba(150,200,204,.55)';x.lineWidth=Math.max(3,Math.min(W,H)*.016);x.stroke();
+    x.restore();path();x.strokeStyle='rgba(52,34,18,.95)';x.lineWidth=Math.max(1.3,Math.min(W,H)*.006);x.stroke();}
   return c;}
 function mmBuild(){const Z=ZONE;MM.base=null;MM.fog=null;MM.loc=null;if(!Z||!GROUND||G.room){return;}
   const s=Math.min(.25,360/Z.w,540/Z.h);MM.base=mmPaint(Z,s);MM.s=s;MM.sl=Math.min(.25,1500/Z.w,1500/Z.h);MM.loc=Math.abs(MM.sl-s)<1e-6?MM.base:mmPaint(Z,MM.sl);
