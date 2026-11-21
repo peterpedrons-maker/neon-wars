@@ -274,9 +274,9 @@ function drawEnt(sc,e,frame){
   const hp=e.kind==='hero'?G.hero:null;
   let fr=null,scale=1,S0;
   if(e.pet){fr=[0,0,128,128,64,116];scale=1;S0=128;}
-  else{fr=entFrame(e);if(!fr)return;scale=e.kind==='boss'?(typeof bsc==='function'?bsc(e):e.T.scale):(typeof msc==='function'?msc(e):(e.sc||1));S0=Math.max(128,Math.ceil(Math.max(fr[3],fr[4])*scale*1.5/64)*64);if(e.type==='cperna'&&!e.dead)S0=1024;}
+  else{fr=entFrame(e);if(!fr)return;scale=e.kind==='boss'?(typeof bsc==='function'?bsc(e):e.T.scale):(typeof msc==='function'?msc(e):(e.sc||1));S0=Math.max(128,Math.ceil(Math.max(fr[3],fr[4])*scale*1.5/64)*64);}
   const r=entRec(sc,e,S0);r.seen=frame;
-  let al=e.dead?Math.max(0,1-Math.max(0,e.deadT-.5)/.6):1;if(e.type==='cperna'&&!e.dead&&G.hero&&G.hero.y<e.y+8&&Math.abs(G.hero.x-e.x)<120)al=.28;
+  let al=e.dead?Math.max(0,1-Math.max(0,e.deadT-.5)/.6):1;
   const dyn=e.kind==='hero'||e.kind==='boss'||e.flash>0||e.tint||e.shd>0||e.pet||e.elite||(e.dod!=null);
   const dxk=e.dx?Math.round(e.dx.y*2)+','+Math.round(e.dx.rot*60)+','+Math.round(e.dx.sx*40)+','+Math.round(e.dx.sy*40)+','+Math.round(e.dx.x*2):'',key=e.pet?'':fr[0]+','+fr[1]+','+(e.flash>0?1:0)+','+al.toFixed(2)+','+scale+','+dxk;
   if(dyn||key!==r.key){r.key=key;
@@ -752,12 +752,13 @@ function render3(){
    foc=B||M;const id=foc&&(foc.id||foc.name||'x')+(foc===B?'B':'M');
    if(id&&id!==camBossId){camBossId=id;camKick=foc===B?3.2:2.4;}else if(!id){camBossId=null;}
    if(camKick>0)camKick-=dt;
-   if(foc){tgtZ=foc===B?1.34:1.22;if(foc.ent||camKick>0)tgtZ+=foc===B?.3:.2;
+   if(foc){tgtZ=foc===B?1.34:1.22;if(foc.giant){tgtZ=2.1;if(camKick>0||foc.mst)tgtZ=2.5;}if(foc.ent||camKick>0)tgtZ+=foc===B?.3:.2;
      const ac=foc.act;if(ac&&ac.skill&&ac.t<ac.dur){const wide={rift:.5,charge:.55,zig:.5,leap:.45,dive:.4,echo:.35,spin:.3}[ac.anim];tgtZ+=wide||.22;chan=1;}}}
   if(G.cut&&G.cut.zoom){tgtZ=G.cut.zoom;foc=null;}
   zk+=(tgtZ-zk)*Math.min(1,dt*((G.cut&&G.cut.zoom)?5:(tgtZ>zk?1.6:.9)));
   const asp=cam.aspect,dist=(window.__cd||scn.dist)*(asp<1?(1+(1-asp)*1.2)*(1+(zk-1)*.7)/(zk):1)*(asp<1?zk:zk);let tx=(G.cam.x+G.LW/2)*U,tz=(G.cam.y+G.LH/2)*U;
-  if(foc&&zk>1.02){const w=Math.min(chan?.62:.45,(zk-1)*.9);tx+=(foc.x*U-tx)*w;tz+=(foc.y*U-tz)*w;}
+  if(foc&&foc.giant){tx+=(foc.x*U-tx)*.55;tz+=((foc.y-150)*U-tz)*.55;}
+  else if(foc&&zk>1.02){const w=Math.min(chan?.62:.45,(zk-1)*.9);tx+=(foc.x*U-tx)*w;tz+=(foc.y*U-tz)*w;}
   if(!camT)camT=new T.Vector3(tx,0,tz);camT.x+=(tx-camT.x)*.5;camT.z+=(tz-camT.z)*.5;
   const sh=G.shake>0?G.shake:0;cam.position.set(camT.x+(Math.random()-.5)*sh*.3,.9+Math.sin(TILT)*dist,camT.z-1+Math.cos(TILT)*dist);cam.lookAt(camT.x,.9,camT.z-1);
   if(mood==='field'){scn.sun.position.set(camT.x-9,15,camT.z+7);scn.sun.target.position.set(camT.x,0,camT.z);scn.sun.target.updateMatrixWorld();scn.sun.castShadow=sunI>.35;}

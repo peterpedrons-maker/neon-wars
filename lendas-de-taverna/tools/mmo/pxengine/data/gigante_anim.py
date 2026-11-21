@@ -55,7 +55,8 @@ def tufts(c, x0, y0, x1, y1, n, sg, ln, r0=3.4, reg='fur'):
 def v2(a, L):  # vetor a partir do eixo "para baixo", positivo = para fora
     return math.sin(a) * L, math.cos(a) * L
 
-def draw(P, t=0.0):
+def draw(P, t=0.0, view='d'):
+    back = view == 'u'
     FA.W, FA.H = int(DW * SK), int(DH * SK)
     cv = _fast(FA.Cv()); cv.contact = False
     c = Sc(cv, SK)
@@ -130,20 +131,23 @@ def draw(P, t=0.0):
         c.cap(H0[0] + sg * 28, H0[1] - 18, H0[0] + sg * 46, H0[1] - 40, 8, 4.8, 'horn'); c.cap(H0[0] + sg * 46, H0[1] - 40, H0[0] + sg * 49, H0[1] - 68, 4.8, 1.2, 'horn')
         c.cap(H0[0] + sg * 36, H0[1], H0[0] + sg * 56, H0[1] - 4, 5, 3, 'horn'); c.cap(H0[0] + sg * 56, H0[1] - 4, H0[0] + sg * 64, H0[1] - 20, 3, 1, 'horn')
     c.ell(H0[0] - 18, H0[1] - 10, 12, 7, 'stone'); c.ell(H0[0] + 18, H0[1] - 12, 13, 8, 'moss')
-    c.ell(H0[0], H0[1] + 22, 18, 11, 'skin'); c.ell(H0[0], H0[1] + 34 + jaw * 12, 21, 10 + jaw * 4, 'body')
-    for sg in (-1, 1):
+    if back:
+        c.ell(H0[0], H0[1] + 8, 33, 30, 'fur'); tufts(c, H0[0] - 26, H0[1] + 22, H0[0] + 26, H0[1] + 26, 8, 1, 16, 4)
+    else:
+      c.ell(H0[0], H0[1] + 22, 18, 11, 'skin'); c.ell(H0[0], H0[1] + 34 + jaw * 12, 21, 10 + jaw * 4, 'body')
+      for sg in (-1, 1):
         c.cap(H0[0] + sg * 12, H0[1] + 34 + jaw * 11, H0[0] + sg * 14, H0[1] + 20 - jaw * 2, 3.2, 1.4, 'tusk')
         c.cap(H0[0] + sg * 36, H0[1] + 14, H0[0] + sg * 42, H0[1] + 40, 6, 3, 'fur')
-    tufts(c, H0[0] - 20, H0[1] + 40 + jaw * 12, H0[0] + 20, H0[1] + 42 + jaw * 12, 5, 1, 12, 3.2)
+    if not back: tufts(c, H0[0] - 20, H0[1] + 40 + jaw * 12, H0[0] + 20, H0[1] + 42 + jaw * 12, 5, 1, 12, 3.2)
     # musgo e pedras
     for (mx, my, a, b_) in ((cx - 52, 122, 12, 8), (cx + 40, 168, 9, 6), (cx + 64, 150, 7, 5)): c.ell(mx + ox, my + oy, a, b_, 'moss')
     c.ell(cx - 22 + ox, 232 + oy, 8, 5, 'stone'); c.ell(cx + 54 + ox, 120 + oy, 7, 5, 'stone')
     # runas e olhos (brilham mais no rugido)
     glow = g('glow')
-    for (rx, ry) in ((cx - 30, 134), (cx + 24, 144), (cx - 4, 164), (cx + 40, 120), (cx - 46, 178), (cx + 14, 188), (cx - 8, 206)):
+    for (rx, ry) in (() if back else ((cx - 30, 134), (cx + 24, 144), (cx - 4, 164), (cx + 40, 120), (cx - 46, 178), (cx + 14, 188), (cx - 8, 206))):
         for dx_, dy_ in ((0, 0), (1, 0), (0, 1), (-1, 0), (0, -1), (1, 1)) + (((2, 0), (0, 2), (-2, 0), (0, -2)) if glow > .5 else ()): c.dot(rx + ox + dx_, ry + oy + dy_, FLAT['rune'])
         c.dot(rx + ox, ry + oy, FLAT['eye2'])
-    for ex in (-13, 13):
+    for ex in (() if back else (-13, 13)):
         for dx_ in (-2, -1, 0, 1, 2, 3):
             for dy_ in (0, 1, 2): c.dot(H0[0] + ex + dx_, H0[1] + dy_, FLAT['eye'])
         c.dot(H0[0] + ex, H0[1] + 1, FLAT['eye2']); c.dot(H0[0] + ex + 1, H0[1] + 1, FLAT['eye2'])
@@ -255,7 +259,43 @@ def preview(path, names=None, hero=None):
     print(path, len(fr), 'quadros', {k: len(v) for k, v in out.items()})
     return out
 
+# ------------------------------------------------------------------ atlas do jogo (escala de jogo SK=.6, 3 vistas; costas só em parado/andar/dano, o resto cai na frente)
+def export(out_dir='../../../../mmo/assets/chars'):
+    import json, os
+    global SK
+    SK = .6
+    front = ['idle', 'walk', 'stomp', 'smash', 'sweep', 'roar', 'hurt', 'death']
+    backn = ['idle', 'walk', 'hurt']
+    jobs = [(n, i, P, 'd') for n in front for i, P in enumerate(seq(n))] + [(n, i, P, 'u') for n in backn for i, P in enumerate(seq(n))]
+    with Pool(4) as p: imgs = p.map(_fv, jobs, chunksize=3)
+    w, h = int(DW * SK), int(DH * SK); cols = 19; rows = -(-len(imgs) // cols)
+    A = Image.new('RGBA', (cols * w, rows * h), (0, 0, 0, 0)); idx = {}
+    for k, ((n, i, P, v), im) in enumerate(zip(jobs, imgs)):
+        A.alpha_composite(im, ((k % cols) * w, (k // cols) * h)); idx.setdefault((n, v), []).append(k)
+    an = {}
+    alias = {'attack': 'smash', 'cast': 'roar'}
+    for nm in front + list(alias):
+        src = alias.get(nm, nm)
+        f = idx[(src, 'd')]
+        b = idx.get((src, 'u'), f)
+        an[nm + '_d'] = f; an[nm + '_s'] = f; an[nm + '_u'] = b
+    d = idx[('death', 'd')]; an['kneel_d'] = an['kneel_s'] = an['kneel_u'] = d[:17]
+    for v in 'dsu': an['death_' + v] = d[17:]      # a morte do jogo parte do joelho no chão (ele só morre ajoelhado)
+    assert A.width <= 4096 and A.height <= 4096, A.size
+    A.save(os.path.join(out_dir, 'cx_gigante_atlas.png'), optimize=True)
+    json.dump(dict(w=w, h=h, ax=(CX + XO) * SK, ay=(FY + YO) * SK, cols=cols, anims=an), open(os.path.join(out_dir, 'cx_gigante_atlas.json'), 'w'))
+    print('gigante', len(imgs), 'quadros', A.size)
+
+def _fv(a):
+    n, i, P, v = a
+    global SK
+    SK = .6
+    return draw(P, P.get('_t', 0), v)
+
+
 if __name__ == '__main__':
     if sys.argv[1] == 'preview': preview(sys.argv[2], sys.argv[3].split(',') if len(sys.argv) > 3 else None)
+    elif sys.argv[1] == 'export': export()
     elif sys.argv[1] == 'one':
         P = seq(sys.argv[3])[int(sys.argv[4])]; frame((sys.argv[3], 0, P)).save(sys.argv[2])
+
