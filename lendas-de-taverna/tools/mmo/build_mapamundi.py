@@ -1,34 +1,47 @@
 # Mapa-múndi de fantasia da Região 1, a partir da geometria REAL das zonas (tamanho, lados, saídas, água, estradas, props).
-# -> mmo/assets/mapa_regiao1.png, mapa_regiao1_ids.png, mapa_regiao1_layout.json   (use /usr/bin/python3)
+# -> mmo/assets/mapa_regiao<N>.png, mapa_regiao<N>_ids.png, mapa_regiao<N>_layout.json   (use /usr/bin/python3)
+# Região 1: /usr/bin/python3 tools/mmo/build_mapamundi.py      Região 2: REG=2 /usr/bin/python3 tools/mmo/build_mapamundi.py
+# REGRA: toda região nova ganha o MESMO tipo de mapa (relevo, estradas, florestas/montanhas em mancha, zonas orgânicas, nomes) — ver bloco REG==2 e docs.
 import numpy as np, random, math, json, os
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from scipy.ndimage import gaussian_filter, zoom, binary_fill_holes, binary_closing, distance_transform_edt
 from skimage import measure
 from skimage.morphology import skeletonize
 A='mmo/assets/'
+REG=int(os.environ.get('REG','1'))
 src=open('tools/mmo/build_mundo.py').read(); ns={}
 exec(src[src.index('SIZE=dict'):src.index('def _arrive')],ns); SIZE,LINKS=ns['SIZE'],ns['LINKS']
+exec(src[src.index('R2=['):src.index('EXL={k:[]')].split('\n')[0],ns)
 exec(src[src.index('BIOME=dict'):src.index('def auto_theme')],ns); BIOME=ns['BIOME']
 exec(src[src.index('NM=dict'):src.index('OPP=')],ns)
-OPP={0:1,1:0,2:3,3:2}
+OPP={0:1,1:0,2:3,3:2}; ns['OPP']=OPP
+if REG==2:
+    exec(src[src.index('SIZE.update(muralha'):src.index('EXL={k:[]')],ns); exec(src[src.index('LINKS2=['):src.index('for a,sa,pa,b,pb in LINKS2')],ns)
+    R2=ns['R2']; SIZE={k:ns['SIZE'][k] for k in R2}; LINKS=ns['LINKS2']; BIOME={k:'mount' for k in R2}
+    GR={k:json.load(open(A+'zone_%s.json'%k))['region'].get('ground','sand') for k in R2}
+TOWNK=('town','cidade2') if REG==1 else ('cinzamuro',)
 KEYS=['town','estrada','planicie','ponte','colinas','desfiladeiro','passo','goblins','lenhadores','ogros','brejo','brumas','cemiterio','mortos','lago','clareira','eremita','cabana','gruta','mina']
-KEYS+=[k for k in SIZE if k not in KEYS]+['cidade2']   # zonas novas do build_mundo.py entram aqui sozinhas (ligadas por LINKS)
+KEYS+=[k for k in SIZE if k not in KEYS]+['cidade2']
+if REG==2: KEYS=['cinzamuro']+R2   # zonas novas do build_mundo.py entram aqui sozinhas (ligadas por LINKS)
 # --- layout em unidades do jogo (origem = canto da Planície) ---
-pos={'planicie':(0,0)}; adj={}
+ROOT='planicie' if REG==1 else 'muralha'
+pos={ROOT:(0,0)}; adj={}
 for a,sa,pa,b,pb in LINKS:
     adj.setdefault(a,[]).append((a,sa,pa,b,pb)); adj.setdefault(b,[]).append((b,OPP[sa],pb,a,pa))
-q=['planicie']
+q=[ROOT]
 while q:
     a=q.pop(0)
     for (_,sa,pa,b,pb) in adj[a]:
         if b in pos: continue
         ax,ay=pos[a];aw,ah=SIZE[a];bw,bh=SIZE[b]
         pos[b]={0:(ax+pa-pb,ay-bh),1:(ax+pa-pb,ay+ah),2:(ax-bw,ay+pa-pb),3:(ax+aw,ay+pa-pb)}[sa]; q.append(b)
-pos['estrada']=(4900,6000)            # a Estrada faz uma ferradura: desenhada ao lado, sem bater no Brejo
-SZ=dict(SIZE); SZ['town']=(2600,1500); SZ['cidade2']=(3000,1800)
-pos['town']=(4900+1100-1300,8700); pos['cidade2']=(pos['passo'][0]+2250-1500,pos['passo'][1]-1800)
+if REG==1: pos['estrada']=(4900,6000)            # a Estrada faz uma ferradura: desenhada ao lado, sem bater no Brejo
+SZ=dict(SIZE); SZ['town']=(2600,1500); SZ['cidade2']=(3000,1800); SZ['cinzamuro']=(2600,1500)
+if REG==1:
+    pos['town']=(4900+1100-1300,8700); pos['cidade2']=(pos['passo'][0]+2250-1500,pos['passo'][1]-1800)
+else: pos['cinzamuro']=(pos['muralha'][0]+1100-1300,pos['muralha'][1]+SIZE['muralha'][1]-100)
 xs=[pos[k][0] for k in KEYS]+[pos[k][0]+SZ[k][0] for k in KEYS]; ys=[pos[k][1] for k in KEYS]+[pos[k][1]+SZ[k][1] for k in KEYS]
-M=600; x0,x1,y0,y1=min(xs)-M,max(xs)+M,min(ys)-M,max(ys)+M
+M=600 if REG==1 else 2600; x0,x1,y0,y1=min(xs)-M,max(xs)+M,min(ys)-M,max(ys)+M
 W=1100; K=W/(x1-x0); H=int((y1-y0)*K); S=2
 rect={k:((pos[k][0]-x0)*K,(pos[k][1]-y0)*K,SZ[k][0]*K,SZ[k][1]*K) for k in KEYS}
 R=random.Random(7)
@@ -48,7 +61,7 @@ land[:12]=False;land[-12:]=False;land[:,:12]=False;land[:,-12:]=False
 # --- dados reais das zonas: água e estradas (do chão), props ---
 water=np.zeros((H,W),bool); road=np.zeros((H,W),bool); Zj={}
 for i,k in enumerate(KEYS):
-    if k in('town','cidade2'): continue
+    if k in TOWNK: continue
     j=json.load(open(A+'zone_%s.json'%k)); g=np.array(Image.open(A+'zone_%s_ground.png'%k).convert('RGB')).astype(int); Zj[k]=j
     rx,ry,rw,rh=rect[k]; m=(ID==i)
     u=np.clip(((xx-rx)/rw*g.shape[1]).astype(int),0,g.shape[1]-1); v=np.clip(((yy-ry)/rh*g.shape[0]).astype(int),0,g.shape[0]-1)
@@ -59,6 +72,8 @@ water=gaussian_filter(water.astype(np.float32),1.2)>.4
 par=np.zeros((H,W,3),np.float32); par[:]=(226,205,160); par+=(noise(6,11)[...,None]-.5)*28; par+=(noise(150,12)[...,None]-.5)*40
 INT={'town':'town','estrada':'road','planicie':'plain','ponte':'river','colinas':'hills','desfiladeiro':'mount','passo':'mount','goblins':'dark','lenhadores':'forest','ogros':'forest','brejo':'swamp','brumas':'swamp','cemiterio':'grave','mortos':'grave','lago':'lake','clareira':'dark','eremita':'forest','cabana':'swamp','gruta':'mount','mina':'mount','cidade2':'town'}
 TINT={'town':(214,180,120),'road':(222,196,140),'plain':(204,208,140),'river':(176,198,176),'hills':(196,182,140),'mount':(176,166,150),'dark':(120,150,110),'forest':(150,176,112),'swamp':(150,160,100),'grave':(168,150,170),'lake':(160,190,196)}
+TINT.update(sand=(220,190,130),red=(196,118,84),salt=(232,228,218),ash=(120,112,120),rock=(168,166,172))
+if REG==2: INT={k:GR.get(k,'sand') for k in KEYS}; INT['cinzamuro']='rock'
 col=np.zeros((H,W,3),np.float32)
 for i,k in enumerate(KEYS): col[ID==i]=TINT[INT.get(k) or {'forest':'forest','dark':'dark','mount':'mount','grave':'grave','swamp':'swamp'}.get(BIOME.get(k),'plain')]
 col=np.stack([gaussian_filter(col[...,c],13) for c in range(3)],-1)
@@ -134,7 +149,7 @@ def put(fn,x,y,*a,sp=1):
     if sp and occ[gy,gx]: return False
     occ[gy,gx]=True; fn(x,y,*a); return True
 items=[]
-Fl=np.zeros((H,W),np.float32); Fd=np.zeros((H,W),np.float32); Mt=np.zeros((H,W),np.float32); Gv=np.zeros((H,W),np.float32); Sw=np.zeros((H,W),np.float32)
+Rk=np.zeros((H,W),np.float32); Th=np.zeros((H,W),np.float32); Fl=np.zeros((H,W),np.float32); Fd=np.zeros((H,W),np.float32); Mt=np.zeros((H,W),np.float32); Gv=np.zeros((H,W),np.float32); Sw=np.zeros((H,W),np.float32)
 def acc(arr,X,Y,w=1.0):
     if 0<=X<W and 0<=Y<H: arr[int(Y),int(X)]+=w
 for i,k in enumerate(KEYS):
@@ -148,13 +163,16 @@ for i,k in enumerate(KEYS):
     for p_ in j['props']:
         X=rx+p_['x']/ZW*rw; Y=ry+p_['y']/ZH*rh; t,kk=p_.get('t'),p_.get('k')
         if not(0<=X<W and 0<=Y<H) or not zm[int(Y),int(X)]: continue
-        if t=='p': acc(Fd if inter=='dark' else (Sw if inter=='swamp' else (Gv if inter=='grave' else (Mt if inter=='mount' else Fl))),X,Y)
+        if t=='p': acc(Mt if REG==2 else Fd if inter=='dark' else (Sw if inter=='swamp' else (Gv if inter=='grave' else (Mt if inter=='mount' else Fl))),X,Y)
         elif kk=='mount': acc(Mt,X,Y,3)
+        elif kk=='crag' and REG==2: acc(Rk,X,Y,.25)
+        elif kk=='thorn' and REG==2: acc(Th,X,Y,.7)
         elif kk=='tombstone': acc(Gv,X,Y)
         elif kk=='tent': items.append((Y,tent,(X,Y)))
         elif kk=='column' and R.random()<.12: items.append((Y,column,(X,Y)))
         elif kk=='rock' and R.random()<.05: items.append((Y,rock,(X,Y)))
     if inter=='mount': Mt[zm]+=.03
+    if REG==2 and ZW>0: pass
     # relevo de borda = o que existe do outro lado de cada lado
     for sd in range(4):
         th=side_th[sd]; tgt={'forest':Fl,'dark':Fd,'mount':Mt,'grave':Gv,'swamp':Sw}.get(th)
@@ -172,15 +190,16 @@ for i,k in enumerate(KEYS):
             if s_!=sd: continue
             if sd<2: strip[:,int(rx+c-14):int(rx+c+14)]=False
             else: strip[int(ry+c-14):int(ry+c+14),:]=False
+        if REG==2: strip&=(noise(22,sd+60)>.36+.1*(sd%2))
         tgt[strip]+=.09
     for m_ in j.get('marks',[]):
         if m_['k']=='camp': items.append((ry+m_['y']/ZH*rh,tent,(rx+m_['x']/ZW*rw,ry+m_['y']/ZH*rh)))
-i_col=KEYS.index('colinas'); rx,ry,rw,rh=rect['colinas']
-for _ in range(60):
+i_col=KEYS.index('colinas') if REG==1 else 0; rx,ry,rw,rh=rect['colinas' if REG==1 else KEYS[0]]
+for _ in range(60 if REG==1 else 0):
     X,Y=rx+R.random()*rw,ry+R.random()*rh
     if 0<=X<W and 0<=Y<H and ID[int(Y),int(X)]==i_col: items.append((Y,hill,(X,Y,R.uniform(.9,1.3))))
 # relevo com sombreado (luz de noroeste): montanhas altas, florestas e colinas levemente elevadas
-Hh=gaussian_filter(Mt,9)*60+gaussian_filter(Fl+Fd+Gv+Sw,9)*2.5+(noise(55,31)-.5)*.9+gaussian_filter(land.astype(np.float32),10)*.6
+Hh=gaussian_filter(Mt,9)*60+gaussian_filter(Rk,6)*5+gaussian_filter(Fl+Fd+Gv+Sw,9)*2.5+(noise(55,31)-.5)*.9+gaussian_filter(land.astype(np.float32),10)*.6
 Hh=Hh*land
 gy_,gx_=np.gradient(gaussian_filter(Hh,1.6))
 sh_=np.clip((-gx_-gy_)*9,-1,1)                      # luz vindo do canto superior esquerdo
@@ -210,17 +229,64 @@ def f_dark(x,y,k=1): tree(x,y,R.uniform(.9,1.15),True)
 def mt(x,y,k=1): mount(x,y,R.uniform(1.0,1.5))
 def sw(x,y,k=1): reed(x,y) if R.random()<.6 else dead(x,y)
 def gv(x,y,k=1): grave(x,y) if R.random()<.7 else dead(x,y)
-stylize(Fl,.04,(70,130,70,255),(40,84,44,200),f_light,22,34)
-stylize(Fd,.04,(30,86,64,255),(24,60,44,210),f_dark,22,34)
-stylize(Mt,.035,(150,138,122,255),(70,56,44,200),mt,24,38)
-stylize(Gv,.025,(130,110,140,255),(70,50,80,190),gv,22,30)
-stylize(Sw,.03,(110,130,60,255),(70,84,36,190),sw,22,34)
+GRI=np.zeros((H,W),np.int32)
+for i_,k_ in enumerate(KEYS): GRI[ID==i_]=['sand','red','salt','ash','rock'].index(INT.get(k_,'sand')) if INT.get(k_,'sand') in ('sand','red','salt','ash','rock') else 0
+PALM={'sand':((200,170,120),(140,108,74)),'red':((190,104,74),(124,62,44)),'salt':((214,210,204),(150,146,146)),'ash':((104,100,108),(58,54,64)),'rock':((176,168,160),(112,102,96))}
+def gpal(x,y): return PALM[['sand','red','salt','ash','rock'][GRI[min(H-1,max(0,int(y))),min(W-1,max(0,int(x)))]]]
+def mount_c(x,y,k=1):
+    c1,c2=gpal(x,y); s_=13*k; top=(x+s_*.08,y-s_*1.6)
+    d.polygon([P(x-s_,y),P(*top),P(x+s_,y)],fill=c1+(255,)); d.polygon([P(*top),P(x+s_,y),P(x+s_*.12,y)],fill=c2+(255,))
+    for j in range(3): d.line([P(x+s_*(.2+.2*j),y-s_*(.35+.2*j)),P(x+s_*(.5+.15*j),y-s_*.05)],fill=(60,44,36,150),width=1)
+    d.line([P(x-s_,y),P(*top),P(x+s_,y)],fill=INK,width=2)
+def mesa(x,y,k=1):
+    c1,c2=gpal(x,y); w_=11*k; h_=11*k
+    d.polygon([P(x-w_,y),P(x-w_*.8,y-h_),P(x+w_*.8,y-h_),P(x+w_,y)],fill=c1+(255,)); d.polygon([P(x+w_*.25,y-h_),P(x+w_*.8,y-h_),P(x+w_,y),P(x+w_*.25,y)],fill=c2+(255,))
+    d.polygon([P(x-w_*.8,y-h_),P(x+w_*.8,y-h_),P(x+w_*.7,y-h_-3*k),P(x-w_*.7,y-h_-3*k)],fill=tuple(min(255,v+34) for v in c1)+(255,))
+    for j in (.3,.55,.78): d.line([P(x-w_*(1-.2*j),y-h_*j),P(x+w_*(1-.2*j),y-h_*j)],fill=c2+(255,),width=1)
+    d.line([P(x-w_,y),P(x-w_*.8,y-h_),P(x-w_*.7,y-h_-3*k),P(x+w_*.7,y-h_-3*k),P(x+w_*.8,y-h_),P(x+w_,y)],fill=INK,width=2)
+def rockpile(x,y,k=1):
+    c1,c2=gpal(x,y)
+    for dx,dy,r_ in((-4,0,3.4),(2,.5,4.2),(7,-1,2.6)):
+        d.ellipse([P(x+dx-r_,y+dy-r_*.8)[0],P(x+dx-r_,y+dy-r_*.8)[1],P(x+dx+r_,y+dy+r_*.5)[0],P(x+dx+r_,y+dy+r_*.5)[1]],fill=c1+(255,),outline=INK)
+def thorn(x,y,k=1):
+    for a_ in(-50,-25,0,25,50):
+        r_=math.radians(a_-90); d.line([P(x,y),P(x+math.cos(r_)*7,y+math.sin(r_)*7)],fill=(88,92,40,255),width=2)
+    d.ellipse([P(x-1.5,y-1.5)[0],P(x-1.5,y-1.5)[1],P(x+1.5,y+1.5)[0],P(x+1.5,y+1.5)[1]],fill=(60,52,28,255))
+def dune(x,y,k=1):
+    c1,c2=gpal(x,y); d.arc([P(x-11,y-5)[0],P(x-11,y-5)[1],P(x+11,y+5)[0],P(x+11,y+5)[1]],200,340,fill=tuple(int(v*.72) for v in c1)+(210,),width=2)
+def keep(x,y,k=1):
+    w_=12*k; d.rectangle([P(x-w_,y-w_*.9)[0],P(x-w_,y-w_*.9)[1],P(x+w_,y)[0],P(x+w_,y)[1]],fill=(150,148,156,255),outline=INK)
+    for tx in(-w_,w_):
+        d.rectangle([P(x+tx-4*k,y-w_*1.5)[0],P(x+tx-4*k,y-w_*1.5)[1],P(x+tx+4*k,y)[0],P(x+tx+4*k,y)[1]],fill=(120,118,128,255),outline=INK)
+        d.polygon([P(x+tx-5*k,y-w_*1.5),P(x+tx,y-w_*2.1),P(x+tx+5*k,y-w_*1.5)],fill=(140,56,44,255),outline=INK)
+    d.arc([P(x-4*k,y-8*k)[0],P(x-4*k,y-8*k)[1],P(x+4*k,y+0)[0],P(x+4*k,y+0)[1]],180,360,fill=INK,width=2)
+if REG==1:
+    stylize(Fl,.04,(70,130,70,255),(40,84,44,200),f_light,22,34)
+    stylize(Fd,.04,(30,86,64,255),(24,60,44,210),f_dark,22,34)
+    stylize(Mt,.035,(150,138,122,255),(70,56,44,200),mt,24,38)
+    stylize(Gv,.025,(130,110,140,255),(70,50,80,190),gv,22,30)
+    stylize(Sw,.03,(110,130,60,255),(70,84,36,190),sw,22,34)
+else:
+    def mt2(x,y,k=1): mount_c(x,y,R.uniform(1.0,1.5))
+    def mesa2(x,y,k=1):
+        (mesa if GRI[min(H-1,max(0,int(y))),min(W-1,max(0,int(x)))]==1 else rockpile)(x,y,R.uniform(.9,1.3))
+    stylize(Mt,.035,(130,118,108,255),(70,56,44,200),mt2,34,70)
+    stylize(Rk,.004,(150,96,70,255),(90,50,34,170),mesa2,30,26)
+    stylize(Th,.003,(140,130,70,255),(90,82,44,150),thorn,30,26)
+    # dunas e crateras suaves nas zonas de areia / sal
+    for i_,k_ in enumerate(KEYS):
+        if INT.get(k_) not in('sand','salt'): continue
+        rx_,ry_,rw_,rh_=rect[k_]
+        for _ in range(int(rw_*rh_/600)):
+            X,Y=rx_+R.random()*rw_,ry_+R.random()*rh_
+            if 0<=X<W and 0<=Y<H and ID[int(Y),int(X)]==i_: items.append((Y,dune,(X,Y)))
 items.sort(key=lambda t:t[0])
 d=ImageDraw.Draw(base,'RGBA')
 for _,fn,a in items: put(fn,*a)
 # cidades
-for k,n,sc in(('town',9,1.3),('cidade2',6,1.15)):
+for k,n,sc in((('town',9,1.3),('cidade2',6,1.15)) if REG==1 else (('cinzamuro',0,1),)):
     rx,ry,rw,rh=rect[k]
+    if REG==2: keep(rx+rw*.5,ry+rh*.62,1.5); [house(rx+rw*(.18+.64*i_/7),ry+rh*.78+R.randint(-3,3),.9) for i_ in range(8)]
     for jx in range(n): house(rx+rw*.15+jx*(rw*.7/n)+R.randint(-3,3),ry+rh*.5+R.randint(-10,10),sc)
 # estradas reais (esqueleto do chão) + ligações entre zonas
 # (estradas internas: malha limpa passagem -> centro da zona, desenhada abaixo)
@@ -243,7 +309,7 @@ def pull(k,pt):
 def hubpt(k):
     rx,ry,rw,rh=rect[k]; return pull(k,(rx+rw/2,ry+rh/2))
 ROADS=[]; MARKS=[]
-MAINZ=['town','estrada','planicie','ponte','colinas','desfiladeiro','passo','cidade2']
+MAINZ=['town','estrada','planicie','ponte','colinas','desfiladeiro','passo','cidade2'] if REG==1 else ['cinzamuro','muralha','planalto','garganta','mesas','leito','salinas','rubro','forjas','portao']
 def ismain(a,b): return a in MAINZ and b in MAINZ and abs(MAINZ.index(a)-MAINZ.index(b))==1
 def road(pts,main=False): ROADS.append(([(x*S,y*S) for x,y in pts],main))
 EXITS={}
@@ -258,8 +324,12 @@ for a_,sa,pa,b_,pb in LINKS:
     A_=ex_pt(a_,sa,pa); B_=ex_pt(b_,OPP[sa],pb)
     if math.hypot(A_[0]-B_[0],A_[1]-B_[1])>45: continue   # ligação em ciclo: sem estrada reta atravessando o mapa
     A2,B2=pull(a_,A_),pull(b_,B_); road(bez(A2,((A2[0]+B2[0])/2,(A2[1]+B2[1])/2),B2,24),ismain(a_,b_)); MARKS.append(((A_[0]+B_[0])/2,(A_[1]+B_[1])/2,ismain(a_,b_)))
-t_,e_,pa_,c2_=rect['town'],rect['estrada'],rect['passo'],rect['cidade2']
-for A_,B_,mk in (((t_[0]+t_[2]*.45,t_[1]),(e_[0]+e_[2]*.45,e_[1]+e_[3]),('town','estrada')),((pa_[0]+pa_[2]*.5,pa_[1]),(c2_[0]+c2_[2]*.5,c2_[1]+c2_[3]),('passo','cidade2'))):
+if REG==1:
+  t_,e_,pa_,c2_=rect['town'],rect['estrada'],rect['passo'],rect['cidade2']
+  CITYL=(((t_[0]+t_[2]*.45,t_[1]),(e_[0]+e_[2]*.45,e_[1]+e_[3]),('town','estrada')),((pa_[0]+pa_[2]*.5,pa_[1]),(c2_[0]+c2_[2]*.5,c2_[1]+c2_[3]),('passo','cidade2')))
+else:
+  t_,m_=rect['cinzamuro'],rect['muralha']; CITYL=(((t_[0]+t_[2]*.5,t_[1]+t_[3]*.3),(m_[0]+m_[2]*1100/4200*0+m_[2]*.5,m_[1]+m_[3]),('a','b')),)
+for A_,B_,mk in CITYL:
     if math.hypot(A_[0]-B_[0],A_[1]-B_[1])<90: road(bez(A_,((A_[0]+B_[0])/2+6,(A_[1]+B_[1])/2),B_),True)
 # desenho em camadas: contorno escuro -> miolo de terra batida -> fio central (principal = vermelho tracejado)
 def strokes(w,col,main_only=None):
@@ -321,7 +391,11 @@ try:
         sp=5*S; wd=sum(d.textlength(c,font=fm)+sp for c in txt); lay=Image.new('RGBA',(int(wd)+40,70*S),(0,0,0,0)); ld=ImageDraw.Draw(lay); xx=20
         for c in txt: ld.text((xx,35*S),c,font=fm,fill=col,anchor='lm'); xx+=ld.textlength(c,font=fm)+sp
         lay=lay.rotate(ang,expand=True,resample=Image.BICUBIC); base.paste(lay,(int(cx*S-lay.width/2),int(cy*S-lay.height/2)),lay)
-    sea_name('MAR DAS BRUMAS',930,1010,-9); sea_name('GOLFO DO ALVORECER',880,1700,7)
+    if REG==1: sea_name('MAR DAS BRUMAS',930,1010,-9); sea_name('GOLFO DO ALVORECER',880,1700,7)
+    else:
+        for txt,xs_,ys_,an_ in(('MAR DE CINZAS',(int(W*.06),int(W*.3)),(int(H*.4),int(H*.62)),90),('GOLFO DO SAL',(int(W*.6),int(W*.72)),(int(H*.12),int(H*.38)),-6)):
+            sub=dist_c[ys_[0]:ys_[1],xs_[0]:xs_[1]]; iy,ix=np.unravel_index(np.argmax(np.where(~land[ys_[0]:ys_[1],xs_[0]:xs_[1]],sub,0)),sub.shape)
+            sea_name(txt,xs_[0]+ix,ys_[0]+iy,an_)
 except Exception as e: print('mar',e)
 d=ImageDraw.Draw(base,'RGBA')
 # moldura e bússola
@@ -343,17 +417,17 @@ try:
     bx,by=W//2,H-70
     d.rounded_rectangle([P(bx-190,by-34)[0],P(bx-190,by-34)[1],P(bx+190,by+30)[0],P(bx+190,by+30)[1]],radius=14,fill=(228,208,160,235),outline=INK,width=4)
     d.rounded_rectangle([P(bx-182,by-28)[0],P(bx-182,by-28)[1],P(bx+182,by+24)[0],P(bx+182,by+24)[1]],radius=10,outline=(120,80,40,200),width=2)
-    d.text(P(bx,by-8),'Região de Brumavale',font=ft,fill=(70,36,16,255),anchor='mm'); d.text(P(bx,by+14),'Nível 1 a 12',font=fs_,fill=(120,56,30,255),anchor='mm')
+    d.text(P(bx,by-8),'Região de Brumavale' if REG==1 else 'Terras Áridas de Cinzamuro',font=ft if REG==1 else ImageFont.truetype('mmo/assets/fonts/Almendra-Bold.ttf',24*S),fill=(70,36,16,255),anchor='mm'); d.text(P(bx,by+14),'Nível 1 a 12' if REG==1 else 'Nível 10 a 20',font=fs_,fill=(120,56,30,255),anchor='mm')
 except Exception as e: print('fonte',e)
 out=np.array(base.convert('RGB')).astype(np.float32); hh,ww=out.shape[:2]; v=np.mgrid[0:hh,0:ww]; vx=(v[1]/ww-.5)*2; vy=(v[0]/hh-.5)*2
 out*=np.clip(1-.3*(np.maximum(abs(vx),abs(vy))**4),.55,1)[...,None]
-Image.fromarray(np.clip(out,0,255).astype(np.uint8)).resize((W,H),Image.LANCZOS).save(A+'mapa_regiao1.png',optimize=True)
-Image.fromarray(np.where(land,ID,255).astype(np.uint8)).resize((W//2,H//2),Image.NEAREST).save(A+'mapa_regiao1_ids.png')
+Image.fromarray(np.clip(out,0,255).astype(np.uint8)).resize((W,H),Image.LANCZOS).save(A+'mapa_regiao%d.png'%REG,optimize=True)
+Image.fromarray(np.where(land,ID,255).astype(np.uint8)).resize((W//2,H//2),Image.NEAREST).save(A+'mapa_regiao%d_ids.png'%REG)
 # centros dos rótulos = centro da região visível (centróide da máscara)
 NMd=ns.get('NM') or {}
-lay={'w':W,'h':H,'keys':[k if k in('town','cidade2') else 'zone_'+k for k in KEYS],'nm':{('zone_'+k):NMd.get(k,k) for k in KEYS if k not in('town','cidade2')},'c':{}}
+lay={'w':W,'h':H,'keys':[k if k in TOWNK else 'zone_'+k for k in KEYS],'nm':{('zone_'+k):NMd.get(k,k) for k in KEYS if k not in TOWNK},'c':{}}
 for i,k in enumerate(KEYS):
     m=(ID==i)&land; ys2,xs2=np.nonzero(m)
     lay['c'][k]=[float(xs2.mean()),float(ys2.mean()),float(np.ptp(xs2)),float(np.ptp(ys2))] if len(xs2) else [0,0,0,0]
-json.dump(lay,open(A+'mapa_regiao1_layout.json','w'))
+json.dump(lay,open(A+'mapa_regiao%d_layout.json'%REG,'w'))
 print('ok',W,H)
