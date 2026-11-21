@@ -5430,7 +5430,7 @@ function cxStill(cls,view,i,pk){const k=CXON&&heroCx(cls,pk),sh=k&&CXS[k];if(!CX
 for(const k in MOBS){const T=MOBS[k];if(!T.ranged&&!T.totem&&T.rng>=18&&T.rng<=30&&!T._rg){T.rng+=6;T._rg=1;}}
 const CXSC=.75;   /* escala dos sprites pixel art no mundo (1 = pixel nativo x2). Dono: personagens grandes demais -> .75 */
 // Tamanho por criatura (1 = herói). Variedade de altura: pequenos x grandes.
-const CXSIZE={gigante:1.05,perna:2.6,ccabeca:1.5,mare:2,cervo:1,alfa:1.25,rato:.78,ratkin:.9,barata:.7,aranha:.85,cobra:.85,sapo:.9,goblin:.85,goblin_x:.9,sapador:.8,ladrao:.92,cogumelo:.9,morcego:.8,harpia:.95,necro:.95,cult_lodo:.95,
+const CXSIZE={gigante:3.4,perna:2.6,ccabeca:1.5,mare:2,cervo:1,alfa:1.25,rato:.78,ratkin:.9,barata:.7,aranha:.85,cobra:.85,sapo:.9,goblin:.85,goblin_x:.9,sapador:.8,ladrao:.92,cogumelo:.9,morcego:.8,harpia:.95,necro:.95,cult_lodo:.95,
  javali:1.05,lobo:1.0,gnoll:1.12,carnical:1.05,mumia:1.12,afogado:1.12,zumbi:1.2,ogrinho:1.15,ogro_lenhador:1.4,tronco:1.45,cav_caido:1.3,gargula:1.15,guarda_c:1.15,ogro:1.3,esqueleto:.95,
  grunk:1.15,morvath:1.2,gorgash:1.35,ratking:1.1,skrix:1.05,presa:1.25,vampiro:1.15,boticario:1.0,rei:1.2};
 function cxSize(e){const k=cxKeyOf(e);return (k&&CXSIZE[k])||1;}
@@ -5920,7 +5920,7 @@ function wmDraw(){const o=wmEnsure();if(!o.classList.contains('on'))return;
  if(inf._h!==h){inf._h=h;inf.innerHTML=h;const b=$('wmo');if(b)b.onclick=()=>{const kk=WM.sel;wmClose();MM.big=true;MM.view=kk;MM.vc[kk]=null;mmFsOpen();MM.view=kk;mmFsDraw();};}
 }
 function mmToggle(){if(MM.big){mmFsClose();return;}MM.big=true;MM.view=G.map;sfx('ui_click',.5);const c=$('mm');if(c)c._w='';mmFsOpen();}
-function plateTag(e){if(e.kind==='hero')return G.scene==='town'?e.name+'  Nv.'+SAVE.lv:'';if(e.kind==='boss')return '';const h=G.hero;return ((h&&(h.tg===e||(h.act&&h.act.tgt===e)))||e.mini||e.elite)?e.name+'  Nv.'+(e.rare?'??':e.lv):'';}
+function plateTag(e){if(e.kind==='hero')return G.scene==='town'?e.name+'  Nv.'+SAVE.lv:'';if(e.kind==='boss')return '';const h=G.hero;return ((h&&(h.tg===e||(h.act&&h.act.tgt===e)))||e.mini||e.elite)?e.name+(e.noLv?'':'  Nv.'+(e.rare?'??':e.lv)):'';}
 /* posiciona os nomes sem sobreposição: herói e chefe têm prioridade, os demais sobem até achar espaço */
 function plateLayout(list){const P=[];for(const it of list){if(it.e)it.e._pl=null;}for(const it of list){const e=it.e;if(!e||e.dead||e.kind==='vill'||e.kind==='npc')continue;const sx0=e.x-G.cam.x,sy0=e.y-G.cam.y-(e.kind==='boss'?98:(e.kind==='hero'?56:55));if(sx0<-30||sx0>G.LW+30||sy0<-20||sy0>G.LH+40)continue;
     ctx.font='700 8px Rubik,sans-serif';const tag=plateTag(e),hbar=e.kind==='hero'?G.scene!=='town':e.hp>0&&!e.ent;if(!tag&&!hbar&&!(e.sts&&Object.keys(e.sts).length))continue;const w=tag?ctx.measureText(tag).width+6:30;P.push({e,tag,w,sx:clamp(sx0,w/2+3,G.LW-w/2-3),sy:sy0,pri:e.kind==='hero'?0:e.kind==='boss'?1:2,bar:hbar});}
@@ -6670,7 +6670,7 @@ function hnKill(m){if(m.dead||m.minion||G.arena)return;const S=hnS();
   for(const h of hnAct0()){if(h.id!=='alfa')continue;const a=S.act.alfa;if(a.fim||a.ok1||G.map!==h.map||m.type!=='lobo')continue;a.k=(a.k||0)+1;
     if(a.k>=10){a.ok1=1;hnNote(a,'Depois do décimo lobo, a Planície ficou muda. Nenhum uivo respondeu.');chat('O último uivo se apaga. A Planície fica em silêncio.',3);floatText(G.hero.x,G.hero.y-80,'Silêncio...','#bcd0ff',10,1.6,{pop:1,glow:1});sfx('ui_confirm',.4);writeSave();}}}
 const hxp=H=>H.xk?kx(H.xk,H.lvx||5):(H.xp||0);   /* XP da caçada em 'abates equivalentes' (xk) no nível lvx */
-function spawnAlfa(x,y){const lv=HLV,m=mkMob('alfa',x,y,-1),FM=FAMM.javali;m.lv=lv;m.maxhp=Math.round(m.T.hp*FM[0]*mobHpMul(lv));m.hp=m.maxhp;m.pow=m.T.atk*FM[1]*mobAtkMul(lv);m.def=lv*1.3;
+function spawnAlfa(x,y){const lv=HLV,m=mkMob('alfa',x,y,-1),FM=FAMM.javali;m.lv=lv;m.noLv=1;m.maxhp=Math.round(m.T.hp*FM[0]*mobHpMul(lv));m.hp=m.maxhp;m.pow=m.T.atk*FM[1]*mobAtkMul(lv);m.def=lv*1.3;
   m.minion=true;m.respawn=1e9;m.hunt=true;m.mini=true;m.sc=1.45;m.name=m.T.nome;m.eng=true;G.mobs.push(m);G.hnMob=m;
   m.onDie=()=>{evLoot(m.x,m.y,3,2);const a=hnS().act.alfa;if(a){a.fim=1;hnNote(a,'Presa-Lunar tombou. Volte à Guilda dos Caçadores.');}chat('Presa-Lunar, o Alfa, tombou! Relate a caçada na Guilda dos Caçadores.',4);huntDone('Presa-Lunar, o Alfa Cinzento','D');G.mobs.forEach(b=>{if(!b.dead&&b.alAdd)killMob(b);});writeSave();};
   bossSnd('roar');VF.wave(m.x,m.y,110,'#bcd0ff',.8,5);VF.glow(m.x,m.y-30,70,'#bcd0ff',.6);return m;}
@@ -6726,7 +6726,7 @@ const MARE_SK=[{id:'slam',anim:'slam',cd:4.2,warn:.95,wt:5,maxd:360},{id:'sweep'
   {id:'geyser',anim:'roar',cd:9,warn:.85,wt:3,hp:.92},{id:'grab',anim:'grab',cd:11,warn:.8,wt:3,hp:.85,mind:170},{id:'whirl',anim:'roar',cd:17,warn:.9,wt:3,hp:.55}];
 const MARE_LV=12;
 function mareShore(m){let y=m.sy;for(let k=0;k<80&&isWater(m.sx,y);k++)y+=4;return y;}
-function spawnMare(){const R=ZONE.region&&ZONE.region.mare;if(!R)return null;cxLoad('mare');const lv=MARE_LV,m=mkMob('mare',R.x,R.y,-1),FM=FAMM.javali;m.lv=lv;
+function spawnMare(){const R=ZONE.region&&ZONE.region.mare;if(!R)return null;cxLoad('mare');const lv=MARE_LV,m=mkMob('mare',R.x,R.y,-1),FM=FAMM.javali;m.lv=lv;m.noLv=1;
   m.maxhp=Math.round(m.T.hp*FM[0]*mobHpMul(lv));m.hp=m.maxhp;m.pow=m.T.atk*FM[1]*mobAtkMul(lv);m.def=lv*1.3;m.sx=R.x;m.sy=R.y;
   m.minion=true;m.respawn=1e9;m.hunt=true;m.mini=true;m.name=m.T.nome;m.eng=true;m.row=2;m.cd=1.4;m.msk={};m.imm={ctrl:1,atordoado:1,preso:1,lento:1,gelado:1,medo:1};m.shY=mareShore(m);
   m.mst={a:'emerge',t:0,dur:1.1};G.mobs.push(m);G.hnMob=m;
@@ -6803,12 +6803,12 @@ function mareHuntTick(dt){const S=hnS(),a=S.act.mare;if(!a||a.fim||G.scene!=='du
    e ataca: PISADA (círculo no pé) e CHUTE LATERAL (faixa). Perna que cai desabilita aquele lado. Com 2 pernas caídas a CABEÇA desce:
    Mordida, Rugido (medo) e Pedregulho. Com 4 pernas caídas a cabeça desaba no chão e fica exposta (+50% dano). Matar a cabeça encerra a caçada.
    Sprites: cx_perna / cx_ccabeca (colosso.py); efeitos 3D: M3.shock/rocks/boulder. */
-MOBS.cperna={nome:'Gigante das Colinas',cx:'gigante',rad:78,shr:96,fam:'javali',noElite:1,hp:1700,atk:11,xp:1800,gold:[60,120],speed:28,aggro:2400,rng:120,aspd:99,sw:70,deathDur:2.6,numY:120,aura:['#c8a070','#fff0c0']};
+MOBS.cperna={nome:'Gigante das Colinas',cx:'gigante',rad:130,shr:170,fam:'javali',noElite:1,hp:1700,atk:11,xp:1800,gold:[60,120],speed:42,aggro:2400,rng:200,aspd:99,sw:120,deathDur:2.6,numY:260,aura:['#c8a070','#fff0c0']};
 MOBS.ccabeca={nome:'Cabeça do Gigante',cx:'ccabeca',rad:46,shr:54,fam:'javali',noElite:1,hp:800,atk:11,xp:1500,gold:[500,900],speed:0,aggro:2400,rng:0,aspd:99,sw:44,deathDur:1.6,numY:66,aura:['#ffcf4a','#fff6c0']};
 const COL_LV=14;
 /* formação das 4 patas por direção do corpo (0 norte,1 oeste,2 sul,3 leste); índice 0/1 = traseiras, 2/3 = dianteiras; diagonais (0,3) e (1,2) andam juntas */
 const COL_LAY={0:[[0,0]],1:[[0,0]],2:[[0,0]],3:[[0,0]]};   /* gigante humanoide: um corpo só (a hitbox fica nos pés) */
-function colMob(kind,x,y){const lv=COL_LV,m=mkMob(kind,x,y,-1),FM=FAMM.javali;m.lv=lv;m.maxhp=Math.round(m.T.hp*FM[0]*mobHpMul(lv));m.hp=m.maxhp;m.pow=m.T.atk*FM[1]*mobAtkMul(lv);m.def=lv*1.3;
+function colMob(kind,x,y){const lv=COL_LV,m=mkMob(kind,x,y,-1),FM=FAMM.javali;m.lv=lv;m.noLv=1;m.maxhp=Math.round(m.T.hp*FM[0]*mobHpMul(lv));m.hp=m.maxhp;m.pow=m.T.atk*FM[1]*mobAtkMul(lv);m.def=lv*1.3;
   m.minion=true;m.respawn=1e9;m.hunt=true;m.mini=true;m.name=m.T.nome;m.eng=true;m.msk={};m.cd=1+Math.random();m.imm={ctrl:1,atordoado:1,preso:1,lento:1,gelado:1,medo:1};m.row=2;G.mobs.push(m);return m;}
 function spawnColosso(){const R=ZONE.region&&ZONE.region.colo;if(!R)return null;cxLoad('gigante');const C=G.colo={x:R.x,y:R.y,ox:R.x,oy:R.y,at:0,mv:0,face:2,legs:[],head:null,phase:0,gcd:2.2,t:0};
   const m=colMob('cperna',R.x,R.y);m.cl=C;m.li=0;m.cdx=0;m.cdy=0;m.giant=1;C.legs.push(m);m.mst={a:'roar',t:0,dur:1.5};
@@ -6816,17 +6816,18 @@ function spawnColosso(){const R=ZONE.region&&ZONE.region.colo;if(!R)return null;
   G.hnMob=m;VF.shake(1);sfx('col_roar',1,1);sfx('col_step',1,1);
   floatText(R.x,R.y-260,'O VALE TREME... UM GIGANTE DESPERTOU!','#ffd070',13,2.4,{pop:1,bold:1,glow:1});chat('O chão racha: um gigante das colinas se levanta, enorme!',4);return C;}
 function colKneel(m){const C=m.cl;if(m.kneel)return;m.kneel=1;m.act=null;m.mst={a:'kneel',t:0,dur:1.6,hold:1};floatText(m.x,m.y-260,'O GIGANTE CAI DE JOELHOS!','#ffd070',13,2,{pop:1,bold:1,glow:1});sfx('col_roar',1,.85);VF.shake(1);VF.m3('shock',m.x,m.y,.9,{r:170,c:0xd8c8a8});chat('As pernas cederam: ataque a cabeça do gigante!',4);setTimeout(()=>{if(G.colo===C&&!C.head&&!m.dead)colHead();},1200);}
-function colHead(){const C=G.colo,R=C;const m=colMob('ccabeca',R.x,R.y+80);m.sx=m.x;m.sy=m.y;m.ch1=1;C.head=m;m.mst={a:'descend',t:0,dur:1.6};m.take=0;G.hnMob=m;sfx('col_roar',1,.85);VF.shake(1);
+function colHead(){const C=G.colo,R=C;const m=colMob('ccabeca',R.x,R.y+200);m.sx=m.x;m.sy=m.y;m.ch1=1;C.head=m;m.mst={a:'descend',t:0,dur:1.6};m.take=0;G.hnMob=m;sfx('col_roar',1,.85);VF.shake(1);
   m.onDie=()=>{evLoot(m.x,m.y+40,7,3);const a=hnS().act.colosso;if(a){a.fim=1;hnNote(a,'O Gigante das Colinas tombou. Volte à Guilda dos Caçadores.');}G.colo&&(G.colo.done=1,G.colo.dead=1);for(const l of C.legs)if(!l.dead)killMob(l);
     SAVE.hunts=SAVE.hunts||{};SAVE.hunts['Colosso das Colinas']=(SAVE.hunts['Colosso das Colinas']||0)+1;sfx('col_die',1,1);chat('O Colosso das Colinas tombou! Relate a caçada na Guilda dos Caçadores.',4);huntDone('Colosso das Colinas','A');G.hnMob=null;writeSave();};
   floatText(m.x,m.y-150,'ATAQUE A CABEÇA!','#ffe070',13,1.8,{pop:1,bold:1,glow:1});}
 function colZ(m,o){addZone(Object.assign({src:m,nodash:1,nofx:1,pc:'#d8b070',wc:[210,170,100]},o));}
 function colLegSkill(m,pick){const h=G.hero,C=m.cl;C.gcd=1.1;m.act={t:0,dur:pick+.5,skill:true,anim:pick===1.0?'stomp':'sweep',hit:pick/(pick+.5)};
-  if(m.act.anim==='stomp'){const a=Math.atan2(h.y-m.y,h.x-m.x),px=m.x+Math.cos(a)*Math.min(110,dist(m,h)),py=m.y+Math.sin(a)*Math.min(110,dist(m,h))*.8;
-    colZ(m,{shape:'circle',x:px,y:py,r:120,warn:pick,mult:2.3,st:['abalado',.6,4,0],shake:.9,onDet:z=>{VF.m3('shock',z.x,z.y,.7,{r:z.r,c:0xe8d8b0});VF.m3('rocks',z.x,z.y,1.2,{r:z.r*1.1,n:10});VF.burst(z.x,z.y,16,['#a89878','#6a5a48','#d8c8a8'],{s0:40,s1:150,flat:.5,up:60,g:220});sfx('col_stomp',1,.9+Math.random()*.2);VF.shake(1);}});
-    floatText(m.x,m.y-250,'Pisada','#ffe0a0',10,1,{pop:1,bold:1});sfx('col_step',.7,1);return;}
-  const a=Math.atan2(h.y-m.y,h.x-m.x);colZ(m,{shape:'line',x:m.x,y:m.y,a,len:330,w:120,warn:pick,mult:1.8,st:['atordoado',.5,.7,0],shake:.5,onDet:z=>{VF.burst(m.x+Math.cos(a)*130,m.y+Math.sin(a)*130,18,['#a89878','#d8c8a8','#fff'],{s0:60,s1:190,flat:.4,up:40,g:200});sfx('col_sweep',.9,1);VF.m3('shock',m.x+Math.cos(a)*120,m.y+Math.sin(a)*120,.5,{r:90,c:0xe8d8b0});}});
-  floatText(m.x,m.y-250,'Chute','#ffe0a0',10,1,{pop:1,bold:1});sfx('col_step',.7,.85);}
+  if(m.act.anim==='stomp'){const a=Math.atan2(h.y-m.y,h.x-m.x),px=m.x+Math.cos(a)*Math.min(230,dist(m,h)),py=m.y+Math.sin(a)*Math.min(230,dist(m,h))*.8;
+    colZ(m,{shape:'circle',x:px,y:py,r:210,warn:pick,mult:2.3,st:['abalado',.6,4,0],shake:.9,onDet:z=>{VF.m3('shock',z.x,z.y,.7,{r:z.r,c:0xe8d8b0});VF.m3('rocks',z.x,z.y,1.2,{r:z.r*1.1,n:10});VF.burst(z.x,z.y,16,['#a89878','#6a5a48','#d8c8a8'],{s0:40,s1:150,flat:.5,up:60,g:220});sfx('col_stomp',1,.9+Math.random()*.2);VF.shake(1);}});
+    floatText(m.x,m.y-520,'Pisada','#ffe0a0',10,1,{pop:1,bold:1});sfx('col_step',.7,1);return;}
+  {const a=Math.atan2(h.y-m.y,h.x-m.x),d=Math.min(300,dist(m,h)),px=m.x+Math.cos(a)*d,py=m.y+Math.sin(a)*d*.8;
+    colZ(m,{shape:'circle',x:px,y:py,r:170,warn:pick,mult:1.9,st:['atordoado',.5,.8,0],shake:.8,onDet:z=>{VF.m3('shock',z.x,z.y,.6,{r:z.r,c:0xe8d8b0});VF.m3('rocks',z.x,z.y,1,{r:z.r,n:8});VF.burst(z.x,z.y,18,['#a89878','#d8c8a8','#fff'],{s0:60,s1:190,flat:.4,up:40,g:200});sfx('col_sweep',.9,1);VF.shake(.8);}});}
+  floatText(m.x,m.y-520,'Soco','#ffe0a0',10,1,{pop:1,bold:1});sfx('col_step',.7,.85);}
 function colLegTick(m,dt){const h=G.hero,C=m.cl;m.row=(!m.act&&h&&h.y<m.y-70)?0:2;m.stun=0;m.stagger=0;m.kvx=m.kvy=0;m.dash=null;if(m.sts){stUpdate(m,dt);if(m.dead)return;}
   if(m.kneel){const q=m.mst;if(q)q.t=Math.min(q.dur-.01,q.t+dt);m.hp=Math.max(m.hp,3);m.state='idle';return;}
   if(m.mst){const q=m.mst;q.t+=dt;m.state='idle';if(q.t>=q.dur)m.mst=null;return;}
@@ -6835,7 +6836,7 @@ function colLegTick(m,dt){const h=G.hero,C=m.cl;m.row=(!m.act&&h&&h.y<m.y-70)?0:
   if(!h||h.state==='ko'){m.state='idle';return;}
   const d=dist(m,h);m.x=C.x+m.cdx;m.y=C.y+m.cdy;m.wx=m.x;m.wy=m.y;
   if(C.mv){m.state='walk';m.animT=C.at+((m.li===0||m.li===3)?0:8/14);}else m.state='idle';
-  m.cd-=dt;if(m.cd>0||C.gcd>0||d>200)return;m.cd=rnd(2.2,3.4)*(m.fury?.65:1);C.gcd=1.1;colLegSkill(m,d<130||Math.random()<.65?1.0:1.1);}
+  m.cd-=dt;if(m.cd>0||C.gcd>0||d>380)return;m.cd=rnd(2.2,3.4)*(m.fury?.65:1);C.gcd=1.1;colLegSkill(m,d<200||Math.random()<.65?1.0:1.1);}
 function colHeadSkill(m,id){const h=G.hero,C=m.cl||G.colo;C.gcd=1;const w=id==='bite'?.9:id==='roar'?1.0:.8;m.act={t:0,dur:w+.55,skill:true,anim:id,hit:w/(w+.55)};
   if(id==='bite'){const f=freeSpot(h.x,h.y);colZ(m,{shape:'circle',x:f[0],y:f[1],r:78,warn:w,mult:2.6,st:['atordoado',.6,.9,0],shake:.8,onDet:z=>{VF.m3('shock',z.x,z.y,.6,{r:z.r,c:0xe8d8b0});VF.burst(z.x,z.y,14,['#a89878','#fff'],{s0:50,s1:150,flat:.5,up:50,g:200});sfx('col_bite',1,1);VF.shake(1);}});floatText(m.x,m.y-140,'Mordida','#ffe0a0',10,1,{pop:1,bold:1});sfx('col_roar',.6,1.2);return;}
   if(id==='roar'){colZ(m,{shape:'circle',x:m.x,y:m.y+110,r:230,warn:w,mult:1.2,st:['medo',1,2,0],shake:.7,onDet:z=>{VF.m3('aurora',z.x,z.y,1.4,{r:z.r});sfx('col_roar',1,1);VF.shake(1);}});floatText(m.x,m.y-140,'RUGIDO','#ffcf4a',12,1.2,{pop:1,bold:1,glow:1});return;}
@@ -6850,8 +6851,13 @@ function colHeadTick(m,dt){const h=G.hero,C=G.colo;m.x=m.sx;m.y=m.sy;m.kvx=m.kvy
 function colArena(dt){const C=G.colo;if(!C||G.scene!=='dungeon'||G.map!=='zone_colinas')return;C.gcd=Math.max(0,C.gcd-dt);C.t+=dt;
   {const h=G.hero,al=C.legs.filter(l=>!l.dead&&l.hp>0);C.mv=0;
     if(h&&al.length&&!al.some(l=>l.act)){const dx=h.x-C.x,dy=h.y-C.y,f=C.face;let nf=f;if(Math.abs(dx)>Math.abs(dy)*1.3)nf=dx>0?3:1;else if(Math.abs(dy)>Math.abs(dx)*1.3)nf=dy>0?2:0;if(nf!==f&&Math.hypot(dx,dy)>170)C.face=nf;}
-    const L=COL_LAY[C.face];C.legs.forEach((l,i)=>{const sp=260*dt,ex=L[i][0]-l.cdx,ey=L[i][1]-l.cdy,d=Math.hypot(ex,ey);if(d>0.5){const k=Math.min(1,sp/d);l.cdx+=ex*k;l.cdy+=ey*k;}});if(h&&h.state!=='ko'&&al.length&&!al.some(l=>l.act)){let nl=al[0],nd=1e9;for(const l of al){const q=dist(l,h);if(q<nd){nd=q;nl=l;}}
-    if(nd>150&&!al[0].kneel&&!al[0].mst){const sp=al[0].T.speed*MOVE*(al[0].fury?1.5:1)*.8,dx=h.x-nl.x,dy=h.y-nl.y,L=Math.hypot(dx,dy)||1,nx=C.x+dx/L*sp*dt,ny=C.y+dy/L*sp*dt;if(Math.hypot(nx-C.ox,ny-C.oy)<560){C.x=nx;C.y=ny;C.mv=1;C.at+=dt*(sp/46);if(Math.random()<dt*3){sfx('col_step',.3,.85+Math.random()*.15);VF.shake(.12);}}}}}
+    const L=COL_LAY[C.face];C.legs.forEach((l,i)=>{const sp=260*dt,ex=L[i][0]-l.cdx,ey=L[i][1]-l.cdy,d=Math.hypot(ex,ey);if(d>0.5){const k=Math.min(1,sp/d);l.cdx+=ex*k;l.cdy+=ey*k;}});const g=al[0];
+    if(g&&!g.kneel&&!g.mst&&!al.some(l=>l.act)){const eng=h&&h.state!=='ko'&&Math.hypot(h.x-C.x,h.y-C.y)<1500;let tx=null,ty=0,sp=g.T.speed*MOVE*(g.fury?1.5:1)*.8;
+      if(eng){if(dist(g,h)>260){tx=h.x;ty=h.y;}}
+      else{if(Math.hypot(C.x-C.ox,C.y-C.oy)>24){tx=C.ox;ty=C.oy;sp*=1.3;}g.hp=Math.min(g.maxhp,g.hp+g.maxhp*.05*dt);}   // fora de combate: volta ao centro da clareira e se cura
+      if(tx!=null){const dx=tx-C.x,dy=ty-C.y,L2=Math.hypot(dx,dy)||1,sx=dx/L2*sp*dt,sy=dy/L2*sp*dt;let mv=0;
+        if(!blockedAt(C.x+sx,C.y+sy,70)){C.x+=sx;C.y+=sy;mv=1;}else if(!blockedAt(C.x+sx,C.y,70)){C.x+=sx;mv=1;}else if(!blockedAt(C.x,C.y+sy,70)){C.y+=sy;mv=1;}   // colisão com o cenário
+        if(mv){C.mv=1;C.at+=dt*(sp/80);if(Math.random()<dt*3){sfx('col_step',.3,.85+Math.random()*.15);VF.shake(.14);}}}}}
 if(Math.random()<dt*5){const l=C.legs[0];if(l&&!l.dead)VF.pt(l.x+rnd(-60,60),l.y-rnd(0,10),{vy:-rnd(5,16),life:.6,col:'#a89878',sz:2.4,add:false});}}
 function colHuntTick(dt){const S=hnS(),a=S.act.colosso;if(!a||a.fim||G.scene!=='dungeon'||G.map!=='zone_colinas'||G.arena)return;const h=G.hero;if(!h||h.state==='ko')return;const R=ZONE.region&&ZONE.region.colo;if(!R)return;
   if(G.colo&&!G.colo.done&&G.mobs.some(m=>(m.type==='cperna'||m.type==='ccabeca')&&!m.dead))return;if(G.colo&&G.colo.done)G.colo=null;
@@ -7026,7 +7032,7 @@ function dmkImg(k){if(DMK[k])return DMK[k];const P={skull:['.XXXXX.','XXXXXXX','
 function dangerMarkers(){const mk=$('dmk')||(()=>{const d=document.createElement('div');d.id='dmk';d.style.cssText='position:absolute;inset:0;pointer-events:none;z-index:3;overflow:hidden';const st=document.createElement('style');st.textContent='#dmk img{position:absolute;transform:translate(-50%,-100%);width:27px;height:27px;image-rendering:pixelated;animation:dmkb .9s infinite;filter:drop-shadow(0 2px 0 #000a)}#dmk img.rr{width:36px;height:36px;filter:drop-shadow(0 0 6px #ff5a4a)}@keyframes dmkb{50%{margin-top:-4px}}';document.head.appendChild(st);$('stage').appendChild(d);return d;})();
   let i=0;if(G.on&&G.hero&&G.scene==='dungeon'&&window.V3&&V3.toScreen&&!G.winOpen&&!G.cut){const ts=V3.toScreen;
     for(const m of G.mobs||[]){if(m.dead||m.hide||dist(m,G.hero)>760)continue;let k=null;if(m.rare)k='gem_rare';else if(m.tier==='gold')k='skull_gold';else if(m.tier==='blue')k='skull_blue';else if(m.mini&&!m.minion)k='gem_rare';if(!k)continue;
-      while(mk.children.length<=i)mk.appendChild(document.createElement('img'));const e=mk.children[i++],hh=(m.type==='cperna'?120:m.type==='ccabeca'?85:m.type==='mare'?66:m.type==='cervo'?104:m.rare?46:(m.mini?42:38))*cxSize(m),p=ts(m.x,m.y,hh);
+      while(mk.children.length<=i)mk.appendChild(document.createElement('img'));const e=mk.children[i++],hh=(m.type==='cperna'?330:m.type==='ccabeca'?85:m.type==='mare'?66:m.type==='cervo'?104:m.rare?46:(m.mini?42:38))*cxSize(m),p=ts(m.x,m.y,hh);
       const u=dmkImg(k);if(e.dataset.k!==k){e.dataset.k=k;e.src=u;e.className=m.rare?'rr':'';}e.style.left=p[0]+'px';e.style.top=p[1]+'px';e.style.display='block';}}
   for(;i<mk.children.length;i++)mk.children[i].style.display='none';}
 /* ===== GPS DE MISSÃO: seta sobre a cabeça do herói apontando o caminho (uma missão guiada por vez) ===== */

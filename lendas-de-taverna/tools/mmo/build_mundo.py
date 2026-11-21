@@ -332,6 +332,10 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     for k_,x_,y_,s_,r_ in extra_k:addk(k_,x_,y_,s_,r_)
     _mv,_dr=declutter(P,W,H);print('   anti-sobreposição:',name,'movidos',_mv,'removidos',_dr)
     if name.endswith('lago'):P[:]=[p for p in P if not(380<p['x']<2020 and 930<p['y']<1270 and p.get('k')!='lily')]   # arena do Maragon: só grama e água
+    if name.endswith('colinas'):     # clareira redonda do Gigante: nada de cenário (só capim/flor) nem monstros comuns num raio de 780px
+        _cx,_cy,_R=2500,2300,780
+        P[:]=[p for p in P if not(math.hypot(p['x']-_cx,p['y']-_cy)<_R and p.get('k') not in ('flower','grass','tuft'))]
+        spawns[:]=[q for q in spawns if math.hypot(q[0]-_cx,q[1]-_cy)>_R+120]
     P.sort(key=lambda p:p['y'])
     exs=[dict(id=e['id'],nm=e['nm'],side=e['side'],toSide=e.get('toSide',-1),x=e['rect'][0],y=e['rect'][1],w=e['rect'][2],h=e['rect'][3],to=e['to'],at=e['at'],ready=e['ready'],msg=e.get('msg','')) for e in exits]
     marks=[dict(k='camp',x=cx_,y=cy_,nm='Acampamento') for cx_,cy_ in camps]+[dict(k='poi',x=x_,y=y_,nm='Ponto de interesse') for x_,y_ in pois]+[dict(k='lair',x=x_,y=y_,nm='Covil') for x_,y_ in lairs]+[dict(k='shrine',x=x_,y=y_,nm='Santuário') for x_,y_ in shrines]
