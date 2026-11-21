@@ -665,7 +665,7 @@ M3.whirl={build(f,g){const r=f.r||150;g.userData.R=[];for(let i=0;i<5;i++){const
 /* TSUNAMI em pixel art: texturas desenhadas por código (ondas em 5 tons com dither, crista de espuma recortada, lâmina d'água no chão) */
 const _TSU={};
 function _tsuTex(kind){if(_TSU[kind])return _TSU[kind];
-  const W=64,Hh=kind==='wall'?32:kind==='lip'?10:64,c=document.createElement('canvas');c.width=W;c.height=Hh;const x=c.getContext('2d');
+  const W=64,Hh=kind==='wall'?32:kind==='lip'?10:kind==='cloud'?28:64,c=document.createElement('canvas');c.width=W;c.height=Hh;const x=c.getContext('2d');
   const px=(i,j,col,a)=>{x.globalAlpha=a==null?1:a;x.fillStyle=col;x.fillRect(((i%W)+W)%W,j,1,1);};
   const D=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];const dth=(i,j,k)=>(D[j&3][i&3]/16)<k;
   if(kind==='wall'){const P=['#ffffff','#a0e4f8','#3a9ee0','#1f6cba','#154f98','#0e3676'];
@@ -677,6 +677,10 @@ function _tsuTex(kind){if(_TSU[kind])return _TSU[kind];
     for(let n=0;n<22;n++){const i=(n*37+5)%W,j=9+((n*19)%20);px(i,j,P[1]);px(i+1,j,P[1]);if(n%3==0)px(i+2,j,P[0]);}}
   else if(kind==='lip'){for(let i=0;i<W;i++){const h=3+Math.round(3*Math.sin(i*.35)+2*Math.sin(i*1.1+2));for(let j=0;j<Hh;j++){const d=j-(Hh-1-h);if(d<0)continue;px(i,j,d<=1?'#ffffff':d<4?'#e2fbff':'#9ae0f4');}}
     for(let n=0;n<14;n++){const i=(n*23+3)%W;px(i,0,'#ffffff');px(i+1,1,'#e2fbff');}}
+  else if(kind==='cloud'){const C3=['#7f93b4','#b4c6de','#e6eef8','#ffffff'];
+    for(let k=0;k<12;k++){const cx=(k*11+5)%W,cy=13+((k*7)%6),r=6+(k*5)%5;
+      for(let pass=0;pass<3;pass++){for(let j=cy-r;j<=cy+r;j++)for(let i=cx-r-2;i<=cx+r+2;i++){const dx=(i-cx)/1.35,dy=j-(cy+pass*-1.2);if(dx*dx+dy*dy<=(r-pass*1.5)*(r-pass*1.5)&&j>=0&&j<Hh){const u=(j-(cy-r))/(2*r);px(i,j,C3[Math.max(0,Math.min(3,pass===0?(u>.55?0:1):pass===1?(u>.6?1:2):(u>.5?2:3)))]);}}}}
+    for(let i=0;i<W;i++)for(let j=Hh-6;j<Hh;j++){const a=(Hh-j)/6;if(((i*3+j*5)%7)/7>a)x.clearRect(i,j,1,1);}}
   else if(kind==='sheet'){const P=['#6fd0ee','#3a96d8','#2670b8','#1a508e'];
     for(let i=0;i<W;i++)for(let j=0;j<Hh;j++){const w=Math.sin(i*.31+j*.19)+Math.sin(i*.17-j*.43+1.7)+Math.sin(j*.7+i*.09);let k=w>1.6?0:w>.3?1:w>-1?2:3;if(dth(i,j,.4)&&k<3&&Math.sin(i*.8+j*1.3)>.6)k++;px(i,j,P[k],.5+.12*(3-k)/3);}
     for(let n=0;n<26;n++){const i=(n*29+7)%W,j=(n*47+3)%Hh,l=2+(n%4);for(let q=0;q<l;q++)px(i+q,j,'#d8f8ff',.8);}}
@@ -698,6 +702,9 @@ M3.tsunami={build(f,g){const L=f.len||1600,Hh=f.h||230,PX=5;
   U.wallM.map.offset.x=T0*.9;U.wall2M.map.offset.x=-T0*.6+.3;U.lipM.map.offset.x=-T0*1.7;U.frM.map.offset.x=T0*1.3;U.frM.map.offset.y=T0*1.8;
   U.shn.scale.set(1,1,Math.max(1,z));U.shn.position.z=z/2;U.shM.map.repeat.set(U.L/(64*PX),Math.max(1,z)/(64*PX));U.shM.map.offset.y=-T0*.5;U.shM.map.offset.x=T0*.2;U.shM.opacity=.85*Math.min(1,fall*1.4)*Math.max(0,1-(T0-(f.max*.55))/(f.max*.45+.01)*.35);
   U.S.forEach(p=>{const u=(T0*1.6+p.p)%1;p.d.position.set(p.x+Math.sin(T0*3+p.p*9)*6,U.Hh+p.h*Math.sin(u*Math.PI)-4,10+u*34);p.d.rotation.set(u*6,u*4,0);p.d.material.opacity=.95*(1-u*u);});}};
+/* COBERTURA DE NUVENS do Colosso: duas camadas de nuvem em pixel art bem no alto, escondendo o topo das patas (segue o corpo via ft) */
+M3.cloudcap={build(f,g){const L=f.len||620,H=f.hh||300;g.userData.C=[];[[1,0,.9,0x9fb0cc],[.8,60,1,0xffffff],[.7,-90,.7,0xe8f0fa]].forEach((q,i)=>{const mt=_tsuMat('cloud',q[2]);mt.map.repeat.set(L/(64*7),1);const m=new T.Mesh(new T.PlaneGeometry(L*q[0],28*8*q[0]).translate(q[1],0,0),mt);m.position.set(0,H+i*26,22-i*30);g.add(m);g.userData.C.push({m,mt,sp:.05+i*.03});});},
+ upd(f,g,t){const T0=t*f.max;g.userData.C.forEach((c,i)=>{c.mt.map.offset.x=T0*c.sp*(i%2?-1:1);c.m.position.y=(f.hh||300)+i*26+Math.sin(T0*.8+i)*6;});}};
 /* PEDREGULHO (cuspe do Colosso): rocha girando com rastro de poeira, segue o projétil (ft) */
 M3.boulder={build(f,g){const r=new T.Mesh(new T.DodecahedronGeometry(13,0),_mt(0x8a7a60,1,false)),c=new T.Mesh(new T.DodecahedronGeometry(9,0),_mt(0xc8b890,.9,false));const H=new T.Group();H.position.y=24;H.add(r,c);g.add(H);g.userData.H=H;
   g.userData.T=[0,1,2,3].map(i=>{const d=new T.Mesh(new T.SphereGeometry(4-i*.7,5,4),_mt(0xb8a888,.55-i*.1,false));g.add(d);return d;});const sh=new T.Mesh(new T.CircleGeometry(11,14).rotateX(-Math.PI/2),_mt(0x20180c,.4,false));g.add(sh);},
