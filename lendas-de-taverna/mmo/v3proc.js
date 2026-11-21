@@ -15,15 +15,16 @@ const mix=(c1,c2,t)=>[lerp(c1[0],c2[0],t),lerp(c1[1],c2[1],t),lerp(c1[2],c2[2],t
 function cv(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
 // ---- máscaras em grade de 4px (água do jogo; caminho/pedra lidos como dados do mapa original)
 function blur(m,w,h,r){const o=new Float32Array(m.length);for(let y=0;y<h;y++)for(let x=0;x<w;x++){let s=0,n=0;for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=w||yy>=h)continue;s+=m[yy*w+xx];n++;}o[y*w+x]=s/n;}return o;}
+P.TMK=[{k:[108,112,124],a:[104,110,126],b:[128,134,150]},{k:[168,92,70],a:[158,84,62],b:[190,110,80]},{k:[226,228,232],a:[212,216,224],b:[242,242,246]},{k:[60,56,62],a:[46,42,50],b:[72,66,74]},{k:[206,178,130],a:[196,164,116],b:[224,196,148]}];   // rock, red, salt, ash, sand (Região 2)
 function masks(env){
-  const gw=Math.ceil(env.W/4),gh=Math.ceil(env.H/4),water=new Float32Array(gw*gh),dirt=new Float32Array(gw*gh),stone=new Float32Array(gw*gh),grave=new Float32Array(gw*gh),swamp=new Float32Array(gw*gh),dforest=new Float32Array(gw*gh),rockm=new Float32Array(gw*gh);
+  const gw=Math.ceil(env.W/4),gh=Math.ceil(env.H/4),water=new Float32Array(gw*gh),dirt=new Float32Array(gw*gh),stone=new Float32Array(gw*gh),grave=new Float32Array(gw*gh),swamp=new Float32Array(gw*gh),dforest=new Float32Array(gw*gh);const TM=P.TMK.map(()=>new Float32Array(gw*gh));
   if(env.WATER&&env.WCW)for(let y=0;y<gh;y++)for(let x=0;x<gw;x++)if(env.WATER[y*env.WCW+x])water[y*gw+x]=1;
   if(env.GROUND){const c=cv(gw,gh),x=c.getContext('2d',{willReadFrequently:true});x.drawImage(env.GROUND,0,0,gw,gh);const d=x.getImageData(0,0,gw,gh).data;
     for(let i=0;i<gw*gh;i++){const r=d[i*4],g=d[i*4+1],b=d[i*4+2];if(water[i])continue;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),sat=(mx-mn)/(mx||1);
-      if(env.themes){const nr=(a,b2,c)=>Math.abs(r-a)<7&&Math.abs(g-b2)<7&&Math.abs(b-c)<7;if(nr(96,84,120)){grave[i]=1;continue;}if(nr(74,92,40)){swamp[i]=1;continue;}if(nr(40,100,60)){dforest[i]=1;continue;}if(nr(108,112,124)){rockm[i]=1;continue;}}
+      if(env.themes){const nr=(a,b2,c)=>Math.abs(r-a)<7&&Math.abs(g-b2)<7&&Math.abs(b-c)<7;if(nr(96,84,120)){grave[i]=1;continue;}if(nr(74,92,40)){swamp[i]=1;continue;}if(nr(40,100,60)){dforest[i]=1;continue;}{let hit=0;for(let t=0;t<P.TMK.length;t++){const k=P.TMK[t].k;if(nr(k[0],k[1],k[2])){TM[t][i]=1;hit=1;break;}}if(hit)continue;}}
       if(env.arid){if(r>g+4&&r>b+18&&r>70)dirt[i]=1;else if(sat<.12&&mx>85)stone[i]=1;}
       else if(env.stoneNonGreen){if(!(g>r+25&&g>b+25))stone[i]=1;}else if(r>g+4&&r>b+18&&r>70)dirt[i]=1;else if(sat<.14&&mx>85)stone[i]=1;}}
-  return {gw,gh,water:blur(blur(water,gw,gh,2),gw,gh,1),dirt:blur(dirt,gw,gh,1),stone:blur(stone,gw,gh,1),grave:blur(grave,gw,gh,2),swamp:blur(swamp,gw,gh,2),dforest:blur(dforest,gw,gh,2),rock:blur(rockm,gw,gh,2)};
+  return {gw,gh,water:blur(blur(water,gw,gh,2),gw,gh,1),dirt:blur(dirt,gw,gh,1),stone:blur(stone,gw,gh,1),grave:blur(grave,gw,gh,2),swamp:blur(swamp,gw,gh,2),dforest:blur(dforest,gw,gh,2),tm:TM.map(m=>blur(m,gw,gh,2))};
 }
 const samp=(m,gw,gh,gx,gy)=>{const x=Math.max(0,Math.min(gw-1.001,gx)),y=Math.max(0,Math.min(gh-1.001,gy)),xi=x|0,yi=y|0,xf=x-xi,yf=y-yi;
   return (m[yi*gw+xi]*(1-xf)+m[yi*gw+xi+1]*xf)*(1-yf)+(m[(yi+1)*gw+xi]*(1-xf)+m[(yi+1)*gw+xi+1]*xf)*yf;};
@@ -34,10 +35,10 @@ P.ground=function(env,pal,seed){
     const n=fbm(gx/120,gy/120,s0),n2=fbm(gx/22,gy/22,s0+9),sp=hash(px,py,s0);
     let col=mix(mix(pal.g1,pal.g2,sst(.3,.7,n)),pal.g3,sst(.55,.8,n2)*.6);
     col=mix(col,pal.g2,(sp>.93?.35:0));
-    if(env.themes){const gv=samp(M.grave,M.gw,M.gh,mx,my),sw=samp(M.swamp,M.gw,M.gh,mx,my),df=samp(M.dforest,M.gw,M.gh,mx,my),rk=samp(M.rock,M.gw,M.gh,mx,my);
+    if(env.themes){const gv=samp(M.grave,M.gw,M.gh,mx,my),sw=samp(M.swamp,M.gw,M.gh,mx,my),df=samp(M.dforest,M.gw,M.gh,mx,my);
       if(gv>.05)col=mix(col,mix([58,52,70],[84,76,96],sst(.4,.75,n2)),sst(.05,.5,gv)*.92);
       if(sw>.05){const mud=sst(.5,.7,n2);col=mix(col,mix([56,70,34],[48,40,28],mud),sst(.05,.5,sw)*.92);}
-      if(df>.05)col=mix(col,mix([26,62,38],[20,50,32],sst(.45,.7,n)),sst(.05,.5,df)*.9);if(rk>.05)col=mix(col,mix([104,110,126],[128,134,150],sst(.4,.75,n2)),sst(.05,.5,rk)*.94);}
+      if(df>.05)col=mix(col,mix([26,62,38],[20,50,32],sst(.45,.7,n)),sst(.05,.5,df)*.9);for(let t=0;t<P.TMK.length;t++){const v=samp(M.tm[t],M.gw,M.gh,mx,my);if(v>.05){const T_=P.TMK[t];col=mix(col,mix(T_.a,T_.b,sst(.4,.75,n2)),sst(.05,.5,v)*.94);}}}
     const dv=samp(M.dirt,M.gw,M.gh,mx,my)+(n2-.5)*.5;
     if(dv>.35){const t=sst(.35,.55,dv),dc=mix(mix(pal.d1,pal.d2,n2),pal.d3,sp>.9?.5:0);col=mix(col,dc,t);}
     const sv=samp(M.stone,M.gw,M.gh,mx,my);
@@ -84,6 +85,7 @@ const MODELS={
     m.add(jitter(new T.ConeGeometry(.34,.85,7,3),.3,27),cc.clone().multiplyScalar(1.08),M4(-.4,.42,-.1,1,1,1),{moss:.2});
     m.add(jitter(new T.ConeGeometry(.22,.4,7,2),.25,29),0xeef2f6,M4(0,1.12,0,1,1,1));
     return m.geo();},
+  crag(c){const m=Mesh(),cc=new T.Color(c);m.add(jitter(new T.IcosahedronGeometry(.5,1),.5,3),cc,M4(0,.22,0,1,.66,.85));m.add(jitter(new T.IcosahedronGeometry(.3,1),.55,5),cc.clone().multiplyScalar(.85),M4(.44,.1,.12,1,.72,1));m.add(jitter(new T.IcosahedronGeometry(.2,1),.5,8),cc.clone().multiplyScalar(1.1),M4(-.38,.07,.2,1,.7,1));return m.geo();},   // rocha árida (sem musgo)
   rock(c){const m=Mesh(),cc=new T.Color(c);m.add(jitter(new T.IcosahedronGeometry(.5,1),.5,3),cc,M4(0,.22,0,1,.66,.85),{moss:.55});m.add(jitter(new T.IcosahedronGeometry(.3,1),.55,5),cc.clone().multiplyScalar(.85),M4(.44,.1,.12,1,.72,1),{moss:.4});m.add(jitter(new T.IcosahedronGeometry(.2,1),.5,8),cc.clone().multiplyScalar(1.1),M4(-.38,.07,.2,1,.7,1),{moss:.3});return m.geo();},
   bush(c){const m=Mesh(),cc=new T.Color(c);[[0,.2,0,.34],[.25,.15,.1,.22],[-.22,.14,-.05,.2]].forEach(([x,y,z,r],i)=>m.add(jitter(new T.IcosahedronGeometry(r,0),.35,i+2),cc.clone().multiplyScalar(.85+i*.1),M4(x,y,z,1,.75,1)));return m.geo();},
   post(c){const m=Mesh();m.add(new T.CylinderGeometry(.05,.07,1,6),0x4a3220,M4(0,.5,0,1,1,1));m.add(new T.CylinderGeometry(.1,.07,.12,6),0x2a2a2e,M4(0,1.02,0,1,1,1));return m.geo();},
@@ -332,8 +334,8 @@ P.MODELS=MODELS;P.hash=hash;P.mix=mix;P.fbm=fbm;
 
 // ---- props descritos direto por dados (mapas gerados por código): [{k,x,y,s}] -> instâncias 3D
 P.direct=function(add,list,sc){
-  const COL={brazier:'#3a3a42',sacks:'#8a7448',altar:'#5c7480',cage:'#3a3a42',pots:'#a8602e',crates:'#8a5a30',barrel:'#7a5230',pillar:'#6a8696',chest:'#8a5a2a',table:'#6a4a2a',potshelf:'#5a3a22',dead:'#4a3a30',broad:'#2f4a2a',thorn:'#4a3424',rock:'#5a5e58',mount:'#6c6a6e',tuft:'#46783a',reed:'#6f8a3c',lily:'#3f8a46',bones:'#d6ccb0',mush:'#5ff0d0',totem:'#4a3220',tent:'#6a4a30',flower:'#ffffff',tombstone:'#8a8d92',tomb:'#7c8086',column:'#9a9a94',coffin:'#5a4030',urn:'#8a6a50',puddle:'#3a4a22',rune:'#a070ff',drums:'#7a5230'};
-  const WF={mount:1.9,dead:.8,broad:1.1,rock:1.6,tent:1.3,totem:.45,thorn:1.1,reed:.9,lily:1};const by={};
+  const COL={brazier:'#3a3a42',sacks:'#8a7448',altar:'#5c7480',cage:'#3a3a42',pots:'#a8602e',crates:'#8a5a30',barrel:'#7a5230',pillar:'#6a8696',chest:'#8a5a2a',table:'#6a4a2a',potshelf:'#5a3a22',dead:'#4a3a30',broad:'#2f4a2a',thorn:'#4a3424',rock:'#5a5e58',crag:'#7a6c60',mount:'#6c6a6e',tuft:'#46783a',reed:'#6f8a3c',lily:'#3f8a46',bones:'#d6ccb0',mush:'#5ff0d0',totem:'#4a3220',tent:'#6a4a30',flower:'#ffffff',tombstone:'#8a8d92',tomb:'#7c8086',column:'#9a9a94',coffin:'#5a4030',urn:'#8a6a50',puddle:'#3a4a22',rune:'#a070ff',drums:'#7a5230'};
+  const WF={mount:1.9,dead:.8,broad:1.1,rock:1.6,crag:1.6,tent:1.3,totem:.45,thorn:1.1,reed:.9,lily:1};const by={};
   for(const q of list)(by[q.k]=by[q.k]||[]).push(q);
   const mat=(k)=>{if(k==='mush')return new T.MeshStandardMaterial({vertexColors:true,flatShading:true,emissive:0x22ccaa,emissiveIntensity:.9,roughness:.5});
     const m=new T.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:.9});if(k==='tuft'||k==='dead'||k==='broad'||k==='reed'){const sw={tuft:.35,dead:.01,broad:.02,reed:.12}[k];m.onBeforeCompile=sh=>{sh.uniforms.uTime=P.time;sh.vertexShader='uniform float uTime;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n#ifdef USE_INSTANCING\nfloat ph=instanceMatrix[3].x*.9+instanceMatrix[3].z*.6;\n#else\nfloat ph=0.;\n#endif\ntransformed.x+=sin(uTime*1.7+ph)*position.y*'+sw.toFixed(3)+';transformed.z+=cos(uTime*1.3+ph*1.3)*position.y*'+(sw*.6).toFixed(3)+';');};}return m;};

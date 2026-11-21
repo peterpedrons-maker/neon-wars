@@ -1,4 +1,4 @@
-# Região 2 — Terras Áridas de Cinzamuro (Nv 10–20) — PROPOSTA aprovada pelo dono · **Cinzamuro (cidade) v1 construída** (ver CLAUDE.md); o resto ainda não
+# Região 2 — Terras Áridas de Cinzamuro (Nv 10–20) — **MAPAS CONSTRUÍDOS (21 zonas + Cinzamuro)**; faltam chefes, bichos de deserto, dungeons e missões (ver CLAUDE.md); o resto ainda não
 
 Esboço: `docs/regiao2_esboco.png` (gerado por `tools/mmo/esboco_regiao2.py`; editar o script e regerar).
 
