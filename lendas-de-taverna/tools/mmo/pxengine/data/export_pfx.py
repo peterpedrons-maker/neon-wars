@@ -4,7 +4,7 @@ Uso: python3 export_pfx.py <cat/efeito> <nome> <t0> <t1> [fps=20] [opts-json] [-
 Requer o checkout do PixelFx em /root/pixelfx (node tools/render.mjs)."""
 import json, subprocess, sys, os, tempfile
 from PIL import Image
-PFX = '/root/pixelfx'; OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../../mmo/assets/fx')
+PFX = os.environ.get('PFX_DIR', '/root/pixelfx'); OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../../mmo/assets/fx')
 def run(fid, name, t0, t1, fps=20, opts=None, prev=None):
     tmp = tempfile.mkdtemp()
     cmd = ['node', 'tools/render.mjs', fid, '--sheet', '--fps', str(fps), '--no-actor', '--out', tmp]
