@@ -21,7 +21,11 @@ function masks(env){
   if(env.GROUND){const c=cv(gw,gh),x=c.getContext('2d',{willReadFrequently:true});x.drawImage(env.GROUND,0,0,gw,gh);const d=x.getImageData(0,0,gw,gh).data;
     for(let i=0;i<gw*gh;i++){const r=d[i*4],g=d[i*4+1],b=d[i*4+2];if(water[i])continue;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),sat=(mx-mn)/(mx||1);
       if(env.themes){const nr=(a,b2,c)=>Math.abs(r-a)<7&&Math.abs(g-b2)<7&&Math.abs(b-c)<7;if(nr(96,84,120)){grave[i]=1;continue;}if(nr(74,92,40)){swamp[i]=1;continue;}if(nr(40,100,60)){dforest[i]=1;continue;}}
+<<<<<<< HEAD
       if(env.arid){if(r>g+4&&r>b+18&&r>70)dirt[i]=1;else if(sat<.12&&mx>85)stone[i]=1;}
+=======
+      if(env.arid){if(r>=198&&r>g+4){}else if(r>g+4&&r>b+18&&r>70)dirt[i]=1;else if(sat<.12&&mx>85)stone[i]=1;}
+>>>>>>> origin/main
       else if(env.stoneNonGreen){if(!(g>r+25&&g>b+25))stone[i]=1;}else if(r>g+4&&r>b+18&&r>70)dirt[i]=1;else if(sat<.14&&mx>85)stone[i]=1;}}
   return {gw,gh,water:blur(blur(water,gw,gh,2),gw,gh,1),dirt:blur(dirt,gw,gh,1),stone:blur(stone,gw,gh,1),grave:blur(grave,gw,gh,2),swamp:blur(swamp,gw,gh,2),dforest:blur(dforest,gw,gh,2)};
 }
@@ -258,7 +262,11 @@ P.fire=function(add,x,z,s,kind){
 const DIMS={bench:16,planter:16,cabinet:26,potshelf:26,longcounter:30,plants:18,window:6,wallseg:16,drape:6,rug:(w,h)=>h*1.3,forge:46,table:56,stall:44,sign:8,flag:8,well:60,barrelpile:36,hedge:(w,h)=>h*.8,trophy:14};
 const TOWNMAP={'7721':'lamp','d6ee':'lamp','0ed4':'lamp','5a6a':'lamp','52e1':'lamp','c15b':'barrelpile','4ce7':'barrelpile','8291':'bench','769a':'bench','9304':'flag','7c7e':'flag','63e3':'planter','afca':'planter','8a8b':'sign','df9b':'stall','15eb':'well','32e6':'hedge','718d':'hedge'};
 const INMAP={'5dfc':'cabinet','0dd8':'cabinet','ae14':'potshelf','f586':'potshelf','2774':'potshelf','adee':'longcounter','6bde':'plants','1168':'window','5d78':'trophy','ecbe':'wallseg','a719':'wallseg','0367':'wallseg','e04f':'wallseg','df00':'drape','3820':'drape','64c7':'bench','dca1':'rug','1c44':'forge','fbc2':'forge','f1a3':'lamp','5b39':'table','a94a':'table'};
+<<<<<<< HEAD
 function kindTown(a,rgb,flat,id){if(/^(w_|towe|gate|keep|ad\d|s_|cact|pine|rock|hs\d|cliff|stairs|brazier)/.test(id||''))return null;   /* peças de Cinzamuro: ficam como arte 2D em pé */
+=======
+function kindTown(a,rgb,flat,id){if(/^(w_|towe|gate|keep|ad\d|s_|cact)/.test(id||''))return null;   /* peças de Cinzamuro: ficam como arte 2D em pé */
+>>>>>>> origin/main
   const mk0=TOWNMAP[(id||'').slice(0,4)];if(mk0)return (window.V3_HAND||mk0==='bench'||mk0==='planter')?mk0:null;const [,,w,h]=a,[r,g,b]=rgb,mx=Math.max(r,g,b),mn=Math.min(r,g,b),sat=(mx-mn)/(mx||1),green=g>r+6&&g>=b-4,brown=r>g+8&&g>=b-6&&sat>.22;
   if(flat)return rgb[1]>rgb[0]+6?'tuft':'flower';
   if(h>=100&&w>=90)return (b>=r-4)?'frost':(sat<.5?'dead':'broad');
@@ -340,7 +348,11 @@ P.direct=function(add,list,sc){
     im.castShadow=!(k==='tuft'||k==='bones'||k==='mush'||k==='reed'||k==='lily');im.receiveShadow=true;im.frustumCulled=false;add(im);
     if(k==='mush'&&sc)L.forEach((it,i)=>{if(i%7===0)sc.sources.push({p:new T.Vector3(it.x*U,.6,it.y*U),c:0x40ffd0,k:.9,night:1,fl:0});});}
 };
+<<<<<<< HEAD
 P.palArido={g1:[112,118,134],g2:[126,132,148],g3:[98,104,120],d1:[150,130,108],d2:[162,142,118],d3:[132,114,94],st:[170,170,174],sm:[104,104,110],shore:[130,134,146],w1:[70,140,170],w2:[34,84,120]};
+=======
+P.palArido={g1:[214,186,136],g2:[224,198,150],g3:[200,170,122],d1:[170,136,94],d2:[184,150,104],d3:[150,118,82],st:[158,154,146],sm:[100,92,82],shore:[200,170,120],w1:[70,140,170],w2:[34,84,120]};
+>>>>>>> origin/main
 P.palPantano={g1:[34,60,34],g2:[48,78,40],g3:[26,46,30],d1:[84,66,44],d2:[98,78,52],d3:[70,54,38],st:[110,110,100],sm:[60,60,56],shore:[58,56,38],w1:[70,100,72],w2:[28,50,42]};
 P.palMadeira={base:'#6a4a2a',p:[148,104,60]};
 
