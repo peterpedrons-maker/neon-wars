@@ -1023,7 +1023,7 @@ function render3(){
   for(const s of scn.smoke){s.t+=dt;const u=(s.t%4)/4;s.sp.position.set(s.x+u*.9,s.y+u*2.6,s.z+Math.sin(u*5+s.t)*.1);const q=.5+u*1.8;s.sp.scale.set(q,q,1);s.sp.material.opacity=Math.sin(u*Math.PI)*.35*(1-n*.4);}
   if(V3.proc&&V3.proc.stU){const q=V3.proc.stU;if(!ZONE.room&&!ZONE.dark&&h){const v=new T.Vector3(h.x*U,1.1,h.y*U).project(cam),bs=R.getDrawingBufferSize(new T.Vector2());q.hp.value.set((v.x*.5+.5)*bs.x,(v.y*.5+.5)*bs.y);q.hz.value=(v.z+1)/2;q.r.value=bs.x*.2;}else q.r.value=0;}
   try{syncDecals();}catch(e){}try{syncGroundFx();}catch(e){}try{syncGps();}catch(e){}try{syncM3();}catch(e){console.error('m3',e);}
-  windTick(performance.now()/1000);
+  windTick(window.__wt!=null?window.__wt:performance.now()/1000);
   if(scn.grass)scn.grass.update(camT,G.hero,G.mobs,t);
   if(scn.fill)scn.fill.intensity=.38*(1-Math.min(1,(n||0)*1.3));
   if(scn.rays){const day=Math.max(0,1-(n||0)*1.8)*(window.__rays===0?0:1),cell=9,hsh=(a,b)=>{const v=Math.sin(a*127.1+b*311.7)*43758.5453;return v-Math.floor(v);};let k=0;
