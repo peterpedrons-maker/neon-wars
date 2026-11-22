@@ -1282,6 +1282,15 @@ html.cutm #hud,html.cutm #bar,html.cutm #mmenu,html.cutm #joy,html.cutm #chat,ht
 :root:root #win.bk .sbh span{color:#2a6a2a!important;font-weight:700}
 :root:root #win.bk .sbk em{color:#4a2c14!important}
 :root:root #win.bk .vfoot{padding:0 8px}
+/* ATRIBUTOS v2 */
+.avl small{display:block;font:500 10px var(--f);color:#b8ac90;margin-top:2px;letter-spacing:0}
+.at2{margin:8px 0;padding:10px 12px;background:linear-gradient(180deg,#221b2c,#14101a);border:1px solid #3a3148;border-left:4px solid var(--ac)}
+.at2 .ah{display:flex;align-items:center;gap:10px}.at2 .ai{width:30px;height:30px;display:grid;place-items:center;font-size:17px;color:var(--ac);border:1px solid var(--ac);background:rgba(0,0,0,.35);text-shadow:0 0 8px var(--ac)}
+.at2 .an{flex:1}.at2 .an b{font:700 15px var(--fd,inherit);letter-spacing:.06em;color:var(--ac)}.at2 .an em{font:600 10px var(--f);font-style:normal;color:#ffe08a;margin-left:6px;letter-spacing:0}
+.at2 .av{font:700 26px var(--fd,inherit);color:#ffe08a;min-width:44px;text-align:right;text-shadow:0 0 10px rgba(255,190,70,.4)}
+.at2 .aeff{margin:8px 0 6px;display:flex;flex-direction:column;gap:3px}.at2 .ae{display:flex;align-items:baseline;gap:8px;font-size:12px;color:#d6ccb2}.at2 .ae span{flex:1}.at2 .ae b{color:#fff3c8;font-weight:700}.at2 .ae i{font-style:normal;font-size:10px;color:#8fb48c;min-width:74px;text-align:right}
+.at2 .abr{position:relative;height:12px;background:#0e0a12;border:1px solid #3a3148;margin:6px 0 8px;overflow:hidden}.at2 .abf{height:100%;background:linear-gradient(90deg,color-mix(in srgb,var(--ac) 55%,#000),var(--ac))}.at2 .abr span{position:absolute;inset:0;display:grid;place-items:center;font:600 9px var(--f);color:#fff;text-shadow:0 1px 2px #000}
+.at2 .abt{display:flex;gap:8px;justify-content:flex-end}.at2 .abt .pl{min-width:56px;height:32px}
 </style>
 </head>
 <body>
@@ -2508,7 +2517,7 @@ const TALENTS={
 const TCAP={exec:.06,boss:.08,ls:.04,dmgred:.25,thorns:.15,crit:.08,aspd:.12,critd:.45,atk:.2,regen:.02};
 let TF={};
 function tfCalc(){if(window.ptCalc)return ptCalc();TF={};const R=SAVE.tl||{};for(const b of (TALENTS[SAVE.cls]||[]))for(const n of b.nodes){const r=R[n[0]]||0;if(!r)continue;for(const k in n[3])TF[k]=(TF[k]||0)+n[3][k]*r;}for(const k in TCAP)if(TF[k]>TCAP[k])TF[k]=TCAP[k];}
-function tf(k){return TF[k]||0;}
+function tf(k){return (TF[k]||0)+((ATB&&ATB[k])||0);}
 const tlTotal=()=>window.ptTotal?ptTotal():0;
 const tlSpentAll=()=>window.ptSpent?ptSpent():0;
 const tlPoints=()=>tlTotal()-tlSpentAll();
@@ -2555,12 +2564,12 @@ function renderTalents(B){
 }
 
 function heroStatsInto(h){
-  const C=CLASSES[SAVE.cls],L=SAVE.lv,g=gearTotals(),A=SAVE.at;
+  atCalc();const C=CLASSES[SAVE.cls],L=SAVE.lv,g=gearTotals(),A=SAVE.at;
   const E=SAVE.elix||{};
   h.maxhp=Math.round((C.hp*(1+.15*(L-1))+g.hp+ATV.vit*A.vit)*(E.vigor>0?1.2:1));
-  h.pow=C.atk*(1+.12*(L-1))+g.atk+atkFromAttrs(A)+(E.forca>0?elixPow():0);
+  h.pow=C.atk*(1+.12*(L-1))+g.atk+(E.forca>0?elixPow():0);
   h.def=C.def+L*.8+g.def+(E.defesa>0?elixDef():0);h.kbG=g.kb||0;h.kdG=g.kd||0;
-  h.speed=C.speed*MOVE*(1+g.spd/100);h.rng=hRng(C);h.aspd=C.aspd;h.crit=C.crit+g.crit/100+Math.floor((A.sor||0)/ATV.sorN)*.01;subApply(h);
+  h.speed=C.speed*MOVE*(1+g.spd/100);h.rng=hRng(C);h.aspd=C.aspd;h.crit=C.crit+g.crit/100;subApply(h);
   h.maxhp=Math.round(h.maxhp*(1+tf('hp')+sb('hp')));h.pow*=1+tf('atk')+sb('atk')+pb('atk');h.def*=1+tf('def')+sb('def');h.speed*=1+tf('spd')+sb('spd');h.aspd=h.aspd/(1+tf('aspd')+sb('aspd'));h.crit+=tf('crit')+sb('crit');
 }
 /* dificuldade: o nível do monstro sobe com a profundidade na floresta (0 na entrada → 1 no fim da estrada) e +5 por zona */
@@ -2906,9 +2915,29 @@ function skPoints(){return (SAVE.lv-1)-(SAVE.sk.reduce((a,b)=>a+b,0)-1);}
 const ATTR=[['for','Força'],['des','Destreza'],['int','Inteligência'],['fe','Fé'],['car','Carisma'],['vit','Vitalidade'],['sor','Sorte']];
 const MAIN_ATTR={guerreiro:'for',clerigo:'fe',ladino:'des',arqueiro:'des',mago:'int',bardo:'car'},ATV={vit:6,sorN:5};
 const ATT_NEW=()=>({for:0,des:0,int:0,fe:0,car:0,vit:0,sor:0});
-const FEV=.012,CARV=.01;   /* Fé: +1,2% de cura/escudo por ponto · Carisma: +1% de duração/potência de buffs e acordes por ponto */
-const feM=()=>1+((SAVE.at&&SAVE.at.fe)||0)*FEV,carM=()=>1+((SAVE.at&&SAVE.at.car)||0)*CARV;
-function atkFromAttrs(A){const m=MAIN_ATTR[SAVE.cls];let t=0;for(const k of ['for','des','int','fe','car']){const v=A[k]||0;t+=k===m?v:Math.floor(v/2);}return t;}
+/* ===== ATRIBUTOS v2 (dono: "precisam ter real importância para todas as classes; ninguém joga tudo em FOR/INT") =====
+   Cada atributo dá bônus em % com RETORNO DECRESCENTE: bônus = máx · x/(x+K). Quanto mais pontos num só atributo, menos cada ponto rende,
+   então misturar sempre compensa. O atributo PRINCIPAL da classe rende ×1,25 (vantagem, não domínio).
+   FOR: dano geral e empurrão · DES: velocidade de ataque, de movimento e recarga da esquiva · INT: dano das habilidades e recarga das habilidades
+   FÉ: cura e escudo, redução de dano e regeneração · CAR: potência/duração de buffs e acordes, XP e ouro · VIT: vida (+6/ponto) e defesa · SOR: crítico, dano crítico e drops */
+const AT_K=60,AT_MAINX=1.25;
+const ATSPEC={
+  for:{c:'#ff7a5a',ic:'⚔',n:'Força',fx:[['atk','Dano geral',1],['kb','Chance de empurrão',1]]},
+  des:{c:'#7ae0a0',ic:'➶',n:'Destreza',fx:[['aspd','Velocidade de ataque',1],['spd','Velocidade de movimento',1],['dcd','Recarga da esquiva (menor)',1]]},
+  int:{c:'#8aa8ff',ic:'✦',n:'Inteligência',fx:[['sk','Dano das habilidades',1],['cdr','Recarga das habilidades (menor)',1]]},
+  fe:{c:'#ffe08a',ic:'✚',n:'Fé',fx:[['heal','Cura e escudo',1],['dmgred','Dano recebido (menor)',1],['regen','Regeneração de vida/s',1]]},
+  car:{c:'#e08aff',ic:'♪',n:'Carisma',fx:[['buff','Potência e duração de buffs/acordes',1],['xp','Experiência ganha',1],['gold','Ouro ganho',1]]},
+  vit:{c:'#ff9aa8',ic:'♥',n:'Vitalidade',fx:[['hpf','Vida máxima (+6 por ponto)',0],['def','Defesa',1]]},
+  sor:{c:'#ffd24a',ic:'★',n:'Sorte',fx:[['crit','Chance de crítico',1],['critd','Dano crítico',1],['drop','Chance de drop',1]]}
+};
+const ATMAX={atk:.45,kb:.20,aspd:.30,spd:.12,dcd:.25,sk:.55,cdr:.30,heal:.80,dmgred:.12,regen:.012,buff:.60,xp:.25,gold:.25,def:.20,crit:.25,critd:.40,drop:.20};
+const atEff=(k,x)=>(x||0)*(MAIN_ATTR[SAVE.cls]===k?AT_MAINX:1);
+const atC=(k,x)=>{const e=atEff(k,x);return e/(e+AT_K);};            /* fração do máximo (0–1) */
+function atBonus(k,key,x){const A=SAVE.at||{};if(x==null)x=A[k]||0;return (ATMAX[key]||0)*atC(k,x);}
+var ATB={};
+function atCalc(){const A=SAVE.at||{};ATB={};for(const k in ATSPEC)for(const f of ATSPEC[k].fx){if(f[0]==='hpf'||f[0]==='heal'||f[0]==='buff')continue;ATB[f[0]]=(ATB[f[0]]||0)+atBonus(k,f[0]);}}
+const feM=()=>1+atBonus('fe','heal'),carM=()=>1+atBonus('car','buff');
+function atkFromAttrs(A){return 0;/* v2: o atributo vira % (ver ATSPEC) */const m=MAIN_ATTR[SAVE.cls];let t=0;for(const k of ['for','des','int','fe','car']){const v=A[k]||0;t+=k===m?v:Math.floor(v/2);}return t;}
 function attrDesc(k){const m=MAIN_ATTR[SAVE.cls];if(k==='vit')return '+'+ATV.vit+' de vida por ponto';if(k==='for')return (k===m?'Principal da sua classe: +1 de ataque por ponto':'+1 de ataque a cada 2 pontos')+' · +1% de empurrão a cada 3';if(k==='sor')return '+1% de crítico a cada '+ATV.sorN+' pontos';const base=k===m?'Principal da sua classe: +1 de ataque por ponto':'+1 de ataque a cada 2 pontos';if(k==='fe')return base+' · +'+(FEV*100).toFixed(1).replace('.',',')+'% de cura e escudo por ponto';if(k==='car')return base+' · +'+Math.round(CARV*100)+'% de duração e potência de buffs/acordes por ponto';return base;}
 const AT_LV=3;
 function atPoints(){return AT_LV*(SAVE.lv-1)-Object.values(SAVE.at).reduce((a,b)=>a+b,0);}
@@ -2978,7 +3007,7 @@ function knock(e,fx,fy,force){if(e.kind==='boss'||e.mini||(e.T&&e.T.fixed))retur
 /* EMPURRÃO é um atributo secundário: chance por golpe (base da classe + Força), com intervalo mínimo por alvo; chefes resistem.
    Habilidades com empurrão próprio (> 1,2) continuam garantidas. */
 const KNOCK_CLS={guerreiro:.30,ladino:.10,clerigo:.12,arqueiro:.07,mago:.05,bardo:.07},KNOCK_SUB={barbaro:.20,cavaleiro:.10};
-function knockChance(){const A=SAVE.at||{},g=(G.hero&&G.hero.kbG)||0;return Math.min(.75,(KNOCK_CLS[SAVE.cls]||.1)+(KNOCK_SUB[SAVE.sub]||0)+Math.floor((A.for||0)/3)*.01+g/100+uf('kb'));}
+function knockChance(){const A=SAVE.at||{},g=(G.hero&&G.hero.kbG)||0;return Math.min(.75,(KNOCK_CLS[SAVE.cls]||.1)+(KNOCK_SUB[SAVE.sub]||0)+g/100+uf('kb'));}
 const KD_CLS={guerreiro:.35,ladino:.1,clerigo:.1,arqueiro:0,mago:0,bardo:0},KD_SUB={barbaro:.4,cavaleiro:.25};
 /* QUEDA: quanto mais tempo o inimigo fica caído depois de um empurrão (multiplicador do tempo base de 0,3 s) */
 function knockDownMul(){const g=(G.hero&&G.hero.kdG)||0;return 1+Math.min(2,(KD_CLS[SAVE.cls]||0)+(KD_SUB[SAVE.sub]||0)+g/100+uf('kd'));}
@@ -3649,7 +3678,7 @@ function heroHitMoment(h){
   if(h.sts&&stHas(h,'furtivo')){h.furt=1;stRm(h,'furtivo');setTimeout(()=>{h.furt=0;},700);}
   if(a.sk<0){if(hStyle()==='slash')meleeHit(h,t,cmbMul(h,t,a),!!a.fc,a.fin&&h.cls==='guerreiro'?1.7:1);else if(!(h.cls==='arqueiro'&&a.v==='4')){if(hStyle()==='shoot')sfx('bow',.8,.95+Math.random()*.1);fireProj(h,t,cmbMul(h,t,a),!!a.fc,instr()?'note':(h.cls==='mago'?EL[(a.step||0)%3].st:undefined));}cmbHit(h,t,a);
     if(h.cls==='clerigo'&&Math.random()<.2)h.hp=Math.min(h.maxhp,h.hp+Math.round(h.maxhp*.03));return;}
-  const i=a.sk,S=C.skills[i],emp=!!a.emp,o=emp?empO(S[4]):S[4],sc=skSc(i),ef=skEf(i)*(emp?1.25:1),du=skDu(i)*(emp?1.5:1)*carM(),mult=S[3]*sc*wxSkMul(S[0])*cmbSkMul(h,t)*(emp?1.15:1),ranged=hStyle()!=='slash';
+  const i=a.sk,S=C.skills[i],emp=!!a.emp,o=emp?empO(S[4]):S[4],sc=skSc(i),ef=skEf(i)*(emp?1.25:1),du=skDu(i)*(emp?1.5:1)*carM(),mult=S[3]*sc*(1+tf('sk'))*wxSkMul(S[0])*cmbSkMul(h,t)*(emp?1.15:1),ranged=hStyle()!=='slash';
   if(emp)empFx(h,S);
   {const [sn,sv]=skSnd(S,h.cls);sfx(sn,sv);}skFx(S,h,t,o);applySkillStatus(S,h,t,o);
   if(emp&&h.cls==='ladino')rogEmp(h,S,t,mult,o);
@@ -6243,13 +6272,17 @@ function renderPan(){
       sfx('tr_equip',.7);G.fx.push({k:'ring',x:G.hero.x,y:G.hero.y,life:.5,max:.5,col:'#ffe08a'});afterPts();});
     B.querySelectorAll('[data-a]').forEach(e=>e.onclick=()=>panAct(e.dataset.a));
   }else{
-    const pts=atPoints();
-    let html=`<div class="avl"><span>Pontos de atributo · ${AT_LV} por nível</span><b>${pts}</b></div>`;
-    ATTR.forEach(([k,n])=>{const d=attrDesc(k),pm=MAIN_ATTR[SAVE.cls]===k;html+=`<div class="atr"><div class="an"><b>${n}${pm?' ★':''}</b><span>${d}</span></div><div class="av">${SAVE.at[k]}</div><button class="pl" data-at="${k}" ${pts>0?'':'disabled'}>+</button></div>`;});
+    const pts=atPoints(),pc=v=>(Math.round(v*1000)/10).toString().replace('.',',')+'%';
+    let html=`<div class="avl"><span>Pontos de atributo · ${AT_LV} por nível<small>Cada atributo rende menos a cada ponto: misture!</small></span><b>${pts}</b></div>`;
+    ATTR.forEach(([k])=>{const S=ATSPEC[k],x=SAVE.at[k]||0,pm=MAIN_ATTR[SAVE.cls]===k,c=atC(k,x);
+      const lines=S.fx.map(([key,lab,pctf])=>{if(key==='hpf')return `<div class="ae"><span>${lab}</span><b>+${ATV.vit*x}</b><i>próx. +${ATV.vit}</i></div>`;
+        const cur=atBonus(k,key),nx=atBonus(k,key,x+1)-cur,fmt=key==='regen'?(v=>(Math.round(v*1000)/10).toString().replace('.',',')+'%'):pc;
+        return `<div class="ae"><span>${lab}</span><b>+${fmt(cur)}</b><i>próx. +${fmt(nx)}</i></div>`;}).join('');
+      html+=`<div class="at2" style="--ac:${S.c}"><div class="ah"><span class="ai">${S.ic}</span><div class="an"><b>${S.n}${pm?' <em>★ Principal ×1,25</em>':''}</b></div><div class="av">${x}</div></div><div class="aeff">${lines}</div><div class="abr"><div class="abf" style="width:${Math.round(c*100)}%"></div><span>${Math.round(c*100)}% do bônus máximo</span></div><div class="abt"><button class="pl" data-at="${k}" data-n="1" ${pts>0?'':'disabled'}>+1</button><button class="pl" data-at="${k}" data-n="5" ${pts>=2?'':'disabled'}>+5</button></div></div>`;});
     html+=`<div class="qs p"><b>Resumo</b></div><div class="stg stl"><div class="s-hp"><span>Vida</span><b>${h.maxhp}</b></div><div class="s-atk"><span>Ataque</span><b>${Math.round(h.pow)}</b></div><div class="s-def"><span>Defesa</span><b>${Math.round(h.def)}</b></div><div class="s-crit"><span>Crítico</span><b>${Math.round(h.crit*100)}%</b></div><div class="s-kb"><span>Empurrão</span><b>${Math.round(knockChance()*100)}%</b></div><div class="s-kb"><span>Queda</span><b>+${Math.round((knockDownMul()-1)*100)}%</b></div><div class="s-spd"><span>Velocidade</span><b>${Math.round(h.speed)}</b></div><div class="s-spd"><span>Atq/s</span><b>${(1/h.aspd).toFixed(2)}</b></div></div>`;
     html+=`<div class="acts"><button data-a="resetat" ${SAVE.gold<resetCost()?'disabled':''}>Redistribuir atributos (${resetCost()} ouro)</button></div>`;
     B.innerHTML=html;
-    B.querySelectorAll('[data-at]').forEach(e=>e.onclick=()=>{const k=e.dataset.at;if(atPoints()<=0)return;SAVE.at[k]++;sfx('tr_equip',.7);G.fx.push({k:'ring',x:G.hero.x,y:G.hero.y,life:.5,max:.5,col:'#ffe08a'});afterPts();});
+    B.querySelectorAll('[data-at]').forEach(e=>e.onclick=()=>{const k=e.dataset.at,n=Math.min(+e.dataset.n||1,atPoints());if(n<=0)return;SAVE.at[k]+=n;sfx('tr_equip',.7);G.fx.push({k:'ring',x:G.hero.x,y:G.hero.y,life:.5,max:.5,col:'#ffe08a'});afterPts();});
     B.querySelectorAll('[data-a]').forEach(e=>e.onclick=()=>panAct(e.dataset.a));
   }
 }
