@@ -5923,9 +5923,9 @@ function wmEnsure(){let o=$('wmap');if(o)return o;o=document.createElement('div'
   bx.addEventListener('wheel',e=>{e.preventDefault();zoomTo((WM.z||2)*(e.deltaY<0?1.15:1/1.15),e.clientX,e.clientY);},{passive:false});}
  return o;}
 function wmOpen(){const o=wmEnsure();o.classList.add('on');if(MM.big){const m=$('mapfs');if(m)m.classList.remove('on');MM.big=false;}WM.reg=wmRegOf(G.scene==='town'?(G.townMap||'town'):G.map);WM.sig='';WM.oc='';WM.ol=null;WM.sel=(G.scene==='town'?(G.townMap||'town'):G.map);WM.on=1;WM.first=1;wmDraw();clearInterval(WM.iv);WM.iv=setInterval(wmDraw,200);}
-function wmClose(){WM.on=0;clearInterval(WM.iv);const o=$('wmap');if(o)o.classList.remove('on');sfx('ui_click',.4);}
-function wmVis(k){return mmVisited(k);}
-function wmKnown(k){if(wmVis(k))return 2;return MMADJ.some(([a,b])=>(a===k&&wmVis(b))||(b===k&&wmVis(a)))?1:0;}
+function wmClose(){WM.on=0;WM.tp=0;clearInterval(WM.iv);const o=$('wmap');if(o)o.classList.remove('on');sfx('ui_click',.4);}
+function wmVis(k){return WM.tp||mmVisited(k);}
+function wmKnown(k){if(WM.tp)return 2;if(wmVis(k))return 2;return MMADJ.some(([a,b])=>(a===k&&wmVis(b))||(b===k&&wmVis(a)))?1:0;}
 function wmPct(k){if(k===G.map&&MM.disc)return mmPct();const m=MAPS[k];const sv=SAVE.disc&&SAVE.disc[k];if(!m||!sv)return isTw(k)?100:null;const Z=m.zone,gw=Math.ceil(Z.w/100),gh=Math.ceil(Z.h/100);let g=0,t=0;try{const bb=atob(sv);for(let j=4;j<gh-4;j++)for(let i=4;i<gw-4;i++){t++;const n=j*gw+i;if((bb.charCodeAt(n>>3)||0)&(1<<(n&7)))g++;}}catch(e){return null;}return t?Math.min(100,Math.round(g/t*100)):null;}
 const WMK0=['town','zone_estrada','zone_planicie','zone_ponte','zone_colinas','zone_desfiladeiro','zone_passo','zone_goblins','zone_lenhadores','zone_ogros','zone_brejo','zone_brumas','zone_cemiterio','zone_mortos','zone_lago','zone_clareira','zone_eremita','zone_cabana','zone_gruta','zone_mina','cidade2'];
 function wmAssets(){const r=WM.reg||1;let A=(WM.A=WM.A||{})[r];
@@ -5933,7 +5933,7 @@ function wmAssets(){const r=WM.reg||1;let A=(WM.A=WM.A||{})[r];
   fetch(f+'_layout.json').then(x=>x.json()).then(j=>{A.lay=j;A.keys=j.keys;A.ready|=4;wmDraw();});
   const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);A.idd=x.getImageData(0,0,c.width,c.height);A.ready|=2;wmDraw();};im.src=f+'_ids.png';}
  if(A.ready===7){WM.img=A.img;WM.lay=A.lay;WM.keys=A.keys;WM.idd=A.idd;}return A.ready;}
-function wmState(k){if(k==='cidade2')return wmVis('zone_passo')?1:0;return wmKnown(k);}
+function wmState(k){if(WM.tp)return 2;if(k==='cidade2')return wmVis('zone_passo')?1:0;return wmKnown(k);}
 function wmDraw(){const o=wmEnsure();if(!o.classList.contains('on'))return;
  {const t=$('wmrt');if(t&&t._r!==WM.reg){t._r=WM.reg;t.textContent=WMREG[WM.reg];}document.querySelectorAll('#wmtabs button').forEach(b=>b.classList.toggle('on',+b.dataset.r===WM.reg));}
  if(wmAssets()!==7){return;}
@@ -5975,14 +5975,14 @@ function wmDraw(){const o=wmEnsure();if(!o.classList.contains('on'))return;
  if(WM.first){WM.first=0;const bx=o.querySelector('.wmm'),Lc=WM.lay.c[(WM.sel||'').replace('zone_','')]||WM.lay.c[(cur||'').replace('zone_','')];if(bx&&Lc){bx.scrollLeft=Lc[0]*sc-bx.clientWidth/2;bx.scrollTop=Lc[1]*sc-bx.clientHeight/2;}}
  /* cartão de info */
  const inf=$('wmi'),k=WM.sel;let h='';
- if(k&&WM.keys&&WM.keys.includes(k)&&wmState(k)){const v=wmVis(k)&&k!=='cidade2',I=MMINFO[k]||['???',''];
+ if(k&&WM.keys&&WM.keys.includes(k)&&wmState(k)){const v=(WM.tp||wmVis(k)&&k!=='cidade2'),I=MMINFO[k]||['???',''];
   if(!v)h='<b>???</b><span>Área desconhecida — chegue perto da passagem para descobrir.</span>';
   else{const p=wmPct(k),bs=WMBOSS[k];h='<b>'+I[0]+'</b><span>'+I[1]+(p!=null?' · Explorado '+p+'%':'')+(cur===k?' · <em>Você está aqui</em>':'')+'</span>';
    if(bs){const a=(SAVE.hunts&&SAVE.hunts[bs[0]])||0,b2=(SAVE.hunts&&SAVE.hunts[bs[1]])||0;h+='<span>☠ Chefe: '+bs[0]+(a?' ✔ ×'+a:'')+' · Mini: '+bs[1]+(b2?' ✔ ×'+b2:'')+'</span>';}
    if(WMGATE[k])h+='<span>◆ Entrada: '+WMGATE[k]+'</span>';
-   if(k!==cur||true)h+='<button id="wmo">Ver mapa da área</button>';}}
+   if(WM.tp)h+='<button id="wmgo">Viajar para cá</button>';else h+='<button id="wmo">Ver mapa da área</button>';}}
  else h='<span>Toque numa área para ver detalhes.</span>';
- if(inf._h!==h){inf._h=h;inf.innerHTML=h;const b=$('wmo');if(b)b.onclick=()=>{const kk=WM.sel==='cidade2'?'cinzamuro':WM.sel;wmClose();MM.big=true;MM.view=kk;MM.vc[kk]=null;mmFsOpen();MM.view=kk;mmFsDraw();};}
+ if(inf._h!==h){inf._h=h;inf.innerHTML=h;const g=$('wmgo');if(g)g.onclick=()=>{const kk=(WM.sel==='cidade2'||WM.sel==='cinzamuro')?'cinzamuro':WM.sel;wmClose();tpGo(kk);};const b=$('wmo');if(b)b.onclick=()=>{const kk=WM.sel==='cidade2'?'cinzamuro':WM.sel;wmClose();MM.big=true;MM.view=kk;MM.vc[kk]=null;mmFsOpen();MM.view=kk;mmFsDraw();};}
 }
 function mmToggle(){if(MM.big){mmFsClose();return;}MM.big=true;MM.view=G.map;sfx('ui_click',.5);const c=$('mm');if(c)c._w='';mmFsOpen();}
 function plateTag(e){if(e.kind==='hero')return G.scene==='town'?e.name+'  Nv.'+SAVE.lv:'';if(e.kind==='boss')return '';const h=G.hero;return ((h&&(h.tg===e||(h.act&&h.act.tgt===e)))||e.mini||e.elite)?e.name+(e.noLv?'':'  Nv.'+(e.rare?'??':e.lv)):'';}
@@ -7411,8 +7411,8 @@ function setHtml(){return `<div class="sec-h"><span>Ajustes de combate</span></d
   <div class="wr"><img class="ic" src="${UI}greek-temple.png"><div class="tx"><b>Trocar de herói</b><span>Volta à tela inicial (até ${SLOT_N} heróis; o progresso é salvo)</span></div><button class="gb" data-a="set:swap">TROCAR</button></div>
   <div class="wr"><img class="ic" src="${UI}scroll-unfurled.png"><div class="tx"><b>Rever a abertura</b><span>Passa de novo a introdução da história (só na cidade)</span></div><button class="gb" data-a="set:intro">VER</button></div>${tpHtml()}`;}
 /* TESTE: ir direto para qualquer zona do mundo (só com TEST_UNLOCK ligado) */
-function tpHtml(){if(!TEST_UNLOCK)return '';const ks=['cinzamuro',...Object.keys(WNAME)].filter(k=>MMINFO[k]);return `<div class="sec-h"><span>Teste</span></div><div class="wr"><img class="ic" src="${UI}greek-temple.png"><div class="tx"><b>Ir para uma zona</b><span>Atalho de teste, sem missões nem portões</span><select id="tpsel" style="margin-top:4px;width:100%;background:#2a1c10;color:#f6ead0;border:1px solid #6a4a22;padding:4px">${ks.map(k=>`<option value="${k}">${MMINFO[k][0]} · ${MMINFO[k][1]}</option>`).join('')}</select></div><button class="gb" data-a="set:tp">IR</button></div>`;}
-async function tpGo(k){if(G.xfer)return;G.xfer=1;closeWin();try{toast('Viajando…',20000);await ensureMap(k);$('toast').style.display='none';if(k==='cinzamuro')enterTown(false,false,{map:'cinzamuro',at:[800,2420]});else enterDungeon(1,{map:k});}catch(e){console.error(e);toast('Não foi possível viajar.',2500);}G.xfer=0;}
+function tpHtml(){if(!TEST_UNLOCK)return '';return `<div class="sec-h"><span>Teste</span></div><div class="wr"><img class="ic" src="${UI}greek-temple.png"><div class="tx"><b>Viajar pelo mapa</b><span>Abre o mapa-múndi (todas as regiões e zonas liberadas): escolha o lugar e apareça no começo dele, sem missões nem portões</span></div><button class="gb" data-a="set:tp">MAPA</button></div>`;}
+async function tpGo(k){if(G.xfer)return;G.xfer=1;closeWin();try{toast('Viajando…',20000);await ensureMap(k);$('toast').style.display='none';if(k==='cinzamuro')enterTown(false,false,{map:'cinzamuro',at:[800,2420]});else if(k==='town')enterTown(false,false);else enterDungeon(1,{map:k});}catch(e){console.error(e);toast('Não foi possível viajar.',2500);}G.xfer=0;}
 function winLocais(){
   $('wtt').textContent='Atalhos';
   let h='<div class="sub">Toque em um lugar e o herói vai sozinho até lá.</div>';
@@ -7717,7 +7717,7 @@ function winAct(a){
   if(hnAct(a))return;
   if(socAct(a))return;
   const [k,v]=a.split(':');
-  if(k==='set'){if(v==='tp'){const z=$('tpsel');if(z)tpGo(z.value);return;}if(v==='intro'){if(G.scene==='town'&&!G.room){closeWin();setTimeout(()=>introCut(true),200);}else toast('Só na cidade, fora das lojas',1500);return;}if(v==='swap'){writeSave();location.reload();return;}if(v==='joyf'){SAVE.joyF=!JOYF();hudApply();sfx('ui_click');writeSave();winLocais();return;}if(v==='hud'){closeWin();hudEditStart();return;}if(v==='apot'){const L=[.35,.5,.7,0],i=L.indexOf(SAVE.apot==null?.35:SAVE.apot);SAVE.apot=L[(i+1)%L.length];}else SAVE.autoEq=!SAVE.autoEq;sfx('ui_click');writeSave();winLocais();return;}
+  if(k==='set'){if(v==='tp'){closeWin();setTimeout(()=>{wmOpen();WM.tp=1;WM.sig='';wmDraw();},150);return;}if(v==='intro'){if(G.scene==='town'&&!G.room){closeWin();setTimeout(()=>introCut(true),200);}else toast('Só na cidade, fora das lojas',1500);return;}if(v==='swap'){writeSave();location.reload();return;}if(v==='joyf'){SAVE.joyF=!JOYF();hudApply();sfx('ui_click');writeSave();winLocais();return;}if(v==='hud'){closeWin();hudEditStart();return;}if(v==='apot'){const L=[.35,.5,.7,0],i=L.indexOf(SAVE.apot==null?.35:SAVE.apot);SAVE.apot=L[(i+1)%L.length];}else SAVE.autoEq=!SAVE.autoEq;sfx('ui_click');writeSave();winLocais();return;}
   if(k==='leave'){closeWin();G.wp={x:ZONE.exit.x,y:ZONE.exit.y+10};return;}
   if(k==='goto'&&v.startsWith('door')){closeWin();const id=a.split(':')[2],d=ZONE.doors.find(x=>x.id===id);if(d){G.wp={x:d.x,y:d.y-2,target:{kind:'door',id:d.id,room:d.room}};}sfx('ui_confirm',.6);return;}
   if(k==='goto'){closeWin();const t=v==='portal'?{kind:'portal'}:G.npcs.find(n=>n.id===v);G.wp=v==='portal'?{x:ZONE.portal.stand[0],y:ZONE.portal.stand[1],target:t}:{x:t.x,y:t.y+8,target:t};sfx('ui_confirm',.6);return;}

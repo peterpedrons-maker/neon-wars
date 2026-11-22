@@ -85,6 +85,39 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     # ---- FORMATO JOGÁVEL (mesmo do mapa-múndi): tudo fora do contorno é barreira
     INSIDE,CORRM=ZS.inside(name.replace('zone_',''),W,H,exits,wx,wy,True)
     DIN=distance_transform_edt(INSIDE)*GS;DOUT=distance_transform_edt(~INSIDE)*GS
+    _in2=DIN>=130;_ix=distance_transform_edt(~_in2,return_indices=True);_id=_ix[0]*GS;_ii2=_ix[1]
+    def _clip(pts,keep=110,maxd=520):     # estrada/trilha só existe DENTRO do contorno: trechos que escapam são puxados para dentro (curvas curtas) ou cortados (caminho que nem existe)
+        out=[];cur=[]
+        for (ax,ay),(bx,by) in zip(pts,pts[1:]):
+            n=max(1,int(math.hypot(bx-ax,by-ay)//25))
+            for k_ in range(n+1 if (bx,by)==pts[-1] else n):
+                x_=ax+(bx-ax)*k_/n;y_=ay+(by-ay)*k_/n;i_=min(gh-1,max(0,int(y_)//GS));j_=min(gw-1,max(0,int(x_)//GS))
+                if min(x_,y_,W-x_,H-y_)<200 or DIN[i_,j_]>=keep:
+                    if cur and math.hypot(x_-cur[-1][0],y_-cur[-1][1])>110:
+                        if len(cur)>1:out.append(cur)
+                        cur=[]
+                    cur.append((x_,y_))
+                elif _id[i_,j_]<=maxd:
+                    a_,b_=_ix[1][0][i_,j_],_ix[1][1][i_,j_];pt_=(float(wx[a_,b_]),float(wy[a_,b_]))
+                    if cur and math.hypot(pt_[0]-cur[-1][0],pt_[1]-cur[-1][1])>110:     # salto por cima de uma baía: corta a estrada em vez de atravessar a parede
+                        if len(cur)>1:out.append(cur)
+                        cur=[]
+                    cur.append(pt_)
+                else:
+                    if len(cur)>1:out.append(cur)
+                    cur=[]
+        if len(cur)>1:out.append(cur)
+        res=[]
+        for c_ in out:       # suaviza (média móvel) para não ficar serrilhado
+            for _ in range(6):c_=[c_[0]]+[((c_[i-1][0]+c_[i][0]+c_[i+1][0])/3,(c_[i-1][1]+c_[i][1]+c_[i+1][1])/3) for i in range(1,len(c_)-1)]+[c_[-1]]
+            q_=[]
+            for x_,y_ in c_:     # a suavização pode encostar na parede: reprojeta para dentro
+                i_=min(gh-1,max(0,int(y_)//GS));j_=min(gw-1,max(0,int(x_)//GS))
+                if min(x_,y_,W-x_,H-y_)>=200 and DIN[i_,j_]<keep:a_,b_=_ix[1][0][i_,j_],_ix[1][1][i_,j_];x_,y_=float(wx[a_,b_]),float(wy[a_,b_])
+                q_.append((x_,y_))
+            res.append(q_)
+        return res
+    roads=[q for r_ in roads for q in _clip(r_)];trails=[q for r_ in trails for q in _clip(r_,80)]
     _inner=DIN>200;_ii=distance_transform_edt(~_inner,return_indices=True)[1]
     def fixpt(x,y):
         i=min(gh-1,max(0,int(y)//GS));j=min(gw-1,max(0,int(x)//GS))
@@ -383,11 +416,28 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
         _cx,_cy,_R=2500,2300,780
         P[:]=[p for p in P if not(math.hypot(p['x']-_cx,p['y']-_cy)<_R and p.get('k') not in ('flower','grass','tuft'))]
         spawns[:]=[q for q in spawns if math.hypot(q[0]-_cx,q[1]-_cy)>_R+120]
+    # ---- ESTRADAS SEMPRE LIVRES (dono: "estrada passando por dentro de pedras/montanhas"): varredura final tira qualquer
+    #      cenário sólido/grande que invada a faixa da estrada ou da trilha (miúdos como flor/capim/seixo ficam)
+    _small={'flower','grass','tuft','pebble','reed','lily'}
+    def _rd(x,y):
+        d=1e9
+        for pts in list(roads)+list(trails):
+            for (ax,ay),(bx,by) in zip(pts,pts[1:]):
+                vx,vy=bx-ax,by-ay;L=vx*vx+vy*vy or 1;t=max(0,min(1,((x-ax)*vx+(y-ay)*vy)/L));d=min(d,math.hypot(x-ax-t*vx,y-ay-t*vy))
+        return d
+    _rm=0
+    for p_ in list(P):
+        if p_.get('k') in _small:continue
+        if p_['t']=='p' and not p_.get('col'):continue      # sprites decorativos pequenos sem colisão (lampiões etc. já respeitam a estrada)
+        cr=max([c[2] for c in p_.get('col',[])]+[0]);sz=p_.get('s') or 0
+        clr=46+max(cr,sz*.32)
+        if _rd(p_['x'],p_['y'])<clr:P.remove(p_);_rm+=1
+    print('   estradas livres:',name,'removidos',_rm)
     P.sort(key=lambda p:p['y'])
     exs=[dict(id=e['id'],nm=e['nm'],side=e['side'],toSide=e.get('toSide',-1),x=e['rect'][0],y=e['rect'][1],w=e['rect'][2],h=e['rect'][3],to=e['to'],at=e['at'],ready=e['ready'],msg=e.get('msg','')) for e in exits]
     marks=[dict(k='camp',x=cx_,y=cy_,nm='Acampamento') for cx_,cy_ in camps]+[dict(k='poi',x=x_,y=y_,nm='Ponto de interesse') for x_,y_ in pois]+[dict(k='lair',x=x_,y=y_,nm='Covil') for x_,y_ in lairs]+[dict(k='shrine',x=x_,y=y_,nm='Santuário') for x_,y_ in shrines]
     Z=dict(w=W,h=H,props=P,spawns=spawns,plaza=[0,0,1,1],pond=[0,0,1,1],road=[],start=list(start),boss=[W//2,H//2],gate=list(start),
-           region=dict(nome=nome,nv=nv,gs=1/GS,mundo=name,ground=ground or '',shape=shape,**({'wx':wxw} if wxw else {}),**(region_extra or {})),exits=exs,marks=marks,fx=[],wallc=wall,**({'gates':[dict(nm=g['nm'],dg=g['dg'],x=g['x'],y=g['y'],r=g.get('r',130)) for g in gates]} if gates else {}))
+           region=dict(nome=nome,nv=nv,gs=1/GS,mundo=name,ground=ground or '',shape=shape,roads=[[[round(x_),round(y_)] for x_,y_ in r_] for r_ in roads],**({'wx':wxw} if wxw else {}),**(region_extra or {})),exits=exs,marks=marks,fx=[],wallc=wall,**({'gates':[dict(nm=g['nm'],dg=g['dg'],x=g['x'],y=g['y'],r=g.get('r',130)) for g in gates]} if gates else {}))
     json.dump(Z,open(f'{A}/{name}.json','w'),separators=(',',':'))
     from collections import Counter
     print(name,'spawns',len(spawns),'props',len(P),Counter(p.get('k') or p.get('t') for p in P).most_common(8),'paredes',len(wall),'saídas',[e['id'] for e in exs])
