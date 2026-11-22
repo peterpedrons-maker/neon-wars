@@ -1,7 +1,7 @@
 // 🚀 Neon Wars - Game Types
 
 export type PlayerClass = ShipType;
-export type GameScreen = 'menu' | 'how-to-play' | 'class-select' | 'map-select' | 'playing' | 'upgrade' | 'game-over' | 'leaderboard' | 'shop' | 'multiplayer-lobby' | 'achievements';
+export type GameScreen = 'menu' | 'how-to-play' | 'class-select' | 'map-select' | 'playing' | 'upgrade' | 'game-over' | 'leaderboard' | 'shop' | 'achievements';
 
 export type EnemyType =
   // Base enemies
