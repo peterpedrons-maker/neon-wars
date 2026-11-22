@@ -31,3 +31,7 @@ Jogo web (React + Vite + canvas, `src/`), PWA, ~14 mil linhas. Estilo desejado: 
 
 ## Sobre Supabase
 Para jogo offline com ranking: **não precisa agora**. No futuro, ranking global pode usar (a) Supabase com nome anônimo + validação no servidor, ou (b) placar nativo das plataformas (Google Play Games, Game Center, Steam). Decidir só na etapa do ranking.
+
+## Andamento
+- **Etapa 1 (limpeza) FEITA:** removidos multiplayer (`multiplayer.ts`, `MultiplayerLobby`, `CoopGameCanvas`), conta/login (`useAuth`, `AuthScreen`), `src/integrations/supabase` e a dependência `@supabase/supabase-js`. O jogo abre direto no menu; progresso e ranking ficam em `localStorage` (`neon-wars-lb` para o ranking). Build, teste e fluxo menu → nave → mapa conferidos. Ficam arquivados, sem uso: `supabase/` (migrações), `.env` (chaves públicas do projeto antigo) e `bun.lock*` (desatualizados). Os textos de tradução do multiplayer/login continuam em `i18n.tsx` (limpar depois).
+- Próximo: etapa 2 (ranking local com interface pronta) e etapa 3 (música).

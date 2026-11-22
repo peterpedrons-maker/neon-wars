@@ -12,13 +12,10 @@ interface MainMenuProps {
   onLeaderboard: () => void;
   onHowToPlay: () => void;
   onShop: () => void;
-  onMultiplayer: () => void;
   onAchievements: () => void;
-  username?: string;
-  onLogout?: () => void;
 }
 
-const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, onLeaderboard, onHowToPlay, onShop, onMultiplayer, onAchievements, username, onLogout }) => {
+const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, onLeaderboard, onHowToPlay, onShop, onAchievements }) => {
   const { t, lang, setLang } = useLanguage();
 
   useEffect(() => {
@@ -82,11 +79,6 @@ const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, 
           style={{ background: 'linear-gradient(135deg, rgba(0,229,255,0.2), rgba(191,90,242,0.2))', borderColor: '#0ff', boxShadow: '0 0 20px rgba(0,255,255,0.3), inset 0 0 15px rgba(0,255,255,0.1)' }}>
           {t('play')}
         </button>
-        <button onClick={() => handleClick(onMultiplayer)} onMouseEnter={playHover}
-          className="py-2.5 sm:py-3 px-8 text-base sm:text-lg font-bold rounded-lg text-[#39ff14] border border-[#39ff14]/30 transition-all hover:border-[#39ff14] hover:shadow-[0_0_15px_rgba(57,255,20,0.3)] font-mono"
-          style={{ background: 'rgba(57,255,20,0.05)' }}>
-          {t('multiplayer_coop')}
-        </button>
         <button onClick={() => handleClick(onShop)} onMouseEnter={playHover}
           className="py-2.5 sm:py-3 px-8 text-base sm:text-lg font-bold rounded-lg text-[#bf5af2] border border-[#bf5af2]/30 transition-all hover:border-[#bf5af2] hover:shadow-[0_0_15px_rgba(191,90,242,0.3)] font-mono"
           style={{ background: 'rgba(191,90,242,0.05)' }}>
@@ -109,17 +101,6 @@ const MainMenu: React.FC<MainMenuProps> = ({ plasma, stats, milestones, onPlay, 
         </button>
       </div>
 
-      {username && (
-        <div className="mt-4 flex items-center gap-3">
-          <span className="text-xs font-mono text-[#6080aa]">👤 {username}</span>
-          {onLogout && (
-            <button onClick={() => { playClick(); onLogout(); }}
-              className="text-xs font-mono text-[#ff4060] hover:text-[#ff6080] transition-colors">
-              {t('logout')}
-            </button>
-          )}
-        </div>
-      )}
       <div className="mt-4 text-xs sm:text-sm text-[#203050] font-mono text-center">{t('controls_hint')}</div>
     </div>
   );
