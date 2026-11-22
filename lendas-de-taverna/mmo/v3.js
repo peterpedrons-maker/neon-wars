@@ -512,6 +512,9 @@ function drawEnt(sc,e,frame){
 const tmp=new T.Vector3();
 function toScreen(x,y,hpx){tmp.set(x*U,(hpx||0)*U/CT,y*U).project(cam);return [(tmp.x+1)/2*stageEl.clientWidth,(1-tmp.y)/2*stageEl.clientHeight,tmp.z];}
 V3.toScreen=toScreen;
+const _rc=new T.Raycaster(),_pl=new T.Plane(new T.Vector3(0,1,0),0),_hit=new T.Vector3(),_nd=new T.Vector2();
+/* ponto do MUNDO (px do jogo) sob o cursor: raio da câmera até o chão — usado pela mira do mouse (PC) */
+V3.fromScreen=function(sx,sy){if(!cam)return null;const r=stageEl.getBoundingClientRect();_nd.set((sx-r.left)/r.width*2-1,-((sy-r.top)/r.height)*2+1);cam.updateMatrixWorld();_rc.setFromCamera(_nd,cam);return _rc.ray.intersectPlane(_pl,_hit)?[_hit.x/U,_hit.z/U]:null;};
 function pxScale(x,y){const a=toScreen(x,y,0),b=toScreen(x,y,10);return Math.max(.2,Math.abs(a[1]-b[1])/10);}
 V3.pick=function(cx,cy){const r=stageEl.getBoundingClientRect(),nx=(cx-r.left)/r.width*2-1,ny=-((cy-r.top)/r.height)*2+1;
   const ray=new T.Raycaster();ray.setFromCamera({x:nx,y:ny},cam);const o=ray.ray.origin,d=ray.ray.direction;if(Math.abs(d.y)<1e-5)return [G.hero.x,G.hero.y];
