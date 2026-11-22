@@ -123,7 +123,7 @@ function makeGrass(gTex,GWu,GHu,add){
   const N=GFX==='baixo'?0:GFX==='medio'?7000:13000;if(!N)return null;const P=36;
   const blade=(a,h,w)=>[[-w,0,0],[w,0,0],[0,h,0]].map(v=>[v[0]*Math.cos(a)+v[2]*Math.sin(a),v[1],-v[0]*Math.sin(a)+v[2]*Math.cos(a)]);
   const pos=[],col=[],idx=[];let vi=0;
-  for(let b=0;b<3;b++){const a=b*Math.PI/3+.3,h=.31+.11*(b%2),w=.095;const q=blade(a,h,w);const lean=(b-1)*.06;q.forEach((v,i)=>{pos.push(v[0]+(i===2?Math.cos(a+1.57)*lean*h:0),v[1],v[2]);col.push(i===2?1:.38,i===2?1:.38,i===2?1:.38);});idx.push(vi,vi+1,vi+2);vi+=3;}
+  for(let b=0;b<3;b++){const a=b*Math.PI/3+.3,h=.31+.11*(b%2),w=.07;const q=blade(a,h,w);const lean=(b-1)*.06;q.forEach((v,i)=>{pos.push(v[0]+(i===2?Math.cos(a+1.57)*lean*h:0),v[1],v[2]);col.push(i===2?1:.38,i===2?1:.38,i===2?1:.38);});idx.push(vi,vi+1,vi+2);vi+=3;}
   const g=new T.InstancedBufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.setAttribute('normal',new T.Float32BufferAttribute(pos.map((v,i)=>i%3===1?1:0),3));g.setIndex(idx);g.instanceCount=N;
   const off=new Float32Array(N*3);let sd=12345;const rnd=()=>{sd=(sd*1664525+1013904223)>>>0;return sd/4294967296;};
   for(let i=0;i<N;i++){off[i*3]=rnd()*P;off[i*3+1]=rnd()*P;off[i*3+2]=rnd();}
@@ -141,7 +141,7 @@ function makeGrass(gTex,GWu,GHu,add){
      .replace('#include <project_vertex>','vec4 mvPosition=viewMatrix*vec4(transformed+vec3(wp.x,0.,wp.y),1.);gl_Position=projectionMatrix*mvPosition;')
      .replace('#include <color_vertex>',`vec2 wp=uC+mod(aO.xy-uC+uP*.5,uP)-uP*.5;vec2 uvg=wp/uWH;
        vec3 gc=texture2D(uG,uvg).rgb;float gr=step(.0,wp.x)*step(wp.x,uWH.x)*step(.0,wp.y)*step(wp.y,uWH.y)*smoothstep(1.02,1.16,gc.g/max(gc.r,.001))*smoothstep(.95,1.2,gc.g/max(gc.b,.001));
-       float dc=length(wp-uC),fade=1.-smoothstep(10.,16.,dc);float hs=(.55+.7*aO.z)*gr*fade*1.0;
+       float dc=length(wp-uC),fade=1.-smoothstep(10.,16.,dc);float hs=(.55+.7*aO.z)*gr*fade*.45;
        #include <color_vertex>
 #ifdef USE_COLOR
 vColor.rgb=color*mix(.3,.62,position.y/.5)*(gc*vec3(.8,.95,.7)+vec3(.0,.02,.0));
@@ -1023,7 +1023,7 @@ function render3(){
   for(const s of scn.smoke){s.t+=dt;const u=(s.t%4)/4;s.sp.position.set(s.x+u*.9,s.y+u*2.6,s.z+Math.sin(u*5+s.t)*.1);const q=.5+u*1.8;s.sp.scale.set(q,q,1);s.sp.material.opacity=Math.sin(u*Math.PI)*.35*(1-n*.4);}
   if(V3.proc&&V3.proc.stU){const q=V3.proc.stU;if(!ZONE.room&&!ZONE.dark&&h){const v=new T.Vector3(h.x*U,1.1,h.y*U).project(cam),bs=R.getDrawingBufferSize(new T.Vector2());q.hp.value.set((v.x*.5+.5)*bs.x,(v.y*.5+.5)*bs.y);q.hz.value=(v.z+1)/2;q.r.value=bs.x*.2;}else q.r.value=0;}
   try{syncDecals();}catch(e){}try{syncGroundFx();}catch(e){}try{syncGps();}catch(e){}try{syncM3();}catch(e){console.error('m3',e);}
-  windTick(performance.now()/1000);
+  windTick(window.__wt!=null?window.__wt:performance.now()/1000);
   if(scn.grass)scn.grass.update(camT,G.hero,G.mobs,t);
   if(scn.fill)scn.fill.intensity=.38*(1-Math.min(1,(n||0)*1.3));
   if(scn.rays){const day=Math.max(0,1-(n||0)*1.8)*(window.__rays===0?0:1),cell=9,hsh=(a,b)=>{const v=Math.sin(a*127.1+b*311.7)*43758.5453;return v-Math.floor(v);};let k=0;
