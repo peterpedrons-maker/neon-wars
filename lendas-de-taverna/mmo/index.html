@@ -1036,6 +1036,7 @@ html #bar .acl .slot2 .key,html #bar .acl .atkb .key{display:none!important}
 html #chat div{animation:cfade 9s forwards!important}
 html #bar .acl .slot2.lock{opacity:.6}
 html #bar .acl .slot2 .lv{transform:scale(.8);transform-origin:50% 100%}
+html #qtr{left:8px!important;right:auto!important;width:150px!important}
 html #qtr{opacity:.88}
 html #qtr.cl .qr i{display:none!important}
 html #qtr .qr span{display:none!important}
@@ -6431,7 +6432,10 @@ function socUI(){const s=$('soc');if(!s||s.dataset.b)return;s.dataset.b=1;petLoa
   const q=document.createElement('div');q.id='qtr';s.parentNode.appendChild(q);
   q.onclick=ev=>{if(ev.target.closest('.qth')){SAVE.qcol=(SAVE.qcol===false);sfx('ui_click',.5);writeSave();socRefresh();return;}if(G.winOpen)return;sfx('ui_click');G.qtab='m';openWin('diario');};
   setInterval(qPlace,400);}
-function qPlace(){const q=$('qtr'),m=$('mm'),h=$('hud');if(!q||!m||!h)return;if(MM.big){q.style.display='none';return;}q.style.display='';const r=m.getBoundingClientRect(),hr=h.getBoundingClientRect();{const mn=$('mmenu');if(mn&&r.height>0){const qb=q.getBoundingClientRect();mn.style.setProperty('top',Math.round(Math.max(r.bottom,qb.bottom||0)-hr.top+8)+'px');}}if(r.height>0){q.style.top=Math.round(r.bottom-hr.top+14)+'px';const pg=$('prog');if(pg){pg.style.top=Math.round(r.bottom-hr.top+4)+'px';pg.style.width=Math.round(r.width)+'px';const zn=$('zname');if(zn){zn.style.right='auto';zn.style.left=Math.round(r.left+r.width/2-hr.left)+'px';}}};}
+function qPlace(){const q=$('qtr'),m=$('mm'),h=$('hud');if(!q||!m||!h)return;if(MM.big){q.style.display='none';return;}q.style.display='';const r=m.getBoundingClientRect(),hr=h.getBoundingClientRect();{const mn=$('mmenu');if(mn&&r.height>0)mn.style.setProperty('top',Math.round(r.bottom-hr.top+8)+'px');}
+  /* lista de missões no LADO ESQUERDO, abaixo do painel do herói (nick) e dos ícones de buff/debuff; o medidor de estilo desce junto */
+  {const he=$('hero'),st=$('sts');if(he){const hb=he.getBoundingClientRect(),sb=st?st.getBoundingClientRect():null;let base=hb.bottom;if(sb&&sb.height>2&&getComputedStyle(st).display!=='none')base=Math.max(base,sb.bottom);q.style.top=Math.round(base-hr.top+8)+'px';const sy=$('sty');if(sy){const qb=q.getBoundingClientRect();sy.style.top=Math.round(Math.max(base,qb.bottom)-hr.top+8)+'px';}}}
+  if(r.height>0){const pg=$('prog');if(pg){pg.style.top=Math.round(r.bottom-hr.top+4)+'px';pg.style.width=Math.round(r.width)+'px';const zn=$('zname');if(zn){zn.style.right='auto';zn.style.left=Math.round(r.left+r.width/2-hr.left)+'px';}}};}
 function socRefresh(){if(!SAVE.q)return;socUI();
   const c=qMain(),t=$('qtr');if(t){const L=SAVE.q.d.l,rows=[];{const sq=stCurQ(),sn=stNext();if(sq){const pg=stProg();rows.push(['Principal: '+sq.nm,pg[0],pg[1],pg[0]>=pg[1]?'Fale com '+NPCD[sq.turn].nm:(sq.give[sq.give.length-1]).slice(0,60),false,0]);}else if(sn){const ok=SAVE.lv>=sn.lv;rows.push(['Principal: '+sn.nm,0,1,ok?'Fale com '+NPCD[sn.giver].nm:'Alcance o nível '+sn.lv,false,0]);}for(const x of secActive().slice(0,3)){const pg=qkProg(x);rows.push([x.nm,pg[0],pg[1],'',pg[0]>=pg[1],0]);}}if(c){const v=qVal(c);rows.push([c.nm,v,c.n,c.ds.replace(/\.$/,''),v>=c.n,0]);}else rows.push(['Trilha concluída',1,1,'',1,0]);
     for(const d of L){const v=qVal(d);rows.push([d.nm,v,d.n,d.ds.replace(/\.$/,''),v>=d.n,d.c]);}
