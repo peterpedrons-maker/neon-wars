@@ -1282,15 +1282,17 @@ html.cutm #hud,html.cutm #bar,html.cutm #mmenu,html.cutm #joy,html.cutm #chat,ht
 :root:root #win.bk .sbh span{color:#2a6a2a!important;font-weight:700}
 :root:root #win.bk .sbk em{color:#4a2c14!important}
 :root:root #win.bk .vfoot{padding:0 8px}
-/* ATRIBUTOS v2 */
-.avl small{display:block;font:500 10px var(--f);color:#b8ac90;margin-top:2px;letter-spacing:0}
-.at2{margin:8px 0;padding:10px 12px;background:linear-gradient(180deg,#221b2c,#14101a);border:1px solid #3a3148;border-left:4px solid var(--ac)}
-.at2 .ah{display:flex;align-items:center;gap:10px}.at2 .ai{width:30px;height:30px;display:grid;place-items:center;font-size:17px;color:var(--ac);border:1px solid var(--ac);background:rgba(0,0,0,.35);text-shadow:0 0 8px var(--ac)}
-.at2 .an{flex:1}.at2 .an b{font:700 15px var(--fd,inherit);letter-spacing:.06em;color:var(--ac)}.at2 .an em{font:600 10px var(--f);font-style:normal;color:#ffe08a;margin-left:6px;letter-spacing:0}
-.at2 .av{font:700 26px var(--fd,inherit);color:#ffe08a;min-width:44px;text-align:right;text-shadow:0 0 10px rgba(255,190,70,.4)}
-.at2 .aeff{margin:8px 0 6px;display:flex;flex-direction:column;gap:3px}.at2 .ae{display:flex;align-items:baseline;gap:8px;font-size:12px;color:#d6ccb2}.at2 .ae span{flex:1}.at2 .ae b{color:#fff3c8;font-weight:700}.at2 .ae i{font-style:normal;font-size:10px;color:#8fb48c;min-width:74px;text-align:right}
-.at2 .abr{position:relative;height:12px;background:#0e0a12;border:1px solid #3a3148;margin:6px 0 8px;overflow:hidden}.at2 .abf{height:100%;background:linear-gradient(90deg,color-mix(in srgb,var(--ac) 55%,#000),var(--ac))}.at2 .abr span{position:absolute;inset:0;display:grid;place-items:center;font:600 9px var(--f);color:#fff;text-shadow:0 1px 2px #000}
-.at2 .abt{display:flex;gap:8px;justify-content:flex-end}.at2 .abt .pl{min-width:56px;height:32px}
+/* ATRIBUTOS v2 — tudo numa tela, sem rolagem */
+.atw{display:flex;flex-direction:column;gap:clamp(3px,.7vh,6px);height:100%;min-height:0}
+.atw .avl{flex:0 0 auto}.avl small{display:block;font:500 10px var(--f);color:#b8ac90;margin-top:2px;letter-spacing:0}
+.at3{flex:1 1 0;min-height:44px;max-height:74px;display:flex;align-items:center;gap:8px;padding:4px 8px;background:linear-gradient(180deg,#221b2c,#14101a);border:1px solid #3a3148;border-left:4px solid var(--ac)}
+.at3 .ai{flex:0 0 26px;height:26px;display:grid;place-items:center;font-size:15px;color:var(--ac);border:1px solid var(--ac);background:rgba(0,0,0,.35);text-shadow:0 0 8px var(--ac)}
+.at3 .am{flex:1;min-width:0}.at3 .al{display:flex;align-items:center;gap:6px}.at3 .al b{font:700 13px var(--fd,inherit);letter-spacing:.05em;color:var(--ac)}.at3 .al em{font:600 9px var(--f);font-style:normal;color:#ffe08a}
+.at3 .abr{flex:1;height:5px;background:#0e0a12;border:1px solid #3a3148}.at3 .abf{height:100%;background:var(--ac)}
+.at3 .ac{display:flex;flex-wrap:wrap;gap:1px 8px;margin-top:2px;font-size:10px;color:#cfc5ac}.at3 .ch b{color:#fff3c8}.at3 .ch i{font-style:normal;color:#8fd48c;font-size:9px}
+.at3 .av{flex:0 0 auto;min-width:30px;text-align:right;font:700 20px var(--fd,inherit);color:#ffe08a;text-shadow:0 0 10px rgba(255,190,70,.4)}
+.at3 .abt{flex:0 0 auto;display:flex;flex-direction:column;gap:3px}.at3 .abt .pl{min-width:36px;height:22px;font-size:11px;padding:0}
+.atw .ahint{flex:0 0 auto;font:500 9px var(--f);color:#a89c80;text-align:center}.atw .acts{flex:0 0 auto}
 </style>
 </head>
 <body>
@@ -2922,13 +2924,13 @@ const ATT_NEW=()=>({for:0,des:0,int:0,fe:0,car:0,vit:0,sor:0});
    FÉ: cura e escudo, redução de dano e regeneração · CAR: potência/duração de buffs e acordes, XP e ouro · VIT: vida (+6/ponto) e defesa · SOR: crítico, dano crítico e drops */
 const AT_K=60,AT_MAINX=1.25;
 const ATSPEC={
-  for:{c:'#ff7a5a',ic:'⚔',n:'Força',fx:[['atk','Dano geral',1],['kb','Chance de empurrão',1]]},
-  des:{c:'#7ae0a0',ic:'➶',n:'Destreza',fx:[['aspd','Velocidade de ataque',1],['spd','Velocidade de movimento',1],['dcd','Recarga da esquiva (menor)',1]]},
-  int:{c:'#8aa8ff',ic:'✦',n:'Inteligência',fx:[['sk','Dano das habilidades',1],['cdr','Recarga das habilidades (menor)',1]]},
-  fe:{c:'#ffe08a',ic:'✚',n:'Fé',fx:[['heal','Cura e escudo',1],['dmgred','Dano recebido (menor)',1],['regen','Regeneração de vida/s',1]]},
-  car:{c:'#e08aff',ic:'♪',n:'Carisma',fx:[['buff','Potência e duração de buffs/acordes',1],['xp','Experiência ganha',1],['gold','Ouro ganho',1]]},
-  vit:{c:'#ff9aa8',ic:'♥',n:'Vitalidade',fx:[['hpf','Vida máxima (+6 por ponto)',0],['def','Defesa',1]]},
-  sor:{c:'#ffd24a',ic:'★',n:'Sorte',fx:[['crit','Chance de crítico',1],['critd','Dano crítico',1],['drop','Chance de drop',1]]}
+  for:{c:'#ff7a5a',ic:'⚔',n:'Força',fx:[['atk','Dano',1],['kb','Empurrão',1]]},
+  des:{c:'#7ae0a0',ic:'➶',n:'Destreza',fx:[['aspd','Vel. ataque',1],['spd','Movimento',1],['dcd','−Recarga esquiva',1]]},
+  int:{c:'#8aa8ff',ic:'✦',n:'Inteligência',fx:[['sk','Dano habilidades',1],['cdr','−Recarga habilidades',1]]},
+  fe:{c:'#ffe08a',ic:'✚',n:'Fé',fx:[['heal','Cura/escudo',1],['dmgred','−Dano recebido',1],['regen','Regeneração',1]]},
+  car:{c:'#e08aff',ic:'♪',n:'Carisma',fx:[['buff','Buffs/acordes',1],['xp','XP',1],['gold','Ouro',1]]},
+  vit:{c:'#ff9aa8',ic:'♥',n:'Vitalidade',fx:[['hpf','Vida',0],['def','Defesa',1]]},
+  sor:{c:'#ffd24a',ic:'★',n:'Sorte',fx:[['crit','Crítico',1],['critd','Dano crít.',1],['drop','Drops',1]]}
 };
 const ATMAX={atk:.45,kb:.20,aspd:.30,spd:.12,dcd:.25,sk:.55,cdr:.30,heal:.80,dmgred:.12,regen:.012,buff:.60,xp:.25,gold:.25,def:.20,crit:.25,critd:.40,drop:.20};
 const atEff=(k,x)=>(x||0)*(MAIN_ATTR[SAVE.cls]===k?AT_MAINX:1);
@@ -3004,7 +3006,7 @@ function floatText(x,y,t,col,size=9,life=.9,o){const heal=col==='#8ef08a'&&/^\+\
 function spark(x,y,n=6){for(let i=0;i<n;i++){const a=Math.random()*6.28,s=rnd(40,90);G.fx.push({k:'sp',x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.22,max:.22});}}
 function dmgCalc(att,def,mult=1,critCh=.1){let d=att*rnd(.85,1.15)*mult*(1-Math.min(.85,def/(def+5*att)));let crit=Math.random()<critCh;if(crit)d*=1.8;return {d:Math.max(1,Math.round(d)),crit};}
 function knock(e,fx,fy,force){if(e.kind==='boss'||e.mini||(e.T&&e.T.fixed))return;const d=Math.hypot(fx,fy)||1;e.kvx+=fx/d*force;e.kvy+=fy/d*force;}
-/* EMPURRÃO é um atributo secundário: chance por golpe (base da classe + Força), com intervalo mínimo por alvo; chefes resistem.
+/* EMPURRÃO é um atributo secundário: chance por golpe (base da classe + bônus de Força em %, ver ATSPEC), com intervalo mínimo por alvo; chefes resistem.
    Habilidades com empurrão próprio (> 1,2) continuam garantidas. */
 const KNOCK_CLS={guerreiro:.30,ladino:.10,clerigo:.12,arqueiro:.07,mago:.05,bardo:.07},KNOCK_SUB={barbaro:.20,cavaleiro:.10};
 function knockChance(){const A=SAVE.at||{},g=(G.hero&&G.hero.kbG)||0;return Math.min(.75,(KNOCK_CLS[SAVE.cls]||.1)+(KNOCK_SUB[SAVE.sub]||0)+g/100+uf('kb'));}
@@ -6273,14 +6275,14 @@ function renderPan(){
     B.querySelectorAll('[data-a]').forEach(e=>e.onclick=()=>panAct(e.dataset.a));
   }else{
     const pts=atPoints(),pc=v=>(Math.round(v*1000)/10).toString().replace('.',',')+'%';
-    let html=`<div class="avl"><span>Pontos de atributo · ${AT_LV} por nível<small>Cada atributo rende menos a cada ponto: misture!</small></span><b>${pts}</b></div>`;
+    let html=`<div class="atw"><div class="avl"><span>Pontos de atributo · ${AT_LV} por nível<small>Cada ponto rende menos que o anterior: misture!</small></span><b>${pts}</b></div>`;
     ATTR.forEach(([k])=>{const S=ATSPEC[k],x=SAVE.at[k]||0,pm=MAIN_ATTR[SAVE.cls]===k,c=atC(k,x);
-      const lines=S.fx.map(([key,lab,pctf])=>{if(key==='hpf')return `<div class="ae"><span>${lab}</span><b>+${ATV.vit*x}</b><i>próx. +${ATV.vit}</i></div>`;
+      const chips=S.fx.map(([key,lab],n)=>{if(key==='hpf')return `<span class="ch">${lab} <b>+${ATV.vit*x}</b>${n===0?` <i>+${ATV.vit}</i>`:''}</span>`;
         const cur=atBonus(k,key),nx=atBonus(k,key,x+1)-cur,fmt=key==='regen'?(v=>(Math.round(v*1000)/10).toString().replace('.',',')+'%'):pc;
-        return `<div class="ae"><span>${lab}</span><b>+${fmt(cur)}</b><i>próx. +${fmt(nx)}</i></div>`;}).join('');
-      html+=`<div class="at2" style="--ac:${S.c}"><div class="ah"><span class="ai">${S.ic}</span><div class="an"><b>${S.n}${pm?' <em>★ Principal ×1,25</em>':''}</b></div><div class="av">${x}</div></div><div class="aeff">${lines}</div><div class="abr"><div class="abf" style="width:${Math.round(c*100)}%"></div><span>${Math.round(c*100)}% do bônus máximo</span></div><div class="abt"><button class="pl" data-at="${k}" data-n="1" ${pts>0?'':'disabled'}>+1</button><button class="pl" data-at="${k}" data-n="5" ${pts>=2?'':'disabled'}>+5</button></div></div>`;});
-    html+=`<div class="qs p"><b>Resumo</b></div><div class="stg stl"><div class="s-hp"><span>Vida</span><b>${h.maxhp}</b></div><div class="s-atk"><span>Ataque</span><b>${Math.round(h.pow)}</b></div><div class="s-def"><span>Defesa</span><b>${Math.round(h.def)}</b></div><div class="s-crit"><span>Crítico</span><b>${Math.round(h.crit*100)}%</b></div><div class="s-kb"><span>Empurrão</span><b>${Math.round(knockChance()*100)}%</b></div><div class="s-kb"><span>Queda</span><b>+${Math.round((knockDownMul()-1)*100)}%</b></div><div class="s-spd"><span>Velocidade</span><b>${Math.round(h.speed)}</b></div><div class="s-spd"><span>Atq/s</span><b>${(1/h.aspd).toFixed(2)}</b></div></div>`;
-    html+=`<div class="acts"><button data-a="resetat" ${SAVE.gold<resetCost()?'disabled':''}>Redistribuir atributos (${resetCost()} ouro)</button></div>`;
+        return `<span class="ch">${lab} <b>+${fmt(cur)}</b>${n===0?` <i>+${fmt(nx)}</i>`:''}</span>`;}).join('');
+      html+=`<div class="at3" style="--ac:${S.c}"><span class="ai">${S.ic}</span><div class="am"><div class="al"><b>${S.n}</b>${pm?'<em>★ ×1,25</em>':''}<div class="abr"><div class="abf" style="width:${Math.round(c*100)}%"></div></div></div><div class="ac">${chips}</div></div><div class="av">${x}</div><div class="abt"><button class="pl" data-at="${k}" data-n="1" ${pts>0?'':'disabled'}>+1</button><button class="pl" data-at="${k}" data-n="5" ${pts>=2?'':'disabled'}>+5</button></div></div>`;});
+    html+=`<div class="ahint">Verde = ganho do próximo ponto · barra = quanto do bônus máximo já foi usado</div>`;
+    html+=`<div class="acts"><button data-a="resetat" ${SAVE.gold<resetCost()?'disabled':''}>Redistribuir atributos (${resetCost()} ouro)</button></div></div>`;
     B.innerHTML=html;
     B.querySelectorAll('[data-at]').forEach(e=>e.onclick=()=>{const k=e.dataset.at,n=Math.min(+e.dataset.n||1,atPoints());if(n<=0)return;SAVE.at[k]+=n;sfx('tr_equip',.7);G.fx.push({k:'ring',x:G.hero.x,y:G.hero.y,life:.5,max:.5,col:'#ffe08a'});afterPts();});
     B.querySelectorAll('[data-a]').forEach(e=>e.onclick=()=>panAct(e.dataset.a));
