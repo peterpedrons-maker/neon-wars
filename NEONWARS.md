@@ -64,7 +64,7 @@ Regras: cada arma tem **papel único** (alvo único, multidão, controle, defesa
 | 4 | **Satélites** (Orbitals) | drones orbitam e ferem no contato | +drones, +raio, +velocidade | **Anel de Escudo**: 8 satélites que também **destroem balas inimigas** e disparam lasers para fora |
 | 5 | **Arco Voltaico** (Chain Lightning + Tesla + Lightning Ring) | raio salta entre inimigos próximos | +saltos, +dano, atordoa | **Tempestade**: arcos permanentes ligando até 12 inimigos, atordoamento em cadeia |
 | 6 | **Pulso Nova** (Shockwave + Frost Nova) | anel de choque periódico ao redor da nave, empurra | +raio, +dano, −recarga | **Dupla Nova**: dois anéis seguidos que **apagam todas as balas inimigas** da tela e empurram forte |
-| 7 | **Rastro Incandescente** (Flame Trail + Plasma Field) | deixa fogo no caminho por onde você passa | +duração, +largura, +dano | **Círculo de Fogo**: o rastro fecha um anel e **explode** ao se fechar |
+| 7 | **Raio Ricochete** (NOVA, no lugar do Rastro Incandescente) | raio rápido que **quica de inimigo em inimigo** (3 quicadas) | +quicadas, +dano, +velocidade | **Pinball Neon**: 10 quicadas, cada quicada solta um anel de faíscas; se não houver alvo, ricocheteia nas bordas da tela (nunca desperdiça) |
 | 8 | **Singularidade** (Gravity Well + Void Rift) | buraco negro que puxa inimigos e balas | +raio, +força, +dano | **Colapso**: o buraco negro implode numa explosão gigante e deixa uma fenda que continua puxando |
 | 9 | **Railgun** (Canhão Pesado) | tiro lento e devastador que atravessa tudo em linha | +dano, −recarga, +espessura | **Disparo Duplo**: 2 tiros, tremor de tela e raio residual que queima a linha por 1 s |
 | 10 | **Sentinelas** (Sentry Drones) | drones autônomos que miram e atiram | +drones, +cadência | **Rede Laser**: sentinelas se ligam por feixes formando uma rede que fere quem a cruza |
@@ -73,6 +73,7 @@ Regras: cada arma tem **papel único** (alvo único, multidão, controle, defesa
 
 **Modificadores (5)** — tornam qualquer arma compatível mais forte e criam builds: Perfuração, Ricochete, Guiado (auto-mira), Multi-tiro, Explosivo.
 **Passivas (8):** Dano, Cadência, Velocidade, Área/Alcance, Ímã de XP, Nano-Reparo, Sorte (+crítico), Blindagem.
-Removidas/fundidas: Neon Aura, Raio Cadeia duplicado, Evasão, XP Boost, Vampirismo (podem voltar como passivas se o dono quiser).
+Removidas/fundidas: **Rastro Incandescente (fogo atrás da nave: não é projétil e obriga os inimigos a seguirem o jogador; o dono pediu para tirar)**, Neon Aura, Raio Cadeia duplicado, Evasão, XP Boost, Vampirismo (podem voltar como passivas se o dono quiser).
 
-**Em aberto (decidir com o dono):** o nível 8 exige uma passiva específica (como no Vampire Survivors) ou só chegar ao nível; quantas armas por partida (hoje 3 slots); sinergias entre elementos; padrões de bala dos chefes.
+**Decisões do dono:** (1) **o nível 8 NÃO exige passiva**: basta chegar ao nível; (2) **3 slots de arma** por enquanto (aumentar depois, se fizer sentido); (3) tirar o Rastro Incandescente e acrescentar o **Raio Ricochete**; (4) o Modificador "Ricochete" continua existindo para dar quique a outras armas de projétil (build "raio que ricocheteia").
+**Em aberto:** sinergias entre elementos; padrões de bala dos chefes; como as armas aparecem nas escolhas de nível (raridade/peso); passivas extras.
