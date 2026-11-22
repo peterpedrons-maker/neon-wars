@@ -123,18 +123,19 @@ function makeGrass(gTex,GWu,GHu,add){
   const N=GFX==='baixo'?0:GFX==='medio'?7000:13000;if(!N)return null;const P=36;
   const blade=(a,h,w)=>[[-w,0,0],[w,0,0],[0,h,0]].map(v=>[v[0]*Math.cos(a)+v[2]*Math.sin(a),v[1],-v[0]*Math.sin(a)+v[2]*Math.cos(a)]);
   const pos=[],col=[],idx=[];let vi=0;
-  for(let b=0;b<3;b++){const a=b*Math.PI/3+.3,h=.42+.14*(b%2),w=.11;const q=blade(a,h,w);const lean=(b-1)*.06;q.forEach((v,i)=>{pos.push(v[0]+(i===2?Math.cos(a+1.57)*lean*h:0),v[1],v[2]);col.push(i===2?1:.38,i===2?1:.38,i===2?1:.38);});idx.push(vi,vi+1,vi+2);vi+=3;}
+  for(let b=0;b<3;b++){const a=b*Math.PI/3+.3,h=.31+.11*(b%2),w=.095;const q=blade(a,h,w);const lean=(b-1)*.06;q.forEach((v,i)=>{pos.push(v[0]+(i===2?Math.cos(a+1.57)*lean*h:0),v[1],v[2]);col.push(i===2?1:.38,i===2?1:.38,i===2?1:.38);});idx.push(vi,vi+1,vi+2);vi+=3;}
   const g=new T.InstancedBufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('color',new T.Float32BufferAttribute(col,3));g.setAttribute('normal',new T.Float32BufferAttribute(pos.map((v,i)=>i%3===1?1:0),3));g.setIndex(idx);g.instanceCount=N;
   const off=new Float32Array(N*3);let sd=12345;const rnd=()=>{sd=(sd*1664525+1013904223)>>>0;return sd/4294967296;};
   for(let i=0;i<N;i++){off[i*3]=rnd()*P;off[i*3+1]=rnd()*P;off[i*3+2]=rnd();}
   g.setAttribute('aO',new T.InstancedBufferAttribute(off,3));
-  const U_={uC:{value:new T.Vector2()},uT:{value:0},uG:{value:gTex},uWH:{value:new T.Vector2(GWu,GHu)},uP:{value:P},uPush:{value:Array.from({length:8},()=>new T.Vector3(0,-1e4,0))}};
+  const U_={uC:{value:new T.Vector2()},uT:{value:0},uG:{value:gTex},uWH:{value:new T.Vector2(GWu,GHu)},uP:{value:P},uW:V3.proc?V3.proc.wind:{value:new T.Vector3()},uPush:{value:Array.from({length:8},()=>new T.Vector3(0,-1e4,0))}};
   const m=new T.MeshLambertMaterial({vertexColors:true,side:T.DoubleSide});
   m.onBeforeCompile=sh=>{Object.assign(sh.uniforms,U_);
-    sh.vertexShader='attribute vec3 aO;uniform vec2 uC,uWH;uniform float uT,uP;uniform sampler2D uG;uniform vec3 uPush[8];\n'+sh.vertexShader
+    sh.vertexShader='attribute vec3 aO;uniform vec2 uC,uWH;uniform float uT,uP;uniform sampler2D uG;uniform vec3 uPush[8];uniform vec3 uW;\n'+sh.vertexShader
      .replace('#include <begin_vertex>',`vec3 transformed=position*vec3(1.,hs,1.);
-       float wnd=sin(uT*1.6+wp.x*.7+wp.y*.5)*.5+sin(uT*2.7+wp.y*1.3)*.25;float hb=position.y/.62;
-       transformed.x+=wnd*.16*hb*hb;transformed.z+=cos(uT*1.3+wp.x*.6)*.08*hb*hb;
+       float hb=position.y/.5;float gst=uW.z*(.5+.5*sin(uT*1.9-dot(wp,uW.xy)*.55));
+       float wnd=sin(uT*1.6+wp.x*.7+wp.y*.5)*.4+sin(uT*2.7+wp.y*1.3)*.2;
+       transformed.xz+=uW.xy*(gst*.5+.06)*hb*hb;transformed.x+=wnd*.12*(.5+uW.z)*hb*hb;transformed.z+=cos(uT*1.3+wp.x*.6)*.06*(.5+uW.z)*hb*hb;
        for(int i=0;i<8;i++){vec2 d=wp-uPush[i].xz;float dd=length(d);float f=smoothstep(uPush[i].y>-1e3?1.5:0.,0.,dd)*step(-1e3,uPush[i].y);if(f>0.){vec2 dir=d/max(dd,.001);transformed.xz+=dir*f*hb*.75;transformed.y*=1.-f*.55*hb;}}
        vec3 gTint=gc*1.15;`)
      .replace('#include <project_vertex>','vec4 mvPosition=viewMatrix*vec4(transformed+vec3(wp.x,0.,wp.y),1.);gl_Position=projectionMatrix*mvPosition;')
@@ -143,7 +144,7 @@ function makeGrass(gTex,GWu,GHu,add){
        float dc=length(wp-uC),fade=1.-smoothstep(10.,16.,dc);float hs=(.55+.7*aO.z)*gr*fade*1.0;
        #include <color_vertex>
 #ifdef USE_COLOR
-vColor.rgb=color*mix(.3,.62,position.y/.62)*(gc*vec3(.8,.95,.7)+vec3(.0,.02,.0));
+vColor.rgb=color*mix(.3,.62,position.y/.5)*(gc*vec3(.8,.95,.7)+vec3(.0,.02,.0));
 #endif`)
      ;
     sh.vertexShader=sh.vertexShader.replace('vec3 transformed','vec3 transformed');};
@@ -156,6 +157,9 @@ function size(){const w=stageEl.clientWidth,h=stageEl.clientHeight,d=Math.min(de
 // imagem só-chão da Cripta (as paredes e a plataforma viram geometria 3D)
 let crpFloor=null,crpFloorReq=false;
 function needFloor(){if(crpFloor||crpFloorReq)return;crpFloorReq=true;const im=new Image();im.onload=()=>{crpFloor=im;};im.onerror=()=>{crpFloor=GROUND;};im.src='assets/zone_cripta2_floor.png';}
+function windTick(t){   /* VENTO (dono): direção que vira devagar + rajadas; alimenta grama, árvores, arbustos, água e o som */
+  const ang=.7+.9*Math.sin(t*.021)+.25*Math.sin(t*.07),g=Math.pow(Math.max(0,Math.sin(t*.19+Math.sin(t*.083)*2.2)),3),str=Math.min(1.5,.22+.28*(.5+.5*Math.sin(t*.045))+1.05*g);
+  const W=window.WIND=window.WIND||{};W.ang=ang;W.str=str;if(V3.proc&&V3.proc.wind)V3.proc.wind.value.set(Math.cos(ang),Math.sin(ang),str);}
 V3.dbg=()=>scn;V3.setGfx=l=>{GFX=l;try{localStorage.setItem('hb_gfx',l);}catch(e){}};V3.gfx=()=>GFX;
 V3.active=function(){
   if(!V3.ready||typeof G==='undefined'||!G.on||!G.hero||typeof ZONE==='undefined'||!ZONE||!ATLAS||!GROUND){document.body.classList.remove('v3on');return false;}
@@ -1019,6 +1023,7 @@ function render3(){
   for(const s of scn.smoke){s.t+=dt;const u=(s.t%4)/4;s.sp.position.set(s.x+u*.9,s.y+u*2.6,s.z+Math.sin(u*5+s.t)*.1);const q=.5+u*1.8;s.sp.scale.set(q,q,1);s.sp.material.opacity=Math.sin(u*Math.PI)*.35*(1-n*.4);}
   if(V3.proc&&V3.proc.stU){const q=V3.proc.stU;if(!ZONE.room&&!ZONE.dark&&h){const v=new T.Vector3(h.x*U,1.1,h.y*U).project(cam),bs=R.getDrawingBufferSize(new T.Vector2());q.hp.value.set((v.x*.5+.5)*bs.x,(v.y*.5+.5)*bs.y);q.hz.value=(v.z+1)/2;q.r.value=bs.x*.2;}else q.r.value=0;}
   try{syncDecals();}catch(e){}try{syncGroundFx();}catch(e){}try{syncGps();}catch(e){}try{syncM3();}catch(e){console.error('m3',e);}
+  windTick(performance.now()/1000);
   if(scn.grass)scn.grass.update(camT,G.hero,G.mobs,t);
   if(scn.fill)scn.fill.intensity=.38*(1-Math.min(1,(n||0)*1.3));
   if(scn.rays){const day=Math.max(0,1-(n||0)*1.8)*(window.__rays===0?0:1),cell=9,hsh=(a,b)=>{const v=Math.sin(a*127.1+b*311.7)*43758.5453;return v-Math.floor(v);};let k=0;
