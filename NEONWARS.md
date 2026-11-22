@@ -47,3 +47,32 @@ Para jogo offline com ranking: **não precisa agora**. No futuro, ranking global
 - Já existe chefe: a cada 5 ondas (`BOSS_WAVE_INTERVAL`), com chefe do mapa ou `mothership/vortex/colossus`; **mega-chefes `archon` (onda 15) e `oblivion` (onda 30)**; chefes por mapa (lava_dragon, void_lord, frost_titan…).
 - ~23 armas e ~10 passivas em `abilities.ts`, mais 8 upgrades simples em `upgrades.ts`; 16 naves; vários mapas com inimigos próprios.
 - Sinergias entre armas/passivas: ainda não existem de forma explícita (a investigar).
+
+## Direção visual (dono + proposta)
+- Base: **neon vetorial estilo Geometry Wars** (formas geométricas, brilho/bloom, partículas, grade). É seguro para publicar: o estilo não é protegido; só **não copiar nomes, formas nem sons específicos** do Geometry Wars. É barato de produzir, fica ótimo no celular e entrega "dopamina" por efeito (explosões, rastros, tremor, cores).
+- Cada nave e cada inimigo = **silhueta geométrica própria + cor própria + padrão de movimento próprio** (diferenciação que o dono pediu).
+- Verificar disponibilidade do nome "Neon Wars" nas lojas/marca antes de publicar (nome comum).
+
+## ARMAS v2 — proposta (de 23 para 12; 5 modificadores; 8 passivas)
+Regras: cada arma tem **papel único** (alvo único, multidão, controle, defesa, rajada), **silhueta de efeito própria** e uma **forma máxima (nível 8)** que muda visivelmente o comportamento. Todas ganham etiquetas de elemento (Cinético, Fogo, Gelo, Elétrico, Vazio, Plasma) para as sinergias da etapa seguinte. A arma inicial continua sendo o tiro próprio de cada nave.
+
+| # | Arma (vem de) | Como funciona (nv 1) | Evolução por nível (2–7) | **Nível 8 (forma máxima)** |
+|---|---|---|---|---|
+| 1 | **Raio Prisma** (Ion Beam) | feixe periódico na direção da mira, perfura tudo | +dano, +comprimento, −recarga | **Prisma**: o feixe se divide em 3 e gira 360° por 2 s, queimando |
+| 2 | **Enxame de Mísseis** (Missile Barrage) | 2 mísseis teleguiados por salva | +mísseis, +dano de explosão | **Ogivas em Cacho**: cada míssil explode em 6 mini-mísseis que caçam outros alvos |
+| 3 | **Lâmina Bumerangue** (Boomerang) | lâmina que vai e volta, acerta nas duas passagens | +lâminas, +tamanho, perfura | **Tríade Cortante**: 3 lâminas em órbita ampla que voltam deixando rastro de corte |
+| 4 | **Satélites** (Orbitals) | drones orbitam e ferem no contato | +drones, +raio, +velocidade | **Anel de Escudo**: 8 satélites que também **destroem balas inimigas** e disparam lasers para fora |
+| 5 | **Arco Voltaico** (Chain Lightning + Tesla + Lightning Ring) | raio salta entre inimigos próximos | +saltos, +dano, atordoa | **Tempestade**: arcos permanentes ligando até 12 inimigos, atordoamento em cadeia |
+| 6 | **Pulso Nova** (Shockwave + Frost Nova) | anel de choque periódico ao redor da nave, empurra | +raio, +dano, −recarga | **Dupla Nova**: dois anéis seguidos que **apagam todas as balas inimigas** da tela e empurram forte |
+| 7 | **Rastro Incandescente** (Flame Trail + Plasma Field) | deixa fogo no caminho por onde você passa | +duração, +largura, +dano | **Círculo de Fogo**: o rastro fecha um anel e **explode** ao se fechar |
+| 8 | **Singularidade** (Gravity Well + Void Rift) | buraco negro que puxa inimigos e balas | +raio, +força, +dano | **Colapso**: o buraco negro implode numa explosão gigante e deixa uma fenda que continua puxando |
+| 9 | **Railgun** (Canhão Pesado) | tiro lento e devastador que atravessa tudo em linha | +dano, −recarga, +espessura | **Disparo Duplo**: 2 tiros, tremor de tela e raio residual que queima a linha por 1 s |
+| 10 | **Sentinelas** (Sentry Drones) | drones autônomos que miram e atiram | +drones, +cadência | **Rede Laser**: sentinelas se ligam por feixes formando uma rede que fere quem a cruza |
+| 11 | **Cristais Gélidos** (Raio de Gelo + Frost) | leque de lascas de gelo que desacelera | +lascas, +lentidão, congela | **Congelamento Total**: congela a tela por 1,5 s; quem morre congelado **estilhaça** em dano de área |
+| 12 | **Bomba Fragmentada** (Explosivo + Spray Ácido) | projétil que explode e deixa poça corrosiva | +raio, +dano, +poça | **Cascata**: a explosão gera 3 bombas que explodem em cadeia, cada uma deixando poça |
+
+**Modificadores (5)** — tornam qualquer arma compatível mais forte e criam builds: Perfuração, Ricochete, Guiado (auto-mira), Multi-tiro, Explosivo.
+**Passivas (8):** Dano, Cadência, Velocidade, Área/Alcance, Ímã de XP, Nano-Reparo, Sorte (+crítico), Blindagem.
+Removidas/fundidas: Neon Aura, Raio Cadeia duplicado, Evasão, XP Boost, Vampirismo (podem voltar como passivas se o dono quiser).
+
+**Em aberto (decidir com o dono):** o nível 8 exige uma passiva específica (como no Vampire Survivors) ou só chegar ao nível; quantas armas por partida (hoje 3 slots); sinergias entre elementos; padrões de bala dos chefes.
