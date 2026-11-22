@@ -57,7 +57,7 @@ const hex=(s,d)=>{try{const v=parseInt(String(s||'').replace('#','').slice(0,6),
 function buildScene(key){
   const mood=ZONE.room?'room':ZONE.dark?'dark':(key==='town'||key==='cinzamuro')?'town':'field';
   const rnd=rndSeed(11);
-  const sc={key,mood,grp:new T.Group(),houses:[],winMats:[],sources:[],pool:[],glows:[],smoke:[],chimneys:[],fires:[],fireGeos:[],ents:new Map(),labels:new Map(),dist:mood==='room'?12:mood==='town'?12.5:20,used:0};
+  const sc={key,mood,grp:new T.Group(),houses:[],winMats:[],sources:[],pool:[],glows:[],smoke:[],chimneys:[],fires:[],fireGeos:[],ents:new Map(),labels:new Map(),dist:mood==='room'?12:20,used:0};
   const g=sc.grp,add=o=>{g.add(o);return o;};
   S.add(g);
   const aTex=texOf(ATLAS,1),AW=ATLAS.width,AH=ATLAS.height,GWu=ZONE.w*U,GHu=ZONE.h*U;
