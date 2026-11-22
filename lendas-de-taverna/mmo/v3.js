@@ -143,7 +143,7 @@ function buildScene(key){
   const aTex=texOf(ATLAS,1),AW=ATLAS.width,AH=ATLAS.height,GWu=ZONE.w*U,GHu=ZONE.h*U;
   sc.hemi=new T.HemisphereLight(0xcfe3ff,mood==='field'||mood==='town'?0x7a5a8a:0x4a5a3a,.8);   /* chão do hemisfério roxo-quente: as sombras ficam coloridas, não cinza */sc.sun=new T.DirectionalLight(0xfff0d0,1.0);sc.sun.position.set(-8,14,10);add(sc.hemi);add(sc.sun);if(mood==='field'||mood==='town'){sc.fill=new T.DirectionalLight(0xffc890,.38);sc.fill.position.set(8,6,-10);add(sc.fill);}   /* luz de preenchimento quente (levanta o miolo das matas sem apagar o contraste) */
   sc.hl=new T.PointLight(0xffb870,0,10,2);add(sc.hl);
-  if(mood==='field'){const sh=sc.sun.shadow;sc.sun.castShadow=true;sh.mapSize.set(2048,2048);sh.radius=3;const c=sh.camera;c.left=-17;c.right=17;c.top=17;c.bottom=-17;c.near=1;c.far=60;sh.bias=-.0006;sh.normalBias=.03;add(sc.sun.target);}
+  if(mood==='field'||mood==='town'){const sh=sc.sun.shadow;sc.sun.castShadow=true;sh.mapSize.set(2048,2048);sh.radius=3;const c=sh.camera;c.left=-17;c.right=17;c.top=17;c.bottom=-17;c.near=1;c.far=60;sh.bias=-.0006;sh.normalBias=.03;add(sc.sun.target);}
   // ---- chão
   let dgrid=null;
   if(mood==='room'){
@@ -453,7 +453,7 @@ function drawEnt(sc,e,frame){
   const el=(G.crp&&typeof crpElev==='function'?crpElev(e):0)*U/CT,zz=(e.zoff||0)*U/CT;   /* andar e esquivar só deslizam; saltos de habilidade (zoff) continuam */
   r.root.position.set(e.x*U,el,e.y*U);r.me.position.y=zz;if(r.gh)r.gh.position.y=zz;
   const sw=e.kind==='hero'?22:e.kind==='boss'?40:(e.T?e.T.sw:22),sr=(e.T&&e.T.shr)||sw*.62,fl=zz?Math.min(.6,zz*CT/U/220):0,bs=sr*3.1*U/1.3*(1-fl);
-  r.bl.scale.set(bs,bs,1);r.bl.material.opacity=Math.min(1,al*(1-fl)*(sc.mood==='dark'?.9:1));
+  const sdv=sc.sd||[0,0,.3];r.bl.position.set(sdv[0]*sdv[2]*.45*(1-fl),.03,sdv[1]*sdv[2]*.45*(1-fl));r.bl.scale.set(bs*(1+.25*sdv[2]),bs,1);r.bl.material.opacity=Math.min(1,al*(1-fl)*(sc.mood==='dark'?.9:1)*1.5);   /* sombra de contato: deslocada para longe do sol, mais alongada com o sol baixo, mais escura */
   if(r.ring){const p=.5+.5*Math.sin(G.t*4+e.x),q=(sw*.8+3*p)*U;r.ring.scale.set(q*1.1,q*1.1,1);r.ring.visible=!e.dead;}
   return r;
 }
@@ -941,7 +941,16 @@ function render3(){
   if(!camT)camT=new T.Vector3(tx,0,tz);camT.x+=(tx-camT.x)*.5;camT.z+=(tz-camT.z)*.5;
   const sh=G.shake>0?G.shake:0;cam.position.set(camT.x+(Math.random()-.5)*sh*.3,.9+Math.sin(TILT)*dist,camT.z-1+Math.cos(TILT)*dist);cam.lookAt(camT.x,.9,camT.z-1);
   if(scn.fades&&scn.fades.length&&V3.proc&&G.hero&&!window.__nofade){cam.updateMatrixWorld();const hx=G.hero.x*U,hz=G.hero.y*U,tg=[hx,.9,hz],near=[];for(const m of G.mobs){if(m.dead||m.hide)continue;const dx=m.x*U-hx,dz=m.y*U-hz,d=dx*dx+dz*dz;if(d<400)near.push([d,m]);}near.sort((a,b)=>a[0]-b[0]);for(const [,m] of near.slice(0,24))tg.push(m.x*U,.9,m.y*U);V3.proc.fadeTick(scn.fades,cam.position.x,cam.position.y,cam.position.z,tg,dt);}
-  if(mood==='field'){scn.sun.position.set(camT.x-9,15,camT.z+7);scn.sun.target.position.set(camT.x,0,camT.z);scn.sun.target.updateMatrixWorld();scn.sun.castShadow=sunI>.35;}
+  if(mood==='field'||mood==='town'){
+    /* SOL (dono): nasce a leste ao amanhecer, sobe, cruza o céu e se põe a oeste; de noite a luz vira lua (fraca, azulada, do lado oposto). Sombras longas e alaranjadas no nascer/pôr. */
+    const tt=((TOD.t||.4)%1),ds=(tt-.23)/.54,day=ds>0&&ds<1,ang=Math.PI*Math.min(1,Math.max(0,ds)),el=day?Math.sin(ang):0,az=-Math.cos(ang);
+    let dx,dy,dz;if(day){dx=az*.9;dy=Math.max(.16,el*.95);dz=.45*(1-el)+.25;}else{const nn=tt>=.77?(tt-.77)/.46:(tt+.23)/.46,a2=Math.PI*Math.min(1,Math.max(0,nn));dx=-Math.cos(a2)*.7;dy=Math.max(.5,Math.sin(a2));dz=-.4;}
+    const R=24,Lm=Math.hypot(dx,dy,dz)||1;scn.sun.position.set(camT.x+dx/Lm*R,dy/Lm*R,camT.z+dz/Lm*R);scn.sun.target.position.set(camT.x,0,camT.z);scn.sun.target.updateMatrixWorld();
+    const warm=day?Math.pow(1-el,2.2):0;
+    if(day){sunI=(.35+1.55*Math.pow(el,.7))*(mood==='town'?.95:1);scn.sun.color.setRGB(1,.96-.34*warm,.84-.56*warm);hemi=(mood==='field'?.62:.56)+.18*el-.0*warm;scn.hemi.intensity=hemi;scn.hemi.color.setRGB(.8-.1*warm,.88-.2*warm,1-.45*warm);}
+    else{sunI=.32;scn.sun.color.setHex(0x8fa6ff);}
+    scn.sd=[-dx/Lm,-dz/Lm,Math.min(1.6,Math.max(.25,(1-dy/Lm)*1.6))];
+    scn.sun.intensity=sunI;scn.sun.castShadow=sunI>.3;scn.sun.shadow.radius=day?2+4*(1-el):5;}
   G.cam.rx=Math.round(G.cam.x);G.cam.ry=Math.round(G.cam.y);
   // ---- entidades
   const h=G.hero,list=[h];
