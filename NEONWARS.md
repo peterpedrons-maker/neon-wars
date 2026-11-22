@@ -35,3 +35,15 @@ Para jogo offline com ranking: **não precisa agora**. No futuro, ranking global
 ## Andamento
 - **Etapa 1 (limpeza) FEITA:** removidos multiplayer (`multiplayer.ts`, `MultiplayerLobby`, `CoopGameCanvas`), conta/login (`useAuth`, `AuthScreen`), `src/integrations/supabase` e a dependência `@supabase/supabase-js`. O jogo abre direto no menu; progresso e ranking ficam em `localStorage` (`neon-wars-lb` para o ranking). Build, teste e fluxo menu → nave → mapa conferidos. Ficam arquivados, sem uso: `supabase/` (migrações), `.env` (chaves públicas do projeto antigo) e `bun.lock*` (desatualizados). Os textos de tradução do multiplayer/login continuam em `i18n.tsx` (limpar depois).
 - Próximo: etapa 2 (ranking local com interface pronta) e etapa 3 (música).
+
+## Visão do jogo (dono)
+- **Gênero:** Vampire Survivors + **bullet hell**, com **foco em BUILD**. Propósito: **dopamina** — explosões, cores, coisas espalhadas na tela, muito feedback.
+- **Armas/builds:** muitas armas e passivas que **combinam entre si** (sinergias e evoluções, como no Vampire Survivors), a build do jogador define a partida.
+- **Inimigos e chefes:** inimigos que atiram padrões (bullet hell) e **chefes bem feitos** (hoje: chefe a cada 5 ondas, mega-chefes `archon` na onda 15 e `oblivion` na 30).
+- **Refazer:** visual inteiro (cenário, naves, fases), **menus** (hoje genéricos e de baixa qualidade), **fluidez** dos movimentos e **diferenciação clara entre as naves** (16 hoje).
+- **Pendente de decisão:** nome das sinergias, lista de armas/evoluções, padrões de bullet hell por chefe, direção de arte.
+
+## Estado atual (conferido no código)
+- Já existe chefe: a cada 5 ondas (`BOSS_WAVE_INTERVAL`), com chefe do mapa ou `mothership/vortex/colossus`; **mega-chefes `archon` (onda 15) e `oblivion` (onda 30)**; chefes por mapa (lava_dragon, void_lord, frost_titan…).
+- ~23 armas e ~10 passivas em `abilities.ts`, mais 8 upgrades simples em `upgrades.ts`; 16 naves; vários mapas com inimigos próprios.
+- Sinergias entre armas/passivas: ainda não existem de forma explícita (a investigar).
