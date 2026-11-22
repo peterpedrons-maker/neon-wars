@@ -489,6 +489,11 @@ html.land #mmenu.col .mbtn.mtgl{height:30px!important}
 html.land #mmenu .mbtn.grp{width:46px!important;min-width:0!important}
 html.land .bag{grid-template-columns:repeat(10,1fr)}
 html.land #qtr{top:96px!important}
+html.land #tBg{display:none!important}
+html.land .pcols{display:flex;gap:12px;height:100%;min-height:0}
+html.land .pcols .pc1{flex:1 1 50%;min-width:0;overflow:auto}html.land .pcols .pc2{flex:1 1 50%;min-width:0;overflow:auto;border-left:1px solid #3a3148;padding-left:12px}
+html.land .pcols .bag{grid-template-columns:repeat(6,1fr)}
+html.land #pan .pdw{max-height:46vh}
 /* PAISAGEM: janelas centralizadas, largura de leitura confortável */
 html.land #win .box,html.land #pan .box{width:min(100%,940px);margin:0 auto}html.land #pan .box{height:94%}html.land #win,html.land #pan{padding:8px}
 .qc:not(.mn){padding:8px 10px}.qc:not(.mn) .qh img{width:28px;height:28px;padding:3px}.qc:not(.mn) .qh b{font-size:13px}.qc:not(.mn) .qh span{font-size:10.5px}.qc:not(.mn) .qp{margin:5px 0 5px;height:13px}
@@ -6257,6 +6262,7 @@ function showTip(){
   t.style.setProperty('--ax',(r.left+r.width/2-pr.left-x)+'px');
 }
 function renderPan(){
+  if(document.documentElement.classList.contains('land')&&panTab==='bg')panTab='eq';   /* paisagem: equipamento e mochila na MESMA tela, em duas colunas */
   const gp=PGRP[panTab]||'pers';PL[gp]=panTab;$('pan').querySelector('.tt span').textContent=PTT[gp];
   ['Eq','At','Bg','Mt','Sk','Tl'].forEach(x=>{const b=$('t'+x);b.style.display=PGRP[x.toLowerCase()]===gp?'':'none';b.classList.toggle('on',panTab===x.toLowerCase());});
   hideTip();
@@ -6264,14 +6270,19 @@ function renderPan(){
   if(panTab==='eq'||panTab==='bg'){
     const isEq=panTab==='eq';
     const sl=k=>{const it=SAVE.eq[k],sel=panSel&&panSel.src==='eq'&&panSel.k===k;return `<div class="pds" data-k="${k}">`+(it?itemCell(it,sel,'eq:'+k,'slot'):`<div class="slot" data-c="none"><div class="ph">${SLOT_NAME[k]}</div></div>`)+'</div>';};
-    let html='';
-    if(isEq){html+=`<div class="hxid"><b>${SAVE.name||C.nome}</b><span>${C.nome}${subOf()?' · '+subOf().nome:''} · Nível ${SAVE.lv}</span></div>`;html+=`<div class="pdw" id="pdw"><canvas id="pdoll"></canvas><div class="pcol l">${['elmo','armadura','luvas','botas'].map(sl).join('')}</div><div class="pcol r">${['arma','amuleto','escudo','anel'].map(sl).join('')}</div><div class="pdh">toque no boneco para girar</div></div>`;
+    const land=document.documentElement.classList.contains('land');
+    const mkEq=()=>{let html='';
+    {html+=`<div class="hxid"><b>${SAVE.name||C.nome}</b><span>${C.nome}${subOf()?' · '+subOf().nome:''} · Nível ${SAVE.lv}</span></div>`;html+=`<div class="pdw" id="pdw"><canvas id="pdoll"></canvas><div class="pcol l">${['elmo','armadura','luvas','botas'].map(sl).join('')}</div><div class="pcol r">${['arma','amuleto','escudo','anel'].map(sl).join('')}</div><div class="pdh">toque no boneco para girar</div></div>`;
     html+=`<div class="pcw"><span>PODER DE COMBATE</span><b>${pcFmt(heroPC())}</b></div>`;
     html+=`<div class="stg stl"><div class="s-hp"><span>Vida</span><b>${h.maxhp}</b></div><div class="s-atk"><span>Ataque</span><b>${Math.round(h.pow)}</b></div><div class="s-def"><span>Defesa</span><b>${Math.round(h.def)}</b></div><div class="s-crit"><span>Crítico</span><b>${Math.round(h.crit*100)}%</b></div><div class="s-kb"><span>Empurrão</span><b>${Math.round(knockChance()*100)}%</b></div><div class="s-spd"><span>Velocidade</span><b>${Math.round(h.speed)}</b></div></div>`;
     }
-    else{html+=`<div class="qs p"><b>Mochila</b><span>${SAVE.inv.length} / ${BAG_MAX}</span></div><div class="bag">`+Array.from({length:Math.max(BAG_MAX,SAVE.inv.length)},(_,i)=>{const it=SAVE.inv[i];return it?itemCell(it,panSel&&panSel.src==='bag'&&panSel.k===i,'bag:'+i,'cell'):'<div class="cell e"></div>';}).join('')+'</div>';
+    return html;};
+    const mkBg=()=>{let html='';
+    {html+=`<div class="qs p"><b>Mochila</b><span>${SAVE.inv.length} / ${BAG_MAX}</span></div><div class="bag">`+Array.from({length:Math.max(BAG_MAX,SAVE.inv.length)},(_,i)=>{const it=SAVE.inv[i];return it?itemCell(it,panSel&&panSel.src==='bag'&&panSel.k===i,'bag:'+i,'cell'):'<div class="cell e"></div>';}).join('')+'</div>';
     html+=`<div class="acts" style="display:none"></div><div class="sub" style="padding:6px 4px">Para vender, fale com o Mercador (Bram).</div>`;}
-    B.innerHTML=html;if(isEq)drawDoll();
+    return html;};
+    let html;if(land)html='<div class="pcols"><div class="pc1">'+mkEq()+'</div><div class="pc2">'+mkBg()+'</div></div>';else html=isEq?mkEq():mkBg();
+    B.innerHTML=html;if(isEq||land)drawDoll();
     B.querySelectorAll('[data-c]').forEach(e=>e.onclick=ev=>{ev.stopPropagation();const c=e.dataset.c;if(c==='none')return;const [src,k]=c.split(':');const nk=src==='bag'?+k:k;if(panSel&&panSel.src===src&&panSel.k===nk)panSel=null;else panSel={src,k:nk};sfx('ui_click',.5);renderPan();});
     B.querySelectorAll('[data-a]').forEach(e=>e.onclick=()=>panAct(e.dataset.a));
     B.onclick=e=>{if(panSel){panSel=null;renderPan();}};
