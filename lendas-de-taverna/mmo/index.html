@@ -3195,7 +3195,9 @@ function skOk(i){const w=skWc(i);return w==='any'||w===wCat();}
 const isSd=it=>it.sd!==undefined?it.sd:SDEF.includes(it.bn);
 function catOk(it,cur){if(!lvOk(it))return false;if(!subWeaponOk(it))return false;if(it.slot!=='arma')return true;return wCatOf(it)===(cur?wCatOf(cur):WCAT[CLASSES[SAVE.cls].atk_]);}
 function hRng(C){const st=hStyle();return st===C.atk_?C.rng:st==='cast'?150:st==='shoot'?170:30;}
-function basePool(slot){const B=BASES[slot];if(slot==='arma'&&SAVE.sub&&SUBW[SAVE.sub]&&Math.random()<.85){const L=(B[SAVE.cls]||[]).filter(x=>SUBW[SAVE.sub][x[0]]);if(L.length)return L;}const cl=Math.random()<.6?SAVE.cls:pick(Object.keys(CLASSES));return B[cl]||B._||B[SAVE.cls];}
+/* DROPS DA SUA CLASSE (dono): 95% dos itens por classe saem da lista da própria classe (estilo Smart Loot do Diablo 3); 5% de qualquer classe */
+const DROP_OWN=.95;
+function basePool(slot){const B=BASES[slot];if(slot==='arma'&&SAVE.sub&&SUBW[SAVE.sub]&&Math.random()<.85){const L=(B[SAVE.cls]||[]).filter(x=>SUBW[SAVE.sub][x[0]]);if(L.length)return L;}const cl=Math.random()<DROP_OWN?SAVE.cls:pick(Object.keys(CLASSES));return B[cl]||B._||B[SAVE.cls];}
 /* --- ataque do herói --- */
 function atkDur(h){const k=hStyle();return k==='cast'?.75:k==='shoot'?.62:.5;}
 function atkFrames(h){const k=hStyle();return k==='cast'?7:k==='shoot'?13:6;}
