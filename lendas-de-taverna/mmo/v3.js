@@ -7,7 +7,8 @@ if(window.V3_OFF)return;
 if(typeof THREE==='undefined'){window.V3_FAIL='three.js ausente';return;}
 const QS=new URLSearchParams(location.search),HD2D=QS.get('hd')==='1',HDFX=QS.get('hd')!=='0'&&QS.get('hd')!=='1';   /* HD-2D REAL é o PADRÃO (dono); ?hd=0 desliga; qualidade em Atalhos > Gráficos (alto/médio/baixo) */
 let GFX=(function(){try{return localStorage.getItem('hb_gfx')||'alto';}catch(e){return 'alto';}})();   /* hd=2: pós-processamento WebGL de verdade (DoF por profundidade, bloom, céu, saturação) */   /* TESTE (dono): ?hd=1 = estilo HD-2D (desfoque tilt-shift + cor) e ?tilt=NN = ângulo da câmera */
-const T=THREE,U=1.3/46,TILT=(+QS.get('tilt')||28)*Math.PI/180,CT=Math.cos(TILT);
+const T=THREE,U=1.3/46,FOVD=+QS.get('fov')||16,DK=Math.tan(16*Math.PI/180)/Math.tan(FOVD*Math.PI/360),   /* FOV vertical menor = menos distorção de perspectiva (o mesmo personagem tem o mesmo tamanho no topo e na base da tela); a câmera recua DK× para manter o enquadramento do FOV 32 antigo */
+      TILT=(+QS.get('tilt')||28)*Math.PI/180,CT=Math.cos(TILT);
 const V3=window.V3={ready:false,err:''};
 let R,S,cam,glc,stageEl,lbBox;
 const scenes=new Map();let scn=null;
@@ -39,7 +40,7 @@ function init(){
     for(const c of ['g','t','b']){const d=document.createElement('div');d.className='hdb '+c;stageEl.insertBefore(d,$('cv').nextSibling);}}
   try{R=new T.WebGLRenderer({canvas:glc,antialias:true,powerPreference:'high-performance'});}catch(err){V3.err='este aparelho não liberou o WebGL';return;}
   R.outputEncoding=T.sRGBEncoding;R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;R.toneMapping=T.ACESFilmicToneMapping;
-  S=new T.Scene();cam=new T.PerspectiveCamera(32,1,.5,200);
+  S=new T.Scene();cam=new T.PerspectiveCamera(FOVD,1,1,420);
   if(HDFX){try{postInit();}catch(e){console.error('post',e);POST=null;}}
   V3.ready=true;
 }
@@ -416,6 +417,7 @@ function entRec(sc,e,S0){let r=sc.ents.get(e);if(r&&r.S0===S0)return r;
   const mat=new T.MeshLambertMaterial({map:tex,transparent:true,alphaTest:.3,emissive:0xffffff,emissiveMap:tex,emissiveIntensity:.3,side:T.DoubleSide});
   if(e.kind==='boss'||e.mini)mat.emissiveIntensity=.7;
   const me=new T.Mesh(geoFor(S0),mat);me.scale.y=1/CT;
+  if(!e.pet&&sc.mood==='field'||sc.mood==='town'){me.castShadow=true;me.customDepthMaterial=new T.MeshDepthMaterial({depthPacking:T.RGBADepthPacking,map:tex,alphaTest:.5,side:T.DoubleSide});}   /* sombra do personagem projetada pelo sol (silhueta do sprite) */
   const root=new T.Group();root.add(me);
   let gh=null;if(e.kind==='hero'||e.kind==='mob'||e.kind==='boss'){const gm=new T.MeshBasicMaterial({map:tex,transparent:true,opacity:e.kind==='hero'?.8:.62,alphaTest:.3,depthFunc:T.GreaterDepth,depthWrite:false,side:T.DoubleSide}),hc=e.kind==='hero'?'vec3(.55,.88,1.)':'vec3(1.,.38,.32)';   /* silhueta colorida: herói azul-claro, inimigos vermelhos (só onde algo está na frente) */
     gm.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\ndiffuseColor.rgb=mix(diffuseColor.rgb,'+hc+',.72);');};gm.customProgramCacheKey=()=>'gh'+(e.kind==='hero'?'h':'m');
@@ -912,7 +914,7 @@ function render3(){
   const nTod=TOD.n||0,wm=TOD.warm||0;
   let n,bgc,fogD,fogC,hemi,sunI,hemC=0xcfe3ff,sunC=0xfff0d0;
   if(mood==='town'||mood==='field'){
-    n=nTod*(mood==='town'?1:.45);hemi=(mood==='field'?1.02:.88)-.62*n;sunI=1.15-.97*n+wm*.2;hemC=n>.5?0x6a82c8:0xcfe3ff;sunC=n>.5?0x8aa0ff:(wm>.4?0xffc890:0xfff0d0);
+    n=nTod*(mood==='town'?1:.45);hemi=(mood==='field'?.74:.66)-.45*n;sunI=1.6-1.35*n+wm*.2;   /* mais sol e menos luz ambiente = sombras fortes (personagens, árvores) */hemC=n>.5?0x6a82c8:0xcfe3ff;sunC=n>.5?0x8aa0ff:(wm>.4?0xffc890:0xfff0d0);
     bgc=_c1.setHex(0xa9c9e6).lerp(_c2.setHex(0x070b1a),Math.min(1,n*1.1));if(wm>.3)bgc.lerp(_c2.setHex(0xe6a468),(wm-.3)*.8*(1-n));
     fogD=.012+.008*n;
     if(mood==='field'){const th=(typeof ZTHEME!=='undefined'&&G.scene==='dungeon')?ZTHEME[famOf(G.zoneLv)]:null;if(th){hemC=new T.Color(hemC).multiply(_c2.set(th.mul)).getHex();}}
@@ -921,7 +923,7 @@ function render3(){
   if(G.map==='zone_pantano'){n=.85;hemi=.8;hemC=0x6a86a8;sunI=.9;sunC=0xa8c4ff;bgc=_c1.setHex(0x142420);fogD=.03;}
   scn.hemi.intensity=hemi;scn.hemi.color.setHex(hemC);scn.sun.intensity=sunI;scn.sun.color.setHex(sunC);
   if(V3.proc)V3.proc.time.value=t;
-  S.background=bgc.clone();S.fog=S.fog||new T.FogExp2(0x9fc4e6,.012);S.fog.color.copy(bgc);S.fog.density=fogD*(POST?.5:1);R.toneMappingExposure=1.0+.15*n+(mood==='dark'?.25:0);
+  S.background=bgc.clone();S.fog=S.fog||new T.FogExp2(0x9fc4e6,.012);S.fog.color.copy(bgc);S.fog.density=fogD*(POST?.5:1)/DK;R.toneMappingExposure=1.0+.15*n+(mood==='dark'?.25:0);
   // ---- câmera (segue o centro da câmera do jogo)
   // zoom cinematográfico: a câmera se afasta quando um chefe/mini-chefe chega e acompanha a luta, depois volta ao normal
   let foc=null,tgtZ=1,chan=0;
@@ -933,7 +935,7 @@ function render3(){
      const ac=foc.act;if(ac&&ac.skill&&ac.t<ac.dur){const wide={rift:.5,charge:.55,zig:.5,leap:.45,dive:.4,echo:.35,spin:.3}[ac.anim];tgtZ+=wide||.22;chan=1;}}}
   if(G.cut&&G.cut.zoom){tgtZ=G.cut.zoom;foc=null;}
   zk+=(tgtZ-zk)*Math.min(1,dt*((G.cut&&G.cut.zoom)?5:(tgtZ>zk?1.6:.9)));
-  const asp=cam.aspect,dist=(window.__cd||scn.dist)*(asp<1?(1+(1-asp)*1.2)*(1+(zk-1)*.7)/(zk):1)*(asp<1?zk:zk);let tx=(G.cam.x+G.LW/2)*U,tz=(G.cam.y+G.LH/2)*U;
+  const asp=cam.aspect,distB=(window.__cd||scn.dist)*(asp<1?(1+(1-asp)*1.2)*(1+(zk-1)*.7)/(zk):1)*(asp<1?zk:zk),dist=DK*(window.__cd||scn.dist)*(asp<1?(1+(1-asp)*1.2)*(1+(zk-1)*.7)/(zk):1)*(asp<1?zk:zk);let tx=(G.cam.x+G.LW/2)*U,tz=(G.cam.y+G.LH/2)*U;
   if(foc&&foc.giant){const dg=Math.hypot(foc.x-G.hero.x,foc.y-G.hero.y),w=.5*Math.max(0,Math.min(1,1-(dg-260)/700));tx+=(foc.x*U-tx)*w;tz+=((foc.y-330)*U-tz)*w;}
   else if(foc&&zk>1.02){const w=Math.min(chan?.62:.45,(zk-1)*.9);tx+=(foc.x*U-tx)*w;tz+=(foc.y*U-tz)*w;}
   if(!camT)camT=new T.Vector3(tx,0,tz);camT.x+=(tx-camT.x)*.5;camT.z+=(tz-camT.z)*.5;
@@ -947,7 +949,7 @@ function render3(){
   if(G.boss&&!(G.boss.dead&&G.boss.deadT>1.2))list.push(G.boss);
   if(G.petE)list.push(G.petE);
   if(G.scene==='town'){for(const q of (G.npcs||[]))list.push(q);for(const q of (G.vill||[]))list.push(q);}else if(G.scene==='dungeon'&&G.npcs&&G.npcs.length){for(const q of G.npcs)list.push(q);}
-  const lim=(dist*1.15)/U*.0+Math.pow(dist*1.6,2);
+  const lim=Math.pow(distB*1.6,2);
   for(const e of list){if(!e||e.hide)continue;const dx=e.x*U-camT.x,dz=e.y*U-camT.z;
     if(e!==h&&dx*dx+dz*dz>lim){const r0=scn.ents.get(e);if(r0){r0.seen=frameNo;r0.root.visible=false;}continue;}
     const r=drawEnt(scn,e,frameNo);if(r)r.root.visible=true;}
@@ -976,9 +978,9 @@ function render3(){
   if(scn.rays){const day=Math.max(0,1-(n||0)*1.8)*(window.__rays===0?0:1),cell=4.5,hsh=(a,b)=>{const v=Math.sin(a*127.1+b*311.7)*43758.5453;return v-Math.floor(v);};let k=0;
     const gx=Math.floor(camT.x/cell),gz=Math.floor(camT.z/cell);
     for(let ix=gx-4;ix<=gx+4&&k<18;ix++)for(let iz=gz-4;iz<=gz+4&&k<18;iz++){const hv=hsh(ix,iz);if(hv<.7||day<=.02)continue;
-      const m=scn.rays.children[k++],bx=(ix+.5+(hsh(iz,ix)-.5)*.9)*cell,bz=(iz+.5+(hsh(ix+3,iz)-.5)*.9)*cell,w=1.1+hsh(ix,iz+7)*1.9,ht=8+hsh(ix+9,iz)*5,dh=Math.hypot(bx-h.x*U,bz-h.y*U),dc=Math.hypot(bx-camT.x,bz-camT.z);
+      const m=scn.rays.children[k++],bx=(ix+.5+(hsh(iz,ix)-.5)*.9)*cell,bz=(iz+.5+(hsh(ix+3,iz)-.5)*.9)*cell,w=.7+hsh(ix,iz+7)*1.1,ht=8+hsh(ix+9,iz)*5,dh=Math.hypot(bx-h.x*U,bz-h.y*U),dc=Math.hypot(bx-camT.x,bz-camT.z);
       m.visible=true;m.position.set(bx,ht*.5,bz);m.scale.set(w,ht,1);m.rotation.y=Math.atan2(cam.position.x-bx,cam.position.z-bz);m.rotation.z=-.34;
-      m.material.uniforms.uA.value=1.15*day*Math.max(0,1-dc/24)*Math.min(1,Math.max(0,(dh-2.2)/3));m.material.uniforms.uT.value=t;}
+      m.material.uniforms.uA.value=.5*day*Math.max(0,1-dc/24)*Math.min(1,Math.max(0,(dh-2.2)/3));m.material.uniforms.uT.value=t;}
     for(;k<18;k++)scn.rays.children[k].visible=false;}
   if(POST){try{postRender(h,bgc,n);}catch(e){console.error('post',e);POST=null;R.setRenderTarget(null);R.render(S,cam);}}else R.render(S,cam);
   overlay2D(h,list);
