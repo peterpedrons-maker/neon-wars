@@ -989,7 +989,7 @@ function render3(){
      const ac=foc.act;if(ac&&ac.skill&&ac.t<ac.dur){const wide={rift:.5,charge:.55,zig:.5,leap:.45,dive:.4,echo:.35,spin:.3}[ac.anim];tgtZ+=wide||.22;chan=1;}}}
   if(G.cut&&G.cut.zoom){tgtZ=G.cut.zoom;foc=null;}
   zk+=(tgtZ-zk)*Math.min(1,dt*((G.cut&&G.cut.zoom)?5:(tgtZ>zk?1.6:.9)));
-  const asp=cam.aspect,distB=(window.__cd||scn.dist)*(asp<1?(1+(1-asp)*1.2)*(1+(zk-1)*.7)/(zk):1)*(asp<1?zk:zk),dist=DK*(window.__cd||scn.dist)*(asp<1?(1+(1-asp)*1.2)*(1+(zk-1)*.7)/(zk):1)*(asp<1?zk:zk);let tx=(G.cam.x+G.LW/2)*U,tz=(G.cam.y+G.LH/2)*U;
+  const asp=cam.aspect,LK=asp>1.1?1+Math.min(.32,(asp-1.1)*.28):1,distB=LK*(window.__cd||scn.dist)*(asp<1?(1+(1-asp)*1.2)*(1+(zk-1)*.7)/(zk):1)*(asp<1?zk:zk),dist=DK*LK*(window.__cd||scn.dist)*(asp<1?(1+(1-asp)*1.2)*(1+(zk-1)*.7)/(zk):1)*(asp<1?zk:zk);let tx=(G.cam.x+G.LW/2)*U,tz=(G.cam.y+G.LH/2)*U;
   if(foc&&foc.giant){const dg=Math.hypot(foc.x-G.hero.x,foc.y-G.hero.y),w=.5*Math.max(0,Math.min(1,1-(dg-260)/700));tx+=(foc.x*U-tx)*w;tz+=((foc.y-330)*U-tz)*w;}
   else if(foc&&zk>1.02){const w=Math.min(chan?.62:.45,(zk-1)*.9);tx+=(foc.x*U-tx)*w;tz+=(foc.y*U-tz)*w;}
   if(!camT)camT=new T.Vector3(tx,0,tz);camT.x+=(tx-camT.x)*.5;camT.z+=(tz-camT.z)*.5;

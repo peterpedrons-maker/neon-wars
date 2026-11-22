@@ -16,6 +16,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 html,body{margin:0;height:100%;background:#000;color:var(--papel);font-family:var(--f);font-size:13px;overflow:hidden;touch-action:manipulation}
 #stage{position:absolute;left:50%;top:0;height:100%;transform:translateX(-50%);background:var(--bg);overflow:hidden}
+html.land #stage{left:0;transform:none}
 canvas#cv{touch-action:none;position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;display:none}
 #gc{position:absolute;inset:0;display:none;z-index:300;align-items:center;justify-content:center;padding:22px;background:rgba(4,3,8,.74);backdrop-filter:blur(2px)}
 #gc.on{display:flex;animation:gcf .14s ease-out}@keyframes gcf{from{opacity:0}to{opacity:1}}
@@ -480,6 +481,16 @@ i.ul{position:absolute;right:2px;top:1px;font:700 9px var(--f);font-style:normal
 .skc .chs{display:flex;flex-wrap:wrap;gap:4px}.skc .chs span{font:600 10.5px var(--f);padding:2px 7px;background:#0d0b11;border:1px solid rgba(217,180,95,.28);color:#e9dcb4}
 .skc.eqd{border-color:var(--ouroE);box-shadow:inset 3px 0 0 var(--ouroE)}.skc .sbt{display:flex;flex-direction:column;gap:6px}
 #pan .box{height:86%}
+/* PAISAGEM: menu lateral vira uma FAIXA horizontal no topo (à esquerda do minimapa), sem cobrir os botões de combate */
+html.land #mmenu{top:8px!important;bottom:auto!important;right:118px!important;flex-direction:row!important;display:flex!important;align-items:center!important;max-width:calc(100% - 330px)}
+html.land #mmenu:not(.col){display:flex!important;grid-template-columns:none!important;padding:3px!important}
+html.land #mmenu .mbtn.mtgl,html.land #mmenu:not(.col) .mbtn.mtgl{width:auto!important;min-width:64px;height:44px!important;grid-column:auto!important;border-bottom:0!important;border-right:1px solid #5a4620!important;margin:0 3px 0 0!important}
+html.land #mmenu.col .mbtn.mtgl{height:30px!important}
+html.land #mmenu .mbtn.grp{width:46px!important;min-width:0!important}
+html.land .bag{grid-template-columns:repeat(10,1fr)}
+html.land #qtr{top:96px!important}
+/* PAISAGEM: janelas centralizadas, largura de leitura confortável */
+html.land #win .box,html.land #pan .box{width:min(100%,940px);margin:0 auto}html.land #pan .box{height:94%}html.land #win,html.land #pan{padding:8px}
 .qc:not(.mn){padding:8px 10px}.qc:not(.mn) .qh img{width:28px;height:28px;padding:3px}.qc:not(.mn) .qh b{font-size:13px}.qc:not(.mn) .qh span{font-size:10.5px}.qc:not(.mn) .qp{margin:5px 0 5px;height:13px}
 .fmode button span{font-size:10px}
 .fmode{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}.fmode button{min-width:0;padding:0 1px;font-size:9.5px;letter-spacing:.02em;overflow:hidden}
@@ -2206,7 +2217,8 @@ function writeSave(){try{SAVE.kills=SAVE.kills||0;localStorage.setItem(slotKey(S
 function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));if(id!=='pan')closePanSafe();if(id)$(id).classList.add('on');
   $('cv').style.display=(id==='hud'||id==='res'||id==='ko')?'block':'none';
   if(AC){if(id==='title'){try{ambStop();}catch(e){}titleMusic();}else if(id==='create')createMusic();}}
-function fitStage(){const w=Math.min(innerWidth,innerHeight*0.62);$('stage').style.width=w+'px';resizeCanvas();}
+/* FORMATO (dono): paisagem é o principal (PC e celular deitado); em retrato continua como antes */
+function fitStage(){const land=innerWidth>innerHeight*.9,w=land?innerWidth:Math.min(innerWidth,innerHeight*0.62);document.documentElement.classList.toggle('land',land);$('stage').style.width=w+'px';resizeCanvas();try{if(window.hudApply)hudApply();}catch(e){}}
 function resizeCanvas(){
   const st=$('stage'),dpr=Math.min(window.devicePixelRatio||1,3),cw=Math.round(st.clientWidth*dpr),ch=Math.round(st.clientHeight*dpr),cv=$('cv');
   cv.width=cw;cv.height=ch;G.K=Math.max(2,Math.round(dpr*1.1));G.LW=Math.ceil(cw/G.K);G.LH=Math.ceil(ch/G.K);
