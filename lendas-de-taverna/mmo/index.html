@@ -3919,7 +3919,8 @@ function bossSnd(k){if(!AC||!sfxGain)return;if(BSND[k]&&BUF[BSND[k]]){sfx(BSND[k
     for(let i=0;i<7;i++){const tt=t+.4+i*.58,o=AC.createOscillator(),gg=AC.createGain();o.frequency.setValueAtTime(75,tt);o.frequency.exponentialRampToValueAtTime(34,tt+.18);_env(gg,tt,.01,.35,.25);o.connect(gg);gg.connect(sfxGain);o.start(tt);o.stop(tt+.3);}
     return;}}
 /* ============ ESQUIVA AUTOMÁTICA + ZONAS DE PERIGO (marcações vermelhas) ============ */
-const DODGE={guerreiro:{t:'roll',fx:'roll',cd:9,d:60,nm:'Rolamento'},ladino:{t:'roll',fx:'vanish',cd:6,d:78,nm:'Passo sombrio'},clerigo:{t:'roll',fx:'roll',cd:9,d:56,nm:'Rolamento'},arqueiro:{t:'roll',fx:'flip',cd:7,d:76,nm:'Salto acrobático'},bardo:{t:'roll',fx:'dance',cd:8,d:62,nm:'Passo de dança'},mago:{t:'blink',fx:'blink',cd:8,d:100,nm:'Teletransporte'}};
+/* esquiva: recarga curta (~metade da antiga) e i-frames (h.inv) cobrindo TODO o movimento + folga de .16s; hurtHero e todo dano de zona/projétil respeitam h.inv */
+const DODGE={guerreiro:{t:'roll',fx:'roll',cd:4.5,d:60,nm:'Rolamento'},ladino:{t:'roll',fx:'vanish',cd:3,d:78,nm:'Passo sombrio'},clerigo:{t:'roll',fx:'roll',cd:4.5,d:56,nm:'Rolamento'},arqueiro:{t:'roll',fx:'flip',cd:3.5,d:76,nm:'Salto acrobático'},bardo:{t:'roll',fx:'dance',cd:4,d:62,nm:'Passo de dança'},mago:{t:'blink',fx:'blink',cd:4.5,d:100,nm:'Teletransporte'}};
 let ZK=.6,PSQ=.5; /* achatamento de efeitos no chao: .6/.5 no desenho 2D antigo; 1 quando o mapa 3D ja projeta o chao em perspectiva (o overlay usa a projecao real do chao) */
 function perspSet(){const on=!!(window.V3&&V3.active&&V3.active());ZK=on?1:.6;PSQ=on?1:.5;}
 function zoneContains(z,p,m=0){if(z.shape==='line'){const c=Math.cos(z.a),s=Math.sin(z.a),dx=p.x-z.x,dy=p.y-z.y,lx=dx*c+dy*s,ly=-dx*s+dy*c;return lx>=-8-m&&lx<=z.len+m&&Math.abs(ly)<=z.w/2+m;}
@@ -4053,7 +4054,7 @@ function drawZones(ctx,cx,cy){perspSet();drawGdec(ctx,cx,cy);drawPools(ctx,cx,cy
 function heroDodge(h,vx,vy,why){const D=DODGE[h.cls];if(!D||h.dcd>0||h.dod||h.state==='ko')return false;if(stHas(h,'atordoado')||(D.t==='roll'&&stHas(h,'preso')))return false;
   let L=Math.hypot(vx,vy)||1;vx/=L;vy/=L;
   if(D.back&&why==='melee'){/* arqueiro salta para trás */}
-  const dx=vx*D.d,dy=vy*D.d;h.dcd=D.cd*(1-Math.min(.6,tf('dcd')));h.act=null;h.inv=(D.t==='blink'?.5:.42);h.row=dir4(vx,vy);
+  const dx=vx*D.d,dy=vy*D.d;h.dcd=D.cd*(1-Math.min(.6,tf('dcd')));h.act=null;h.inv=Math.max(h.inv||0,D.t==='blink'?.62:(D.fx==='flip'?.4:D.fx==='dance'?.38:.34)+.16);h.row=dir4(vx,vy);
   floatText(h.x,h.y-62,D.nm+'!','#cfe9ff',8,.9);dodgeSynth(D.t);
   if(D.t==='blink'){const ox=h.x,oy=h.y;gxRing(ox,oy,34,'#b070ff',6,.55);gxRing(ox,oy,20,'#e0c0ff',4,.4);for(let i=0;i<14;i++){const k=i/13;gxPart(0,{k:'p',sh:'dia',x:ox+dx*k+gxR(-4,4),y:oy+dy*k-gxR(6,22),s:gxR(2.5,4.5),col:i%2?'#e0c0ff':'#b070ff',a:1,z:6},gxR(-20,20),-gxR(10,40),0,gxR(.4,.8));}gxFlash(h.x,h.y-14,40,'#b070ff',.35);gxStar(h.x,h.y-14,26,'#e0c0ff',.3);for(let i=0;i<10;i++)gxPart(0,{k:'p',sh:'dia',x:h.x+gxR(-8,8),y:h.y-gxR(2,26),s:gxR(2.5,4.5),col:i%2?'#e0c0ff':'#b070ff',a:1,z:6},gxR(-30,30),-gxR(20,70),0,gxR(.35,.6));
     h.x+=dx;h.y+=dy;collide(h);h.x=clamp(h.x,14,ZONE.w-14);h.dod={t:0,dur:.34,dx:0,dy:0,type:'blink',p:0,fx:'blink',vx,vy,ox,oy};gxFlash(h.x,h.y-14,40,'#b070ff',.35);gxStar(h.x,h.y-14,26,'#e0c0ff',.3);gxRing(h.x,h.y,30,'#b070ff',6,.4);}
