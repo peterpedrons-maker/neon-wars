@@ -77,3 +77,32 @@ Removidas/fundidas: **Rastro Incandescente (fogo atrás da nave: não é projét
 
 **Decisões do dono:** (1) **o nível 8 NÃO exige passiva**: basta chegar ao nível; (2) **3 slots de arma** por enquanto (aumentar depois, se fizer sentido); (3) tirar o Rastro Incandescente e acrescentar o **Raio Ricochete**; (4) o Modificador "Ricochete" continua existindo para dar quique a outras armas de projétil (build "raio que ricocheteia").
 **Em aberto:** sinergias entre elementos; padrões de bala dos chefes; como as armas aparecem nas escolhas de nível (raridade/peso); passivas extras.
+
+## TIPOS DE ENERGIA (elementos) — proposta v1 (dono: "uns 6 tipos; um deles gravidade")
+Tema **neon** (nada de fogo/gelo de fantasia). Cada tipo tem **cor própria, papel único, status que aplica nos inimigos e efeito visual característico**. Armas só serão (re)desenhadas DEPOIS de fechar os tipos (as 12 armas da seção anterior ficam provisórias; as etiquetas de tipo ali de 5 cores serão refeitas).
+
+| Tipo | Cor | Papel | Status no inimigo | Visual |
+|---|---|---|---|---|
+| **Elétrico** | ciano | espalhar/encadear, controle leve | **Choque**: atordoa por instantes e o dano salta para vizinhos | arcos nervosos, faíscas |
+| **Plasma** | magenta | dano em área, explosões | **Queima**: dano contínuo por 3 s | bolas e explosões grandes, brasas |
+| **Luz** | amarelo-branco | precisão, perfuração, dano alto em linha | **Exposto**: leva +dano do próximo acerto | feixes retos, brilho limpo |
+| **Gravidade** | violeta | agrupar e esmagar, controle de multidão | **Puxado**: é arrastado para o centro | buracos negros, ondas que distorcem |
+| **Corrosão** | verde-limão | enfraquecer, dano ao longo do tempo | **Corroído**: leva +% de dano de todas as fontes e perde velocidade | poças, gotas, fumaça |
+| **Cinético** | laranja | impacto físico, ricochete, escudo | **Empurrado**: knockback; projéteis quicam | balas sólidas, estilhaços, rebotes |
+
+### Regras de combinação ("reações")
+Quando um inimigo tem um status e é atingido por outro tipo, acontece uma reação (efeito extra e visual maior — é onde mora a dopamina e a build):
+- **Gravidade + Plasma = Implosão:** agrupa e explode (dano em área ×).
+- **Gravidade + Cinético = Estilhaços em órbita:** inimigos puxados giram e se chocam.
+- **Gravidade + Luz = Lente:** o feixe é dobrado e amplificado ao cruzar o campo.
+- **Elétrico + Corrosão = Condutor:** o choque se espalha para TODOS os corroídos da tela.
+- **Elétrico + Cinético = Ricochete carregado:** projéteis quicam soltando arcos.
+- **Plasma + Corrosão = Nuvem tóxica explosiva:** poça que explode ao ser acesa.
+- **Luz + Elétrico = Sobrecarga:** o inimigo exposto dispara um raio em linha ao morrer.
+- **Luz + Corrosão / Plasma + Elétrico / Plasma + Cinético / Elétrico + Gravidade ...:** a definir (15 pares no total; começar com as 7 acima, os outros só se fizerem sentido).
+Regra geral: a reação consome o status, tem pequeno tempo de recarga por inimigo e **sempre mostra um efeito grande e legível**.
+
+### Pontos em aberto
+- Inimigos e chefes com fraqueza/resistência a tipos? (por enquanto: NÃO).
+- Cada nave tem um tipo "favorito"? (ajuda a diferenciar naves).
+- Mínimo de tipos por build para ativar reações (ex.: 2 armas de tipos diferentes).
