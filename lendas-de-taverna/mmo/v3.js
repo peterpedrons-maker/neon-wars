@@ -5,7 +5,8 @@
 'use strict';
 if(window.V3_OFF)return;
 if(typeof THREE==='undefined'){window.V3_FAIL='three.js ausente';return;}
-const T=THREE,U=1.3/46,TILT=47*Math.PI/180,CT=Math.cos(TILT);
+const QS=new URLSearchParams(location.search),HD2D=QS.get('hd')==='1';   /* TESTE (dono): ?hd=1 = estilo HD-2D (desfoque tilt-shift + cor) e ?tilt=NN = ângulo da câmera */
+const T=THREE,U=1.3/46,TILT=(+QS.get('tilt')||47)*Math.PI/180,CT=Math.cos(TILT);
 const V3=window.V3={ready:false,err:''};
 let R,S,cam,glc,stageEl,lbBox;
 const scenes=new Map();let scn=null;
@@ -33,6 +34,8 @@ function init(){
   const mk=cl=>{const d=document.createElement('div');d.className=cl;stageEl.insertBefore(d,$('cv').nextSibling);return d;};
   lbBox=document.createElement('div');lbBox.id='v3lb';stageEl.insertBefore(lbBox,$('cv').nextSibling);
   const vg=document.createElement('div');vg.id='v3vg';stageEl.insertBefore(vg,$('cv').nextSibling);
+  if(HD2D){const st2=document.createElement('style');st2.textContent='.hdb{position:absolute;left:0;right:0;pointer-events:none;z-index:1}.hdb.t{top:0;height:34%;-webkit-backdrop-filter:blur(3.2px);backdrop-filter:blur(3.2px);-webkit-mask-image:linear-gradient(#000,transparent);mask-image:linear-gradient(#000,transparent)}.hdb.b{bottom:0;height:26%;-webkit-backdrop-filter:blur(2.4px);backdrop-filter:blur(2.4px);-webkit-mask-image:linear-gradient(transparent,#000);mask-image:linear-gradient(transparent,#000)}.hdb.g{inset:0;height:auto;-webkit-backdrop-filter:saturate(1.18) contrast(1.06) brightness(1.03);backdrop-filter:saturate(1.18) contrast(1.06) brightness(1.03)}';document.head.appendChild(st2);
+    for(const c of ['g','t','b']){const d=document.createElement('div');d.className='hdb '+c;stageEl.insertBefore(d,$('cv').nextSibling);}}
   try{R=new T.WebGLRenderer({canvas:glc,antialias:true,powerPreference:'high-performance'});}catch(err){V3.err='este aparelho não liberou o WebGL';return;}
   R.outputEncoding=T.sRGBEncoding;R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;R.toneMapping=T.ACESFilmicToneMapping;
   S=new T.Scene();cam=new T.PerspectiveCamera(32,1,.5,200);
