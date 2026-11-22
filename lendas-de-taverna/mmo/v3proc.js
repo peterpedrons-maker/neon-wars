@@ -323,7 +323,7 @@ P.forest=function(env,add,rnd,items,theme){const DG=theme==='dungeon'||theme==='
     L.forEach((it,i)=>{const w=it.a[2],h=it.a[3],r=hash(Math.round(it.x),Math.round(it.y),11);let H,R;
       const DM=DIMS[k];
       if(DM){H=h*U/CT*.85*({forge:.7,well:.75,cabinet:.9}[k]||1);R=w*U*.5;}else if(k==='conifer'||k==='broad'||k==='dead'||k==='frost'){H=h*U/CT*.8;R=w*U*.5;}else if(k==='post'){H=h*U/CT*.85;R=1;}
-      else if(k==='rock'||k==='bush'||k==='thorn'){H=Math.max(.5,h*U/CT*.9);R=Math.max(.6,w*U*.6);}
+      else if(k==='rock'||k==='bush'||k==='thorn'){const bk=k==='bush'?.62:1;H=Math.max(.4,h*U/CT*.9*bk);R=Math.max(.45,w*U*.6*bk);}   /* arbustos menores (dono) */
       else if(k==='lamp'||k==='pillar'||k==='banner'||k==='column'||k==='tombstone'||k==='urn'||k==='barrel'||k==='crate'||k==='chest'||k==='coffin'||k==='block'||k==='tomb'){H=h*U/CT*.85;R=w*U*.5;}
       else if(k==='rune'||k==='slime'||k==='blood'){H=1;R=Math.max(.3,Math.max(w,h*1.2)*U*.5);}
       else if(k==='tent'||k==='drums'||k==='totem'||k==='mush'){H=h*U/CT*.85;R=w*U*.5;}
