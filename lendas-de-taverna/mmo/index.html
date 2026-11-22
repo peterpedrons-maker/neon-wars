@@ -1283,16 +1283,22 @@ html.cutm #hud,html.cutm #bar,html.cutm #mmenu,html.cutm #joy,html.cutm #chat,ht
 :root:root #win.bk .sbk em{color:#4a2c14!important}
 :root:root #win.bk .vfoot{padding:0 8px}
 /* ATRIBUTOS v2 — tudo numa tela, sem rolagem */
-.atw{display:flex;flex-direction:column;gap:clamp(3px,.7vh,6px);height:100%;min-height:0}
+.atw{position:relative;display:flex;flex-direction:column;gap:clamp(4px,.8vh,8px);height:100%;min-height:0}
 .atw .avl{flex:0 0 auto}.avl small{display:block;font:500 10px var(--f);color:#b8ac90;margin-top:2px;letter-spacing:0}
-.at3{flex:1 1 0;min-height:44px;max-height:74px;display:flex;align-items:center;gap:8px;padding:4px 8px;background:linear-gradient(180deg,#221b2c,#14101a);border:1px solid #3a3148;border-left:4px solid var(--ac)}
-.at3 .ai{flex:0 0 26px;height:26px;display:grid;place-items:center;font-size:15px;color:var(--ac);border:1px solid var(--ac);background:rgba(0,0,0,.35);text-shadow:0 0 8px var(--ac)}
-.at3 .am{flex:1;min-width:0}.at3 .al{display:flex;align-items:center;gap:6px}.at3 .al b{font:700 13px var(--fd,inherit);letter-spacing:.05em;color:var(--ac)}.at3 .al em{font:600 9px var(--f);font-style:normal;color:#ffe08a}
-.at3 .abr{flex:1;height:5px;background:#0e0a12;border:1px solid #3a3148}.at3 .abf{height:100%;background:var(--ac)}
-.at3 .ac{display:flex;flex-wrap:wrap;gap:1px 8px;margin-top:2px;font-size:10px;color:#cfc5ac}.at3 .ch b{color:#fff3c8}.at3 .ch i{font-style:normal;color:#8fd48c;font-size:9px}
-.at3 .av{flex:0 0 auto;min-width:30px;text-align:right;font:700 20px var(--fd,inherit);color:#ffe08a;text-shadow:0 0 10px rgba(255,190,70,.4)}
-.at3 .abt{flex:0 0 auto;display:flex;flex-direction:column;gap:3px}.at3 .abt .pl{min-width:36px;height:22px;font-size:11px;padding:0}
+.at3{flex:1 1 0;min-height:44px;max-height:78px;display:flex;align-items:center;gap:10px;padding:4px 10px;background:linear-gradient(180deg,#221b2c,#14101a);border:1px solid #3a3148;border-left:4px solid var(--ac)}
+.at3 .ai,.atcard .ai{flex:0 0 30px;height:30px;display:grid;place-items:center;font-size:17px;color:var(--ac);border:1px solid var(--ac);background:rgba(0,0,0,.35);text-shadow:0 0 8px var(--ac)}
+.at3 .am{flex:1;min-width:0}.at3 .al{display:flex;align-items:center;gap:6px}.at3 .al b{font:700 15px var(--fd,inherit);letter-spacing:.05em;color:var(--ac)}.at3 .al em{font:600 9px var(--f);font-style:normal;color:#ffe08a}
+.at3 .abr{height:6px;background:#0e0a12;border:1px solid #3a3148;margin-top:5px}.at3 .abf{height:100%;background:var(--ac)}
+.aq{flex:0 0 auto;width:24px;height:24px;border-radius:50%;border:1px solid #c9a24a;background:rgba(22,16,10,.9);color:#ffd66e;font:700 13px var(--f);padding:0;cursor:pointer}
+.at3 .av{flex:0 0 auto;min-width:32px;text-align:right;font:700 22px var(--fd,inherit);color:#ffe08a;text-shadow:0 0 10px rgba(255,190,70,.4)}
+.at3 .abt{flex:0 0 auto;display:flex;flex-direction:column;gap:3px}.at3 .abt .pl{min-width:40px;height:24px;font-size:12px;padding:0}
 .atw .ahint{flex:0 0 auto;font:500 9px var(--f);color:#a89c80;text-align:center}.atw .acts{flex:0 0 auto}
+.atinfo{position:absolute;inset:0;z-index:5;background:rgba(6,4,10,.78);display:flex;align-items:center;justify-content:center;padding:10px}
+.atcard{width:100%;background:linear-gradient(180deg,#2a2236,#16111d);border:2px solid var(--ac);padding:12px;box-shadow:0 0 24px rgba(0,0,0,.7)}
+.atcard .ah{display:flex;align-items:center;gap:10px}.atcard .ah b{flex:1;font:700 16px var(--fd,inherit);color:var(--ac);letter-spacing:.06em}
+.atcard .ad{margin:8px 0;font-size:12px;color:#e0d6bc;line-height:1.35}
+.atcard .ie{display:flex;align-items:baseline;gap:8px;padding:4px 0;border-top:1px solid #3a3148;font-size:12px;color:#d6ccb2}.atcard .ie span{flex:1}.atcard .ie b{color:#fff3c8}.atcard .ie i{font-style:normal;font-size:10px;color:#8fd48c;min-width:96px;text-align:right}
+.atcard .an2{margin-top:8px;font-size:10px;color:#a89c80;line-height:1.35}
 </style>
 </head>
 <body>
@@ -2923,6 +2929,7 @@ const ATT_NEW=()=>({for:0,des:0,int:0,fe:0,car:0,vit:0,sor:0});
    FOR: dano geral e empurrão · DES: velocidade de ataque, de movimento e recarga da esquiva · INT: dano das habilidades e recarga das habilidades
    FÉ: cura e escudo, redução de dano e regeneração · CAR: potência/duração de buffs e acordes, XP e ouro · VIT: vida (+6/ponto) e defesa · SOR: crítico, dano crítico e drops */
 const AT_K=60,AT_MAINX=1.25;
+const ATDESC={for:'Poder bruto: aumenta o dano de tudo o que você faz e a chance de empurrar inimigos.',des:'Agilidade: ataca e anda mais rápido e recarrega a esquiva em menos tempo.',int:'Domínio das habilidades: elas causam mais dano e recarregam mais rápido.',fe:'Proteção e cura: curas e escudos mais fortes, menos dano recebido e regeneração de vida.',car:'Presença e liderança: buffs e acordes mais fortes e duradouros, além de mais XP e ouro.',vit:'Resistência: mais vida máxima (+6 por ponto) e mais defesa.',sor:'Fortuna: mais chance de crítico, crítico mais forte e mais drops.'};
 const ATSPEC={
   for:{c:'#ff7a5a',ic:'⚔',n:'Força',fx:[['atk','Dano',1],['kb','Empurrão',1]]},
   des:{c:'#7ae0a0',ic:'➶',n:'Destreza',fx:[['aspd','Vel. ataque',1],['spd','Movimento',1],['dcd','−Recarga esquiva',1]]},
@@ -6277,13 +6284,16 @@ function renderPan(){
     const pts=atPoints(),pc=v=>(Math.round(v*1000)/10).toString().replace('.',',')+'%';
     let html=`<div class="atw"><div class="avl"><span>Pontos de atributo · ${AT_LV} por nível<small>Cada ponto rende menos que o anterior: misture!</small></span><b>${pts}</b></div>`;
     ATTR.forEach(([k])=>{const S=ATSPEC[k],x=SAVE.at[k]||0,pm=MAIN_ATTR[SAVE.cls]===k,c=atC(k,x);
-      const chips=S.fx.map(([key,lab],n)=>{if(key==='hpf')return `<span class="ch">${lab} <b>+${ATV.vit*x}</b>${n===0?` <i>+${ATV.vit}</i>`:''}</span>`;
+      html+=`<div class="at3" style="--ac:${S.c}"><span class="ai">${S.ic}</span><div class="am"><div class="al"><b>${S.n}</b>${pm?'<em>★ ×1,25</em>':''}</div><div class="abr"><div class="abf" style="width:${Math.round(c*100)}%"></div></div></div><button class="aq" data-aq="${k}" title="O que faz?">?</button><div class="av">${x}</div><div class="abt"><button class="pl" data-at="${k}" data-n="1" ${pts>0?'':'disabled'}>+1</button><button class="pl" data-at="${k}" data-n="5" ${pts>=2?'':'disabled'}>+5</button></div></div>`;});
+    if(G.atInfo){const k=G.atInfo,S=ATSPEC[k],x=SAVE.at[k]||0,pm=MAIN_ATTR[SAVE.cls]===k;
+      const rows=S.fx.map(([key,lab])=>{if(key==='hpf')return `<div class="ie"><span>${lab}</span><b>+${ATV.vit*x}</b><i>+${ATV.vit} por ponto</i></div>`;
         const cur=atBonus(k,key),nx=atBonus(k,key,x+1)-cur,fmt=key==='regen'?(v=>(Math.round(v*1000)/10).toString().replace('.',',')+'%'):pc;
-        return `<span class="ch">${lab} <b>+${fmt(cur)}</b>${n===0?` <i>+${fmt(nx)}</i>`:''}</span>`;}).join('');
-      html+=`<div class="at3" style="--ac:${S.c}"><span class="ai">${S.ic}</span><div class="am"><div class="al"><b>${S.n}</b>${pm?'<em>★ ×1,25</em>':''}<div class="abr"><div class="abf" style="width:${Math.round(c*100)}%"></div></div></div><div class="ac">${chips}</div></div><div class="av">${x}</div><div class="abt"><button class="pl" data-at="${k}" data-n="1" ${pts>0?'':'disabled'}>+1</button><button class="pl" data-at="${k}" data-n="5" ${pts>=2?'':'disabled'}>+5</button></div></div>`;});
-    html+=`<div class="ahint">Verde = ganho do próximo ponto · barra = quanto do bônus máximo já foi usado</div>`;
+        return `<div class="ie"><span>${lab}</span><b>+${fmt(cur)}</b><i>próx. ponto +${fmt(nx)}</i></div>`;}).join('');
+      html+=`<div class="atinfo" data-aq="x"><div class="atcard" onclick="event.stopPropagation()" style="--ac:${S.c}"><div class="ah"><span class="ai">${S.ic}</span><b>${S.n}</b><button class="aq" data-aq="x">✕</button></div><div class="ad">${ATDESC[k]}</div>${rows}<div class="an2">Máximo possível: bônus cheio em 100% (a barra mostra quanto já foi usado: ${Math.round(atC(k,x)*100)}%). Cada ponto rende menos que o anterior.${pm?' Este é o atributo principal da sua classe: rende ×1,25.':''}</div></div></div>`;}
+    html+=`<div class="ahint">Toque no ? para saber o que cada atributo faz</div>`;
     html+=`<div class="acts"><button data-a="resetat" ${SAVE.gold<resetCost()?'disabled':''}>Redistribuir atributos (${resetCost()} ouro)</button></div></div>`;
     B.innerHTML=html;
+    B.querySelectorAll('[data-aq]').forEach(e=>e.onclick=ev=>{ev.stopPropagation();const k=e.dataset.aq;G.atInfo=(k==='x'||G.atInfo===k)?null:k;sfx('ui_click',.4);renderPan();});
     B.querySelectorAll('[data-at]').forEach(e=>e.onclick=()=>{const k=e.dataset.at,n=Math.min(+e.dataset.n||1,atPoints());if(n<=0)return;SAVE.at[k]+=n;sfx('tr_equip',.7);G.fx.push({k:'ring',x:G.hero.x,y:G.hero.y,life:.5,max:.5,col:'#ffe08a'});afterPts();});
     B.querySelectorAll('[data-a]').forEach(e=>e.onclick=()=>panAct(e.dataset.a));
   }
