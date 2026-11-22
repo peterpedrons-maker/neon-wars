@@ -5516,7 +5516,9 @@ const CXSIZE={gigante:4.533,perna:2.6,ccabeca:1.5,mare:2,cervo:1,alfa:1.25,rato:
  javali:1.05,lobo:1.0,gnoll:1.12,carnical:1.05,mumia:1.12,afogado:1.12,zumbi:1.2,ogrinho:1.15,ogro_lenhador:1.4,tronco:1.45,cav_caido:1.3,gargula:1.15,guarda_c:1.15,ogro:1.3,esqueleto:.95,
  grunk:1.15,morvath:1.2,gorgash:1.35,ratking:1.1,skrix:1.05,presa:1.25,vampiro:1.15,boticario:1.0,rei:1.2};
 Object.assign(CXSIZE,{escorpiao:.8,escorpiao_sal:.85,lagarto:1,salamandra:.95,chacal:.9,lobo_poeira:1.15,cao_guerra:1.15,cao_infernal:1.2,abutre:1,escaravelho:.75,verme:1.2,bandido_deserto:1,saqueador:1.15,atirador_deserto:1,cultista_sol:1,mumia_solar:1.1,kobold:.8,anao_renegado:.9,golem_pedra:1.5,golem_sal:1.45,golem_magma:1.6,cav_negro:1.25,armadura:1.2,mago_batalha:1,imp:.8,troll_mesas:1.5,ogro_deserto:1.4});
-function cxSize(e){const k=cxKeyOf(e);return (k&&CXSIZE[k])||1;}
+/* PROPORÇÃO PADRÃO dos humanoides jogáveis/NPCs (dono: "tamanhos e proporções diferentes"): medido pela largura da cabeça (alvo ≈49px nativos) */
+const CXNORM={h_clerigo:.93,h_mago:.95,n_ladino:.85,n_clerigo:.85,n_bardo:.85,n_guardiao:.82,n_mago:1.0,n_guarda:1.04,n_cacador:1.0,h_bardo:1.0};
+function cxSize(e){const k=cxKeyOf(e);if(!k)return 1;if(CXSIZE[k])return CXSIZE[k];const b=CXNORM[k]||CXNORM[k.replace(/_(machado|martelo|espadacurta|cetro|varinha|flauta|longo)$/,'')];return b||1;}
 function chScale(e){return(e.fury?1.1:1)*(e.ch?1+.14*Math.min(1,e.ch.t/e.ch.dur)+.025*Math.sin(G.t*32):1);}
 function bsc(e){const k=CXON&&cxKeyOf(e);return k&&CXS[k]?CXSC*cxSize(e)*chScale(e):e.T.scale;}
 function msc(e){const k=CXON&&cxKeyOf(e);return (k&&CXS[k]?CXSC*cxSize(e)*(e.mini?chScale(e):1):1)*(e.sc||1);}
