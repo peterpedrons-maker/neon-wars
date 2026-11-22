@@ -8,8 +8,10 @@ for f in sorted(glob.glob(A+'/zone_*.json')):
     if not R:continue
     n=0;worst=None
     for p in Z['props']:
-        if p.get('k') in SMALL or (p['t']=='p' and not p.get('col')):continue
-        cr=max([c[2] for c in p.get('col',[])]+[0]);sz=p.get('s') or 0;clr=46+max(cr,sz*.32)
+        if p.get('k') in SMALL or (p['t']=='p' and p.get('id','').startswith(('v_','b_'))):continue
+        if p['t']=='p':clr=36
+        else:
+            cr=max([c[2] for c in p.get('col',[])]+[0]);sz=p.get('s') or 0;clr=46+max(cr,sz*.32)
         d=1e9
         for pts in R:
             for (ax,ay),(bx,by) in zip(pts,pts[1:]):
