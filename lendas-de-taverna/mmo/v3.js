@@ -7,8 +7,8 @@ if(window.V3_OFF)return;
 if(typeof THREE==='undefined'){window.V3_FAIL='three.js ausente';return;}
 const QS=new URLSearchParams(location.search),HD2D=QS.get('hd')==='1',HDFX=QS.get('hd')!=='0'&&QS.get('hd')!=='1';   /* HD-2D REAL é o PADRÃO (dono); ?hd=0 desliga; qualidade em Atalhos > Gráficos (alto/médio/baixo) */
 let GFX=(function(){try{return localStorage.getItem('hb_gfx')||'alto';}catch(e){return 'alto';}})();   /* hd=2: pós-processamento WebGL de verdade (DoF por profundidade, bloom, céu, saturação) */   /* TESTE (dono): ?hd=1 = estilo HD-2D (desfoque tilt-shift + cor) e ?tilt=NN = ângulo da câmera */
-const T=THREE,U=1.3/46,FOVD=+QS.get('fov')||16,DK=Math.tan(16*Math.PI/180)/Math.tan(FOVD*Math.PI/360),   /* FOV vertical menor = menos distorção de perspectiva (o mesmo personagem tem o mesmo tamanho no topo e na base da tela); a câmera recua DK× para manter o enquadramento do FOV 32 antigo */
-      TILT=(+QS.get('tilt')||28)*Math.PI/180,CT=Math.cos(TILT);
+const T=THREE,U=1.3/46,FOVD=+QS.get('fov')||32,DK=Math.tan(16*Math.PI/180)/Math.tan(FOVD*Math.PI/360),   /* FOV vertical menor = menos distorção de perspectiva (o mesmo personagem tem o mesmo tamanho no topo e na base da tela); a câmera recua DK× para manter o enquadramento do FOV 32 antigo */
+      TILT=(+QS.get('tilt')||47)*Math.PI/180,CT=Math.cos(TILT);
 const V3=window.V3={ready:false,err:''};
 let R,S,cam,glc,stageEl,lbBox;
 const scenes=new Map();let scn=null;
