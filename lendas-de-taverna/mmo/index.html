@@ -1291,7 +1291,7 @@ html.cutm #hud,html.cutm #bar,html.cutm #mmenu,html.cutm #joy,html.cutm #chat,ht
 .at3 .abr{height:6px;background:#0e0a12;border:1px solid #3a3148;margin-top:5px}.at3 .abf{height:100%;background:var(--ac)}
 .aq{flex:0 0 auto;width:24px;height:24px;border-radius:50%;border:1px solid #c9a24a;background:rgba(22,16,10,.9);color:#ffd66e;font:700 13px var(--f);padding:0;cursor:pointer}
 .at3 .av{flex:0 0 auto;min-width:32px;text-align:right;font:700 22px var(--fd,inherit);color:#ffe08a;text-shadow:0 0 10px rgba(255,190,70,.4)}
-.at3 .abt{flex:0 0 auto;display:flex;flex-direction:column;gap:3px}.at3 .abt .pl{min-width:40px;height:24px;font-size:12px;padding:0}
+.at3 .abt{flex:0 0 auto;display:flex}.at3 .abt .pl{min-width:44px;height:40px;font-size:22px;line-height:1;padding:0}
 .atw .ahint{flex:0 0 auto;font:500 9px var(--f);color:#a89c80;text-align:center}.atw .acts{flex:0 0 auto}
 .atinfo{position:absolute;inset:0;z-index:5;background:rgba(6,4,10,.78);display:flex;align-items:center;justify-content:center;padding:10px}
 .atcard{width:100%;background:linear-gradient(180deg,#2a2236,#16111d);border:2px solid var(--ac);padding:12px;box-shadow:0 0 24px rgba(0,0,0,.7)}
@@ -6284,7 +6284,7 @@ function renderPan(){
     const pts=atPoints(),pc=v=>(Math.round(v*1000)/10).toString().replace('.',',')+'%';
     let html=`<div class="atw"><div class="avl"><span>Pontos de atributo · ${AT_LV} por nível<small>Cada ponto rende menos que o anterior: misture!</small></span><b>${pts}</b></div>`;
     ATTR.forEach(([k])=>{const S=ATSPEC[k],x=SAVE.at[k]||0,pm=MAIN_ATTR[SAVE.cls]===k,c=atC(k,x);
-      html+=`<div class="at3" style="--ac:${S.c}"><span class="ai">${S.ic}</span><div class="am"><div class="al"><b>${S.n}</b>${pm?'<em>★ ×1,25</em>':''}</div><div class="abr"><div class="abf" style="width:${Math.round(c*100)}%"></div></div></div><button class="aq" data-aq="${k}" title="O que faz?">?</button><div class="av">${x}</div><div class="abt"><button class="pl" data-at="${k}" data-n="1" ${pts>0?'':'disabled'}>+1</button><button class="pl" data-at="${k}" data-n="5" ${pts>=2?'':'disabled'}>+5</button></div></div>`;});
+      html+=`<div class="at3" style="--ac:${S.c}"><span class="ai">${S.ic}</span><div class="am"><div class="al"><b>${S.n}</b></div><div class="abr"><div class="abf" style="width:${Math.round(c*100)}%"></div></div></div><button class="aq" data-aq="${k}" title="O que faz?">?</button><div class="av">${x}</div><div class="abt"><button class="pl" data-at="${k}" data-n="1" ${pts>0?'':'disabled'}>+</button></div></div>`;});
     if(G.atInfo){const k=G.atInfo,S=ATSPEC[k],x=SAVE.at[k]||0,pm=MAIN_ATTR[SAVE.cls]===k;
       const rows=S.fx.map(([key,lab])=>{if(key==='hpf')return `<div class="ie"><span>${lab}</span><b>+${ATV.vit*x}</b><i>+${ATV.vit} por ponto</i></div>`;
         const cur=atBonus(k,key),nx=atBonus(k,key,x+1)-cur,fmt=key==='regen'?(v=>(Math.round(v*1000)/10).toString().replace('.',',')+'%'):pc;
