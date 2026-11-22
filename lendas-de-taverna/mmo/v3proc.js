@@ -274,6 +274,7 @@ function kindIn(a,rgb,flat,id){return null;const mk0=INMAP[(id||'').slice(0,4)];
   if(flat)return null;if(h<=70&&green&&sat>.18)return 'bush';if(w<=22&&h>=60)return 'lamp';return kindDg(a,rgb,false);}
 // ---- floresta: devolve o que sobrou (props sem modelo) para continuarem como sprites
 /* árvores/objetos entre a câmera e o herói ficam vazados (transparência pontilhada) para não tapar o jogador */
+P.wind={value:new T.Vector3(.8,.6,.3)};   /* x,z = direção do vento; z... y = força (0–1.4) — ver windTick em v3.js */
 P.stU={hp:{value:new T.Vector2(-1e4,-1e4)},hz:{value:2},r:{value:0}};
 P.seeThru=function(m){const prev=m.onBeforeCompile;m.onBeforeCompile=function(sh,r){if(prev)prev.call(this,sh,r);sh.uniforms.uHP=P.stU.hp;sh.uniforms.uHZ=P.stU.hz;sh.uniforms.uR=P.stU.r;
   const AF=this.defines&&this.defines.USE_AFADE!==undefined;
@@ -311,7 +312,7 @@ P.forest=function(env,add,rnd,items,theme){const DG=theme==='dungeon'||theme==='
   take(items.stand,false);take(items.flats,true);
   const runeMat=()=>new T.MeshBasicMaterial({vertexColors:true,transparent:true,blending:T.AdditiveBlending,depthWrite:false,opacity:.9});
   const slimeMat=()=>new T.MeshStandardMaterial({vertexColors:true,emissive:0x40c040,emissiveIntensity:.5,roughness:.3});
-  const mk=sw=>{const m=new T.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:.92});if(sw)m.onBeforeCompile=sh=>{sh.uniforms.uTime=P.time;sh.vertexShader='uniform float uTime;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n#ifdef USE_INSTANCING\nfloat ph=instanceMatrix[3].x*.9+instanceMatrix[3].z*.6;\n#else\nfloat ph=0.;\n#endif\ntransformed.x+=sin(uTime*1.7+ph)*position.y*'+sw.toFixed(3)+';transformed.z+=cos(uTime*1.3+ph*1.3)*position.y*'+(sw*.6).toFixed(3)+';');};return P.seeThru(m);};
+  const mk=sw=>{const m=new T.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:.92});if(sw)m.onBeforeCompile=sh=>{sh.uniforms.uTime=P.time;sh.uniforms.uWind=P.wind;sh.vertexShader='uniform float uTime;uniform vec3 uWind;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n#ifdef USE_INSTANCING\nfloat ph=instanceMatrix[3].x*.9+instanceMatrix[3].z*.6;\n#else\nfloat ph=0.;\n#endif\nfloat wg=uWind.z*(.55+.45*sin(uTime*1.3+ph*.5-instanceMatrix[3].x*.15*uWind.x-instanceMatrix[3].z*.15*uWind.y));\ntransformed.x+=(sin(uTime*1.7+ph)*(.45+wg)+uWind.x*wg*1.6)*position.y*'+sw.toFixed(3)+';transformed.z+=(cos(uTime*1.3+ph*1.3)*(.45+wg)+uWind.y*wg*1.6)*position.y*'+(sw*.6+.0).toFixed(3)+';');};return P.seeThru(m);};
   const SW={tuft:.35,flower:.25,bush:.05,broad:.02,conifer:.012,dead:.01,mush:0};
   const BASE={hay:[214,178,72],conifer:[28,66,62],broad:[74,92,46],tuft:[78,128,52],bush:[58,104,46],rock:[118,118,112],thorn:[84,58,36],tent:[130,84,58],puddle:null,bones:[214,204,176],twig:[84,60,40],mush:[220,190,70],pillar:null,banner:null,lamp:[40,40,46],bench:[122,86,50],planter:[110,74,44],barrel:[110,76,44],crate:[120,84,48],chest:[122,80,40],coffin:[90,62,40],tomb:null,tombstone:null,urn:null,block:null,column:null,rune:null,slime:[96,200,70],blood:[96,24,22]};
   for(const k in buckets){const L=buckets[k];if(!L.length)continue;
@@ -323,7 +324,7 @@ P.forest=function(env,add,rnd,items,theme){const DG=theme==='dungeon'||theme==='
     L.forEach((it,i)=>{const w=it.a[2],h=it.a[3],r=hash(Math.round(it.x),Math.round(it.y),11);let H,R;
       const DM=DIMS[k];
       if(DM){H=h*U/CT*.85*({forge:.7,well:.75,cabinet:.9}[k]||1);R=w*U*.5;}else if(k==='conifer'||k==='broad'||k==='dead'||k==='frost'){H=h*U/CT*.8;R=w*U*.5;}else if(k==='post'){H=h*U/CT*.85;R=1;}
-      else if(k==='rock'||k==='bush'||k==='thorn'){const bk=k==='bush'?.62:1;H=Math.max(.4,h*U/CT*.9*bk);R=Math.max(.45,w*U*.6*bk);}   /* arbustos menores (dono) */
+      else if(k==='rock'||k==='bush'||k==='thorn'){const bk=k==='bush'?.46:1;H=Math.max(.4,h*U/CT*.9*bk);R=Math.max(.45,w*U*.6*bk);}   /* arbustos menores (dono) */
       else if(k==='lamp'||k==='pillar'||k==='banner'||k==='column'||k==='tombstone'||k==='urn'||k==='barrel'||k==='crate'||k==='chest'||k==='coffin'||k==='block'||k==='tomb'){H=h*U/CT*.85;R=w*U*.5;}
       else if(k==='rune'||k==='slime'||k==='blood'){H=1;R=Math.max(.3,Math.max(w,h*1.2)*U*.5);}
       else if(k==='tent'||k==='drums'||k==='totem'||k==='mush'){H=h*U/CT*.85;R=w*U*.5;}
@@ -341,11 +342,11 @@ P.forest=function(env,add,rnd,items,theme){const DG=theme==='dungeon'||theme==='
 P.waterMesh=function(g,GWu,GHu,tint){
   const M=g.M,c=cv(M.gw,M.gh),x=c.getContext('2d'),im=x.createImageData(M.gw,M.gh);for(let i=0;i<M.gw*M.gh;i++){const v=Math.max(0,Math.min(255,Math.round(M.water[i]*255)));im.data[i*4]=im.data[i*4+1]=im.data[i*4+2]=v;im.data[i*4+3]=255;}x.putImageData(im,0,0);
   const tex=new T.CanvasTexture(c);tex.minFilter=tex.magFilter=T.LinearFilter;
-  const mat=new T.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{t:P.time,mask:{value:tex},sz:{value:new T.Vector2(GWu,GHu)},tint:{value:new T.Vector3(...(tint||[.55,.78,.95]))}},
+  const mat=new T.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{t:P.time,uWind:P.wind,mask:{value:tex},sz:{value:new T.Vector2(GWu,GHu)},tint:{value:new T.Vector3(...(tint||[.55,.78,.95]))}},
     vertexShader:'varying vec2 vUv;varying vec3 vW;void main(){vUv=uv;vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}',
-    fragmentShader:'uniform sampler2D mask;uniform vec3 tint;uniform float t;varying vec2 vUv;varying vec3 vW;float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}'+
+    fragmentShader:'uniform sampler2D mask;uniform vec3 tint;uniform float t;uniform vec3 uWind;varying vec2 vUv;varying vec3 vW;float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}'+
       'void main(){float m=texture2D(mask,vec2(vUv.x,1.-vUv.y)).r;if(m<.44)discard;float a=smoothstep(.44,.55,m);'+
-      'vec2 q=vW.xz;float w1=sin(q.x*2.3+t*1.1+sin(q.y*1.7+t*.7)*1.3),w2=sin(q.y*3.1-t*1.4+sin(q.x*2.1-t*.5)*1.1);float r=(w1*w2)*.5+.5;'+
+      'vec2 q=vW.xz-uWind.xy*t*(.25+.5*uWind.z);float w1=sin(q.x*2.3+t*1.1+sin(q.y*1.7+t*.7)*1.3),w2=sin(q.y*3.1-t*1.4+sin(q.x*2.1-t*.5)*1.1);float r=(w1*w2)*.5+.5;'+
       'float c1=n(q*3.2+vec2(t*.35,t*.2)),c2=n(q*5.5-vec2(t*.3,t*.45));float caus=pow(max(0.,1.-abs(c1-c2)*3.2),3.);'+
       'float sp=pow(max(0.,sin(q.x*7.+t*1.6+sin(q.y*3.)*2.)*sin(q.y*14.-t*1.3)),22.);'+
       'float shore=smoothstep(.62,.5,m);float foam=shore*(.5+.5*sin(q.x*7.+q.y*6.+t*2.2+n(q*4.)*6.))*smoothstep(.2,.8,n(q*6.+t*.4));'+
@@ -364,7 +365,7 @@ P.direct=function(add,list,sc){
   const WF={mount:1.9,dead:.8,broad:1.1,rock:1.6,crag:1.6,tent:1.3,totem:.45,thorn:1.1,reed:.9,lily:1};const by={};
   for(const q of list)(by[q.k]=by[q.k]||[]).push(q);
   const mat=(k)=>{if(k==='mush')return new T.MeshStandardMaterial({vertexColors:true,flatShading:true,emissive:0x22ccaa,emissiveIntensity:.9,roughness:.5});
-    const m=new T.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:.9});if(k==='tuft'||k==='dead'||k==='broad'||k==='reed'){const sw={tuft:.35,dead:.01,broad:.02,reed:.12}[k];m.onBeforeCompile=sh=>{sh.uniforms.uTime=P.time;sh.vertexShader='uniform float uTime;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n#ifdef USE_INSTANCING\nfloat ph=instanceMatrix[3].x*.9+instanceMatrix[3].z*.6;\n#else\nfloat ph=0.;\n#endif\ntransformed.x+=sin(uTime*1.7+ph)*position.y*'+sw.toFixed(3)+';transformed.z+=cos(uTime*1.3+ph*1.3)*position.y*'+(sw*.6).toFixed(3)+';');};}return m;};
+    const m=new T.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:.9});if(k==='tuft'||k==='dead'||k==='broad'||k==='reed'){const sw={tuft:.35,dead:.01,broad:.02,reed:.12}[k];m.onBeforeCompile=sh=>{sh.uniforms.uTime=P.time;sh.uniforms.uWind=P.wind;sh.vertexShader='uniform float uTime;uniform vec3 uWind;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n#ifdef USE_INSTANCING\nfloat ph=instanceMatrix[3].x*.9+instanceMatrix[3].z*.6;\n#else\nfloat ph=0.;\n#endif\nfloat wg=uWind.z*(.55+.45*sin(uTime*1.3+ph*.5-instanceMatrix[3].x*.15*uWind.x-instanceMatrix[3].z*.15*uWind.y));\ntransformed.x+=(sin(uTime*1.7+ph)*(.45+wg)+uWind.x*wg*1.6)*position.y*'+sw.toFixed(3)+';transformed.z+=(cos(uTime*1.3+ph*1.3)*(.45+wg)+uWind.y*wg*1.6)*position.y*'+(sw*.6+.0).toFixed(3)+';');};}return m;};
   for(const k in by){const L=by[k];if(!MODELS[k])continue;const im=new T.InstancedMesh(MODELS[k](new T.Color(COL[k]||'#888')),P.seeThru(mat(k)),L.length),m4=new T.Matrix4(),q=new T.Quaternion(),e=new T.Euler();
     L.forEach((it,i)=>{const r=hash(Math.round(it.x),Math.round(it.y),11),H=it.s*U/CT*.8,w=(WF[k]||1),s=.9+r*.25;e.set(0,k==='tent'?0:r*6.283,0);q.setFromEuler(e);
       const wf=it.wf||w;m4.compose(new T.Vector3(it.x*U,it.lift||0,it.y*U),q,new T.Vector3(H*wf*s,H*s,H*wf*s));im.setMatrixAt(i,m4);im.setColorAt(i,k==='flower'?new T.Color(`hsl(${Math.round(hash(i,3,3)*360)},72%,64%)`):new T.Color().setScalar(.85+hash(i,5,5)*.3));});
