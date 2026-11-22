@@ -276,8 +276,34 @@ function kindIn(a,rgb,flat,id){return null;const mk0=INMAP[(id||'').slice(0,4)];
 /* árvores/objetos entre a câmera e o herói ficam vazados (transparência pontilhada) para não tapar o jogador */
 P.stU={hp:{value:new T.Vector2(-1e4,-1e4)},hz:{value:2},r:{value:0}};
 P.seeThru=function(m){const prev=m.onBeforeCompile;m.onBeforeCompile=function(sh,r){if(prev)prev.call(this,sh,r);sh.uniforms.uHP=P.stU.hp;sh.uniforms.uHZ=P.stU.hz;sh.uniforms.uR=P.stU.r;
-  sh.fragmentShader='uniform vec2 uHP;uniform float uHZ;uniform float uR;\n'+sh.fragmentShader.replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\nif(uR>0.){float dd=length(gl_FragCoord.xy-uHP);if(gl_FragCoord.z<uHZ-.00035&&dd<uR){float f=dd/uR;if(f<.55||mod(floor(gl_FragCoord.x)+floor(gl_FragCoord.y),2.)<1.)discard;}}');};
-  m.customProgramCacheKey=()=>'st'+(prev?'1':'0');return m;};
+  const AF=this.defines&&this.defines.USE_AFADE!==undefined;
+  sh.fragmentShader=(AF?'varying float vFade;\n':'')+'uniform vec2 uHP;uniform float uHZ;uniform float uR;\n'+sh.fragmentShader.replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\n'+(AF?'if(vFade<.995){float dn=fract(52.9829189*fract(dot(gl_FragCoord.xy,vec2(.06711056,.00583715))));if(dn>vFade)discard;}\n':'')+'if(uR>0.){float dd=length(gl_FragCoord.xy-uHP);if(gl_FragCoord.z<uHZ-.00035&&dd<uR){float f=dd/uR;if(f<.55||mod(floor(gl_FragCoord.x)+floor(gl_FragCoord.y),2.)<1.)discard;}}');
+  if(AF){sh.vertexShader='attribute float aFade;varying float vFade;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvFade=aFade;');}};
+  m.customProgramCacheKey=function(){return 'st'+(prev?'1':'0')+((this.defines&&this.defines.USE_AFADE!==undefined)?'f':'');};return m;};
+/* ===== DESVANECER O OBJETO INTEIRO que tapa o herói/inimigos (estilo HD-2D): cada instância alta tem uma opacidade própria (aFade, dither) ===== */
+P.fadeAcc=[];
+const FADEK={conifer:1,broad:1,dead:1,frost:1,mount:1,rock:1,crag:1,pillar:1,column:1,totem:1,tent:1,tomb:1,tombstone:0,thorn:0,bush:0};
+P.regFade=function(im,k){
+  if(!FADEK[k]||!im.geometry)return;const g=im.geometry;g.computeBoundingBox();const bb=g.boundingBox,n=im.count,a=im.instanceMatrix.array;
+  const D={n,x:new Float32Array(n),z:new Float32Array(n),r:new Float32Array(n),h:new Float32Array(n),f:new Float32Array(n).fill(1),w:new Float32Array(n).fill(1)};
+  for(let i=0;i<n;i++){const o=i*16,sx=Math.hypot(a[o],a[o+1],a[o+2]),sy=Math.hypot(a[o+4],a[o+5],a[o+6]);D.x[i]=a[o+12];D.z[i]=a[o+14];D.h[i]=a[o+13]+bb.max.y*sy;D.r[i]=Math.max(.35,Math.max(bb.max.x,bb.max.z,-bb.min.x,-bb.min.z)*sx*.55);}
+  const at=new T.InstancedBufferAttribute(D.f,1);at.setUsage(T.DynamicDrawUsage);g.setAttribute('aFade',at);
+  const m=im.material;m.defines=m.defines||{};m.defines.USE_AFADE='';m.needsUpdate=true;D.im=im;D.at=at;P.fadeAcc.push(D);
+};
+/* a cada quadro: para cada alvo (herói + inimigos próximos) testa o segmento câmera→alvo contra o cilindro de cada instância */
+P.fadeTick=function(sets,cx,cy,cz,targets,dt){
+  if(!sets||!sets.length)return;const k=Math.min(1,dt*10);
+  for(const D of sets){let ch=false;
+    for(let i=0;i<D.n;i++){let tg=1;const ix=D.x[i],iz=D.z[i];
+      for(let q=0;q<targets.length;q+=3){const tx=targets[q],ty=targets[q+1],tz=targets[q+2];
+        const dx=tx-cx,dz=tz-cz,L2=dx*dx+dz*dz;if(L2<1e-6)continue;
+        if(Math.abs(ix-tx)>9||Math.abs(iz-tz)>9)continue;
+        let t=((ix-cx)*dx+(iz-cz)*dz)/L2;if(t<=0||t>.985)continue;
+        const px=cx+dx*t,pz=cz+dz*t,py=cy+(ty-cy)*t,ddx=px-ix,ddz=pz-iz,R=D.r[i]+.22;
+        if(ddx*ddx+ddz*ddz<R*R&&py<D.h[i]){tg=.1;break;}}
+      const f=D.f[i];if(Math.abs(tg-f)>.003){D.f[i]=f+(tg-f)*k;ch=true;}}
+    if(ch)D.at.needsUpdate=true;}
+};
 P.forest=function(env,add,rnd,items,theme){const DG=theme==='dungeon'||theme==='indoor';
   const mats={},buckets={},rest={stand:[],flats:[]};
   const take=(list,flat)=>{for(const it of list){const [id,x,y]=it,a=env.ATLAS_J[id];if(!a)continue;if(theme==='outdoor'&&(id.slice(0,2)==='b_'||id.slice(0,2)==='v_')){rest.stand.push(it);continue;}   /* casas das vilas: arte original em pé */
@@ -306,7 +332,7 @@ P.forest=function(env,add,rnd,items,theme){const DG=theme==='dungeon'||theme==='
       e.set(0,(k==='tent'||k==='drums'||DM?0:r*6.283),0);q.setFromEuler(e);const sc=k==='totem'||k==='post'||DM?1:.9+r*.25;
       const sx=k==='post'?1:(k==='totem'?H*.45:k==='lamp'?Math.max(.4,R*2*1.5):R*2*sc),sz=DM?(typeof DM==='function'?DM(w,h):DM)*U:(k==='post'?1:sx);m4.compose(new T.Vector3(it.x*U,0,it.y*U),q,new T.Vector3(sx,H*sc,sz));im.setMatrixAt(i,m4);
       const c0=new T.Color(k==='flower'?`hsl(${Math.round(hash(i,3,3)*360)},70%,62%)`:'#ffffff');if(k!=='flower')c0.multiplyScalar(.88+hash(i,5,5)*.22);else c0.convertSRGBToLinear();im.setColorAt(i,c0);});
-    im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;im.frustumCulled=false;add(im);}
+    im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;im.frustumCulled=false;if(theme==='outdoor'||theme==='town')P.regFade(im,k);add(im);}
   P.lastRest=rest;P.lastKinds=Object.fromEntries(Object.entries(buckets).map(([k,v])=>[k,v.length]));
   return rest;
 };
@@ -342,7 +368,7 @@ P.direct=function(add,list,sc){
   for(const k in by){const L=by[k];if(!MODELS[k])continue;const im=new T.InstancedMesh(MODELS[k](new T.Color(COL[k]||'#888')),P.seeThru(mat(k)),L.length),m4=new T.Matrix4(),q=new T.Quaternion(),e=new T.Euler();
     L.forEach((it,i)=>{const r=hash(Math.round(it.x),Math.round(it.y),11),H=it.s*U/CT*.8,w=(WF[k]||1),s=.9+r*.25;e.set(0,k==='tent'?0:r*6.283,0);q.setFromEuler(e);
       const wf=it.wf||w;m4.compose(new T.Vector3(it.x*U,it.lift||0,it.y*U),q,new T.Vector3(H*wf*s,H*s,H*wf*s));im.setMatrixAt(i,m4);im.setColorAt(i,k==='flower'?new T.Color(`hsl(${Math.round(hash(i,3,3)*360)},72%,64%)`):new T.Color().setScalar(.85+hash(i,5,5)*.3));});
-    im.castShadow=!(k==='tuft'||k==='bones'||k==='mush'||k==='reed'||k==='lily');im.receiveShadow=true;im.frustumCulled=false;add(im);
+    im.castShadow=!(k==='tuft'||k==='bones'||k==='mush'||k==='reed'||k==='lily');im.receiveShadow=true;im.frustumCulled=false;P.regFade(im,k);add(im);
     if(k==='mush'&&sc)L.forEach((it,i)=>{if(i%7===0)sc.sources.push({p:new T.Vector3(it.x*U,.6,it.y*U),c:0x40ffd0,k:.9,night:1,fl:0});});}
 };
 P.palArido={g1:[112,118,134],g2:[126,132,148],g3:[98,104,120],d1:[150,130,108],d2:[162,142,118],d3:[132,114,94],st:[170,170,174],sm:[104,104,110],shore:[130,134,146],w1:[70,140,170],w2:[34,84,120]};

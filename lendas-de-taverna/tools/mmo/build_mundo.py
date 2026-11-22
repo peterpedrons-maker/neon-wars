@@ -187,8 +187,16 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
             for gx in range(40,W-40,step):
                 x=gx+rr.uniform(-1,1)*step*jit;y=gy+rr.uniform(-1,1)*step*jit
                 if 40<x<W-40 and 40<y<H-40 and not at(BAND,x,y):fn(x,y)
+    TC={}   # grade grossa das árvores já colocadas (para não ficarem coladas umas nas outras)
+    def cent(x,y):return min(1.0,at(DIN,x,y)/(.22*min(W,H)))      # 0 = beira do mapa, 1 = miolo (onde o jogador mais anda)
     def tree(x,y):
         if ground in ARID or not free(x,y):return    # deserto: sem árvores (espinheiros e rochas vêm de mid/deco)
+        # HD-2D (dono): menos árvores no miolo e perto das estradas (mais grama/arbustos), mais nas bordas; e nunca coladas umas nas outras
+        cc=cent(x,y)
+        if rr.random()>(1-.72*cc)*(1-.5*max(0.,1-at(road_d,x,y)/260)):return
+        cx_,cy_=int(x//120),int(y//120)
+        if any((cx_+a,cy_+b) in TC and any(math.hypot(x-px,y-py)<105 for px,py in TC[(cx_+a,cy_+b)]) for a in(-1,0,1) for b in(-1,0,1)) and rr.random()<.8:return
+        TC.setdefault((cx_,cy_),[]).append((x,y))
         f=(.30+at(N3,x,y)*.9)*(.4+at(N1,x,y))*grove(x,y,.56 if fdens<=1 else .40)*fdens
         if hills and hills(x,y)>.2:
             if rr.random()<.45*grove(x,y,.5):spr(rr.choice(TALL_C),x,y)
@@ -207,11 +215,12 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
         if hills and hills(x,y)>.25:
             if r<.42:spr(rr.choice(ROCK),x,y)
             return
-        if r<.08+d*.20:spr(rr.choice(BUSH),x,y)
-        elif r<.11+d*.20:spr(rr.choice(ROCK[:4]),x,y)
+        c_=cent(x,y)
+        if r<.08+d*.20+.14*c_:spr(rr.choice(BUSH),x,y)       # miolo: mais arbustos
+        elif r<.11+d*.20+.14*c_:spr(rr.choice(ROCK[:4]),x,y)
     def flat(x,y):
         if at(water,x,y) or at(CORR,x,y):return
-        if rr.random()<.20+.5*max(0,at(CL,x,y)-.5):P.append(dict(t='flat',id=rr.choice(FLATS),x=round(x),y=round(y)))
+        if rr.random()<.20+.5*max(0,at(CL,x,y)-.5)+.30*cent(x,y):P.append(dict(t='flat',id=rr.choice(FLATS),x=round(x),y=round(y)))   # miolo: mais capim/flores
     place_grid(58,tree);place_grid(74,mid)
     if ground not in ARID:place_grid(28,flat,.5)
     def deco(x,y):

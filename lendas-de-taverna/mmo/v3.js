@@ -116,6 +116,7 @@ function size(){const w=stageEl.clientWidth,h=stageEl.clientHeight,d=Math.min(de
 // imagem só-chão da Cripta (as paredes e a plataforma viram geometria 3D)
 let crpFloor=null,crpFloorReq=false;
 function needFloor(){if(crpFloor||crpFloorReq)return;crpFloorReq=true;const im=new Image();im.onload=()=>{crpFloor=im;};im.onerror=()=>{crpFloor=GROUND;};im.src='assets/zone_cripta2_floor.png';}
+V3.dbg=()=>scn;
 V3.active=function(){
   if(!V3.ready||typeof G==='undefined'||!G.on||!G.hero||typeof ZONE==='undefined'||!ZONE||!ATLAS||!GROUND){document.body.classList.remove('v3on');return false;}
   if(G.map==='zone_cripta2'){needFloor();if(!crpFloor){document.body.classList.remove('v3on');return false;}}
@@ -129,6 +130,7 @@ const TOPDOWN=new Set(['5b39','a94a','dca1','64c7','0367']);   /* arte desenhada
 const hex=(s,d)=>{try{const v=parseInt(String(s||'').replace('#','').slice(0,6),16);return isNaN(v)?d:v;}catch(e){return d;}};
 // ------------------------------------------------------------------ cenários
 function buildScene(key){
+  if(V3.proc)V3.proc.fadeAcc=[];
   const mood=ZONE.room?'room':ZONE.dark?'dark':(key==='town'||key==='cinzamuro')?'town':'field';
   const rnd=rndSeed(11);
   const sc={key,mood,grp:new T.Group(),houses:[],winMats:[],sources:[],pool:[],glows:[],smoke:[],chimneys:[],fires:[],fireGeos:[],ents:new Map(),labels:new Map(),dist:mood==='room'?12:20,used:0};
@@ -221,6 +223,7 @@ function buildScene(key){
     sc.flies={pts:new T.Points(fg,new T.PointsMaterial({map:new T.CanvasTexture(fc),size:.5,transparent:true,blending:T.AdditiveBlending,depthWrite:false})),base:fp,n:NF};add(sc.flies.pts);}
   for(const ch of sc.chimneys)for(let i=0;i<6;i++){const sp=new T.Sprite(new T.SpriteMaterial({map:blobTex(.5),transparent:true,depthWrite:false,color:0xcfcfd4,opacity:0}));add(sp);sc.smoke.push({sp,x:ch.x,y:ch.y,z:ch.z,t:i/6*4});}
   sc.lifeFn=buildLife(sc,add);
+  sc.fades=V3.proc?V3.proc.fadeAcc:[];V3.proc&&(V3.proc.fadeAcc=[]);
   return sc;
 }
 function townExtras(sc,add,rnd,aTex,AW,AH){
@@ -404,7 +407,9 @@ function entRec(sc,e,S0){let r=sc.ents.get(e);if(r&&r.S0===S0)return r;
   if(e.kind==='boss'||e.mini)mat.emissiveIntensity=.7;
   const me=new T.Mesh(geoFor(S0),mat);me.scale.y=1/CT;
   const root=new T.Group();root.add(me);
-  let gh=null;if(e.kind==='hero'||e.kind==='mob'||e.kind==='boss'){gh=new T.Mesh(geoFor(S0),new T.MeshBasicMaterial({map:tex,color:e.kind==='hero'?0xffffff:0xffc4c4,transparent:true,opacity:e.kind==='hero'?.5:.45,alphaTest:.3,depthFunc:T.GreaterDepth,depthWrite:false,side:T.DoubleSide}));gh.scale.y=1/CT;gh.renderOrder=5;root.add(gh);}
+  let gh=null;if(e.kind==='hero'||e.kind==='mob'||e.kind==='boss'){const gm=new T.MeshBasicMaterial({map:tex,transparent:true,opacity:e.kind==='hero'?.8:.62,alphaTest:.3,depthFunc:T.GreaterDepth,depthWrite:false,side:T.DoubleSide}),hc=e.kind==='hero'?'vec3(.55,.88,1.)':'vec3(1.,.38,.32)';   /* silhueta colorida: herói azul-claro, inimigos vermelhos (só onde algo está na frente) */
+    gm.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\ndiffuseColor.rgb=mix(diffuseColor.rgb,'+hc+',.72);');};gm.customProgramCacheKey=()=>'gh'+(e.kind==='hero'?'h':'m');
+    gh=new T.Mesh(geoFor(S0),gm);gh.scale.y=1/CT;gh.renderOrder=5;root.add(gh);}
   const bl=new T.Mesh(new T.PlaneGeometry(1.3,.8),new T.MeshBasicMaterial({map:BT,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-4}));bl.rotation.x=-Math.PI/2;bl.position.y=.03;root.add(bl);
   let ring=null;if(e.elite){ring=new T.Mesh(discGeo,new T.MeshBasicMaterial({map:ringTex,color:new T.Color(e.elCol||'#8ec2ff'),transparent:true,blending:T.AdditiveBlending,depthWrite:false,opacity:.6}));ring.rotation.x=-Math.PI/2;ring.position.y=.04;root.add(ring);}
   sc.grp.add(root);r={S0,c,cx:c.getContext('2d'),tex,me,gh,root,bl,ring,seen:0,key:''};sc.ents.set(e,r);return r;}
@@ -923,6 +928,7 @@ function render3(){
   else if(foc&&zk>1.02){const w=Math.min(chan?.62:.45,(zk-1)*.9);tx+=(foc.x*U-tx)*w;tz+=(foc.y*U-tz)*w;}
   if(!camT)camT=new T.Vector3(tx,0,tz);camT.x+=(tx-camT.x)*.5;camT.z+=(tz-camT.z)*.5;
   const sh=G.shake>0?G.shake:0;cam.position.set(camT.x+(Math.random()-.5)*sh*.3,.9+Math.sin(TILT)*dist,camT.z-1+Math.cos(TILT)*dist);cam.lookAt(camT.x,.9,camT.z-1);
+  if(scn.fades&&scn.fades.length&&V3.proc&&G.hero&&!window.__nofade){cam.updateMatrixWorld();const hx=G.hero.x*U,hz=G.hero.y*U,tg=[hx,.9,hz],near=[];for(const m of G.mobs){if(m.dead||m.hide)continue;const dx=m.x*U-hx,dz=m.y*U-hz,d=dx*dx+dz*dz;if(d<150)near.push([d,m]);}near.sort((a,b)=>a[0]-b[0]);for(const [,m] of near.slice(0,6))tg.push(m.x*U,.9,m.y*U);V3.proc.fadeTick(scn.fades,cam.position.x,cam.position.y,cam.position.z,tg,dt);}
   if(mood==='field'){scn.sun.position.set(camT.x-9,15,camT.z+7);scn.sun.target.position.set(camT.x,0,camT.z);scn.sun.target.updateMatrixWorld();scn.sun.castShadow=sunI>.35;}
   G.cam.rx=Math.round(G.cam.x);G.cam.ry=Math.round(G.cam.y);
   // ---- entidades
