@@ -868,8 +868,9 @@ html #mmenu .mbtn{width:44px!important;height:48px!important;background:rgba(0,0
 html #mmenu .mbtn:active{background:rgba(255,214,110,.2)!important;border-color:#c9a24a!important}
 html #mmenu .mbtn img{width:30px!important;height:30px!important;margin:0!important}
 html #mmenu .mbtn small{position:static!important;margin-top:2px;font:700 7px var(--f);color:#d8c690;letter-spacing:.04em}
-html #mmenu .mbtn.mtgl{width:100%!important;min-width:40px;height:20px!important;background:none!important;border:0!important;border-bottom:1px solid #5a4620!important;color:#ffd66e;font-size:13px;padding:0!important;justify-content:center!important;margin-bottom:1px}
-html #mmenu.col .mbtn.mtgl{border-bottom:0!important;margin:0}
+html #mmenu .mbtn.mtgl{width:100%!important;min-width:58px;height:22px!important;background:none!important;border:0!important;border-bottom:1px solid #5a4620!important;color:#ffd66e;font:700 10px var(--f);letter-spacing:.06em;white-space:nowrap;padding:0!important;justify-content:center!important;margin-bottom:1px}
+html #mmenu.col .mbtn.mtgl{border:1px solid #c9a24a!important;border-radius:4px;background:rgba(22,16,10,.92)!important;margin:0;height:26px!important}
+html #mmenu:not(.col){display:grid!important;grid-template-columns:repeat(2,minmax(44px,1fr));gap:4px;padding:4px!important}html #mmenu:not(.col) .mbtn.mtgl{grid-column:1/-1}
 html #mmenu .mbtn .bd{right:-3px;top:-4px}
 /* botões de ação (combate): anel com brilho por função, selo da tecla, contador da poção e cadeado de bloqueio */
 #bar .acl .slot2{filter:drop-shadow(0 3px 5px rgba(0,0,0,.6)) drop-shadow(0 0 4px rgba(255,214,110,.3))}
@@ -2784,8 +2785,7 @@ function buildBar(){
   if(TW){
     const sk0=SAVE.eqs[0]>=0?SAVE.eqs[0]:0;
     ab.appendChild(mkTb('bGo','<img src="assets/hud/atalhos.png" style="padding:2px 2px 11px"><span class="lbl">Atalhos</span>','slot2',()=>{if(G.winOpen)return;sfx('ui_click');openWin('locais');}));
-    ab.appendChild(mkTb('bPot',potHtml,'slot2',()=>usePotion(true)));
-    socMenu(m,false);
+    socMenu(m,false);   /* poção só existe onde há combate (campo/dungeon): na cidade não faz sentido */
     updPot();badge();hudApply();return;
   }
   [0,1,2].forEach(k=>{const si=SAVE.eqs[k],lk=SAVE.lv<SLOT_UNL[k]||si<0||SAVE.sk[si]<1||!skAvail(si)||!skOk(si);const d=document.createElement('div');d.className='slot2'+(lk?' lock':'')+(si<0?' empty':'');d.id='sk'+k;
@@ -2797,7 +2797,7 @@ function buildBar(){
   ab.appendChild(atk);
   const pot=mkTb('bPot',potHtml,'slot2 sep',()=>usePotion(true));ab.appendChild(pot);
   {const D=DODGE[SAVE.cls];const dd=mkTb('bDodge','<img src="assets/hud/'+(D.t==='blink'?'esq_blink':'esq_roll')+'.png" style="padding:0"><span class="key">E</span><div class="cd"></div><div class="ct"></div>','slot2',()=>{});dd.addEventListener('pointerdown',ev=>{manualDodge();ev.preventDefault();});ab.appendChild(dd);}
-  const tw=mkTb('bTownB','<img src="assets/hud/cidade.png" style="width:40px;height:40px">','mbtn',()=>{sfx('ui_click');gConfirm(ZONE.region?'Você volta ao portal de Brumavale (o caminho de volta pode ser feito a pé).':G.fromReg?'O progresso desta dungeon será perdido.':'O progresso desta floresta (abates) será perdido.',{title:'Voltar para a cidade?',ok:'Voltar',no:'Ficar'}).then(ok=>{if(!ok)return;if(G.fromReg){G.regRet=G.regLast||null;regBack();}else enterTown(false);});});
+  const tw=mkTb('bTownB','<img src="assets/hud/cidade.png" style="width:30px;height:30px"><small>Cidade</small>','mbtn grp',()=>{sfx('ui_click');gConfirm(ZONE.region?'Você volta ao portal de Brumavale (o caminho de volta pode ser feito a pé).':G.fromReg?'O progresso desta dungeon será perdido.':'O progresso desta floresta (abates) será perdido.',{title:'Voltar para a cidade?',ok:'Voltar',no:'Ficar'}).then(ok=>{if(!ok)return;if(G.fromReg){G.regRet=G.regLast||null;regBack();}else enterTown(false);});});
   socMenu(m,true);m.appendChild(tw);updPot();badge();hudApply();
 }
 function updPot(){const n=$('potn');if(n)n.textContent=SAVE.potions+(SAVE.potL?'+'+SAVE.potL:'');}
@@ -6438,10 +6438,13 @@ function socRefresh(){if(!SAVE.q)return;socUI();
     t.innerHTML=`<div class="qth">Missões<u></u><i>${SAVE.qcol!==false?'▸ +'+Math.max(0,rows.length-1):'▾'}</i></div><div class="qrs">`+rows.map((r,i)=>`<div class="qr${i===0?' mn':' dy'}${r[4]?' ok':''}${r[5]?' dn':''}"><b>${r[0]}<em>${r[5]?'✓':r[1]+'/'+r[2]}</em></b>${i===0?`<span>${r[4]?'Concluída — toque para receber':r[3]}</span>`:''}<i><s style="width:${r[2]?Math.min(100,r[1]/r[2]*100):100}%"></s></i></div>`).join('')+'</div>';qPlace();}
   const claim=(c&&qOk(c))||SAVE.q.d.l.some(d=>!d.c&&qOk(d)),b=$('bdQ');if(b)b.style.display=claim?'block':'none';
   const p=$('pty');if(p)p.innerHTML=G.party.members.map(m=>`<div class="pm"><b>${clsIc(m.cls,14,m.sub)}<span>${escH(m.name)}</span><em>${m.lv||1}</em></b><div class="bar"><b style="width:${clamp((m.hp||0)/(m.maxhp||1)*100,0,100)}%"></b></div></div>`).join('');}
+if(!window._mmOut){window._mmOut=1;document.addEventListener('pointerdown',e=>{const m=$('mmenu');if(m&&m._close&&!SAVE.mcol&&!m.contains(e.target))m._close();},true);}
 function socMenu(m,dun){
   if(SAVE.mcol===undefined)SAVE.mcol=true;   // menu lateral recolhido por padrão (mais espaço de tela)
-  const mk=(id,ic,lab,fn,bd,hud)=>mkTb(id,'<img src="'+ic+'"'+(hud?'':' class="ui"')+'><small>'+lab+'</small>'+(bd?'<span class="bd" id="'+bd+'"></span>':''),'mbtn grp',()=>{if(G.winOpen)return;sfx('ui_click');fn();});
-  const tg=mkTb('bMt','<span>'+(SAVE.mcol?'☰':'‹')+'</span>','mbtn mtgl',()=>{SAVE.mcol=!SAVE.mcol;m.classList.toggle('col',!!SAVE.mcol);tg.firstChild.textContent=SAVE.mcol?'☰':'‹';sfx('ui_click',.5);writeSave();});
+  const mk=(id,ic,lab,fn,bd,hud)=>mkTb(id,'<img src="'+ic+'"'+(hud?'':' class="ui"')+'><small>'+lab+'</small>'+(bd?'<span class="bd" id="'+bd+'"></span>':''),'mbtn grp',()=>{if(G.winOpen)return;sfx('ui_click');if(m._close)m._close();fn();});
+  const lab=()=>SAVE.mcol?'☰ MENU':'✕ FECHAR';
+  const tg=mkTb('bMt','<span>'+lab()+'</span>','mbtn mtgl',()=>{SAVE.mcol=!SAVE.mcol;m.classList.toggle('col',!!SAVE.mcol);tg.firstChild.textContent=lab();sfx('ui_click',.5);writeSave();});
+  m._close=()=>{if(SAVE.mcol)return;SAVE.mcol=true;m.classList.add('col');tg.firstChild.textContent=lab();};
   m.classList.toggle('col',!!SAVE.mcol);m.appendChild(tg);
   m.appendChild(mk('bPs','assets/hud/heroi.png','Pers.',()=>openPan(PL.pers),'bdPs',1));
   m.appendChild(mk('bBg','assets/hud/mochila.png','Mochila',()=>openPan('bg'),null,1));
@@ -7435,7 +7438,7 @@ function winMercador(){
   }else if(tab==='sell'){
     h+=`<div class="sec-h"><span>Mochila · toque para vender</span><span>${SAVE.inv.length} / ${BAG_MAX}</span></div><div class="bag">`+Array.from({length:Math.max(BAG_MAX,SAVE.inv.length)},(_,i)=>{const it=SAVE.inv[i];if(!it)return '<div class="cell e"></div>';const R=RAR[it.rar],sel=G.wsel&&G.wsel.t==='sell'&&G.wsel.k===i;return `<div class="cell vw ${sel?'sel':''}" style="--rc:${R.c};border-color:${R.c}" data-w="sell:${i}"><img src="../assets/ico/${it.icon}.png"><span class="il">${it.up?'+'+it.up:it.ilvl}</span></div>`;}).join('')+'</div>';
     const c0=SAVE.inv.filter(x=>x.rar===0),c1=SAVE.inv.filter(x=>x.rar===1),g=a=>a.reduce((t,x)=>t+itemVal(x),0);
-    h+=`<div class="vfoot"><button class="db" data-a="sellr:0" ${c0.length?'':'disabled'}>Comuns (${c0.length}) +${g(c0)}</button><button class="db" data-a="sellr:1" ${c1.length?'':'disabled'}>Incomuns (${c1.length}) +${g(c1)}</button></div><div class="sub">Itens equipados não são vendidos.</div>`;
+    h+=`<div class="vfoot"><button class="db" data-a="sellr:0" ${c0.length?'':'disabled'}>Comuns (${c0.length}) +${g(c0)}</button><button class="db" data-a="sellr:1" ${c1.length?'':'disabled'}>Incomuns (${c1.length}) +${g(c1)}</button></div><div class="vfoot"><button class="db" style="width:100%" data-a="sella:0" ${SAVE.inv.length?'':'disabled'}>Vender TUDO (${SAVE.inv.length}) +${g(SAVE.inv)}</button></div><div class="sub">Itens equipados não são vendidos.</div>`;
   }else{
     if(!G.bb.length)h+='<div class="sub" style="padding:20px 0">Nada para recomprar.<br>Itens vendidos nesta visita aparecem aqui.</div>';
     h+='<div class="vg">'+G.bb.map((it,i)=>vItem(it,itemVal(it),'bb:'+i,G.wsel&&G.wsel.t==='bb'&&G.wsel.k===i,SAVE.gold>=itemVal(it))).join('')+'</div>';
@@ -7724,6 +7727,8 @@ function winAct(a){
   if(k==='mt'){G.mtab=v;G.wsel=null;sfx('ui_click');}
   else if(k==='sell'){const i=+v,it=SAVE.inv[i];if(!it)return;SAVE.inv.splice(i,1);SAVE.gold+=itemVal(it);(G.bb=G.bb||[]).unshift(it);if(G.bb.length>10)G.bb.pop();G.wsel=null;sfx('coin',.7);}
   else if(k==='rb'){const i=+v,it=(G.bb||[])[i];if(!it)return;const p=itemVal(it);if(SAVE.gold<p||SAVE.inv.length>=BAG_MAX){sfx('ui_denied');return;}SAVE.gold-=p;G.bb.splice(i,1);G.wsel=null;sfx('coin',.7);addItem(it);}
+  else if(k==='sella'){const n=SAVE.inv.length,g=SAVE.inv.reduce((t,x)=>t+itemVal(x),0);if(!n){sfx('ui_denied');return;}
+    gConfirm('Vender TODOS os '+n+' itens da mochila por '+g+' de ouro? Itens equipados não são vendidos.',{title:'Vender tudo',ok:'Vender tudo'}).then(ok=>{if(!ok)return;const all=SAVE.inv.slice();SAVE.inv=[];SAVE.gold+=all.reduce((t,x)=>t+itemVal(x),0);G.bb=(G.bb||[]);all.slice(-10).forEach(x=>G.bb.unshift(x));G.bb.length=Math.min(G.bb.length,10);G.wsel=null;sfx('coin',.9);badge();writeSave();renderWin();});return;}
   else if(k==='sellr'){let g=0,n=0;SAVE.inv=SAVE.inv.filter(x=>{if(x.rar===+v){g+=itemVal(x);n++;return false;}return true;});SAVE.gold+=g;sfx(n?'coin':'ui_denied',.8);}
   else if(k==='buy'){const i=+v,it=G.shop[i];if(!it)return;const p=itemVal(it)*4;if(SAVE.gold<p){sfx('ui_denied');return;}SAVE.gold-=p;G.shop[i]=null;G.wsel=null;sfx('coin',.7);addItem(it);}
   else if(k==='restock'){const rc=40+SAVE.lv*6;if(SAVE.gold<rc){sfx('ui_denied');return;}SAVE.gold-=rc;restock();sfx('coin',.7);}
