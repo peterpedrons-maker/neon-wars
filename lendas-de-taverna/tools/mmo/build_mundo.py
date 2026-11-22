@@ -437,9 +437,11 @@ def build(name,W,H,seed,nome,nv,roads,trails,waters,exits,camps,pois,start,side_
     _rm=0
     for p_ in list(P):
         if p_.get('k') in _small:continue
-        if p_['t']=='p' and not p_.get('col'):continue      # sprites decorativos pequenos sem colisão (lampiões etc. já respeitam a estrada)
-        cr=max([c[2] for c in p_.get('col',[])]+[0]);sz=p_.get('s') or 0
-        clr=46+max(cr,sz*.32)
+        if p_['t']=='p' and p_.get('id','').startswith(('v_','b_')):continue      # props de vila/casas já respeitam a estrada
+        if p_['t']=='p':clr=60                                  # sprites de pedra/árvore/arbusto (sem 'col'): 60px da estrada
+        else:
+            cr=max([c[2] for c in p_.get('col',[])]+[0]);sz=p_.get('s') or 0
+            clr=46+max(cr,sz*.32)
         if _rd(p_['x'],p_['y'])<clr:P.remove(p_);_rm+=1
     print('   estradas livres:',name,'removidos',_rm)
     P.sort(key=lambda p:p['y'])

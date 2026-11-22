@@ -132,15 +132,15 @@ function makeGrass(gTex,GWu,GHu,add){
   const m=new T.MeshLambertMaterial({vertexColors:true,side:T.DoubleSide});
   m.onBeforeCompile=sh=>{Object.assign(sh.uniforms,U_);
     sh.vertexShader='attribute vec3 aO;uniform vec2 uC,uWH;uniform float uT,uP;uniform sampler2D uG;uniform vec3 uPush[8];uniform vec3 uW;\n'+sh.vertexShader
-     .replace('#include <begin_vertex>',`vec3 transformed=position*vec3(1.,hs,1.);
+     .replace('#include <begin_vertex>',`float xzs=smoothstep(.0,.06,hs);vec3 transformed=position*vec3(xzs,hs,xzs);   /* fora do gramado: encolhe também a largura (senão sobram lâminas achatadas no chão) */
        float hb=position.y/.5;float gst=uW.z*(.5+.5*sin(uT*1.9-dot(wp,uW.xy)*.55));
        float wnd=sin(uT*1.6+wp.x*.7+wp.y*.5)*.4+sin(uT*2.7+wp.y*1.3)*.2;
        transformed.xz+=uW.xy*(gst*.5+.06)*hb*hb;transformed.x+=wnd*.12*(.5+uW.z)*hb*hb;transformed.z+=cos(uT*1.3+wp.x*.6)*.06*(.5+uW.z)*hb*hb;
        for(int i=0;i<8;i++){vec2 d=wp-uPush[i].xz;float dd=length(d);float f=smoothstep(uPush[i].y>-1e3?1.5:0.,0.,dd)*step(-1e3,uPush[i].y);if(f>0.){vec2 dir=d/max(dd,.001);transformed.xz+=dir*f*hb*.75;transformed.y*=1.-f*.55*hb;}}
        vec3 gTint=gc*1.15;`)
      .replace('#include <project_vertex>','vec4 mvPosition=viewMatrix*vec4(transformed+vec3(wp.x,0.,wp.y),1.);gl_Position=projectionMatrix*mvPosition;')
-     .replace('#include <color_vertex>',`vec2 wp=uC+mod(aO.xy-uC+uP*.5,uP)-uP*.5;vec2 uvg=wp/uWH;
-       vec3 gc=texture2D(uG,uvg).rgb;float gr=step(.0,wp.x)*step(wp.x,uWH.x)*step(.0,wp.y)*step(wp.y,uWH.y)*smoothstep(1.02,1.16,gc.g/max(gc.r,.001))*smoothstep(.95,1.2,gc.g/max(gc.b,.001));
+     .replace('#include <color_vertex>',`vec2 wp=uC+mod(aO.xy-uC+uP*.5,uP)-uP*.5;vec2 uvg=vec2(wp.x/uWH.x,1.-wp.y/uWH.y);
+       vec3 gc=texture2D(uG,uvg).rgb;float gr=smoothstep(1.02,1.16,gc.g/max(gc.r,.001))*smoothstep(.95,1.2,gc.g/max(gc.b,.001));
        float dc=length(wp-uC),fade=1.-smoothstep(10.,16.,dc);float hs=(.55+.7*aO.z)*gr*fade*.45;
        #include <color_vertex>
 #ifdef USE_COLOR
@@ -206,7 +206,10 @@ function buildScene(key){
       {const x=gimg.canvas.getContext('2d'),S0=gimg.canvas.width/ZONE.w;x.fillStyle='#030409';for(let cy=0;cy<dgrid.rows;cy++)for(let cx=0;cx<dgrid.cols;cx++)if(!dgrid.isF(cx,cy))x.fillRect(Math.floor((dgrid.ox+cx*dgrid.cw)*S0),Math.floor((dgrid.oy+cy*dgrid.ch)*S0),Math.ceil(dgrid.cw*S0)+1,Math.ceil(dgrid.ch*S0)+1);}}
     const pg=procOn?gimg:null,gTex=texOf(pg?pg.canvas:gimg,1);gTex.anisotropy=8;
     const gm=new T.MeshStandardMaterial({map:gTex,roughness:.95});if(mood!=='dark'){gm.bumpMap=gTex;gm.bumpScale=1.2;}
-    const ground=new T.Mesh(new T.PlaneGeometry(GWu,GHu),gm);ground.rotation.x=-Math.PI/2;ground.position.set(GWu/2,0,GHu/2);add(ground);ground.receiveShadow=true;if(mood==='field'&&procOn&&!ZONE.room){try{sc.grass=makeGrass(gTex,GWu,GHu,add);}catch(e){console.error('grass',e);}}if(pg&&pg.M&&mood!=='dark'){add(V3.proc.waterMesh(pg,GWu,GHu,(key==='zone_pantano'||(ZONE.region&&ZONE.region.ground==='swamp'))?[.45,.62,.4]:undefined));sc.lifeUpd=V3.proc.waterLife(add,pg,GWu,GHu,key==='zone_pantano'?{slow:.7,opacity:.5,size:1.5}:{opacity:.55,size:1.5,per:280});}if(pg&&key==='zone_esgoto'){add(V3.proc.waterMesh(pg,GWu,GHu,[.35,.5,.18]));sc.lifeUpd=V3.proc.waterLife(add,pg,GWu,GHu,{size:1.8,slow:.45,opacity:.45,per:420});}
+    const EXT=(ZONE.region&&mood==='field')?44:0;   /* PROLONGAMENTO (dono): o mapa continua visível além das bordas/saídas (chão e cenário espelhados); a troca de mapa continua no mesmo lugar */
+    if(EXT){gTex.wrapS=gTex.wrapT=T.MirroredRepeatWrapping;gTex.needsUpdate=true;}
+    const gg=new T.PlaneGeometry(GWu+2*EXT,GHu+2*EXT);if(EXT){const uv=gg.attributes.uv,pp=gg.attributes.position;for(let i=0;i<uv.count;i++){uv.setXY(i,(pp.getX(i)+GWu/2+0+0)/GWu,(pp.getY(i)+GHu/2)/GHu);}}
+    sc.gTex=gTex;const ground=new T.Mesh(gg,gm);ground.rotation.x=-Math.PI/2;ground.position.set(GWu/2,0,GHu/2);add(ground);ground.receiveShadow=true;if(mood==='field'&&procOn&&!ZONE.room){try{sc.grass=makeGrass(gTex,GWu,GHu,add);}catch(e){console.error('grass',e);}}if(pg&&pg.M&&mood!=='dark'){add(V3.proc.waterMesh(pg,GWu,GHu,(key==='zone_pantano'||(ZONE.region&&ZONE.region.ground==='swamp'))?[.45,.62,.4]:undefined));sc.lifeUpd=V3.proc.waterLife(add,pg,GWu,GHu,key==='zone_pantano'?{slow:.7,opacity:.5,size:1.5}:{opacity:.55,size:1.5,per:280});}if(pg&&key==='zone_esgoto'){add(V3.proc.waterMesh(pg,GWu,GHu,[.35,.5,.18]));sc.lifeUpd=V3.proc.waterLife(add,pg,GWu,GHu,{size:1.8,slow:.45,opacity:.45,per:420});}
     if(ZONE.region&&ZONE.exits&&ZONE.exits.length)sc.exitUpd=V3.proc.exitMarks(add,ZONE.exits,ZONE.w,ZONE.h);
     if(mood!=='dark'){const far=new T.Mesh(new T.PlaneGeometry(400,400),new T.MeshStandardMaterial({color:0x2c5a22,roughness:1}));far.rotation.x=-Math.PI/2;far.position.set(GWu/2,-.02,GHu/2);add(far);}
   }
@@ -220,8 +223,16 @@ function buildScene(key){
     if(!n)return null;const geo=bufGeo(pos,uv,idx,1);
     const m=new T.MeshLambertMaterial({map:aTex,alphaTest:.4,side:T.DoubleSide,emissive:0xffffff,emissiveMap:aTex,emissiveIntensity:0});
     return add(new T.Mesh(geo,m));}
+  let PX=ZONE.props;
+  if(ZONE.region&&mood==='field'){   /* cenário espelhado nas bordas (faixa de 600px) para o prolongamento */
+    const Wp=ZONE.w,Hp=ZONE.h,B=600,ex=[];
+    for(const p of ZONE.props){if(p.t==='fire'||p.t==='portal')continue;
+      const nx=p.x<B,fx=p.x>Wp-B,ny=p.y<B,fy=p.y>Hp-B;if(!(nx||fx||ny||fy))continue;
+      const X=nx?-p.x:fx?2*Wp-p.x:p.x,Y=ny?-p.y:fy?2*Hp-p.y:p.y;
+      if(nx||fx)ex.push(Object.assign({},p,{x:X,y:p.y,_m:1}));if(ny||fy)ex.push(Object.assign({},p,{x:p.x,y:Y,_m:1}));if((nx||fx)&&(ny||fy))ex.push(Object.assign({},p,{x:X,y:Y,_m:1}));}
+    PX=ZONE.props.concat(ex);}
   const stand=[],flats=[],lampsP=[];
-  for(const p of ZONE.props){if(p.t==='fire'){sc.fires.push(p);continue;}
+  for(const p of PX){if(p.t==='fire'){sc.fires.push(p);continue;}
     if(!p.id||p.t==='portal')continue;
     const a=ATLAS_J[p.id];if(!a)continue;
     if(mood==='room'&&p.id.slice(0,4)==='f1a3')continue;   /* lustre preto (arte sem luz): fica só a luz */
@@ -230,7 +241,7 @@ function buildScene(key){
     if((key==='town'&&p.id.startsWith('b_'))||(key==='cinzamuro'&&/^(s_|hs\d|w_|tower|gate|keep|cliff|stairs)/.test(p.id)))continue;stand.push([p.id,p.x,p.y]);
     if((key==='town'||key==='cinzamuro')&&a[2]<=24&&a[3]>=80)lampsP.push([p.x*U,2.3,p.y*U]);}
   if(key==='zone_pantano'&&V3.proc)V3.proc.direct(add,ZONE.props.filter(p=>p.k),sc);
-  if(ZONE.region&&V3.proc)V3.proc.direct(add,ZONE.props.filter(p=>p.k),sc);
+  if(ZONE.region&&V3.proc)V3.proc.direct(add,PX.filter(p=>p.k),sc);
   if(key==='zone_cripta2'&&V3.proc){   // Cripta: cada prop do atlas vira o modelo certo (nada de adivinhar pela cor)
     const MAPC=[['prop_barril','barrel',.85],['prop_caixas','crates',1.1],['braseiro','brazier',.9],['pilar','pillar',.8],['prop_potes','pots',.9],['prop_sacos','sacks',1],['prop_altar','altar',1.05],['prop_bau','chest',1.2],['prop_mesa','table',1.1],['prop_prateleira','potshelf',1.0],['prop_jaula','cage',1.05]],pl=ZONE.crp&&ZONE.crp.plat,lift=pl?pl.elev*U/CT:0,list=[],keep=[];
     for(const p of ZONE.props){const a=ATLAS_J[p.id];if(p.t!=='p'||!a){keep.push(p);continue;}const e=MAPC.find(q=>p.id.startsWith(q[0]));if(!e){keep.push(p);continue;}
