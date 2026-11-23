@@ -1916,22 +1916,40 @@ function todTint(ctx){const k=G.scene==='town'?1:.4,n=TOD.n*k,w=TOD.warm*k;if(n<
 /* ===== CLIMA (estilo FFXII): cada zona do mundo tem uma tabela de tempo (region.wx = pesos de clear/rain/storm). Chuva e tempestade escurecem o céu, tocam som,
    e mudam o combate: raios +25%/+40%, fogo −20%/−30% e criaturas do lodo/água ficam 20% mais fortes. O tempo muda sozinho a cada ~1,5–3 min. ===== */
 const WX={k:'clear',a:0,c:0,next:1e9,fl:0,thT:-1,opts:null,map:'',drops:[],spl:[],bt:0};
-const WXN={clear:'Tempo aberto',rain:'Chuva',storm:'Tempestade'},WXHINT={rain:'raios +25% · fogo −20%',storm:'raios +40% · fogo −30%'};
+const WXN={clear:'Tempo aberto',rain:'Chuva',storm:'Tempestade',snow:'Nevasca'},WXHINT={rain:'raios +25% · fogo −20%',storm:'raios +40% · fogo −30%',snow:'gelo +25% · fogo −15%'};
+/* Neve fica DESLIGADA por enquanto (dono: não combina com o clima atual; reservar para uma região fria futura). Para ligar: preencher SNOWZ com {zone_x:{clear:a,snow:b}}. */
+const SNOWZ={};
 const WET={sapo:1,afogado:1,homemrato:1,cobra:1,barata:1,rato:1,ratass:1,cultlodo:1,ladrao:1};
-function wxReset(){const R=ZONE&&G.scene==='dungeon'&&ZONE.region;WX.opts=R&&R.wx||null;WX.k='clear';WX.a=0;WX.c=0;WX.fl=0;WX.thT=-1;WX.next=WX.opts?rnd(15,50):1e9;WX.drops=[];WX.spl=[];
+function wxReset(){const R=ZONE&&G.scene==='dungeon'&&ZONE.region;WX.opts=R&&(SNOWZ[G.map]||R.wx)||null;WX.k='clear';WX.a=0;WX.c=0;WX.fl=0;WX.thT=-1;WX.next=WX.opts?rnd(15,50):1e9;WX.drops=[];WX.spl=[];WX.wet=0;G.pud=[];
   if(WX.opts&&Math.random()<.45)wxSet(wxPick(),true);}
 function wxPick(){const w=WX.opts;let tot=0;for(const k in w)tot+=w[k];let r=Math.random()*tot;for(const k in w){r-=w[k];if(r<=0)return k;}return 'clear';}
-function wxSet(k,quiet){if(k===WX.k)return;WX.k=k;if(!quiet){chat(k==='rain'?'Começou a chover.':k==='storm'?'Uma tempestade chegou! '+WXHINT.storm+'.':'O tempo abriu.',k==='clear'?4:3);}}
+function wxSet(k,quiet){if(k===WX.k)return;WX.k=k;if(!quiet){chat(k==='snow'?'Começou a nevar. '+WXHINT.snow+'.':k==='rain'?'Começou a chover.':k==='storm'?'Uma tempestade chegou! '+WXHINT.storm+'.':'O tempo abriu.',k==='clear'?4:3);}}
 function wxSkMul(id){if(WX.k==='clear'||!id)return 1;const st=WX.k==='storm';
+  if(WX.k==='snow'){if(/gelo|congel|neve|frost|glac/.test(id))return 1.25;if(/fogo|chama|cataclismo|incend|meteoro|pir/.test(id))return .85;return 1;}
   if(/raio|tempest|trov|relamp|choque/.test(id))return st?1.4:1.25;if(/fogo|chama|cataclismo|incend|meteoro|pir/.test(id))return st?.7:.8;return 1;}
 function wxTick(dt){dt/=TEMPO;if(WX.map!==G.map||WX.sc!==G.scene){WX.map=G.map;WX.sc=G.scene;wxReset();}
   WX.next-=dt;if(WX.opts&&WX.next<=0){WX.next=rnd(90,180);wxSet(wxPick());}
-  const ta=WX.k==='clear'?0:WX.k==='rain'?.75:1,tc=WX.k==='clear'?0:WX.k==='rain'?.7:1;
+  const sn=WX.k==='snow',ta=WX.k==='clear'?0:sn?.85:WX.k==='rain'?.75:1,tc=WX.k==='clear'?0:sn?.3:WX.k==='rain'?.7:1;
   WX.a+=(ta-WX.a)*Math.min(1,dt*.35);WX.c+=(tc-WX.c)*Math.min(1,dt*.25);if(WX.a<.01&&ta===0)WX.a=0;if(WX.c<.01&&tc===0)WX.c=0;
   if(WX.k==='storm'&&WX.fl<=0&&Math.random()<dt*.12){WX.fl=1;WX.thT=rnd(.5,1.8);}
   if(WX.fl>0)WX.fl=Math.max(0,WX.fl-dt*2.2);if(WX.thT>0){WX.thT-=dt;if(WX.thT<=0){wxThunder();WX.thT=-1;}}
-  WX.bt-=dt;if(WX.bt<=0){WX.bt=1;const want=WX.a>.5;if(G.mobs)for(const m of G.mobs){if(m.dead||!m.T||m.kind!=='mob')continue;const w=!!WET[m.type]&&want;if(!!m.wxb!==w){m.pow*=w?1.2:1/1.2;m.wxb=w;}}wxBadge();}
-  wxSound(dt);windSound(dt);wxDraw(dt);}
+  WX.bt-=dt;if(WX.bt<=0){WX.bt=1;const want=WX.a>.5;if(G.mobs)for(const m of G.mobs){if(m.dead||!m.T||m.kind!=='mob')continue;const w=!!WET[m.type]&&want&&WX.k!=='snow';if(!!m.wxb!==w){m.pow*=w?1.2:1/1.2;m.wxb=w;}}wxBadge();}
+  puddleTick(dt);wxSound(dt);windSound(dt);wxDraw(dt);}
+/* POÇAS (dono): chovendo por um tempo, o chão acumula água (WX.wet 0..1 sobe na chuva/tempestade e seca com tempo aberto); poças nascem em volta do herói, ganham ondinhas das gotas, e pisar nelas espirra água com som. Desenhadas em v3.js (`syncPuddles`). */
+let PUDT=0,RIPT=0;
+function splashSnd(v=.5){if(!AC||!sfxGain)return;const t=AC.currentTime,n=Math.floor(AC.sampleRate*.22),b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++){const e=Math.pow(1-i/n,2.2);d[i]=(Math.random()*2-1)*e;}
+  const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type='bandpass';f.Q.value=.9;f.frequency.setValueAtTime(900+Math.random()*500,t);f.frequency.exponentialRampToValueAtTime(3200,t+.16);const g=AC.createGain();g.gain.value=v*.55;s.connect(f);f.connect(g);g.connect(sfxGain);s.start(t);
+  const o=AC.createOscillator(),og=AC.createGain();o.type='sine';o.frequency.setValueAtTime(320+Math.random()*120,t);o.frequency.exponentialRampToValueAtTime(900,t+.07);og.gain.setValueAtTime(v*.18,t);og.gain.exponentialRampToValueAtTime(.001,t+.09);o.connect(og);og.connect(sfxGain);o.start(t);o.stop(t+.1);}
+function puddleTick(dt){const out=G.scene==='dungeon'&&ZONE&&ZONE.region&&!ZONE.dark&&!ZONE.room&&!ZONE.crp;if(!out){if(G.pud&&G.pud.length)G.pud=[];return;}
+  WX.wet=Math.max(0,Math.min(1,(WX.wet||0)+dt*(WX.k==='storm'?1/55:WX.k==='rain'?1/100:-1/120)));
+  const P=G.pud||(G.pud=[]);for(const q of P){const want=q.dying?0:1;q.a+=(want-q.a)*Math.min(1,dt*.7);}
+  PUDT-=dt;if(PUDT<=0){PUDT=.45;const h=G.hero,n=Math.round(WX.wet*22);
+    for(let i=P.length-1;i>=0;i--){const q=P[i];if(Math.hypot(q.x-h.x,q.y-h.y)>1000||(q.dying&&q.a<.03))P.splice(i,1);}
+    const live=P.filter(q=>!q.dying);
+    if(live.length<n){for(let k=0;k<6;k++){const a=Math.random()*6.28,d=110+Math.random()*420,x=h.x+Math.cos(a)*d,y=h.y+Math.sin(a)*d*.8;if(x<60||y<60||x>ZONE.w-60||y>ZONE.h-60)continue;if(isWater(x,y)||blockedAt(x,y,16))continue;P.push({x,y,r:16+Math.random()*26,as:.55+Math.random()*.35,a:0,sd:Math.random()});break;}}
+    else if(live.length>n&&WX.wet<.99){const q=live[Math.floor(Math.random()*live.length)];q.dying=true;}}
+  RIPT-=dt;if(RIPT<=0&&WX.k!=='clear'&&P.length){RIPT=WX.k==='storm'?.09:.18;const q=P[Math.floor(Math.random()*P.length)];if(q.a>.5&&Math.abs(q.x-G.hero.x)<500&&Math.abs(q.y-G.hero.y)<400)VF.wave(q.x+(Math.random()-.5)*q.r,q.y+(Math.random()-.5)*q.r*q.as,5+Math.random()*7,'#d6ebff',.75,1.4);}}
+function puddleAt(x,y){for(const q of (G.pud||[])){if(q.a<.4)continue;const dx=(x-q.x)/q.r,dy=(y-q.y)/(q.r*q.as);if(dx*dx+dy*dy<1)return q;}return null;}
 function wxBadge(){let b=document.getElementById('wxb');if(!b){b=document.createElement('div');b.id='wxb';b.style.cssText='position:absolute;left:calc(50% + 52px);transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top));text-align:center;font:700 8.5px/1.25 var(--fd);letter-spacing:.06em;text-transform:uppercase;color:#a8d4ff;text-shadow:0 1px 0 #000,0 0 6px #000;white-space:nowrap;pointer-events:none;z-index:5;display:none';($('stage')||document.body).appendChild(b);}
   const on=WX.k!=='clear'&&G.on&&G.scene==='dungeon'&&WX.a>.3;b.style.display=on?'block':'none';if(on)b.innerHTML=WXN[WX.k]+'<br><span style="color:#d8e8ff;font-size:7.5px">'+WXHINT[WX.k]+'</span>';}
 let WXA=null;
@@ -1950,7 +1968,10 @@ function wxThunder(){if(!AC||!sfxGain)return;try{const t=AC.currentTime,n=AC.sam
   const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(420,t);f.frequency.exponentialRampToValueAtTime(90,t+2);const g=AC.createGain();g.gain.value=.9;s.connect(f);f.connect(g);g.connect(sfxGain);s.start(t);}catch(e){}}
 function wxDraw(dt){const c=document.getElementById('wxc');if(!c)return;const st=$('stage'),W=st.clientWidth,H=st.clientHeight;if(c.width!==W||c.height!==H){c.width=W;c.height=H;}
   const x=c.getContext('2d');x.clearRect(0,0,W,H);if(G.scene!=='dungeon'||(WX.a<.02&&WX.c<.02&&WX.fl<=0))return;
-  if(WX.c>0){x.fillStyle='rgba(18,28,48,'+(WX.c*.3).toFixed(3)+')';x.fillRect(0,0,W,H);}
+  if(WX.c>0&&WX.k!=='snow'){x.fillStyle='rgba(18,28,48,'+(WX.c*.3).toFixed(3)+')';x.fillRect(0,0,W,H);}
+  if(WX.k==='snow'||(WX.flk&&WX.flk.length)){WX.flk=WX.flk||[];const sw=WX.k==='snow'?WX.a:0,NF=Math.floor(260*sw),wd=(window.WIND?WIND.str:.3);while(WX.flk.length<NF)WX.flk.push({x:Math.random()*W,y:Math.random()*H,r:2+Math.random()*3,v:45+Math.random()*60,p:Math.random()*6});if(WX.flk.length>NF)WX.flk.length=NF;
+    x.fillStyle='rgba(245,250,255,.85)';for(const f of WX.flk){f.p+=dt*1.5;f.y+=f.v*dt;f.x+=(Math.sin(f.p)*14+25+wd*40)*dt;if(f.y>H){f.y=-4;f.x=Math.random()*W;}if(f.x>W)f.x=0;x.fillRect(Math.round(f.x),Math.round(f.y),Math.ceil(f.r),Math.ceil(f.r));}
+    if(WX.k==='snow'){x.fillStyle='rgba(215,230,250,'+(WX.c*.18).toFixed(3)+')';x.fillRect(0,0,W,H);}if(WX.k==='snow')return;}
   const N=Math.floor(150*WX.a);while(WX.drops.length<N)WX.drops.push({x:Math.random()*(W+120),y:Math.random()*H,l:7+Math.random()*9,v:620+Math.random()*320});if(WX.drops.length>N)WX.drops.length=N;
   x.strokeStyle='rgba(200,222,255,'+(.22+.3*WX.a).toFixed(2)+')';x.lineWidth=1.5;x.beginPath();
   for(const d of WX.drops){d.y+=d.v*dt;d.x-=d.v*dt*.22;if(d.y>H){d.y=-10;d.x=Math.random()*(W+120);if(Math.random()<.18&&WX.spl.length<30)WX.spl.push({x:Math.random()*W,y:H*(.35+Math.random()*.6),t:0});}x.moveTo(d.x,d.y);x.lineTo(d.x+d.l*.22,d.y-d.l);}
@@ -1962,7 +1983,7 @@ function buildLights(fx){LIGHTS=[];for(const e of fx){if(e.k==='fire')LIGHTS.pus
 function entLight(e,cx,cy){if(!LIGHTS.length||e.kind==='vill'||e.dead)return;let pr=0;for(const L of LIGHTS){const q=1-Math.hypot(e.x-L.x,(e.y-10)-L.y)/L.r;if(q>pr)pr=q;}if(pr<=.02)return;
   ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=Math.min(.5,.3*pr*(1+TOD.n*.8));ctx.drawImage(AMB.glowSpr('#ff9a40',22),Math.round(e.x-cx-22),Math.round(e.y-cy-38),44,44);ctx.restore();}
 function runFx(h,dt){h.rnT=(h.rnT||0)-dt;if(h.rnT>0)return;h.rnT=.09;VF.puff(h.x-(h.row===1?-4:h.row===3?4:0),h.y+1,1,'#c8b890',{r:3,up:3,a:.35,sz:.5});}
-function stepFx(h,dt){h.fsT=(h.fsT||0)-dt;if(h.fsT>0)return;h.fsT=.19;h.fsSide=-(h.fsSide||1);const x=h.x+h.fsSide*3,y=h.y+1;if(!GCTX||isWater(x,y))return;let d;try{{const q=GROUND?GROUND.width/ZONE.w:1;d=GCTX.getImageData(Math.max(0,(x*q)|0),Math.max(0,(y*q)|0),1,1).data;}}catch(e){return;}
+function stepFx(h,dt){h.fsT=(h.fsT||0)-dt;if(h.fsT>0)return;h.fsT=.19;h.fsSide=-(h.fsSide||1);const x=h.x+h.fsSide*3,y=h.y+1;{const q=puddleAt(x,y);if(q){VF.burst(x,y,7,['#cfe8ff','#ffffff','#8fc0ec'],{s0:30,s1:90,flat:.4,up:55,g:240});VF.wave(x,y,16,'#d6ebff',.55,1.6);splashSnd(h.run?.6:.45);return;}}if(!GCTX||isWater(x,y))return;let d;try{{const q=GROUND?GROUND.width/ZONE.w:1;d=GCTX.getImageData(Math.max(0,(x*q)|0),Math.max(0,(y*q)|0),1,1).data;}}catch(e){return;}
   if(d[0]>d[1]*1.04&&d[0]>70){G.prints.push({x,y,t:G.t});if(G.prints.length>70)G.prints.shift();VF.puff(h.x,h.y,1,'#b09a78',{r:3,up:5,a:.3,sz:.5});}}
 function drawPrints(cx,cy){const P=G.prints;if(!P||!P.length)return;ctx.fillStyle='#2a1c10';for(const p of P){const age=G.t-p.t;if(age>6)continue;const x=Math.round(p.x-cx),y=Math.round(p.y-cy);if(x<-4||x>G.LW+4||y<-4||y>G.LH+4)continue;ctx.globalAlpha=Math.max(0,.34*(1-age/6));ctx.fillRect(x-1,y,2,1);ctx.fillRect(x,y-1,1,1);}ctx.globalAlpha=1;}
 const LIFE={pg:[],bf:[]};
@@ -5278,13 +5299,20 @@ function updateTown(dt){
   if(!G.room)lifeUpdate(dt);
   if(h.hp<h.maxhp)h.hp=Math.min(h.maxhp,h.hp+h.maxhp*.2*dt);
   for(const n of G.npcs){const d=dist(h,n);n.row=d<150?dir4(h.x-n.x,h.y-n.y):n.row0;}
-  for(const v of G.vill){v.t-=dt;if(v.t<=0){v.t=rnd(2,5);v.tx=v.x0+rnd(-46,46);v.ty=v.y0+rnd(-26,26);}
+  /* NOITE NA CIDADE: moradores recolhem-se nas casas/lojas (ponto de porta mais próximo) e somem; de manhã saem e voltam aos seus postos */
+  const night=!G.room&&TOD.n>.6,day=TOD.n<.35;
+  for(const v of G.vill){if(v.pet)continue;
+    if(v.hid){if(day){v.hid=false;v.go=null;}continue;}
+    if(night&&!v.go&&ZONE.doors&&ZONE.doors.length){if(v.nt===undefined)v.nt=rnd(0,25);v.nt-=dt;if(v.nt<=0){let b=null,bd=1e9;for(const d of ZONE.doors){const q=Math.hypot(d.x-v.x,d.y-v.y);if(q<bd){bd=q;b=d;}}v.go=b;}}
+    if(v.go){const m=moveTo(v,v.go.x,v.go.y+30,38,dt);v.moving=m>0.1;if(v.moving)v.animT+=dt*.9;if(Math.hypot(v.go.x-v.x,v.go.y+30-v.y)<14){v.hid=true;v.moving=false;v.nt=undefined;}if(day)v.go=null;continue;}
+    if(day&&v.nt!==undefined)v.nt=undefined;}
+  for(const v of G.vill){if(v.hid||v.go)continue;v.t-=dt;if(v.t<=0){v.t=rnd(2,5);v.tx=v.x0+rnd(-46,46);v.ty=v.y0+rnd(-26,26);}
     const m=moveTo(v,v.tx,v.ty,24,dt);collide(v,6);v.moving=m>0.1;if(v.moving)v.animT+=dt*.7;}
 }
 function nearInt(){const h=G.hero;if((G.scene!=='town'&&!(G.scene==='dungeon'&&(ZONE.gates||(G.npcs&&G.npcs.length))))||G.winOpen||G.roomBusy)return null;
   if(G.scene==='dungeon'){if(ZONE.gates)for(const g of ZONE.gates)if(dist(h,g)<g.r)return {k:'gate',g,lb:'Entrar',nm:g.nm,ic:'greek-temple'};for(const n of (G.npcs||[]))if(dist(h,n)<(n.r||40)+14)return {k:'npc',t:n,lb:'Falar',nm:n.nm,ic:n.ic};return null;}
   for(const n of G.npcs)if(dist(h,n)<(n.r||40)+14)return {k:'npc',t:n,lb:'Falar',nm:n.nm,ic:n.ic};
-  for(const v of G.vill){if(v.pet)continue;if(dist(h,v)<36){if(!v.vn)v.vn=VNAMES[G.vill.indexOf(v)%VNAMES.length];return {k:'npc',t:v,lb:'Falar',nm:v.vn,ic:'hood'};}}
+  for(const v of G.vill){if(v.pet||v.hid)continue;if(dist(h,v)<36){if(!v.vn)v.vn=VNAMES[G.vill.indexOf(v)%VNAMES.length];return {k:'npc',t:v,lb:'Falar',nm:v.vn,ic:'hood'};}}
   if(!G.room&&ZONE.boards)for(const b of ZONE.boards)if(Math.hypot(h.x-b.x,h.y-b.y)<58)return {k:'board',b,lb:'Ver caçadas',nm:b.nm,ic:b.ic};
   if(!G.room){if(ZONE.doors)for(const d of ZONE.doors)if(Math.abs(h.x-d.x)<34&&h.y<d.y+8&&h.y>d.y-36)return {k:'door',d,lb:'Entrar',nm:d.nm,ic:d.ic};
     const P=ZONE.portal;if(P&&!P.off&&Math.abs(h.x-P.x)<38&&h.y<P.stand[1]+8&&h.y>P.y-22)return {k:'portal',lb:'Entrar',nm:'Portal das Dungeons',ic:'greek-temple'};}
@@ -6123,7 +6151,7 @@ function render(){
   for(const p of ZONE.props){if(p.x<mx||p.x>mxx||p.y<my||p.y>myy)continue;list.push({y:p.y,p});}
   const h=G.hero;list.push({y:h.y,e:h});for(const m of G.mobs){if(m.dead&&m.deadT>1.1)continue;list.push({y:m.y,e:m});}
   if(G.petE)list.push({y:G.petE.y,e:G.petE});
-  if(G.scene==='town'){for(const n of G.npcs)list.push({y:n.y,e:n});for(const v of G.vill)list.push({y:v.y,e:v});}
+  if(G.scene==='town'){for(const n of G.npcs)list.push({y:n.y,e:n});for(const v of G.vill)if(!v.hid)list.push({y:v.y,e:v});}
   if(G.boss&&!(G.boss.dead&&G.boss.deadT>1.2))list.push({y:G.boss.y,e:G.boss});
   list.sort((a,b)=>a.y-b.y);
   const glow=[];let occl=false;const hb=[h.x-cx-16,h.y-cy-52,h.x-cx+16,h.y-cy+4];const ents=[];
@@ -7211,7 +7239,7 @@ function nMark(id){if(id==='cacador')return hnMarkNpc();let ready=0,wait=0,main=
   for(const x of SEC){if(s.act[x.id]){if(x.turn===id){if(qkReady(x))ready=1;else wait=1;}}else if(!s.sd[x.id]&&x.giver===id&&SAVE.lv>=x.lv)side=1;}
   if(ready)return ['?','g'];if(main)return ['!','g'];if(side)return ['!','s'];if(wait)return ['?','o'];return null;}
 function stMarkers(){if(!G.on||!G.hero||!window.V3||!V3.toScreen){return;}dlgInit();const mk=$('npcmk');if(!mk)return;const ts=V3.toScreen;
-  const list=[...(G.npcs||[]),...(G.scene==='town'?(G.vill||[]):[])];
+  const list=[...(G.npcs||[]),...(G.scene==='town'?(G.vill||[]).filter(v=>!v.hid):[])];
   const doors=(G.scene==='town'&&!G.room&&ZONE.doors)?ZONE.doors:[];
   while(mk.children.length<list.length+doors.length+2){const e=document.createElement('div');mk.appendChild(e);}
   let i=0;
@@ -7221,7 +7249,7 @@ function stMarkers(){if(!G.on||!G.hero||!window.V3||!V3.toScreen){return;}dlgIni
   if(BUB.e&&BUB.t>0&&!G.winOpen){const e=mk.children[i++],p=ts(BUB.e.x,BUB.e.y,BUB.e.kind==='vill'?58:(BUB.e.id==='mer'?64:72));e.className='nbub';e.textContent=BUB.txt;e.style.left=p[0]+'px';e.style.top=(p[1]-(BUB.e.kind==='npc'&&mk.querySelector('.nmk')?18:0))+'px';e.style.display='block';e.style.color='';}
   for(;i<mk.children.length;i++)mk.children[i].style.display='none';}
 function bubTick(){if(!G.on||!G.hero)return;BUB.t-=.7;if(BUB.t<=0)BUB.e=null;if(BUB.e||G.winOpen||G.dlg||G.cut)return;
-  const h=G.hero,list=[...(G.npcs||[]),...(G.scene==='town'?(G.vill||[]):[])];let best=null,bd=170;
+  const h=G.hero,list=[...(G.npcs||[]),...(G.scene==='town'?(G.vill||[]).filter(v=>!v.hid):[])];let best=null,bd=170;
   for(const n of list){const d=dist(h,n);if(d<bd&&Date.now()-(BUB.last.get(n)||0)>16000){bd=d;best=n;}}
   if(!best)return;BUB.last.set(best,Date.now());BUB.e=best;BUB.t=4.2;BUB.txt=nGreet({id:best.kind==='vill'?'':best.id});}
 setInterval(()=>{try{stNpcSync();}catch(e){}},300);setInterval(()=>{try{bubTick();}catch(e){}},700);
