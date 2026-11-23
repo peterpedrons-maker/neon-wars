@@ -1916,21 +1916,23 @@ function todTint(ctx){const k=G.scene==='town'?1:.4,n=TOD.n*k,w=TOD.warm*k;if(n<
 /* ===== CLIMA (estilo FFXII): cada zona do mundo tem uma tabela de tempo (region.wx = pesos de clear/rain/storm). Chuva e tempestade escurecem o céu, tocam som,
    e mudam o combate: raios +25%/+40%, fogo −20%/−30% e criaturas do lodo/água ficam 20% mais fortes. O tempo muda sozinho a cada ~1,5–3 min. ===== */
 const WX={k:'clear',a:0,c:0,next:1e9,fl:0,thT:-1,opts:null,map:'',drops:[],spl:[],bt:0};
-const WXN={clear:'Tempo aberto',rain:'Chuva',storm:'Tempestade'},WXHINT={rain:'raios +25% · fogo −20%',storm:'raios +40% · fogo −30%'};
+const WXN={clear:'Tempo aberto',rain:'Chuva',storm:'Tempestade',snow:'Nevasca'},WXHINT={rain:'raios +25% · fogo −20%',storm:'raios +40% · fogo −30%',snow:'gelo +25% · fogo −15%'};
+const SNOWZ={zone_colinas:{clear:4,snow:2},zone_desfiladeiro:{clear:3,snow:3},zone_passo:{clear:2,snow:5},zone_mina:{clear:3,snow:3},zone_muralha:{clear:5,snow:1}};
 const WET={sapo:1,afogado:1,homemrato:1,cobra:1,barata:1,rato:1,ratass:1,cultlodo:1,ladrao:1};
-function wxReset(){const R=ZONE&&G.scene==='dungeon'&&ZONE.region;WX.opts=R&&R.wx||null;WX.k='clear';WX.a=0;WX.c=0;WX.fl=0;WX.thT=-1;WX.next=WX.opts?rnd(15,50):1e9;WX.drops=[];WX.spl=[];
+function wxReset(){const R=ZONE&&G.scene==='dungeon'&&ZONE.region;WX.opts=R&&(SNOWZ[G.map]||R.wx)||null;WX.k='clear';WX.a=0;WX.c=0;WX.fl=0;WX.thT=-1;WX.next=WX.opts?rnd(15,50):1e9;WX.drops=[];WX.spl=[];
   if(WX.opts&&Math.random()<.45)wxSet(wxPick(),true);}
 function wxPick(){const w=WX.opts;let tot=0;for(const k in w)tot+=w[k];let r=Math.random()*tot;for(const k in w){r-=w[k];if(r<=0)return k;}return 'clear';}
-function wxSet(k,quiet){if(k===WX.k)return;WX.k=k;if(!quiet){chat(k==='rain'?'Começou a chover.':k==='storm'?'Uma tempestade chegou! '+WXHINT.storm+'.':'O tempo abriu.',k==='clear'?4:3);}}
+function wxSet(k,quiet){if(k===WX.k)return;WX.k=k;if(!quiet){chat(k==='snow'?'Começou a nevar. '+WXHINT.snow+'.':k==='rain'?'Começou a chover.':k==='storm'?'Uma tempestade chegou! '+WXHINT.storm+'.':'O tempo abriu.',k==='clear'?4:3);}}
 function wxSkMul(id){if(WX.k==='clear'||!id)return 1;const st=WX.k==='storm';
+  if(WX.k==='snow'){if(/gelo|congel|neve|frost|glac/.test(id))return 1.25;if(/fogo|chama|cataclismo|incend|meteoro|pir/.test(id))return .85;return 1;}
   if(/raio|tempest|trov|relamp|choque/.test(id))return st?1.4:1.25;if(/fogo|chama|cataclismo|incend|meteoro|pir/.test(id))return st?.7:.8;return 1;}
 function wxTick(dt){dt/=TEMPO;if(WX.map!==G.map||WX.sc!==G.scene){WX.map=G.map;WX.sc=G.scene;wxReset();}
   WX.next-=dt;if(WX.opts&&WX.next<=0){WX.next=rnd(90,180);wxSet(wxPick());}
-  const ta=WX.k==='clear'?0:WX.k==='rain'?.75:1,tc=WX.k==='clear'?0:WX.k==='rain'?.7:1;
+  const sn=WX.k==='snow',ta=WX.k==='clear'?0:sn?.85:WX.k==='rain'?.75:1,tc=WX.k==='clear'?0:sn?.3:WX.k==='rain'?.7:1;
   WX.a+=(ta-WX.a)*Math.min(1,dt*.35);WX.c+=(tc-WX.c)*Math.min(1,dt*.25);if(WX.a<.01&&ta===0)WX.a=0;if(WX.c<.01&&tc===0)WX.c=0;
   if(WX.k==='storm'&&WX.fl<=0&&Math.random()<dt*.12){WX.fl=1;WX.thT=rnd(.5,1.8);}
   if(WX.fl>0)WX.fl=Math.max(0,WX.fl-dt*2.2);if(WX.thT>0){WX.thT-=dt;if(WX.thT<=0){wxThunder();WX.thT=-1;}}
-  WX.bt-=dt;if(WX.bt<=0){WX.bt=1;const want=WX.a>.5;if(G.mobs)for(const m of G.mobs){if(m.dead||!m.T||m.kind!=='mob')continue;const w=!!WET[m.type]&&want;if(!!m.wxb!==w){m.pow*=w?1.2:1/1.2;m.wxb=w;}}wxBadge();}
+  WX.bt-=dt;if(WX.bt<=0){WX.bt=1;const want=WX.a>.5;if(G.mobs)for(const m of G.mobs){if(m.dead||!m.T||m.kind!=='mob')continue;const w=!!WET[m.type]&&want&&WX.k!=='snow';if(!!m.wxb!==w){m.pow*=w?1.2:1/1.2;m.wxb=w;}}wxBadge();}
   wxSound(dt);windSound(dt);wxDraw(dt);}
 function wxBadge(){let b=document.getElementById('wxb');if(!b){b=document.createElement('div');b.id='wxb';b.style.cssText='position:absolute;left:calc(50% + 52px);transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top));text-align:center;font:700 8.5px/1.25 var(--fd);letter-spacing:.06em;text-transform:uppercase;color:#a8d4ff;text-shadow:0 1px 0 #000,0 0 6px #000;white-space:nowrap;pointer-events:none;z-index:5;display:none';($('stage')||document.body).appendChild(b);}
   const on=WX.k!=='clear'&&G.on&&G.scene==='dungeon'&&WX.a>.3;b.style.display=on?'block':'none';if(on)b.innerHTML=WXN[WX.k]+'<br><span style="color:#d8e8ff;font-size:7.5px">'+WXHINT[WX.k]+'</span>';}
@@ -1950,7 +1952,10 @@ function wxThunder(){if(!AC||!sfxGain)return;try{const t=AC.currentTime,n=AC.sam
   const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(420,t);f.frequency.exponentialRampToValueAtTime(90,t+2);const g=AC.createGain();g.gain.value=.9;s.connect(f);f.connect(g);g.connect(sfxGain);s.start(t);}catch(e){}}
 function wxDraw(dt){const c=document.getElementById('wxc');if(!c)return;const st=$('stage'),W=st.clientWidth,H=st.clientHeight;if(c.width!==W||c.height!==H){c.width=W;c.height=H;}
   const x=c.getContext('2d');x.clearRect(0,0,W,H);if(G.scene!=='dungeon'||(WX.a<.02&&WX.c<.02&&WX.fl<=0))return;
-  if(WX.c>0){x.fillStyle='rgba(18,28,48,'+(WX.c*.3).toFixed(3)+')';x.fillRect(0,0,W,H);}
+  if(WX.c>0&&WX.k!=='snow'){x.fillStyle='rgba(18,28,48,'+(WX.c*.3).toFixed(3)+')';x.fillRect(0,0,W,H);}
+  if(WX.k==='snow'||(WX.flk&&WX.flk.length)){WX.flk=WX.flk||[];const sw=WX.k==='snow'?WX.a:0,NF=Math.floor(110*sw),wd=(window.WIND?WIND.str:.3);while(WX.flk.length<NF)WX.flk.push({x:Math.random()*W,y:Math.random()*H,r:1+Math.random()*2,v:35+Math.random()*45,p:Math.random()*6});if(WX.flk.length>NF)WX.flk.length=NF;
+    x.fillStyle='rgba(245,250,255,.85)';for(const f of WX.flk){f.p+=dt*1.5;f.y+=f.v*dt;f.x+=(Math.sin(f.p)*14+25+wd*40)*dt;if(f.y>H){f.y=-4;f.x=Math.random()*W;}if(f.x>W)f.x=0;x.fillRect(Math.round(f.x),Math.round(f.y),Math.ceil(f.r),Math.ceil(f.r));}
+    if(WX.k==='snow'){x.fillStyle='rgba(215,230,250,'+(WX.c*.18).toFixed(3)+')';x.fillRect(0,0,W,H);}if(WX.k==='snow')return;}
   const N=Math.floor(150*WX.a);while(WX.drops.length<N)WX.drops.push({x:Math.random()*(W+120),y:Math.random()*H,l:7+Math.random()*9,v:620+Math.random()*320});if(WX.drops.length>N)WX.drops.length=N;
   x.strokeStyle='rgba(200,222,255,'+(.22+.3*WX.a).toFixed(2)+')';x.lineWidth=1.5;x.beginPath();
   for(const d of WX.drops){d.y+=d.v*dt;d.x-=d.v*dt*.22;if(d.y>H){d.y=-10;d.x=Math.random()*(W+120);if(Math.random()<.18&&WX.spl.length<30)WX.spl.push({x:Math.random()*W,y:H*(.35+Math.random()*.6),t:0});}x.moveTo(d.x,d.y);x.lineTo(d.x+d.l*.22,d.y-d.l);}
