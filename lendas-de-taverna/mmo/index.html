@@ -490,6 +490,27 @@ html.land #mmenu .mbtn.grp{width:46px!important;min-width:0!important}
 html.land .bag{grid-template-columns:repeat(10,1fr)}
 html.land #qtr{top:96px!important}
 html.land #tBg{display:none!important}
+#keymap{position:absolute;inset:0;z-index:420;background:rgba(5,4,8,.82);display:flex;align-items:center;justify-content:center;padding:8px}
+#keymap .kbx{width:min(100%,760px);max-height:100%;overflow:auto;background:linear-gradient(180deg,#1b1724,#0f0c15);border:2px solid #8a7440;padding:10px 14px;box-shadow:0 14px 44px rgba(0,0,0,.75)}
+#keymap .kbh{display:flex;align-items:center;justify-content:space-between}#keymap .kbh b{font:700 16px var(--fd,inherit);color:#f3dc9a;letter-spacing:.06em}#keymap .kbh button{width:34px;height:34px;border:2px solid #a07828;background:#2a2233;color:#ffe08a;font-size:16px}
+#keymap .kbs{font-size:11px;color:#b8ac90;margin:4px 0 8px}#keymap .kbg{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}
+#keymap .kbr{display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #2c2538;font-size:12px;color:#d6ccb2}#keymap .kbr span{flex:1}
+#keymap .kbr button{min-width:78px;height:28px;border:1px solid #c9a24a;background:#241c30;color:#ffe08a;font:700 12px var(--f)}#keymap .kbr button.on{background:#6a4a22;color:#fff}
+#keymap .kbf{margin-top:8px;text-align:right}#keymap .kbf button{height:30px;padding:0 14px;border:1px solid #6a4a22;background:#2a1c10;color:#d8c8a0;font:600 11px var(--f)}
+html.pcin #bar .acl .slot2 .key{display:flex!important;left:-3px;top:-8px;background:#1a1208;border:1px solid #c9a24a;padding:0 4px;color:#ffe08a}
+@media (min-width:1000px){html.pcin #bar .abar.acl{transform:scale(1.3);transform-origin:100% 100%}}
+html.land .skcols{display:flex;gap:12px;height:100%;min-height:0}html.land .skcols .sk1{flex:0 0 34%;min-width:0;overflow:auto}html.land .skcols .sk2{flex:1;min-width:0;overflow:auto;border-left:1px solid #3a3148;padding-left:12px}
+html.land .atw{display:grid!important;grid-template-columns:1fr 1fr;grid-auto-rows:minmax(44px,1fr);gap:6px 10px;align-content:stretch}html.land .atw .avl,html.land .atw .ahint,html.land .atw .acts{grid-column:1/-1}html.land .at3{max-height:none}
+/* mapa-múndi em paisagem: mapa à esquerda, cabeçalho/abas/cartão à direita */
+html.land #wmap{display:none;padding:6px;gap:0 8px}html.land #wmap.on{display:grid;grid-template-columns:1fr 250px;grid-template-rows:auto auto 1fr;align-items:start}
+html.land #wmap .wmm{grid-column:1;grid-row:1/4;height:100%;width:100%;min-width:0}
+html.land #wmap .wmh,html.land #wmap .wmtabs,html.land #wmap .wmi{grid-column:2;width:auto;margin:0}
+html.land #wmap .wmh{padding:4px 40px 2px 0}html.land #wmap .wmi{min-height:0;padding:6px 0}
+/* criação de herói em paisagem: boneco à esquerda, passos à direita */
+html.land #create{display:none;flex-direction:row;flex-wrap:wrap;align-content:flex-start}html.land #create.on{display:grid;grid-template-columns:42% 1fr;grid-template-rows:auto 1fr auto;padding:0 14px 8px;gap:0 14px}
+html.land #csteps{grid-column:1/-1;grid-row:1;padding-top:6px}html.land #cstage{grid-column:1;grid-row:2/4;min-height:0}
+html.land .cstep{grid-column:2;grid-row:2;overflow:auto;min-height:0}html.land #cnav{grid-column:2;grid-row:3;margin-top:6px}
+
 html.land .pcols{display:flex;gap:12px;height:100%;min-height:0}
 html.land .pcols .pc1{flex:1 1 50%;min-width:0;overflow:auto}html.land .pcols .pc2{flex:1 1 50%;min-width:0;overflow:auto;border-left:1px solid #3a3148;padding-left:12px}
 html.land .pcols .bag{grid-template-columns:repeat(6,1fr)}
@@ -1316,7 +1337,6 @@ html.cutm #hud,html.cutm #bar,html.cutm #mmenu,html.cutm #joy,html.cutm #chat,ht
 .atcard .ie{display:flex;align-items:baseline;gap:8px;padding:4px 0;border-top:1px solid #3a3148;font-size:12px;color:#d6ccb2}.atcard .ie span{flex:1}.atcard .ie b{color:#fff3c8}.atcard .ie i{font-style:normal;font-size:10px;color:#8fd48c;min-width:96px;text-align:right}
 .atcard .an2{margin-top:8px;font-size:10px;color:#a89c80;line-height:1.35}
 /* CONTROLES DE PC: mostra a tecla em cada botão */
-html.pcin #bar .key,html.pcin .slot2 .key{display:flex!important}
 html.pcin #joy{display:none!important}
 html.pcin #bAtk::after{content:'MOUSE';position:absolute;right:-2px;top:-6px;font:700 8px var(--f);color:#ffd66e;background:#1a1208;border:1px solid #c9a24a;padding:1px 3px}
 </style>
@@ -6012,7 +6032,7 @@ function wmState(k){if(WM.tp)return 2;if(k==='cidade2')return wmVis('zone_passo'
 function wmDraw(){const o=wmEnsure();if(!o.classList.contains('on'))return;
  {const t=$('wmrt');if(t&&t._r!==WM.reg){t._r=WM.reg;t.textContent=WMREG[WM.reg];}document.querySelectorAll('#wmtabs button').forEach(b=>b.classList.toggle('on',+b.dataset.r===WM.reg));}
  if(wmAssets()!==7){return;}
- const cv=$('wmc'),dpr=Math.min(2,window.devicePixelRatio||1),aw=o.clientWidth-12,ah=o.clientHeight-200;if(aw<50||ah<50)return;
+ const cv=$('wmc'),dpr=Math.min(2,window.devicePixelRatio||1),land_=document.documentElement.classList.contains('land'),aw=o.clientWidth-(land_?280:12),ah=o.clientHeight-(land_?16:200);if(aw<50||ah<50)return;
  const WW=WM.lay.w,HH=WM.lay.h,sc=Math.min(aw/WW,ah/HH)*(WM.z||2),cw=Math.round(WW*sc),ch=Math.round(HH*sc);
  if(cv._s!==cw+'x'+ch){cv._s=cw+'x'+ch;cv.width=cw*dpr;cv.height=ch*dpr;cv.style.width=cw+'px';cv.style.height=ch+'px';WM.sig='';}
  const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.imageSmoothingEnabled=true;WM.hit=[];
@@ -6309,6 +6329,7 @@ function renderPan(){
     if(!SAVE.sub)html+=`<div class="skc sub lock" style="opacity:1"><img src="${UI}${SUBS[SAVE.cls][0].ic}.png" style="filter:sepia(1) saturate(4) hue-rotate(-8deg) brightness(1.2);padding:6px"><div class="t"><b>Subclasse</b><br>${SAVE.lv<SUB_LV?`Desbloqueia no nível ${SUB_LV}. Veja as opções na criação do herói ou com o Mestre de Classe na cidade.`:'Disponível! Fale com o Mestre de Classe na cidade e escolha uma (definitiva): '+SUBS[SAVE.cls].map(x=>x.nome).join(' ou ')+'.'}</div></div>`;
     html+=`<div class="acts"><button data-a="reset" ${SAVE.gold<resetCost()?'disabled':''}>Redistribuir habilidades (${resetCost()} ouro)</button></div>`;
     B.innerHTML=html;
+    if(document.documentElement.classList.contains('land')){const kids=[...B.children],ie=kids.findIndex(c=>c.classList.contains('eqs')),L=document.createElement('div'),R=document.createElement('div'),W=document.createElement('div');L.className='sk1';R.className='sk2';W.className='skcols';kids.forEach((c,i)=>(i<=ie?L:R).appendChild(c));const rst=R.querySelector('.acts');if(rst)L.appendChild(rst);W.appendChild(L);W.appendChild(R);B.appendChild(W);}
     B.querySelectorAll('[data-nd]').forEach(e=>e.onclick=()=>{skSel=+e.dataset.nd;sfx('ui_click',.5);renderPan();});
     B.querySelectorAll('[data-slot]').forEach(e=>e.onclick=()=>{const k=+e.dataset.slot;if(SAVE.lv<SLOT_UNL[k]){sfx('ui_denied');toast('Slot libera no nível '+SLOT_UNL[k],1100);return;}skSlot=k;sfx('ui_click',.6);renderPan();});
     B.querySelectorAll('[data-eq]').forEach(e=>e.onclick=()=>{const i=+e.dataset.eq;if(SAVE.sk[i]<1)return;
@@ -7502,12 +7523,23 @@ function setHtml(){return `<div class="sec-h"><span>Ajustes de combate</span></d
   <div class="sec-h"><span>Controles</span></div>
   <div class="wr"><img class="ic" src="${UI}crossed-swords.png"><div class="tx"><b>Joystick flutuante</b><span>${JOYF()?'Toque e arraste no lado esquerdo da tela: o joystick aparece onde o dedo estiver':'Joystick fixo no canto da tela'}</span></div><button class="gb" data-a="set:joyf">${JOYF()?'SIM':'NÃO'}</button></div>
   <div class="wr"><img class="ic" src="${UI}magic-swirl.png"><div class="tx"><b>Posição dos botões</b><span>Arraste cada botão (ataque, habilidades, poção, esquiva e joystick) para onde o seu polegar alcança</span></div><button class="gb" data-a="set:hud">EDITAR</button></div>
+  <div class="wr"><img class="ic" src="${UI}crossed-swords.png"><div class="tx"><b>Teclas do teclado</b><span>Veja e troque as teclas de cada ação (PC)</span></div><button class="gb" data-a="set:keys">TECLAS</button></div>
   <div class="wr"><img class="ic" src="${UI}magic-swirl.png"><div class="tx"><b>Gráficos</b><span>${({alto:'Alto: cor, brilho, profundidade de campo e raios de luz',medio:'Médio: sem profundidade de campo',baixo:'Baixo: sem efeitos (para aparelhos fracos)'})[(window.V3&&V3.gfx&&V3.gfx())||'alto']}</span></div><button class="gb" data-a="set:gfx">${({alto:'ALTO',medio:'MÉDIO',baixo:'BAIXO'})[(window.V3&&V3.gfx&&V3.gfx())||'alto']}</button></div>
   <div class="wr"><img class="ic" src="${UI}greek-temple.png"><div class="tx"><b>Trocar de herói</b><span>Volta à tela inicial (até ${SLOT_N} heróis; o progresso é salvo)</span></div><button class="gb" data-a="set:swap">TROCAR</button></div>
   <div class="wr"><img class="ic" src="${UI}scroll-unfurled.png"><div class="tx"><b>Rever a abertura</b><span>Passa de novo a introdução da história (só na cidade)</span></div><button class="gb" data-a="set:intro">VER</button></div>${tpHtml()}`;}
 /* TESTE: ir direto para qualquer zona do mundo (só com TEST_UNLOCK ligado) */
 function tpHtml(){if(!TEST_UNLOCK)return '';return `<div class="sec-h"><span>Teste</span></div><div class="wr"><img class="ic" src="${UI}greek-temple.png"><div class="tx"><b>Viajar pelo mapa</b><span>Abre o mapa-múndi (todas as regiões e zonas liberadas): escolha o lugar e apareça no começo dele, sem missões nem portões</span></div><button class="gb" data-a="set:tp">MAPA</button></div>`;}
 async function tpGo(k){if(G.xfer)return;G.xfer=1;closeWin();try{toast('Viajando…',20000);await ensureMap(k);$('toast').style.display='none';if(k==='cinzamuro')enterTown(false,false,{map:'cinzamuro',at:[800,2420]});else if(k==='town')enterTown(false,false);else enterDungeon(1,{map:k});}catch(e){console.error(e);toast('Não foi possível viajar.',2500);}G.xfer=0;}
+const KNAME={up:'Mover para cima',down:'Mover para baixo',left:'Mover para a esquerda',right:'Mover para a direita',dodge:'Esquiva',potion:'Poção',interact:'Interagir / falar',mount:'Montaria',s1:'Habilidade 1',s2:'Habilidade 2',s3:'Habilidade 3',char:'Personagem',bag:'Mochila',skills:'Habilidades',passives:'Passivas',diary:'Diário',quests:'Missões',map:'Mapa'};
+const kLab=k=>k===' '?'ESPAÇO':k.length===1?k.toUpperCase():k.replace('arrow','↑↓←→ ').toUpperCase();
+function keyLabels(){try{const set=(id,a)=>{const el=document.querySelector('#'+id+' .key');if(el)el.textContent=kLab(KB[a]);};set('sk0','s1');set('sk1','s2');set('sk2','s3');set('bPot','potion');set('bDodge','dodge');}catch(e){}}
+function keyMapOpen(){let o=$('keymap');if(o)o.remove();o=document.createElement('div');o.id='keymap';
+  const draw=()=>{o.innerHTML='<div class="kbx"><div class="kbh"><b>Teclas do teclado</b><button id="kbc">✕</button></div><div class="kbs">Mouse: esquerdo = atacar · direito = habilidade 1 · mira = cursor. Clique numa tecla e aperte a nova.</div><div class="kbg">'+Object.keys(KNAME).map(a=>`<div class="kbr"><span>${KNAME[a]}</span><button data-ka="${a}">${kLab(KB[a])}</button></div>`).join('')+'</div><div class="kbf"><button id="kbr">Restaurar padrão</button></div></div>';
+    o.querySelector('#kbc').onclick=()=>{window.KREB=null;o.remove();};o.querySelector('#kbr').onclick=()=>{Object.assign(KB,KDEF);try{localStorage.setItem('hb_keys',JSON.stringify(KB));}catch(e){}kbRebuild();keyLabels();draw();};
+    o.querySelectorAll('[data-ka]').forEach(b=>b.onclick=()=>{window.KREB=b.dataset.ka;b.textContent='aperte…';b.classList.add('on');});};
+  draw();$('stage').appendChild(o);
+  const kd=e=>{if(!window.KREB)return;e.preventDefault();e.stopPropagation();const k=e.key.toLowerCase();if(k==='escape'){window.KREB=null;draw();return;}if(['shift','control','alt','meta','tab'].includes(k))return;const a=window.KREB;for(const x in KB)if(KB[x]===k&&x!==a)KB[x]=KB[a];KB[a]=k;window.KREB=null;try{localStorage.setItem('hb_keys',JSON.stringify(KB));}catch(e2){}kbRebuild();keyLabels();draw();};
+  document.addEventListener('keydown',kd,true);const obs=new MutationObserver(()=>{if(!document.body.contains(o)){document.removeEventListener('keydown',kd,true);obs.disconnect();window.KREB=null;}});obs.observe($('stage'),{childList:true});}
 function winLocais(){
   $('wtt').textContent='Atalhos';
   let h='<div class="sub">Toque em um lugar e o herói vai sozinho até lá.</div>';
@@ -7812,7 +7844,7 @@ function winAct(a){
   if(hnAct(a))return;
   if(socAct(a))return;
   const [k,v]=a.split(':');
-  if(k==='set'){if(v==='gfx'){const L=['alto','medio','baixo'];if(window.V3&&V3.setGfx){V3.setGfx(L[(L.indexOf(V3.gfx())+1)%3]);sfx('ui_click');winLocais();}return;}if(v==='tp'){closeWin();setTimeout(()=>{wmOpen();WM.tp=1;WM.sig='';wmDraw();},150);return;}if(v==='intro'){if(G.scene==='town'&&!G.room){closeWin();setTimeout(()=>introCut(true),200);}else toast('Só na cidade, fora das lojas',1500);return;}if(v==='swap'){writeSave();location.reload();return;}if(v==='joyf'){SAVE.joyF=!JOYF();hudApply();sfx('ui_click');writeSave();winLocais();return;}if(v==='hud'){closeWin();hudEditStart();return;}if(v==='apot'){const L=[.35,.5,.7,0],i=L.indexOf(SAVE.apot==null?.35:SAVE.apot);SAVE.apot=L[(i+1)%L.length];}else SAVE.autoEq=!SAVE.autoEq;sfx('ui_click');writeSave();winLocais();return;}
+  if(k==='set'){if(v==='keys'){closeWin();setTimeout(keyMapOpen,80);return;}if(v==='gfx'){const L=['alto','medio','baixo'];if(window.V3&&V3.setGfx){V3.setGfx(L[(L.indexOf(V3.gfx())+1)%3]);sfx('ui_click');winLocais();}return;}if(v==='tp'){closeWin();setTimeout(()=>{wmOpen();WM.tp=1;WM.sig='';wmDraw();},150);return;}if(v==='intro'){if(G.scene==='town'&&!G.room){closeWin();setTimeout(()=>introCut(true),200);}else toast('Só na cidade, fora das lojas',1500);return;}if(v==='swap'){writeSave();location.reload();return;}if(v==='joyf'){SAVE.joyF=!JOYF();hudApply();sfx('ui_click');writeSave();winLocais();return;}if(v==='hud'){closeWin();hudEditStart();return;}if(v==='apot'){const L=[.35,.5,.7,0],i=L.indexOf(SAVE.apot==null?.35:SAVE.apot);SAVE.apot=L[(i+1)%L.length];}else SAVE.autoEq=!SAVE.autoEq;sfx('ui_click');writeSave();winLocais();return;}
   if(k==='leave'){closeWin();G.wp={x:ZONE.exit.x,y:ZONE.exit.y+10};return;}
   if(k==='goto'&&v.startsWith('door')){closeWin();const id=a.split(':')[2],d=ZONE.doors.find(x=>x.id===id);if(d){G.wp={x:d.x,y:d.y-2,target:{kind:'door',id:d.id,room:d.room}};}sfx('ui_confirm',.6);return;}
   if(k==='goto'){closeWin();const t=v==='portal'?{kind:'portal'}:G.npcs.find(n=>n.id===v);G.wp=v==='portal'?{x:ZONE.portal.stand[0],y:ZONE.portal.stand[1],target:t}:{x:t.x,y:t.y+8,target:t};sfx('ui_confirm',.6);return;}
@@ -7883,24 +7915,30 @@ G.joy={x:0,y:0,m:0};G.castReq=-1;G.atkHold=false;
    const fup=ev=>{if(pend&&ev.pointerId===pend.id)pend=null;if(fid!==null&&ev.pointerId===fid){fid=null;id=null;J.classList.remove('act');setV(0,0);hudApply();}};
    addEventListener('pointerup',fup);addEventListener('pointercancel',fup);}
   // teclado (WASD / setas)
-  const KS={};const kv=()=>{const dx=(KS.d||KS.arrowright?1:0)-(KS.a||KS.arrowleft?1:0),dy=(KS.s||KS.arrowdown?1:0)-(KS.w||KS.arrowup?1:0);if(id!==null)return;if(!dx&&!dy){setV(0,0);return;}const d=Math.hypot(dx,dy);G.joy.m=G.pc?(KS.shift?.5:1):(KS.shift?1:.6);G.joy.x=dx/d;G.joy.y=dy/d;K.style.transform=`translate(${dx/d*R*.8}px,${dy/d*R*.8}px)`;};
+  const KS={};const kv=()=>{const dx=(KS.right?1:0)-(KS.left?1:0),dy=(KS.down?1:0)-(KS.up?1:0);if(id!==null)return;if(!dx&&!dy){setV(0,0);return;}const d=Math.hypot(dx,dy);G.joy.m=G.pc?(KS.shift?.5:1):(KS.shift?1:.6);G.joy.x=dx/d;G.joy.y=dy/d;K.style.transform=`translate(${dx/d*R*.8}px,${dy/d*R*.8}px)`;};
   /* CONTROLES DE PC (dono): WASD move (corre; Shift = andar) · mouse mira · botão esquerdo ataca (segurar) · botão direito = habilidade 1 · 1/2/3 habilidades · ESPAÇO esquiva · Q poção · E/F interagir · R montaria
      janelas: C personagem · B/I mochila · K habilidades · N passivas · J diário · O missões · M mapa · Esc fecha */
   const setPC=on=>{if(G.pc===on)return;G.pc=on;document.documentElement.classList.toggle('pcin',on);try{hudApply();}catch(e){}};
-  const winKey=(k)=>{if(G.scene==='dungeon'&&G.winOpen&&k!=='x'){}const m={c:()=>openPan(PL.pers),b:()=>openPan('bg'),i:()=>openPan('bg'),k:()=>openPan(PL.hab),n:()=>{openPan('sk');setTimeout(()=>{const t=document.querySelector('[data-pt]');},0);},j:()=>{G.qtab=['b','c','p'].includes(G.qtab)?G.qtab:'b';openWin('diario');},o:()=>{G.qtab=['m','f'].includes(G.qtab)?G.qtab:'m';openWin('diario');},m:()=>mmToggle()};return m[k]?(m[k](),true):false;};
-  addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test((e.target.tagName||'')))return;const k=e.key.toLowerCase();if(e.ctrlKey||e.metaKey||e.altKey)return;
-    if(k==='escape'){if(G.winOpen){closeWin();}else if($('pan')&&$('pan').classList.contains('on')){if(typeof closePan==='function')closePan();}else if(MM.big){mmFsClose();}return;}
+  /* TECLAS REMAPEÁVEIS (dono): KB = ação → tecla (localStorage hb_keys); setas sempre também movem */
+  const KDEF={up:'w',down:'s',left:'a',right:'d',dodge:' ',potion:'q',interact:'e',mount:'r',s1:'1',s2:'2',s3:'3',char:'c',bag:'b',skills:'k',passives:'n',diary:'j',quests:'o',map:'m'};
+  window.KDEF=KDEF;window.KB=Object.assign({},KDEF);try{Object.assign(KB,JSON.parse(localStorage.getItem('hb_keys')||'{}'));}catch(e){}
+  const KACT={};window.kbRebuild=()=>{for(const k in KACT)delete KACT[k];for(const a in KB)KACT[KB[a]]=a;KACT.arrowup=KACT.arrowup||'up';KACT.arrowdown=KACT.arrowdown||'down';KACT.arrowleft=KACT.arrowleft||'left';KACT.arrowright=KACT.arrowright||'right';KACT.i=KACT.i||'bag';};kbRebuild();
+  const MOVE={up:1,down:1,left:1,right:1};
+  const winAct=a=>{const m={char:()=>openPan(PL.pers),bag:()=>openPan('bg'),skills:()=>openPan(PL.hab),passives:()=>openPan('sk'),diary:()=>{G.qtab=['b','c','p'].includes(G.qtab)?G.qtab:'b';openWin('diario');},quests:()=>{G.qtab=['m','f'].includes(G.qtab)?G.qtab:'m';openWin('diario');},map:()=>mmToggle()};return m[a]?(m[a](),true):false;};
+  addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test((e.target.tagName||'')))return;if(window.KREB){return;}const k=e.key.toLowerCase();if(e.ctrlKey||e.metaKey||e.altKey)return;
+    if(k==='escape'){if(G.winOpen){closeWin();}else if($('pan')&&$('pan').classList.contains('on')){closePan();}else if(MM.big){mmFsClose();}return;}
     if(!G.on)return;const play=!G.winOpen&&!($('pan')&&$('pan').classList.contains('on'))&&!G.cut;
     if(k==='shift'){KS.shift=1;kv();return;}
-    if('wasd'.includes(k)&&k.length===1||k.startsWith('arrow')){setPC(true);if(!play&&!G.cut)return;KS[k]=1;G.wp=null;kv();if(k.startsWith('arrow'))e.preventDefault();return;}
-    if(['c','b','i','k','n','j','o','m'].includes(k)&&!(k==='j'&&false)){setPC(true);if(G.winOpen||($('pan')&&$('pan').classList.contains('on'))){if(G.winOpen)closeWin();else if(typeof closePan==='function')closePan();return;}if(G.scene==='town'||G.scene==='dungeon')winKey(k);return;}
+    const a=KACT[k];if(!a)return;setPC(true);
+    if(MOVE[a]){if(!play)return;KS[a]=1;G.wp=null;kv();if(k.startsWith('arrow'))e.preventDefault();return;}
+    if(['char','bag','skills','passives','diary','quests','map'].includes(a)){if(G.winOpen)closeWin();else if($('pan')&&$('pan').classList.contains('on'))closePan();else if(G.scene==='town'||G.scene==='dungeon')winAct(a);e.preventDefault();return;}
     if(!play)return;
-    if(['1','2','3'].includes(k)){setPC(true);G.castReq=+k-1;}
-    else if(k===' '){setPC(true);if(G.scene==='dungeon'&&!e.repeat)manualDodge();e.preventDefault();}
-    else if(k==='q'&&G.scene==='dungeon'){setPC(true);usePotion(true);}
-    else if(k==='e'){setPC(true);itbDo();}
-    else if(k==='r'){mountToggle();}});
-  addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k==='shift'){KS.shift=0;kv();return;}if(KS[k]){KS[k]=0;kv();}});
+    if(a==='s1'||a==='s2'||a==='s3'){G.castReq=+a[1]-1;}
+    else if(a==='dodge'){if(G.scene==='dungeon'&&!e.repeat)manualDodge();e.preventDefault();}
+    else if(a==='potion'&&G.scene==='dungeon'){usePotion(true);}
+    else if(a==='interact'){itbDo();}
+    else if(a==='mount'){mountToggle();}});
+  addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k==='shift'){KS.shift=0;kv();return;}const a=KACT[k];if(a&&KS[a]){KS[a]=0;kv();}});
   // mouse: mira + ataque (esquerdo, segurar) + habilidade 1 (direito)
   {const st=$('stage');
    addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'||!G.on||!window.V3||!V3.fromScreen)return;setPC(true);const w=V3.fromScreen(e.clientX,e.clientY);if(w){G.mouse={x:w[0],y:w[1],on:true,sx:e.clientX,sy:e.clientY};}});
@@ -7913,7 +7951,8 @@ G.joy={x:0,y:0,m:0};G.castReq=-1;G.atkHold=false;
 
 /* ===== layout dos botões (editável), joystick flutuante ===== */
 const HUD_IDS=['bAtk','sk0','sk1','sk2','bPot','bDodge'];
-function hudApply(){
+function hudApply(){try{keyLabels();}catch(e){}return hudApply0.apply(this,arguments);}
+function hudApply0(){
   const J=$('joy');if(!J)return;const L=SAVE.hl||{};
   HUD_IDS.forEach(id=>{const e=$(id);if(!e)return;const p=L[id];if(p){e.style.right=p[0]+'px';e.style.bottom=p[1]+'px';}else{e.style.right='';e.style.bottom='';}});
   const fl=!!JOYF()&&!G.editHud;J.classList.toggle('fl',fl);document.documentElement.classList.toggle('jfl',JOYF());
