@@ -1953,7 +1953,7 @@ function wxThunder(){if(!AC||!sfxGain)return;try{const t=AC.currentTime,n=AC.sam
 function wxDraw(dt){const c=document.getElementById('wxc');if(!c)return;const st=$('stage'),W=st.clientWidth,H=st.clientHeight;if(c.width!==W||c.height!==H){c.width=W;c.height=H;}
   const x=c.getContext('2d');x.clearRect(0,0,W,H);if(G.scene!=='dungeon'||(WX.a<.02&&WX.c<.02&&WX.fl<=0))return;
   if(WX.c>0&&WX.k!=='snow'){x.fillStyle='rgba(18,28,48,'+(WX.c*.3).toFixed(3)+')';x.fillRect(0,0,W,H);}
-  if(WX.k==='snow'||(WX.flk&&WX.flk.length)){WX.flk=WX.flk||[];const sw=WX.k==='snow'?WX.a:0,NF=Math.floor(110*sw),wd=(window.WIND?WIND.str:.3);while(WX.flk.length<NF)WX.flk.push({x:Math.random()*W,y:Math.random()*H,r:1+Math.random()*2,v:35+Math.random()*45,p:Math.random()*6});if(WX.flk.length>NF)WX.flk.length=NF;
+  if(WX.k==='snow'||(WX.flk&&WX.flk.length)){WX.flk=WX.flk||[];const sw=WX.k==='snow'?WX.a:0,NF=Math.floor(260*sw),wd=(window.WIND?WIND.str:.3);while(WX.flk.length<NF)WX.flk.push({x:Math.random()*W,y:Math.random()*H,r:2+Math.random()*3,v:45+Math.random()*60,p:Math.random()*6});if(WX.flk.length>NF)WX.flk.length=NF;
     x.fillStyle='rgba(245,250,255,.85)';for(const f of WX.flk){f.p+=dt*1.5;f.y+=f.v*dt;f.x+=(Math.sin(f.p)*14+25+wd*40)*dt;if(f.y>H){f.y=-4;f.x=Math.random()*W;}if(f.x>W)f.x=0;x.fillRect(Math.round(f.x),Math.round(f.y),Math.ceil(f.r),Math.ceil(f.r));}
     if(WX.k==='snow'){x.fillStyle='rgba(215,230,250,'+(WX.c*.18).toFixed(3)+')';x.fillRect(0,0,W,H);}if(WX.k==='snow')return;}
   const N=Math.floor(150*WX.a);while(WX.drops.length<N)WX.drops.push({x:Math.random()*(W+120),y:Math.random()*H,l:7+Math.random()*9,v:620+Math.random()*320});if(WX.drops.length>N)WX.drops.length=N;
