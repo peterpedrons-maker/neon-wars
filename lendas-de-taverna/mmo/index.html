@@ -490,6 +490,12 @@ html.land #mmenu .mbtn.grp{width:46px!important;min-width:0!important}
 html.land .bag{grid-template-columns:repeat(10,1fr)}
 html.land #qtr{top:96px!important}
 html.land #tBg{display:none!important}
+/* paisagem: cabeçalho do NPC compacto (sobra mais altura para a lista) */
+:root:root html.land #win .nh,html.land #win .nh{padding:3px 10px!important;gap:8px}
+html.land #win .nh .np{transform:scale(.62);transform-origin:left center;margin:-14px -14px -14px 0}
+html.land #win .nh span{display:none}html.land #win .nh b{font-size:13px!important}
+html.land #win .gd{transform:scale(.85)}
+html.land #win .wb{padding-top:4px}
 #keymap{position:absolute;inset:0;z-index:420;background:rgba(5,4,8,.82);display:flex;align-items:center;justify-content:center;padding:8px}
 #keymap .kbx{width:min(100%,760px);max-height:100%;overflow:auto;background:linear-gradient(180deg,#1b1724,#0f0c15);border:2px solid #8a7440;padding:10px 14px;box-shadow:0 14px 44px rgba(0,0,0,.75)}
 #keymap .kbh{display:flex;align-items:center;justify-content:space-between}#keymap .kbh b{font:700 16px var(--fd,inherit);color:#f3dc9a;letter-spacing:.06em}#keymap .kbh button{width:34px;height:34px;border:2px solid #a07828;background:#2a2233;color:#ffe08a;font-size:16px}
@@ -2243,7 +2249,7 @@ function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remov
   $('cv').style.display=(id==='hud'||id==='res'||id==='ko')?'block':'none';
   if(AC){if(id==='title'){try{ambStop();}catch(e){}titleMusic();}else if(id==='create')createMusic();}}
 /* FORMATO (dono): paisagem é o principal (PC e celular deitado); em retrato continua como antes */
-function fitStage(){const land=innerWidth>innerHeight*.9,w=land?innerWidth:Math.min(innerWidth,innerHeight*0.62);document.documentElement.classList.toggle('land',land);$('stage').style.width=w+'px';resizeCanvas();try{if(window.hudApply)hudApply();}catch(e){}}
+function fitStage(){const land=innerWidth>innerHeight*.9,w=land?innerWidth:Math.min(innerWidth,innerHeight*(innerWidth>=700?.8:0.62));document.documentElement.classList.toggle('land',land);$('stage').style.width=w+'px';resizeCanvas();try{if(window.hudApply)hudApply();}catch(e){}}
 function resizeCanvas(){
   const st=$('stage'),dpr=Math.min(window.devicePixelRatio||1,3),cw=Math.round(st.clientWidth*dpr),ch=Math.round(st.clientHeight*dpr),cv=$('cv');
   cv.width=cw;cv.height=ch;G.K=Math.max(2,Math.round(dpr*1.1));G.LW=Math.ceil(cw/G.K);G.LH=Math.ceil(ch/G.K);
@@ -3842,7 +3848,7 @@ function moveTo(e,tx,ty,sp,dt,pf){
   const s=Math.min(d,spm*dt);e.x+=dx/d*s;e.y+=dy/d*s;e.row=dir4(dx,dy);return s||(rest?.001:0);
 }
 /* mira (ARPG manual): última direção do joystick; ataque/habilidade sem alvo saem nessa direção */
-function aimVec(h){const j=G.joy;if(G.pc&&G.mouse&&G.mouse.on){const dx=G.mouse.x-h.x,dy=G.mouse.y-h.y,L=Math.hypot(dx,dy);if(L>6){G.aim={x:dx/L,y:dy/L};return {x:dx/L,y:dy/L};}}else if(j.m>0){G.aim={x:j.x,y:j.y};}if(!G.aim){const r=h.row;G.aim={x:r===3?1:r===1?-1:0,y:r===2?1:r===0?-1:0};}if(!G.aim.x&&!G.aim.y)G.aim={x:0,y:1};const L=Math.hypot(G.aim.x,G.aim.y)||1;return {x:G.aim.x/L,y:G.aim.y/L};}
+function aimVec(h){const j=G.joy;if(G.gpA&&G.gpA.m>.3){G.aim={x:G.gpA.x,y:G.gpA.y};return {x:G.gpA.x,y:G.gpA.y};}if(G.pc&&G.mouse&&G.mouse.on){const dx=G.mouse.x-h.x,dy=G.mouse.y-h.y,L=Math.hypot(dx,dy);if(L>6){G.aim={x:dx/L,y:dy/L};return {x:dx/L,y:dy/L};}}else if(j.m>0){G.aim={x:j.x,y:j.y};}if(!G.aim){const r=h.row;G.aim={x:r===3?1:r===1?-1:0,y:r===2?1:r===0?-1:0};}if(!G.aim.x&&!G.aim.y)G.aim={x:0,y:1};const L=Math.hypot(G.aim.x,G.aim.y)||1;return {x:G.aim.x/L,y:G.aim.y/L};}
 function virtTarget(h,reach){const a=aimVec(h);return {x:h.x+a.x*reach,y:h.y+a.y*reach,kind:'virt',virt:true,dead:false,T:{},hp:1,maxhp:1,ax:a.x,ay:a.y};}
 function coneTarget(h,vt){const a={x:vt.ax,y:vt.ay};let b=null,bd=1e9;for(const m of allFoes()){const dx=m.x-h.x,dy=m.y-h.y,d=Math.hypot(dx,dy)||.01,R=h.rng+((m.T&&m.T.rad)||0)+12;if(d>R)continue;if((dx*a.x+dy*a.y)/d<.17)continue;if(d<bd){bd=d;b=m;}}return b;}
 function startAimed(h){const reach=h.rng*(h.rng>60?1.3:1.05);let t=nearestMob(h,reach);if(!t)t=virtTarget(h,Math.max(34,h.rng*.9));startHeroAttack(h,t,-2);}
@@ -7924,7 +7930,7 @@ G.joy={x:0,y:0,m:0};G.castReq=-1;G.atkHold=false;
   window.KDEF=KDEF;window.KB=Object.assign({},KDEF);try{Object.assign(KB,JSON.parse(localStorage.getItem('hb_keys')||'{}'));}catch(e){}
   const KACT={};window.kbRebuild=()=>{for(const k in KACT)delete KACT[k];for(const a in KB)KACT[KB[a]]=a;KACT.arrowup=KACT.arrowup||'up';KACT.arrowdown=KACT.arrowdown||'down';KACT.arrowleft=KACT.arrowleft||'left';KACT.arrowright=KACT.arrowright||'right';KACT.i=KACT.i||'bag';};kbRebuild();
   const MOVE={up:1,down:1,left:1,right:1};
-  const winAct=a=>{const m={char:()=>openPan(PL.pers),bag:()=>openPan('bg'),skills:()=>openPan(PL.hab),passives:()=>openPan('sk'),diary:()=>{G.qtab=['b','c','p'].includes(G.qtab)?G.qtab:'b';openWin('diario');},quests:()=>{G.qtab=['m','f'].includes(G.qtab)?G.qtab:'m';openWin('diario');},map:()=>mmToggle()};return m[a]?(m[a](),true):false;};
+  const winAct=a=>{const m={char:()=>openPan(PL.pers),bag:()=>openPan('bg'),skills:()=>openPan(PL.hab),passives:()=>openPan('tl'),diary:()=>{G.qtab=['b','c','p'].includes(G.qtab)?G.qtab:'b';openWin('diario');},quests:()=>{G.qtab=['m','f'].includes(G.qtab)?G.qtab:'m';openWin('diario');},map:()=>mmToggle()};return m[a]?(m[a](),true):false;};
   addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test((e.target.tagName||'')))return;if(window.KREB){return;}const k=e.key.toLowerCase();if(e.ctrlKey||e.metaKey||e.altKey)return;
     if(k==='escape'){if(G.winOpen){closeWin();}else if($('pan')&&$('pan').classList.contains('on')){closePan();}else if(MM.big){mmFsClose();}return;}
     if(!G.on)return;const play=!G.winOpen&&!($('pan')&&$('pan').classList.contains('on'))&&!G.cut;
@@ -7939,6 +7945,23 @@ G.joy={x:0,y:0,m:0};G.castReq=-1;G.atkHold=false;
     else if(a==='interact'){itbDo();}
     else if(a==='mount'){mountToggle();}});
   addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k==='shift'){KS.shift=0;kv();return;}const a=KACT[k];if(a&&KS[a]){KS[a]=0;kv();}});
+  /* GAMEPAD (dono): Xbox/PlayStation (mapeamento padrão do navegador). Stick esquerdo move (corre), direito mira (sem ele mira pelo movimento), RT/R1 ataca (segurar), A esquiva/interagir, X/Y/B habilidades 1/2/3, LB poção, LT montaria, Start personagem, Select mapa, D-pad ↑ mochila ↓ diário ← habilidades → missões. */
+  {const prev=window.__gpprev={};let gpm=false;const dz=v=>Math.abs(v)<.22?0:v;
+   const tick=()=>{try{const gps=navigator.getGamepads?navigator.getGamepads():[];const g=[...gps].find(x=>x&&x.connected&&x.mapping==='standard')||[...gps].find(x=>x&&x.connected);if(!g)return;
+     const B=i=>!!(g.buttons[i]&&g.buttons[i].pressed),edge=i=>{const n=B(i),o=prev[i];prev[i]=n;return n&&!o;};
+     const lx=dz(g.axes[0]||0),ly=dz(g.axes[1]||0),rx=dz(g.axes[2]||0),ry=dz(g.axes[3]||0),any=lx||ly||rx||ry||g.buttons.some(b=>b.pressed);if(any&&!G.pc)setPC(true);
+     const play=G.on&&!G.winOpen&&!($('pan')&&$('pan').classList.contains('on'))&&!G.cut&&!MM.big;
+     if(play&&id===null){const m=Math.min(1,Math.hypot(lx,ly));if(m>0){G.joy.m=Math.max(.35,m);G.joy.x=lx/Math.hypot(lx,ly);G.joy.y=ly/Math.hypot(lx,ly);G.wp=null;gpm=true;}else if(gpm){gpm=false;if(!Object.keys(KS).some(k=>KS[k]&&k!=='shift'))setV(0,0);}}
+     G.gpA=(play&&Math.hypot(rx,ry)>.3)?{x:rx/Math.hypot(rx,ry),y:ry/Math.hypot(rx,ry),m:Math.hypot(rx,ry)}:null;
+     const atk=play&&(B(7)||B(5));if(atk){if(!G.gpAtk)G.atkTap=G.t;G.atkHold=true;G.gpAtk=true;}else if(G.gpAtk){G.gpAtk=false;G.atkHold=false;}
+     if(edge(9)&&(G.on||G.winOpen||$('pan').classList.contains('on'))){if(G.winOpen)closeWin();else if($('pan').classList.contains('on'))closePan();else winAct('char');}
+     if(G.on){if(edge(8))winAct('map');if(edge(12))winAct('bag');if(edge(13))winAct('diary');if(edge(14))winAct('skills');if(edge(15))winAct('quests');}
+     if(play){if(edge(0)){if(G.near)itbDo();else if(G.scene==='dungeon')manualDodge();}
+       if(edge(2))G.castReq=0;if(edge(3))G.castReq=1;if(edge(1))G.castReq=2;
+       if(edge(4)&&G.scene==='dungeon')usePotion(true);if(edge(6))mountToggle();}
+     else{edge(0);edge(2);edge(3);edge(1);edge(4);edge(6);}
+   }catch(e){}};
+   setInterval(tick,16);}
   // mouse: mira + ataque (esquerdo, segurar) + habilidade 1 (direito)
   {const st=$('stage');
    addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'||!G.on||!window.V3||!V3.fromScreen)return;setPC(true);const w=V3.fromScreen(e.clientX,e.clientY);if(w){G.mouse={x:w[0],y:w[1],on:true,sx:e.clientX,sy:e.clientY};}});
