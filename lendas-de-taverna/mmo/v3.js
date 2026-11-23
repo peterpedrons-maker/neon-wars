@@ -579,12 +579,18 @@ function syncGps(){
 let _pudTx=null;
 function syncPuddles(){
   if(!scn||typeof G==='undefined')return;let pg=scn.pud;if(!pg){pg=scn.pud=new T.Group();scn.grp.add(pg);}
-  if(!_pudTx){const cv=document.createElement('canvas');cv.width=cv.height=32;const c=cv.getContext('2d');
-    for(let y=0;y<32;y++)for(let x=0;x<32;x++){const dx=(x-15.5)/16,dy=(y-15.5)/16,d=dx*dx+dy*dy;if(d>1)continue;const rim=d>.72,sky=(y<14&&d<.5)&&((x+y)%2===0);c.fillStyle=rim?'rgba(30,48,70,.8)':sky?'rgba(190,215,240,.85)':(d>.5?'rgba(52,86,124,.82)':'rgba(70,112,156,.82)');c.fillRect(x,y,1,1);}
-    _pudTx=new T.CanvasTexture(cv);_pudTx.encoding=T.sRGBEncoding;_pudTx.magFilter=T.NearestFilter;_pudTx.minFilter=T.NearestFilter;_pudTx.generateMipmaps=false;}
+  if(!_pudTx){const N=64,cv=document.createElement('canvas');cv.width=cv.height=N;const c=cv.getContext('2d'),im=c.createImageData(N,N);
+    /* lâmina fina de água: contorno irregular com borda suave, escurece o chão e reflete um brilho do céu (sem cor azul chapada) */
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){const dx=(x-N/2+.5)/(N/2),dy=(y-N/2+.5)/(N/2),d=Math.hypot(dx,dy),an=Math.atan2(dy,dx);
+      const R=.78+.1*Math.sin(an*3+1.3)+.07*Math.sin(an*5+.4)+.05*Math.sin(an*8+2.1);let e=(R-d)/.22;if(e<=0)continue;e=Math.min(1,e);e=e*e*(3-2*e);
+      /* escurece o chão (molhado), reflexo claro do céu em faixas e um fio claro na borda da lâmina */
+      const i=(y*N+x)*4,edge=Math.max(0,1-Math.abs((R-d)-.035)/.035),sky=Math.max(0,Math.sin((dy*2.2+dx*.9+.4)*3.1))*Math.max(0,.9-d*.8)*(.5+.5*Math.sin(dx*6+dy*2.4));
+      let r=30,g=48,bl=64,al=e*.5;const k=Math.min(1,sky*.95+edge*.8);r+=(215-r)*k;g+=(232-g)*k;bl+=(250-bl)*k;al=Math.min(1,al+k*.55*Math.max(e,edge));
+      im.data[i]=r;im.data[i+1]=g;im.data[i+2]=bl;im.data[i+3]=al*255;}
+    c.putImageData(im,0,0);_pudTx=new T.CanvasTexture(cv);_pudTx.encoding=T.sRGBEncoding;_pudTx.generateMipmaps=false;_pudTx.minFilter=T.LinearFilter;_pudTx.magFilter=T.LinearFilter;}
   const live=new Set(),P=G.pud||[];
   for(const q of P){live.add(q);let o=q._g;if(!o){const geo=new T.PlaneGeometry(1,1);geo.rotateX(-Math.PI/2);const mat=new T.MeshBasicMaterial({map:_pudTx,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});const mesh=new T.Mesh(geo,mat);mesh.renderOrder=2;mesh.rotation.y=q.sd*6;pg.add(mesh);o=q._g={mesh,mat};}
-    o.mat.opacity=Math.max(0,Math.min(1,q.a))*.9;o.mesh.scale.set(q.r*2*U,1,q.r*2*q.as*U);o.mesh.position.set(q.x*U,.022,q.y*U);o.mesh.rotation.y=0;}
+    o.mat.opacity=Math.max(0,Math.min(1,q.a))*.95;o.mesh.scale.set(q.r*2.3*U,1,q.r*2.3*q.as*U);o.mesh.position.set(q.x*U,.022,q.y*U);o.mesh.rotation.y=q.sd*6.28;}
   for(const c of pg.children.slice()){let ok=false;for(const q of live)if(q._g&&q._g.mesh===c){ok=true;break;}if(!ok){pg.remove(c);c.geometry.dispose();c.material.dispose();}}
 }
 function syncGroundFx(){
