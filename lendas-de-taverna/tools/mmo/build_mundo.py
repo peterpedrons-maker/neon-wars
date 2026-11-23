@@ -641,7 +641,7 @@ r2('garganta',2222,'Nv 12–13',[12,13],['saqueador', 'chacal', 'abutre', 'bandi
 # ---- Mesas Rubras (Nv 13–15): argila vermelha com mesas gigantes (blocos de rocha)
 r2('mesas',2323,'Nv 13–15',[13,15],['trollmesas', 'golempedra', 'lobopoeira', 'ogrodeserto', 'saqueador', 'lobopoeira'],'red',
    roads=[[(3200,6390),(3150,5400),(3300,4500),(3200,3600),(3250,2400),(3200,1200),(3200,10)],[(3200,3700),(2200,3650),(1000,3600),(10,3600)],[(3250,3000),(4200,2800),(5400,2500),(6390,2400)]],
-   extra_k=mesas_rocks(6400,6400,34,2323,avoid=[(3200,y) for y in range(300,6300,600)]),camps=[(4800,4800)],shrines=[(1800,1500)],pois=[(3200,3600)],start=(3200,6150),packs=36)
+   extra_k=mesas_rocks(6400,6400,34,2323,avoid=[(3200,y) for y in range(300,6300,600)]),camps=[(4800,4800)],shrines=[(1800,1500)],pois=[(3200,3600)],start=(3200,6150),packs=36,region_extra=dict(minis=[dict(type='reimesas',x=1800,y=1500,lv=15,aggro=420,respawn=240)]))
 # ---- Leito do Rio Seco (Nv 14–15): leito largo e sinuoso, areia branca e pedregulhos
 r2('leito',2424,'Nv 14–15',[14,15],['escaravelho', 'lagarto', 'verme', 'chacal', 'escorpiao'],'sand',
    roads=[[(1200,5590),(1050,4700),(1300,3800),(1000,2900),(1250,2000),(1200,1100),(1200,10)],[(1100,3000),(500,3000),(10,3000)],[(1250,4200),(1800,4200),(2390,4200)]],
