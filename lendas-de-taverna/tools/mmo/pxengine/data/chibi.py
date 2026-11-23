@@ -985,6 +985,17 @@ def accessory2(g, hat, view, hx, hy, back=False):
                 for xx in (hx + 9, hx + 10, hx + 11, hx + 12): g.put(xx, hy + 12, 'E')
                 g.put(hx + 9, hy + 13, 'E'); g.put(hx + 12, hy + 13, 'E')
             for k, xx in enumerate(range(hx + 1, hx + 21, 3)): g.stamp(['II', 'IJ'], xx, hy + 19 + (1 if 0 < k < 6 else 0))
+    elif hat == 'reimesas':                                                  # Rei das Mesas: troll coroado — coroa dourada de picos com gemas, chifres curtos de pedra, presas, colar de osso
+        accessory2(g, 'ogre', view, hx, hy, back)
+        xs = (3, 7, 11, 15, 19) if view != 'side' else (4, 7, 10, 13)
+        for k, xx in enumerate(xs):
+            for y_ in range(4 + (k % 2) * 2 + (2 if k == len(xs) // 2 else 0)): g.put(hx + xx, hy - 2 - y_, 'H' if y_ == 0 else 'E'); g.put(hx + xx + 1, hy - 2 - y_, 'E' if y_ > 1 else 'H')
+        for xx in range(hx + (2 if view != 'side' else 3), hx + (22 if view != 'side' else 16)): g.put(xx, hy - 1, 'E'); g.put(xx, hy, 'H')
+        if not back:
+            g.put(hx + (11 if view != 'side' else 9), hy - 1, 'P'); g.put(hx + (12 if view != 'side' else 10), hy - 1, 'P')
+            if view != 'side':
+                g.stamp(['W.', 'WW'], hx + 6, hy + 11); g.stamp(['.W', 'WW'], hx + 15, hy + 11)
+        for k, xx in enumerate(range(hx + 1, hx + 21, 3)): g.stamp(['II', 'IJ'], xx, hy + 19 + (1 if 0 < k < 6 else 0))
     elif hat == 'skrix':                                                     # xama Skrix: coroa de penas altas + nariz de gancho + sorriso de presas
         accessory2(g, 'gob_shaman', view, hx, hy, back)
         if view == 'side': g.stamp(['ss', 'sSs', '.sS', '..s'], hx + 19, hy + 8)
@@ -1476,7 +1487,7 @@ HAIRS = {'ruivo': dict(R='#9a3030', r='#e84820', O='#f08018', L='#f8b060'), 'pre
          'rosa': dict(R='#a02860', r='#e8509a', O='#f878b8', L='#ffb8dc'), 'verde': dict(R='#1c5a30', r='#3aa850', O='#58c868', L='#a8f0a8')}
 SKINS.update({'pedra': dict(s='#a8acb8', S='#6a6e80', p='#d0d4e0'), 'goblin': dict(s='#86c050', S='#4e8a30', p='#b0e078'), 'osso': dict(s='#e6deee', S='#8a7aa8', p='#f8f4fc'),
               'javali': dict(s='#c48c62', S='#8a5a38', p='#e8b890'), 'rato': dict(s='#a4a4b2', S='#6c6c7c', p='#ccccd8'),
-              'zumbi': dict(s='#8cac8a', S='#5a7a68', p='#b0ccae'), 'ogro': dict(s='#b0a862', S='#78703a', p='#d0c886'),
+              'zumbi': dict(s='#8cac8a', S='#5a7a68', p='#b0ccae'), 'ogro': dict(s='#b0a862', S='#78703a', p='#d0c886'), 'troll': dict(s='#8a7098', S='#584270', p='#b49ac4'),
               'fantasma': dict(s='#c4ecff', S='#6a9ad0', p='#eefaff')})
 HAIRS.update({'g_pedra': dict(R='#4a4e60', r='#9a9eb0', O='#7a7e90', L='#c0c4d4'), 'g_goblin': dict(R='#4e8a30', r='#86c050', O='#6aa83c', L='#a8dc78'), 'g_osso': dict(R='#8a7aa8', r='#e6deee', O='#c8c0d4', L='#f8f4fc'),
               'g_javali': dict(R='#3a2214', r='#6a4020', O='#4e2e18', L='#8a5a30'), 'g_rato': dict(R='#5a5a6a', r='#9a9aaa', O='#7a7a8a', L='#c4c4d0'),
