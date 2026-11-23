@@ -97,7 +97,7 @@ ANIMS = {
     'esqueleto': dict(attack='jab', hurt='stagger', death='crumble'), 'esqmago': dict(attack='cast', hurt='stagger', death='dissolve'),
     'guarda_c': dict(attack='smash', hurt='stoic', death='crumble'), 'cultista': dict(attack='cast', hurt='stagger', death='dissolve'),
     'gargula': dict(attack='jab', hurt='stoic', death='crumble'), 'zumbi': dict(attack='smash', hurt='stoic', death='topple'),
-    'ogro': dict(attack='smash', hurt='stoic', death='topple'), 'grunk': dict(attack='smash', hurt='stoic', death='topple'),
+    'ogro': dict(attack='smash', hurt='stoic', death='topple'), 'rei_mesas': dict(attack='smash', hurt='stoic', death='topple'), 'grunk': dict(attack='smash', hurt='stoic', death='topple'),
     'morvath': dict(attack='smash', hurt='stoic', death='crumble'), 'gorgash': dict(attack='smash', hurt='stoic', death='topple'),
     'ratking': dict(attack='jab', hurt='stagger', death='tumble'), 'skrix': dict(attack='cast', hurt='stagger', death='dissolve'),
     'presa': dict(attack='smash', hurt='stoic', death='topple'), 'rei': dict(attack='smash', hurt='stoic', death='crumble'),
@@ -120,7 +120,7 @@ for _k in list(UNITS):
 UNITS['h_mago'].update(sk=dict(sky='msky', frost='mfrost', beam='mbeam', burn='mburn', rock='mrock'))
 UNITS['h_ladino'].update(spin=True, sk=dict(rain='rrain', exec='rexec', mark='rmark', trap='rtrap'))
 UNITS['h_guerreiro']['twirl'] = True      # Tufao (Giro de Lamina empoderado): anim 'spin'
-GCAST = {'grunk': 'slam', 'gorgash': 'slam', 'presa': 'slam', 'morvath': 'cast', 'ratking': 'cast', 'vampiro': 'cast', 'skrix': 'cast'}
+GCAST = {'rei_mesas': 'slam', 'matriarca': 'cast', 'grunk': 'slam', 'gorgash': 'slam', 'presa': 'slam', 'morvath': 'cast', 'ratking': 'cast', 'vampiro': 'cast', 'skrix': 'cast'}
 GEN = {   # (ataque, dano, morte) para inimigos fora do motor chibi
     'goblin': ('lunge', 'flinch', 'tumble'), 'goblin_x': ('cast', 'stagger', 'dissolve'), 'sapador': ('lunge', 'flinch', 'tumble'), 'bandido': ('lunge', 'flinch', 'fall'),
     'carnical': ('lunge', 'flinch', 'melt'), 'mumia': ('slam', 'stoic', 'dissolve'), 'necro': ('cast', 'stagger', 'dissolve'), 'cav_caido': ('slam', 'stoic', 'topple'),
@@ -135,7 +135,7 @@ GEN = {   # (ataque, dano, morte) para inimigos fora do motor chibi
 for _k in ('matriarca', 'escorpiao', 'escorpiao_sal', 'lagarto', 'salamandra', 'chacal', 'lobo_poeira', 'cao_guerra', 'cao_infernal', 'abutre', 'escaravelho', 'verme'):
     UNITS[_k] = dict(kind='f', name=_k)
 for _k in ('bandido_deserto', 'saqueador', 'atirador_deserto', 'cultista_sol', 'mumia_solar', 'kobold', 'anao_renegado', 'golem_pedra', 'golem_sal', 'golem_magma',
-           'cav_negro', 'armadura', 'mago_batalha', 'imp', 'troll_mesas', 'ogro_deserto', 'rei_mesas'):
+           'cav_negro', 'armadura', 'mago_batalha', 'imp', 'troll_mesas', 'ogro_deserto'):
     UNITS[_k] = dict(kind='m', spec=_k)
 GEN.update({
     'matriarca': ('slam', 'stoic', 'flip'), 'escorpiao': ('pounce', 'flinch', 'flip'), 'escorpiao_sal': ('pounce', 'flinch', 'flip'), 'lagarto': ('lunge', 'flinch', 'flip'), 'salamandra': ('lunge', 'flinch', 'melt'),
@@ -145,6 +145,9 @@ GEN.update({
     'mumia_solar': ('slam', 'stoic', 'dissolve'), 'kobold': ('lunge', 'flinch', 'tumble'), 'anao_renegado': ('slam', 'stoic', 'topple'), 'golem_pedra': ('slam', 'stoic', 'topple'),
     'golem_sal': ('slam', 'stoic', 'dissolve'), 'golem_magma': ('slam', 'stoic', 'melt'), 'cav_negro': ('slam', 'stoic', 'topple'), 'armadura': ('slam', 'stoic', 'topple'),
     'mago_batalha': ('cast', 'stagger', 'dissolve'), 'imp': ('lunge', 'flinch', 'tumble'), 'troll_mesas': ('slam', 'stoic', 'topple'), 'rei_mesas': ('slam', 'stoic', 'topple'), 'ogro_deserto': ('slam', 'stoic', 'topple')})
+UNITS['rei_mesas'] = _BA(cls='warrior', skin='troll', hair='preto', hairstyle='mohawk', eyes='amarelo', hat='reimesas', outfit='mail', clothes='bronze', metal='ferro', weapon='maca_ferro', tn_off=3, hdy_off=2, bulk=1, face_style='brute', shape=dict(fists=1))
+UNITS['rei_mesas']['xa'] = dict(leap='pounce', charge='lunge', guard='cast', spin='spin')
+UNITS['matriarca']['xa'] = dict(charge='lunge', plague='slam', brood='cast', burrow='pounce')
 for _k, _v in GCAST.items():
     if _k in UNITS: UNITS[_k]['gcast'] = _v
 for _k, _v in GEN.items():
@@ -172,6 +175,15 @@ for _k, (_b, _o) in _VAR.items():
 
 
 def frames(u, kind, view):
+    if kind in u.get('xa', {}):                           # animacao PROPRIA por habilidade de chefe (xa = {id_da_habilidade: estilo})
+        import genanim as GA, chibi_anim3 as N3
+        sty = u['xa'][kind]; vv = {'right': 'side', 'down': 'front', 'up': 'back'}.get(view, view)
+        if sty in ('spin', 'rise', 'dive', 'leap'):
+            return N3.variant(frames0(u, 'attack', view), sty, view)
+        st = frames0(u, 'idle', view)[0]
+        if u['kind'] == 'c': base = [f[0].convert('RGBA') for f in C.anim(view, 'cast', u['ap']['cls'], None, u['ap'], dense=1)]
+        else: base = [f.convert('RGBA') for f in frames0(u, 'idle', view)]
+        return GA.attack(vv, base, st.convert('RGBA'), sty)
     if kind == 'cast' and u.get('gcast'):                 # habilidade de chefe: animacao propria (nao reaproveita o ataque)
         import genanim as GA
         st = frames0(u, 'idle', view)[0]
@@ -246,6 +258,7 @@ def export(key):
         shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), u['src'] + '_atlas.png'), os.path.join(OUT, f'cx_{key}_atlas.png'))
         shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), u['src'] + '_atlas.json'), os.path.join(OUT, f'cx_{key}_atlas.json')); print(key, 'copiado de', u['src']); return
     kinds = ['idle', 'walk', 'run', 'attack', 'hurt', 'death', 'cast'] + (list(COMBO_KINDS) if u.get('combo') else []) + (['spin'] if u.get('twirl') else []) + (['crush', 'quake', 'wall', 'rage'] if u.get('twirl') else []) + (['spin'] if u.get('spin') else []) + list(u.get('sk', {}))
+    kinds += list(u.get('xa', {}))
     ALIAS = {}
     if u['kind'] == 'c' and not u.get('run'): ALIAS['run'] = 'walk'
     elif u['kind'] != 'c': ALIAS['run'] = 'walk'
