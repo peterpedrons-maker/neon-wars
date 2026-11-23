@@ -575,6 +575,18 @@ function syncGps(){
   o.grp.rotation.y=Math.atan2(-g.ax,-g.ay);o.grp.scale.setScalar(1.2+pulse*.12);
   o.fill.material.opacity=.78+.22*pulse;
 }
+/* POÇAS de chuva: planos deitados no chão (textura pixel compartilhada: água azulada com reflexo do céu e borda mais escura) */
+let _pudTx=null;
+function syncPuddles(){
+  if(!scn||typeof G==='undefined')return;let pg=scn.pud;if(!pg){pg=scn.pud=new T.Group();scn.grp.add(pg);}
+  if(!_pudTx){const cv=document.createElement('canvas');cv.width=cv.height=32;const c=cv.getContext('2d');
+    for(let y=0;y<32;y++)for(let x=0;x<32;x++){const dx=(x-15.5)/16,dy=(y-15.5)/16,d=dx*dx+dy*dy;if(d>1)continue;const rim=d>.72,sky=(y<14&&d<.5)&&((x+y)%2===0);c.fillStyle=rim?'rgba(30,48,70,.8)':sky?'rgba(190,215,240,.85)':(d>.5?'rgba(52,86,124,.82)':'rgba(70,112,156,.82)');c.fillRect(x,y,1,1);}
+    _pudTx=new T.CanvasTexture(cv);_pudTx.encoding=T.sRGBEncoding;_pudTx.magFilter=T.NearestFilter;_pudTx.minFilter=T.NearestFilter;_pudTx.generateMipmaps=false;}
+  const live=new Set(),P=G.pud||[];
+  for(const q of P){live.add(q);let o=q._g;if(!o){const geo=new T.PlaneGeometry(1,1);geo.rotateX(-Math.PI/2);const mat=new T.MeshBasicMaterial({map:_pudTx,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});const mesh=new T.Mesh(geo,mat);mesh.renderOrder=2;mesh.rotation.y=q.sd*6;pg.add(mesh);o=q._g={mesh,mat};}
+    o.mat.opacity=Math.max(0,Math.min(1,q.a))*.9;o.mesh.scale.set(q.r*2*U,1,q.r*2*q.as*U);o.mesh.position.set(q.x*U,.022,q.y*U);o.mesh.rotation.y=0;}
+  for(const c of pg.children.slice()){let ok=false;for(const q of live)if(q._g&&q._g.mesh===c){ok=true;break;}if(!ok){pg.remove(c);c.geometry.dispose();c.material.dispose();}}
+}
 function syncGroundFx(){
   if(!scn||typeof G==='undefined'||typeof FXS==='undefined')return;
   let gg=scn.gfx;if(!gg){gg=scn.gfx=new T.Group();scn.grp.add(gg);}
@@ -1036,7 +1048,7 @@ function render3(){
   for(const w of scn.sway||[]){w.t+=dt;w.g.rotation.z=Math.sin(w.t*1.5+w.ph)*w.amp;w.g.rotation.y=w.ry+Math.sin(w.t*.9+w.ph)*.06;}
   for(const s of scn.smoke){s.t+=dt;const u=(s.t%4)/4;s.sp.position.set(s.x+u*.9,s.y+u*2.6,s.z+Math.sin(u*5+s.t)*.1);const q=.5+u*1.8;s.sp.scale.set(q,q,1);s.sp.material.opacity=Math.sin(u*Math.PI)*.35*(1-n*.4);}
   if(V3.proc&&V3.proc.stU){const q=V3.proc.stU;if(!ZONE.room&&!ZONE.dark&&h){const v=new T.Vector3(h.x*U,1.1,h.y*U).project(cam),bs=R.getDrawingBufferSize(new T.Vector2());q.hp.value.set((v.x*.5+.5)*bs.x,(v.y*.5+.5)*bs.y);q.hz.value=(v.z+1)/2;q.r.value=bs.x*.2;}else q.r.value=0;}
-  try{syncDecals();}catch(e){}try{syncGroundFx();}catch(e){}try{syncGps();}catch(e){}try{syncM3();}catch(e){console.error('m3',e);}
+  try{syncDecals();}catch(e){}try{syncGroundFx();}catch(e){}try{syncPuddles();}catch(e){}try{syncGps();}catch(e){}try{syncM3();}catch(e){console.error('m3',e);}
   windTick(window.__wt!=null?window.__wt:performance.now()/1000);
   if(scn.grass)scn.grass.update(camT,G.hero,G.mobs,t);
   if(scn.fill)scn.fill.intensity=.38*(1-Math.min(1,(n||0)*1.3));
