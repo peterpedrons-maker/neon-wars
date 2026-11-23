@@ -3,9 +3,10 @@
 escorpiao (+sal), lagarto (+salamandra), canino (chacal, lobo-da-poeira, cao-de-guerra, cao-infernal), abutre, escaravelho, verme."""
 import math
 from fauna import Cv, R, hx, FLAT, PAL, W, H, BASE, DRAW
-FLAT.update({'stinger': hx('#e8d8a0'), 'ember': hx('#ffb030')})
+FLAT.update({'stinger': hx('#e8d8a0'), 'ember': hx('#ffb030'), 'egg': hx('#e8dcb0'), 'eggs': hx('#b8a878')})
 PAL.update({
     'escorpiao': dict(body=R('#7a4a1c', '#b07a34', '#dcaa58'), shell=R('#5a3410', '#8a5a22', '#b8843a'), pinca=R('#6a3a14', '#9a622a', '#c88a44'), tail=R('#6a3a14', '#a06a2c', '#d09a4c'), sting=R('#3a2a10', '#6a4a1a', '#9a7030')),
+    'matriarca': dict(body=R('#3a1418', '#7a2a2c', '#b44a44'), shell=R('#241014', '#4a1c20', '#7a3236'), pinca=R('#2a1014', '#5a2024', '#8a3a3c'), tail=R('#2a1014', '#5a2024', '#8a3a3c'), sting=R('#d8c070', '#f0dc88', '#fff4b0')),
     'escorpiao_sal': dict(body=R('#8a98b0', '#c4d0e0', '#eef4fa'), shell=R('#6a7a98', '#a4b4cc', '#d8e4f2'), pinca=R('#7a8aa8', '#b0c0d8', '#e0ecf8'), tail=R('#7a8aa8', '#b4c4dc', '#e4f0fa'), sting=R('#3a5a9a', '#5a8ae0', '#9ac0ff')),
     'lagarto': dict(body=R('#5a5a50', '#8a8a78', '#b8b8a0'), belly=R('#a09a78', '#c8c29a', '#e6e0bc'), spine=R('#3a3a34', '#5a5a50', '#7a7a68'), eye=R('#caa020', '#f0c840', '#fff090'), claw=R('#aaa090', '#d0c8b4', '#ece6d6')),
     'salamandra': dict(body=R('#7a2a10', '#c84a18', '#f08030'), belly=R('#d8a050', '#f0c870', '#fff0a8'), spine=R('#3a1008', '#6a2010', '#9a3418'), eye=R('#fff060', '#ffffa0', '#ffffff'), claw=R('#3a1c10', '#5a2c18', '#7a3c20')),
@@ -20,7 +21,7 @@ PAL.update({
 
 
 # ------------------------------------------------------------------ ESCORPIAO (do deserto / de sal)
-def _escorpiao(pal):
+def _escorpiao(pal, queen=False):
     def f(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy=0, **kw):
         c = Cv(); cx = W // 2; gy = BASE
         if view == 'right':
@@ -34,6 +35,9 @@ def _escorpiao(pal):
             c.ell(bx - 3, by - 1, 8, 4.6)                                   # abdome
             c.ell(bx + 4, by - 1.4, 5, 4.4, 'shell')                        # carapaça
             c.ell(bx - 3, by - .4, 6, 2.2, 'shell')
+            if queen:
+                for k in range(5): c.cap(bx + 6 - k * 2.6, by - 4.4, bx + 6.6 - k * 2.6, by - 8.6 - (1.8 if k in (1, 2, 3) else 0), 1.3, .3, 'stinger')   # coroa de espinhos
+                c.ell(bx - 8.2, by + .2, 3.8, 3.4, 'egg'); c.ell(bx - 7.2, by - .6, 1.6, 1.5, 'eggs'); c.ell(bx - 9.4, by + 1.2, 1.4, 1.3, 'eggs')   # bolsa de ovos
             # cauda: sobe por trás e arqueia sobre o corpo
             pts = [(bx - 9, by - 1), (bx - 13, by - 5), (bx - 14, by - 10), (bx - 11 + math.sin(tail) * .8, by - 15), (bx - 5 + math.sin(tail) * 1.2, by - 17.5)]
             for (x0, y0), (x1, y1), r in zip(pts, pts[1:], (2.6, 2.4, 2.2, 2.0)): c.cap(x0, y0, x1, y1, r, r * .9, 'tail')
@@ -54,6 +58,9 @@ def _escorpiao(pal):
             c.ell(bx, by + 2.4, 5.6, 6.6)
             c.ell(bx, by - 2.6, 4.6, 4.2, 'shell')
             for k in range(4): c.cap(bx, by + 3 + k * 2.2, bx, by + 4.8 + k * 2.2, 3.6 - k * .5, 3.0 - k * .5, 'shell')
+            if queen:
+                for k in range(5): c.cap(bx + (k - 2) * 1.9, by - 3.4, bx + (k - 2) * 2.4, by - 7.4 - (2 if k in (1, 2, 3) else 0), 1.2, .3, 'stinger')
+                if back: c.ell(bx, by + 9, 3.6, 3.2, 'egg'); c.dot(bx - 1, by + 9, hx('#b8a878')); c.dot(bx + 1.5, by + 10, hx('#b8a878'))
             for sg in (-1, 1):
                 c.cap(bx + sg * 3, by - 4 * sgn, bx + sg * 7 + lunge * .1, by - 8 * sgn, 1.5, 1.4, 'pinca')
                 c.ell(bx + sg * 7.6, by - 10 * sgn - (2 if mouth else 0) * sgn, 3.2, 2.8, 'pinca'); c.cap(bx + sg * 7.6, by - 12 * sgn, bx + sg * 9, by - 15 * sgn, 1.2, .4, 'pinca')
@@ -264,7 +271,7 @@ def verme(view, ph=0.0, bob=0, lunge=0, mouth=0, squint=False, tail=0.0, head_dy
 
 
 DRAW.update({
-    'escorpiao': _escorpiao('escorpiao'), 'escorpiao_sal': _escorpiao('escorpiao_sal'),
+    'escorpiao': _escorpiao('escorpiao'), 'escorpiao_sal': _escorpiao('escorpiao_sal'), 'matriarca': _escorpiao('matriarca', queen=True),
     'lagarto': _lagarto('lagarto'), 'salamandra': _lagarto('salamandra', flame=True),
     'chacal': _canino('chacal', size=.9, lean=.82), 'lobo_poeira': _canino('poeira', size=1.12, lean=.95, mane=True),
     'cao_guerra': _canino('guerra', size=1.1, lean=1.0, armor=True), 'cao_infernal': _canino('infernal', size=1.12, lean=.95, horns=True, ember=True),
@@ -273,7 +280,7 @@ DRAW.update({
 if __name__ == '__main__':
     import sys
     from PIL import Image
-    ks = sys.argv[1:] or ['escorpiao', 'escorpiao_sal', 'lagarto', 'salamandra', 'chacal', 'lobo_poeira', 'cao_guerra', 'cao_infernal', 'abutre', 'escaravelho', 'verme']
+    ks = sys.argv[1:] or ['matriarca', 'escorpiao', 'escorpiao_sal', 'lagarto', 'salamandra', 'chacal', 'lobo_poeira', 'cao_guerra', 'cao_infernal', 'abutre', 'escaravelho', 'verme']
     S = Image.new('RGBA', (72 * 4 * 3, 64 * 4 * len(ks)), (150, 120, 80, 255))
     for i, k in enumerate(ks):
         for j, v in enumerate(('right', 'down', 'up')):

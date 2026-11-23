@@ -634,7 +634,7 @@ def r2(name,seed,nv,lv,mobs,ground,**kw):
 # ---- Planalto Árido (Nv 10–12): a primeira zona de verdade; chão de areia, acampamento de bandidos, covil da Matriarca Escorpião (santuário)
 r2('planalto',2121,'Nv 10–12',[10,12],['escorpiao', 'lagarto', 'chacal', 'bandidodeserto', 'abutre', 'chacal', 'escorpiao'],'sand',
    roads=[[(3200,6390),(3100,5500),(3350,4500),(3200,3500),(3300,2400),(3200,1200),(3200,10)],[(3200,3500),(2200,3300),(1100,3000),(10,2800)],[(3300,4000),(4400,3800),(5400,3500),(6390,3400)]],
-   camps=[(2100,4500)],shrines=[(4700,1700)],pois=[(3200,3300),(1500,1300)],start=(3200,6150),packs=34)
+   camps=[(2100,4500)],shrines=[(4700,1700)],pois=[(3200,3300),(1500,1300)],start=(3200,6150),packs=34,region_extra=dict(minis=[dict(type='matriarca',x=4700,y=1700,lv=12,aggro=420,respawn=240)]))
 # ---- Garganta do Vento (Nv 12–13): desfiladeiro estreito e sinuoso, ventos fortes
 r2('garganta',2222,'Nv 12–13',[12,13],['saqueador', 'chacal', 'abutre', 'bandidodeserto', 'lagarto'],'rock',
    roads=[[(1100,4790),(1000,4000),(1250,3100),(1000,2200),(1200,1300),(1100,10)]],pois=[(1100,2400)],start=(1100,4600),band=(420,420,420,420),dens=.7)
