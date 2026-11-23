@@ -368,6 +368,7 @@ SPECS.update({
  'imp': dict(skin='#c83a28', horns=1, ears=1, nose=1.6, cloth='#3a1a1a', cloth2='#c83a28', pants='#c83a28', boots='#8a2a20', weapon='spear', wlen=12, wang=-.95, eye='#ffe040', eye_hi=0, head=7.8, torso=3.8, torso_h=4.4, leg=4.2, tunic=1, scar=0, cape='#5a1a14'),
  'troll_mesas': dict(skin='#7a6a8a', tusks=1, hair='#3a2a4a', hair_style='mohawk', belly='#9a8aa8', cloth='#6a4a3a', cloth2='#8a6a4a', pants='#4a3a2a', boots='#3a2a1a', weapon='club', wlen=14, wang=-.9, eye='#ffd040', eye_hi=0, head=7.6, torso=6.6, torso_h=6.4, leg=6.4, bulk=3.0, pads=1, scar=1, belt=1, tunic=1),
  'ogro_deserto': dict(skin='#b09a58', tusks=1, horns=1, turban='#8a3a2a', belly='#c8b878', cloth='#8a5a30', cloth2='#6a3a20', pants='#4a3a2a', boots='#3a2a20', weapon='axe', wlen=13, wang=-.9, eye='#a02a10', eye_hi=0, head=8.0, torso=6.4, torso_h=6.0, leg=6.0, bulk=2.4, scar=1, belt=1, tunic=1, strap=1, strap_c='#5a2a18'),
+ 'rei_mesas': dict(skin='#8a5a54', tusks=1, hair='#2a1a1a', hair_style='mohawk', belly='#a87a70', cloth='#5a1a14', cloth2='#c89a30', pants='#3a2a22', boots='#2a1a14', weapon='club', wlen=18, wang=-.9, eye='#ffd040', eye_hi=0, head=8.2, torso=7.2, torso_h=6.8, leg=6.8, bulk=3.6, pads=1, spikes=1, scar=1, belt=1, tunic=1, crown=1, crown_c='#e0b040', crown_band='#8a5a20', cape='#5a1a14', bones=1, strap=1, strap_c='#c89a30', warpaint=1, paint_c='#e0b040'),
 })
 for k, S in SPECS.items(): S.setdefault('has_cape', 1)
 

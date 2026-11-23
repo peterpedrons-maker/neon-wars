@@ -135,7 +135,7 @@ GEN = {   # (ataque, dano, morte) para inimigos fora do motor chibi
 for _k in ('matriarca', 'escorpiao', 'escorpiao_sal', 'lagarto', 'salamandra', 'chacal', 'lobo_poeira', 'cao_guerra', 'cao_infernal', 'abutre', 'escaravelho', 'verme'):
     UNITS[_k] = dict(kind='f', name=_k)
 for _k in ('bandido_deserto', 'saqueador', 'atirador_deserto', 'cultista_sol', 'mumia_solar', 'kobold', 'anao_renegado', 'golem_pedra', 'golem_sal', 'golem_magma',
-           'cav_negro', 'armadura', 'mago_batalha', 'imp', 'troll_mesas', 'ogro_deserto'):
+           'cav_negro', 'armadura', 'mago_batalha', 'imp', 'troll_mesas', 'ogro_deserto', 'rei_mesas'):
     UNITS[_k] = dict(kind='m', spec=_k)
 GEN.update({
     'matriarca': ('slam', 'stoic', 'flip'), 'escorpiao': ('pounce', 'flinch', 'flip'), 'escorpiao_sal': ('pounce', 'flinch', 'flip'), 'lagarto': ('lunge', 'flinch', 'flip'), 'salamandra': ('lunge', 'flinch', 'melt'),
@@ -144,7 +144,7 @@ GEN.update({
     'bandido_deserto': ('lunge', 'flinch', 'fall'), 'saqueador': ('slam', 'stoic', 'fall'), 'atirador_deserto': ('lunge', 'flinch', 'tumble'), 'cultista_sol': ('cast', 'stagger', 'dissolve'),
     'mumia_solar': ('slam', 'stoic', 'dissolve'), 'kobold': ('lunge', 'flinch', 'tumble'), 'anao_renegado': ('slam', 'stoic', 'topple'), 'golem_pedra': ('slam', 'stoic', 'topple'),
     'golem_sal': ('slam', 'stoic', 'dissolve'), 'golem_magma': ('slam', 'stoic', 'melt'), 'cav_negro': ('slam', 'stoic', 'topple'), 'armadura': ('slam', 'stoic', 'topple'),
-    'mago_batalha': ('cast', 'stagger', 'dissolve'), 'imp': ('lunge', 'flinch', 'tumble'), 'troll_mesas': ('slam', 'stoic', 'topple'), 'ogro_deserto': ('slam', 'stoic', 'topple')})
+    'mago_batalha': ('cast', 'stagger', 'dissolve'), 'imp': ('lunge', 'flinch', 'tumble'), 'troll_mesas': ('slam', 'stoic', 'topple'), 'rei_mesas': ('slam', 'stoic', 'topple'), 'ogro_deserto': ('slam', 'stoic', 'topple')})
 for _k, _v in GCAST.items():
     if _k in UNITS: UNITS[_k]['gcast'] = _v
 for _k, _v in GEN.items():
