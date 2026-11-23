@@ -132,13 +132,13 @@ GEN = {   # (ataque, dano, morte) para inimigos fora do motor chibi
     'vampiro': ('pounce', 'stagger', 'flip'),
 }
 # ---- REGIÃO 2 (Terras Áridas): inimigos do deserto (fauna3.py / humano.py) ----
-for _k in ('escorpiao', 'escorpiao_sal', 'lagarto', 'salamandra', 'chacal', 'lobo_poeira', 'cao_guerra', 'cao_infernal', 'abutre', 'escaravelho', 'verme'):
+for _k in ('matriarca', 'escorpiao', 'escorpiao_sal', 'lagarto', 'salamandra', 'chacal', 'lobo_poeira', 'cao_guerra', 'cao_infernal', 'abutre', 'escaravelho', 'verme'):
     UNITS[_k] = dict(kind='f', name=_k)
 for _k in ('bandido_deserto', 'saqueador', 'atirador_deserto', 'cultista_sol', 'mumia_solar', 'kobold', 'anao_renegado', 'golem_pedra', 'golem_sal', 'golem_magma',
            'cav_negro', 'armadura', 'mago_batalha', 'imp', 'troll_mesas', 'ogro_deserto'):
     UNITS[_k] = dict(kind='m', spec=_k)
 GEN.update({
-    'escorpiao': ('pounce', 'flinch', 'flip'), 'escorpiao_sal': ('pounce', 'flinch', 'flip'), 'lagarto': ('lunge', 'flinch', 'flip'), 'salamandra': ('lunge', 'flinch', 'melt'),
+    'matriarca': ('slam', 'stoic', 'flip'), 'escorpiao': ('pounce', 'flinch', 'flip'), 'escorpiao_sal': ('pounce', 'flinch', 'flip'), 'lagarto': ('lunge', 'flinch', 'flip'), 'salamandra': ('lunge', 'flinch', 'melt'),
     'chacal': ('pounce', 'flinch', 'collapse'), 'lobo_poeira': ('pounce', 'stoic', 'collapse'), 'cao_guerra': ('pounce', 'stoic', 'collapse'), 'cao_infernal': ('pounce', 'flinch', 'dissolve'),
     'abutre': ('pounce', 'stagger', 'flip'), 'escaravelho': ('pounce', 'flinch', 'flip'), 'verme': ('slam', 'flinch', 'melt'),
     'bandido_deserto': ('lunge', 'flinch', 'fall'), 'saqueador': ('slam', 'stoic', 'fall'), 'atirador_deserto': ('lunge', 'flinch', 'tumble'), 'cultista_sol': ('cast', 'stagger', 'dissolve'),
