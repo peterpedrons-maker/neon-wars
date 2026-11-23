@@ -5283,13 +5283,20 @@ function updateTown(dt){
   if(!G.room)lifeUpdate(dt);
   if(h.hp<h.maxhp)h.hp=Math.min(h.maxhp,h.hp+h.maxhp*.2*dt);
   for(const n of G.npcs){const d=dist(h,n);n.row=d<150?dir4(h.x-n.x,h.y-n.y):n.row0;}
-  for(const v of G.vill){v.t-=dt;if(v.t<=0){v.t=rnd(2,5);v.tx=v.x0+rnd(-46,46);v.ty=v.y0+rnd(-26,26);}
+  /* NOITE NA CIDADE: moradores recolhem-se nas casas/lojas (ponto de porta mais próximo) e somem; de manhã saem e voltam aos seus postos */
+  const night=!G.room&&TOD.n>.6,day=TOD.n<.35;
+  for(const v of G.vill){if(v.pet)continue;
+    if(v.hid){if(day){v.hid=false;v.go=null;}continue;}
+    if(night&&!v.go&&ZONE.doors&&ZONE.doors.length){if(v.nt===undefined)v.nt=rnd(0,25);v.nt-=dt;if(v.nt<=0){let b=null,bd=1e9;for(const d of ZONE.doors){const q=Math.hypot(d.x-v.x,d.y-v.y);if(q<bd){bd=q;b=d;}}v.go=b;}}
+    if(v.go){const m=moveTo(v,v.go.x,v.go.y+30,38,dt);v.moving=m>0.1;if(v.moving)v.animT+=dt*.9;if(Math.hypot(v.go.x-v.x,v.go.y+30-v.y)<14){v.hid=true;v.moving=false;v.nt=undefined;}if(day)v.go=null;continue;}
+    if(day&&v.nt!==undefined)v.nt=undefined;}
+  for(const v of G.vill){if(v.hid||v.go)continue;v.t-=dt;if(v.t<=0){v.t=rnd(2,5);v.tx=v.x0+rnd(-46,46);v.ty=v.y0+rnd(-26,26);}
     const m=moveTo(v,v.tx,v.ty,24,dt);collide(v,6);v.moving=m>0.1;if(v.moving)v.animT+=dt*.7;}
 }
 function nearInt(){const h=G.hero;if((G.scene!=='town'&&!(G.scene==='dungeon'&&(ZONE.gates||(G.npcs&&G.npcs.length))))||G.winOpen||G.roomBusy)return null;
   if(G.scene==='dungeon'){if(ZONE.gates)for(const g of ZONE.gates)if(dist(h,g)<g.r)return {k:'gate',g,lb:'Entrar',nm:g.nm,ic:'greek-temple'};for(const n of (G.npcs||[]))if(dist(h,n)<(n.r||40)+14)return {k:'npc',t:n,lb:'Falar',nm:n.nm,ic:n.ic};return null;}
   for(const n of G.npcs)if(dist(h,n)<(n.r||40)+14)return {k:'npc',t:n,lb:'Falar',nm:n.nm,ic:n.ic};
-  for(const v of G.vill){if(v.pet)continue;if(dist(h,v)<36){if(!v.vn)v.vn=VNAMES[G.vill.indexOf(v)%VNAMES.length];return {k:'npc',t:v,lb:'Falar',nm:v.vn,ic:'hood'};}}
+  for(const v of G.vill){if(v.pet||v.hid)continue;if(dist(h,v)<36){if(!v.vn)v.vn=VNAMES[G.vill.indexOf(v)%VNAMES.length];return {k:'npc',t:v,lb:'Falar',nm:v.vn,ic:'hood'};}}
   if(!G.room&&ZONE.boards)for(const b of ZONE.boards)if(Math.hypot(h.x-b.x,h.y-b.y)<58)return {k:'board',b,lb:'Ver caçadas',nm:b.nm,ic:b.ic};
   if(!G.room){if(ZONE.doors)for(const d of ZONE.doors)if(Math.abs(h.x-d.x)<34&&h.y<d.y+8&&h.y>d.y-36)return {k:'door',d,lb:'Entrar',nm:d.nm,ic:d.ic};
     const P=ZONE.portal;if(P&&!P.off&&Math.abs(h.x-P.x)<38&&h.y<P.stand[1]+8&&h.y>P.y-22)return {k:'portal',lb:'Entrar',nm:'Portal das Dungeons',ic:'greek-temple'};}
@@ -6128,7 +6135,7 @@ function render(){
   for(const p of ZONE.props){if(p.x<mx||p.x>mxx||p.y<my||p.y>myy)continue;list.push({y:p.y,p});}
   const h=G.hero;list.push({y:h.y,e:h});for(const m of G.mobs){if(m.dead&&m.deadT>1.1)continue;list.push({y:m.y,e:m});}
   if(G.petE)list.push({y:G.petE.y,e:G.petE});
-  if(G.scene==='town'){for(const n of G.npcs)list.push({y:n.y,e:n});for(const v of G.vill)list.push({y:v.y,e:v});}
+  if(G.scene==='town'){for(const n of G.npcs)list.push({y:n.y,e:n});for(const v of G.vill)if(!v.hid)list.push({y:v.y,e:v});}
   if(G.boss&&!(G.boss.dead&&G.boss.deadT>1.2))list.push({y:G.boss.y,e:G.boss});
   list.sort((a,b)=>a.y-b.y);
   const glow=[];let occl=false;const hb=[h.x-cx-16,h.y-cy-52,h.x-cx+16,h.y-cy+4];const ents=[];
@@ -7216,7 +7223,7 @@ function nMark(id){if(id==='cacador')return hnMarkNpc();let ready=0,wait=0,main=
   for(const x of SEC){if(s.act[x.id]){if(x.turn===id){if(qkReady(x))ready=1;else wait=1;}}else if(!s.sd[x.id]&&x.giver===id&&SAVE.lv>=x.lv)side=1;}
   if(ready)return ['?','g'];if(main)return ['!','g'];if(side)return ['!','s'];if(wait)return ['?','o'];return null;}
 function stMarkers(){if(!G.on||!G.hero||!window.V3||!V3.toScreen){return;}dlgInit();const mk=$('npcmk');if(!mk)return;const ts=V3.toScreen;
-  const list=[...(G.npcs||[]),...(G.scene==='town'?(G.vill||[]):[])];
+  const list=[...(G.npcs||[]),...(G.scene==='town'?(G.vill||[]).filter(v=>!v.hid):[])];
   const doors=(G.scene==='town'&&!G.room&&ZONE.doors)?ZONE.doors:[];
   while(mk.children.length<list.length+doors.length+2){const e=document.createElement('div');mk.appendChild(e);}
   let i=0;
@@ -7226,7 +7233,7 @@ function stMarkers(){if(!G.on||!G.hero||!window.V3||!V3.toScreen){return;}dlgIni
   if(BUB.e&&BUB.t>0&&!G.winOpen){const e=mk.children[i++],p=ts(BUB.e.x,BUB.e.y,BUB.e.kind==='vill'?58:(BUB.e.id==='mer'?64:72));e.className='nbub';e.textContent=BUB.txt;e.style.left=p[0]+'px';e.style.top=(p[1]-(BUB.e.kind==='npc'&&mk.querySelector('.nmk')?18:0))+'px';e.style.display='block';e.style.color='';}
   for(;i<mk.children.length;i++)mk.children[i].style.display='none';}
 function bubTick(){if(!G.on||!G.hero)return;BUB.t-=.7;if(BUB.t<=0)BUB.e=null;if(BUB.e||G.winOpen||G.dlg||G.cut)return;
-  const h=G.hero,list=[...(G.npcs||[]),...(G.scene==='town'?(G.vill||[]):[])];let best=null,bd=170;
+  const h=G.hero,list=[...(G.npcs||[]),...(G.scene==='town'?(G.vill||[]).filter(v=>!v.hid):[])];let best=null,bd=170;
   for(const n of list){const d=dist(h,n);if(d<bd&&Date.now()-(BUB.last.get(n)||0)>16000){bd=d;best=n;}}
   if(!best)return;BUB.last.set(best,Date.now());BUB.e=best;BUB.t=4.2;BUB.txt=nGreet({id:best.kind==='vill'?'':best.id});}
 setInterval(()=>{try{stNpcSync();}catch(e){}},300);setInterval(()=>{try{bubTick();}catch(e){}},700);
