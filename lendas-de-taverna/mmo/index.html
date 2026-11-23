@@ -1920,14 +1920,16 @@ const WXN={clear:'Tempo aberto',rain:'Chuva',storm:'Tempestade',snow:'Nevasca'},
 /* Neve fica DESLIGADA por enquanto (dono: não combina com o clima atual; reservar para uma região fria futura). Para ligar: preencher SNOWZ com {zone_x:{clear:a,snow:b}}. */
 const SNOWZ={};
 const WET={sapo:1,afogado:1,homemrato:1,cobra:1,barata:1,rato:1,ratass:1,cultlodo:1,ladrao:1};
-function wxReset(){const R=ZONE&&G.scene==='dungeon'&&ZONE.region;WX.opts=R&&(SNOWZ[G.map]||R.wx)||null;WX.k='clear';WX.a=0;WX.c=0;WX.fl=0;WX.thT=-1;WX.next=WX.opts?rnd(15,50):1e9;WX.drops=[];WX.spl=[];WX.wet=0;G.pud=[];
+const TOWNWX={town:{clear:7,rain:3}}; /* Brumavale também chove (Cinzamuro é árida: sem chuva) */
+function wxOut(){return (G.scene==='dungeon'||(G.scene==='town'&&!G.room))&&ZONE;}
+function wxReset(){const R=ZONE&&G.scene==='dungeon'&&ZONE.region;WX.opts=R&&(SNOWZ[G.map]||R.wx)||(G.scene==='town'&&!G.room&&TOWNWX[G.townMap])||null;WX.k='clear';WX.a=0;WX.c=0;WX.fl=0;WX.thT=-1;WX.next=WX.opts?rnd(15,50):1e9;WX.drops=[];WX.spl=[];WX.wet=0;G.pud=[];
   if(WX.opts&&Math.random()<.45)wxSet(wxPick(),true);}
 function wxPick(){const w=WX.opts;let tot=0;for(const k in w)tot+=w[k];let r=Math.random()*tot;for(const k in w){r-=w[k];if(r<=0)return k;}return 'clear';}
 function wxSet(k,quiet){if(k===WX.k)return;WX.k=k;if(!quiet){chat(k==='snow'?'Começou a nevar. '+WXHINT.snow+'.':k==='rain'?'Começou a chover.':k==='storm'?'Uma tempestade chegou! '+WXHINT.storm+'.':'O tempo abriu.',k==='clear'?4:3);}}
 function wxSkMul(id){if(WX.k==='clear'||!id)return 1;const st=WX.k==='storm';
   if(WX.k==='snow'){if(/gelo|congel|neve|frost|glac/.test(id))return 1.25;if(/fogo|chama|cataclismo|incend|meteoro|pir/.test(id))return .85;return 1;}
   if(/raio|tempest|trov|relamp|choque/.test(id))return st?1.4:1.25;if(/fogo|chama|cataclismo|incend|meteoro|pir/.test(id))return st?.7:.8;return 1;}
-function wxTick(dt){dt/=TEMPO;if(WX.map!==G.map||WX.sc!==G.scene){WX.map=G.map;WX.sc=G.scene;wxReset();}
+function wxTick(dt){dt/=TEMPO;const wk=G.map+'|'+G.scene+'|'+(G.scene==='town'?G.townMap+(G.room?'r':''):'');if(WX.map!==wk){WX.map=wk;WX.sc=G.scene;wxReset();}
   WX.next-=dt;if(WX.opts&&WX.next<=0){WX.next=rnd(90,180);wxSet(wxPick());}
   const sn=WX.k==='snow',ta=WX.k==='clear'?0:sn?.85:WX.k==='rain'?.75:1,tc=WX.k==='clear'?0:sn?.3:WX.k==='rain'?.7:1;
   WX.a+=(ta-WX.a)*Math.min(1,dt*.35);WX.c+=(tc-WX.c)*Math.min(1,dt*.25);if(WX.a<.01&&ta===0)WX.a=0;if(WX.c<.01&&tc===0)WX.c=0;
@@ -1937,10 +1939,10 @@ function wxTick(dt){dt/=TEMPO;if(WX.map!==G.map||WX.sc!==G.scene){WX.map=G.map;W
   puddleTick(dt);wxSound(dt);windSound(dt);wxDraw(dt);}
 /* POÇAS (dono): chovendo por um tempo, o chão acumula água (WX.wet 0..1 sobe na chuva/tempestade e seca com tempo aberto); poças nascem em volta do herói, ganham ondinhas das gotas, e pisar nelas espirra água com som. Desenhadas em v3.js (`syncPuddles`). */
 let PUDT=0,RIPT=0;
-function splashSnd(v=.5){if(!AC||!sfxGain)return;const t=AC.currentTime,n=Math.floor(AC.sampleRate*.22),b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++){const e=Math.pow(1-i/n,2.2);d[i]=(Math.random()*2-1)*e;}
+function splashSnd(v=.5){if(!AC||!sfxGain)return;if(BUF.puddle_0){sfx('puddle_'+Math.floor(Math.random()*4),Math.min(1,v*1.25),.92+Math.random()*.2);return;}const t=AC.currentTime,n=Math.floor(AC.sampleRate*.22),b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++){const e=Math.pow(1-i/n,2.2);d[i]=(Math.random()*2-1)*e;}
   const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type='bandpass';f.Q.value=.9;f.frequency.setValueAtTime(900+Math.random()*500,t);f.frequency.exponentialRampToValueAtTime(3200,t+.16);const g=AC.createGain();g.gain.value=v*.55;s.connect(f);f.connect(g);g.connect(sfxGain);s.start(t);
   const o=AC.createOscillator(),og=AC.createGain();o.type='sine';o.frequency.setValueAtTime(320+Math.random()*120,t);o.frequency.exponentialRampToValueAtTime(900,t+.07);og.gain.setValueAtTime(v*.18,t);og.gain.exponentialRampToValueAtTime(.001,t+.09);o.connect(og);og.connect(sfxGain);o.start(t);o.stop(t+.1);}
-function puddleTick(dt){const out=G.scene==='dungeon'&&ZONE&&ZONE.region&&!ZONE.dark&&!ZONE.room&&!ZONE.crp;if(!out){if(G.pud&&G.pud.length)G.pud=[];return;}
+function puddleTick(dt){const out=(G.scene==='dungeon'&&ZONE&&ZONE.region&&!ZONE.dark&&!ZONE.room&&!ZONE.crp)||(G.scene==='town'&&!G.room&&ZONE&&WX.opts);if(!out){if(G.pud&&G.pud.length)G.pud=[];return;}
   WX.wet=Math.max(0,Math.min(1,(WX.wet||0)+dt*(WX.k==='storm'?1/55:WX.k==='rain'?1/100:-1/120)));
   const P=G.pud||(G.pud=[]);for(const q of P){const want=q.dying?0:1;q.a+=(want-q.a)*Math.min(1,dt*.7);}
   PUDT-=dt;if(PUDT<=0){PUDT=.45;const h=G.hero,n=Math.round(WX.wet*22);
@@ -1951,14 +1953,17 @@ function puddleTick(dt){const out=G.scene==='dungeon'&&ZONE&&ZONE.region&&!ZONE.
   RIPT-=dt;if(RIPT<=0&&WX.k!=='clear'&&P.length){RIPT=WX.k==='storm'?.09:.18;const q=P[Math.floor(Math.random()*P.length)];if(q.a>.5&&Math.abs(q.x-G.hero.x)<500&&Math.abs(q.y-G.hero.y)<400)VF.wave(q.x+(Math.random()-.5)*q.r,q.y+(Math.random()-.5)*q.r*q.as,5+Math.random()*7,'#d6ebff',.75,1.4);}}
 function puddleAt(x,y){for(const q of (G.pud||[])){if(q.a<.4)continue;const dx=(x-q.x)/q.r,dy=(y-q.y)/(q.r*q.as);if(dx*dx+dy*dy<1)return q;}return null;}
 function wxBadge(){let b=document.getElementById('wxb');if(!b){b=document.createElement('div');b.id='wxb';b.style.cssText='position:absolute;left:calc(50% + 52px);transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top));text-align:center;font:700 8.5px/1.25 var(--fd);letter-spacing:.06em;text-transform:uppercase;color:#a8d4ff;text-shadow:0 1px 0 #000,0 0 6px #000;white-space:nowrap;pointer-events:none;z-index:5;display:none';($('stage')||document.body).appendChild(b);}
-  const on=WX.k!=='clear'&&G.on&&G.scene==='dungeon'&&WX.a>.3;b.style.display=on?'block':'none';if(on)b.innerHTML=WXN[WX.k]+'<br><span style="color:#d8e8ff;font-size:7.5px">'+WXHINT[WX.k]+'</span>';}
+  const on=WX.k!=='clear'&&G.on&&wxOut()&&!G.room&&WX.a>.3;b.style.display=on?'block':'none';if(on)b.innerHTML=WXN[WX.k]+'<br><span style="color:#d8e8ff;font-size:7.5px">'+WXHINT[WX.k]+'</span>';}
 let WXA=null;
-function wxSound(dt){if(!AC||!sfxGain)return;if(!WXA){try{const n=AC.sampleRate*2,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);let l=0;for(let i=0;i<n;i++){const w=Math.random()*2-1;l=(l+.04*w)/1.04;d[i]=l*3.2+w*.25;}
+function wxSound(dt){if(!AC||!sfxGain)return;if(!WXA&&BUF.rain_loop){try{const s=AC.createBufferSource();s.buffer=BUF.rain_loop;s.loop=true;const g=AC.createGain();g.gain.value=0;s.connect(g);g.connect(sfxGain);s.start();WXA={g,real:1};}catch(e){}}
+  if(!WXA){if(G.t<8)return;try{const n=AC.sampleRate*2,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);let l=0;for(let i=0;i<n;i++){const w=Math.random()*2-1;l=(l+.04*w)/1.04;d[i]=l*3.2+w*.25;}
     const s=AC.createBufferSource();s.buffer=b;s.loop=true;const f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=2600;f.Q.value=.5;const g=AC.createGain();g.gain.value=0;s.connect(f);f.connect(g);g.connect(sfxGain);s.start();WXA={g};}catch(e){return;}}
-  WXA.g.gain.value+=((WX.a*.11)-WXA.g.gain.value)*Math.min(1,dt*2);}
+  WXA.g.gain.value+=((WX.a*(WXA.real?.45:.11))-WXA.g.gain.value)*Math.min(1,dt*2);}
 /* SOM DO VENTO (dono): ruído filtrado em duas camadas (sopro grave + assobio) cujo volume/tom seguem a força do vento (WIND.str, calculada em v3.js); só ao ar livre */
 let WDA=null;
-function windSound(dt){if(!AC||!sfxGain)return;if(!WDA){try{const n=AC.sampleRate*3,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);let l=0,l2=0;for(let i=0;i<n;i++){const w=Math.random()*2-1;l=(l+.03*w)/1.03;l2=(l2*.98+.02*w);d[i]=l*4+l2*2;}
+function windSound(dt){if(!AC||!sfxGain)return;if(!WDA&&BUF.wind_loop){try{const s=AC.createBufferSource();s.buffer=BUF.wind_loop;s.loop=true;const g=AC.createGain();g.gain.value=0;s.connect(g);g.connect(sfxGain);s.start();WDA={real:g};}catch(e){}}
+  if(WDA&&WDA.real){const out=G.scene==='dungeon'&&ZONE&&!ZONE.dark&&!ZONE.room&&!ZONE.crp||G.scene==='town',st=out&&window.WIND?WIND.str:0;WDA.real.gain.value+=(((.06+st*.34)*(out?1:0))-WDA.real.gain.value)*Math.min(1,dt*1.6);return;}
+  if(!WDA){if(G.t<8)return;try{const n=AC.sampleRate*3,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);let l=0,l2=0;for(let i=0;i<n;i++){const w=Math.random()*2-1;l=(l+.03*w)/1.03;l2=(l2*.98+.02*w);d[i]=l*4+l2*2;}
     const mk=(type,fr,q)=>{const s=AC.createBufferSource();s.buffer=b;s.loop=true;s.playbackRate.value=fr>600?1.3:1;const f=AC.createBiquadFilter();f.type=type;f.frequency.value=fr;f.Q.value=q;const g=AC.createGain();g.gain.value=0;s.connect(f);f.connect(g);g.connect(sfxGain);s.start();return {f,g};};
     WDA={lo:mk('lowpass',380,.6),hi:mk('bandpass',1500,1.4)};}catch(e){return;}}
   const out=G.scene==='dungeon'&&ZONE&&!ZONE.dark&&!ZONE.room&&!ZONE.crp||G.scene==='town',st=out&&window.WIND?WIND.str:0,rain=(typeof WX!=='undefined'&&WX.a)||0,k=Math.min(1,dt*1.6);
@@ -1967,7 +1972,7 @@ function windSound(dt){if(!AC||!sfxGain)return;if(!WDA){try{const n=AC.sampleRat
 function wxThunder(){if(!AC||!sfxGain)return;try{const t=AC.currentTime,n=AC.sampleRate*2.2,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);let l=0;for(let i=0;i<n;i++){const w=Math.random()*2-1;l=(l+.02*w)/1.02;d[i]=l*5*Math.pow(1-i/n,1.6);}
   const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(420,t);f.frequency.exponentialRampToValueAtTime(90,t+2);const g=AC.createGain();g.gain.value=.9;s.connect(f);f.connect(g);g.connect(sfxGain);s.start(t);}catch(e){}}
 function wxDraw(dt){const c=document.getElementById('wxc');if(!c)return;const st=$('stage'),W=st.clientWidth,H=st.clientHeight;if(c.width!==W||c.height!==H){c.width=W;c.height=H;}
-  const x=c.getContext('2d');x.clearRect(0,0,W,H);if(G.scene!=='dungeon'||(WX.a<.02&&WX.c<.02&&WX.fl<=0))return;
+  const x=c.getContext('2d');x.clearRect(0,0,W,H);if(!wxOut()||G.room||(WX.a<.02&&WX.c<.02&&WX.fl<=0))return;
   if(WX.c>0&&WX.k!=='snow'){x.fillStyle='rgba(18,28,48,'+(WX.c*.3).toFixed(3)+')';x.fillRect(0,0,W,H);}
   if(WX.k==='snow'||(WX.flk&&WX.flk.length)){WX.flk=WX.flk||[];const sw=WX.k==='snow'?WX.a:0,NF=Math.floor(260*sw),wd=(window.WIND?WIND.str:.3);while(WX.flk.length<NF)WX.flk.push({x:Math.random()*W,y:Math.random()*H,r:2+Math.random()*3,v:45+Math.random()*60,p:Math.random()*6});if(WX.flk.length>NF)WX.flk.length=NF;
     x.fillStyle='rgba(245,250,255,.85)';for(const f of WX.flk){f.p+=dt*1.5;f.y+=f.v*dt;f.x+=(Math.sin(f.p)*14+25+wd*40)*dt;if(f.y>H){f.y=-4;f.x=Math.random()*W;}if(f.x>W)f.x=0;x.fillRect(Math.round(f.x),Math.round(f.y),Math.ceil(f.r),Math.ceil(f.r));}
@@ -2137,7 +2142,7 @@ function audioInit(){
   const m=AC.createGain();m.gain.value=.55;m.connect(AC.destination);sfxGain=AC.createGain();sfxGain.gain.value=1;sfxGain.connect(m);musGain=AC.createGain();musGain.gain.value=.22;musGain.connect(m);
   ['ui_click','ui_confirm','ui_denied','swing','hit_0','hit_1','slash','crit','miss','bow','arrow_hit','spell_cast','spell_hit','heal','coin','levelup','death','victory','sk_golpe','sk_meteoros','sk_flechas','sk_sagrado','sk_corte','sk_grito','tr_equip','tr_open','tr_close','sk_fogo','sk_gelo','sk_raio','sk_terra','sk_veneno','sk_nota','sk_estocada','sk_explosao','st_escudo','buff','dg_title','boss_roar','boss_rei_roar','boss_slam','boss_charge','boss_spin','boss_guard','boss_swarm','boss_plague','boss_burrow','boss_flask','boss_throw','boss_dark','cut_marca','cut_queda','cut_sino'].forEach(n=>loadBuf('../assets/audio/sfx/'+n+'.ogg',n));
   for(const sp of ['rato','javali','goblin','esq','bat','ogro','lobo','aranha','barata','sapo','cobra','tronco','harpia','gnoll','humano','morto','cogu'])for(const k of ['atk','hurt','die'])loadBuf('../assets/audio/sfx/mob_'+sp+'_'+k+'.ogg','mob_'+sp+'_'+k);
-  for(const q of ['atk','hurt','die','engage','stomp','charge','bellow','bark','grove','imune','step','glint'])loadBuf('../assets/audio/sfx/cervo_'+q+'.ogg','cervo_'+q);loadBuf('../assets/audio/sfx/mount_neigh.ogg','mount_neigh');for(const q of ['roar','step','stomp','sweep','fall','bite','spit','die'])loadBuf('../assets/audio/sfx/col_'+q+'.ogg','col_'+q);for(const q of ['step','stomp','punch','roar','hurt','kneel','die'])loadBuf('../assets/audio/sfx/gig_'+q+'.ogg','gig_'+q);for(const q of ['roar','hurt','die','atk','slam','sweep','cast','orb','orbhit','geyser','grab','whirl','dive','tsunami','emerge','bubbles'])loadBuf('../assets/audio/sfx/mare_'+q+'.ogg','mare_'+q);for(const q of ['q_accept','q_obj','q_done'])loadBuf('../assets/audio/sfx/'+q+'.ogg',q);loadBuf('../assets/audio/sfx/mount_snort.ogg','mount_snort');
+  for(const q of ['atk','hurt','die','engage','stomp','charge','bellow','bark','grove','imune','step','glint'])loadBuf('../assets/audio/sfx/cervo_'+q+'.ogg','cervo_'+q);loadBuf('../assets/audio/sfx/mount_neigh.ogg','mount_neigh');for(const q of ['roar','step','stomp','sweep','fall','bite','spit','die'])loadBuf('../assets/audio/sfx/col_'+q+'.ogg','col_'+q);for(const q of ['step','stomp','punch','roar','hurt','kneel','die'])loadBuf('../assets/audio/sfx/gig_'+q+'.ogg','gig_'+q);for(const q of ['roar','hurt','die','atk','slam','sweep','cast','orb','orbhit','geyser','grab','whirl','dive','tsunami','emerge','bubbles'])loadBuf('../assets/audio/sfx/mare_'+q+'.ogg','mare_'+q);for(const q of ['q_accept','q_obj','q_done'])loadBuf('../assets/audio/sfx/'+q+'.ogg',q);loadBuf('../assets/audio/sfx/mount_snort.ogg','mount_snort');for(const q of ['puddle_0','puddle_1','puddle_2','puddle_3','rain_loop','wind_loop'])loadBuf('../assets/audio/sfx/'+q+'.ogg',q);
   loadBuf('../assets/audio/music/campina.ogg','m_campina').then(()=>{if(musOn)playMusic();});
   loadBuf('../assets/audio/music/chefe.ogg','m_chefe');loadBuf('../assets/audio/music/vila.ogg','m_vila');
 }
@@ -2719,9 +2724,12 @@ function mkBoss(bx,by){
     for(let k=0;k<6;k++){const a=k*1.047+Math.random()*.5,f=freeSpot(m.x+Math.cos(a)*40,m.y+Math.sin(a)*26),b=mkMob('rato',f[0],f[1],-1);b.minion=true;b.respawn=1e9;b.hunt=true;b.elite=false;b.tier=null;b.name='Rato da Praga';b.rkAdd=1;b.lv=m.lv;b.maxhp=Math.round(b.maxhp*.5);b.hp=b.maxhp;G.mobs.push(b);}chat('O Rei dos Ratos explode em ratos!',2);};
   return m;
 }
+const PACKX=1.6; /* extras por ponto de spawn nas zonas do mundo (0 = original) */
 function resetZone(){
   if(ZONE.crp){crpInit();return;}
-  G.crp=null;G.mobs=[];ZONE.spawns.forEach((s,i)=>{{const f=freeSpot(s[0],s[1]);G.mobs.push(mkMob(varOf(G.zoneLv,s[2]!==undefined?s[2]:i),f[0],f[1],i));}});
+  G.crp=null;G.mobs=[];ZONE.spawns.forEach((s,i)=>{{const f=freeSpot(s[0],s[1]);const k=varOf(G.zoneLv,s[2]!==undefined?s[2]:i);G.mobs.push(mkMob(k,f[0],f[1],i));
+    /* MAIS INIMIGOS POR ÁREA (dono): em zonas do mundo cada ponto de spawn ganha +PACKX em média de companheiros da mesma espécie em volta */
+    if(ZONE.region&&G.scene==='dungeon'){const ex=Math.floor(PACKX)+(Math.random()<PACKX%1?1:0);for(let q=0;q<ex;q++){const an=Math.random()*6.283,g=freeSpot(f[0]+Math.cos(an)*(55+Math.random()*60),f[1]+Math.sin(an)*(40+Math.random()*45));G.mobs.push(mkMob(k,g[0],g[1],i));}}}});
   bossAlert(false);G.boss=null;G.mp=[];G.ev=null;G.chest=null;G.evT=ZONE.region?1e9:rnd(40,70);G.zbWait=0;G.zm={};G.kills=0;G.phase='farm';G.bossWoke=false;G.dtm=0;G.bossRoll=1;G.projs=[];G.hnMob=null;try{rareSpawn();}catch(e){}try{bossPresence();}catch(e){}
 }
 function fadeTo(cb){const f=$('fade');f.classList.add('on');setTimeout(()=>{cb();setTimeout(()=>f.classList.remove('on'),220);},380);}
